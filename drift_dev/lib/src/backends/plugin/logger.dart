@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_generated.dart';
 import 'package:drift_dev/src/backends/plugin/plugin.dart';
 import 'package:logging/logging.dart';
@@ -24,7 +23,7 @@ void setupLogger(MoorPlugin plugin) {
       final error =
           PluginErrorParams(false, message, rec.stackTrace.toString());
 
-      plugin.channel?.sendNotification(error.toNotification());
+      plugin.channel.sendNotification(error.toNotification());
     }
 
     print('${rec.level.name}: ${rec.message}');

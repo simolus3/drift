@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'dart:convert';
 
@@ -21,7 +20,7 @@ import 'main.dart';
 CREATE TABLE "groups" (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  
+
   UNIQUE(name)
 );
 
@@ -31,7 +30,7 @@ CREATE TABLE group_members (
   "group" INT NOT NULL REFERENCES "groups"(id),
   user INT NOT NULL REFERENCES users(id),
   is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-  
+
   PRIMARY KEY ("group", user) ON CONFLICT REPLACE
 );
 
@@ -55,7 +54,7 @@ class Settings {}
 
 class SettingsConverter extends TypeConverter<Settings, String> {
   const SettingsConverter();
-  
+
   String mapToSql(Settings s) => '';
   Settings mapToDart(String db) => Settings();
 }

@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
@@ -11,7 +10,7 @@ void main() {
     final state = TestState.withContent({
       'foo|lib/a.moor': '''
          import 'enum.dart';
-         
+
          CREATE TABLE foo (
            fruit ENUM(Fruits) NOT NULL,
            another ENUM(DoesNotExist) NOT NULL
@@ -25,7 +24,7 @@ void main() {
     });
 
     final file = await state.analyze('package:foo/a.moor');
-    final table = file.currentResult.declaredTables.single;
+    final table = file.currentResult!.declaredTables.single;
     final column = table.columns.singleWhere((c) => c.name.name == 'fruit');
 
     state.close();

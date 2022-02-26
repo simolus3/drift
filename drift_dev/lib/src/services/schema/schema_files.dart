@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:recase/recase.dart';
@@ -45,7 +44,7 @@ class SchemaWriter {
     } else if (entity is MoorTrigger) {
       type = 'trigger';
       data = {
-        'on': _idOf(entity.on),
+        'on': _idOf(entity.on!),
         'refences_in_body': [
           for (final ref in entity.bodyReferences) _idOf(ref),
         ],
@@ -55,7 +54,7 @@ class SchemaWriter {
     } else if (entity is MoorIndex) {
       type = 'index';
       data = {
-        'on': _idOf(entity.table),
+        'on': _idOf(entity.table!),
         'name': entity.name,
         'sql': entity.createStmt,
       };
@@ -65,6 +64,8 @@ class SchemaWriter {
         'scenario': 'create',
         'sql': entity.sql,
       };
+    } else {
+      throw AssertionError('unknown entity type $entity');
     }
 
     return {
@@ -89,7 +90,7 @@ class SchemaWriter {
       if (table.overrideTableConstraints != null)
         'constraints': table.overrideTableConstraints,
       if (table.primaryKey != null)
-        'explicit_pk': [...table.primaryKey.map((c) => c.name.name)]
+        'explicit_pk': [...table.primaryKey!.map((c) => c.name.name)]
     };
   }
 
@@ -104,8 +105,8 @@ class SchemaWriter {
       'dsl_features': [...column.features.map(_dslFeatureData)],
       if (column.typeConverter != null)
         'type_converter': {
-          'dart_expr': column.typeConverter.expression,
-          'dart_type_name': column.typeConverter.mappedType
+          'dart_expr': column.typeConverter!.expression,
+          'dart_type_name': column.typeConverter!.mappedType
               .getDisplayString(withNullability: false),
         }
     };
@@ -172,13 +173,13 @@ class SchemaReader {
     _currentlyProcessing.add(id);
 
     final rawData = _rawById[id];
-    final references = (rawData['references'] as List<dynamic>).cast<int>();
+    final references = (rawData?['references'] as List<dynamic>).cast<int>();
 
     // Ensure that dependencies have been resolved
     references.forEach(_processById);
 
-    final content = rawData['data'] as Map<String, dynamic>;
-    final type = rawData['type'] as String;
+    final content = rawData?['data'] as Map<String, dynamic>;
+    final type = rawData?['type'] as String;
 
     MoorSchemaEntity entity;
     switch (type) {
@@ -207,7 +208,7 @@ class SchemaReader {
     final name = content['name'] as String;
     final sql = content['sql'] as String;
 
-    return MoorIndex(name, null, sql, on);
+    return MoorIndex(name, const CustomIndexDeclaration(), sql, on);
   }
 
   MoorTrigger _readTrigger(Map<String, dynamic> content) {
@@ -225,7 +226,7 @@ class SchemaReader {
   MoorTable _readTable(Map<String, dynamic> content) {
     final sqlName = content['name'] as String;
     final isVirtual = content['is_virtual'] as bool;
-    final withoutRowId = content['without_rowid'] as bool /*?*/;
+    final withoutRowId = content['without_rowid'] as bool?;
 
     if (isVirtual) {
       final create = content['create_virtual_stmt'] as String;
@@ -247,12 +248,12 @@ class SchemaReader {
         _readColumn(rawColumn as Map<String, dynamic>)
     ];
 
-    List<String> tableConstraints;
+    List<String>? tableConstraints;
     if (content.containsKey('constraints')) {
       tableConstraints = (content['constraints'] as List<dynamic>).cast();
     }
 
-    Set<MoorColumn> explicitPk;
+    Set<MoorColumn>? explicitPk;
     if (content.containsKey('explicit_pk')) {
       explicitPk = {
         for (final columnName in content['explicit_pk'] as List<dynamic>)
@@ -295,11 +296,11 @@ class SchemaReader {
       nullable: nullable,
       defaultArgument: data['default_dart'] as String,
       customConstraints: customConstraints,
-      features: dslFeatures,
+      features: dslFeatures.whereType<ColumnFeature>().toList(),
     );
   }
 
-  ColumnFeature _columnFeature(dynamic data) {
+  ColumnFeature? _columnFeature(dynamic data) {
     if (data == 'auto-increment') return AutoIncrement();
     if (data == 'primary-key') return const PrimaryKey();
 

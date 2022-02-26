@@ -1,6 +1,6 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
+import 'package:collection/collection.dart';
 import 'package:drift_dev/src/backends/plugin/services/requests.dart';
 import 'package:drift_dev/src/backends/plugin/utils/ast_to_location.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -54,7 +54,7 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
 
     // if the file is analyzed, we can report analyzed columns
     final resolved = request.parsedMoor.declaredTables
-        ?.singleWhere((t) => t.sqlName == e.tableName, orElse: () => null);
+        .singleWhereOrNull((t) => t.sqlName == e.tableName);
 
     if (resolved != null) {
       for (final column in resolved.columns) {
@@ -103,7 +103,7 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
     // enrich information with variable types if the query has been analyzed.
     // (resolvedQueries is null when the file isn't fully analyzed)
     final resolved = request.parsedMoor.resolvedQueries
-        ?.firstWhere((q) => q.name == name, orElse: () => null);
+        ?.firstWhereOrNull((q) => q.name == name);
 
     if (resolved != null) {
       final parameterBuilder = StringBuffer('(');

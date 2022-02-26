@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
@@ -19,15 +18,15 @@ class Products extends Table {
 @DriftDatabase(tables: [Products], daos: [ProductsDao])
 class MyDatabase {}
 
-abstract class BaseDao<T extends Table, D > 
+abstract class BaseDao<T extends Table, D >
   extends DatabaseAccessor<MyDatabase> {
-  
+
   final TableInfo<T, D> _table;
-  
+
   BaseDao(MyDatabase db, this._table): super(db);
-  
+
   Future<void> insertOne(Insertable<T> value) => into(_table).insert(value);
-  
+
   Future<List<T>> selectAll() => select(_table).get();
 }
 
@@ -49,7 +48,7 @@ class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
     expect(file.errors.errors, isEmpty);
 
     final dao = (file.currentResult as ParsedDartFile).declaredDaos.single;
-    expect(dao.dbClass.element.name, 'MyDatabase');
+    expect(dao.dbClass.element!.name, 'MyDatabase');
 
     state.close();
   });

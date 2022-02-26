@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 
 import 'package:analyzer/dart/ast/ast.dart';
@@ -42,17 +41,17 @@ void main() {
     Future<void> _verifyReturnExpressionMatches(
         Element element, String source) async {
       final node = await _loadDeclaration(element);
-      expect(parser.returnExpressionOfMethod(node).toSource(), source);
+      expect(parser.returnExpressionOfMethod(node)!.toSource(), source);
     }
 
     final testClass = library.getType('Test');
 
     await _verifyReturnExpressionMatches(
-        testClass.getGetter('getter'), "'foo'");
+        testClass!.getGetter('getter')!, "'foo'");
     await _verifyReturnExpressionMatches(
-        testClass.getMethod('function'), "'bar'");
+        testClass.getMethod('function')!, "'bar'");
 
-    final invalidDecl = await _loadDeclaration(testClass.getMethod('invalid'));
+    final invalidDecl = await _loadDeclaration(testClass.getMethod('invalid')!);
     expect(parser.returnExpressionOfMethod(invalidDecl), isNull);
     expect(parser.step.errors.errors, isNotEmpty);
 

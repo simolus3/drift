@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:convert';
 import 'dart:io';
 
@@ -44,17 +43,17 @@ class GenerateUtilsCommand extends Command {
 
   @override
   String get invocation {
-    return '${runner.executableName} schema generate <input> <output>';
+    return '${runner!.executableName} schema generate <input> <output>';
   }
 
   @override
   Future<void> run() async {
-    final isNnbd = (argResults['null-safety'] as bool) ??
+    final isNnbd = (argResults?['null-safety'] as bool?) ??
         await _isCurrentPackageNullSafe();
 
-    final isForMoor = argResults.arguments.contains('moor_generator');
+    final isForMoor = argResults!.arguments.contains('moor_generator');
 
-    final rest = argResults.rest;
+    final rest = argResults!.rest;
     if (rest.length != 2) {
       usageException('Expected input and output directories');
     }
@@ -80,8 +79,8 @@ class GenerateUtilsCommand extends Command {
         version,
         entities,
         isNnbd,
-        argResults['data-classes'] as bool,
-        argResults['companions'] as bool,
+        argResults?['data-classes'] as bool,
+        argResults?['companions'] as bool,
         isForMoor,
       );
     }
@@ -92,12 +91,16 @@ class GenerateUtilsCommand extends Command {
   }
 
   Future<bool> _isCurrentPackageNullSafe() async {
-    PackageConfig config;
+    PackageConfig? config;
     try {
       config = await findPackageConfig(Directory.current);
     } on Object {
       stderr.write('Could not determine whether to use null-safety. Please '
           'run this command in a Dart project, or try running `pub get` first');
+      return false;
+    }
+
+    if (config == null) {
       return false;
     }
 
@@ -107,6 +110,8 @@ class GenerateUtilsCommand extends Command {
     if (ownPackage == null) return false;
 
     final version = ownPackage.languageVersion;
+    if (version == null) return false;
+
     final featureSet = FeatureSet.fromEnableFlags2(
       sdkLanguageVersion: Version(version.major, version.minor, 0),
       flags: const [],
@@ -125,9 +130,8 @@ class GenerateUtilsCommand extends Command {
 
       if (match == null || entity is! File) continue;
 
-      final version = int.parse(match.group(1));
-      final file = entity as File;
-      final rawData = json.decode(await file.readAsString());
+      final version = int.parse(match.group(1)!);
+      final rawData = json.decode(await entity.readAsString());
 
       final schema = SchemaReader.readJson(rawData as Map<String, dynamic>);
       results[version] = schema.entities.toList();

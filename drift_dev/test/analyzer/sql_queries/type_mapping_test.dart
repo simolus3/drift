@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';

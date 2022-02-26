@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
@@ -49,7 +48,7 @@ SELECT * FROM total_duration_by_artist_view;
     state.close();
 
     final totalDurationByArtist =
-        queries.singleWhere((q) => q.name == 'totalDurationByArtist');
+        queries!.singleWhere((q) => q.name == 'totalDurationByArtist');
     expect(
       totalDurationByArtist,
       returnsColumns({

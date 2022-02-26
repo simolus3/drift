@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'dart:async';
 

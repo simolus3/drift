@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/model/table.dart';
@@ -21,13 +20,13 @@ void main() {
     });
 
     final file = await state.analyze('package:foo/a.moor');
-    final view = file.currentResult.declaredViews.single;
-    expect(view.parserView.resolvedColumns.length, equals(1));
-    final column = view.parserView.resolvedColumns.single;
+    final view = file.currentResult!.declaredViews.single;
+    expect(view.parserView!.resolvedColumns.length, equals(1));
+    final column = view.parserView!.resolvedColumns.single;
 
     state.close();
 
-    expect(column.type.type, BasicType.text);
+    expect(column.type!.type, BasicType.text);
     expect(view.references,
         contains(isA<MoorTable>().having((t) => t.sqlName, 'sqlName', 't')));
     expect(file.errors.errors, isEmpty);
@@ -50,13 +49,13 @@ void main() {
     });
 
     final file = await state.analyze('package:foo/a.moor');
-    final parentView = file.currentResult.declaredViews
+    final parentView = file.currentResult!.declaredViews
         .singleWhere((element) => element.name == 'parent_view');
-    final childView = file.currentResult.declaredViews
+    final childView = file.currentResult!.declaredViews
         .singleWhere((element) => element.name == 'child_view');
-    expect(parentView.parserView.resolvedColumns.length, equals(2));
-    expect(childView.parserView.resolvedColumns.length, equals(1));
-    final column = childView.parserView.resolvedColumns.single;
+    expect(parentView.parserView!.resolvedColumns.length, equals(2));
+    expect(childView.parserView!.resolvedColumns.length, equals(1));
+    final column = childView.parserView!.resolvedColumns.single;
 
     state.close();
 
@@ -66,7 +65,7 @@ void main() {
         childView.transitiveTableReferences.map((e) => e.displayName), ['t']);
 
     expect(file.errors.errors, isEmpty);
-    expect(column.type.type, BasicType.text);
+    expect(column.type!.type, BasicType.text);
   });
 
   test('view without table', () async {
@@ -94,7 +93,7 @@ void main() {
     final state = TestState.withContent({
       'foo|lib/a.moor': '''
         CREATE TABLE foo (bar INTEGER NOT NULL PRIMARY KEY);
-      
+
         CREATE VIEW v AS SELECT foo.** FROM foo;
       ''',
     });

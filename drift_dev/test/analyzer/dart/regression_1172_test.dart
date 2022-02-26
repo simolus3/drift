@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:test/test.dart';
 
 import '../utils.dart';

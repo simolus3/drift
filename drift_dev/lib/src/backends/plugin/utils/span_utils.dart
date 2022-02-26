@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:source_span/source_span.dart';
 
 bool intersect(SourceSpan a, SourceSpan b) {

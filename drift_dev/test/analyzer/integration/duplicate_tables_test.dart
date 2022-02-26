@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
 
@@ -16,14 +15,14 @@ import 'table.dart';
 class MyDatabase {}
       ''',
       'foo|lib/file.moor': '''
-import 'table.dart';      
+import 'table.dart';
       ''',
       'foo|lib/table.dart': '''
 import 'package:drift/drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
-}      
+}
       '''
     });
 

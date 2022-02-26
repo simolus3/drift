@@ -1,5 +1,3 @@
-//@dart=2.9
-
 import 'package:charcode/ascii.dart';
 import 'package:drift_dev/src/writer/utils/hash_code.dart';
 import 'package:test/test.dart';

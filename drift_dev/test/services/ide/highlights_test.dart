@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:build/build.dart';
 import 'package:drift_dev/src/services/ide/moor_ide.dart';
@@ -9,9 +8,9 @@ import 'utils.dart';
 final _asset = AssetId('foo', 'lib/bar.moor');
 
 void main() {
-  MoorIde moorIde;
-  Map<AssetId, String> data;
-  List<HighlightRegion> results;
+  late MoorIde moorIde;
+  late Map<AssetId, String> data;
+  late List<HighlightRegion> results;
 
   setUp(() {
     data = {};
@@ -29,7 +28,7 @@ void main() {
     for (final region in results) {
       final regionType = region.type;
       final lexeme =
-          data[_asset].substring(region.offset, region.offset + region.length);
+          data[_asset]!.substring(region.offset, region.offset + region.length);
 
       if (regionType == type && lexeme == content) return;
 

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
@@ -29,11 +28,10 @@ class MoorPlugin extends ServerPlugin
     with OutlineMixin, FoldingMixin, CompletionMixin, NavigationMixin {
   final Map<ContextRoot, MoorDriver> drivers = {};
 
-  ErrorService errorService;
+  late final ErrorService errorService = ErrorService(this);
 
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
-    errorService = ErrorService(this);
   }
 
   factory MoorPlugin.forProduction() {
@@ -64,11 +62,11 @@ class MoorPlugin extends ServerPlugin
   }
 
   @override
-  Null createAnalysisDriver(plugin.ContextRoot contextRoot) {
+  Never createAnalysisDriver(plugin.ContextRoot contextRoot) {
     throw UnsupportedError('Using custom driver management');
   }
 
-  MoorDriver _moorDriverForPath(String path) {
+  MoorDriver? _moorDriverForPath(String path) {
     for (final driver in drivers.values) {
       if (driver.context.contextRoot.isAnalyzed(path)) return driver;
     }
@@ -80,8 +78,9 @@ class MoorPlugin extends ServerPlugin
     final driver = _moorDriverForPath(path);
     if (driver == null) {
       throw RequestFailure(plugin.RequestError(
-          plugin.RequestErrorCode.INVALID_PARAMETER,
-          "Path isn't covered by plugin: $path"));
+        plugin.RequestErrorCode.INVALID_PARAMETER,
+        "Path isn't covered by plugin: $path",
+      ));
     }
     return driver;
   }
@@ -112,7 +111,7 @@ class MoorPlugin extends ServerPlugin
 
     // All remaining contexts have been removed
     for (final removed in oldRoots) {
-      drivers.remove(removed).dispose();
+      drivers.remove(removed)?.dispose();
     }
 
     return Future.value(plugin.AnalysisSetContextRootsResult());

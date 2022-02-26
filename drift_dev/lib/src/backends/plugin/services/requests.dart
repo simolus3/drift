@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';

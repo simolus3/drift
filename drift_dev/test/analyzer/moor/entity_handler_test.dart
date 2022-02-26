@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:test/test.dart';
 
@@ -15,7 +14,7 @@ CREATE TABLE users (
 '''
     };
 
-    TestState state;
+    TestState? state;
 
     tearDown(() => state?.close());
 
@@ -27,7 +26,7 @@ import 'b.moor';
 CREATE TABLE friendships (
   user_a INTEGER REFERENCES users (id),
   user_b INTEGER REFERENCES users (id),
-  
+
   PRIMARY KEY(user_a, user_b),
   CHECK (user_a != user_b)
 );
@@ -35,10 +34,10 @@ CREATE TABLE friendships (
         ...definitions,
       });
 
-      final file = await state.analyze('package:foo/a.moor');
+      final file = await state!.analyze('package:foo/a.moor');
       expect(file.errors.errors, isEmpty);
 
-      final table = file.currentResult.declaredTables.single;
+      final table = file.currentResult!.declaredTables.single;
       expect(
         table.references,
         [
@@ -56,7 +55,7 @@ import 'b.moor';
 CREATE TABLE friendships (
   user_a INTEGER REFERENCES users (id),
   user_b INTEGER REFERENCES users (id),
-  
+
   PRIMARY KEY(user_a, user_b),
   CHECK (user_a != user_b)
 );
@@ -68,11 +67,11 @@ END;
         ...definitions,
       });
 
-      final file = await state.analyze('package:foo/a.moor');
+      final file = await state!.analyze('package:foo/a.moor');
       expect(file.errors.errors, isEmpty);
 
       final trigger =
-          file.currentResult.declaredEntities.whereType<MoorTrigger>().single;
+          file.currentResult!.declaredEntities.whereType<MoorTrigger>().single;
       expect(
         trigger.references,
         {
@@ -98,10 +97,10 @@ CREATE INDEX idx ON users (name);
         ...definitions,
       });
 
-      final file = await state.analyze('package:foo/a.moor');
+      final file = await state!.analyze('package:foo/a.moor');
       expect(file.errors.errors, isEmpty);
 
-      final trigger = file.currentResult.declaredEntities.single as MoorIndex;
+      final trigger = file.currentResult!.declaredEntities.single as MoorIndex;
       expect(trigger.references, {
         const TypeMatcher<MoorTable>()
             .having((table) => table.displayName, 'displayName', 'users'),
@@ -110,7 +109,7 @@ CREATE INDEX idx ON users (name);
   });
 
   group('issues error when referencing an unknown table', () {
-    TestState state;
+    TestState? state;
 
     tearDown(() => state?.close());
 
@@ -123,7 +122,7 @@ CREATE TABLE foo (
         '''
       });
 
-      final file = await state.analyze('package:foo/a.moor');
+      final file = await state!.analyze('package:foo/a.moor');
 
       expect(
         file.errors.errors.map((e) => e.message),
@@ -139,7 +138,7 @@ END;
         ''',
       });
 
-      final file = await state.analyze('package:foo/a.moor');
+      final file = await state!.analyze('package:foo/a.moor');
 
       expect(
         file.errors.errors.map((e) => e.message),

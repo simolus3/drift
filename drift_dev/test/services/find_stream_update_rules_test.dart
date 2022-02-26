@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
@@ -27,7 +26,7 @@ END;
 import 'package:drift/drift.dart';
 
 @DriftDatabase(include: {'a.moor'})
-class MyDatabase {}      
+class MyDatabase {}
       '''
     });
 

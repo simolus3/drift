@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
@@ -19,16 +18,16 @@ class MoorDriver {
   final ResourceProvider _resourceProvider;
   final Lock lock = Lock();
 
-  /* late final */ MoorSession session;
-  StandaloneBackend backend;
-  AnalysisContext context;
+  late final MoorSession session;
+  late StandaloneBackend backend;
+  late AnalysisContext context;
 
-  StreamSubscription _fileChangeSubscription;
-  StreamSubscription _taskCompleteSubscription;
+  StreamSubscription? _fileChangeSubscription;
+  StreamSubscription? _taskCompleteSubscription;
 
   MoorDriver(this._resourceProvider,
-      {String contextRoot,
-      String sdkPath,
+      {required String contextRoot,
+      String? sdkPath,
       MoorOptions options = const MoorOptions.defaults()}) {
     final overlayed = OverlayResourceProvider(_resourceProvider);
     final collection = AnalysisContextCollection(
@@ -101,7 +100,7 @@ class MoorDriver {
 
   /// Waits for the file at [path] to be parsed. If the file is neither a Dart
   /// or a moor file, returns `null`.
-  Future<FoundFile> waitFileParsed(String path) async {
+  Future<FoundFile?> waitFileParsed(String path) async {
     if (!_ownsFile(path)) {
       return null;
     }
@@ -111,7 +110,7 @@ class MoorDriver {
     if (found.isParsed) {
       return found;
     } else {
-      final result = Completer<FoundFile>();
+      final result = Completer<FoundFile?>();
 
       unawaited(session
           .completedFiles()

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/src/services/schema/find_differences.dart';
 import 'package:test/test.dart';
 

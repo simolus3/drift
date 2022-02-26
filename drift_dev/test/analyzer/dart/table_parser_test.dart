@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 
 import 'package:analyzer/dart/element/element.dart';
@@ -13,9 +12,9 @@ import 'package:test/test.dart';
 import '../../utils/test_backend.dart';
 
 void main() {
-  TestBackend backend;
-  ParseDartStep dartStep;
-  MoorDartParser parser;
+  late TestBackend backend;
+  late ParseDartStep dartStep;
+  late MoorDartParser parser;
 
   setUpAll(() {
     backend = TestBackend({
@@ -122,20 +121,20 @@ void main() {
     parser = MoorDartParser(dartStep);
   });
 
-  Future<MoorTable> parse(String name) async {
-    return parser.parseTable(dartStep.library.getType(name));
+  Future<MoorTable?> parse(String name) async {
+    return parser.parseTable(dartStep.library.getType(name)!);
   }
 
   group('table names', () {
     test('use overridden name', () async {
       final parsed = await parse('TableWithCustomName');
-      expect(parsed.sqlName, equals('my-fancy-table'));
+      expect(parsed!.sqlName, equals('my-fancy-table'));
       expect(parsed.overrideWithoutRowId, isTrue);
     });
 
     test('use re-cased class name', () async {
       final parsed = await parse('Users');
-      expect(parsed.sqlName, equals('users'));
+      expect(parsed!.sqlName, equals('users'));
     });
 
     test('should not parse for complex methods', () async {
@@ -148,7 +147,7 @@ void main() {
     test('should use field name if no name has been set explicitly', () async {
       final table = await parse('Users');
       final idColumn =
-          table.columns.singleWhere((col) => col.name.name == 'id');
+          table!.columns.singleWhere((col) => col.name.name == 'id');
 
       expect(idColumn.name, equals(ColumnName.implicitly('id')));
       expect(
@@ -164,7 +163,7 @@ void main() {
     test('should use explicit name, if it exists', () async {
       final table = await parse('Users');
       final idColumn =
-          table.columns.singleWhere((col) => col.name.name == 'user_name');
+          table!.columns.singleWhere((col) => col.name.name == 'user_name');
 
       expect(idColumn.name, equals(ColumnName.explicitly('user_name')));
     });
@@ -172,7 +171,7 @@ void main() {
     test('should parse min and max length for text columns', () async {
       final table = await parse('Users');
       final idColumn =
-          table.columns.singleWhere((col) => col.name.name == 'user_name');
+          table!.columns.singleWhere((col) => col.name.name == 'user_name');
 
       expect(idColumn.features,
           contains(LimitingTextLength(minLength: 6, maxLength: 32)));
@@ -181,7 +180,7 @@ void main() {
     test('should only parse max length when relevant', () async {
       final table = await parse('Users');
       final idColumn =
-          table.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
+          table!.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
 
       expect(idColumn.features, contains(LimitingTextLength(maxLength: 100)));
     });
@@ -190,7 +189,7 @@ void main() {
       final table = await parse('CustomPrimaryKey');
 
       final partA =
-          table.columns.singleWhere((c) => c.dartGetterName == 'partA');
+          table!.columns.singleWhere((c) => c.dartGetterName == 'partA');
       final partB =
           table.columns.singleWhere((c) => c.dartGetterName == 'partB');
 
@@ -201,7 +200,7 @@ void main() {
     test('parsed default values', () async {
       final table = await parse('Users');
       final defaultsColumn =
-          table.columns.singleWhere((c) => c.name.name == 'defaults');
+          table!.columns.singleWhere((c) => c.name.name == 'defaults');
 
       expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
     });
@@ -209,7 +208,7 @@ void main() {
     test('parses documentation comments', () async {
       final table = await parse('Users');
       final idColumn =
-          table.columns.singleWhere((col) => col.name.name == 'id');
+          table!.columns.singleWhere((col) => col.name.name == 'id');
 
       final usernameColumn =
           table.columns.singleWhere((col) => col.name.name == 'user_name');
@@ -225,7 +224,7 @@ void main() {
   test('parses custom primary keys', () async {
     final table = await parse('CustomPrimaryKey');
 
-    expect(table.primaryKey, containsAll(table.columns));
+    expect(table!.primaryKey, containsAll(table.columns));
     expect(table.columns.any((column) => column.hasAI), isFalse);
   });
 
@@ -243,7 +242,7 @@ void main() {
 
   test('recognizes aliases for rowid', () async {
     final table = await parse('WithAliasForRowId');
-    final idColumn = table.columns.singleWhere((c) => c.name.name == 'id');
+    final idColumn = table!.columns.singleWhere((c) => c.name.name == 'id');
 
     expect(table.isColumnRequiredForInsert(idColumn), isFalse);
   });
@@ -252,7 +251,7 @@ void main() {
     test('from abstract classes or mixins', () async {
       final table = await parse('Foos');
 
-      expect(table.columns, hasLength(2));
+      expect(table!.columns, hasLength(2));
       expect(
           table.columns.map((c) => c.name.name), containsAll(['id', 'name']));
     });
@@ -261,13 +260,13 @@ void main() {
       final socks = await parse('Socks');
       final archivedSocks = await parse('ArchivedSocks');
 
-      expect(socks.columns, hasLength(2));
+      expect(socks!.columns, hasLength(2));
       expect(socks.columns.map((c) => c.name.name), ['name', 'id']);
 
-      expect(archivedSocks.columns, hasLength(4));
+      expect(archivedSocks!.columns, hasLength(4));
       expect(archivedSocks.columns.map((c) => c.name.name),
           ['name', 'id', 'archived_by', 'archived_on']);
-      expect(archivedSocks.primaryKey.map((e) => e.name.name), ['id']);
+      expect(archivedSocks.primaryKey!.map((e) => e.name.name), ['id']);
     });
   });
 

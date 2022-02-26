@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'dart:convert';
 
@@ -18,7 +17,7 @@ void main() {
         'foo|main.moor': '''
 import 'converter.dart';
 --import 'package:moor_converters/converters.dart';
- 
+
 CREATE TABLE foo (
   id INT NOT NULL MAPPED BY `const MyConverter()`
 );
@@ -28,9 +27,9 @@ import 'package:drift/drift.dart';
 
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();
-  
+
   int mapToSql(DateTime time) => time?.millisecondsSinceEpoch;
-  
+
   DateTime mapToDart(int fromSql) {
     if (fromSql == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(fromSql);
@@ -43,7 +42,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]);
+        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]!);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {
@@ -68,8 +67,8 @@ CREATE TABLE foo (
   id INT NOT NULL MAPPED BY `const MyConverter()`
 );
         ''',
-        'foo|indirection.moor': ''' 
-import 'converter.dart';        
+        'foo|indirection.moor': '''
+import 'converter.dart';
         ''',
         'foo|converter.dart': '''
 import 'package:drift/drift.dart';
@@ -91,7 +90,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]);
+        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]!);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {

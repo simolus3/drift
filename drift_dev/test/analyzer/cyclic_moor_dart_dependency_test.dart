@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:build/build.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
@@ -9,8 +8,8 @@ import 'package:test/test.dart';
 import '../utils/test_backend.dart';
 
 void main() {
-  TestBackend backend;
-  MoorSession session;
+  late TestBackend backend;
+  late MoorSession session;
 
   setUpAll(() {
     backend = TestBackend({

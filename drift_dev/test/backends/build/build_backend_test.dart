@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/backends/backend.dart';
@@ -24,10 +23,10 @@ void main() {
       ),
       {
         'foo|lib/main.dart': '''
-part 'helper.dart';        
+part 'helper.dart';
          ''',
-        'foo|lib/helper.dart': ''' 
-part of 'main.dart';        
+        'foo|lib/helper.dart': '''
+part of 'main.dart';
         '''
       },
     );

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:convert';
 import 'dart:io';
 
@@ -17,7 +16,7 @@ class DumpSchemaCommand extends Command {
 
   @override
   String get invocation {
-    return '${runner.executableName} schema dump [arguments] <input> <output>';
+    return '${runner!.executableName} schema dump [arguments] <input> <output>';
   }
 
   final MoorCli cli;
@@ -30,7 +29,7 @@ class DumpSchemaCommand extends Command {
 
   @override
   Future<void> run() async {
-    final rest = argResults.rest;
+    final rest = argResults!.rest;
     if (rest.length != 2) {
       usageException('Expected input and output files');
     }
@@ -40,7 +39,7 @@ class DumpSchemaCommand extends Command {
     final absolute = File(rest[0]).absolute.path;
     final input = await driver.waitFileParsed(absolute);
 
-    if (!input.isAnalyzed) {
+    if (input == null || !input.isAnalyzed) {
       cli.exit('Unexpected error: The input file could not be analyzed');
     }
 
@@ -49,7 +48,7 @@ class DumpSchemaCommand extends Command {
       cli.exit('Input file is not a Dart file');
     }
 
-    final db = (result as ParsedDartFile).declaredDatabases.single;
+    final db = result.declaredDatabases.single;
     final writer = SchemaWriter(db);
 
     await File(rest[1]).writeAsString(json.encode(writer.createSchemaJson()));

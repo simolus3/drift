@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:sqlparser/sqlparser.dart';

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -34,7 +33,7 @@ class MoorHighlightComputer {
         final mode = const {
           CommentMode.cStyle: HighlightRegionType.COMMENT_BLOCK,
           CommentMode.line: HighlightRegionType.COMMENT_END_OF_LINE,
-        }[token];
+        }[token]!;
         _contribute(token, mode);
       } else if (token is InlineDartToken) {
         _contribute(token, HighlightRegionType.COMMENT_DOCUMENTATION);
@@ -64,8 +63,10 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
 
   _HighlightingVisitor(this.collector);
 
-  void _contribute(SyntacticEntity node, HighlightRegionType type) {
-    collector._contribute(node, type);
+  void _contribute(SyntacticEntity? node, HighlightRegionType type) {
+    if (node != null) {
+      collector._contribute(node, type);
+    }
   }
 
   @override
@@ -133,10 +134,7 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitTableConstraint(TableConstraint e, void arg) {
-    if (e.nameToken != null) {
-      collector._contribute(
-          e.nameToken, HighlightRegionType.STATIC_GETTER_DECLARATION);
-    }
+    _contribute(e.nameToken, HighlightRegionType.STATIC_GETTER_DECLARATION);
     visitChildren(e, arg);
   }
 
@@ -158,11 +156,9 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
         _contribute(identifier.nameToken, HighlightRegionType.ANNOTATION);
       }
 
-      if (e.parameters != null) {
-        isDeclaringVariables = true;
-        visitList(e.parameters, arg);
-        isDeclaringVariables = false;
-      }
+      isDeclaringVariables = true;
+      visitList(e.parameters, arg);
+      isDeclaringVariables = false;
     }
 
     visitChildren(e, arg);

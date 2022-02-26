@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:drift_dev/moor_generator.dart';
@@ -29,7 +28,9 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
 
   _NavigationVisitor(this.request, this.collector);
 
-  void _reportForSpan(SourceSpan span, ElementKind kind, Location target) {
+  void _reportForSpan(SourceSpan? span, ElementKind kind, Location target) {
+    if (span == null) return;
+
     final offset = span.start.offset;
     final length = span.end.offset - offset;
 
@@ -53,10 +54,10 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
   void visitMoorImportStatement(ImportStatement e, void arg) {
     if (request.isMoorAndParsed) {
       final moor = request.parsedMoor;
-      final resolved = moor.resolvedImports[e];
+      final resolved = moor.resolvedImports?[e];
 
       if (resolved != null) {
-        final span = e.importString.span;
+        final span = e.importString?.span;
         _reportForSpan(
             span, ElementKind.FILE, Location(resolved.uri.path, 0, 0, 1, 1));
       }
@@ -71,7 +72,7 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
       final resolved = e.resolved;
 
       if (resolved is Column) {
-        final locations = _locationOfColumn(resolved);
+        final locations = _locationOfColumn(resolved).whereType<Location>();
         for (final declaration in locations) {
           _reportForSpan(e.span, ElementKind.FIELD, declaration);
         }
@@ -81,7 +82,7 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  Iterable<Location> _locationOfColumn(Column column) sync* {
+  Iterable<Location?> _locationOfColumn(Column column) sync* {
     final declaration = column.meta<MoorColumn>()?.declaration;
     if (declaration != null) {
       // the column was declared in a table and we happen to know where the
@@ -96,10 +97,10 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
     } else if (column is CompoundSelectColumn) {
       // a compound select column consists of multiple column declarations -
       // let's use all of them
-      yield* column.columns.where((c) => c != null).expand(_locationOfColumn);
+      yield* column.columns.expand(_locationOfColumn);
     } else if (column is DelegatedColumn) {
       if (column.innerColumn != null) {
-        yield* _locationOfColumn(column.innerColumn);
+        yield* _locationOfColumn(column.innerColumn!);
       }
     }
   }
@@ -108,11 +109,11 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
   void visitTableReference(TableReference e, void arg) {
     final resolved = e.resolved;
 
-    if (resolved is Table && resolved != null) {
+    if (resolved is Table) {
       final declaration = resolved.meta<MoorTable>()?.declaration;
       if (declaration != null) {
         _reportForSpan(
-            e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
+            e.span, ElementKind.CLASS, locationOfDeclaration(declaration)!);
       }
     }
 

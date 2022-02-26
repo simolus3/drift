@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/moor/moor_ffi_extension.dart';
@@ -10,7 +9,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  SqlEngine engine;
+  late SqlEngine engine;
 
   setUp(() {
     engine = SqlEngine(
@@ -30,7 +29,7 @@ void main() {
               allOf(contains('2'), contains('3'), contains('pow expects')),
             )
             .having(
-              (source) => source.span.text,
+              (source) => source.span!.text,
               'span.text',
               'pow(1, 2, 3)',
             ),
@@ -48,7 +47,7 @@ void main() {
               allOf(contains('2'), contains('1'), contains('sin expects')),
             )
             .having(
-              (source) => source.span.text,
+              (source) => source.span!.text,
               'span.text',
               'sin(1, 2)',
             ),
@@ -60,7 +59,7 @@ void main() {
     final result = engine.analyze('SELECT pow(2.5, 3);');
     final stmt = result.root as SelectStatement;
 
-    expect(stmt.resolvedColumns.map(result.typeOf), [
+    expect(stmt.resolvedColumns!.map(result.typeOf), [
       const ResolveResult(ResolvedType(type: BasicType.real, nullable: true))
     ]);
   });
@@ -69,7 +68,7 @@ void main() {
     final result = engine.analyze('SELECT current_time_millis();');
     final stmt = result.root as SelectStatement;
 
-    expect(stmt.resolvedColumns.map(result.typeOf), [
+    expect(stmt.resolvedColumns!.map(result.typeOf), [
       const ResolveResult(ResolvedType(type: BasicType.int, nullable: false))
     ]);
   });
@@ -108,7 +107,7 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
     expect(fileA.errors.errors, isEmpty);
     final resultA = fileA.currentResult as ParsedMoorFile;
 
-    final queryInA = resultA.resolvedQueries.single as SqlSelectQuery;
+    final queryInA = resultA.resolvedQueries!.single as SqlSelectQuery;
     expect(
       queryInA.resultSet.columns.single,
       const TypeMatcher<ResultColumn>()

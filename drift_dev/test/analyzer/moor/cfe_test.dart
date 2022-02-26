@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build/build.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
@@ -10,9 +9,9 @@ import 'package:test/test.dart';
 import '../../utils/test_backend.dart';
 
 void main() {
-  TestBackend backend;
-  MoorSession session;
-  Task task;
+  late TestBackend backend;
+  late MoorSession session;
+  late Task task;
 
   setUpAll(() {
     backend = TestBackend(
@@ -32,7 +31,7 @@ WITH RECURSIVE
     LIMIT 1000000
   )
   SELECT x FROM cnt;
-  
+
 test2:
 WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
          ''',
@@ -58,7 +57,7 @@ WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
     expect(file.errors.errors, isEmpty);
 
     final result = file.currentResult as ParsedMoorFile;
-    final query = result.resolvedQueries.firstWhere((q) => q.name == 'test')
+    final query = result.resolvedQueries!.firstWhere((q) => q.name == 'test')
         as SqlSelectQuery;
 
     expect(query.variables, isEmpty);
@@ -75,13 +74,13 @@ WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
   test('finds the underlying table when aliased through CFE', () {
     final file = session.registerFile(Uri.parse('package:foo/test.moor'));
     final result = file.currentResult as ParsedMoorFile;
-    final query = result.resolvedQueries.firstWhere((q) => q.name == 'test2')
+    final query = result.resolvedQueries!.firstWhere((q) => q.name == 'test2')
         as SqlSelectQuery;
 
     final resultSet = query.resultSet;
 
     expect(resultSet.matchingTable, isNotNull);
-    expect(resultSet.matchingTable.table.displayName, 'foo');
+    expect(resultSet.matchingTable!.table.displayName, 'foo');
     expect(resultSet.needsOwnClass, isFalse);
   });
 }

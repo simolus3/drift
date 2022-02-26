@@ -23,7 +23,7 @@ extension ExpandParameters on SqlInvocation {
       final unrelated = allColumns.where((column) {
         if (column is! ExpressionColumn) return true;
 
-        final expression = column.expression!;
+        final expression = column.expression;
         return !expression.selfAndDescendants.contains(this);
       });
 

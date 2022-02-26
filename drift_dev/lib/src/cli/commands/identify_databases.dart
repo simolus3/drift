@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 import 'dart:io';
 
@@ -29,17 +28,17 @@ class IdentifyDatabases extends MoorCommand {
 
       cli.logger.fine('Scanning $file');
 
-      final parsed = await driver.waitFileParsed(file.path);
-      final result = parsed.currentResult as ParsedDartFile;
+      final parsed = (await driver.waitFileParsed(file.path))!;
+      final result = parsed.currentResult;
 
-      // result can be null when we're running into a part of file
-      if (result == null) continue;
+      // might be a `part of` file...
+      if (result is! ParsedDartFile) continue;
 
       if (result.dbAccessors.isNotEmpty) {
         final displayName = p.relative(file.path, from: directory.path);
 
         final names = result.dbAccessors
-            .map((t) => t.declaration.fromClass.name)
+            .map((t) => t.declaration!.fromClass.name)
             .join(', ');
 
         cli.logger.info('$displayName has moor databases or daos: $names');

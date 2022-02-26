@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -25,7 +24,7 @@ class AnalyzeCommand extends MoorCommand {
 
       cli.logger.fine('Analyzing $file');
 
-      final parsed = await driver.waitFileParsed(file.path);
+      final parsed = (await driver.waitFileParsed(file.path))!;
 
       if (parsed.errors.errors.isNotEmpty) {
         cli.logger.warning('For file ${p.relative(file.path)}:');

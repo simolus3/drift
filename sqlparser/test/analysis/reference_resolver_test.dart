@@ -85,7 +85,7 @@ void main() {
     final resolved = expression.resolved as ExpressionColumn;
 
     enforceEqual(
-      resolved.expression!,
+      resolved.expression,
       BinaryExpression(
         NumericLiteral(3, token(TokenType.numberLiteral)),
         token(TokenType.star),

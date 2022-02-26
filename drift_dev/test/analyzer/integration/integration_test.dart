@@ -1,4 +1,3 @@
-//@dart=2.9
 @Tags(['analyzer'])
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
@@ -8,7 +7,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  TestState state;
+  late TestState state;
 
   setUpAll(() {
     state = TestState.withContent({
@@ -21,7 +20,7 @@ import 'another.dart'; // so that the resolver picks it up
 class UsedLanguages extends Table {
   IntColumn get language => integer()();
   IntColumn get library => integer()();
-  
+
   @override
   Set<Column> get primaryKey => {language, library};
 }
@@ -54,7 +53,7 @@ joinTest: SELECT * FROM reference_test r
         ''',
       'test_lib|lib/another.dart': r'''
 import 'package:drift/drift.dart';
-      
+
 class ProgrammingLanguages extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -88,9 +87,9 @@ class ProgrammingLanguages extends Table {
         database.tables.singleWhere((r) => r.sqlName == 'reference_test');
     expect(tableWithReferences.references.single.sqlName, 'libraries');
 
-    final importQuery = database.queries
+    final importQuery = database.queries!
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
-    expect(importQuery.resultSet.matchingTable.table.dartTypeName,
+    expect(importQuery.resultSet.matchingTable!.table.dartTypeName,
         'ProgrammingLanguage');
     expect(importQuery.declaredInMoorFile, isFalse);
     expect(importQuery.hasMultipleTables, isFalse);
@@ -113,7 +112,7 @@ class ProgrammingLanguages extends Table {
       ),
     );
 
-    final librariesQuery = database.queries
+    final librariesQuery = database.queries!
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;
     expect(librariesQuery.variables.single.type, ColumnType.text);
     expect(librariesQuery.declaredInMoorFile, isTrue);

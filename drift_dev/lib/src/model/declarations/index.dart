@@ -12,3 +12,12 @@ class MoorIndexDeclaration implements MoorDeclaration, IndexDeclaration {
   MoorIndexDeclaration.fromNodeAndFile(this.node, FoundFile file)
       : declaration = SourceRange.fromNodeAndFile(node, file);
 }
+
+class CustomIndexDeclaration implements IndexDeclaration {
+  const CustomIndexDeclaration();
+
+  @override
+  SourceRange get declaration {
+    throw UnsupportedError('Custom declaration does not have a source');
+  }
+}

@@ -184,9 +184,9 @@ class ExpressionColumn extends Column {
   final String name;
 
   /// The expression returned by this column.
-  final Expression? expression;
+  final Expression expression;
 
-  ExpressionColumn({required this.name, this.expression});
+  ExpressionColumn({required this.name, required this.expression});
 }
 
 /// A column that is created by a reference expression. The difference to an

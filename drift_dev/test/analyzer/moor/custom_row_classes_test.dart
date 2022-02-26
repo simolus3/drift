@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
@@ -52,10 +51,10 @@ class ExistingForView {
     expect(customName.existingRowClass, isNull);
 
     expect(existing.dartTypeName, 'ExistingRowClass');
-    expect(existing.existingRowClass.targetClass.name, 'ExistingRowClass');
+    expect(existing.existingRowClass!.targetClass.name, 'ExistingRowClass');
 
     expect(existingView.dartTypeName, 'ExistingForView');
-    expect(existingView.existingRowClass.targetClass.name, 'ExistingForView');
+    expect(existingView.existingRowClass!.targetClass.name, 'ExistingForView');
   });
 
   test('can use generic row classes', () async {

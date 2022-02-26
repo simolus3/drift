@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'assist_service.dart';
 
 class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {
@@ -8,11 +7,12 @@ class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {
   void contribute(
       AssistCollector collector, ColumnDefinition node, String path) {
     final notNull = node.findConstraint<NotNull>();
+    final typeNames = node.typeNames;
 
     if (notNull == null) {
       // there is no not-null constraint on this column, suggest to add one
       // after the type name
-      final end = node.typeNames.last.span.end.offset;
+      final end = typeNames!.last.span.end.offset;
       const id = AssistId.makeNotNull;
 
       collector.addAssist(PrioritizedSourceChange(

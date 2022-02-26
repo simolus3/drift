@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 import 'dart:io';
 
@@ -25,10 +24,10 @@ Future run(List<String> args) async {
 
 class MoorCli {
   Logger get logger => Logger.root;
-  CommandRunner _runner;
-  MoorProject project;
+  late final CommandRunner _runner;
+  late final MoorProject project;
 
-  bool verbose;
+  bool verbose = false;
 
   MoorCli() {
     _runner = CommandRunner(
@@ -66,7 +65,7 @@ class MoorCli {
     await _runner.runCommand(results);
   }
 
-  void exit(String message) {
+  Never exit(String message) {
     throw FatalToolError(message);
   }
 }

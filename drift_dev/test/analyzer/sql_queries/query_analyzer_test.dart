@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
@@ -8,7 +7,7 @@ import '../utils.dart';
 void main() {
   test('respects explicit type arguments', () async {
     final state = TestState.withContent({
-      'foo|lib/main.moor': ''' 
+      'foo|lib/main.moor': '''
 bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
       ''',
     });
@@ -20,7 +19,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     expect(file.errors.errors, isEmpty);
     final content = file.currentResult as ParsedMoorFile;
 
-    final query = content.resolvedQueries.single;
+    final query = content.resolvedQueries!.single;
     expect(query, const TypeMatcher<SqlSelectQuery>());
 
     final resultSet = (query as SqlSelectQuery).resultSet;
@@ -32,7 +31,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
 
   test('reads REQUIRED syntax', () async {
     final state = TestState.withContent({
-      'foo|lib/main.moor': ''' 
+      'foo|lib/main.moor': '''
 bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
       ''',
     });
@@ -44,7 +43,7 @@ bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
     expect(file.errors.errors, isEmpty);
     final content = file.currentResult as ParsedMoorFile;
 
-    final query = content.resolvedQueries.single;
+    final query = content.resolvedQueries!.single;
     expect(
       query.variables,
       allOf(

@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -25,13 +24,13 @@ Future<void> _apply() {
 }
 
 Future<void> _setup(Iterable<d.Descriptor> lib,
-    {String pubspec, Iterable<d.Descriptor> additional}) async {
+    {String? pubspec, Iterable<d.Descriptor>? additional}) async {
   // Copy and patch moor_generator's package config instead of running `pub get`
   // in each test.
 
   final uri = await Isolate.packageConfig;
   final config =
-      PackageConfig.parseBytes(await File.fromUri(uri).readAsBytes(), uri);
+      PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
 
   final appUri = '${File(p.join(d.sandbox, 'app')).absolute.uri}/';
   final newConfig = PackageConfig([

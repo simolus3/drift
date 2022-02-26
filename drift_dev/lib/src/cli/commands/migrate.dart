@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
@@ -22,7 +21,7 @@ class MigrateCommand extends MoorCommand {
       RegExp('(?:\\w+\\.)?build(?:\\.\\w+)?');
   static final RegExp _builderKeyPattern = RegExp('(?:(\\w+)[:|])?(\\w+)');
 
-  AnalysisContext context;
+  late final AnalysisContext context;
 
   MigrateCommand(MoorCli cli) : super(cli);
 
@@ -92,9 +91,8 @@ class MigrateCommand extends MoorCommand {
       return;
     }
 
-    final typedResult = unitResult as ResolvedUnitResult;
     final writer = _Moor2DriftDartRewriter(await file.readAsString());
-    typedResult.unit.accept(writer);
+    unitResult.unit.accept(writer);
 
     await file.writeAsString(writer.content);
   }
@@ -117,7 +115,7 @@ class MigrateCommand extends MoorCommand {
       final importedFile = import.importedFile;
       if (p.url.extension(importedFile) == '.moor') {
         final newImport = p.url.setExtension(importedFile, '.drift');
-        output = output.replaceFirst(import.span.text, "import '$newImport';");
+        output = output.replaceFirst(import.span!.text, "import '$newImport';");
       }
     }
 
@@ -158,7 +156,7 @@ class MigrateCommand extends MoorCommand {
     final targets = originalBuildConfig['targets'];
     if (targets is! Map) return;
 
-    for (final key in (targets as Map).keys) {
+    for (final key in targets.keys) {
       if (key is! String) continue;
 
       final builders = targets[key]['builders'];
@@ -201,14 +199,12 @@ class MigrateCommand extends MoorCommand {
 
       if (data is! YamlMap) return;
 
-      final dependencyBlock = data as YamlMap;
-
-      for (final entry in dependencyBlock.nodes.entries) {
+      for (final entry in data.nodes.entries) {
         final dep = entry.key as YamlScalar;
         final package = dep.value;
 
         if (newPackages.containsKey(package)) {
-          final replaceWith = newPackages[package];
+          final replaceWith = newPackages[package]!;
           // Replace the package name, and the entire dependency block if its
           // a string or null
 
@@ -257,7 +253,7 @@ class MigrateCommand extends MoorCommand {
   Future<void> _transformAnalysisOptions(File file) async {
     // Replace moor with drift from the `analyzer/plugins` key.
     var content = await file.readAsString();
-    YamlNode node;
+    YamlNode? node;
     try {
       node = loadYamlNode(content, sourceUrl: file.uri);
     } on Exception {
@@ -398,12 +394,11 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
 
       if (type is! InterfaceType) continue;
 
-      final iType = type as InterfaceType;
-      if (iType.element.library.isDartCore && iType.element.name == 'pragma') {
-        final name = value.getField('name').toStringValue();
+      if (type.element.library.isDartCore && type.element.name == 'pragma') {
+        final name = value.getField('name')!.toStringValue()!;
 
         if (name == 'moor2drift') {
-          final newIdentifier = value.getField('options').toStringValue();
+          final newIdentifier = value.getField('options')!.toStringValue()!;
           _writer.replace(node.offset, node.length, newIdentifier);
           return;
         }
@@ -434,14 +429,14 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     if (type is! InterfaceType ||
         // note that even old moor code uses these names since UseMoor/UseDao
         // are type aliases to the new interfaces.
-        ((type as InterfaceType).element.name != 'DriftDatabase' &&
-            (type as InterfaceType).element.name != 'DriftAccessor')) {
+        (type.element.name != 'DriftDatabase' &&
+            type.element.name != 'DriftAccessor')) {
       return;
     }
 
     final include = {
-      for (final entry in annotation.getField('include').toSetValue())
-        p.url.setExtension(entry.toStringValue(), '.drift')
+      for (final entry in annotation.getField('include')!.toSetValue()!)
+        p.url.setExtension(entry.toStringValue()!, '.drift')
     };
 
     final newInclude = StringBuffer('{');

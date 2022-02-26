@@ -1,10 +1,8 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/moor/create_table_reader.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
-import 'package:drift_dev/src/analyzer/runner/task.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_handler.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -29,16 +27,21 @@ CREATE TABLE bar (
 Future<void> main() async {
   final mapper = TypeMapper();
   final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
-  final step = ParseMoorStep(Task(null, null, null),
-      FoundFile(Uri.parse('file://foo'), FileType.moor), '');
+  final state =
+      TestState.withContent({'a|lib/foo.drift': 'foo'}, enableAnalyzer: false);
+  tearDownAll(state.close);
+  final task = await state.runTask('package:a/foo.drift');
+
+  final step = ParseMoorStep(
+      task, FoundFile(Uri.parse('file://foo'), FileType.moor), '');
 
   final parsedFoo = engine.parse(createFoo).rootNode as CreateTableStatement;
   final foo = await CreateTableReader(parsedFoo, step).extractTable(mapper);
-  engine.registerTable(mapper.extractStructure(foo));
+  engine.registerTable(mapper.extractStructure(foo!));
 
   final parsedBar = engine.parse(createBar).rootNode as CreateTableStatement;
   final bar = await CreateTableReader(parsedBar, step).extractTable(mapper);
-  engine.registerTable(mapper.extractStructure(bar));
+  engine.registerTable(mapper.extractStructure(bar!));
 
   SqlQuery parse(String sql) {
     final parsed = engine.analyze(sql);
@@ -100,7 +103,7 @@ FROM routes
 
     expect(file.errors.errors, isEmpty);
 
-    final query = result.resolvedQueries.single;
+    final query = result.resolvedQueries!.single;
     final resultSet = (query as SqlSelectQuery).resultSet;
 
     expect(resultSet.columns.map((e) => e.name), ['id', 'from', 'to']);
@@ -125,8 +128,8 @@ CREATE TABLE tableB1 (id INTEGER);
 
 query: SELECT
   tableA1.**,
-  tableA2.**, 
-  tableB1.**, 
+  tableA2.**,
+  tableB1.**,
   tableB2.**
 FROM tableA1 -- not nullable
 
@@ -147,7 +150,7 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
 
     expect(file.errors.errors, isEmpty);
 
-    final query = result.resolvedQueries.single;
+    final query = result.resolvedQueries!.single;
     final resultSet = (query as SqlSelectQuery).resultSet;
 
     final nested = resultSet.nestedResults;
@@ -175,9 +178,9 @@ query: SELECT * FROM my_view;
 
     final result = file.currentResult as ParsedMoorFile;
 
-    final query = result.resolvedQueries.single;
+    final query = result.resolvedQueries!.single;
     expect(
-        query.resultSet.matchingTable,
+        query.resultSet!.matchingTable,
         isA<MatchingMoorTable>()
             .having((e) => e.table, 'table',
                 isA<MoorView>().having((e) => e.name, 'name', 'my_view'))
@@ -197,11 +200,11 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
     expect(file.errors.errors, isEmpty);
 
     final result = file.currentResult as ParsedMoorFile;
-    final query = result.resolvedQueries.single;
+    final query = result.resolvedQueries!.single;
 
-    expect(query.resultSet.nestedResults, hasLength(2));
+    expect(query.resultSet!.nestedResults, hasLength(2));
     expect(
-        query.resultSet.nestedResults,
+        query.resultSet!.nestedResults,
         everyElement(isA<NestedResultTable>().having(
             (e) => e.table.displayName, 'table.displayName', 'my_view')));
   });

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'utils.dart';
 
 void main() {

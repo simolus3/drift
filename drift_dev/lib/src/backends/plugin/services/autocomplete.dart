@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:drift_dev/src/backends/plugin/services/requests.dart';
@@ -11,6 +10,8 @@ class MoorCompletingContributor implements CompletionContributor {
       MoorCompletionRequest request, CompletionCollector collector) {
     if (request.isMoorAndParsed) {
       final autoComplete = request.parsedMoor.parseResult.autoCompleteEngine;
+      if (autoComplete == null) return Future.value();
+
       final results = autoComplete.suggestCompletions(request.offset);
 
       // todo: Fix calculation in sqlparser. Then, set offset to results.anchor

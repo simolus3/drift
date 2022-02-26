@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_handler.dart';
@@ -20,7 +19,7 @@ void main() {
     final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(moorQuery.lints,
-        anyElement((AnalysisError q) => q.message.contains('unknown type')));
+        anyElement((AnalysisError q) => q.message!.contains('unknown type')));
   });
 
   test('warns when the result depends on a Dart template', () {
@@ -28,7 +27,7 @@ void main() {
     final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(moorQuery.lints,
-        anyElement((AnalysisError q) => q.message.contains('Dart template')));
+        anyElement((AnalysisError q) => q.message!.contains('Dart template')));
   });
 
   test('warns when nested results refer to table-valued functions', () {
@@ -182,12 +181,12 @@ all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
   );
 
   group('warns about insert column count mismatch', () {
-    TestState state;
+    TestState? state;
 
     tearDown(() => state?.close());
 
     Future<void> expectError() async {
-      final file = await state.analyze('package:foo/a.moor');
+      final file = await state!.analyze('package:foo/a.moor');
       expect(
         file.errors.errors,
         contains(const TypeMatcher<MoorError>().having(

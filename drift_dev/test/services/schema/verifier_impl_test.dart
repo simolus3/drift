@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations.dart';
 import 'package:test/test.dart';
@@ -19,7 +18,7 @@ void main() {
   group('migrateAndValidate', () {
     test('invokes a migration', () async {
       driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-      OpeningDetails capturedDetails;
+      OpeningDetails? capturedDetails;
 
       final connection = await verifier.startAt(3);
       final db = _TestDatabase(connection.executor, 7)
@@ -28,8 +27,8 @@ void main() {
         });
 
       await verifier.migrateAndValidate(db, 4);
-      expect(capturedDetails.versionBefore, 3);
-      expect(capturedDetails.versionNow, 4);
+      expect(capturedDetails!.versionBefore, 3);
+      expect(capturedDetails!.versionNow, 4);
 
       driftRuntimeOptions.dontWarnAboutMultipleDatabases = false;
     });

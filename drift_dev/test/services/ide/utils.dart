@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build/build.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
 import 'package:drift_dev/src/services/ide/moor_ide.dart';

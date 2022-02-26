@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
@@ -23,12 +22,14 @@ Location _locationForSpan(SourceSpan span, FoundFile file) {
   );
 }
 
-Location locationOfNode(FoundFile file, AstNode node) {
+Location? locationOfNode(FoundFile file, AstNode node) {
   if (!node.hasSpan) return null;
-  return _locationForSpan(node.span, file);
+
+  final span = node.span;
+  return span != null ? _locationForSpan(span, file) : null;
 }
 
-Location locationOfDeclaration(Declaration declaration) {
+Location? locationOfDeclaration(Declaration declaration) {
   final file = declaration.declaration.file;
   if (declaration is DartDeclaration) {
     return _locationForSpan(spanForElement(declaration.element), file);

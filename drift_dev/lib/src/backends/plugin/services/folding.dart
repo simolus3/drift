@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:drift_dev/src/backends/plugin/services/requests.dart';
@@ -50,6 +49,8 @@ class _FoldingVisitor extends RecursiveVisitor<void, void> {
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     final startBody = e.openingBracket;
     final endBody = e.closingBracket;
+
+    if (startBody == null || endBody == null) return;
 
     // report everything between the two brackets as class body
     final first = startBody.span.end.offset + 1;
