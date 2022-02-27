@@ -1,9 +1,19 @@
-part of 'package:drift/web.dart';
+import 'dart:async';
+
+import 'package:drift/backends.dart';
+import 'package:drift/drift.dart';
+
+import 'sql_js.dart';
+import 'storage.dart';
 
 /// Signature of a function that asynchronously initializes a web database if it
 /// doesn't exist.
 /// The bytes returned should represent a valid sqlite3 database file.
-typedef CreateWebDatabase = Future<Uint8List> Function();
+typedef CreateWebDatabase = FutureOr<Uint8List> Function();
+
+/// Signature of a function that initializes a [SqlJsDatabase] before its used
+/// by drift.
+typedef WebSetup = FutureOr<void> Function(SqlJsDatabase database);
 
 /// Experimental drift backend for the web. To use this platform, you need to
 /// include the latest version of `sql.js` in your html.
@@ -12,32 +22,49 @@ class WebDatabase extends DelegatedDatabase {
   ///
   /// [name] can be used to identify multiple databases. The optional
   /// [initializer] can be used to initialize the database if it doesn't exist.
-  WebDatabase(String name,
-      {bool logStatements = false, CreateWebDatabase? initializer})
-      : super(_WebDelegate(DriftWebStorage(name), initializer),
+  ///  The optional [setup] function can be used to perform a setup just after
+  /// the database is opened, before drift is fully ready. This can be used to
+  /// add custom user-defined sql functions or to provide encryption keys in
+  /// SQLCipher implementations.
+  WebDatabase(
+    String name, {
+    bool logStatements = false,
+    CreateWebDatabase? initializer,
+    WebSetup? setup,
+  }) : super(_WebDelegate(DriftWebStorage(name), initializer, setup),
             logStatements: logStatements, isSequential: true);
 
   /// A database executor that works on the web.
   ///
   /// The [storage] parameter controls how the data will be stored. The default
   /// constructor of [DriftWebStorage] will use local storage for that, but an
-  /// IndexedDB-based implementation is available via.
-  WebDatabase.withStorage(DriftWebStorage storage,
-      {bool logStatements = false, CreateWebDatabase? initializer})
-      : super(_WebDelegate(storage, initializer),
+  /// IndexedDB-based implementation is available via
+  /// [DriftWebStorage.indexedDb].
+  ///
+  ///  The optional [setup] function can be used to perform a setup just after
+  /// the database is opened, before drift is fully ready. This can be used to
+  /// add custom user-defined sql functions or to provide encryption keys in
+  /// SQLCipher implementations.
+  WebDatabase.withStorage(
+    DriftWebStorage storage, {
+    bool logStatements = false,
+    CreateWebDatabase? initializer,
+    WebSetup? setup,
+  }) : super(_WebDelegate(storage, initializer, setup),
             logStatements: logStatements, isSequential: true);
 }
 
 class _WebDelegate extends DatabaseDelegate {
   final DriftWebStorage storage;
   final CreateWebDatabase? initializer;
+  final WebSetup? setup;
 
   late SqlJsDatabase _db;
   bool _isOpen = false;
 
   bool _inTransaction = false;
 
-  _WebDelegate(this.storage, this.initializer);
+  _WebDelegate(this.storage, this.initializer, this.setup);
 
   @override
   set isInTransaction(bool value) {
@@ -82,6 +109,7 @@ class _WebDelegate extends DatabaseDelegate {
     }
 
     _db = module.createDatabase(restored);
+    await setup?.call(_db);
     _isOpen = true;
   }
 
@@ -191,7 +219,7 @@ class _WebVersionDelegate extends DynamicVersionDelegate {
   Future<int> get schemaVersion async {
     final storage = delegate.storage;
     int? version;
-    if (storage is _CustomSchemaVersionSave) {
+    if (storage is CustomSchemaVersionSave) {
       version = storage.schemaVersion;
     }
 
@@ -202,7 +230,7 @@ class _WebVersionDelegate extends DynamicVersionDelegate {
   Future<void> setSchemaVersion(int version) async {
     final storage = delegate.storage;
 
-    if (storage is _CustomSchemaVersionSave) {
+    if (storage is CustomSchemaVersionSave) {
       storage.schemaVersion = version;
     }
 

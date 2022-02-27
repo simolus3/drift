@@ -1,4 +1,11 @@
-part of 'package:drift/web.dart';
+import 'dart:html';
+import 'dart:indexed_db';
+import 'dart:js';
+import 'dart:typed_data';
+
+import 'package:meta/meta.dart';
+
+import 'binary_string_conversion.dart';
 
 /// Interface to control how drift should store data on the web.
 abstract class DriftWebStorage {
@@ -85,7 +92,11 @@ abstract class DriftWebStorage {
   }
 }
 
-abstract class _CustomSchemaVersionSave implements DriftWebStorage {
+/// A web storage implementation that stores the schema version outside of the
+/// `PRAGMA user_version` of the database.
+@internal
+abstract class CustomSchemaVersionSave implements DriftWebStorage {
+  /// Get or set the current schema version of an opened database file.
   int? get schemaVersion;
   set schemaVersion(int? value);
 }
@@ -106,7 +117,7 @@ Uint8List? _restoreLocalStorage(String name) {
   return null;
 }
 
-class _LocalStorageImpl implements DriftWebStorage, _CustomSchemaVersionSave {
+class _LocalStorageImpl implements DriftWebStorage, CustomSchemaVersionSave {
   final String name;
 
   String get _persistenceKey => _persistenceKeyForLocalStorage(name);

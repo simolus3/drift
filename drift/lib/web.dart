@@ -5,21 +5,14 @@
 @experimental
 library drift.web;
 
-import 'dart:async';
 import 'dart:html';
-import 'dart:indexed_db';
-import 'dart:js';
 
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import 'backends.dart';
-import 'drift.dart';
-import 'src/web/binary_string_conversion.dart';
-import 'src/web/sql_js.dart';
-
-part 'src/web/storage.dart';
-part 'src/web/web_db.dart';
+export 'src/web/sql_js.dart';
+export 'src/web/storage.dart' hide CustomSchemaVersionSave;
+export 'src/web/web_db.dart';
 
 /// Extension to transform a raw [MessagePort] from web workers into a Dart
 /// [StreamChannel].

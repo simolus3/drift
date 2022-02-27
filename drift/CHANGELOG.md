@@ -2,6 +2,7 @@
 
 - Add `DataClassName.extending` to control the superclass of generated row
   classes.
+- Add `setup` parameter to the constructors of `WebDatabase` too.
 
 ## 1.4.0
 

@@ -191,6 +191,21 @@ void main() {
     await _testWith(
         DriftWebStorage.indexedDb('name', migrateFromLocalStorage: false));
   });
+
+  test('runs setup callback', () async {
+    final executor = WebDatabase.withStorage(
+      DriftWebStorage.volatile(),
+      setup: expectAsync1((database) {
+        database.run('CREATE TABLE foo (bar, baz);');
+      }),
+    );
+
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    final attachedDb = _FakeDatabase(executor);
+
+    await executor.ensureOpen(attachedDb);
+    await executor.runSelect('SELECT * FROM foo;', []);
+  });
 }
 
 Future<void> _testWith(DriftWebStorage storage) async {
