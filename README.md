@@ -4,6 +4,7 @@ _Note: Moor has been renamed to drift_
 
 [![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://github.com/simolus3/moor/actions/workflows/main.yml/badge.svg)
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
+[![melos](https://img.shields.io/badge/maintained%20with-melos-f700ff.svg?style=flat-square)](https://github.com/invertase/melos)
 
 ## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=moor)
 
