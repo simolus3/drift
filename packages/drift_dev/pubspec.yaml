@@ -55,11 +55,3 @@ dev_dependencies:
 
 executables:
   drift_dev:
-
-dependency_overrides:
-  drift:
-    path: ../drift
-  moor:
-    path: ../moor
-  sqlparser:
-    path: ../sqlparser

@@ -1,0 +1,24 @@
+name: drift
+repository: https://github.com/simolus3/moor
+
+packages:
+  - packages/**
+  - extras/**
+
+scripts:
+  analyze:
+    run: dart analyze --fatal-infos --fatal-warnings .
+    description: Run Dart analyzer.
+
+  format:
+    run: dart format -o write .
+    description: Run Dart formatter.
+
+command:
+  version:
+    # Generate commit links in package changelogs.
+    linkToCommits: true
+    # Only allow versioning to happen on master branch.
+    branch: master
+    # Additionally build a changelog at the root of the workspace.
+    workspaceChangelog: true

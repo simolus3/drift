@@ -27,9 +27,3 @@ dev_dependencies:
   test: ^1.17.0
   mockito: ^5.0.7
   rxdart: ^0.27.0
-
-dependency_overrides:
-  drift_dev:
-    path: ../drift_dev
-  sqlparser:
-    path: ../sqlparser

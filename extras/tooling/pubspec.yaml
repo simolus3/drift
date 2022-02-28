@@ -9,8 +9,3 @@ dependencies:
   analyzer: ^2.5.0
   coverage: ^1.0.2
   path: ^1.8.0
-  simons_pub_uploader:
-    hosted:
-      url: https://simonbinder.eu
-      name: simons_pub_uploader
-    version: ^1.0.2
