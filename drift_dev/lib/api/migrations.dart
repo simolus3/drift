@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_dev/src/services/schema/verifier_impl.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -56,6 +57,63 @@ abstract class SchemaVerifier {
   /// expected exist.
   Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
       {bool validateDropped = false});
+}
+
+/// Utilities verifying that the current schema of the database matches what
+/// the generated code expects.
+extension VerifySelf on GeneratedDatabase {
+  /// Compares and validates the schema of the current database with what the
+  /// generated code expects.
+  ///
+  /// When changing tables or other elements of your database schema, you need
+  /// to increate your [GeneratedDatabase.schemaVersion] and write a migration
+  /// to transform your existing tables to the new structure.
+  ///
+  /// For queries, drift always assumes that your database schema matches the
+  /// structure of your defined tables. This isn't the case when you forget to
+  /// write a schema migration, which can cause all kinds of problems later.
+  ///
+  /// For this reason, the [validateDatabaseSchema] method can be used in your
+  /// database, (perhaps in a [MigrationStrategy.beforeOpen] callback) to verify
+  /// that your database schema is what drift expects.
+  ///
+  /// When [validateDropped] is enabled (it is by default), this method also
+  /// verifies that all schema elements that you've deleted at some point are no
+  /// longer present in your runtime schema.
+  Future<void> validateDatabaseSchema({bool validateDropped = true}) async {
+    final virtualTables = allTables
+        .whereType<VirtualTableInfo>()
+        .map((e) => e.entityName)
+        .toList();
+
+    final schemaOfThisDatabase =
+        await executor.collectSchemaInput(virtualTables);
+
+    // Collect the schema hwo it would be if we just called `createAll` on a
+    // clean database.
+    final referenceDb = _GenerateFromScratch(this, NativeDatabase.memory());
+    final referenceSchema = await referenceDb
+        .doWhenOpened((e) => e.collectSchemaInput(virtualTables));
+
+    verify(referenceSchema, schemaOfThisDatabase, validateDropped);
+  }
+}
+
+class _GenerateFromScratch extends GeneratedDatabase {
+  final GeneratedDatabase reference;
+
+  _GenerateFromScratch(this.reference, QueryExecutor executor)
+      : super(SqlTypeSystem.defaultInstance, executor);
+
+  @override
+  Iterable<TableInfo<Table, dynamic>> get allTables => reference.allTables;
+
+  @override
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities =>
+      reference.allSchemaEntities;
+
+  @override
+  int get schemaVersion => 1;
 }
 
 /// The implementation of this class is generated through the `moor_generator`

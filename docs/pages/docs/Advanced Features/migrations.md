@@ -463,3 +463,39 @@ void main() {
   });
 }
 ```
+
+## Verifying a database schema at runtime
+
+Instead (or in addition to) [writing tests](#verifying-migrations) to ensure your migrations work as they should,
+you can use a new API from `drift_dev` 1.5.0 to verify the current schema without any additional setup.
+
+```dart
+// import the migrations tooling
+import 'package:drift_dev/api/migrations.dart';
+
+// Then, in your database...
+final migration = SchemaMigration(
+  onCreate: (m) async { /* ... */ }
+  onUpgrade: (m, from, to) async { /* your existing migration logic */ },
+  beforeOpen: (details) async {
+    // your existing beforeOpen callback, enable foreign keys, etc.
+
+    if (kDebugBuild) {
+      // This check pulls in a fair amount of code that's not needed anywhere else, so we recommend
+      // only doing it in debug builds.
+      await db.validateDatabaseSchema();
+    }
+  },
+);
+```
+
+When you use `validateDatabaseSchema`, drift will transparently:
+
+- collect information about your database by reading from `sqlite3_schema`.
+- create a fresh in-memory instance of your database and create a reference schema with `Migrator.createAll()`.
+- compare the two. Ideally, your actual schema at runtime should be identical to the fresh one even though it
+  grew through different versions of your app.
+
+When a mismatch is found, an exception with a message explaining exactly where another value was expected will
+be thrown.
+This allows you to find issues with your schema migrations quickly.

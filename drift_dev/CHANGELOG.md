@@ -1,3 +1,8 @@
+## 1.5.0-dev
+
+- Add `validateDatabaseSchema` extension to `api/migrations.dart`. It validates
+  that the schema of a database at runtime matches what one would expect.
+
 ## 1.4.0
 
 - Generator support for the `LIST()` feature introduced in drift 1.4.

@@ -145,4 +145,10 @@ to know to write selects, updates and inserts in drift!
  With a bit of additional setup, drift can transparently run in a background isolate without
  you having to adapt your query code. See [Isolates]({{ '../Advanced Features/isolates.md' | pageUrl }}) for more on that.
 - Drift has excellent support for custom SQL statements, including a static analyzer and code-generation tools. See [Getting started with sql]({{ 'starting_with_sql.md' | pageUrl }})
-  or [Using SQL]({{ '../Using SQL/index.md' | pageUrl }}) for everything there is to now.
+  or [Using SQL]({{ '../Using SQL/index.md' | pageUrl }}) for everything there is to know about using drift's SQL-based APIs.
+- Something to keep in mind for later: When you change the schema of your database and write migrations, drift can help you make sure they're
+  correct. Use [runtime checks], which don't require additional setup, or more involved [test utilities] if you want to test migrations between
+  any schema versions.
+
+[runtime checks]: {{ '../Advanced Features/migrations.md#verifying-a-database-schema-at-runtime' | pageUrl }}
+[test utilities]: {{ '../Advanced Features/migrations.md#verifying-migrations' | pageUrl }}

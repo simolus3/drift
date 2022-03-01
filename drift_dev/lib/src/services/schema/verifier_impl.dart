@@ -33,13 +33,7 @@ class VerifierImplementation implements SchemaVerifier {
         await otherConnection.executor.collectSchemaInput(virtualTables);
     await otherConnection.executor.close();
 
-    final result =
-        FindSchemaDifferences(referenceSchema, actualSchema, validateDropped)
-            .compare();
-
-    if (!result.noChanges) {
-      throw SchemaMismatch(result.describe());
-    }
+    verify(referenceSchema, actualSchema, validateDropped);
   }
 
   String _randomString() {
@@ -85,7 +79,7 @@ class VerifierImplementation implements SchemaVerifier {
   }
 }
 
-extension on QueryExecutor {
+extension CollectSchema on QueryExecutor {
   Future<List<Input>> collectSchemaInput(List<String> virtualTables) async {
     final result = await runSelect('SELECT * FROM sqlite_master;', const []);
 
@@ -101,6 +95,17 @@ extension on QueryExecutor {
     }
 
     return inputs;
+  }
+}
+
+void verify(List<Input> referenceSchema, List<Input> actualSchema,
+    bool validateDropped) {
+  final result =
+      FindSchemaDifferences(referenceSchema, actualSchema, validateDropped)
+          .compare();
+
+  if (!result.noChanges) {
+    throw SchemaMismatch(result.describe());
   }
 }
 

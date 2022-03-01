@@ -1,6 +1,7 @@
 @TestOn('vm')
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
+import 'package:drift_dev/api/migrations.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
@@ -317,6 +318,38 @@ void main() {
       await expectLater(
           db.doWhenOpened((_) {}), throwsA('Error after partial migration'));
       expect(nativeDb.userVersion, 3);
+    });
+  });
+
+  group('verifySelf', () {
+    test('throws when a schema is not created properly', () {
+      final executor = NativeDatabase.memory();
+      final db = TodoDb(executor);
+      db.migration = MigrationStrategy(
+        onCreate: (m) async {
+          // Only creating one table, won't be enough
+          await m.createTable(db.categories);
+        },
+        beforeOpen: (details) async {
+          await db.validateDatabaseSchema();
+        },
+      );
+
+      expect(
+          db.customSelect('SELECT 1;').get(), throwsA(isA<SchemaMismatch>()));
+    });
+
+    test('does not throw for a matching schema', () {
+      final executor = NativeDatabase.memory();
+      final db = TodoDb(executor);
+      db.migration = MigrationStrategy(
+        // use default and correct `onCreate`, validation should work
+        beforeOpen: (details) async {
+          await db.validateDatabaseSchema();
+        },
+      );
+
+      expect(db.customSelect('SELECT 1;').get(), completes);
     });
   });
 }
