@@ -84,7 +84,13 @@ abstract class DatabaseConnectionUser {
   /// but run them in a transaction-specific executor.
   @internal
   DatabaseConnectionUser get resolvedEngine {
-    return (Zone.current[_zoneRootUserKey] as DatabaseConnectionUser?) ?? this;
+    final fromZone = Zone.current[_zoneRootUserKey] as DatabaseConnectionUser?;
+
+    if (fromZone != null && fromZone.attachedDatabase == attachedDatabase) {
+      return fromZone;
+    } else {
+      return this;
+    }
   }
 
   /// Marks the [tables] as updated.

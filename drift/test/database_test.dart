@@ -93,4 +93,21 @@ void main() {
     final db = TodoDb(executor);
     expect(db.customSelect('SELECT 1').getSingle(), throwsA('error'));
   });
+
+  test('zone database is ignored for operations on another database', () async {
+    final ex1 = MockExecutor();
+    final ex2 = MockExecutor();
+
+    final db1 = TodoDb(ex1);
+    final db2 = TodoDb(ex2);
+    addTearDown(db1.close);
+    addTearDown(db2.close);
+
+    await db1.transaction(() async {
+      await db2.customSelect('SELECT 1').get();
+    });
+
+    verify(ex2.runSelect('SELECT 1', []));
+    verifyNever(ex2.runSelect(any, any));
+  });
 }
