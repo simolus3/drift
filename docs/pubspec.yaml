@@ -53,3 +53,8 @@ dependency_overrides:
     git:
       url: https://github.com/simolus3/mime.git
       ref: woff2
+
+  # https://github.com/dart-lang/dart_style/issues/1095
+  dart_style:
+    git:
+      url: https://github.com/dart-lang/dart_style.git
