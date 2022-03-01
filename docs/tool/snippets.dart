@@ -14,6 +14,15 @@ class SnippetsBuilder extends CodeExcerptBuilder {
   }
 
   @override
+  String Function(
+          Excerpt excerpt, ContinousRegion last, ContinousRegion upcoming)
+      writePlasterFor(AssetId id) {
+    return (excerpt, last, upcoming) {
+      return '\n';
+    };
+  }
+
+  @override
   Future<Highlighter?> highlighterFor(
       AssetId assetId, String content, BuildStep buildStep) async {
     switch (assetId.extension) {
@@ -33,12 +42,12 @@ class _DriftHighlighter extends Highlighter {
   void highlight() {
     final engine = SqlEngine(
       EngineOptions(
-        useMoorExtensions: true,
+        useDriftExtensions: true,
         version: SqliteVersion.current,
       ),
     );
 
-    final result = engine.parseMoorFile(file.span(0).text);
+    final result = engine.parseDriftFile(file.span(0).text);
     _HighlightingVisitor().visit(result.rootNode, this);
 
     for (final token in result.tokens) {
@@ -112,14 +121,15 @@ class _HighlightingVisitor extends RecursiveVisitor<_DriftHighlighter, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, _DriftHighlighter arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, _DriftHighlighter arg) {
     if (e is DeclaredStatement) {
       final name = e.identifier;
       if (name is SimpleName) {
         arg.reportSql(name.identifier, RegionType.functionTitle);
       }
     }
-    super.visitMoorSpecificNode(e, arg);
+
+    super.visitDriftSpecificNode(e, arg);
   }
 
   @override

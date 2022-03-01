@@ -15,6 +15,8 @@ When making changes to your database schema, you need to write migrations enabli
 an old version of your app to convert to the database expected by the latest version.
 Drift provides a set of APIs to make writing migrations easy.
 
+{% assign snippets = 'package:moor_documentation/snippets/migrations/migrations.dart.excerpt.json' | readString | json_decode %}
+
 ## Basics
 
 Drift provides a migration API that can be used to gradually apply schema changes after bumping
@@ -24,42 +26,11 @@ getter.
 Here's an example: Let's say you wanted to add a due date to your todo entries (`v2` of the schema).
 Later, you decide to also add a priority column (`v3` of the schema).
 
-```dart
-class Todos extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 10)();
-  TextColumn get content => text().named('body')();
-  IntColumn get category => integer().nullable()();
-  DateTimeColumn get dueDate => dateTime().nullable()(); // new, added column in v2
-  IntColumn get priority => integer().nullable()(); // new, added column in v3
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'table' %}
 
 We can now change the `database` class like this:
 
-```dart
-  @override
-  int get schemaVersion => 3; // bump because the tables have changed
-
-  @override
-  MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) {
-      return m.createAll();
-    },
-    onUpgrade: (Migrator m, int from, int to) async {
-      if (from < 2) {
-        // we added the dueDate property in the change from version 1 to version 2
-        await m.addColumn(todos, todos.dueDate);
-      }
-      if (from < 3) {
-        // we added the priority property in the change from version 1 or 2 to version 3
-        await m.addColumn(todos, todos.priority);
-      }
-    }
-  );
-
-  // rest of class can stay the same
-```
+{% include "blocks/snippet" snippets = snippets name = 'start' %}
 
 You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/drift/latest/drift/Migrator-class.html)
 for all the available options.
@@ -87,27 +58,7 @@ Still, it can be useful to:
 
 With all of this combined, a migration callback can look like this:
 
-```dart
-MigrationStrategy(
-  onUpgrade: (m, from, to) async {
-    await customStatement('PRAGMA foreign_keys = OFF'); // disable foreign_keys before migrations
-
-    await transaction(() async {
-      // put your migration logic here
-    });
-
-    // Assert that the schema is valid after migrations
-    if (kDebugMode) {
-      final wrongForeignKeys = await customSelect('PRAGMA foreign_key_check').get();
-      assert(wrongForeignKeys.isEmpty, "${wrongForeignKeys.map((e) => e.data)}");
-    }
-  },
-  beforeOpen: (details) async {
-    await customStatement('PRAGMA foreign_keys = ON');
-    // ...
-  },
-)
-```
+{% include "blocks/snippet" snippets = snippets name = 'structured' %}
 
 ## Complex migrations
 
@@ -162,20 +113,7 @@ class Todos extends Table {
 
 After re-running your build and incrementing the schema version, you can write a migration:
 
-```dart
-onUpgrade: (m, old, to) async {
-  if (old <= yourOldVersion) {
-    await m.alterTable(
-      TableMigration(
-        todos,
-        columnTransformer: {
-          todos.category: todos.category.cast<int>(),
-        }
-      ),
-    );
-  }
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'change_type' %}
 
 The important part here is the `columnTransformer` - a map from columns to expressions that will
 be used to copy the old data. The values in that map refer to the old table, so we can use
@@ -469,25 +407,9 @@ void main() {
 Instead (or in addition to) [writing tests](#verifying-migrations) to ensure your migrations work as they should,
 you can use a new API from `drift_dev` 1.5.0 to verify the current schema without any additional setup.
 
-```dart
-// import the migrations tooling
-import 'package:drift_dev/api/migrations.dart';
+{% assign runtime_snippet = 'package:moor_documentation/snippets/migrations/runtime_verification.dart.excerpt.json' | readString | json_decode %}
 
-// Then, in your database...
-MigrationStrategy get migration = MigrationStratey(
-  onCreate: (m) async { /* ... */ }
-  onUpgrade: (m, from, to) async { /* your existing migration logic */ },
-  beforeOpen: (details) async {
-    // your existing beforeOpen callback, enable foreign keys, etc.
-
-    if (kDebugBuild) {
-      // This check pulls in a fair amount of code that's not needed anywhere else, so we recommend
-      // only doing it in debug builds.
-      await db.validateDatabaseSchema();
-    }
-  },
-);
-```
+{% include "blocks/snippet" snippets = runtime_snippet name = '' %}
 
 When you use `validateDatabaseSchema`, drift will transparently:
 

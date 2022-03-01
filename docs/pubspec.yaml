@@ -22,7 +22,7 @@ dev_dependencies:
   shelf_static: ^1.1.0
   code_snippets:
     hosted: https://simonbinder.eu
-    version: ^0.0.3
+    version: ^0.0.4
 
   # Fake path_provider for snippets
   path_provider:
