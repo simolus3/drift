@@ -2,6 +2,8 @@
 set -e
 echo "- Generate drift"
 (cd ../drift && dart pub get && dart run build_runner build --delete-conflicting-outputs)
+echo "- Generate docs"
+(cd ../docs && dart pub get && dart run build_runner build --delete-conflicting-outputs)
 echo "- Generate benchmarks"
 (cd ../extras/benchmarks && dart pub get && dart run build_runner build --delete-conflicting-outputs)
 echo "- Generate integration_tests/tests"

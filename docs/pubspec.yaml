@@ -20,6 +20,15 @@ dev_dependencies:
   linkcheck: ^2.0.19
   shelf: ^1.2.0
   shelf_static: ^1.1.0
+  code_snippets:
+    hosted: https://simonbinder.eu
+    version: ^0.0.3
+
+  # Fake path_provider for snippets
+  path_provider:
+    path: assets/path_provider
+  # Used in examples
+  rxdart: ^0.27.3
 
   moor:
   moor_generator:

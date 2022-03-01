@@ -18,6 +18,12 @@ jobs:
         run: dart run tool/ci_build.dart
         working-directory: docs
 
+      - name: Analyze Dart sources
+        working-directory: docs
+        run: |
+          dart analyze --fatal-infos --fatal-warnings
+          dart run drift_dev analyze
+
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v1.2
