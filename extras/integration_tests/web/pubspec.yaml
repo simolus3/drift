@@ -5,18 +5,9 @@ environment:
 
 dependencies:
   tests:
-    path: ../tests
 
 dev_dependencies:
   test: ^1.5.0
   build_runner:
   build_web_compilers:
   drift_dev: ^1.0.0
-
-dependency_overrides:
-  drift:
-    path: ../../../drift
-  drift_dev:
-    path: ../../../drift_dev
-  sqlparser:
-    path: ../../../sqlparser

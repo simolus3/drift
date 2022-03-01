@@ -11,20 +11,10 @@ dependencies:
     sdk: flutter
   moor_flutter:
   tests:
-    path: ../tests
   encrypted_moor:
-    path: ../../encryption
 
 dev_dependencies:
   test:
-
-dependency_overrides:
-  drift:
-    path: ../../../drift
-  moor_flutter:
-    path: ../../../moor_flutter
-  moor:
-    path: ../../../moor
 
 flutter:
   assets:

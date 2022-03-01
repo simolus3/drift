@@ -4,6 +4,7 @@ repository: https://github.com/simolus3/moor
 packages:
   - packages/**
   - extras/**
+  - docs/*
 
 scripts:
   analyze:

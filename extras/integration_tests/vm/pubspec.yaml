@@ -9,13 +9,6 @@ environment:
 
 dependencies:
   tests:
-    path: ../tests
 
 dev_dependencies:
   test: ^1.16.0
-
-dependency_overrides:
-  drift:
-    path: ../../../drift
-  moor:
-    path: ../../../moor

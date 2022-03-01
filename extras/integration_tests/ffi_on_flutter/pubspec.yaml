@@ -12,19 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
   tests:
-    path: ../tests
   sqlite3_flutter_libs: ^0.2.0
 
 dev_dependencies:
   test:
-
-dependency_overrides:
-  drift:
-    path: ../../../drift
-  moor_flutter:
-    path: ../../../moor_flutter
-  moor:
-    path: ../../../moor
 
 flutter:
   assets:
