@@ -325,6 +325,8 @@ void main() {
     test('throws when a schema is not created properly', () {
       final executor = NativeDatabase.memory();
       final db = TodoDb(executor);
+      addTearDown(db.close);
+
       db.migration = MigrationStrategy(
         onCreate: (m) async {
           // Only creating one table, won't be enough
@@ -342,6 +344,8 @@ void main() {
     test('does not throw for a matching schema', () {
       final executor = NativeDatabase.memory();
       final db = TodoDb(executor);
+      addTearDown(db.close);
+
       db.migration = MigrationStrategy(
         // use default and correct `onCreate`, validation should work
         beforeOpen: (details) async {
@@ -350,6 +354,14 @@ void main() {
       );
 
       expect(db.customSelect('SELECT 1;').get(), completes);
+    });
+
+    test("can be used on a database before it's opened", () async {
+      final executor = NativeDatabase.memory();
+      final db = TodoDb(executor);
+      addTearDown(db.close);
+
+      expect(db.validateDatabaseSchema(), completes);
     });
   });
 }

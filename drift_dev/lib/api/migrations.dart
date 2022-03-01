@@ -86,14 +86,12 @@ extension VerifySelf on GeneratedDatabase {
         .map((e) => e.entityName)
         .toList();
 
-    final schemaOfThisDatabase =
-        await executor.collectSchemaInput(virtualTables);
+    final schemaOfThisDatabase = await collectSchemaInput(virtualTables);
 
-    // Collect the schema hwo it would be if we just called `createAll` on a
+    // Collect the schema how it would be if we just called `createAll` on a
     // clean database.
     final referenceDb = _GenerateFromScratch(this, NativeDatabase.memory());
-    final referenceSchema = await referenceDb
-        .doWhenOpened((e) => e.collectSchemaInput(virtualTables));
+    final referenceSchema = await referenceDb.collectSchemaInput(virtualTables);
 
     verify(referenceSchema, schemaOfThisDatabase, validateDropped);
   }

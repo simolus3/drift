@@ -79,19 +79,43 @@ class VerifierImplementation implements SchemaVerifier {
   }
 }
 
+Input? _parseInputFromSchemaRow(
+    Map<String, Object?> row, List<String> virtualTables) {
+  final name = row['name'] as String;
+
+  // Skip sqlite-internal tables
+  if (name.startsWith('sqlite_autoindex')) return null;
+  if (virtualTables.any((v) => name.startsWith('${v}_'))) return null;
+
+  return Input(name, row['sql'] as String);
+}
+
+extension CollectSchemaDb on DatabaseConnectionUser {
+  Future<List<Input>> collectSchemaInput(List<String> virtualTables) async {
+    final result = await customSelect('SELECT * FROM sqlite_master;').get();
+    final inputs = <Input>[];
+
+    for (final row in result) {
+      final input = _parseInputFromSchemaRow(row.data, virtualTables);
+      if (input != null) {
+        inputs.add(input);
+      }
+    }
+
+    return inputs;
+  }
+}
+
 extension CollectSchema on QueryExecutor {
   Future<List<Input>> collectSchemaInput(List<String> virtualTables) async {
     final result = await runSelect('SELECT * FROM sqlite_master;', const []);
 
     final inputs = <Input>[];
     for (final row in result) {
-      final name = row['name'] as String;
-
-      // Skip sqlite-internal tables
-      if (name.startsWith('sqlite_autoindex')) continue;
-      if (virtualTables.any((v) => name.startsWith('${v}_'))) continue;
-
-      inputs.add(Input(name, row['sql'] as String));
+      final input = _parseInputFromSchemaRow(row, virtualTables);
+      if (input != null) {
+        inputs.add(input);
+      }
     }
 
     return inputs;

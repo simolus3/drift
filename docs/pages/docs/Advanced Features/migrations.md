@@ -474,7 +474,7 @@ you can use a new API from `drift_dev` 1.5.0 to verify the current schema withou
 import 'package:drift_dev/api/migrations.dart';
 
 // Then, in your database...
-final migration = SchemaMigration(
+MigrationStrategy get migration = MigrationStratey(
   onCreate: (m) async { /* ... */ }
   onUpgrade: (m, from, to) async { /* your existing migration logic */ },
   beforeOpen: (details) async {
