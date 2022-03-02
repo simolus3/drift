@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
+import 'package:path/path.dart';
 
 import '../../cli.dart';
 
@@ -51,6 +52,33 @@ class DumpSchemaCommand extends Command {
     final db = result.declaredDatabases.single;
     final writer = SchemaWriter(db);
 
-    await File(rest[1]).writeAsString(json.encode(writer.createSchemaJson()));
+    var target = rest[1];
+    // This command is most commonly used to write into
+    // `<dir>/drift_schema_vx.json`. When we get a directory as a second arg,
+    // try to infer the file name.
+    if (await FileSystemEntity.isDirectory(target) ||
+        !target.endsWith('.json')) {
+      final version = db.schemaVersion;
+
+      if (version == null) {
+        // Couldn't read schema from database, so fail.
+        usageException(
+          'Target is a directory and the schema version could not be read from '
+          'the database class. Please use a full filename (e.g. '
+          '`$target/drift_schema_v3.json`)',
+        );
+      }
+
+      target = join(target, 'drift_schema_v$version.json');
+    }
+
+    final file = File(target);
+    final parent = file.parent;
+    if (!await parent.exists()) {
+      await parent.create(recursive: true);
+    }
+
+    await File(target).writeAsString(json.encode(writer.createSchemaJson()));
+    print('Wrote to $target');
   }
 }

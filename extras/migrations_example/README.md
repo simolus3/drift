@@ -9,7 +9,7 @@ See `test/migration_test.dart` on how to use the generated verification code.
 After adapting a schema and incrementing the `schemaVersion` in the database, run
 
 ```
-dart run drift_dev schema dump lib/database.dart moor_migrations/moor_schema_v2.json
+dart run drift_dev schema dump lib/database.dart drift_migrations/
 ```
 
 Replace `_v2` with the current `schemaVersion`.

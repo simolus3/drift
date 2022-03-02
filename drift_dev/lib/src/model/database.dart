@@ -59,8 +59,16 @@ abstract class BaseMoorAccessor implements HasDeclaration {
 class Database extends BaseMoorAccessor {
   final List<DartType> daos;
 
+  /// If the source database class overrides `schemaVersion` and returns a
+  /// simple integer literal, stores that version.
+  ///
+  /// This is optionally used by the migration tooling to store the schema in a
+  /// versioned file.
+  int? schemaVersion;
+
   Database({
     this.daos = const [],
+    this.schemaVersion,
     DatabaseOrDaoDeclaration? declaration,
     List<MoorTable> declaredTables = const [],
     List<MoorView> declaredViews = const [],

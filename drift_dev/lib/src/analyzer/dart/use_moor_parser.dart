@@ -52,6 +52,7 @@ class UseMoorParser {
       daos: daoTypes,
       declaredIncludes: includes,
       declaredQueries: parsedQueries,
+      schemaVersion: await _readSchemaVersion(element),
     );
   }
 
@@ -62,5 +63,31 @@ class UseMoorParser {
             .map((obj) => obj.toTypeValue()!)
             .toList() ??
         [];
+  }
+
+  Future<int?> _readSchemaVersion(ClassElement dbClass) async {
+    final element = dbClass.thisType.getGetter('schemaVersion')?.variable;
+    if (element == null) return null;
+
+    final helper = MoorDartParser(step);
+
+    if (element.isSynthetic) {
+      // Getter, read from `=>` body if possible.
+      final expr = helper.returnExpressionOfMethod(
+          await helper.loadElementDeclaration(element.getter!)
+              as MethodDeclaration,
+          reportErrorOnFailure: false);
+      if (expr is IntegerLiteral) {
+        return expr.value;
+      }
+    } else {
+      final astField =
+          await helper.loadElementDeclaration(element) as VariableDeclaration;
+      if (astField.initializer is IntegerLiteral) {
+        return (astField.initializer as IntegerLiteral).value;
+      }
+    }
+
+    return null;
   }
 }

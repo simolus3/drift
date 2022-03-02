@@ -271,21 +271,29 @@ To begin, let's create the first schema representation:
 
 ```
 $ mkdir drift_schemas
-$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v1.json
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/
 ```
 
 This instructs the generator to look at the database defined in `lib/database/database.dart` and extract
 its schema into the new folder.
 
 After making a change to your database schema, you can run the command again. For instance, let's say we
-made a change to our tables and increased the `schemaVersion` to `2`. We would then run:
+made a change to our tables and increased the `schemaVersion` to `2`. To dump the new schema, just run the
+command again:
 
 ```
-$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v2.json
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/
 ```
 
 You'll need to run this command every time you change the schema of your database and increment the `schemaVersion`.
-Remember to name the files `drift_schema_vX.json`, where `X` is the current `schemaVersion` of your database.
+
+Drift will name the files in the folder `drift_schema_vX.json`, where `X` is the current `schemaVersion` of your
+database.
+If drift is unable to extract the version from your `schemaVersion` getter, provide the full path explicitly:
+
+```
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v3.json
+```
 
 #### Generating test code
 

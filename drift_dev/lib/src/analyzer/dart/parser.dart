@@ -55,16 +55,20 @@ class MoorDartParser {
   }
 
   @visibleForTesting
-  Expression? returnExpressionOfMethod(MethodDeclaration method) {
+  Expression? returnExpressionOfMethod(MethodDeclaration method,
+      {bool reportErrorOnFailure = true}) {
     final body = method.body;
 
     if (body is! ExpressionFunctionBody) {
-      step.reportError(ErrorInDartCode(
-        affectedElement: method.declaredElement,
-        severity: Severity.criticalError,
-        message: 'This method must have an expression body '
-            '(use => instead of {return ...})',
-      ));
+      if (reportErrorOnFailure) {
+        step.reportError(ErrorInDartCode(
+          affectedElement: method.declaredElement,
+          severity: Severity.criticalError,
+          message: 'This method must have an expression body '
+              '(use => instead of {return ...})',
+        ));
+      }
+
       return null;
     }
 
