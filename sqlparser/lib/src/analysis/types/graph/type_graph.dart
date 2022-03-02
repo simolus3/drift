@@ -41,6 +41,14 @@ class TypeGraph {
   bool knowsType(Typeable? t) =>
       _knownTypes.containsKey(variables.normalize(t));
 
+  bool knowsNullability(Typeable? t) {
+    final normalized = variables.normalize(t);
+    final knownType = _knownTypes[normalized];
+
+    return (knownType != null && knownType.nullable != null) ||
+        _knownNullability.containsKey(normalized);
+  }
+
   void addRelation(TypeRelation relation) {
     _relations.add(relation);
   }

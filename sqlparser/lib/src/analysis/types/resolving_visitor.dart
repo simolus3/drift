@@ -323,7 +323,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         break;
       case TokenType.doublePipe:
         // string concatenation.
-        session._checkAndResolve(e, _textType, arg);
+        session._checkAndResolve(e, _textType.withoutNullabilityInfo, arg);
         session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
         const childExpectation = ExactTypeExpectation.laxly(_textType);
         visit(e.left, childExpectation);
@@ -502,7 +502,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'trim':
       case 'upper':
         nullableIfChildIs();
-        return _textType;
+        return _textType.withoutNullabilityInfo;
       case 'group_concat':
         return _textType.withNullable(true);
       case 'date':
@@ -668,8 +668,15 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void _lazyCopy(Typeable to, Typeable? from, {bool makeNullable = false}) {
     if (session.graph.knowsType(from)) {
       var type = session.typeOf(from)!;
-      if (makeNullable) type = type.withNullable(true);
-      session._markTypeResolved(to, type);
+      if (makeNullable) {
+        type = type.withNullable(true);
+        session._markTypeResolved(to, type);
+      } else if (session.graph.knowsNullability(from)) {
+        session._markTypeResolved(to, type);
+      } else {
+        session._markTypeResolved(to, type);
+        session._addRelation(NullableIfSomeOtherIs(to, [from!]));
+      }
     } else {
       session._addRelation(CopyTypeFrom(to, from, makeNullable: makeNullable));
     }

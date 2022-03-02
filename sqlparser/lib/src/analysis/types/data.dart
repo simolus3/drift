@@ -35,7 +35,8 @@ class ResolvedType {
   ResolvedType get withoutNullabilityInfo {
     return nullable == null
         ? this
-        : ResolvedType(type: type, hint: hint, isArray: isArray);
+        : ResolvedType(
+            type: type, hint: hint, isArray: isArray, nullable: null);
   }
 
   ResolvedType withNullable(bool nullable) {

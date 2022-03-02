@@ -83,7 +83,7 @@ WITH RECURSIVE
       SELECT x+1 FROM cnt
       LIMIT 1000000
   )
-  SELECT x FROM cnt;    
+  SELECT x FROM cnt;
     ''');
 
     final expressions = content.root.allDescendants.whereType<Expression>();
@@ -91,5 +91,21 @@ WITH RECURSIVE
       expressions.map((e) => content.typeOf(e).type),
       everyElement(isNotNull),
     );
+  });
+
+  test('concatenation is nullable when any part is', () {
+    // https://github.com/simolus3/moor/issues/1719
+
+    final engine = SqlEngine()
+      ..registerTableFromSql('CREATE TABLE foobar (foo TEXT, bar TEXT);');
+
+    final content =
+        engine.analyze("SELECT foo, bar, foo || ' ' || bar FROM foobar;");
+
+    final columns = (content.root as SelectStatement).resolvedColumns!;
+    expect(
+        columns.map(content.typeOf),
+        everyElement(isA<ResolveResult>()
+            .having((e) => e.type?.nullable, 'type.nullable', isTrue)));
   });
 }
