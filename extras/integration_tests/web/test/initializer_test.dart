@@ -195,9 +195,14 @@ void main() {
   test('runs setup callback', () async {
     final executor = WebDatabase.withStorage(
       DriftWebStorage.volatile(),
-      setup: expectAsync1((database) {
-        database.run('CREATE TABLE foo (bar, baz);');
-      }),
+      setup: expectAsync1(
+        (database) {
+          database.run('CREATE TABLE IF NOT EXISTS foo (bar, baz);');
+        },
+        // One for open, one because the database is closed and re-opened after
+        // data is written.
+        count: 2,
+      ),
     );
 
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;

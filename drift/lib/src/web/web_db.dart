@@ -22,10 +22,15 @@ class WebDatabase extends DelegatedDatabase {
   ///
   /// [name] can be used to identify multiple databases. The optional
   /// [initializer] can be used to initialize the database if it doesn't exist.
-  ///  The optional [setup] function can be used to perform a setup just after
+  ///
+  /// The optional [setup] function can be used to perform a setup just after
   /// the database is opened, before drift is fully ready. This can be used to
   /// add custom user-defined sql functions or to provide encryption keys in
   /// SQLCipher implementations.
+  /// __Please note__: With the current web implementation, the database is
+  /// closed and re-opened whenever it is stored (i.e. after every transaction
+  /// or insert/update/delete outside of transactions). The [setup] parameter
+  /// will also be invoked whenever the database is re-opened.
   WebDatabase(
     String name, {
     bool logStatements = false,
@@ -41,10 +46,14 @@ class WebDatabase extends DelegatedDatabase {
   /// IndexedDB-based implementation is available via
   /// [DriftWebStorage.indexedDb].
   ///
-  ///  The optional [setup] function can be used to perform a setup just after
+  /// The optional [setup] function can be used to perform a setup just after
   /// the database is opened, before drift is fully ready. This can be used to
   /// add custom user-defined sql functions or to provide encryption keys in
   /// SQLCipher implementations.
+  /// __Please note__: With the current web implementation, the database is
+  /// closed and re-opened whenever it is stored (i.e. after every transaction
+  /// or insert/update/delete outside of transactions). The [setup] parameter
+  /// will also be invoked whenever the database is re-opened.
   WebDatabase.withStorage(
     DriftWebStorage storage, {
     bool logStatements = false,
@@ -202,6 +211,7 @@ class _WebDelegate extends DatabaseDelegate {
   Future<void> _storeDb() async {
     if (!isInTransaction) {
       await storage.store(_db.export());
+      setup?.call(_db);
     }
   }
 }

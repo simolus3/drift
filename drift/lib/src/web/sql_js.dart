@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:js';
-
 import 'dart:typed_data';
 
 // We write our own mapping code to js instead of depending on package:js
@@ -15,16 +14,16 @@ Future<SqlJsModule> initSqlJs() {
     return _moduleCompleter!.future;
   }
 
-  _moduleCompleter = Completer();
+  final completer = _moduleCompleter = Completer();
   if (!context.hasProperty('initSqlJs')) {
-    return Future.error(UnsupportedError(
+    completer.completeError(UnsupportedError(
         'Could not access the sql.js javascript library. '
         'The drift documentation contains instructions on how to setup drift '
         'the web, which might help you fix this.'));
+  } else {
+    (context.callMethod('initSqlJs') as JsObject)
+        .callMethod('then', [allowInterop(_handleModuleResolved)]);
   }
-
-  (context.callMethod('initSqlJs') as JsObject)
-      .callMethod('then', [_handleModuleResolved]);
 
   return _moduleCompleter!.future;
 }

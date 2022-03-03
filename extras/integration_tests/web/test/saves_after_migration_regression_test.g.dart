@@ -10,8 +10,7 @@ part of 'saves_after_migration_regression_test.dart';
 class Foo extends DataClass implements Insertable<Foo> {
   final int id;
   Foo({@required this.id});
-  factory Foo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+  factory Foo.fromData(Map<String, dynamic> data, {String prefix}) {
     final effectivePrefix = prefix ?? '';
     return Foo(
       id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
@@ -106,15 +105,16 @@ class FoosCompanion extends UpdateCompanion<Foo> {
 }
 
 class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String _alias;
-  $FoosTable(this._db, [this._alias]);
+  $FoosTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedColumn<int> _id;
   @override
   GeneratedColumn<int> get id =>
       _id ??= GeneratedColumn<int>('id', aliasedName, false,
-          typeName: 'INTEGER',
+          type: const IntType(),
           requiredDuringInsert: false,
           defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
@@ -138,21 +138,20 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Foo map(Map<String, dynamic> data, {String tablePrefix}) {
-    return Foo.fromData(data, _db,
+    return Foo.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $FoosTable createAlias(String alias) {
-    return $FoosTable(_db, alias);
+    return $FoosTable(attachedDatabase, alias);
   }
 }
 
 class Bar extends DataClass implements Insertable<Bar> {
   final int id;
   Bar({@required this.id});
-  factory Bar.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+  factory Bar.fromData(Map<String, dynamic> data, {String prefix}) {
     final effectivePrefix = prefix ?? '';
     return Bar(
       id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
@@ -247,15 +246,16 @@ class BarsCompanion extends UpdateCompanion<Bar> {
 }
 
 class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String _alias;
-  $BarsTable(this._db, [this._alias]);
+  $BarsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedColumn<int> _id;
   @override
   GeneratedColumn<int> get id =>
       _id ??= GeneratedColumn<int>('id', aliasedName, false,
-          typeName: 'INTEGER',
+          type: const IntType(),
           requiredDuringInsert: false,
           defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
@@ -279,13 +279,13 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Bar map(Map<String, dynamic> data, {String tablePrefix}) {
-    return Bar.fromData(data, _db,
+    return Bar.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $BarsTable createAlias(String alias) {
-    return $BarsTable(_db, alias);
+    return $BarsTable(attachedDatabase, alias);
   }
 }
 
