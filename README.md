@@ -20,9 +20,9 @@ _Note: Moor has been renamed to drift_
 </p>
 
 
-| Core        Generator  |
-|:-------------:|:-----:|
-| [![Main version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift) [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev) |
+| Core                                                                                      | Generator                                                                                              |
+| :---------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
+| [![Main version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift) | [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev) |
 
 Drift is a reactive persistence library for Flutter and Dart, built on top of
 sqlite. 
