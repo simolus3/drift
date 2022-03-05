@@ -30,6 +30,12 @@ class GenerationContext {
   /// query.
   final DatabaseConnectionUser? executor;
 
+  /// Whether variables are supported and can be written as `?` to be bound
+  /// later.
+  ///
+  /// This is almost always the case, but not in a `CREATE VIEW` statement.
+  final bool supportsVariables;
+
   final List<dynamic> _boundVariables = [];
 
   /// The values of [introducedVariables] that will be sent to the underlying
@@ -51,7 +57,7 @@ class GenerationContext {
 
   /// Constructs a [GenerationContext] by copying the relevant fields from the
   /// database.
-  GenerationContext.fromDb(this.executor)
+  GenerationContext.fromDb(this.executor, {this.supportsVariables = true})
       : typeSystem = executor?.typeSystem ?? SqlTypeSystem.defaultInstance,
         // ignore: invalid_null_aware_operator, (doesn't seem to actually work)
         dialect = executor?.executor?.dialect ?? SqlDialect.sqlite;
@@ -59,7 +65,7 @@ class GenerationContext {
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.
   GenerationContext(this.typeSystem, this.executor,
-      {this.dialect = SqlDialect.sqlite});
+      {this.dialect = SqlDialect.sqlite, this.supportsVariables = true});
 
   /// Introduces a variable that will be sent to the database engine. Whenever
   /// this method is called, a question mark should be added to the [buffer] so

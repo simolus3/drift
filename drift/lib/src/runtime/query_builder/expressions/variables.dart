@@ -60,6 +60,12 @@ class Variable<T> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
+    if (!context.supportsVariables) {
+      // Write as constant instead.
+      Constant<T>(value).writeInto(context);
+      return;
+    }
+
     var explicitStart = context.explicitVariableIndex;
 
     var mark = '?';

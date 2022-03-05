@@ -3,6 +3,7 @@
 - Add `DataClassName.extending` to control the superclass of generated row
   classes.
 - Add `setup` parameter to the constructors of `WebDatabase` too.
+- Don't write variables for expressions in `CREATE VIEW` statements.
 
 ## 1.4.0
 

@@ -1362,7 +1362,7 @@ class CategoryTodoCountViewData extends DataClass {
     final effectivePrefix = prefix ?? '';
     return CategoryTodoCountViewData(
       description: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}categories.desc'])!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}description'])!,
       itemCount: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}item_count'])!,
     );
@@ -1423,7 +1423,7 @@ class $CategoryTodoCountViewView
   $TodosTableTable get todos => attachedDatabase.todosTable;
   $CategoriesTable get categories => attachedDatabase.categories;
   @override
-  List<GeneratedColumn> get $columns => [categories.description, itemCount];
+  List<GeneratedColumn> get $columns => [description, itemCount];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -1440,8 +1440,10 @@ class $CategoryTodoCountViewView
   }
 
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
-      'desc', aliasedName, false,
-      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+      'description', aliasedName, false,
+      type: const StringType(),
+      generatedAs:
+          GeneratedAs(categories.description + const Variable('!'), false));
   late final GeneratedColumn<int?> itemCount = GeneratedColumn<int?>(
       'item_count', aliasedName, false,
       type: const IntType(), generatedAs: GeneratedAs(todos.id.count(), false));

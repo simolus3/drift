@@ -54,7 +54,15 @@ void main() {
 
     variable.writeInto(ctx);
 
-    expect('NULL', ctx.sql);
+    expect(ctx.sql, 'NULL');
     expect(ctx.boundVariables, isEmpty);
+  });
+
+  test('writes constants when variables are not supported', () {
+    const variable = Variable<String?>("hello world'");
+    final ctx = GenerationContext.fromDb(TodoDb(), supportsVariables: false);
+    variable.writeInto(ctx);
+
+    expect(ctx.sql, "'hello world'''");
   });
 }

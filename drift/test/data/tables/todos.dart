@@ -121,10 +121,12 @@ abstract class CategoryTodoCountView extends View {
   TodosTable get todos;
   Categories get categories;
 
+  Expression<String> get description =>
+      categories.description + const Variable('!');
   Expression<int> get itemCount => todos.id.count();
 
   @override
-  Query as() => select([categories.description, itemCount])
+  Query as() => select([description, itemCount])
       .from(categories)
       .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
 }

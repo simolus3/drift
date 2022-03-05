@@ -67,7 +67,7 @@ void main() {
 
       verify(mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS category_todo_count_view AS SELECT '
-          'categories."desc" AS "categories.desc", '
+          'categories."desc" || \'!\' AS "description", '
           'COUNT(todos.id) AS "item_count" '
           'FROM categories '
           'INNER JOIN todos '
