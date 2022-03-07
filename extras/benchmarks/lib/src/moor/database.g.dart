@@ -126,9 +126,10 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
 
 class $KeyValuesTable extends KeyValues
     with TableInfo<$KeyValuesTable, KeyValue> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $KeyValuesTable(this._db, [this._alias]);
+  $KeyValuesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String?> key = GeneratedColumn<String?>(
@@ -175,7 +176,7 @@ class $KeyValuesTable extends KeyValues
 
   @override
   $KeyValuesTable createAlias(String alias) {
-    return $KeyValuesTable(_db, alias);
+    return $KeyValuesTable(attachedDatabase, alias);
   }
 }
 

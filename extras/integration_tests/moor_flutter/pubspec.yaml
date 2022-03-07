@@ -18,14 +18,6 @@ dependencies:
 dev_dependencies:
   test:
 
-dependency_overrides:
-  drift:
-    path: ../../../drift
-  moor_flutter:
-    path: ../../../moor_flutter
-  moor:
-    path: ../../../moor
-
 flutter:
   assets:
     - test_asset.db

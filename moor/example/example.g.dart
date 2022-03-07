@@ -139,20 +139,23 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
 
 class $CategoriesTable extends Categories
     with TableInfo<$CategoriesTable, Category> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CategoriesTable(this._db, [this._alias]);
+  $CategoriesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
+  @override
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
       'description', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
@@ -180,13 +183,13 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Category.fromData(data, _db,
+    return Category.fromData(data, attachedDatabase,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $CategoriesTable createAlias(String alias) {
-    return $CategoriesTable(_db, alias);
+    return $CategoriesTable(attachedDatabase, alias);
   }
 }
 
@@ -372,30 +375,35 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
 }
 
 class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $RecipesTable(this._db, [this._alias]);
+  $RecipesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
       additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 16),
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true);
   final VerificationMeta _instructionsMeta =
       const VerificationMeta('instructions');
+  @override
   late final GeneratedColumn<String?> instructions = GeneratedColumn<String?>(
       'instructions', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
+  @override
   late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
       'category', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+      type: const IntType(), requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, title, instructions, category];
   @override
@@ -435,13 +443,13 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Recipe map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Recipe.fromData(data, _db,
+    return Recipe.fromData(data, attachedDatabase,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $RecipesTable createAlias(String alias) {
-    return $RecipesTable(_db, alias);
+    return $RecipesTable(attachedDatabase, alias);
   }
 }
 
@@ -595,24 +603,28 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
 
 class $IngredientsTable extends Ingredients
     with TableInfo<$IngredientsTable, Ingredient> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $IngredientsTable(this._db, [this._alias]);
+  $IngredientsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _caloriesPer100gMeta =
       const VerificationMeta('caloriesPer100g');
+  @override
   late final GeneratedColumn<int?> caloriesPer100g = GeneratedColumn<int?>(
       'calories', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name, caloriesPer100g];
   @override
@@ -648,13 +660,13 @@ class $IngredientsTable extends Ingredients
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Ingredient map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Ingredient.fromData(data, _db,
+    return Ingredient.fromData(data, attachedDatabase,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $IngredientsTable createAlias(String alias) {
-    return $IngredientsTable(_db, alias);
+    return $IngredientsTable(attachedDatabase, alias);
   }
 }
 
@@ -814,22 +826,26 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
 
 class $IngredientInRecipesTable extends IngredientInRecipes
     with TableInfo<$IngredientInRecipesTable, IngredientInRecipe> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $IngredientInRecipesTable(this._db, [this._alias]);
+  $IngredientInRecipesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _recipeMeta = const VerificationMeta('recipe');
+  @override
   late final GeneratedColumn<int?> recipe = GeneratedColumn<int?>(
       'recipe', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _ingredientMeta = const VerificationMeta('ingredient');
+  @override
   late final GeneratedColumn<int?> ingredient = GeneratedColumn<int?>(
       'ingredient', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _amountInGramsMeta =
       const VerificationMeta('amountInGrams');
+  @override
   late final GeneratedColumn<int?> amountInGrams = GeneratedColumn<int?>(
       'amount', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [recipe, ingredient, amountInGrams];
   @override
@@ -870,13 +886,13 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   Set<GeneratedColumn> get $primaryKey => {recipe, ingredient};
   @override
   IngredientInRecipe map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return IngredientInRecipe.fromData(data, _db,
+    return IngredientInRecipe.fromData(data, attachedDatabase,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $IngredientInRecipesTable createAlias(String alias) {
-    return $IngredientInRecipesTable(_db, alias);
+    return $IngredientInRecipesTable(attachedDatabase, alias);
   }
 }
 

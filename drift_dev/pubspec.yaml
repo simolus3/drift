@@ -56,6 +56,10 @@ dev_dependencies:
 executables:
   drift_dev:
 
+# TODO remove before publishing
+# TODO even though we use Melos build_runner doesn't have options not to do a pub check
+# TODO so always fails with:
+# TODO "The pubspec.yaml file has changed since the pubspec.lock file was generated, please run "dart pub get" again.""
 dependency_overrides:
   drift:
     path: ../drift

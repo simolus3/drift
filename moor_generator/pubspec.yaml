@@ -17,13 +17,3 @@ dependencies:
 
 executables:
   moor_generator:
-
-dependency_overrides:
-  drift:
-    path: ../drift
-  drift_dev:
-    path: ../drift_dev
-  sqlparser:
-    path: ../sqlparser
-  moor:
-    path: ../moor

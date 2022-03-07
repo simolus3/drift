@@ -28,12 +28,3 @@ dev_dependencies:
   mockito: ^5.0.7
   rxdart: ^0.27.0
 
-dependency_overrides:
-  drift:
-    path: ../drift
-  drift_dev:
-    path: ../drift_dev
-  moor_generator:
-    path: ../moor_generator
-  sqlparser:
-    path: ../sqlparser

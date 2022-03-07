@@ -8,9 +8,6 @@ environment:
 dependencies:
   moor: ^4.0.0
   sqflite_sqlcipher: ^2.0.0
+  flutter:
+    sdk: flutter
 
-dependency_overrides:
-  drift:
-    path: ../../drift
-  moor:
-    path: ../../moor
