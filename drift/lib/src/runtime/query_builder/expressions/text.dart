@@ -84,7 +84,7 @@ extension StringExpressionOperators on Expression<String?> {
   ///
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-upper.php
-  Expression<String> upper() {
+  Expression<String?> upper() {
     return FunctionCallExpression('UPPER', [this]);
   }
 
@@ -93,7 +93,7 @@ extension StringExpressionOperators on Expression<String?> {
   ///
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-lower.php
-  Expression<String> lower() {
+  Expression<String?> lower() {
     return FunctionCallExpression('LOWER', [this]);
   }
 
