@@ -98,6 +98,19 @@ void main() {
           []));
     });
 
+    test('creates views through `create()`', () async {
+      await db.createMigrator().create(db.categoryTodoCountView);
+
+      verify(mockExecutor.runCustom(
+          'CREATE VIEW IF NOT EXISTS category_todo_count_view AS SELECT '
+          'categories."desc" || \'!\' AS "description", '
+          'COUNT(todos.id) AS "item_count" '
+          'FROM categories '
+          'INNER JOIN todos '
+          'ON todos.category = categories.id',
+          []));
+    });
+
     test('drops tables', () async {
       await db.createMigrator().deleteTable('users');
 

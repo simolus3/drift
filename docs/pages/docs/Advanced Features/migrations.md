@@ -169,6 +169,23 @@ await m.alterTable(
 )
 ```
 
+## Migrating views, triggers and indices
+
+When changing the definition of a view, a trigger or an index, the easiest way
+to update the database schema is to drop and re-create the element.
+With the `Migrator` API, this is just a matter of calling `await drop(element)`
+followed by `await create(element)`, where `element` is the trigger, view or index
+to update.
+
+Note that the definition of a Dart-defined view might change without modifications
+to the view class itself. This is because columns from a table are referenced with
+a getter. When renaming a column through `.named('name')` in a table definition
+without renaming the getter, the view definition in Dart stays the same but the
+`CREATE VIEW` statement changes.
+
+A headache-free solution to this problem is to just re-create all views in a
+migration, for which the `Migrator` provides the `recreateAllViews` method.
+
 ## Post-migration callbacks
 
 The `beforeOpen` parameter in `MigrationStrategy` can be used to populate data after the database has been created.

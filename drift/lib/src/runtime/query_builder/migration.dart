@@ -65,28 +65,38 @@ class Migrator {
   /// in the database, if they don't exist.
   Future<void> createAll() async {
     for (final entity in _db.allSchemaEntities) {
-      if (entity is TableInfo) {
-        await createTable(entity);
-      } else if (entity is Trigger) {
-        await createTrigger(entity);
-      } else if (entity is Index) {
-        await createIndex(entity);
-      } else if (entity is OnCreateQuery) {
-        await _issueCustomQuery(entity.sql, const []);
-      } else if (entity is ViewInfo) {
-        await createView(entity);
-      } else {
-        throw AssertionError('Unknown entity: $entity');
-      }
+      await create(entity);
     }
   }
 
-  /// Drop and recreate all views. You should call it on every upgrade
+  /// Creates the given [entity], which can be a table, a view, a trigger, an
+  /// index or an [OnCreateQuery].
+  Future<void> create(DatabaseSchemaEntity entity) async {
+    if (entity is TableInfo) {
+      await createTable(entity);
+    } else if (entity is Trigger) {
+      await createTrigger(entity);
+    } else if (entity is Index) {
+      await createIndex(entity);
+    } else if (entity is OnCreateQuery) {
+      await _issueCustomQuery(entity.sql, const []);
+    } else if (entity is ViewInfo) {
+      await createView(entity);
+    } else {
+      throw ArgumentError('Unknown entity type: $entity');
+    }
+  }
+
+  /// Drops and re-creates all views known to the database.
+  ///
+  /// Calling this may be useful in migrations that could potentially affect
+  /// views. This includes changes to a view itself, but changes to tables that
+  /// a view reads from may also warrant re-creating the view to make sure it's
+  /// still valid.
   Future<void> recreateAllViews() async {
     for (final entity in _db.allSchemaEntities) {
       if (entity is ViewInfo) {
-        await _issueCustomQuery(
-            'DROP VIEW IF EXISTS ${entity.entityName}', const []);
+        await drop(entity);
         await createView(entity);
       }
     }
@@ -344,6 +354,8 @@ class Migrator {
       kind = 'TRIGGER';
     } else if (entity is Index) {
       kind = 'INDEX';
+    } else if (entity is ViewInfo) {
+      kind = 'VIEW';
     } else {
       // Entity that can't be dropped.
       return;
