@@ -913,7 +913,7 @@ class Parser {
       ..setSpan(first, _previous);
   }
 
-  AggregateExpression _aggregate(
+  AggregateFunctionInvocation _aggregate(
       IdentifierToken name, FunctionParameters params) {
     Expression? filter;
 
@@ -926,24 +926,30 @@ class Parser {
       _consume(TokenType.rightParen, 'Expecteded closing parenthes');
     }
 
-    _consume(TokenType.over, 'Expected OVER to begin window clause');
+    if (_matchOne(TokenType.over)) {
+      String? windowName;
+      WindowDefinition? window;
 
-    String? windowName;
-    WindowDefinition? window;
+      if (_matchOne(TokenType.identifier)) {
+        windowName = (_previous as IdentifierToken).identifier;
+      } else {
+        window = _windowDefinition();
+      }
 
-    if (_matchOne(TokenType.identifier)) {
-      windowName = (_previous as IdentifierToken).identifier;
+      return WindowFunctionInvocation(
+        function: name,
+        parameters: params,
+        filter: filter,
+        windowDefinition: window,
+        windowName: windowName,
+      )..setSpan(name, _previous);
     } else {
-      window = _windowDefinition();
+      return AggregateFunctionInvocation(
+        function: name,
+        parameters: params,
+        filter: filter,
+      )..setSpan(name, _previous);
     }
-
-    return AggregateExpression(
-      function: name,
-      parameters: params,
-      filter: filter,
-      windowDefinition: window,
-      windowName: windowName,
-    )..setSpan(name, _previous);
   }
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]

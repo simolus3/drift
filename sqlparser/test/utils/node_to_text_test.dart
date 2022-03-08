@@ -189,7 +189,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
       test('with materialized CTEs', () {
         testFormat('''
-          WITH 
+          WITH
             foo (id) AS NOT MATERIALIZED (SELECT 1),
             bar (id) AS MATERIALIZED (SELECT 2)
           SELECT * FROM foo UNION ALL SELECT * FROM bar;
@@ -235,6 +235,18 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
               RANGE BETWEEN CURRENT ROW AND 4 FOLLOWING
               EXCLUDE TIES
             )
+        ''');
+      });
+
+      test('aggregate', () {
+        testFormat('''
+          SELECT
+            subs_id, subs_name,
+            COUNT(is_skipped) FILTER (WHERE is_skipped = true) skipped,
+            COUNT(is_touched) FILTER (WHERE is_touched = true) touched,
+            COUNT(is_passed) FILTER (WHERE is_passed = true) passed
+          FROM stats
+          GROUP BY subs_id;
         ''');
       });
 

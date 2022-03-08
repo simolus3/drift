@@ -44,9 +44,10 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
       : _considerChildren = considerChildren;
 
   @override
-  void visitAggregateExpression(AggregateExpression e, void arg) {
-    final current = _currentAs<AggregateExpression>(e);
-    _assert(current.name == e.name && current.windowName == e.windowName, e);
+  void visitAggregateFunctionInvocation(
+      AggregateFunctionInvocation e, void arg) {
+    final current = _currentAs<AggregateFunctionInvocation>(e);
+    _assert(current.name == e.name, e);
     _checkChildren(e);
   }
 
@@ -713,6 +714,13 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   @override
   void visitWhen(WhenComponent e, void arg) {
     _currentAs<WhenComponent>(e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitWindowFunctionInvocation(WindowFunctionInvocation e, void arg) {
+    final current = _currentAs<WindowFunctionInvocation>(e);
+    _assert(current.name == e.name && current.windowName == e.windowName, e);
     _checkChildren(e);
   }
 

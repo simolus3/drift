@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 final Map<String, Expression> _testCases = {
-  'row_number() OVER (ORDER BY y)': AggregateExpression(
+  'row_number() OVER (ORDER BY y)': WindowFunctionInvocation(
     function: identifier('row_number'),
     parameters: ExprFunctionParameters(),
     windowDefinition: WindowDefinition(
@@ -20,7 +20,7 @@ final Map<String, Expression> _testCases = {
   'row_number(*) FILTER (WHERE 1) OVER '
           '(base_name PARTITION BY a, b '
           'GROUPS BETWEEN UNBOUNDED PRECEDING AND 3 FOLLOWING EXCLUDE TIES)':
-      AggregateExpression(
+      WindowFunctionInvocation(
     function: identifier('row_number'),
     parameters: StarFunctionParameter(),
     filter: NumericLiteral(1, token(TokenType.numberLiteral)),
@@ -41,7 +41,7 @@ final Map<String, Expression> _testCases = {
     ),
   ),
   'row_number() OVER (RANGE CURRENT ROW EXCLUDE NO OTHERS)':
-      AggregateExpression(
+      WindowFunctionInvocation(
     function: identifier('row_number'),
     parameters: ExprFunctionParameters(),
     windowDefinition: WindowDefinition(
@@ -51,6 +51,18 @@ final Map<String, Expression> _testCases = {
         end: FrameBoundary.currentRow(),
         excludeMode: ExcludeMode.noOthers,
       ),
+    ),
+  ),
+  'COUNT(is_skipped) FILTER (WHERE is_skipped = true)':
+      AggregateFunctionInvocation(
+    function: identifier('COUNT'),
+    parameters: ExprFunctionParameters(
+      parameters: [Reference(columnName: 'is_skipped')],
+    ),
+    filter: BinaryExpression(
+      Reference(columnName: 'is_skipped'),
+      token(TokenType.equal),
+      BooleanLiteral.withTrue(token(TokenType.$true)),
     ),
   ),
 };

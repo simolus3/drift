@@ -184,7 +184,7 @@ SELECT row_number() OVER wnd FROM demo
     final column = (context.root as SelectStatement).resolvedColumns!.single
         as ExpressionColumn;
 
-    final over = (column.expression as AggregateExpression).over!;
+    final over = (column.expression as WindowFunctionInvocation).over!;
 
     enforceEqual(
       over,

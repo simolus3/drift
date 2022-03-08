@@ -81,7 +81,8 @@ abstract class AstVisitor<A, R> {
   R visitInExpression(InExpression e, A arg);
   R visitRaiseExpression(RaiseExpression e, A arg);
 
-  R visitAggregateExpression(AggregateExpression e, A arg);
+  R visitAggregateFunctionInvocation(AggregateFunctionInvocation e, A arg);
+  R visitWindowFunctionInvocation(WindowFunctionInvocation e, A arg);
   R visitWindowDefinition(WindowDefinition e, A arg);
   R visitFrameSpec(FrameSpec e, A arg);
   R visitIndexedColumn(IndexedColumn e, A arg);
@@ -488,7 +489,12 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   }
 
   @override
-  R? visitAggregateExpression(AggregateExpression e, A arg) {
+  R? visitAggregateFunctionInvocation(AggregateFunctionInvocation e, A arg) {
+    return visitExpressionInvocation(e, arg);
+  }
+
+  @override
+  R? visitWindowFunctionInvocation(WindowFunctionInvocation e, A arg) {
     return visitExpressionInvocation(e, arg);
   }
 

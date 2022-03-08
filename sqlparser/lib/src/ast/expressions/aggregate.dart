@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-class AggregateExpression extends Expression
+class AggregateFunctionInvocation extends Expression
     implements ExpressionInvocation, ReferenceOwner {
   final IdentifierToken function;
 
@@ -13,6 +13,31 @@ class AggregateExpression extends Expression
 
   @override
   Referencable? resolved;
+
+  AggregateFunctionInvocation({
+    required this.function,
+    required this.parameters,
+    this.filter,
+  });
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAggregateFunctionInvocation(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    parameters = transformer.transformChild(parameters, this, arg);
+    filter = transformer.transformNullableChild(filter, this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes {
+    return [parameters, if (filter != null) filter!];
+  }
+}
+
+class WindowFunctionInvocation extends AggregateFunctionInvocation {
   WindowDefinition? get over {
     if (windowDefinition != null) return windowDefinition;
     return (resolved as NamedWindowDeclaration?)?.definition;
@@ -32,18 +57,19 @@ class AggregateExpression extends Expression
   /// [over] in either case.
   final String? windowName;
 
-  AggregateExpression(
-      {required this.function,
-      required this.parameters,
-      this.filter,
+  WindowFunctionInvocation(
+      {required IdentifierToken function,
+      required FunctionParameters parameters,
+      Expression? filter,
       this.windowDefinition,
       this.windowName})
-      // either window definition or name must be null
-      : assert((windowDefinition == null) != (windowName == null));
+      // one of window definition or name must be null
+      : assert((windowDefinition == null) || (windowName == null)),
+        super(function: function, parameters: parameters, filter: filter);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitAggregateExpression(this, arg);
+    return visitor.visitWindowFunctionInvocation(this, arg);
   }
 
   @override
@@ -66,7 +92,7 @@ class AggregateExpression extends Expression
 
 /// A window declaration that appears in a `SELECT` statement like
 /// `WINDOW <name> AS <window-defn>`. It can be referenced from an
-/// [AggregateExpression] if it uses the same name.
+/// [AggregateFunctionInvocation] if it uses the same name.
 class NamedWindowDeclaration with Referencable {
   // todo: Should be an ast node
   final String name;

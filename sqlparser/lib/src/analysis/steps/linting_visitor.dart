@@ -304,7 +304,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         ));
       } else if (column is ExpressionResultColumn) {
         // While we're at it, window expressions aren't allowed either
-        if (column.expression is AggregateExpression) {
+        if (column.expression is WindowFunctionInvocation) {
           context.reportError(
             AnalysisError(
               type: AnalysisErrorType.illegalUseOfReturning,

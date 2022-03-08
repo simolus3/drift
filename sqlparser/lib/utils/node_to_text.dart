@@ -25,7 +25,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
-  void visitAggregateExpression(AggregateExpression e, void arg) {
+  void visitAggregateFunctionInvocation(
+      AggregateFunctionInvocation e, void arg) {
     symbol(e.name);
 
     symbol('(');
@@ -39,6 +40,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       visit(e.filter!, arg);
       symbol(')', spaceAfter: true);
     }
+  }
+
+  @override
+  void visitWindowFunctionInvocation(WindowFunctionInvocation e, void arg) {
+    visitAggregateFunctionInvocation(e, arg);
 
     if (e.windowDefinition != null) {
       _keyword(TokenType.over);

@@ -7,16 +7,6 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   ReferenceResolver(this.context);
 
   @override
-  void visitAggregateExpression(AggregateExpression e, void arg) {
-    if (e.windowName != null && e.resolved == null) {
-      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName!);
-      e.resolved = resolved;
-    }
-
-    visitChildren(e, arg);
-  }
-
-  @override
   void visitInsertStatement(InsertStatement e, void arg) {
     final table = e.table.resultSet;
     if (table != null) {
@@ -110,6 +100,16 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
       for (final set in e.set) {
         _resolveReferenceInTable(set.column, table);
       }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitWindowFunctionInvocation(WindowFunctionInvocation e, void arg) {
+    if (e.windowName != null && e.resolved == null) {
+      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName!);
+      e.resolved = resolved;
     }
 
     visitChildren(e, arg);
