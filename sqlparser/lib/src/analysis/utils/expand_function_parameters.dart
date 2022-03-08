@@ -1,7 +1,7 @@
 part of '../analysis.dart';
 
 /// Extension to expand parameters defined in a sql invocation, which is either
-/// a [FunctionExpression] or an [AggregateExpression].
+/// a [FunctionExpression] or an [AggregateFunctionInvocation].
 extension ExpandParameters on SqlInvocation {
   /// Returns the expanded parameters of a function call.
   ///

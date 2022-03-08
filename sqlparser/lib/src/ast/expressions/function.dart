@@ -3,9 +3,9 @@ part of '../ast.dart';
 /// Interface for function calls.
 ///
 /// Functions that resolve to an [Expression] are subclasses of
-/// [ExpressionInvocation], like [FunctionExpression] or [AggregateExpression].
-/// There are invocation that don't resolve to an expression, notably
-/// [TableValuedFunction].
+/// [ExpressionInvocation], like [FunctionExpression] or
+/// [AggregateFunctionInvocation]. There are invocations that don't resolve to
+/// an expression, notably [TableValuedFunction]s.
 abstract class SqlInvocation implements AstNode {
   /// The name of the function being called
   String get name;
