@@ -142,4 +142,38 @@ class Database {}
     expect(feature.onUpdate, ReferenceAction.restrict);
     expect(feature.onDelete, ReferenceAction.cascade);
   });
+
+  test('resolves self-references', () async {
+    final state = TestState.withContent(
+      {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Foo extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get parentId => integer().nullable().references(Foo, #id)();
+}
+
+@DriftDatabase(tables: [Foo])
+class Database {}
+'''
+      },
+    );
+    addTearDown(state.close);
+
+    final file = await state.analyze('package:a/main.dart');
+    expect(file.errors.errors, isEmpty);
+
+    final foo = file.currentResult!.declaredTables
+        .firstWhere((e) => e.sqlName == 'foo');
+
+    expect(foo.references, contains(foo));
+
+    final column = foo.columns[1];
+    final feature =
+        column.features.whereType<ResolvedDartForeignKeyReference>().first;
+
+    expect(feature.otherColumn.name.name, 'id');
+    expect(feature.otherTable.sqlName, 'foo');
+  });
 }
