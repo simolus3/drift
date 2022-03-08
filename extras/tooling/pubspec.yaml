@@ -7,5 +7,4 @@ environment:
 
 dependencies:
   analyzer: ^2.5.0
-  coverage: ^1.0.2
   path: ^1.8.0
