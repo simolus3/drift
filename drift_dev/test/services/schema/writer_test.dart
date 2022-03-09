@@ -47,7 +47,7 @@ import 'package:drift/drift.dart';
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  TextColumn get settings => text().map(const SettingsConverter())();
+  TextColumn get settings => text().named('setting').map(const SettingsConverter())();
 }
 
 class Settings {}
@@ -104,6 +104,7 @@ const expected = r'''
             "columns":[
                {
                   "name":"id",
+                  "getter_name": "id",
                   "moor_type":"ColumnType.integer",
                   "nullable":false,
                   "customConstraints":"NOT NULL PRIMARY KEY AUTOINCREMENT",
@@ -116,6 +117,7 @@ const expected = r'''
                },
                {
                   "name":"name",
+                  "getter_name": "name",
                   "moor_type":"ColumnType.text",
                   "nullable":false,
                   "customConstraints":"NOT NULL",
@@ -142,6 +144,7 @@ const expected = r'''
             "columns":[
                {
                   "name":"id",
+                  "getter_name": "id",
                   "moor_type":"ColumnType.integer",
                   "nullable":false,
                   "customConstraints":null,
@@ -154,6 +157,7 @@ const expected = r'''
                },
                {
                   "name":"name",
+                  "getter_name": "name",
                   "moor_type":"ColumnType.text",
                   "nullable":false,
                   "customConstraints":null,
@@ -164,7 +168,8 @@ const expected = r'''
                   ]
                },
                {
-                  "name":"settings",
+                  "name":"setting",
+                  "getter_name": "settings",
                   "moor_type":"ColumnType.text",
                   "nullable":false,
                   "customConstraints":null,
@@ -195,6 +200,7 @@ const expected = r'''
             "columns":[
                {
                   "name":"group",
+                  "getter_name": "group",
                   "moor_type":"ColumnType.integer",
                   "nullable":false,
                   "customConstraints":"NOT NULL REFERENCES \"groups\"(id)",
@@ -206,6 +212,7 @@ const expected = r'''
                },
                {
                   "name":"user",
+                  "getter_name": "user",
                   "moor_type":"ColumnType.integer",
                   "nullable":false,
                   "customConstraints":"NOT NULL REFERENCES users(id)",
@@ -217,6 +224,7 @@ const expected = r'''
                },
                {
                   "name":"is_admin",
+                  "getter_name": "isAdmin",
                   "moor_type":"ColumnType.boolean",
                   "nullable":false,
                   "customConstraints":"NOT NULL DEFAULT FALSE",
@@ -276,6 +284,7 @@ const expected = r'''
           "columns": [
             {
               "name": "sender",
+              "getter_name": "sender",
               "moor_type": "ColumnType.text",
               "nullable": false,
               "customConstraints": "",
@@ -285,6 +294,7 @@ const expected = r'''
             },
             {
               "name": "title",
+              "getter_name": "title",
               "moor_type": "ColumnType.text",
               "nullable": false,
               "customConstraints": "",
@@ -294,6 +304,7 @@ const expected = r'''
             },
             {
               "name": "body",
+              "getter_name": "body",
               "moor_type": "ColumnType.text",
               "nullable": false,
               "customConstraints": "",

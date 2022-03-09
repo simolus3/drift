@@ -97,6 +97,7 @@ class SchemaWriter {
   Map _columnData(MoorColumn column) {
     return {
       'name': column.name.name,
+      'getter_name': column.dartGetterName,
       'moor_type': column.type.toString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
@@ -286,12 +287,13 @@ class SchemaReader {
       for (final feature in data['dsl_features'] as List<dynamic>)
         _columnFeature(feature)
     ];
+    final getterName = data['getter_name'] as String?;
 
     // Note: Not including client default code because that usually depends on
     // imports from the database.
     return MoorColumn(
       name: ColumnName.explicitly(name),
-      dartGetterName: ReCase(name).camelCase,
+      dartGetterName: getterName ?? ReCase(name).camelCase,
       type: moorType,
       nullable: nullable,
       defaultArgument: data['default_dart'] as String?,
