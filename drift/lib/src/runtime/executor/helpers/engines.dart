@@ -334,7 +334,8 @@ class DelegatedDatabase extends _BaseExecutor {
     final openingDetails = OpeningDetails(oldVersion, currentVersion);
     await user.beforeOpen(_BeforeOpeningExecutor(this), openingDetails);
 
-    if (versionDelegate is DynamicVersionDelegate) {
+    if (versionDelegate is DynamicVersionDelegate &&
+        (oldVersion == null || oldVersion < currentVersion)) {
       // set version now, after migrations ran successfully
       await versionDelegate.setSchemaVersion(currentVersion);
     }
