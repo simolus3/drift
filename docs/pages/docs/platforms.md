@@ -12,7 +12,7 @@ lists all supported platforms and how to use drift when building apps for them.
 
 To achieve platform independence, drift separates its core apis from a platform-specific
 database implementation. The core apis are pure-Dart and run on all Dart platforms, even
-outside of Flutter. When writing drift apps, prefer to mainly use the apis in 
+outside of Flutter. When writing drift apps, prefer to mainly use the apis in
 `package:drift/drift.dart` as they are guaranteed to work across all platforms.
 Depending on your platform, you can choose a different `QueryExecutor`.
 
@@ -34,6 +34,9 @@ This is the recommended approach for newer projects as described in the [getting
 
 To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
 package when using `package:drift/native.dart`!
+`sqlite3_flutter_libs` will configure your app to use a fixed sqlite3 version on Android, iOS and macOS.
+It only applies to your full Flutter app though, it can't override the sqlite3 version when running tests
+with `flutter test`.
 
 {% block "blocks/alert" title="A note on ffi and Android" %}
 > `package:drift/native.dart` is the recommended drift implementation for new Android apps.
@@ -87,12 +90,16 @@ details.
 ### macOS
 
 This one is easy! Just use the `NativeDatabase` from `package:drift/native.dart`. No further setup is
-necessary. 
+necessary.
 
 If you need a custom sqlite3 library, or want to make sure that your app will always use a
 specific sqlite3 version, you can also ship that version with your app.
 When depending on `sqlite3_flutter_libs`, drift will automatically use that version which is
 usually more recent than the `sqlite3` version that comes with macOS.
+Again, note that this only works with full Flutter apps and not in say `flutter test`.
+
+For tests or using a custom sqlite3 version without `sqlite3_flutter_libs`, see the following
+section.
 
 ### Bundling sqlite with your app
 
@@ -111,3 +118,8 @@ Be sure to use drift _after_ you set the platform-specific overrides.
 When you use drift in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
 you'll also need to apply the opening overrides on that background isolate.
 You can call them in the isolate's entrypoint before using any drift apis.
+
+For standard Flutter tests running in a Dart VM without native plugins, you can use a
+`flutter_test_config.dart` file to ensure that a recent version of sqlite3 is available.
+An example for this is available [here](https://github.com/simolus3/drift/discussions/1745#discussioncomment-2326294).
+For Dart tests, a similar logic could be put into a `setupAll` callback.
