@@ -109,6 +109,8 @@ void main() {
 
     test('when the database supports dynamic version', () async {
       final version = _MockDynamicVersionDelegate();
+      // Running migrations from version 3 to 3
+      when(userDb.schemaVersion).thenReturn(3);
       when(version.schemaVersion).thenAnswer((_) => Future.value(3));
 
       when(delegate.versionDelegate).thenReturn(version);
@@ -117,6 +119,12 @@ void main() {
       verify(delegate.open(userDb));
       verifyNever(delegate.runCustom(any, any));
       verify(version.schemaVersion);
+      verifyNever(version.setSchemaVersion(3));
+
+
+      // Running migrations from version 2 to 3
+      when(version.schemaVersion).thenAnswer((_) => Future.value(2));
+      await db.ensureOpen(userDb);
       verify(version.setSchemaVersion(3));
     });
 
