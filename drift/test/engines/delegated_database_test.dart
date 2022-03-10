@@ -121,7 +121,6 @@ void main() {
       verify(version.schemaVersion);
       verifyNever(version.setSchemaVersion(3));
 
-
       // Running migrations from version 2 to 3
       when(version.schemaVersion).thenAnswer((_) => Future.value(2));
       await db.ensureOpen(userDb);
