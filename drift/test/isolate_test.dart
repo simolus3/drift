@@ -80,10 +80,16 @@ void main() {
     final isolate = await DriftIsolate.spawn(_backgroundConnection);
     final db = TodoDb.connect(await isolate.connect());
 
-    await expectLater(
-      () => db.customStatement('UPDATE non_existing_table SET foo = bar'),
-      throwsA(anything),
-    );
+    try {
+      await db.customStatement('UPDATE non_existing_table SET foo = bar');
+      fail('Should have thrown an exception');
+    } catch (e, s) {
+      expect(e, isA<DriftRemoteException>());
+
+      // The stack trace of remote exceptions should point towards the actual
+      // source making the faulty call.
+      expect(s.toString(), contains('main.<anonymous closure>'));
+    }
 
     // Check that isolate is still usable
     await expectLater(

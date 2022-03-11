@@ -61,6 +61,8 @@ import 'src/remote/communication.dart';
 import 'src/remote/protocol.dart';
 import 'src/remote/server_impl.dart';
 
+export 'src/remote/communication.dart' show DriftRemoteException;
+
 /// Serves a drift database connection over any two-way communication channel.
 ///
 /// Users are responsible for creating the underlying stream channels before

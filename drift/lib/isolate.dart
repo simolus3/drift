@@ -11,6 +11,8 @@ import 'drift.dart';
 import 'remote.dart';
 import 'src/isolate.dart';
 
+export 'remote.dart' show DriftRemoteException;
+
 /// Signature of a function that opens a database connection.
 typedef DatabaseOpener = DatabaseConnection Function();
 

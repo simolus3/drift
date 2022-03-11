@@ -27,6 +27,11 @@ class DriftCommunication {
   final StreamController<Request> _incomingRequests =
       StreamController(sync: true);
 
+  /// We capture the current stack trace when [request] is called so that, if
+  /// an exception occurs on the remote peer, we can throw exceptions with a
+  /// proper stack trace pointing torwards the causing invocation.
+  final Map<int, StackTrace> _requestTraces = {};
+
   /// Starts a drift communication channel over a raw [StreamChannel].
   DriftCommunication(this._channel,
       {bool debugLog = false, bool serialize = true})
@@ -80,11 +85,15 @@ class DriftCommunication {
       completer?.complete(msg.response);
       _pendingRequests.remove(msg.requestId);
     } else if (msg is ErrorResponse) {
-      final completer = _pendingRequests[msg.requestId];
-      final trace = msg.stackTrace != null
+      final requestId = msg.requestId;
+      final completer = _pendingRequests[requestId];
+      final backgroundTrace = msg.stackTrace != null
           ? StackTrace.fromString(msg.stackTrace!)
           : null;
-      completer?.completeError(msg.error, trace);
+      final foregroundTrace = _requestTraces[requestId];
+
+      completer?.completeError(
+          DriftRemoteException._(msg.error, backgroundTrace), foregroundTrace);
       _pendingRequests.remove(msg.requestId);
     } else if (msg is Request) {
       _incomingRequests.add(msg);
@@ -104,6 +113,8 @@ class DriftCommunication {
     final completer = Completer<T>();
 
     _pendingRequests[id] = completer;
+    _requestTraces[id] = StackTrace.current;
+
     _send(Request(id, request));
     return completer.future;
   }
@@ -169,4 +180,18 @@ class DriftCommunication {
 class ConnectionClosedException implements Exception {
   /// Constant constructor.
   const ConnectionClosedException();
+}
+
+/// An exception reported on the other end of a drift remote protocol.
+///
+/// For a drift isolates, this exception is thrown if an error happened while
+/// a background isolate tries to run your query.
+class DriftRemoteException implements Exception {
+  /// The original error on the remote peer.
+  final Object remoteCause;
+
+  /// The stack trace of the original error on the remote peer.
+  final StackTrace? remoteStackTrace;
+
+  DriftRemoteException._(this.remoteCause, this.remoteStackTrace);
 }
