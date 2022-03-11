@@ -32,7 +32,7 @@ void main() {
     // another isolate.
     final background = await isolate.connect();
     final foreground = background.withExecutor(MultiExecutor(
-      read: _createExecutor(),
+      reads: [_createExecutor()],
       write: background.executor,
     ));
 
