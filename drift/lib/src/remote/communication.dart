@@ -23,14 +23,9 @@ class DriftCommunication {
   // (one per remote). Each of them has an independent _currentRequestId field
   int _currentRequestId = 0;
   final Completer<void> _closeCompleter = Completer();
-  final Map<int, Completer> _pendingRequests = {};
+  final Map<int, _PendingRequest> _pendingRequests = {};
   final StreamController<Request> _incomingRequests =
       StreamController(sync: true);
-
-  /// We capture the current stack trace when [request] is called so that, if
-  /// an exception occurs on the remote peer, we can throw exceptions with a
-  /// proper stack trace pointing torwards the causing invocation.
-  final Map<int, StackTrace> _requestTraces = {};
 
   /// Starts a drift communication channel over a raw [StreamChannel].
   DriftCommunication(this._channel,
@@ -68,7 +63,7 @@ class DriftCommunication {
     _inputSubscription?.cancel();
 
     for (final pending in _pendingRequests.values) {
-      pending.completeError(const ConnectionClosedException());
+      pending.completeWithError(const ConnectionClosedException());
     }
     _pendingRequests.clear();
   }
@@ -81,25 +76,24 @@ class DriftCommunication {
     }
 
     if (msg is SuccessResponse) {
-      final completer = _pendingRequests[msg.requestId];
-      completer?.complete(msg.response);
-      _pendingRequests.remove(msg.requestId);
+      final request = _pendingRequests.remove(msg.requestId);
+      request?.completer.complete(msg.response);
     } else if (msg is ErrorResponse) {
       final requestId = msg.requestId;
-      final completer = _pendingRequests[requestId];
+      final request = _pendingRequests.remove(requestId);
       final backgroundTrace = msg.stackTrace != null
           ? StackTrace.fromString(msg.stackTrace!)
           : null;
-      final foregroundTrace = _requestTraces[requestId];
 
-      completer?.completeError(
-          DriftRemoteException._(msg.error, backgroundTrace), foregroundTrace);
+      request?.completeWithError(
+          DriftRemoteException._(msg.error, backgroundTrace));
       _pendingRequests.remove(msg.requestId);
     } else if (msg is Request) {
       _incomingRequests.add(msg);
     } else if (msg is CancelledResponse) {
-      final completer = _pendingRequests[msg.requestId];
-      completer?.completeError(const CancellationException());
+      final request = _pendingRequests.remove(msg.requestId);
+
+      request?.completeWithError(const CancellationException());
     }
   }
 
@@ -112,8 +106,7 @@ class DriftCommunication {
     final id = requestId ?? newRequestId();
     final completer = Completer<T>();
 
-    _pendingRequests[id] = completer;
-    _requestTraces[id] = StackTrace.current;
+    _pendingRequests[id] = _PendingRequest(completer, StackTrace.current);
 
     _send(Request(id, request));
     return completer.future;
@@ -172,6 +165,21 @@ class DriftCommunication {
         respondError(request, e, s);
       }
     });
+  }
+}
+
+class _PendingRequest {
+  final Completer completer;
+
+  /// We capture the current stack trace when `request` is called so that, if
+  /// an exception occurs on the remote peer, we can throw exceptions with a
+  /// proper stack trace pointing torwards the causing invocation.
+  final StackTrace requestTrace;
+
+  _PendingRequest(this.completer, this.requestTrace);
+
+  void completeWithError(Object error) {
+    completer.completeError(error, requestTrace);
   }
 }
 
