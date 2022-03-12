@@ -44,6 +44,52 @@ void main() {
     ]);
   });
 
+  test('runs selects on reads executor does not block', () async {
+    read = MockExecutor();
+    final secondRead = MockExecutor();
+    write = MockExecutor();
+
+    multi = MultiExecutor.withReadPool(reads: [read, secondRead], write: write);
+    db = TodoDb(multi);
+
+    await multi.ensureOpen(db);
+
+    when(read.runSelect(any, any)).thenAnswer((_) {
+      return Future.delayed(
+          const Duration(milliseconds: 10),
+          () => [
+                {'foo': 'bar'}
+              ]);
+    });
+
+    when(secondRead.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'bar': 'foo'}
+      ];
+    });
+
+    final firstFuture = multi.runSelect('statement', [1]);
+    final secondFuture = multi.runSelect('statement', [2]);
+
+    final fasterResult = await Future.any([firstFuture, secondFuture]);
+    final firstResult = await firstFuture;
+    final secondResult = await secondFuture;
+
+    assert(fasterResult == secondResult);
+
+    verify(read.runSelect('statement', [1]));
+    verifyNever(write.runSelect(any, any));
+    expect(firstResult, [
+      {'foo': 'bar'}
+    ]);
+
+    verify(secondRead.runSelect('statement', [2]));
+    verifyNever(write.runSelect(any, any));
+    expect(secondResult, [
+      {'bar': 'foo'}
+    ]);
+  });
+
   test('runs updates on the writing executor', () async {
     await multi.ensureOpen(db);
 
