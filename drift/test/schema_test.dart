@@ -72,7 +72,7 @@ void main() {
           'FROM categories '
           'INNER JOIN todos '
           'ON todos.category = categories.id '
-          'GROUP BY COUNT(categories.id)',
+          'GROUP BY categories.id',
           []));
 
       verify(mockExecutor.runCustom(
@@ -109,7 +109,7 @@ void main() {
           'FROM categories '
           'INNER JOIN todos '
           'ON todos.category = categories.id '
-          'GROUP BY COUNT(categories.id)',
+          'GROUP BY categories.id',
           []));
     });
 

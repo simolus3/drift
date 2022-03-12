@@ -129,7 +129,7 @@ abstract class CategoryTodoCountView extends View {
   Query as() => select([description, itemCount])
       .from(categories)
       .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
-    ..groupBy([categories.id.count()]);
+    ..groupBy([categories.id]);
 }
 
 abstract class TodoWithCategoryView extends View {
