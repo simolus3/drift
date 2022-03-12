@@ -128,7 +128,8 @@ abstract class CategoryTodoCountView extends View {
   @override
   Query as() => select([description, itemCount])
       .from(categories)
-      .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+      .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
+    ..groupBy([categories.id]);
 }
 
 abstract class TodoWithCategoryView extends View {
