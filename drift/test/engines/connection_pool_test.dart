@@ -6,75 +6,87 @@ import '../data/tables/todos.dart';
 import '../data/utils/mocks.dart';
 
 void main() {
-  late List<MockExecutor> reads;
-  late MockExecutor write;
+  late MockExecutor read, write;
   late MultiExecutor multi;
   late TodoDb db;
 
   setUp(() {
-    reads = [MockExecutor(), MockExecutor()];
+    read = MockExecutor();
     write = MockExecutor();
 
-    multi = MultiExecutor(reads: reads, write: write);
+    multi = MultiExecutor(read: read, write: write);
     db = TodoDb(multi);
   });
 
   test('opens delegated executors when opening', () async {
     await multi.ensureOpen(db);
 
-    for (final read in reads) {
-      verify(read.ensureOpen(argThat(isNot(db))));
-    }
+    verify(read.ensureOpen(argThat(isNot(db))));
     verify(write.ensureOpen(db));
   });
 
   test('runs selects on the reading executor', () async {
     await multi.ensureOpen(db);
 
-    // Two quick queries
-    for (final read in reads) {
-      when(read.runSelect(any, any)).thenAnswer((_) async => [
-            {'foo': 'bar'}
-          ]);
-    }
+    when(read.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'foo': 'bar'}
+      ];
+    });
 
     final result = await multi.runSelect('statement', [1, 2]);
 
-    verify(reads[0].runSelect('statement', [1, 2]));
-    verifyNever(reads[1].runSelect('statement', [1, 2]));
+    verify(read.runSelect('statement', [1, 2]));
     verifyNever(write.runSelect(any, any));
 
     expect(result, [
       {'foo': 'bar'}
     ]);
+  });
 
-    // idle executors sort
-    reads = [reads[1], reads[0]];
-    // first slower query
-    when(reads[0].runSelect(any, any)).thenAnswer(
-      (_) => Future.delayed(
-          const Duration(milliseconds: 4),
+  test('runs selects on reads executor does not block', () async {
+    read = MockExecutor();
+    final secondRead = MockExecutor();
+    write = MockExecutor();
+
+    multi = MultiExecutor.withReadPool(reads: [read, secondRead], write: write);
+    db = TodoDb(multi);
+
+    await multi.ensureOpen(db);
+
+    when(read.runSelect(any, any)).thenAnswer((_) {
+      return Future.delayed(
+          const Duration(milliseconds: 10),
           () => [
-                {'bar': 'foo'}
-              ]),
-    );
+                {'foo': 'bar'}
+              ]);
+    });
 
-    final first = multi.runSelect('statement', [2, 1]);
-    final second = multi.runSelect('statement', [1, 2]);
-
-    final results = await Future.wait([first, second]);
-
-    verify(reads[0].runSelect('statement', [2, 1]));
-    verify(reads[1].runSelect('statement', [1, 2]));
-    verifyNever(write.runSelect(any, any));
-
-    expect(results, [
-      [
+    when(secondRead.runSelect(any, any)).thenAnswer((_) async {
+      return [
         {'bar': 'foo'}
-      ],
-      [
-        {'foo': 'bar'}
-      ]
+      ];
+    });
+
+    final firstFuture = multi.runSelect('statement', [1]);
+    final secondFuture = multi.runSelect('statement', [2]);
+
+    final fasterResult = await Future.any([firstFuture, secondFuture]);
+    final firstResult = await firstFuture;
+    final secondResult = await secondFuture;
+
+    assert(fasterResult == secondResult);
+
+    verify(read.runSelect('statement', [1]));
+    verifyNever(write.runSelect(any, any));
+    expect(firstResult, [
+      {'foo': 'bar'}
+    ]);
+
+    verify(secondRead.runSelect('statement', [2]));
+    verifyNever(write.runSelect(any, any));
+    expect(secondResult, [
+      {'bar': 'foo'}
     ]);
   });
 

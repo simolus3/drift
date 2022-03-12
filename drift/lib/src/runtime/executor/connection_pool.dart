@@ -8,8 +8,19 @@ abstract class MultiExecutor extends QueryExecutor {
   ///
   /// Updating statements, or statements that run in a transaction, will be run
   /// with [write]. Select statements outside of a transaction are executed on
-  /// [reads].
+  /// [read].
   factory MultiExecutor({
+    required QueryExecutor read,
+    required QueryExecutor write,
+  }) =>
+      _MultiExecutorImpl(reads: [read], write: write);
+
+  /// Creates a query executor that will delegate work to different executors.
+  ///
+  /// Updating statements, or statements that run in a transaction, will be run
+  /// with [write]. Select statements outside of a transaction are executed
+  /// on distribution in [reads].
+  factory MultiExecutor.withReadPool({
     required List<QueryExecutor> reads,
     required QueryExecutor write,
   }) =>
@@ -57,6 +68,10 @@ class _QueryExecutorPool {
 
   Future<List<Map<String, Object?>>> runSelect(
       String statement, List<Object?> args) {
+    if (_executors.length == 1) {
+      return _executors.single.runSelect(statement, args);
+    }
+
     final executorCompleter = _ExecutorCompleter(statement, args);
     _queue.add(executorCompleter);
     _run();
