@@ -71,7 +71,8 @@ void main() {
           'COUNT(todos.id) AS "item_count" '
           'FROM categories '
           'INNER JOIN todos '
-          'ON todos.category = categories.id',
+          'ON todos.category = categories.id '
+          'GROUP BY COUNT(categories.id)',
           []));
 
       verify(mockExecutor.runCustom(
@@ -107,7 +108,8 @@ void main() {
           'COUNT(todos.id) AS "item_count" '
           'FROM categories '
           'INNER JOIN todos '
-          'ON todos.category = categories.id',
+          'ON todos.category = categories.id '
+          'GROUP BY COUNT(categories.id)',
           []));
     });
 

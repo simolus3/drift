@@ -1456,7 +1456,8 @@ class $CategoryTodoCountViewView
   Query? get query =>
       (attachedDatabase.selectOnly(categories, includeJoinedTableColumns: false)
             ..addColumns($columns))
-          .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+          .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
+        ..groupBy([categories.id.count()]);
   @override
   Set<String> get readTables => const {'todos', 'categories'};
 }

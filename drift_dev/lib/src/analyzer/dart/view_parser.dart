@@ -226,11 +226,20 @@ class ViewParser {
           );
         }
 
-        var target = body.expression as MethodInvocation;
-
+        Expression? target = body.expression;
         for (;;) {
-          if (target.target == null) break;
-          target = target.target as MethodInvocation;
+          if (target is MethodInvocation) {
+            if (target.target == null) break;
+            target = target.target;
+          } else if (target is CascadeExpression) {
+            target = target.target;
+          } else {
+            throw analysisError(
+                base.step,
+                element,
+                'The `as()` query declaration contains invalid expression type '
+                '${target.runtimeType}');
+          }
         }
 
         if (target.methodName.toString() != 'select') {
@@ -278,12 +287,8 @@ class ViewParser {
         }
 
         final from = target.argumentList.arguments[0].toString();
-        var query = '';
-
-        if (target.parent is MethodInvocation) {
-          target = target.parent as MethodInvocation;
-          query = target.toString().substring(target.target!.toString().length);
-        }
+        final query =
+            body.expression.toString().substring(target.toString().length);
 
         return ViewQueryInformation(columnMap, from, query);
       } catch (e) {
