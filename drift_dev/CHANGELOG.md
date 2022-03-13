@@ -1,7 +1,8 @@
-## 1.5.0-dev
+## 1.5.0
 
 - Add `validateDatabaseSchema` extension to `api/migrations.dart`. It validates
   that the schema of a database at runtime matches what one would expect.
+- Allow cascade operators in the query for Dart-defined views.
 
 ## 1.4.0
 

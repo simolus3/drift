@@ -1,9 +1,14 @@
-## 1.5.0-dev
+## 1.5.0
 
 - Add `DataClassName.extending` to control the superclass of generated row
   classes.
 - Add `setup` parameter to the constructors of `WebDatabase` too.
 - Don't write variables for expressions in `CREATE VIEW` statements.
+- Improve stack traces for errors on a remote isolate.
+- Add `MultiExecutor.withReadPool` constructor to load-balance between multiple
+  reading executors. This can be used in a multi-isolate approach if some
+  queries are expensive.
+
 
 ## 1.4.0
 
