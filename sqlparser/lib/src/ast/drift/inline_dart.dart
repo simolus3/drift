@@ -2,18 +2,18 @@ import '../../reader/tokenizer/token.dart';
 import '../ast.dart';
 
 /// An inline Dart component that appears in a compiled sql query. Inline Dart
-/// components can be bound with complex expressions at runtime by using moor's
+/// components can be bound with complex expressions at runtime by using drift's
 /// Dart API.
 ///
 /// At the moment, we support 4 kind of inline components:
-///  1. expressions: Any expression can be used for moor: `SELECT * FROM table
+///  1. expressions: Any expression can be used for drift: `SELECT * FROM table
 ///  = $expr`. Generated code will write this as an `Expression` class from
-///  moor.
-///  2. limits, which will be exposed as a `Limit` component from moor
+///  drift.
+///  2. limits, which will be exposed as a `Limit` component from drift
 ///  3. A single order-by clause, which will be exposed as a `OrderingTerm` from
-///  moor.
+///  drift.
 ///  4. A list of order-by clauses, which will be exposed as a `OrderBy` from
-///  moor.
+///  drift.
 abstract class DartPlaceholder extends AstNode implements DriftSpecificNode {
   final String name;
 

@@ -7,7 +7,7 @@ import '../statements/transaction.dart';
 import '../visitor.dart';
 import 'drift_file.dart';
 
-/// A declared statement inside a `.moor` file. It consists of an identifier,
+/// A declared statement inside a `.drift` file. It consists of an identifier,
 /// followed by a colon and the query to run.
 class DeclaredStatement extends Statement implements PartOfDriftFile {
   final DeclaredStatementIdentifier identifier;
@@ -42,7 +42,7 @@ class DeclaredStatement extends Statement implements PartOfDriftFile {
   Iterable<AstNode> get childNodes => [statement, ...parameters];
 }
 
-/// How a statement was declared in a moor file.
+/// How a statement was declared in a drift file.
 ///
 /// We support [SimpleName]s (`name: SELECT * FROM tbl`) and special keywords
 /// starting with an `@` in

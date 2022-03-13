@@ -4,7 +4,7 @@ import '../statements/statement.dart';
 import '../visitor.dart';
 import 'drift_file.dart';
 
-/// An `import "file.dart";` statement that can appear inside a moor file.
+/// An `import "file.dart";` statement that can appear inside a drift file.
 class ImportStatement extends Statement implements PartOfDriftFile {
   Token? importToken;
   StringLiteralToken? importString;

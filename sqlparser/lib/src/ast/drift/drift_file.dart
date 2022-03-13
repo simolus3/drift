@@ -4,10 +4,10 @@ import '../visitor.dart';
 import 'declared_statement.dart';
 import 'import_statement.dart';
 
-/// Marker interface for AST nodes that are moor-specific.
+/// Marker interface for AST nodes that are drift-specific.
 abstract class DriftSpecificNode implements AstNode {}
 
-/// Something that can appear as a top-level declaration inside a `.moor` file.
+/// Something that can appear as a top-level declaration inside a `.drift` file.
 abstract class PartOfDriftFile implements Statement, DriftSpecificNode {}
 
 /// A parsed `.drift` file.

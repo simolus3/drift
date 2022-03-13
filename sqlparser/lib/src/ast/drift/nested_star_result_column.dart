@@ -8,7 +8,7 @@ import 'drift_file.dart';
 ///
 /// Nested star result columns behave similar to a regular [StarResultColumn]
 /// when the query is actually run. However, they will affect generated code
-/// when using moor.
+/// when using drift.
 class NestedStarResultColumn extends ResultColumn
     implements DriftSpecificNode, Renamable {
   final String tableName;
