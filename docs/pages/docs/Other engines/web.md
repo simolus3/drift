@@ -122,7 +122,7 @@ object via `window.db`. If you need to quickly run a query to check the state of
 `db.exec(sql)`.
 If you need to delete your databases, there stored using local storage. You can clear all your data with `localStorage.clear()`.
 
-Web support is experimental at the moment, so please [report all issues](https://github.com/simolus3/moor/issues/new) you find.
+Web support is experimental at the moment, so please [report all issues](https://github.com/simolus3/drift/issues/new) you find.
 
 ## Using IndexedDb
 
@@ -199,7 +199,7 @@ You can pass that `DatabaseConnection` to your database by enabling the
 For more information on the `DatabaseConnection` class, see the documentation on
 [isolates]({{ "../Advanced Features/isolates.md" | pageUrl }}).
 
-A small, but working example is available under [extras/web_worker_example](https://github.com/simolus3/moor/tree/develop/extras/web_worker_example)
+A small, but working example is available under [extras/web_worker_example](https://github.com/simolus3/drift/tree/develop/extras/web_worker_example)
 in the drift repository.
 
 ### Flutter
@@ -208,7 +208,7 @@ Flutter web doesn't compile `.dart` files in web folder and won't use `.js` file
 `build_web_compilers` either. Instead, we'll use Dart's build system to manually compile the worker to a
 JavaScript file before using Flutter-specific tooling.
 
-Example is available under [extras/flutter_web_worker_example](https://github.com/simolus3/moor/tree/develop/extras/flutter_web_worker_example)
+Example is available under [extras/flutter_web_worker_example](https://github.com/simolus3/drift/tree/develop/extras/flutter_web_worker_example)
 in the drift repository.
 
 First, add [build_web_compilers](https://pub.dev/packages/build_web_compilers) to the project:

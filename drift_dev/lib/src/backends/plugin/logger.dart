@@ -17,7 +17,7 @@ void setupLogger(MoorPlugin plugin) {
       // issue on the Dart SDK repo for that. We're responsible for the problem
       // though, so tell the user to not annoy the Dart Team with this.
       final message = 'PLEASE DO NOT REPORT THIS ON dart-lang/sdk! '
-          'This should be reported via https://github.com/simolus3/moor/issues/new '
+          'This should be reported via https://github.com/simolus3/drift/issues/new '
           'instead. Message was ${rec.message}, error ${rec.error}';
 
       final error =

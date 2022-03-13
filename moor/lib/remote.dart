@@ -44,7 +44,7 @@
 /// For an example of a channel implementation, you could study the
 /// implementation of the `package:moor/isolate.dart` library, which uses this
 /// library to implement its apis.
-/// The [web](https://moor.simonbinder.eu/web/) documentation on the website
+/// The [web](https://drift.simonbinder.eu/web/) documentation on the website
 /// contains another implementation based on web workers that might be of
 /// interest.
 @experimental

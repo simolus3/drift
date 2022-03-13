@@ -131,7 +131,7 @@ In some advanced use-cases, custom classes can be a better alternative though:
 
 ## Limitations
 
-These restrictions will be gradually lifted in upcoming drift versions. Follow [#1134](https://github.com/simolus3/moor/issues/1134) for details.
+These restrictions will be gradually lifted in upcoming drift versions. Follow [#1134](https://github.com/simolus3/drift/issues/1134) for details.
 
 For now, this feature is subject to the following limitations:
 

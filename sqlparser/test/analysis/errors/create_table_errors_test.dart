@@ -38,7 +38,7 @@ void main() {
     );
 
     test('with a type that is only valid in drift mode', () {
-      // https://github.com/simolus3/moor/discussions/1651
+      // https://github.com/simolus3/drift/discussions/1651
       engineInDriftMode
           .analyze('CREATE TABLE a (c IS_DATETIME, b DECIMAL, c REAL) STRICT;')
           .expectNoError();

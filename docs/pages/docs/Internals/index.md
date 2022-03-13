@@ -15,17 +15,17 @@ published to pub. For that, add an `dependency_overrides` section to your pubspe
 dependency_overrides:
   drift:
     git:
-      url: https://github.com/simolus3/moor.git
+      url: https://github.com/simolus3/drift.git
       ref: develop
       path: drift
   drift_dev:
     git:
-      url: https://github.com/simolus3/moor.git
+      url: https://github.com/simolus3/drift.git
       ref: develop
       path: drift_dev
   sqlparser:
     git:
-      url: https://github.com/simolus3/moor.git
+      url: https://github.com/simolus3/drift.git
       ref: develop
       path: sqlparser
 ```

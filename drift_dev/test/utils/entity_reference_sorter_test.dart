@@ -44,7 +44,7 @@ void main() {
   });
 
   test('accepts self-references', () {
-    // https://github.com/simolus3/moor/issues/586
+    // https://github.com/simolus3/drift/issues/586
     final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
     final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
 

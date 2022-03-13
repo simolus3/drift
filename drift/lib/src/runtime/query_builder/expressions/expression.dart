@@ -421,7 +421,7 @@ class _CastInSqlExpression<D1, D2> extends Expression<D2> {
 /// A sql expression that calls a function.
 ///
 /// This class is mainly used by drift internally. If you find yourself using
-/// this class, consider [creating an issue](https://github.com/simolus3/moor/issues/new)
+/// this class, consider [creating an issue](https://github.com/simolus3/drift/issues/new)
 /// to request native support in drift.
 class FunctionCallExpression<R> extends Expression<R> {
   /// The name of the function to call

@@ -53,7 +53,7 @@ Also, you may have to
 
 Congratulations, your project is now using drift!
 
-If you run into any issues with the automatic migration tool, please [open an issue](https://github.com/simolus3/moor/issues/new/).
+If you run into any issues with the automatic migration tool, please [open an issue](https://github.com/simolus3/drift/issues/new/).
 
 ## Manual migration
 

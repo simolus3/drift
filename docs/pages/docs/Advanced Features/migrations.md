@@ -232,7 +232,7 @@ yet. You can just delete your apps' data and reinstall the app - the database wi
 will be created again. Please note that uninstalling is not enough sometimes - Android might have backed up
 the database file and will re-create it when installing the app again.
 
-You can also delete and re-create all tables every time your app is opened, see [this comment](https://github.com/simolus3/moor/issues/188#issuecomment-542682912)
+You can also delete and re-create all tables every time your app is opened, see [this comment](https://github.com/simolus3/drift/issues/188#issuecomment-542682912)
 on how that can be achieved.
 
 ## Verifying migrations
@@ -248,8 +248,8 @@ By using those test databases, drift can help you test migrations from and to an
 
 {% block "blocks/alert" title="Complex topic ahead" %}
 > Writing schema tests is an advanced topic that requires a fairly complex setup described here.
-  If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/moor/discussions).
-  Also, there's a working example [in the drift repository](https://github.com/simolus3/moor/tree/latest-release/extras/migrations_example).
+  If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
+  Also, there's a working example [in the drift repository](https://github.com/simolus3/drift/tree/latest-release/extras/migrations_example).
 {% endblock %}
 
 ### Setup

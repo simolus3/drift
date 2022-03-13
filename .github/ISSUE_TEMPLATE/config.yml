@@ -1,6 +1,6 @@
 contact_links:
   - name: Discussions
-    url: https://github.com/simolus3/moor/discussions
+    url: https://github.com/simolus3/drift/discussions
     about: "For questions on how to use drift and moor, prefer a Q&A discussion over issues"
   - name: Gitter community
     url: https://gitter.im/moor-dart/community

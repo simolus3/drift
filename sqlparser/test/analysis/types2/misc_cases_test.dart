@@ -94,7 +94,7 @@ WITH RECURSIVE
   });
 
   test('concatenation is nullable when any part is', () {
-    // https://github.com/simolus3/moor/issues/1719
+    // https://github.com/simolus3/drift/issues/1719
 
     final engine = SqlEngine()
       ..registerTableFromSql('CREATE TABLE foobar (foo TEXT, bar TEXT);');

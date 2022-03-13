@@ -80,7 +80,7 @@ void main() {
   });
 
   test('custom statement', () async {
-    // regression test for https://github.com/simolus3/moor/issues/199 - the
+    // regression test for https://github.com/simolus3/drift/issues/199 - the
     // mock will throw when used before opening
     expect(db.customStatement('UPDATE tbl SET a = b'), completes);
   }, onPlatform: const {

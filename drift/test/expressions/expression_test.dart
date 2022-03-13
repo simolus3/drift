@@ -68,7 +68,7 @@ void main() {
   });
 
   test('does not count columns with useColumns: false', () {
-    // Regression test for https://github.com/simolus3/moor/issues/1189
+    // Regression test for https://github.com/simolus3/drift/issues/1189
     final db = TodoDb();
 
     expect(

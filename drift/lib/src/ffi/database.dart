@@ -108,7 +108,7 @@ class NativeDatabase extends DelegatedDatabase {
   /// }
   /// ```
   ///
-  /// For more information, see [issue 835](https://github.com/simolus3/moor/issues/835).
+  /// For more information, see [issue 835](https://github.com/simolus3/drift/issues/835).
   @experimental
   static void closeExistingInstances() {
     tracker.closeExisting();

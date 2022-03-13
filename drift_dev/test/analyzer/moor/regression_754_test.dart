@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  // Regression test for https://github.com/simolus3/moor/issues/754
+  // Regression test for https://github.com/simolus3/drift/issues/754
   test('supports fts5 tables with external content', () async {
     final state = TestState.withContent({
       'foo|lib/a.moor': '''

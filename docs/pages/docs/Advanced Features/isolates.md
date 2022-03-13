@@ -269,4 +269,4 @@ that complicate this setup. Further, the `IsolateNameServer` is not cleared on a
 the isolates are stopped and registered ports become invalid.
 There is no reliable way to check if a `SendPort` is bound to an active `ReceivePort` or not.
 
-Possible implementations of this pattern and associated problems are described in [this issue](https://github.com/simolus3/moor/issues/567#issuecomment-934514380).
+Possible implementations of this pattern and associated problems are described in [this issue](https://github.com/simolus3/drift/issues/567#issuecomment-934514380).

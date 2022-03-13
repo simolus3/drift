@@ -117,7 +117,7 @@ for all the new features.
 ## 2.2.0
 
 - Experimental new CLI tool (`pub run moor_generator`). Not useful at the moment
-- Support inheritance when defining daos ([#285](https://github.com/simolus3/moor/issues/285))
+- Support inheritance when defining daos ([#285](https://github.com/simolus3/drift/issues/285))
 - Improve robustness and error messages, many bug fixes
 
 ## 2.1.1
@@ -156,7 +156,7 @@ for all the new features.
 
 - Support type converters that were introduced in moor 1.7
 - Support parsing and generating code for `.moor` files (
-  see [docs](https://moor.simonbinder.eu/docs/using-sql/custom_tables/)).
+  see [docs](https://drift.simonbinder.eu/docs/using-sql/custom_tables/)).
 
 ## 1.6.0+2
 

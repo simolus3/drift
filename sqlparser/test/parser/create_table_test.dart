@@ -301,7 +301,7 @@ void main() {
   });
 
   test('parses DEFAULT with a negative literal', () {
-    // regression test for https://github.com/simolus3/moor/discussions/1550
+    // regression test for https://github.com/simolus3/drift/discussions/1550
     testStatement(
       'CREATE TABLE a (b INTEGER NOT NULL DEFAULT -1);',
       CreateTableStatement(

@@ -54,7 +54,7 @@ typedef UseMoor = DriftDatabase;
 /// class.
 ///
 /// See also:
-/// - https://moor.simonbinder.eu/daos/
+/// - https://drift.simonbinder.eu/daos/
 @pragma('moor2drift', 'DriftAccessor')
 @moorDeprecated
 typedef UseDao = DriftAccessor;

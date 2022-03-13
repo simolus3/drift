@@ -157,7 +157,7 @@ void main() {
   });
 
   test('updates when any queried table changes in transaction', () {
-    // Nonsense query, repro for https://github.com/simolus3/moor/issues/910
+    // Nonsense query, repro for https://github.com/simolus3/drift/issues/910
     final a = db.users;
     final b = db.categories;
     final c = db.sharedTodos;

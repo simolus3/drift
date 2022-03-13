@@ -17,7 +17,7 @@ Support `moor` version 3.0. To learn what's new, head over to [its changelog](ht
 
 ## 2.1.1
 
-- Fix `runCustom` not using the provided variables ([#406](https://github.com/simolus3/moor/issues/406))
+- Fix `runCustom` not using the provided variables ([#406](https://github.com/simolus3/drift/issues/406))
 
 ## 2.1.0
 
@@ -26,16 +26,16 @@ Support `moor` version 3.0. To learn what's new, head over to [its changelog](ht
 
 ## 2.0.0
 See the changelog of [moor](https://pub.dev/packages/moor#-changelog-tab-) for details,
-or check out an overview of new features [here](https://moor.simonbinder.eu/v2)
+or check out an overview of new features [here](https://drift.simonbinder.eu/v2)
 
 ## 1.7.0
-- Support custom columns via type converters. See the [docs](https://moor.simonbinder.eu/type_converters)
+- Support custom columns via type converters. See the [docs](https://drift.simonbinder.eu/type_converters)
 for details on how to use this feature.
 - Transactions now roll back when not completed successfully, they also rethrow the exception
 to make debugging easier.
 - New `backends` api, making it easier to write database drivers that work with moor. Apart from
 `moor_flutter`, new experimental backends can be checked out from git:
-  1. `encrypted_moor`: An encrypted moor database: https://github.com/simolus3/moor/tree/develop/extras/encryption
+  1. `encrypted_moor`: An encrypted moor database: https://github.com/simolus3/drift/tree/develop/extras/encryption
 - The compiled sql feature is no longer experimental and will stay stable until a major version bump
 - New, experimental support for `.moor` files! Instead of declaring your tables in Dart, you can
   choose to declare them with sql by writing the `CREATE TABLE` statement in a `.moor` file.
@@ -44,7 +44,7 @@ to make debugging easier.
   might be some hiccups. Please report any issues you run into.
 
 ## 1.6.0
-- Experimental web support! See [the documentation](https://moor.simonbinder.eu/web) for details.
+- Experimental web support! See [the documentation](https://drift.simonbinder.eu/web) for details.
 - Make transactions easier to use: Thanks to some Dart async magic, you no longer need to run
   queries on the transaction explicitly. This
   ```dart
@@ -68,7 +68,7 @@ to make debugging easier.
  (`SELECT * FROM entries WHERE id IN ?`)
 - Support `COLLATE` expressions.
 - Date time columns are now comparable
-- The `StringType` now supports arbitrary data from sqlite ([#70](https://github.com/simolus3/moor/pull/70)).
+- The `StringType` now supports arbitrary data from sqlite ([#70](https://github.com/simolus3/drift/pull/70)).
   Thanks, [knaeckeKami](https://github.com/knaeckeKami)!
 - Bugfixes related to stream queries and `LIMIT` clauses.
 
@@ -97,18 +97,18 @@ default `Value.absent()`.
 Don't worry, all your existing code will continue to work, this change is fully backwards
 compatible. You might get analyzer warnings about missing required fields. The migration to
 update companions will fix that. Replacing normal classes with their update companions is simple
-and the only thing needed to fix that. The [documentation](https://moor.simonbinder.eu/queries/#updates-and-deletes)
+and the only thing needed to fix that. The [documentation](https://drift.simonbinder.eu/queries/#updates-and-deletes)
 has been updated to reflect this. If you have additional questions, feel free to 
-[create an issue](https://github.com/simolus3/moor/issues/new).
+[create an issue](https://github.com/simolus3/drift/issues/new).
 ### Compiled sql queries
 Experimental support for compile time custom statements. Sounds super boring, but it
 actually gives you a fluent way to write queries in pure sql. The moor generator will figure
 out what your queries return and automatically generate the boring mapping part. Head on to
-[the documentation](https://moor.simonbinder.eu/queries/custom) to find out how to use this new feature.
+[the documentation](https://drift.simonbinder.eu/queries/custom) to find out how to use this new feature.
   
 Please note that this feature is in an experimental state: Expect minor, but breaking changes
 in the API and in the generated code. Also, if you run into any issues with this feature, 
-[reporting them](https://github.com/simolus3/moor/issues/new) would be super appreciated.
+[reporting them](https://github.com/simolus3/drift/issues/new) would be super appreciated.
 
 ## 1.4.0
 - Added the `RealColumn`, which stores floating point values

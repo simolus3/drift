@@ -5,7 +5,7 @@ import 'data.dart';
 
 void main() {
   test('regression test for #917', () {
-    // Test for https://github.com/simolus3/moor/issues/917
+    // Test for https://github.com/simolus3/drift/issues/917
     final engine = SqlEngine()
       ..registerTableFromSql('CREATE TABLE Shops (id INTEGER);')
       ..registerTableFromSql(
@@ -34,7 +34,7 @@ void main() {
   });
 
   test('regression test for #1188', () {
-    // Test for https://github.com/simolus3/moor/issues/1188
+    // Test for https://github.com/simolus3/drift/issues/1188
     final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTableFromSql('''
         CREATE TABLE IF NOT EXISTS "employees" (
@@ -84,7 +84,7 @@ void main() {
   });
 
   test('regression test for #1234', () {
-    // https://github.com/simolus3/moor/issues/1234#issuecomment-853270925
+    // https://github.com/simolus3/drift/issues/1234#issuecomment-853270925
     final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTableFromSql('''
         CREATE TABLE inboxes (
@@ -115,7 +115,7 @@ void main() {
   });
 
   test('regression test for #1096', () {
-    // https://github.com/simolus3/moor/issues/1096#issuecomment-931378474
+    // https://github.com/simolus3/drift/issues/1096#issuecomment-931378474
     final engine = SqlEngine(
         EngineOptions(useDriftExtensions: true, version: SqliteVersion.v3_35))
       ..registerTableFromSql('''

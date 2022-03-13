@@ -9,7 +9,7 @@ import 'package:drift/drift.dart' show OpeningDetails;
 ///
 /// This is an internal api of drift, which can break often. If you want to
 /// implement custom database backends, consider using the new `backends` API.
-/// The [NativeDatabase implementation](https://github.com/simolus3/moor/blob/develop/drift/lib/src/ffi/database.dart)
+/// The [NativeDatabase implementation](https://github.com/simolus3/drift/blob/develop/drift/lib/src/ffi/database.dart)
 /// might be useful as a reference. If you want to write your own database
 /// engine to use with drift and run into issues, please consider creating an
 /// issue.

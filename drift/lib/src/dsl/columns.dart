@@ -97,7 +97,7 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// This can be used to implement constraints that drift does not (yet)
   /// support (e.g. unique keys, etc.). If you've found a common use-case for
   /// this, it should be considered a limitation of drift itself. Please feel
-  /// free to open an issue at https://github.com/simolus3/moor/issues/new to
+  /// free to open an issue at https://github.com/simolus3/drift/issues/new to
   /// report that.
   ///
   /// See also:

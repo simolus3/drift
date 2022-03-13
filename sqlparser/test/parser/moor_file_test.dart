@@ -161,7 +161,7 @@ END;
   });
 
   test("reports error when the statement can't be parsed", () {
-    // regression test for https://github.com/simolus3/moor/issues/280#issuecomment-570789454
+    // regression test for https://github.com/simolus3/drift/issues/280#issuecomment-570789454
     final parsed = SqlEngine(EngineOptions(useDriftExtensions: true))
         .parseDriftFile('name: NSERT INTO foo DEFAULT VALUES;');
 

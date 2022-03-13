@@ -200,7 +200,7 @@ targets:
 In all files that use generated drift code, you'll have to replace `part 'filename.g.dart'` with `part 'filename.drift.dart'`.
 If you use drift _and_ another builder in the same file, you'll need both `.g.dart` and `.drift.dart` as part-files.
 
-A full example is available as part of [the drift repo](https://github.com/simolus3/moor/tree/develop/extras/with_built_value).
+A full example is available as part of [the drift repo](https://github.com/simolus3/drift/tree/develop/extras/with_built_value).
 
 If you run into any problems with this approach, feel free to open an issue on drift.
 

@@ -10,7 +10,7 @@ dependencies:
   drift: "$latest version"
   drift_postgres:
    git:
-    url: https://github.com/simolus3/moor.git
+    url: https://github.com/simolus3/drift.git
     path: extras/dirft_postgres
 ```
 

@@ -56,7 +56,7 @@ abstract class DataClass {
 ///
 /// See also:
 /// - the explanation in the changelog for 1.5
-/// - https://github.com/simolus3/moor/issues/25
+/// - https://github.com/simolus3/drift/issues/25
 abstract class UpdateCompanion<D> implements Insertable<D> {
   /// Constant constructor so that generated companion classes can be constant.
   const UpdateCompanion();

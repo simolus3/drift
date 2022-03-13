@@ -201,7 +201,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
   });
 
   test('transactions have an isolated view on data', () async {
-    // regression test for https://github.com/simolus3/moor/issues/324
+    // regression test for https://github.com/simolus3/drift/issues/324
     await database
         .customStatement('create table tbl (id integer primary key not null)');
 
@@ -273,7 +273,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
   });
 
   test('supports single quotes in text', () async {
-    // Regression test for https://github.com/simolus3/moor/issues/1179
+    // Regression test for https://github.com/simolus3/drift/issues/1179
     await database.customStatement('CREATE TABLE sample(title TEXT)');
     await database.customStatement('INSERT INTO sample VALUES '
         "('O''Connor'), ('Tomeo''s');");

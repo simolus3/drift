@@ -2,7 +2,7 @@
 
 _Note: Moor has been renamed to drift_
 
-[![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://github.com/simolus3/moor/actions/workflows/main.yml/badge.svg)
+[![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://github.com/simolus3/drift/actions/workflows/main.yml/badge.svg)
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
 
 ## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=moor)
@@ -49,8 +49,8 @@ With drift, persistence on Flutter is fun!
 __To start using drift, read our detailed [docs](https://drift.simonbinder.eu/docs/getting-started/).__
 
 If you have any questions, feedback or ideas, feel free to [create an
-issue](https://github.com/simolus3/moor/issues/new). If you enjoy this
-project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/moor/).
+issue](https://github.com/simolus3/drift/issues/new). If you enjoy this
+project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/drift/).
 
 -----
 

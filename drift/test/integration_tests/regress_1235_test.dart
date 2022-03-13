@@ -7,7 +7,7 @@ import '../data/tables/todos.dart';
 
 void main() {
   test('creating a database instance does not schedule async work', () {
-    // See https://github.com/simolus3/moor/issues/1235. We shouldn't run async
+    // See https://github.com/simolus3/drift/issues/1235. We shouldn't run async
     // work without users being aware of it, and no one expects creating an
     // instance to schedule new microtasks.
     noAsync(() => TodoDb(NativeDatabase.memory()));

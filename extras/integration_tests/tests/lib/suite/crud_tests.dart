@@ -73,7 +73,7 @@ void crudTests(TestExecutor executor) {
           : 'Runner does not support RETURNING');
 
   test('IN ? expressions can be expanded', () async {
-    // regression test for https://github.com/simolus3/moor/issues/156
+    // regression test for https://github.com/simolus3/drift/issues/156
     final db = Database(executor.createConnection());
     final result = await db.usersById([1, 2, 3]).get();
 
@@ -95,7 +95,7 @@ void crudTests(TestExecutor executor) {
   });
 
   test('runCustom with args', () async {
-    // https://github.com/simolus3/moor/issues/406
+    // https://github.com/simolus3/drift/issues/406
     final db = Database(executor.createConnection());
 
     // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member

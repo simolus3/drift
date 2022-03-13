@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  // Regression test for https://github.com/simolus3/moor/issues/1639
+  // Regression test for https://github.com/simolus3/drift/issues/1639
   test('imported views are analyzed', () async {
     final testState = TestState.withContent({
       'a|lib/imported.drift': '''

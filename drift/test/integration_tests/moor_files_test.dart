@@ -95,7 +95,7 @@ void main() {
   });
 
   test('supports absent values for primary key integers', () async {
-    // regression test for #112: https://github.com/simolus3/moor/issues/112
+    // regression test for #112: https://github.com/simolus3/drift/issues/112
 
     await db.into(db.mytable).insert(const MytableCompanion());
     verify(mock.runInsert('INSERT INTO mytable DEFAULT VALUES', []));

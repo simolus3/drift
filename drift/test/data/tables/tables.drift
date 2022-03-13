@@ -37,7 +37,7 @@ CREATE TABLE mytable (
 
 CREATE VIRTUAL TABLE email USING fts5(sender, title, body) AS EMail;
 
--- Weird table, repro for https://github.com/simolus3/moor/issues/932
+-- Weird table, repro for https://github.com/simolus3/drift/issues/932
 CREATE TABLE "Expression" (
     class INTEGER NOT NULL AS "sqlClass",
     "text" TEXT NOT NULL AS "textColumn"

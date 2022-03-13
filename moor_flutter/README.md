@@ -19,12 +19,12 @@ provide helpful and descriptive lints.
 
 With moor, persistence on Flutter is fun!
 
-__To start using moor, read our detailed [docs](https://moor.simonbinder.eu/docs/getting-started/).__
+__To start using moor, read our detailed [docs](https://drift.simonbinder.eu/docs/getting-started/).__
 
 If you have any questions, feedback or ideas, feel free to [create an
-issue](https://github.com/simolus3/moor/issues/new). If you enjoy this
-project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/moor/).
+issue](https://github.com/simolus3/drift/issues/new). If you enjoy this
+project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/drift/).
 
 ## For the web
 For information to use this library on the web (including Flutter web), follow the 
-instructions [here](https://moor.simonbinder.eu/web). Keep in mind that web support is still experimental.
+instructions [here](https://drift.simonbinder.eu/web). Keep in mind that web support is still experimental.

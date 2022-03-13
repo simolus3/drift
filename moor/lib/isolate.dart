@@ -23,7 +23,7 @@ export 'package:drift/isolate.dart';
 ///
 /// See also:
 /// - [Isolate], for general information on multi threading in Dart.
-/// - The [detailed documentation](https://moor.simonbinder.eu/docs/advanced-features/isolates),
+/// - The [detailed documentation](https://drift.simonbinder.eu/docs/advanced-features/isolates),
 ///   which provides example codes on how to use this api.
 @pragma('moor2drift', 'DriftIsolate')
 typedef MoorIsolate = DriftIsolate;

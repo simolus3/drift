@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 part 'saves_after_migration_regression_test.g.dart';
 
-// This is a regression test for https://github.com/simolus3/moor/issues/273
+// This is a regression test for https://github.com/simolus3/drift/issues/273
 
 class Foos extends Table {
   IntColumn get id => integer().autoIncrement()();

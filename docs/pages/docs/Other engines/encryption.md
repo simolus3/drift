@@ -25,7 +25,7 @@ dependencies:
   drift: ^{{ versions.drift }}
   encrypted_moor:
    git:
-    url: https://github.com/simolus3/moor.git
+    url: https://github.com/simolus3/drift.git
     path: extras/encryption 
 ```
 

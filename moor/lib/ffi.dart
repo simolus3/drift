@@ -4,7 +4,7 @@
 /// when running your app. For mobile Flutter apps, you can simply depend on the
 /// `sqlite3_flutter_libs` package to ship the latest sqlite3 version with your
 /// app.
-/// For more information other platforms, see [other engines](https://moor.simonbinder.eu/docs/other-engines/vm/).
+/// For more information other platforms, see [other engines](https://drift.simonbinder.eu/docs/other-engines/vm/).
 @moorDeprecated
 library moor.ffi;
 

@@ -40,8 +40,8 @@ __To start using drift, read our detailed [docs](https://drift.simonbinder.eu/do
 
 
 If you have any questions, feedback or ideas, feel free to [create an
-issue](https://github.com/simolus3/moor/issues/new). If you enjoy this
-project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/moor/).
+issue](https://github.com/simolus3/drift/issues/new). If you enjoy this
+project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/drift/).
 
 
 ## For the web

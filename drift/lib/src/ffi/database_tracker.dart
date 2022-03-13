@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:sqlite3/sqlite3.dart';
 
-/// This entire file is an elaborate hack to workaround https://github.com/simolus3/moor/issues/835.
+/// This entire file is an elaborate hack to workaround https://github.com/simolus3/drift/issues/835.
 ///
 /// Users were running into database deadlocks after (stateless) hot restarts
 /// in Flutter when they use transactions. The problem is that we don't have a

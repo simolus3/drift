@@ -5,7 +5,7 @@ site:
   title: "Drift"
   language: "en"
   copyright: "Simon Binder"
-  github_repo: "https://github.com/simolus3/moor"
+  github_repo: "https://github.com/simolus3/drift"
   github_subdir: "docs/"
   github_branch: develop
   gcs_engine_id: set # this just needs to be set so that the search box shows
@@ -20,7 +20,7 @@ site:
         url: "https://gitter.im/moor-dart/community"
         icon: "fab fa-gitter"
       - name: "Project on GitHub"
-        url: "https://github.com/simolus3/moor"
+        url: "https://github.com/simolus3/drift"
         icon: "fab fa-github"
         desc: "Development takes place here"
   menu:
@@ -30,7 +30,7 @@ site:
       - name: "Pub"
         url: "https://pub.dev/packages/drift"
       - name: "GitHub"
-        url: "https://github.com/simolus3/moor/"
+        url: "https://github.com/simolus3/drift/"
       - name: "API docs"
         url: "/api/"
 

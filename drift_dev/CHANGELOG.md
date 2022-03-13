@@ -26,7 +26,7 @@
 
 ## 1.1.0
 
-- Consider `drift`-named files when generating schema migrations ([#1486](https://github.com/simolus3/moor/issues/1486))
+- Consider `drift`-named files when generating schema migrations ([#1486](https://github.com/simolus3/drift/issues/1486))
 - Emit correct SQL code when using arrays with the `new_sql_code_generation`
   option in specific scenarios.
 - Transform `.moor.dart` part files in the `migrate` command.

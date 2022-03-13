@@ -48,7 +48,7 @@ class MoorPlugin extends ServerPlugin
   String get version => '4.4.1';
   @override
   String get contactInfo =>
-      'Create an issue at https://github.com/simolus3/moor/';
+      'Create an issue at https://github.com/simolus3/drift/';
 
   void _didCreateDriver(MoorDriver driver) {
     driver.tryToLoadOptions();

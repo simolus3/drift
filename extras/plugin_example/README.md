@@ -25,7 +25,7 @@ have already cloned the `moor` repository.
   
 ## Debugging
 Note: If you only want to _use_ the plugin and don't care about debugging it, follow the step
-from the [user documentation](https://moor.simonbinder.eu/docs/using-sql/sql_ide/).
+from the [user documentation](https://drift.simonbinder.eu/docs/using-sql/sql_ide/).
 
 After you completed the setup, these steps will open an editor instance that runs the plugin.
 1. chdir into `moor_generator` and run `dart bin/moor_generator.dart debug-plugin`.

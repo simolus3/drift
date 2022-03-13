@@ -47,10 +47,10 @@ with `flutter test`.
     in your `build.gradle` to remove those binaries.
   - Opening `libsqlite3.so` fails on some Android 6.0.1 devices. This can be fixed by setting
     `android.bundle.enableUncompressedNativeLibs=false` in your `gradle.properties` file.
-    Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/moor/issues/895#issuecomment-720195005)
+    Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/drift/issues/895#issuecomment-720195005)
     for details.
   - Out of memory errors for very complex queries: Since the regular tmp directory isn't available on Android, you need to inform
-    sqlite3 about the right directory to store temporary data. See [this comment](https://github.com/simolus3/moor/issues/876#issuecomment-710013503)
+    sqlite3 about the right directory to store temporary data. See [this comment](https://github.com/simolus3/drift/issues/876#issuecomment-710013503)
     for an example on how to do that.
 {% endblock %}
 
