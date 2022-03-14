@@ -32,11 +32,19 @@ Future<void> _setup(Iterable<d.Descriptor> lib,
   final config =
       PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
 
+  final driftDevUrl =
+      config.packages.singleWhere((e) => e.name == 'drift_dev').root;
+  final moorFlutterUrl = driftDevUrl.resolve('../moor_flutter/');
+
   final appUri = '${File(p.join(d.sandbox, 'app')).absolute.uri}/';
   final newConfig = PackageConfig([
     ...config.packages,
     Package('app', Uri.parse(appUri),
         packageUriRoot: Uri.parse('${appUri}lib/')),
+    // Need to fake moor_flutter because drift_dev can't depend on Flutter
+    // packages
+    Package('moor_flutter', moorFlutterUrl,
+        packageUriRoot: Uri.parse('${moorFlutterUrl}lib/')),
   ]);
   final configBuffer = StringBuffer();
   PackageConfig.writeString(newConfig, configBuffer);
@@ -364,5 +372,77 @@ analyzer:
     # another
 ''')
     ]).validate();
+  });
+
+  _test('transforms moor_flutter usages', () async {
+    await _setup(
+      [
+        d.file('a.dart', r'''
+import 'package:moor_flutter/moor_flutter.dart';
+
+part 'a.dart';
+
+@UseMoor(
+  include: {
+    'package:foo_app/db/foo_queries.moor',
+  },
+)
+class Db extends _$Db {}
+
+QueryExecutor _executor() {
+  return FlutterQueryExecutor.inDatabaseFolder(path: 'foo');
+}
+'''),
+      ],
+      pubspec: '''
+name: app
+
+environment:
+  sdk: ^2.12.0
+
+dependencies:
+  moor: ^4.4.0
+  moor_flutter: ^4.0.0
+dev_dependencies:
+  moor_generator: ^4.4.0
+''',
+    );
+
+    await _apply();
+
+    await d.dir(
+      'app',
+      [
+        d.file('pubspec.yaml', '''
+name: app
+
+environment:
+  sdk: ^2.12.0
+
+dependencies:
+  drift: ^1.0.0
+  drift_sqflite: ^1.0.0
+dev_dependencies:
+  drift_dev: ^1.0.0
+'''),
+        d.dir('lib', [
+          d.file('a.dart', r'''
+import 'package:drift_sqflite/drift_sqflite.dart';
+import 'package:drift/drift.dart';
+
+part 'a.dart';
+
+@DriftDatabase(
+  include: {'package:foo_app/db/foo_queries.drift'},
+)
+class Db extends _$Db {}
+
+QueryExecutor _executor() {
+  return SqfliteQueryExecutor.inDatabaseFolder(path: 'foo');
+}
+'''),
+        ]),
+      ],
+    ).validate();
   });
 }

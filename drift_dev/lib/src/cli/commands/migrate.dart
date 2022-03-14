@@ -192,7 +192,11 @@ class MigrateCommand extends MoorCommand {
 
     if (originalPubspec is! YamlMap) return;
 
-    const newPackages = {'moor': 'drift', 'moor_generator': 'drift_dev'};
+    const newPackages = {
+      'moor': 'drift',
+      'moor_generator': 'drift_dev',
+      'moor_flutter': 'drift_sqflite'
+    };
 
     void processBlock(String key) {
       final data = originalPubspec[key];
@@ -339,12 +343,22 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
       case 'moor_generator':
         newPackage = 'drift_dev';
         break;
+      case 'moor_flutter':
+        newPackage = 'drift_sqflite';
+        path = 'drift_sqflite.dart';
+        break;
       default:
         return;
     }
 
     final driftImport = 'package:$newPackage/$path';
     _writer.replace(l.offset, l.length, asDartLiteral(driftImport));
+
+    if (segments.first == 'moor_flutter') {
+      // `moor_flutter` exports the core moor package, but `drift_sqflite`
+      // doesn't export the core drift package. So, add a new import for that.
+      _writer.replace(l.parent!.end, 0, "\nimport 'package:drift/drift.dart';");
+    }
   }
 
   @override
@@ -376,33 +390,42 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
 
   @override
   void visitSimpleIdentifier(SimpleIdentifier node) {
-    var element = node.staticElement;
-    if (element == null) {
-      // It looks like left-hand identifiers of assignments don't have a static
-      // element, infer from parent.
-      if (node.parent is AssignmentExpression) {
-        element = (node.parent as AssignmentExpression).writeElement;
+    String? newIdentifier;
+
+    if (node.name == 'FlutterQueryExecutor') {
+      newIdentifier = 'SqfliteQueryExecutor';
+    } else {
+      var element = node.staticElement;
+      if (element == null) {
+        // It looks like left-hand identifiers of assignments don't have a
+        // static element, infer from parent.
+        if (node.parent is AssignmentExpression) {
+          element = (node.parent as AssignmentExpression).writeElement;
+        }
+
+        if (element == null) return;
       }
 
-      if (element == null) return;
-    }
+      for (final annotation in element.metadata) {
+        final value = annotation.computeConstantValue();
+        if (value == null) return;
+        final type = value.type;
 
-    for (final annotation in element.metadata) {
-      final value = annotation.computeConstantValue();
-      if (value == null) return;
-      final type = value.type;
+        if (type is! InterfaceType) continue;
 
-      if (type is! InterfaceType) continue;
+        if (type.element.library.isDartCore && type.element.name == 'pragma') {
+          final name = value.getField('name')!.toStringValue()!;
 
-      if (type.element.library.isDartCore && type.element.name == 'pragma') {
-        final name = value.getField('name')!.toStringValue()!;
-
-        if (name == 'moor2drift') {
-          final newIdentifier = value.getField('options')!.toStringValue()!;
-          _writer.replace(node.offset, node.length, newIdentifier);
-          return;
+          if (name == 'moor2drift') {
+            newIdentifier = value.getField('options')!.toStringValue()!;
+            break;
+          }
         }
       }
+    }
+
+    if (newIdentifier != null) {
+      _writer.replace(node.offset, node.length, newIdentifier);
     }
   }
 
