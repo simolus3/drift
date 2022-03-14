@@ -20,12 +20,15 @@ Depending on your platform, you can choose a different `QueryExecutor`.
 
 There are two drift implementations for mobile that you can use:
 
-### using `moor_flutter`
+### using `drift_sqflite`
 
-The original [`moor_flutter`](https://pub.dev/packages/moor_flutter) package uses `sqflite` and
-only works on Android and iOS.
-For new projects, we generally recommend the newer ffi-based implementation, but `moor_flutter`
-is still maintained and supported.
+`drift_sqflite` (formerly known as `moor_flutter`) is a package using the `sqflite` package to
+provide a drift database implementation.
+They use Flutter's package channels and support both Android and iOS. They don't work in Dart
+projects not using flutter.
+
+For new projects, we generally recommend the newer ffi-based implementation, but `drift_sqflite`
+is maintaned and supported too.
 
 ### using `drift/native`
 

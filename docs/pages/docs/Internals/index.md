@@ -30,5 +30,4 @@ dependency_overrides:
       path: sqlparser
 ```
 
-If you're using `moor_flutter`, just exchange `drift` with `moor_flutter` in the package name
-and path.
+If you're using `drift_sqflite`, add a similar override for that package as well.

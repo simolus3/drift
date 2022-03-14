@@ -111,7 +111,7 @@ feel invited to contribute to this page.
 ### sqflite, sqlite3
 
 Sqflite is a Flutter package that provides bindings to the sqlite api for both iOS and Android. It's well maintained
-and has stable api. In fact, the `moor_flutter` variant is built on top of sqflite. But even though sqflite
+and has stable api. In fact, the `moor_flutter` or `drift_sqflite` variants are built on top of sqflite. But even though sqflite
 has an api to construct some simple queries in Dart, drift goes a bit further by
 
 * Generating typesafe mapping code for your queries

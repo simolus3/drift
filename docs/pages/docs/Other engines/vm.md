@@ -57,7 +57,7 @@ Adapt your imports:
   - In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
     with `package:drift/native.dart`.
   - In all other files where you might have imported `moor_flutter`, just import `package:drift/drift.dart`.
-  
+
 Replace the executor. This code:
 ```dart
 FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite')

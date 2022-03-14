@@ -12,7 +12,7 @@ I have not been aware of this when starting this project, but we believe that th
 Despite the associated effort, I'm convinced that renaming the project is the right decision.
 Thank you for your understanding!
 
-Until version `5.0.0`, the current `moor` and `moor_generator` packages will continue to work - __no urgent action is necessary__.
+Until version `5.0.0`, the current `moor`, `moor_flutter` and `moor_generator` packages will continue to work - __no urgent action is necessary__.
 All features and fixes to the new `drift` packages will be mirrored in `moor` as well.
 At the next breaking release, the `moor` set of packages will be discontinued in favor of `drift` and `drift_dev`.
 
@@ -79,23 +79,26 @@ dev_dependencies:
   drift_dev: ^{{ versions.drift_dev }}
 ```
 
+If you've been using `moor_flutter`, also add a dependency on `drift_sqflite: ^1.0.0`.
+
 Run `pub get` to get the new packages.
 
 ### Changing Dart imports
 
 This table compares the old imports from `moor` and the new imports for `drift`:
 
-| Moor import                             | Drift import                           |
-| ----------------------------------------| -------------------------------------- |
-| `package:moor/extensions/json1.dart`    | `package:drift/extensions/json1.dart`  |
-| `package:moor/extensions/moor_ffi.dart` | `package:drift/extensions/native.dart` |
-| `package:moor/backends.dart`            | `package:drift/backends.dart`          |
-| `package:moor/ffi.dart`                 | `package:drift/native.dart`            |
-| `package:moor/isolate.dart`             | `package:drift/isolate.dart`           |
-| `package:moor/moor_web.dart`            | `package:drift/web.dart`               |
-| `package:moor/moor.dart`                | `package:drift/drift.dart`             |
-| `package:moor/remote.dart`              | `package:drift/remote.dart`            |
-| `package:moor/sqlite_keywords.dart`     | `package:drift/sqlite_keywords.dart`   |
+| Moor import                              | Drift import                               |
+| ---------------------------------------- | ------------------------------------------ |
+| `package:moor/extensions/json1.dart`     | `package:drift/extensions/json1.dart`      |
+| `package:moor/extensions/moor_ffi.dart`  | `package:drift/extensions/native.dart`     |
+| `package:moor/backends.dart`             | `package:drift/backends.dart`              |
+| `package:moor/ffi.dart`                  | `package:drift/native.dart`                |
+| `package:moor/isolate.dart`              | `package:drift/isolate.dart`               |
+| `package:moor/moor_web.dart`             | `package:drift/web.dart`                   |
+| `package:moor/moor.dart`                 | `package:drift/drift.dart`                 |
+| `package:moor/remote.dart`               | `package:drift/remote.dart`                |
+| `package:moor/sqlite_keywords.dart`      | `package:drift/sqlite_keywords.dart`       |
+| `package:moor_flutter/moor_flutter.dart` | `package:drift_sqflite/drift_sqflite.dart` |
 
 ### Changing Dart code
 
@@ -113,6 +116,7 @@ This table compares old moor-specific API names and new names as provided by `dr
 | `moorRuntimeOptions`   | `driftRuntimeOptions`              |
 | `$mrjc` and `$mrjf`    | Use `Object.hash` from `dart:core` |
 | `MoorServer`           | `DriftServer`                      |
+| `FlutterQueryExecutor` | `SqfliteQueryExecutor`             |
 
 ### (Optional: Rename moor files)
 

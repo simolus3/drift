@@ -6,14 +6,14 @@ data:
 template: layouts/docs/single
 ---
 
-_Note_: Since `moor_flutter` uses the sqlite version shipped on the device, these extensions might not
+_Note_: Since `drift_sqflite` and `moor_flutter` uses the sqlite version shipped on the device, these extensions might not
 be available on all devices. When using these extensions, using a `NativeDatabase` is strongly recommended.
 This enables the extensions listed here on all Android and iOS devices.
 
 ## json1
 
 To enable the json1 extension in drift files and compiled queries, modify your
-[build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}) to include 
+[build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}) to include
 `json1` in the `sqlite_module` section.
 
 The sqlite extension doesn't require any special tables and works on all text columns. In drift
