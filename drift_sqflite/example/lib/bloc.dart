@@ -1,5 +1,4 @@
 import 'package:example/database/database.dart';
-import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:drift/drift.dart';
 import 'package:rxdart/rxdart.dart';
 

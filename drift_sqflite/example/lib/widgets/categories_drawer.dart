@@ -49,7 +49,8 @@ class CategoriesDrawer extends StatelessWidget {
                 ),
                 onPressed: () {
                   showDialog(
-                      context: context, builder: (_) => AddCategoryDialog());
+                      context: context,
+                      builder: (_) => const AddCategoryDialog());
                 },
               ),
             ],

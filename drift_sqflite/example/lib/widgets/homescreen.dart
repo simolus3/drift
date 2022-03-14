@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 // ignore_for_file: prefer_const_constructors
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   HomeScreenState createState() {
     return HomeScreenState();
@@ -33,7 +35,7 @@ class HomeScreenState extends State<HomeScreen> {
       body: StreamBuilder<List<EntryWithCategory>>(
         stream: bloc.homeScreenEntries,
         builder: (context, snapshot) {
-          print(snapshot);
+          debugPrint(snapshot.toString());
 
           if (!snapshot.hasData) {
             return const Align(

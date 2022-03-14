@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.orange,
           typography: Typography.material2018(),
         ),
-        home: HomeScreen(),
+        home: const HomeScreen(),
       ),
     );
   }

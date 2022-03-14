@@ -3,6 +3,8 @@ import 'package:example/bloc.dart';
 import 'package:provider/provider.dart';
 
 class AddCategoryDialog extends StatefulWidget {
+  const AddCategoryDialog({Key? key}) : super(key: key);
+
   @override
   _AddCategoryDialogState createState() => _AddCategoryDialogState();
 }
