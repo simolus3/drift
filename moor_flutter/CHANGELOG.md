@@ -1,6 +1,7 @@
-## 4.1.0-dev
+## 4.1.0
 
 - Support query cancellations introduced in moor 4.3.0
+- Clarify that this package has been renamed to `drift`.
 
 ## 4.0.0
 
