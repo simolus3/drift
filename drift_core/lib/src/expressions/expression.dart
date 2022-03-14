@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import '../builder/builder.dart';
 
 import '../types.dart';
+import 'case_when.dart';
 import 'common.dart';
 
 abstract class Expression<T> extends SqlComponent {
@@ -19,6 +20,44 @@ abstract class Expression<T> extends SqlComponent {
   }
 
   Expression<T2> dartCast<T2>() => _DartCastExpression<T, T2>(this);
+
+  /// A `CASE WHEN` construct using the current expression as a base.
+  ///
+  /// The expression on which [caseMatch] is invoked will be used as a base and
+  /// compared against the keys in [when]. If an equal key is found in the map,
+  /// the expression returned evaluates to the respective value.
+  /// If no matching keys are found in [when], the [orElse] expression is
+  /// evaluated and returned. If no [orElse] expression is provided, `NULL` will
+  /// be returned instead.
+  ///
+  /// For example, consider this expression mapping numerical weekdays to their
+  /// name:
+  ///
+  /// ```dart
+  /// final weekday = myTable.createdOnWeekDay;
+  /// weekday.caseMatch<String>(
+  ///   when: {
+  ///     Constant(1): Constant('Monday'),
+  ///     Constant(2): Constant('Tuesday'),
+  ///     Constant(3): Constant('Wednesday'),
+  ///     Constant(4): Constant('Thursday'),
+  ///     Constant(5): Constant('Friday'),
+  ///     Constant(6): Constant('Saturday'),
+  ///     Constant(7): Constant('Sunday'),
+  ///   },
+  ///   orElse: Constant('(unknown)'),
+  /// );
+  /// ```
+  Expression<T2> caseMatch<T2>({
+    required Map<Expression<T>, Expression<T2>> when,
+    Expression<T2>? orElse,
+  }) {
+    if (when.isEmpty) {
+      throw ArgumentError.value(when, 'when', 'Must not be empty');
+    }
+
+    return CaseWhenExpression<T2>(this, when.entries.toList(), orElse);
+  }
 
   Expression<T2> cast<T2>(SqlType<T2> type) => _CastInSqlExpression(this, type);
 
