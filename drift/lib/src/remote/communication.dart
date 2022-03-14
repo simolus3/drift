@@ -202,4 +202,7 @@ class DriftRemoteException implements Exception {
   final StackTrace? remoteStackTrace;
 
   DriftRemoteException._(this.remoteCause, this.remoteStackTrace);
+
+  @override
+  String toString() => remoteCause.toString();
 }

@@ -85,6 +85,7 @@ void main() {
       fail('Should have thrown an exception');
     } catch (e, s) {
       expect(e, isA<DriftRemoteException>());
+      expect(e.toString(), contains('no such table: non_existing_table'));
 
       // The stack trace of remote exceptions should point towards the actual
       // source making the faulty call.
