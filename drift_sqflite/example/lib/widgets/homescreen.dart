@@ -88,7 +88,7 @@ class HomeScreenState extends State<HomeScreen> {
   void _createTodoEntry() {
     if (controller.text.isNotEmpty) {
       // We write the entry here. Notice how we don't have to call setState()
-      // or anything - moor will take care of updating the list automatically.
+      // or anything - drift will take care of updating the list automatically.
       bloc.createEntry(controller.text);
       controller.clear();
     }

@@ -14,7 +14,7 @@ class CategoriesDrawer extends StatelessWidget {
         children: <Widget>[
           DrawerHeader(
             child: Text(
-              'Todo-List Demo with moor',
+              'Todo-List Demo with drift',
               style: Theme.of(context)
                   .textTheme
                   .subtitle1

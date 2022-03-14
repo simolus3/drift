@@ -100,7 +100,7 @@ class Database extends _$Database {
 
   Stream<List<CategoryWithCount>> categoriesWithCount() {
     // the _categoriesWithCount method has been generated automatically based
-    // on the query declared in the @UseMoor annotation
+    // on the query declared in the @DriftDatabase annotation
     return _categoriesWithCount().map((row) {
       final hasId = row.id != null;
       final category =

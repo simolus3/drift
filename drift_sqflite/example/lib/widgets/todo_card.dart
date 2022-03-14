@@ -65,7 +65,7 @@ class TodoCard extends StatelessWidget {
               color: Colors.red,
               onPressed: () {
                 // We delete the entry here. Again, notice how we don't have to
-                // call setState() or inform the parent widget. Moor will take
+                // call setState() or inform the parent widget. Drift will take
                 // care of updating the underlying data automatically
                 Provider.of<TodoAppBloc>(context, listen: false)
                     .deleteEntry(entry);
