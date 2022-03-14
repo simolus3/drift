@@ -1,0 +1,32 @@
+name: drift_sqflite_integration_tests
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  drift_sqflite:
+    path: ../../../drift_sqflite
+  tests:
+    path: ../tests
+  encrypted_moor:
+    path: ../../encryption
+
+dev_dependencies:
+  test:
+
+dependency_overrides:
+  drift:
+    path: ../../../drift
+  moor_flutter:
+    path: ../../../moor_flutter
+  moor:
+    path: ../../../moor
+
+flutter:
+  assets:
+    - test_asset.db
