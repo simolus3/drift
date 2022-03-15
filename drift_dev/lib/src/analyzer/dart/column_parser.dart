@@ -249,15 +249,22 @@ class ColumnParser {
           final type = remainingExpr.typeArgumentTypes!.single;
           createdTypeConverter = expression;
 
+          // If the converter type references a class that doesn't exist yet,
+          // (and is hence `dynamic`), we assume that it will be generated and
+          // accessible in the code. In this case, we copy the source into the
+          // generated code instead of potentially transforming it.
+          final checkDynamic = _ContainsDynamicDueToMissingClass();
+          remainingExpr.typeArguments?.accept(checkDynamic);
+          expression.accept(checkDynamic);
+
           // If converter type argument is dynamic, the referenced
           // class is not exists yet. We assume it will be generated
-          if (type is DynamicType ||
-              type is InterfaceType &&
-                  type.typeArguments.isNotEmpty &&
-                  type.typeArguments.single.isDynamic &&
-                  remainingExpr.typeArguments != null) {
+          if (checkDynamic.foundDynamicDueToMissingClass &&
+              remainingExpr.typeArguments != null) {
             typeConverterRuntime = DriftDartType(
-              name: remainingExpr.typeArguments!.arguments[0].toSource(),
+              type: type,
+              overiddenSource:
+                  remainingExpr.typeArguments!.arguments[0].toSource(),
               nullabilitySuffix: NullabilitySuffix.none,
             );
           } else {
@@ -391,5 +398,18 @@ class ColumnParser {
     if (object == null) return null;
 
     return object.computeConstantValue()!.getField('key')!.toStringValue();
+  }
+}
+
+class _ContainsDynamicDueToMissingClass extends RecursiveAstVisitor<void> {
+  bool foundDynamicDueToMissingClass = false;
+
+  @override
+  void visitNamedType(NamedType node) {
+    if (node.type is DynamicType && node.name.name != 'dynamic') {
+      foundDynamicDueToMissingClass = true;
+    } else {
+      super.visitNamedType(node);
+    }
   }
 }

@@ -7,6 +7,7 @@ import 'package:drift_dev/src/analyzer/dart/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
+import 'package:drift_dev/writer.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
@@ -20,6 +21,10 @@ void main() {
     backend = TestBackend({
       AssetId.parse('test_lib|lib/main.dart'): r'''
       import 'package:drift/drift.dart';
+
+      TypeConverter<Dart, SQL> typeConverter<Dart, SQL>() {
+        throw 'stub';
+      }
 
       class TableWithCustomName extends Table {
         @override String get tableName => 'my-fancy-table';
@@ -91,6 +96,16 @@ void main() {
 
         @override
         Set<Column> get primaryKey => {other};
+      }
+
+      class DynamicConverter extends Table {
+        TextColumn get a1 => text().map<dynamic>(typeConverter<dynamic, String>())();
+        TextColumn get a2 => text().map<DoesNotExist>(typeConverter<DoesNotExist, String>())();
+
+        TextColumn get b1 => text().map<List<dynamic>>(typeConverter<List<dynamic>, String>())();
+        TextColumn get b2 => text().map<List<DoesNotExist>>(typeConverter<List<DoesNotExist>, String>())();
+
+        TextColumn get c => text().map<Map<String, dynamic>>(typeConverter<Map<String, dynamic>, String>())();
       }
       ''',
       AssetId.parse('test_lib|lib/invalid_reference.dart'): '''
@@ -245,6 +260,41 @@ void main() {
     final idColumn = table!.columns.singleWhere((c) => c.name.name == 'id');
 
     expect(table.isColumnRequiredForInsert(idColumn), isFalse);
+  });
+
+  test('parses type converters using dynamic', () async {
+    final table = (await parse('DynamicConverter'))!;
+
+    final a1 = table.columns.singleWhere((c) => c.name.name == 'a1');
+    final a2 = table.columns.singleWhere((c) => c.name.name == 'a2');
+    final b1 = table.columns.singleWhere((c) => c.name.name == 'b1');
+    final b2 = table.columns.singleWhere((c) => c.name.name == 'b2');
+    final c = table.columns.singleWhere((c) => c.name.name == 'c');
+
+    void expectType(
+        MoorColumn column, bool hasOverriddenSource, String toString) {
+      expect(
+        column.typeConverter,
+        isA<UsedTypeConverter>()
+            .having(
+              (e) => e.mappedType.overiddenSource,
+              'mappedType.overriddenSource',
+              hasOverriddenSource ? isNotNull : isNull,
+            )
+            .having(
+              (e) =>
+                  e.mappedType.codeString(const GenerationOptions(nnbd: true)),
+              'mappedType.codeString',
+              toString,
+            ),
+      );
+    }
+
+    expectType(a1, false, 'dynamic');
+    expectType(a2, true, 'DoesNotExist');
+    expectType(b1, false, 'List<dynamic>');
+    expectType(b2, true, 'List<DoesNotExist>');
+    expectType(c, false, 'Map<String, dynamic>');
   });
 
   group('inheritance', () {

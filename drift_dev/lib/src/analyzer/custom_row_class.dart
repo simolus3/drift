@@ -146,8 +146,7 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
       type.element.name == 'Uint8List' &&
       type.element.library.name == 'dart.typed_data';
 
-  if (expectedDartType.type != null &&
-      !typesystem.isAssignableTo(expectedDartType.type!, type) &&
+  if (!typesystem.isAssignableTo(expectedDartType.type, type) &&
       !isAllowedUint8List) {
     error('Parameter must accept '
         '${expectedDartType.getDisplayString(withNullability: true)}');

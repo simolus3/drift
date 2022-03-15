@@ -25,51 +25,50 @@ abstract class HasType {
 }
 
 class DriftDartType {
-  final DartType? type;
-  final String name;
+  final DartType type;
+  final String? overiddenSource;
   final NullabilitySuffix nullabilitySuffix;
 
   const DriftDartType({
-    this.type,
-    required this.name,
+    required this.type,
+    this.overiddenSource,
     required this.nullabilitySuffix,
   });
 
   factory DriftDartType.of(DartType type) {
     return DriftDartType(
       type: type,
-      name: type.toString(),
       nullabilitySuffix: type.nullabilitySuffix,
     );
   }
 
   String getDisplayString({required bool withNullability}) {
-    if (type != null) {
-      return type!.getDisplayString(withNullability: withNullability);
-    }
-
-    if (withNullability) {
-      switch (nullabilitySuffix) {
-        case NullabilitySuffix.question:
-          return '$name?';
-        case NullabilitySuffix.star:
-          return '$name*';
-        case NullabilitySuffix.none:
-          return '$name';
+    final source = overiddenSource;
+    if (source != null) {
+      if (withNullability) {
+        switch (nullabilitySuffix) {
+          case NullabilitySuffix.question:
+            return '$source?';
+          case NullabilitySuffix.star:
+            return '$source*';
+          case NullabilitySuffix.none:
+            return source;
+        }
       }
     }
-    return '$name';
+
+    return type.getDisplayString(withNullability: withNullability);
   }
 
   String codeString([GenerationOptions options = const GenerationOptions()]) {
-    if (type != null) {
-      return type!.codeString(options);
+    if (overiddenSource != null) {
+      if (nullabilitySuffix == NullabilitySuffix.star) {
+        return getDisplayString(withNullability: false);
+      }
+      return getDisplayString(withNullability: options.nnbd);
+    } else {
+      return type.codeString(options);
     }
-
-    if (nullabilitySuffix == NullabilitySuffix.star) {
-      return getDisplayString(withNullability: false);
-    }
-    return getDisplayString(withNullability: options.nnbd);
   }
 }
 

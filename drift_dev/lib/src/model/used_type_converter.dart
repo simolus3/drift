@@ -53,13 +53,16 @@ class UsedTypeConverter {
     }
 
     final className = creatingClass.name;
+    final suffix =
+        nullable ? NullabilitySuffix.question : NullabilitySuffix.none;
 
     return UsedTypeConverter(
       expression: 'const EnumIndexConverter<$className>($className.values)',
       mappedType: DriftDartType(
-        name: creatingClass.name,
-        nullabilitySuffix:
-            nullable ? NullabilitySuffix.question : NullabilitySuffix.none,
+        type: creatingClass.instantiate(
+            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none),
+        overiddenSource: creatingClass.name,
+        nullabilitySuffix: suffix,
       ),
       sqlType: ColumnType.integer,
     );
