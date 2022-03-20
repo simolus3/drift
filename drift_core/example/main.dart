@@ -12,4 +12,13 @@ class Users extends SchemaTable {
   String get name => 'users';
 }
 
-void main() {}
+void main() {
+  final builder = QueryBuilder(sql.dialect);
+  final users = Users();
+
+  final query = builder.select([users.id.ref()])..from(users);
+  final context = builder.newContext();
+  query.writeInto(context);
+
+  print(context.sql);
+}

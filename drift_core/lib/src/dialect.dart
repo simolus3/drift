@@ -1,5 +1,9 @@
+import 'common/escape.dart';
+
 abstract class SqlDialect {
   DialectCapabilities get capabilites;
+
+  Set<String> get keywords => baseKeywords;
 
   Object? mapToSqlVariable(Object? dart);
   String mapToSqlLiteral(Object? dart);

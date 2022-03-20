@@ -1,3 +1,6 @@
+import 'package:collection/collection.dart';
+
+import '../common/escape.dart';
 import '../dialect.dart';
 import '../expressions/variable.dart';
 import '../schema.dart';
@@ -17,22 +20,11 @@ abstract class SqlComponent {
 
 /// Contains information about a query while it's being constructed.
 class GenerationContext {
-  /// Whether the query obtained by this context operates on multiple tables.
-  ///
-  /// If it does, columns should prefix their table name to avoid ambiguous
-  /// queries.
-  bool hasMultipleTables = false;
+  final List<ContextScope> _scopeStack = [];
 
   /// When set to a non-null value, [Variable]s in this context will generate
   /// explicit indices starting at [explicitVariableIndex].
   int? explicitVariableIndex;
-
-  /// When set to an entity name (view or table), generated column in that
-  /// entity definition will written into query as expression
-  String? generatingForView;
-
-  /// All tables that the generated query reads from.
-  final List<EntityWithResult> watchedTables = [];
 
   /// The [SqlDialect] that should be respected when generating the query.
   final SqlDialect dialect;
@@ -95,4 +87,20 @@ class GenerationContext {
 
   /// Shortcut to add a single space to the buffer because it's used very often.
   void writeWhitespace() => buffer.write(' ');
+
+  void pushScope(ContextScope scope) => _scopeStack.add(scope);
+  void popScope() => _scopeStack.removeLast();
+  Scope? scope<Scope extends ContextScope>() {
+    return _scopeStack.whereType<Scope>().lastOrNull;
+  }
+
+  Scope requireScope<Scope extends ContextScope>() {
+    return scope()!;
+  }
+
+  String identifier(String identifier) {
+    return escapeIfNeeded(dialect.keywords, identifier);
+  }
 }
+
+abstract class ContextScope {}

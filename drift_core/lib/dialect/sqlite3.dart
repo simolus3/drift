@@ -12,7 +12,7 @@ const SqlType<int> integer = _SqliteType('INTEGER');
 const SqlType<double> real = _SqliteType('REAL');
 const SqlType<List<int>> blob = _SqliteType('BLOB');
 
-class Sqlite3Dialect implements SqlDialect {
+class Sqlite3Dialect extends SqlDialect {
   Sqlite3Dialect._();
 
   @override

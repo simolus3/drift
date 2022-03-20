@@ -1,5 +1,7 @@
 import 'package:meta/meta.dart';
 
+import 'expressions/column.dart';
+import 'expressions/expression.dart';
 import 'types.dart';
 
 abstract class SchemaEntity {
@@ -7,10 +9,14 @@ abstract class SchemaEntity {
 }
 
 abstract class SchemaColumn<T> {
-  SchemaEntity get entity;
+  EntityWithResult get entity;
 
   String get name;
   SqlType<T> get type;
+
+  Expression<T> ref([String? tableOrViewAlias]) {
+    return ColumnReference(this, tableOrViewAlias);
+  }
 }
 
 abstract class EntityWithResult implements SchemaEntity {
@@ -26,7 +32,7 @@ abstract class SchemaTable extends EntityWithResult {
 
 class _SchemaColumn<T> extends SchemaColumn<T> {
   @override
-  final SchemaEntity entity;
+  final EntityWithResult entity;
   @override
   final String name;
   @override
