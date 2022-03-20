@@ -111,7 +111,7 @@ class ViewParser {
       }
     }
 
-    return element.name.snakeCase;
+    return ReCase(element.name).snakeCase;
   }
 
   Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
