@@ -33,6 +33,7 @@ If you're wondering why so many packages are necessary, here's a quick overview 
 - `drift`: This is the core package defining most apis
 - `sqlite3_flutter_libs`: Ships the latest `sqlite3` version with your Android or iOS app. This is not required when you're _not_ using Flutter,
   but then you need to take care of including `sqlite3` yourself.
+  For an overview on other platforms, see [platforms]({{ '../platforms.md' | pageUrl }}).
 - `path_provider` and `path`: Used to find a suitable location to store the database. Maintained by the Flutter and Dart team
 - `drift_dev`: This development-only dependency generates query code based on your tables. It will not be included in your final app.
 - `build_runner`: Common tool for code-generation, maintained by the Dart team
