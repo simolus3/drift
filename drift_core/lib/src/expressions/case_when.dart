@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import '../builder/builder.dart';
+import '../builder/context.dart';
 import 'expression.dart';
 
 /// A `CASE WHEN` expression in SQL.

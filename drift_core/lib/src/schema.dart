@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'types.dart';
 
 abstract class SchemaEntity {
@@ -5,6 +7,8 @@ abstract class SchemaEntity {
 }
 
 abstract class SchemaColumn<T> {
+  SchemaEntity get entity;
+
   String get name;
   SqlType<T> get type;
 }
@@ -13,12 +17,20 @@ abstract class EntityWithResult implements SchemaEntity {
   List<SchemaColumn> get columns;
 }
 
-class SchemaTable implements EntityWithResult {
+abstract class SchemaTable extends EntityWithResult {
+  @protected
+  SchemaColumn<T> column<T>(String name, SqlType<T> type) {
+    return _SchemaColumn(this, name, type);
+  }
+}
+
+class _SchemaColumn<T> extends SchemaColumn<T> {
+  @override
+  final SchemaEntity entity;
   @override
   final String name;
-
   @override
-  final List<SchemaColumn> columns;
+  final SqlType<T> type;
 
-  SchemaTable({required this.name, required this.columns});
+  _SchemaColumn(this.entity, this.name, this.type);
 }

@@ -1,4 +1,4 @@
-import 'package:drift_core/src/builder/builder.dart';
+import 'package:drift_core/src/builder/context.dart';
 import 'package:meta/meta.dart';
 
 import 'expression.dart';

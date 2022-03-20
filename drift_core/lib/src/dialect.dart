@@ -12,6 +12,8 @@ class DialectCapabilities {
   final bool supportsAnonymousVariables;
   final bool supportsNullVariables;
 
-  DialectCapabilities(
-      this.supportsAnonymousVariables, this.supportsNullVariables);
+  DialectCapabilities({
+    this.supportsAnonymousVariables = false,
+    this.supportsNullVariables = false,
+  });
 }
