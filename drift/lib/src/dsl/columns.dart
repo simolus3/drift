@@ -252,6 +252,9 @@ extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
   /// primary key. Columns are non-null by default.
   ColumnBuilder<T?> nullable() => _isGenerated();
 
+  /// Adds UNIQUE constraint to column.
+  ColumnBuilder<T?> unique() => _isGenerated();
+
   /// Uses a custom [converter] to store custom Dart objects in a single column
   /// and automatically mapping them from and to sql.
   ///

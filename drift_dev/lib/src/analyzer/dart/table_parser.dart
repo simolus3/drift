@@ -34,6 +34,15 @@ class TableParser {
       ));
     }
 
+    if (primaryKey != null &&
+        primaryKey.length == 1 &&
+        primaryKey.first.features.contains(const UniqueKey())) {
+      base.step.errors.report(ErrorInDartCode(
+        message: 'Primary key column cannot have UNIQUE constraint',
+        affectedElement: element,
+      ));
+    }
+
     var index = 0;
     for (final converter in table.converters) {
       converter

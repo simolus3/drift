@@ -23,6 +23,7 @@ const String _methodReferences = 'references';
 const String _methodAutoIncrement = 'autoIncrement';
 const String _methodWithLength = 'withLength';
 const String _methodNullable = 'nullable';
+const String _methodUnique = 'unique';
 const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
@@ -218,6 +219,9 @@ class ColumnParser {
         case _methodNullable:
           nullable = true;
           break;
+        case _methodUnique:
+          foundFeatures.add(const UniqueKey());
+          break;
         case _methodCustomConstraint:
           foundCustomConstraint = base.readStringLiteral(
               remainingExpr.argumentList.arguments.first, () {
@@ -351,6 +355,17 @@ class ColumnParser {
           message: 'clientDefault() and withDefault() are mutually exclusive, '
               "they can't both be used. Use clientDefault() for values that "
               'are different for each row and withDefault() otherwise.',
+        ),
+      );
+    }
+
+    if (foundFeatures.contains(const UniqueKey()) &&
+        foundFeatures.contains(const PrimaryKey())) {
+      base.step.reportError(
+        ErrorInDartCode(
+          severity: Severity.error,
+          affectedElement: getter.declaredElement,
+          message: 'Primary key column cannot have UNIQUE constraint',
         ),
       );
     }

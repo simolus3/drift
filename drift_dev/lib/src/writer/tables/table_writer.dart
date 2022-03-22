@@ -28,9 +28,21 @@ abstract class TableOrViewWriter {
               : 'PRIMARY KEY');
 
           wrotePkConstraint = true;
+          break;
         }
       }
+    }
 
+    if (!wrotePkConstraint) {
+      for (final feature in column.features) {
+        if (feature is UniqueKey) {
+          defaultConstraints.add('UNIQUE');
+          break;
+        }
+      }
+    }
+
+    for (final feature in column.features) {
       if (feature is ResolvedDartForeignKeyReference) {
         final tableName = escapeIfNeeded(feature.otherTable.sqlName);
         final columnName = escapeIfNeeded(feature.otherColumn.name.name);
