@@ -336,6 +336,7 @@ class TableWriter extends TableOrViewWriter {
 
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
+    _writeUniqueKeyOverride();
 
     writeMappingMethod(scope);
     // _writeReverseMappingMethod();
@@ -431,6 +432,28 @@ class TableWriter extends TableOrViewWriter {
 
       buffer.write(pk.dartGetterName);
       if (i != pkList.length - 1) {
+        buffer.write(', ');
+      }
+    }
+    buffer.write('};\n');
+  }
+
+  void _writeUniqueKeyOverride() {
+    buffer.write('@override\nSet<GeneratedColumn> get \$uniqueKey => ');
+    final uniqueKey = table.uniqueKey ?? {};
+
+    if (uniqueKey.isEmpty) {
+      buffer.write('<GeneratedColumn>{};');
+      return;
+    }
+
+    buffer.write('{');
+    final uqList = uniqueKey.toList();
+    for (var i = 0; i < uqList.length; i++) {
+      final pk = uqList[i];
+
+      buffer.write(pk.dartGetterName);
+      if (i != uqList.length - 1) {
         buffer.write(', ');
       }
     }

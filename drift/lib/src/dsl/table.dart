@@ -62,6 +62,23 @@ abstract class Table extends HasResultSet {
   @visibleForOverriding
   Set<Column>? get primaryKey => null;
 
+  /// Override this to specify unique keys:
+  /// ```dart
+  /// class IngredientInRecipes extends Table {
+  ///  @override
+  ///  Set<Column> get uniqueKey => {recipe, ingredient};
+  ///
+  ///  IntColumn get recipe => integer()();
+  ///  IntColumn get ingredient => integer()();
+  ///
+  ///  IntColumn get amountInGrams => integer().named('amount')();
+  ///}
+  /// ```
+  /// The getter must return a set literal using the `=>` syntax so that the
+  /// drift generator can understand the code.
+  @visibleForOverriding
+  Set<Column>? get uniqueKey => null;
+
   /// Custom table constraints that should be added to the table.
   ///
   /// See also:
