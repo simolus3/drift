@@ -111,9 +111,9 @@ extension OperationOnTypes on HasType {
     final converter = typeConverter;
     if (converter != null) {
       final needsSuffix = options.nnbd &&
-          (options.nullAwareTypeConverters
-              ? converter.hasNullableDartType
-              : (nullable && !converter.hasNullableDartType));
+          !options.nullAwareTypeConverters &&
+          nullable &&
+          !converter.hasNullableDartType;
       final baseType = converter.mappedType.codeString(options);
 
       final inner = needsSuffix ? '$baseType?' : baseType;
