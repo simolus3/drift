@@ -66,7 +66,8 @@ abstract class Table extends HasResultSet {
   /// ```dart
   /// class IngredientInRecipes extends Table {
   ///  @override
-  ///  Set<Column> get uniqueKey => {recipe, ingredient};
+  ///  Set<Column> get uniqueKeys =>
+  ///     [{recipe, ingredient}, {recipe, amountInGrams}];
   ///
   ///  IntColumn get recipe => integer()();
   ///  IntColumn get ingredient => integer()();
@@ -74,10 +75,10 @@ abstract class Table extends HasResultSet {
   ///  IntColumn get amountInGrams => integer().named('amount')();
   ///}
   /// ```
-  /// The getter must return a set literal using the `=>` syntax so that the
-  /// drift generator can understand the code.
+  /// The getter must return a list of set literals using the `=>` syntax so
+  /// that the drift generator can understand the code.
   @visibleForOverriding
-  Set<Column>? get uniqueKey => null;
+  List<Set<Column>>? get uniqueKeys => null;
 
   /// Custom table constraints that should be added to the table.
   ///

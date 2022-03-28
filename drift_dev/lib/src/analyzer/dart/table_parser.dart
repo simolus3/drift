@@ -12,7 +12,7 @@ class TableParser {
 
     final columns = (await _parseColumns(element)).toList();
     final primaryKey = await _readPrimaryKey(element, columns);
-    final uniqueKey = await _readUniqueKey(element, columns);
+    final uniqueKeys = await _readUniqueKeys(element, columns);
 
     final dataClassInfo = _readDataClassInformation(columns, element);
 
@@ -24,7 +24,7 @@ class TableParser {
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       primaryKey: primaryKey,
-      uniqueKey: uniqueKey,
+      uniqueKeys: uniqueKeys,
       overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
     );
@@ -45,16 +45,17 @@ class TableParser {
       ));
     }
 
-    if (uniqueKey != null &&
-        uniqueKey.length == 1 &&
-        uniqueKey.first.features.contains(const UniqueKey())) {
+    if (uniqueKeys != null &&
+        uniqueKeys.any((key) =>
+            uniqueKeys.length == 1 &&
+            key.first.features.contains(const UniqueKey()))) {
       base.step.errors.report(ErrorInDartCode(
-        message: 'Column provided in uniqueKey set already have a column level '
-            'UNIQUE constraint',
+        message:
+            'Column provided in a single-column uniqueKey set already have a '
+            'column level UNIQUE constraint',
         affectedElement: element,
       ));
     }
-
     var index = 0;
     for (final converter in table.converters) {
       converter
@@ -209,13 +210,13 @@ class TableParser {
     return parsedPrimaryKey;
   }
 
-  Future<Set<MoorColumn>?> _readUniqueKey(
+  Future<List<Set<MoorColumn>>?> _readUniqueKeys(
       ClassElement element, List<MoorColumn> columns) async {
-    final uniqueKeyGetter = element.lookUpGetter('uniqueKey', element.library);
+    final uniqueKeyGetter = element.lookUpGetter('uniqueKeys', element.library);
 
     if (uniqueKeyGetter == null || uniqueKeyGetter.isFromDefaultTable) {
-      // resolved uniqueKey is from the Table dsl superclass. That means there
-      // is no primary key
+      // resolved uniqueKeys is from the Table dsl superclass. That means there
+      // is no unique key list
       return null;
     }
 
@@ -225,39 +226,50 @@ class TableParser {
     if (body is! ExpressionFunctionBody) {
       base.step.reportError(ErrorInDartCode(
           affectedElement: uniqueKeyGetter,
-          message: 'This must return a set literal using the => syntax!'));
+          message: 'This must return a list of set literal using the => '
+              'syntax!'));
       return null;
     }
     final expression = body.expression;
-    final parsedUniqueKey = <MoorColumn>{};
+    final parsedUniqueKeys = <Set<MoorColumn>>[];
 
-    if (expression is SetOrMapLiteral) {
-      for (final entry in expression.elements) {
-        if (entry is Identifier) {
-          final column = columns.singleWhereOrNull(
-              (column) => column.dartGetterName == entry.name);
-          if (column == null) {
-            base.step.reportError(
-              ErrorInDartCode(
-                affectedElement: uniqueKeyGetter,
-                affectedNode: entry,
-                message: 'Column not found in this table',
-              ),
-            );
-          } else {
-            parsedUniqueKey.add(column);
+    if (expression is ListLiteral) {
+      for (final keySet in expression.elements) {
+        if (keySet is SetOrMapLiteral) {
+          final uniqueKey = <MoorColumn>{};
+          for (final entry in keySet.elements) {
+            if (entry is Identifier) {
+              final column = columns.singleWhereOrNull(
+                  (column) => column.dartGetterName == entry.name);
+              if (column == null) {
+                base.step.reportError(
+                  ErrorInDartCode(
+                    affectedElement: uniqueKeyGetter,
+                    affectedNode: entry,
+                    message: 'Column not found in this table',
+                  ),
+                );
+              } else {
+                uniqueKey.add(column);
+              }
+            } else {
+              print('Unexpected entry in expression.elements: $entry');
+            }
           }
+          parsedUniqueKeys.add(uniqueKey);
         } else {
-          print('Unexpected entry in expression.elements: $entry');
+          base.step.reportError(ErrorInDartCode(
+              affectedElement: uniqueKeyGetter,
+              message: 'This must return a set list literal!'));
         }
       }
     } else {
       base.step.reportError(ErrorInDartCode(
           affectedElement: uniqueKeyGetter,
-          message: 'This must return a set literal!'));
+          message: 'This must return a set list literal!'));
     }
 
-    return parsedUniqueKey;
+    return parsedUniqueKeys;
   }
 
   Future<bool?> _overrideWithoutRowId(ClassElement element) async {

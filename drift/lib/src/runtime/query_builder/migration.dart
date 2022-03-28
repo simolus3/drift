@@ -288,17 +288,19 @@ class Migrator {
       context.buffer.write(')');
     }
 
-    if (table.$uniqueKey.isNotEmpty) {
-      context.buffer.write(', UNIQUE (');
-      final uqList = table.$uniqueKey.toList(growable: false);
-      for (var i = 0; i < uqList.length; i++) {
-        final column = uqList[i];
+    if (table.uniqueKeys.isNotEmpty) {
+      for (final key in table.uniqueKeys) {
+        context.buffer.write(', UNIQUE (');
+        final uqList = key.toList(growable: false);
+        for (var i = 0; i < uqList.length; i++) {
+          final column = uqList[i];
 
-        context.buffer.write(escapeIfNeeded(column.$name));
+          context.buffer.write(escapeIfNeeded(column.name));
 
-        if (i != uqList.length - 1) context.buffer.write(', ');
+          if (i != uqList.length - 1) context.buffer.write(', ');
+        }
+        context.buffer.write(')');
       }
-      context.buffer.write(')');
     }
 
     final constraints = dslTable.customConstraints;

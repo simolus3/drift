@@ -439,25 +439,29 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writeUniqueKeyOverride() {
-    buffer.write('@override\nSet<GeneratedColumn> get \$uniqueKey => ');
-    final uniqueKey = table.uniqueKey ?? {};
+    buffer.write('@override\nList<Set<Column>> get uniqueKeys => ');
+    final uniqueKeys = table.uniqueKeys ?? [];
 
-    if (uniqueKey.isEmpty) {
-      buffer.write('<GeneratedColumn>{};');
+    if (uniqueKeys.isEmpty) {
+      buffer.write('[];');
       return;
     }
 
-    buffer.write('{');
-    final uqList = uniqueKey.toList();
-    for (var i = 0; i < uqList.length; i++) {
-      final pk = uqList[i];
+    buffer.write('[');
+    for (final uniqueKey in uniqueKeys) {
+      buffer.write('{');
+      final uqList = uniqueKey.toList();
+      for (var i = 0; i < uqList.length; i++) {
+        final pk = uqList[i];
 
-      buffer.write(pk.dartGetterName);
-      if (i != uqList.length - 1) {
-        buffer.write(', ');
+        buffer.write(pk.dartGetterName);
+        if (i != uqList.length - 1) {
+          buffer.write(', ');
+        }
       }
+      buffer.write('},\n');
     }
-    buffer.write('};\n');
+    buffer.write('];\n');
   }
 
   void _writeAliasGenerator() {
