@@ -144,7 +144,7 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   ///   BlobColumn get rawData => blob();
   ///
   ///   @override
-  ///   Set<Column> get primaryKey = {id};
+  ///   Set<Column> get primaryKey => {id};
   /// }
   /// ```
   ///
