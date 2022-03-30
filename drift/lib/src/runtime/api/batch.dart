@@ -48,7 +48,7 @@ class Batch {
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
-    final context = InsertStatement<Table, D>(_user, table)
+    final context = InsertStatement<T, D>(_user, table)
         .createContext(row, actualMode, onConflict: onConflict);
     _addContext(context);
   }

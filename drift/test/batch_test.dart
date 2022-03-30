@@ -121,6 +121,41 @@ void main() {
     )));
   });
 
+  test('insert with where clause and excluded table', () async {
+    // https://github.com/simolus3/drift/issues/1781
+    final entries = [
+      CategoriesCompanion.insert(description: 'first'),
+      CategoriesCompanion.insert(description: 'second'),
+    ];
+
+    await db.batch((batch) {
+      batch.insertAll<Categories, Category>(
+        db.categories,
+        entries,
+        onConflict: DoUpdate.withExcluded(
+          (old, excluded) => CategoriesCompanion.custom(
+            description: old.description.dartCast(),
+            priority: excluded.priority.dartCast(),
+          ),
+          where: (old, excluded) =>
+              old.id.dartCast<int>().isBiggerOrEqual(excluded.id.dartCast()),
+        ),
+      );
+    });
+
+    verify(executor.transactions.runBatched(BatchedStatements(
+      [
+        ('INSERT INTO categories ("desc") VALUES (?) ON CONFLICT(id) '
+            'DO UPDATE SET "desc" = categories."desc", '
+            'priority = excluded.priority WHERE categories.id >= excluded.id')
+      ],
+      [
+        ArgumentsForBatchedStatement(0, ['first']),
+        ArgumentsForBatchedStatement(0, ['second']),
+      ],
+    )));
+  });
+
   test('can re-use an outer transaction', () async {
     await db.transaction(() async {
       await db.batch((b) {});
