@@ -6,7 +6,7 @@ part of 'custom_tables.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class Config extends DataClass implements Insertable<Config> {
   final String configKey;
   final String? configValue;

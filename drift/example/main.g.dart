@@ -6,7 +6,7 @@ part of 'main.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
