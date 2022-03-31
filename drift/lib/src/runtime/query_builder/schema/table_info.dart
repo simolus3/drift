@@ -34,7 +34,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   /// Additional to the [Table.primaryKey] columns declared by an user, this
   /// also contains auto-increment integers, which are primary key by default.
   @override
-  List<Set<Column>> get uniqueKeys => const [];
+  List<Set<GeneratedColumn>> get uniqueKeys => const [];
 
   /// The table name in the sql table. This can be an alias for the actual table
   /// name. See [actualTableName] for a table name that is not aliased.
