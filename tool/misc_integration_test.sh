@@ -12,7 +12,7 @@ dart pub upgrade
 dart test || EXIT_CODE=$?
 popd
 
-pushd examples/integration_tests/postgres
+pushd extras/integration_tests/postgres
 echo "Running integration tests with Postgres"
 dart pub upgrade
 dart test || EXIT_CODE=$?
