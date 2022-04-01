@@ -16,6 +16,19 @@ outside of Flutter. When writing drift apps, prefer to mainly use the apis in
 `package:drift/drift.dart` as they are guaranteed to work across all platforms.
 Depending on your platform, you can choose a different `QueryExecutor`.
 
+## Overview
+
+This table list all supported drift implementations and on which platforms they run on.
+
+| Implementation | Supported platforms | Notes |
+|----------------|---------------------|-------|
+| `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter` |
+| `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}) is recommended. Formerly known as `package:moor/ffi.dart`. |
+| `WebDatabase` from `package:drift/web.dart` | Web | Works with or without Flutter. A bit of [additional setup]({{ 'Other engines/web.md' | pageUrl }}) is required. |
+
+To support all platforms in a shared codebase, you only need to change how you open your database, all other usages can stay the same.
+[This repository](https://github.com/rodydavis/moor_shared) gives an example on how to do that with conditional imports.
+
 ## Mobile (Android and iOS)
 
 There are two drift implementations for mobile that you can use:
@@ -74,13 +87,23 @@ setup might be required:
 
 ### Windows
 
-On Windows, you can [download sqlite](https://www.sqlite.org/download.html) and extract
-`sqlite3.dll` into a folder that's in your `PATH` environment variable to use drift.
+For Flutter apps, depending on the `sqlite3_flutter_libs` package is enough. It will automatically
+bundle the latest sqlite3 version with your app as a DLL, and drift will automatically use that
+version.
+
+If you don't want to use `sqlite3_flutter_libs`, or if you're not running as a Flutter app
+(keep in mind that `flutter test` does not run as a full Flutter app!), you can [download sqlite](https://www.sqlite.org/download.html)
+and extract`sqlite3.dll` into a folder that's in your `PATH` environment variable to use drift.
 
 You can also ship a custom `sqlite3.dll` along with your app. See the section below for
 details.
 
 ### Linux
+
+When depending on `sqlite3_flutter_libs` in your pubspec and using Flutter, no additional setup
+is necessary.
+When not running as a Flutter app (this includes `flutter test`!), you need to either use a
+`sqlite3` build from your distribution or include a custom `libsqlite3.so`.
 
 On most distributions, `libsqlite3.so` is installed already. If you only need to use drift for
 development, you can just install the sqlite3 libraries. On Ubuntu and other Debian-based
