@@ -12,19 +12,19 @@ dart pub upgrade
 dart test || EXIT_CODE=$?
 popd
 
-pushd extras/integration_tests/postgres
+pushd examples/integration_tests/postgres
 echo "Running integration tests with Postgres"
 dart pub upgrade
 dart test || EXIT_CODE=$?
 popd
 
-pushd extras/with_built_value
+pushd examples/with_built_value
 echo "Running build runner in with_built_value"
 dart pub upgrade
 dart run build_runner build --delete-conflicting-outputs || EXIT_CODE=$?
 popd
 
-pushd extras/migrations_example
+pushd examples/migrations_example
 echo "Testing migrations in migrations_example"
 dart pub upgrade
 dart test
