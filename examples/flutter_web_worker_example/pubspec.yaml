@@ -18,9 +18,9 @@ dev_dependencies:
   drift_dev:
 
 dependency_overrides:
-  drift: 
+  drift:
     path: ../../drift
-  drift_dev: 
+  drift_dev:
     path: ../../drift_dev
   sqlparser:
     path: ../../sqlparser
