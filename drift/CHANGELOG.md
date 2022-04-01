@@ -1,3 +1,7 @@
+## 1.6.0-dev
+
+- Internally use `package:js` to wrap sql.js.
+
 ## 1.5.0
 
 - Add `DataClassName.extending` to control the superclass of generated row

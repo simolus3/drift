@@ -1,4 +1,17 @@
 targets:
+  # We use dartdevc by default, but the worker should always be compiled with dart2js
+  worker:
+    auto_apply_builders: false
+    dependencies: [":$default"]
+    builders:
+      build_web_compilers|entrypoint:
+        enabled: true
+        generate_for:
+         - web/worker.dart
+        options:
+          compiler: dart2js
+
+
   $default:
     builders:
       drift_dev:
@@ -9,3 +22,8 @@ targets:
           generate_values_in_copy_with: true
           named_parameters: true
           new_sql_code_generation: true
+      build_web_compilers|entrypoint:
+        generate_for:
+          # This one is compiled in the other target
+          exclude:
+            - "web/worker.dart"
