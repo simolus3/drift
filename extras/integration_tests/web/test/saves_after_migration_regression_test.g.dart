@@ -137,6 +137,8 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   Foo map(Map<String, dynamic> data, {String tablePrefix}) {
     return Foo.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -277,6 +279,8 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   Bar map(Map<String, dynamic> data, {String tablePrefix}) {
     return Bar.fromData(data,

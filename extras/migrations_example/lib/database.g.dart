@@ -166,6 +166,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -413,6 +415,8 @@ class Groups extends Table with TableInfo<Groups, Group> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Group.fromData(data,
