@@ -18,13 +18,19 @@ class TodosTable extends Table with AutoIncrement {
   TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
   TextColumn get content => text()();
   @JsonKey('target_date')
-  DateTimeColumn get targetDate => dateTime().nullable()();
+  DateTimeColumn get targetDate => dateTime().nullable().unique()();
 
   IntColumn get category => integer().references(Categories, #id).nullable()();
+
+  @override
+  List<Set<Column>>? get uniqueKeys => [
+        {title, category},
+        {title, targetDate},
+      ];
 }
 
 class Users extends Table with AutoIncrement {
-  TextColumn get name => text().withLength(min: 6, max: 32)();
+  TextColumn get name => text().withLength(min: 6, max: 32).unique()();
   BoolColumn get isAwesome => boolean().withDefault(const Constant(true))();
 
   BlobColumn get profilePicture => blob()();
