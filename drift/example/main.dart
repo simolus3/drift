@@ -1,4 +1,5 @@
 // For more information on using drift, please see https://drift.simonbinder.eu/docs/getting-started/
+// A full cross-platform example is available here: https://github.com/simolus3/drift/tree/develop/examples/app
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
