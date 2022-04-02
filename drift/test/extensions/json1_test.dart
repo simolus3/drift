@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/extensions/json1.dart';
 import 'package:test/test.dart';
 
-import '../data/utils/expect_generated.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   test('json1 functions generate valid sql', () {

@@ -1,13 +1,12 @@
 @Tags(['integration'])
-@TestOn('vm')
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/custom_tables.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   test('fts5 integration test', () async {
-    final db = CustomTablesDb(NativeDatabase.memory());
+    final db = CustomTablesDb.connect(testInMemoryDatabase());
 
     await db.into(db.email).insert(EmailCompanion.insert(
         sender: 'foo@example.org', title: 'Hello world', body: 'Test email'));

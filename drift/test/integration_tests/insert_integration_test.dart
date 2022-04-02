@@ -1,16 +1,15 @@
-@TestOn('vm')
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
 import '../skips.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
 
   setUp(() {
-    db = TodoDb(NativeDatabase.memory());
+    db = TodoDb.connect(testInMemoryDatabase());
   });
 
   tearDown(() => db.close());

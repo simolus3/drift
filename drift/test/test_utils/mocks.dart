@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:mockito/mockito.dart';

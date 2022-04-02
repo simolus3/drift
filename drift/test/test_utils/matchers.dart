@@ -1,6 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
+void expectEquals(dynamic a, dynamic expected) {
+  expect(a, equals(expected));
+  expect(a.hashCode, equals(expected.hashCode));
+}
+
+void expectNotEquals(dynamic a, dynamic expected) {
+  expect(a, isNot(equals(expected)));
+  expect(a.hashCode, isNot(equals(expected.hashCode)));
+}
+
 /// Matcher for [Component]-subclasses. Expect that a component generates the
 /// matching [sql] and, optionally, the matching [variables].
 Matcher generates(dynamic sql, [dynamic variables]) {

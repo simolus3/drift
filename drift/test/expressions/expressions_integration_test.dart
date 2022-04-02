@@ -1,15 +1,14 @@
-@TestOn('vm')
 import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
 
   setUp(() async {
-    db = TodoDb(NativeDatabase.memory());
+    db = TodoDb.connect(testInMemoryDatabase());
 
     // we selectOnly from users for the lack of a better option. Insert one
     // row so that getSingle works

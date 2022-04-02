@@ -1,14 +1,13 @@
-@TestOn('vm')
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   test('regression test for #1232', () async {
     // replace with generated table
-    final db = TodoDb(NativeDatabase.memory());
+    final db = TodoDb.connect(testInMemoryDatabase());
     final someTables = {db.todosTable};
 
     await db.customStatement('create table tbl (x int)');

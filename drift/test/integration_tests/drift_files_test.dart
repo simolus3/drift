@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
 import '../data/tables/custom_tables.dart';
-import '../data/utils/mocks.dart';
+import '../test_utils/test_utils.dart';
 
 const _createNoIds =
     'CREATE TABLE IF NOT EXISTS no_ids (payload BLOB NOT NULL PRIMARY KEY) '

@@ -1,15 +1,14 @@
-@TestOn('vm')
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/custom_tables.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   late CustomTablesDb db;
 
   setUp(() {
-    db = CustomTablesDb(NativeDatabase.memory());
+    db = CustomTablesDb.connect(testInMemoryDatabase());
   });
 
   tearDown(() => db.close());

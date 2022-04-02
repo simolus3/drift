@@ -11,7 +11,7 @@ platforms:
   - vm
 
 presets:
-  # Only run on browsers when requested. In CI, we only test on browsers when the VM tests went through
+  # Only run on browsers when requested. In CI, we only test on browsers after the VM tests went through
   browsers:
     platforms:
       - chrome

@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
-import 'data/utils/mocks.dart';
+import 'test_utils/test_utils.dart';
 
 // the content is set to non-null and the title must be between 4 and 16 chars
 // long

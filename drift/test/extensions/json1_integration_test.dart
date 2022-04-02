@@ -1,17 +1,16 @@
 @Tags(['integration'])
-@TestOn('vm')
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:drift/extensions/json1.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   test('json1 integration test', () async {
-    final db = TodoDb(NativeDatabase.memory());
+    final db = TodoDb.connect(testInMemoryDatabase());
     const jsonObject = {
       'foo': 'bar',
       'array': [

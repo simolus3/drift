@@ -1,13 +1,13 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
 import '../data/tables/custom_tables.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   test('Dart queries on views update correctly', () async {
-    final db = CustomTablesDb(NativeDatabase.memory());
+    final db = CustomTablesDb.connect(testInMemoryDatabase());
     addTearDown(db.close);
 
     expect(

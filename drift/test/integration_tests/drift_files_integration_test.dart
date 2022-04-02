@@ -1,18 +1,17 @@
 import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/native.dart';
+
 import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
 import '../data/tables/custom_tables.dart';
 import '../skips.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
-  late NativeDatabase executor;
   late CustomTablesDb db;
 
   setUp(() {
-    executor = NativeDatabase.memory();
-    db = CustomTablesDb(executor);
+    db = CustomTablesDb.connect(testInMemoryDatabase());
   });
 
   tearDown(() => db.close());

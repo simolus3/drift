@@ -1,11 +1,9 @@
-@TestOn('vm')
 import 'package:drift/drift.dart';
 import 'package:drift/extensions/native.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
-import '../data/utils/expect_generated.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   const a = CustomExpression<double>('a');
@@ -34,7 +32,7 @@ void main() {
   });
 
   test('containsCase integration test', () async {
-    final db = TodoDb(NativeDatabase.memory());
+    final db = TodoDb.connect(testInMemoryDatabase());
     // insert exactly one row so that we can evaluate expressions from Dart
     await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
 
@@ -61,7 +59,7 @@ void main() {
     late TodoDb db;
 
     setUp(() async {
-      db = TodoDb(NativeDatabase.memory());
+      db = TodoDb.connect(testInMemoryDatabase());
       // insert exactly one row so that we can evaluate expressions from Dart
       await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
     });
