@@ -22,8 +22,9 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS todos '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title TEXT NULL, '
-          'content TEXT NOT NULL, target_date INTEGER NULL, '
-          'category INTEGER NULL REFERENCES categories (id));',
+          'content TEXT NOT NULL, target_date INTEGER NULL UNIQUE, '
+          'category INTEGER NULL REFERENCES categories (id), '
+          'UNIQUE (title, category), UNIQUE (title, target_date));',
           []));
 
       verify(mockExecutor.runCustom(
@@ -39,7 +40,7 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          'name TEXT NOT NULL, '
+          'name TEXT NOT NULL UNIQUE, '
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
@@ -91,7 +92,7 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          'name TEXT NOT NULL, '
+          'name TEXT NOT NULL UNIQUE, '
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '

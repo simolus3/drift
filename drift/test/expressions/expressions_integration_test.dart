@@ -62,7 +62,7 @@ void main() {
         );
     await db.into(db.users).insert(
           UsersCompanion.insert(
-              name: 'User name',
+              name: 'User name 2',
               profilePicture: Uint8List(0),
               creationTime: Value(secondTime)),
         );
