@@ -25,6 +25,7 @@ This table list all supported drift implementations and on which platforms they 
 | `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter` |
 | `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}) is recommended. Formerly known as `package:moor/ffi.dart`. |
 | `WebDatabase` from `package:drift/web.dart` | Web | Works with or without Flutter. A bit of [additional setup]({{ 'Other engines/web.md' | pageUrl }}) is required. |
+| `WasmDatabase` from `package:drift/web.dart` | Web | Potentially faster than a `WebDatabase`, but still experimental and not yet production ready. See [this]({{ 'Other engines/web.md#drift-wasm' | pageUrl }}) for details. |
 
 To support all platforms in a shared codebase, you only need to change how you open your database, all other usages can stay the same.
 [This repository](https://github.com/rodydavis/moor_shared) gives an example on how to do that with conditional imports.
@@ -81,7 +82,7 @@ read the main article for details.
 
 ## Desktop
 
-Drift also supports all major Desktop operating systems where Dart runs on by using the 
+Drift also supports all major Desktop operating systems where Dart runs on by using the
 `NativeDatabase` from `package:drift/native.dart`. Depending on your operating system, further
 setup might be required:
 

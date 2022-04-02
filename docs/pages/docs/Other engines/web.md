@@ -270,3 +270,28 @@ DatabaseConnection connectToWorker(String databaseName) {
 ```
 
 You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.
+
+## New web backend {#drift-wasm}
+
+__Warning__: This new backend is currently in a very experimental state and not suitable for production use.
+
+Starting from version `1.6.0`, drift supports the new `package:drift/wasm.dart` backend for web apps.
+It binds to a sqlite3 WebAssembly module directly, without requireing an external JavaScript library.
+Unlike sql.js, which uses Emscripten, the new backend uses a custom [sqlite3 VFS](https://www.sqlite.org/vfs.html)
+and doesn't require any dependencies apart from sqlite3 itself.
+The intention is that this build can be optimized for Dart-typical use-cases. For instance, the sql.js backend
+needs to close and re-open the database connection for every save. The new backend can just use a custom
+virtual file system that sqlite3 will then use internally.
+
+As this version of sqlite3 was compiled with a custom VFS, you can't re-use the WebAssembly module from sql.js.
+Instead, grab a sqlite3.wasm file from the [releases](https://github.com/simolus3/sqlite3.dart/releases) of the
+`sqlite3` pub package and put this file in your `web/` folder.
+
+With this setup, sqlite3 can be used on the web without an external library:
+
+{% assign snippets = 'package:moor_documentation/snippets/engines/web_wasm.dart.excerpt.json' | readString | json_decode %}
+{% include "blocks/snippet" snippets = snippets %}
+
+This snippet also works in a service worker.
+
+If you're running into any issues with the new backend, please post them [here](https://github.com/simolus3/sqlite3.dart/issues).
