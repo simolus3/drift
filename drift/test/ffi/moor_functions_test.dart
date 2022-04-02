@@ -1,7 +1,7 @@
 @TestOn('vm')
 import 'dart:math';
 
-import 'package:drift/src/ffi/native_functions.dart';
+import 'package:drift/src/sqlite3/native_functions.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 

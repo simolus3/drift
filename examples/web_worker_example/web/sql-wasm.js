@@ -1,0 +1,1 @@
+../../../extras/integration_tests/web/test/sql-wasm.js

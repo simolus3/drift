@@ -1,0 +1,26 @@
+name: flutter_web_worker_example
+description: An absolute bare-bones flutter web app.
+
+environment:
+  sdk: ">=2.14.3"
+  flutter: ">=2.5.2"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  path_provider: ^2.0.5
+  drift:
+
+dev_dependencies:
+  build_runner: ^2.1.4
+  build_web_compilers: ^3.2.1
+  flutter_lints: ^1.0.4
+  drift_dev:
+
+dependency_overrides:
+  drift:
+    path: ../../drift
+  drift_dev:
+    path: ../../drift_dev
+  sqlparser:
+    path: ../../sqlparser

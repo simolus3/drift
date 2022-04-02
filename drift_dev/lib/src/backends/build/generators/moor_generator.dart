@@ -3,18 +3,6 @@ import 'package:drift_dev/src/backends/build/moor_builder.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
-const _ignoredLints = [
-  'unnecessary_brace_in_string_interps',
-  'unnecessary_this',
-  // more style rules from the Flutter repo we're violating. Should we fix
-  // those?
-  /*
-  'always_specify_types',
-  'implicit_dynamic_parameter',
-  'sort_constructors_first',
-  'lines_longer_than_80_chars',*/
-];
-
 const _targetMajorVersion = 2;
 const _targetMinorVersion = 6;
 
@@ -29,8 +17,8 @@ class MoorGenerator extends Generator implements BaseGenerator {
         builder.createWriter(nnbd: library.element.isNonNullableByDefault);
 
     if (parsed.declaredDatabases.isNotEmpty) {
-      final ignore = '// ignore_for_file: ${_ignoredLints.join(', ')}\n';
-      writer.leaf().write(ignore);
+      const ignore = '// ignore_for_file: type=lint';
+      writer.leaf().writeln(ignore);
     }
 
     for (final db in parsed.declaredDatabases) {
@@ -49,7 +37,7 @@ class MoorGenerator extends Generator implements BaseGenerator {
       if (major < _targetMajorVersion ||
           (major == _targetMajorVersion && minor < _targetMinorVersion)) {
         log.warning('The language version of this file is Dart $major.$minor. '
-            'Moor generates code for Dart $expected or later. Please consider '
+            'Drift generates code for Dart $expected or later. Please consider '
             'raising the minimum SDK version in your pubspec.yaml to at least '
             '$expected.0.');
       }
