@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:meta/meta.dart';
-import 'package:sqlite3/common.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import '../../backends.dart';
@@ -50,7 +49,7 @@ class NativeDatabase extends DelegatedDatabase {
   ///
   /// When the [closeUnderlyingOnClose] argument is set (which is the default),
   /// calling [QueryExecutor.close] on the returned [NativeDatabase] will also
-  /// [CommonDatabase.dispose] the [database] passed to this constructor.
+  /// [Database.dispose] the [database] passed to this constructor.
   ///
   /// Using [NativeDatabase.opened] may be useful when you want to use the same
   /// underlying [Database] in multiple drift connections. Drift uses this
