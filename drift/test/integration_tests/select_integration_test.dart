@@ -27,5 +27,5 @@ void main() {
           ..orderBy([(_) => OrderingTerm.random()]))
         .get();
     expect(rows.isSorted((a, b) => a.id.compareTo(b.id)), isFalse);
-  });
+  }, onPlatform: needsAdaptionForWeb());
 }

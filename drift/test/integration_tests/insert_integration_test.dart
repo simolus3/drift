@@ -1,3 +1,4 @@
+@TestOn('vm') // because of skips.dart
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 

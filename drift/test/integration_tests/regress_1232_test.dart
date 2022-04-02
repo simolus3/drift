@@ -27,5 +27,5 @@ void main() {
         updates: someTables, updateKind: UpdateKind.update);
 
     expect(await watchValue().first, 2);
-  });
+  }, onPlatform: needsAdaptionForWeb());
 }

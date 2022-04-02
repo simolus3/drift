@@ -164,7 +164,7 @@ void main() {
     await db
         .update(db.categories)
         .write(const CategoriesCompanion(description: Value('changed')));
-  });
+  }, onPlatform: needsAdaptionForWeb());
 
   test('custom expressions can introduces new tables to watch', () async {
     final custom = CustomExpression<int>('1', watchedTables: [db.sharedTodos]);
@@ -174,5 +174,5 @@ void main() {
 
     expect(stream, emitsInOrder([1, 1]));
     db.markTablesUpdated({db.sharedTodos});
-  });
+  }, onPlatform: needsAdaptionForWeb());
 }
