@@ -439,7 +439,7 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writeUniqueKeyOverride() {
-    buffer.write('@override\nList<Set<Column>> get uniqueKeys => ');
+    buffer.write('@override\nList<Set<GeneratedColumn>> get uniqueKeys => ');
     final uniqueKeys = table.uniqueKeys ?? [];
 
     if (uniqueKeys.isEmpty) {
