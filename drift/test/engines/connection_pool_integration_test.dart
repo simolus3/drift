@@ -7,7 +7,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' show join;
 import 'package:test/test.dart';
 
-import '../data/tables/todos.dart';
+import '../generated/todos.dart';
 
 String fileName = 'drift-wal-integration-test.db';
 final _file = File(join(Directory.systemTemp.path, fileName));

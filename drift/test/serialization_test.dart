@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
-import 'data/tables/todos.dart';
+import 'generated/todos.dart';
 
 final DateTime someDate = DateTime(2019, 06, 08);
 

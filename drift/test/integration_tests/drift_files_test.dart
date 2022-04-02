@@ -2,8 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import '../data/tables/converter.dart';
-import '../data/tables/custom_tables.dart';
+import '../generated/converter.dart';
+import '../generated/custom_tables.dart';
 import '../test_utils/test_utils.dart';
 
 const _createNoIds =

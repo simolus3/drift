@@ -1,7 +1,7 @@
 @Tags(['integration'])
 import 'package:test/test.dart';
 
-import '../data/tables/custom_tables.dart';
+import '../generated/custom_tables.dart';
 import '../test_utils/test_utils.dart';
 
 void main() {

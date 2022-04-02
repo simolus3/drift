@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:test/scaffolding.dart';
 
-import '../data/tables/todos.dart';
+import '../generated/todos.dart';
 
 void main() {
   test('creating a database instance does not schedule async work', () {

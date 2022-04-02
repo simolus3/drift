@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../data/tables/todos.dart';
+import '../generated/todos.dart';
 
 void main() {
   test('\$expandVar test', () {

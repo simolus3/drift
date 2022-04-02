@@ -5,8 +5,8 @@ import 'package:drift_dev/api/migrations.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
-import '../data/tables/custom_tables.dart';
-import '../data/tables/todos.dart';
+import '../generated/custom_tables.dart';
+import '../generated/todos.dart';
 
 void main() {
   test('change column types', () async {
