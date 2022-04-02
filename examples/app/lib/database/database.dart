@@ -93,6 +93,18 @@ class AppDatabase extends _$AppDatabase {
     }).watch();
   }
 
+  Future<void> deleteCategory(Category category) {
+    return transaction(() async {
+      // First, move todo entries that might remain into the default category
+      await (todoEntries.update()
+            ..where((todo) => todo.category.equals(category.id)))
+          .write(const TodoEntriesCompanion(category: Value(null)));
+
+      // Then, delete the category
+      await categories.deleteOne(category);
+    });
+  }
+
   static Provider<AppDatabase> provider = Provider((ref) {
     final database = AppDatabase();
     ref.onDispose(database.close);

@@ -139,7 +139,7 @@ class _CategoryDrawerEntry extends ConsumerWidget {
 
             // can be null when the dialog is dismissed
             if (confirmed == true) {
-              ref.read(AppDatabase.provider).categories.deleteOne(category);
+              ref.read(AppDatabase.provider).deleteCategory(category);
             }
           },
         ),

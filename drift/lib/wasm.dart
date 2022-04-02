@@ -31,6 +31,17 @@ class WasmDatabase extends DelegatedDatabase {
   WasmDatabase._(DatabaseDelegate delegate, bool logStatements)
       : super(delegate, isSequential: true, logStatements: logStatements);
 
+  /// Creates a wasm database at [path] in the virtual file system of the
+  /// [sqlite3] module.
+  factory WasmDatabase({
+    required CommmonSqlite3 sqlite3,
+    required String path,
+    WasmDatabaseSetup? setup,
+    bool logStatements = false,
+  }) {
+    return WasmDatabase._(_WasmDelegate(sqlite3, path, setup), logStatements);
+  }
+
   /// Creates an in-memory database in the loaded [sqlite3] database.
   factory WasmDatabase.inMemory(
     CommmonSqlite3 sqlite3, {

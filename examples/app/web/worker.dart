@@ -7,8 +7,6 @@ import 'package:drift/remote.dart';
 
 void main() {
   final self = SharedWorkerGlobalScope.instance;
-  self.importScripts('sql-wasm.js');
-
   final server = DriftServer(connect(isInWebWorker: true));
 
   self.onConnect.listen((event) {
