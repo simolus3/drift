@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/common.dart';
 
 // ignore_for_file: avoid_returning_null, only_throw_errors
 
 /// Extension to register moor-specific sql functions.
-extension EnableNativeFunctions on Database {
+extension EnableNativeFunctions on CommonDatabase {
   /// Enables moor-specific sql functions on this database.
   void useNativeFunctions() {
     createFunction(
