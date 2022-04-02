@@ -34,5 +34,3 @@ dependency_overrides:
     path: ../drift_dev
   sqlparser:
     path: ../sqlparser
-  sqlite3:
-    path: /home/simon/programming/sqlite3.dart/sqlite3
