@@ -51,11 +51,23 @@ class TableParser {
             key.first.features.contains(const UniqueKey()))) {
       base.step.errors.report(ErrorInDartCode(
         message:
-            'Column provided in a single-column uniqueKey set already have a '
-            'column level UNIQUE constraint',
+            'Column provided in a single-column uniqueKey set already has a '
+            'column-level UNIQUE constraint',
         affectedElement: element,
       ));
     }
+
+    if (uniqueKeys != null &&
+        primaryKey != null &&
+        uniqueKeys
+            .any((unique) => const SetEquality().equals(unique, primaryKey))) {
+      base.step.errors.report(ErrorInDartCode(
+        message: 'The uniqueKeys override contains the primary key, which is '
+            'already unique by default.',
+        affectedElement: element,
+      ));
+    }
+
     var index = 0;
     for (final converter in table.converters) {
       converter
