@@ -238,7 +238,7 @@ class Users extends Table {
   Set<Column> get primaryKey => {email};
 }
 
-Future<void> createOrUpdateUser(User user) {
+Future<int> createOrUpdateUser(User user) {
   return into(users).insertOnConflictUpdate(user);
 }
 ```
