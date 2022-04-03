@@ -1,4 +1,5 @@
 @Tags(['integration'])
+@TestOn('vm')
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:test/test.dart';

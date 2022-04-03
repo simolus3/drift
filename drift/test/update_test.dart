@@ -5,7 +5,7 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
-import 'data/utils/mocks.dart';
+import 'test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;

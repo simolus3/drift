@@ -1,15 +1,14 @@
-@TestOn('vm')
 import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
 
   setUp(() async {
-    db = TodoDb(NativeDatabase.memory());
+    db = TodoDb.connect(testInMemoryDatabase());
 
     // we selectOnly from users for the lack of a better option. Insert one
     // row so that getSingle works
@@ -165,7 +164,7 @@ void main() {
     await db
         .update(db.categories)
         .write(const CategoriesCompanion(description: Value('changed')));
-  });
+  }, onPlatform: needsAdaptionForWeb());
 
   test('custom expressions can introduces new tables to watch', () async {
     final custom = CustomExpression<int>('1', watchedTables: [db.sharedTodos]);
@@ -175,5 +174,5 @@ void main() {
 
     expect(stream, emitsInOrder([1, 1]));
     db.markTablesUpdated({db.sharedTodos});
-  });
+  }, onPlatform: needsAdaptionForWeb());
 }

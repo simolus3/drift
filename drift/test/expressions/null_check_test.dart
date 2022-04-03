@@ -2,8 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
-import '../data/utils/expect_equality.dart';
-import '../data/utils/expect_generated.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   const innerExpression =

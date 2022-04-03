@@ -1,13 +1,12 @@
-@TestOn('vm')
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
+import '../test_utils/test_utils.dart';
+
 class _TestDb extends GeneratedDatabase {
-  _TestDb()
-      : super(const SqlTypeSystem.withDefaults(), NativeDatabase.memory());
+  _TestDb() : super.connect(testInMemoryDatabase());
   @override
   final List<TableInfo> allTables = const [];
   @override
@@ -35,6 +34,6 @@ void main() {
         throwsA(isA<StateError>().having((e) => e.message, 'message',
             contains("Can't re-open a database after closing it."))),
       );
-    });
+    }, onPlatform: needsAdaptionForWeb());
   }
 }

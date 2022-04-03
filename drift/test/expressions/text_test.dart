@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
-import '../data/utils/expect_generated.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   const expression =

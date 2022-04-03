@@ -2,8 +2,6 @@ import 'package:drift/drift.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:uuid/uuid.dart';
 
-import '../utils/null_executor.dart';
-
 part 'todos.g.dart';
 
 mixin AutoIncrement on Table {
@@ -173,7 +171,7 @@ abstract class TodoWithCategoryView extends View {
   },
 )
 class TodoDb extends _$TodoDb {
-  TodoDb([QueryExecutor? e]) : super(e ?? const NullExecutor()) {
+  TodoDb([QueryExecutor? e]) : super(e ?? _nullExecutor) {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 
@@ -201,3 +199,6 @@ class TodoDb extends _$TodoDb {
 class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
   SomeDao(TodoDb db) : super(db);
 }
+
+QueryExecutor get _nullExecutor =>
+    LazyDatabase(() => throw UnsupportedError('stub'));

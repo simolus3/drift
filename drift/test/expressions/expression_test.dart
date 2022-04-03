@@ -4,8 +4,7 @@ import 'package:test/test.dart';
 
 import '../data/tables/custom_tables.dart';
 import '../data/tables/todos.dart';
-import '../data/utils/expect_generated.dart';
-import '../data/utils/mocks.dart';
+import '../test_utils/test_utils.dart';
 
 class _UnknownExpr extends Expression {
   @override

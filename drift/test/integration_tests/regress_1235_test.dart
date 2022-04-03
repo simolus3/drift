@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:drift/native.dart';
 import 'package:test/scaffolding.dart';
 
 import '../data/tables/todos.dart';
@@ -10,7 +9,7 @@ void main() {
     // See https://github.com/simolus3/drift/issues/1235. We shouldn't run async
     // work without users being aware of it, and no one expects creating an
     // instance to schedule new microtasks.
-    noAsync(() => TodoDb(NativeDatabase.memory()));
+    noAsync(TodoDb.new);
   });
 }
 

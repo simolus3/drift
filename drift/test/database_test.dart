@@ -3,7 +3,7 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
-import 'data/utils/mocks.dart';
+import 'test_utils/test_utils.dart';
 
 class _FakeDb extends GeneratedDatabase {
   _FakeDb(SqlTypeSystem types, QueryExecutor executor) : super(types, executor);

@@ -175,7 +175,7 @@ class DriftProtocol {
       case _tag_ExecuteQuery:
         final method = StatementMethod.values[readInt(1)];
         final sql = fullMessage![2] as String;
-        final args = fullMessage[3] as List;
+        final args = (fullMessage[3] as List).map(_decodeDbValue).toList();
         final executorId = readNullableInt(4);
         return ExecuteQuery(method, sql, args, executorId);
       case _tag_ExecuteBatchedStatement:
@@ -249,6 +249,14 @@ class DriftProtocol {
       return Uint8List.fromList(variable);
     } else {
       return variable;
+    }
+  }
+
+  Object? _decodeDbValue(Object? wire) {
+    if (wire is List) {
+      return wire.cast<int>();
+    } else {
+      return wire;
     }
   }
 }

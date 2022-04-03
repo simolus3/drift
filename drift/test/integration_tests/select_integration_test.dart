@@ -1,16 +1,15 @@
-@TestOn('vm')
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
 
   setUp(() {
-    db = TodoDb(NativeDatabase.memory());
+    db = TodoDb.connect(testInMemoryDatabase());
   });
 
   tearDown(() => db.close());
@@ -28,5 +27,5 @@ void main() {
           ..orderBy([(_) => OrderingTerm.random()]))
         .get();
     expect(rows.isSorted((a, b) => a.id.compareTo(b.id)), isFalse);
-  });
+  }, onPlatform: needsAdaptionForWeb());
 }
