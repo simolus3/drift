@@ -1,5 +1,7 @@
 ## 1.6.0-dev
 
+- Add the `unique()` method to columns and the `uniqueKeys` override to tables
+  to define unique constraints in Dart tables.
 - Add the very experimental `package:drift/wasm.dart` library. It uses WebAssembly
   to access sqlite3 without any external JavaScript libraries, but requires you to
   add a [WebAssembly module](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3#wasm-web-support)
