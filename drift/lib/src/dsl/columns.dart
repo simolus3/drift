@@ -95,8 +95,8 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// [constraint] if that is desired.
   ///
   /// This can be used to implement constraints that drift does not (yet)
-  /// support (e.g. unique keys, etc.). If you've found a common use-case for
-  /// this, it should be considered a limitation of drift itself. Please feel
+  /// support. If you've found a common use-case for  this, it should be
+  /// considered a limitation of drift itself. Please feel
   /// free to open an issue at https://github.com/simolus3/drift/issues/new to
   /// report that.
   ///
@@ -251,6 +251,12 @@ extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
   /// Marks this column as nullable. Nullable columns should not appear in a
   /// primary key. Columns are non-null by default.
   ColumnBuilder<T?> nullable() => _isGenerated();
+
+  /// Adds UNIQUE constraint to column.
+  ///
+  /// Unique constraints spanning multiple keys can be added to a table by
+  /// overriding [Table.uniqueKeys].
+  ColumnBuilder<T?> unique() => _isGenerated();
 
   /// Uses a custom [converter] to store custom Dart objects in a single column
   /// and automatically mapping them from and to sql.

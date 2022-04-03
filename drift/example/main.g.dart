@@ -172,6 +172,8 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
     return TodoCategory.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -459,6 +461,8 @@ class $TodoItemsTable extends TodoItems
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     return TodoItem.fromData(data,

@@ -271,6 +271,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   @override
   Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Config.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -458,6 +460,8 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     return WithDefault.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -545,6 +549,8 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {payload};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -766,6 +772,8 @@ class WithConstraints extends Table
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
     return WithConstraint.fromData(data,
@@ -1036,6 +1044,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {someid};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     return MytableData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -1256,6 +1266,8 @@ class Email extends Table
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
     return EMail.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -1442,6 +1454,8 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
     return WeirdData.fromData(data,

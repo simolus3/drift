@@ -166,6 +166,8 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   Entrie map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Entrie.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);

@@ -28,6 +28,14 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   @override
   Set<Column> get primaryKey => $primaryKey;
 
+  /// The unique key of this table. Can be empty if no custom primary key has
+  /// been specified.
+  ///
+  /// Additional to the [Table.primaryKey] columns declared by an user, this
+  /// also contains auto-increment integers, which are primary key by default.
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => const [];
+
   /// The table name in the sql table. This can be an alias for the actual table
   /// name. See [actualTableName] for a table name that is not aliased.
   @Deprecated('Use aliasedName instead')

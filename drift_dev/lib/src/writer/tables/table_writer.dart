@@ -28,9 +28,21 @@ abstract class TableOrViewWriter {
               : 'PRIMARY KEY');
 
           wrotePkConstraint = true;
+          break;
         }
       }
+    }
 
+    if (!wrotePkConstraint) {
+      for (final feature in column.features) {
+        if (feature is UniqueKey) {
+          defaultConstraints.add('UNIQUE');
+          break;
+        }
+      }
+    }
+
+    for (final feature in column.features) {
       if (feature is ResolvedDartForeignKeyReference) {
         final tableName = escapeIfNeeded(feature.otherTable.sqlName);
         final columnName = escapeIfNeeded(feature.otherColumn.name.name);
@@ -324,6 +336,7 @@ class TableWriter extends TableOrViewWriter {
 
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
+    _writeUniqueKeyOverride();
 
     writeMappingMethod(scope);
     // _writeReverseMappingMethod();
@@ -423,6 +436,32 @@ class TableWriter extends TableOrViewWriter {
       }
     }
     buffer.write('};\n');
+  }
+
+  void _writeUniqueKeyOverride() {
+    buffer.write('@override\nList<Set<GeneratedColumn>> get uniqueKeys => ');
+    final uniqueKeys = table.uniqueKeys ?? [];
+
+    if (uniqueKeys.isEmpty) {
+      buffer.write('[];');
+      return;
+    }
+
+    buffer.write('[');
+    for (final uniqueKey in uniqueKeys) {
+      buffer.write('{');
+      final uqList = uniqueKey.toList();
+      for (var i = 0; i < uqList.length; i++) {
+        final pk = uqList[i];
+
+        buffer.write(pk.dartGetterName);
+        if (i != uqList.length - 1) {
+          buffer.write(', ');
+        }
+      }
+      buffer.write('},\n');
+    }
+    buffer.write('];\n');
   }
 
   void _writeAliasGenerator() {

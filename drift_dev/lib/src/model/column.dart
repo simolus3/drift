@@ -203,6 +203,11 @@ class PrimaryKey extends ColumnFeature {
   const PrimaryKey();
 }
 
+/// A `UNIQUE` column constraint.
+class UniqueKey extends ColumnFeature {
+  const UniqueKey();
+}
+
 class AutoIncrement extends PrimaryKey {
   static const AutoIncrement _instance = AutoIncrement._();
 

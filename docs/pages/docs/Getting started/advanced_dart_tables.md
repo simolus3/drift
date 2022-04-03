@@ -1,7 +1,7 @@
 ---
 data:
   title: "Dart tables"
-  description: Further information on Dart tables
+  description: Further information on defining tables in Dart.
   weight: 150
 template: layouts/docs/single
 ---
@@ -10,6 +10,8 @@ template: layouts/docs/single
 __Prefer sql?__ If you prefer, you can also declare tables via `CREATE TABLE` statements.
 Drift's sql analyzer will generate matching Dart code. [Details]({{ "starting_with_sql.md" | pageUrl }}).
 {% endblock %}
+
+{% assign snippets = 'package:moor_documentation/snippets/tables/advanced.dart.excerpt.json' | readString | json_decode %}
 
 As shown in the [getting started guide]({{ "index.md" | pageUrl }}), sql tables can be written in Dart:
 ```dart
@@ -127,6 +129,19 @@ Note that the primary key must essentially be constant so that the generator can
 
 - it must be defined with the `=>` syntax, function bodies aren't supported
 - it must return a set literal without collection elements like `if`, `for` or spread operators
+
+## Unique Constraints
+
+Starting from version 1.6.0, `UNIQUE` SQL constraints can be defined on Dart tables too.
+A unique constraint contains one or more columns. The combination of all columns in a constraint
+must be unique in the table, or the databas will report an error on inserts.
+
+With drift, a unique constraint can be added to a single column by marking it as `.unique()` in
+the column builder.
+A unique set spanning multiple columns can be added by overriding the `uniqueKeys` getter in the
+`Table` class:
+
+{% include "blocks/snippet" snippets = snippets name = 'unique' %}
 
 ## Supported column types
 

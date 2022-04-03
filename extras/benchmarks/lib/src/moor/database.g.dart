@@ -126,9 +126,10 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
 
 class $KeyValuesTable extends KeyValues
     with TableInfo<$KeyValuesTable, KeyValue> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $KeyValuesTable(this._db, [this._alias]);
+  $KeyValuesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String?> key = GeneratedColumn<String?>(
@@ -168,6 +169,8 @@ class $KeyValuesTable extends KeyValues
   @override
   Set<GeneratedColumn> get $primaryKey => {key};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
     return KeyValue.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -175,7 +178,7 @@ class $KeyValuesTable extends KeyValues
 
   @override
   $KeyValuesTable createAlias(String alias) {
-    return $KeyValuesTable(_db, alias);
+    return $KeyValuesTable(attachedDatabase, alias);
   }
 }
 

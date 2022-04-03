@@ -19,7 +19,7 @@ void main() {
       b.insertAll(db.users, [
         for (var i = 0; i < 1000; i++)
           UsersCompanion.insert(
-              name: 'user name', profilePicture: Uint8List(0)),
+              name: 'user name $i', profilePicture: Uint8List(0)),
       ]);
     });
 

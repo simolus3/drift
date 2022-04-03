@@ -249,6 +249,8 @@ class $CategoriesTable extends Categories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Category.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -503,7 +505,9 @@ class $TodosTableTable extends TodosTable
   @override
   late final GeneratedColumn<DateTime?> targetDate = GeneratedColumn<DateTime?>(
       'target_date', aliasedName, true,
-      type: const IntType(), requiredDuringInsert: false);
+      type: const IntType(),
+      requiredDuringInsert: false,
+      defaultConstraints: 'UNIQUE');
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
@@ -551,6 +555,11 @@ class $TodosTableTable extends TodosTable
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {title, category},
+        {title, targetDate},
+      ];
   @override
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     return TodoEntry.fromData(data,
@@ -782,7 +791,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
       type: const StringType(),
-      requiredDuringInsert: true);
+      requiredDuringInsert: true,
+      defaultConstraints: 'UNIQUE');
   final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
   @override
   late final GeneratedColumn<bool?> isAwesome = GeneratedColumn<bool?>(
@@ -849,6 +859,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     return User.fromData(data,
@@ -1030,6 +1042,8 @@ class $SharedTodosTable extends SharedTodos
   @override
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     return SharedTodo.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -1183,6 +1197,8 @@ class $TableWithoutPKTable extends TableWithoutPK
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1340,6 +1356,8 @@ class $PureDefaultsTable extends PureDefaults
 
   @override
   Set<GeneratedColumn> get $primaryKey => {txt};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     return PureDefault.fromData(data,

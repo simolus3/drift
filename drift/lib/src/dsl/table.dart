@@ -62,6 +62,34 @@ abstract class Table extends HasResultSet {
   @visibleForOverriding
   Set<Column>? get primaryKey => null;
 
+  /// Unique constraints in this table.
+  ///
+  /// When two rows have the same value in _any_  set specified in [uniqueKeys],
+  /// the database will reject the second row for inserts.
+  ///
+  /// Override this to specify unique keys:
+  ///
+  /// ```dart
+  /// class IngredientInRecipes extends Table {
+  ///  @override
+  ///  Set<Column> get uniqueKeys =>
+  ///     [{recipe, ingredient}, {recipe, amountInGrams}];
+  ///
+  ///  IntColumn get recipe => integer()();
+  ///  IntColumn get ingredient => integer()();
+  ///
+  ///  IntColumn get amountInGrams => integer().named('amount')();
+  /// ```
+  ///
+  /// The getter must return a list of set literals using the `=>` syntax so
+  /// that the drift generator can understand the code.
+  ///
+  /// Note that individual columns can also be marked as unique with
+  /// [BuildGeneralColumn.unique]. This is equivalent to adding a single-element
+  /// set to this list.
+  @visibleForOverriding
+  List<Set<Column>>? get uniqueKeys => null;
+
   /// Custom table constraints that should be added to the table.
   ///
   /// See also:

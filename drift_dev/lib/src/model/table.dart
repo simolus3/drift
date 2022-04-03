@@ -92,6 +92,10 @@ class MoorTable extends MoorEntityWithResultSet {
   /// For the full primary key, see [fullPrimaryKey].
   final Set<MoorColumn>? primaryKey;
 
+  /// The set of unique keys if they have been explicitly defined by
+  /// overriding `uniqueKeys` in the table class.
+  final List<Set<MoorColumn>>? uniqueKeys;
+
   /// The primary key for this table.
   ///
   /// Unlikely [primaryKey], this method is not limited to the `primaryKey`
@@ -146,6 +150,7 @@ class MoorTable extends MoorEntityWithResultSet {
     required this.sqlName,
     required this.dartTypeName,
     this.primaryKey,
+    this.uniqueKeys,
     String? overriddenName,
     this.overrideWithoutRowId,
     this.overrideTableConstraints,
