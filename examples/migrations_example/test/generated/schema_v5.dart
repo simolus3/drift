@@ -5,7 +5,8 @@ import 'package:drift/drift.dart';
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
-  UsersData({required this.id, required this.name});
+  final int? nextUser;
+  UsersData({required this.id, required this.name, this.nextUser});
   factory UsersData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return UsersData(
@@ -13,6 +14,8 @@ class UsersData extends DataClass implements Insertable<UsersData> {
           .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       name: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      nextUser: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
     );
   }
   @override
@@ -20,6 +23,9 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || nextUser != null) {
+      map['next_user'] = Variable<int?>(nextUser);
+    }
     return map;
   }
 
@@ -27,6 +33,9 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return UsersCompanion(
       id: Value(id),
       name: Value(name),
+      nextUser: nextUser == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextUser),
     );
   }
 
@@ -36,6 +45,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return UsersData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      nextUser: serializer.fromJson<int?>(json['nextUser']),
     );
   }
   @override
@@ -44,55 +54,68 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'nextUser': serializer.toJson<int?>(nextUser),
     };
   }
 
-  UsersData copyWith({int? id, String? name}) => UsersData(
+  UsersData copyWith({int? id, String? name, int? nextUser}) => UsersData(
         id: id ?? this.id,
         name: name ?? this.name,
+        nextUser: nextUser ?? this.nextUser,
       );
   @override
   String toString() {
     return (StringBuffer('UsersData(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name);
+  int get hashCode => Object.hash(id, name, nextUser);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is UsersData && other.id == this.id && other.name == this.name);
+      (other is UsersData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.nextUser == this.nextUser);
 }
 
 class UsersCompanion extends UpdateCompanion<UsersData> {
   final Value<int> id;
   final Value<String> name;
+  final Value<int?> nextUser;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.nextUser = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.nextUser = const Value.absent(),
   });
   static Insertable<UsersData> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<int?>? nextUser,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (nextUser != null) 'next_user': nextUser,
     });
   }
 
-  UsersCompanion copyWith({Value<int>? id, Value<String>? name}) {
+  UsersCompanion copyWith(
+      {Value<int>? id, Value<String>? name, Value<int?>? nextUser}) {
     return UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      nextUser: nextUser ?? this.nextUser,
     );
   }
 
@@ -105,6 +128,9 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (nextUser.present) {
+      map['next_user'] = Variable<int?>(nextUser.value);
+    }
     return map;
   }
 
@@ -112,7 +138,8 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
   String toString() {
     return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
   }
@@ -133,8 +160,13 @@ class Users extends Table with TableInfo<Users, UsersData> {
       type: const StringType(),
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
+  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      'next_user', aliasedName, true,
+      type: const IntType(),
+      requiredDuringInsert: false,
+      defaultConstraints: 'REFERENCES users (id)');
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  List<GeneratedColumn> get $columns => [id, name, nextUser];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -383,9 +415,9 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   bool get dontWriteConstraints => true;
 }
 
-class DatabaseAtV4 extends GeneratedDatabase {
-  DatabaseAtV4(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  DatabaseAtV4.connect(DatabaseConnection c) : super.connect(c);
+class DatabaseAtV5 extends GeneratedDatabase {
+  DatabaseAtV5(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV5.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   @override
@@ -393,5 +425,5 @@ class DatabaseAtV4 extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, groups];
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 }

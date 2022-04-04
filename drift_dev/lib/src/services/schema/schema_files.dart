@@ -3,6 +3,8 @@ import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../../writer/utils/column_constraints.dart';
+
 const _infoVersion = '0.1.0-dev-preview';
 
 /// Utilities to transform moor schema entities to json.
@@ -71,7 +73,8 @@ class SchemaWriter {
     return {
       'id': _idOf(entity),
       'references': [
-        for (final reference in entity.references) _idOf(reference),
+        for (final reference in entity.references)
+          if (reference != entity) _idOf(reference),
       ],
       'type': type,
       'data': data,
@@ -95,12 +98,16 @@ class SchemaWriter {
   }
 
   Map _columnData(MoorColumn column) {
+    final constraints = defaultConstraints(column);
+
     return {
       'name': column.name.name,
       'getter_name': column.dartGetterName,
       'moor_type': column.type.toString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
+      if (constraints.isNotEmpty && column.customConstraints == null)
+        'defaultConstraints': defaultConstraints(column),
       'default_dart': column.defaultArgument,
       'default_client_dart': column.clientDefaultCode,
       'dsl_features': [...column.features.map(_dslFeatureData)],
@@ -283,9 +290,12 @@ class SchemaReader {
         .firstWhere((type) => type.toString() == data['moor_type']);
     final nullable = data['nullable'] as bool;
     final customConstraints = data['customConstraints'] as String?;
+    final defaultConstraints = data['defaultConstraints'] as String?;
     final dslFeatures = [
       for (final feature in data['dsl_features'] as List<dynamic>)
-        _columnFeature(feature)
+        _columnFeature(feature),
+      if (defaultConstraints != null)
+        DefaultConstraintsFromSchemaFile(defaultConstraints),
     ];
     final getterName = data['getter_name'] as String?;
 

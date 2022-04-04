@@ -17,8 +17,13 @@ class Users extends Table with TableInfo {
       type: const StringType(),
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
+  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      'next_user', aliasedName, true,
+      type: const IntType(),
+      requiredDuringInsert: false,
+      defaultConstraints: 'REFERENCES users (id)');
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  List<GeneratedColumn> get $columns => [id, name, nextUser];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -93,9 +98,9 @@ class Groups extends Table with TableInfo {
   bool get dontWriteConstraints => true;
 }
 
-class DatabaseAtV4 extends GeneratedDatabase {
-  DatabaseAtV4(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  DatabaseAtV4.connect(DatabaseConnection c) : super.connect(c);
+class DatabaseAtV5 extends GeneratedDatabase {
+  DatabaseAtV5(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV5.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   @override
@@ -103,5 +108,5 @@ class DatabaseAtV4 extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, groups];
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 }

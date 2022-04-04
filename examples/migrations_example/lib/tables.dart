@@ -5,4 +5,6 @@ class Users extends Table {
 
   // added in schema version 2, got a default in version 4
   TextColumn get name => text().withDefault(const Constant('name'))();
+
+  IntColumn get nextUser => integer().nullable().references(Users, #id)();
 }

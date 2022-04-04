@@ -24,6 +24,8 @@ class Users extends Table with TableInfo {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
+  @override
   Never map(Map<String, dynamic> data, {String? tablePrefix}) {
     throw UnsupportedError('TableInfo.map in schema verification code');
   }
@@ -71,6 +73,8 @@ class Groups extends Table with TableInfo {
   String get actualTableName => 'groups';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   Never map(Map<String, dynamic> data, {String? tablePrefix}) {
     throw UnsupportedError('TableInfo.map in schema verification code');

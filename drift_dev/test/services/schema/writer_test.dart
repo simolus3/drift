@@ -148,6 +148,7 @@ const expected = r'''
                   "moor_type":"ColumnType.integer",
                   "nullable":false,
                   "customConstraints":null,
+                  "defaultConstraints":"PRIMARY KEY AUTOINCREMENT",
                   "default_dart":null,
                   "default_client_dart":null,
                   "dsl_features":[

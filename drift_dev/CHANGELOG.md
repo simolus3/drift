@@ -1,3 +1,7 @@
+## 1.6.0-dev
+
+- Write Dart references into schema files.
+
 ## 1.5.2
 
 - Fix crash when reading dynamic type converters.

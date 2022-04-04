@@ -1,8 +1,9 @@
-import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:sqlparser/sqlparser.dart';
+
+import '../utils/column_constraints.dart';
 
 /// Common writer for tables or views.
 ///
@@ -16,53 +17,9 @@ abstract class TableOrViewWriter {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
-
-    final defaultConstraints = <String>[];
-    var wrotePkConstraint = false;
+    final constraints = defaultConstraints(column);
 
     for (final feature in column.features) {
-      if (feature is PrimaryKey) {
-        if (!wrotePkConstraint) {
-          defaultConstraints.add(feature is AutoIncrement
-              ? 'PRIMARY KEY AUTOINCREMENT'
-              : 'PRIMARY KEY');
-
-          wrotePkConstraint = true;
-          break;
-        }
-      }
-    }
-
-    if (!wrotePkConstraint) {
-      for (final feature in column.features) {
-        if (feature is UniqueKey) {
-          defaultConstraints.add('UNIQUE');
-          break;
-        }
-      }
-    }
-
-    for (final feature in column.features) {
-      if (feature is ResolvedDartForeignKeyReference) {
-        final tableName = escapeIfNeeded(feature.otherTable.sqlName);
-        final columnName = escapeIfNeeded(feature.otherColumn.name.name);
-
-        var constraint = 'REFERENCES $tableName ($columnName)';
-
-        final onUpdate = feature.onUpdate;
-        final onDelete = feature.onDelete;
-
-        if (onUpdate != null) {
-          constraint = '$constraint ON UPDATE ${onUpdate.description}';
-        }
-
-        if (onDelete != null) {
-          constraint = '$constraint ON DELETE ${onDelete.description}';
-        }
-
-        defaultConstraints.add(constraint);
-      }
-
       if (feature is LimitingTextLength) {
         final buffer = StringBuffer('GeneratedColumn.checkTextLength(');
 
@@ -78,10 +35,6 @@ abstract class TableOrViewWriter {
       }
     }
 
-    if (column.type == ColumnType.boolean) {
-      final name = escapeIfNeeded(column.name.name);
-      defaultConstraints.add('CHECK ($name IN (0, 1))');
-    }
     additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';
 
     if (tableOrView is MoorTable) {
@@ -93,10 +46,9 @@ abstract class TableOrViewWriter {
     if (column.customConstraints != null) {
       additionalParams['\$customConstraints'] =
           asDartLiteral(column.customConstraints!);
-    } else if (defaultConstraints.isNotEmpty) {
-      // Use the default constraints supported by moor
-      additionalParams['defaultConstraints'] =
-          asDartLiteral(defaultConstraints.join(' '));
+    } else if (constraints.isNotEmpty) {
+      // Use the default constraints supported by drift
+      additionalParams['defaultConstraints'] = asDartLiteral(constraints);
     }
 
     if (column.defaultArgument != null) {
@@ -512,23 +464,6 @@ class TableWriter extends TableOrViewWriter {
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');
-    }
-  }
-}
-
-extension on ReferenceAction {
-  String get description {
-    switch (this) {
-      case ReferenceAction.setNull:
-        return 'SET NULL';
-      case ReferenceAction.setDefault:
-        return 'SET DEFAULT';
-      case ReferenceAction.cascade:
-        return 'CASCADE';
-      case ReferenceAction.restrict:
-        return 'RESTRICT';
-      case ReferenceAction.noAction:
-        return 'NO ACTION';
     }
   }
 }

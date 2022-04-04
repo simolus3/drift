@@ -6,11 +6,12 @@ part of 'database.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
-  User({required this.id, required this.name});
+  final int? nextUser;
+  User({required this.id, required this.name, this.nextUser});
   factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
@@ -18,6 +19,8 @@ class User extends DataClass implements Insertable<User> {
           .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       name: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      nextUser: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
     );
   }
   @override
@@ -25,6 +28,9 @@ class User extends DataClass implements Insertable<User> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || nextUser != null) {
+      map['next_user'] = Variable<int?>(nextUser);
+    }
     return map;
   }
 
@@ -32,6 +38,9 @@ class User extends DataClass implements Insertable<User> {
     return UsersCompanion(
       id: Value(id),
       name: Value(name),
+      nextUser: nextUser == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextUser),
     );
   }
 
@@ -41,6 +50,7 @@ class User extends DataClass implements Insertable<User> {
     return User(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      nextUser: serializer.fromJson<int?>(json['nextUser']),
     );
   }
   @override
@@ -49,55 +59,68 @@ class User extends DataClass implements Insertable<User> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'nextUser': serializer.toJson<int?>(nextUser),
     };
   }
 
-  User copyWith({int? id, String? name}) => User(
+  User copyWith({int? id, String? name, int? nextUser}) => User(
         id: id ?? this.id,
         name: name ?? this.name,
+        nextUser: nextUser ?? this.nextUser,
       );
   @override
   String toString() {
     return (StringBuffer('User(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name);
+  int get hashCode => Object.hash(id, name, nextUser);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is User && other.id == this.id && other.name == this.name);
+      (other is User &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.nextUser == this.nextUser);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
   final Value<int> id;
   final Value<String> name;
+  final Value<int?> nextUser;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.nextUser = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.nextUser = const Value.absent(),
   });
   static Insertable<User> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<int?>? nextUser,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (nextUser != null) 'next_user': nextUser,
     });
   }
 
-  UsersCompanion copyWith({Value<int>? id, Value<String>? name}) {
+  UsersCompanion copyWith(
+      {Value<int>? id, Value<String>? name, Value<int?>? nextUser}) {
     return UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      nextUser: nextUser ?? this.nextUser,
     );
   }
 
@@ -110,6 +133,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (nextUser.present) {
+      map['next_user'] = Variable<int?>(nextUser.value);
+    }
     return map;
   }
 
@@ -117,7 +143,8 @@ class UsersCompanion extends UpdateCompanion<User> {
   String toString() {
     return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
   }
@@ -142,8 +169,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       type: const StringType(),
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
+  final VerificationMeta _nextUserMeta = const VerificationMeta('nextUser');
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      'next_user', aliasedName, true,
+      type: const IntType(),
+      requiredDuringInsert: false,
+      defaultConstraints: 'REFERENCES users (id)');
+  @override
+  List<GeneratedColumn> get $columns => [id, name, nextUser];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -159,6 +193,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     if (data.containsKey('name')) {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    }
+    if (data.containsKey('next_user')) {
+      context.handle(_nextUserMeta,
+          nextUser.isAcceptableOrUnknown(data['next_user']!, _nextUserMeta));
     }
     return context;
   }

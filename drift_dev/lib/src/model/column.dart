@@ -279,3 +279,13 @@ class ColumnGeneratedAs {
 
   ColumnGeneratedAs(this.dartExpression, this.stored);
 }
+
+/// When exporting a column to a schema JSON file, all default constraints
+/// like `PRIMARY KEY`, `REFERENCES`, `UNIQUE`, ...) are written as a single
+/// string. Instead of recovering all column features, the schema reader just
+/// emits this default constraints feature which is enough for schema tests.
+class DefaultConstraintsFromSchemaFile extends ColumnFeature {
+  final String defaultConstraints;
+
+  DefaultConstraintsFromSchemaFile(this.defaultConstraints);
+}

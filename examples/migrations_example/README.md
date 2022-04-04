@@ -12,8 +12,6 @@ After adapting a schema and incrementing the `schemaVersion` in the database, ru
 dart run drift_dev schema dump lib/database.dart drift_migrations/
 ```
 
-Replace `_v2` with the current `schemaVersion`.
-
 ### Generating test code
 
 Run
