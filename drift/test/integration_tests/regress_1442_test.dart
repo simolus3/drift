@@ -34,6 +34,6 @@ void main() {
         throwsA(isA<StateError>().having((e) => e.message, 'message',
             contains("Can't re-open a database after closing it."))),
       );
-    }, onPlatform: needsAdaptionForWeb());
+    });
   }
 }
