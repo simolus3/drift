@@ -11,6 +11,7 @@ import 'package:drift_dev/writer.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
+import '../utils.dart';
 
 void main() {
   late TestBackend backend;
@@ -117,6 +118,14 @@ void main() {
 
       @DriftDatabase(tables: [Foo, DoesNotExist])
       class Database {}
+      ''',
+      AssetId.parse('test_lib|lib/invalid_constraints.dart'): '''
+      import 'package:drift/drift.dart';
+
+      class InvalidConstraints extends Table {
+        IntColumn get a => integer().autoIncrement().customConstraint('foo')();
+        IntColumn get b => integer().customConstraint('a').customConstraint('b')();
+      }
       ''',
     });
   });
@@ -364,6 +373,28 @@ void main() {
           ),
         ),
       ),
+    );
+  });
+
+  test('reports errors around suspicous customConstraint uses', () async {
+    final session = MoorSession(backend);
+    final uri = Uri.parse('package:test_lib/invalid_constraints.dart');
+    final backendTask = backend.startTask(uri);
+    final task = session.startTask(backendTask);
+    await task.runTask();
+
+    final file = session.registerFile(uri);
+    file.expectDartError(
+      allOf(
+        contains(
+            'This column definition is using both drift-defined constraints'),
+        contains('and a customConstraint()'),
+      ),
+      'a',
+    );
+    file.expectDartError(
+      contains("You've already set custom constraints on this column"),
+      'customConstraint',
     );
   });
 }

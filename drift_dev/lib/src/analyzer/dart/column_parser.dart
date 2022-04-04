@@ -29,6 +29,14 @@ const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
 const String _methodGenerated = 'generatedAs';
+const Set<String> _addsSqlConstraint = {
+  _methodNamed,
+  _methodReferences,
+  _methodAutoIncrement,
+  _methodUnique,
+  _methodDefault,
+  _methodGenerated
+};
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
@@ -74,6 +82,7 @@ class ColumnParser {
     DriftDartType? typeConverterRuntime;
     ColumnGeneratedAs? generatedAs;
     var nullable = false;
+    var hasDefaultConstraints = false;
 
     final foundFeatures = <ColumnFeature>[];
 
@@ -83,6 +92,10 @@ class ColumnParser {
       if (starters.contains(methodName)) {
         foundStartMethod = methodName;
         break;
+      }
+
+      if (_addsSqlConstraint.contains(methodName)) {
+        hasDefaultConstraints = true;
       }
 
       switch (methodName) {
@@ -223,6 +236,19 @@ class ColumnParser {
           foundFeatures.add(const UniqueKey());
           break;
         case _methodCustomConstraint:
+          if (foundCustomConstraint != null) {
+            base.step.reportError(
+              ErrorInDartCode(
+                severity: Severity.warning,
+                affectedElement: getter.declaredElement,
+                affectedNode: remainingExpr.methodName,
+                message:
+                    "You've already set custom constraints on this column, "
+                    'they will be overriden by this call.',
+              ),
+            );
+          }
+
           foundCustomConstraint = base.readStringLiteral(
               remainingExpr.argumentList.arguments.first, () {
             base.step.reportError(
@@ -366,6 +392,19 @@ class ColumnParser {
           severity: Severity.error,
           affectedElement: getter.declaredElement,
           message: 'Primary key column cannot have UNIQUE constraint',
+        ),
+      );
+    }
+
+    if (hasDefaultConstraints && foundCustomConstraint != null) {
+      base.step.reportError(
+        ErrorInDartCode(
+          severity: Severity.warning,
+          affectedElement: getter.declaredElement,
+          message: 'This column definition is using both drift-defined '
+              'constraints (like references, autoIncrement, ...) and a '
+              'customConstraint(). Only the custom constraint will be added '
+              'to the column in SQL!',
         ),
       );
     }
