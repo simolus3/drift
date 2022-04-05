@@ -1,7 +1,7 @@
 import 'package:drift_core/src/builder/context.dart';
 
 import '../schema.dart';
-import '../statements/scope.dart';
+import '../statements/statement.dart';
 import 'expression.dart';
 
 class ColumnReference<T> extends Expression<T> {

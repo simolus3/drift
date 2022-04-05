@@ -15,7 +15,7 @@ abstract class Expression<T> extends SqlComponent {
   /// parentheses around non-literals.
   bool get isLiteral => false;
 
-  Expression<bool> eq(Expression<bool> compareTo) {
+  Expression<bool> eq(Expression<T> compareTo) {
     return BinaryExpression(this, '=', compareTo);
   }
 

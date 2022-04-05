@@ -12,13 +12,30 @@ class Users extends SchemaTable {
   String get name => 'users';
 }
 
+class Groups extends SchemaTable {
+  SchemaColumn<int> get admin => column('admin', sql.integer);
+  SchemaColumn<String> get description => column('description', sql.text);
+
+  @override
+  List<SchemaColumn> get columns => [admin];
+  @override
+  String get name => 'groups';
+}
+
 void main() {
   final builder = QueryBuilder(sql.dialect);
   final users = Users();
+  final groups = Groups();
 
-  final query = builder.select([users.id.ref()])..from(users);
-  final context = builder.newContext();
-  query.writeInto(context);
+  print(
+    builder
+        .build((builder) => builder.select([users.id.ref()])
+          ..from(users)
+          ..innerJoin(groups, on: groups.admin.ref().eq(users.id.ref())))
+        .sql,
+  );
 
-  print(context.sql);
+  print(
+    builder.build((builder) => builder.delete(from: users)).sql,
+  );
 }

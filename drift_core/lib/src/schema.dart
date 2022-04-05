@@ -19,6 +19,9 @@ abstract class SchemaColumn<T> {
   }
 }
 
+/// Base classes for schema entity with a result set.
+///
+/// This includes tables and views.
 abstract class EntityWithResult implements SchemaEntity {
   List<SchemaColumn> get columns;
 }
