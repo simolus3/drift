@@ -81,7 +81,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
 
     final expectations = targets.map((r) {
-      if (session.graph.knowsType(r)) {
+      if (r != null && session.graph.knowsType(r)) {
         return ExactTypeExpectation(session.typeOf(r)!);
       }
       return const NoTypeExpectation();
@@ -271,8 +271,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     session
       .._checkAndResolve(e, const ResolvedType.bool(), arg)
       .._addRelation(NullableIfSomeOtherIs(e, e.childNodes))
-      .._addRelation(HaveSameType(e.lower, e.upper))
-      .._addRelation(HaveSameType(e.check, e.lower));
+      .._addRelation(HaveSameType([e.lower, e.upper, e.check]));
   }
 
   @override
@@ -299,7 +298,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
         // Not technically a requirement, but assume lhs and rhs have the same
         // type.
-        session._addRelation(HaveSameType(e.left, e.right));
+        session._addRelation(HaveSameType([e.left, e.right]));
         visitChildren(e, const NoTypeExpectation());
         break;
       case TokenType.plus:
@@ -353,7 +352,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitIsExpression(IsExpression e, TypeExpectation arg) {
     session
       .._checkAndResolve(e, const ResolvedType.bool(), arg)
-      .._addRelation(HaveSameType(e.left, e.right))
+      .._addRelation(HaveSameType([e.left, e.right]))
       .._hintNullability(e, false);
 
     visitChildren(e, const NoTypeExpectation());
@@ -380,12 +379,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitCaseExpression(CaseExpression e, TypeExpectation arg) {
     session._addRelation(CopyEncapsulating(e, [
       for (final when in e.whens) when.then,
-      if (e.elseExpr != null) e.elseExpr,
+      if (e.elseExpr != null) e.elseExpr!,
     ]));
 
     if (e.base != null) {
       session._addRelation(
-        CopyEncapsulating(e.base, [for (final when in e.whens) when.when]),
+        CopyEncapsulating(e.base!, [for (final when in e.whens) when.when]),
       );
     }
 
@@ -398,7 +397,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final parent = e.parent;
     if (parent is CaseExpression && parent.base != null) {
       // case expressions with base -> condition is compared to base
-      session._addRelation(CopyTypeFrom(e.when, parent.base));
+      session._addRelation(CopyTypeFrom(e.when, parent.base!));
       visit(e.when, const NoTypeExpectation());
     } else {
       // case expression without base -> the conditions are booleans
@@ -425,7 +424,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       [
         e.left,
         e.right,
-        if (e.escape != null) e.escape,
+        if (e.escape != null) e.escape!,
       ],
     ));
 
@@ -571,7 +570,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'max':
       case 'min':
         session._hintNullability(e, true);
-        session._addRelation(CopyEncapsulating(e, params));
+        session
+          .._addRelation(CopyEncapsulating(e, params))
+          .._addRelation(HaveSameType(params));
         return null;
     }
 
@@ -635,7 +636,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   void _handleColumn(Column? column, [AstNode? context]) {
-    if (session.graph.knowsType(column) || _handledColumns.contains(column)) {
+    if (column == null ||
+        session.graph.knowsType(column) ||
+        _handledColumns.contains(column)) {
       return;
     }
     _handledColumns.add(column);
@@ -666,6 +669,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   void _lazyCopy(Typeable to, Typeable? from, {bool makeNullable = false}) {
+    if (from == null) return;
+
     if (session.graph.knowsType(from)) {
       var type = session.typeOf(from)!;
       if (makeNullable) {
@@ -675,7 +680,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         session._markTypeResolved(to, type);
       } else {
         session._markTypeResolved(to, type);
-        session._addRelation(NullableIfSomeOtherIs(to, [from!]));
+        session._addRelation(NullableIfSomeOtherIs(to, [from]));
       }
     } else {
       session._addRelation(CopyTypeFrom(to, from, makeNullable: makeNullable));

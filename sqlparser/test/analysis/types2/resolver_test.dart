@@ -270,8 +270,8 @@ WITH RECURSIVE
     }
     assert(start != null && end != null);
 
-    expect(session.typeOf(start), dateTime);
-    expect(session.typeOf(end), dateTime);
+    expect(session.typeOf(start!), dateTime);
+    expect(session.typeOf(end!), dateTime);
   });
 
   group('IS IN expressions', () {

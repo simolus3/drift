@@ -7,7 +7,7 @@ class NullableIfSomeOtherIs extends TypeRelation
   @override
   final Typeable target;
   @override
-  final List<Typeable?> from;
+  final List<Typeable> from;
 
   NullableIfSomeOtherIs(this.target, this.from);
 }
@@ -16,7 +16,7 @@ class NullableIfSomeOtherIs extends TypeRelation
 class CopyTypeFrom extends TypeRelation implements DirectedRelation {
   @override
   final Typeable target;
-  final Typeable? other;
+  final Typeable other;
 
   /// When true, [target] will be the array-variant of [other]. When false,
   /// [target] will be the scalar variant of [other]. When null, nothing will be
@@ -33,9 +33,9 @@ class CopyTypeFrom extends TypeRelation implements DirectedRelation {
 /// Dependency declaring that [target] has a type that matches all of [from].
 class CopyEncapsulating extends TypeRelation implements MultiSourceRelation {
   @override
-  final Typeable? target;
+  final Typeable target;
   @override
-  final List<Typeable?> from;
+  final List<Typeable> from;
 
   final CastMode? cast;
   final EncapsulatingNullability nullability;
@@ -44,18 +44,17 @@ class CopyEncapsulating extends TypeRelation implements MultiSourceRelation {
       [this.cast, this.nullability = EncapsulatingNullability.nullIfAny]);
 }
 
-/// Dependency declaring that [first] and [second] have the same type. This is
+/// Dependency declaring that [elements] all have the same type. This is
 /// an optional dependency that will only be applied when one type is known and
-/// the other is not.
+/// the others are not.
 class HaveSameType extends TypeRelation {
-  final Typeable first;
-  final Typeable second;
+  final List<Typeable> elements;
 
-  HaveSameType(this.first, this.second);
+  HaveSameType(this.elements);
 
-  Typeable getOther(Typeable? t) {
-    assert(t == first || t == second);
-    return t == first ? second : first;
+  Iterable<Typeable> getOthers(Typeable t) {
+    assert(elements.contains(t));
+    return elements.where((e) => e != t);
   }
 }
 

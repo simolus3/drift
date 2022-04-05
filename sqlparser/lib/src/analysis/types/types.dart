@@ -28,7 +28,7 @@ class TypeInferenceSession {
   }
 
   /// Returns the inferred type of [t], or `null` if it couldn't be inferred.
-  ResolvedType? typeOf(Typeable? t) {
+  ResolvedType? typeOf(Typeable t) {
     return graph[t];
   }
 

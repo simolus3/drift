@@ -3,16 +3,16 @@ part of '../types.dart';
 class TypeGraph {
   final _ResolvedVariables variables = _ResolvedVariables();
 
-  final Map<Typeable?, ResolvedType> _knownTypes = {};
-  final Map<Typeable?, bool?> _knownNullability = {};
+  final Map<Typeable, ResolvedType> _knownTypes = {};
+  final Map<Typeable, bool?> _knownNullability = {};
 
   final List<TypeRelation> _relations = [];
 
-  final Map<Typeable?, List<TypeRelation>> _edges = {};
-  final Set<Typeable?> _candidateForLaxMultiPropagation = {};
+  final Map<Typeable, List<TypeRelation>> _edges = {};
+  final Set<Typeable> _candidateForLaxMultiPropagation = {};
   final List<DefaultType> _defaultTypes = [];
 
-  ResolvedType? operator [](Typeable? t) {
+  ResolvedType? operator [](Typeable t) {
     final normalized = variables.normalize(t);
 
     if (_knownTypes.containsKey(normalized)) {
@@ -28,7 +28,7 @@ class TypeGraph {
     return null;
   }
 
-  void operator []=(Typeable? t, ResolvedType type) {
+  void operator []=(Typeable t, ResolvedType type) {
     final normalized = variables.normalize(t);
     _knownTypes[normalized] = type;
 
@@ -38,10 +38,9 @@ class TypeGraph {
     }
   }
 
-  bool knowsType(Typeable? t) =>
-      _knownTypes.containsKey(variables.normalize(t));
+  bool knowsType(Typeable t) => _knownTypes.containsKey(variables.normalize(t));
 
-  bool knowsNullability(Typeable? t) {
+  bool knowsNullability(Typeable t) {
     final normalized = variables.normalize(t);
     final knownType = _knownTypes[normalized];
 
@@ -89,7 +88,7 @@ class TypeGraph {
     }
   }
 
-  void _propagateTypeInfo(List<Typeable?> resolved, Typeable? t,
+  void _propagateTypeInfo(List<Typeable> resolved, Typeable t,
       {bool laxMultiSourcePropagation = false}) {
     if (!_edges.containsKey(t)) return;
 
@@ -105,7 +104,9 @@ class TypeGraph {
         }
         _copyType(resolved, edge.other, edge.target, type);
       } else if (edge is HaveSameType) {
-        _copyType(resolved, t, edge.getOther(t));
+        for (final other in edge.getOthers(t)) {
+          _copyType(resolved, t, other);
+        }
       } else if (edge is CopyAndCast) {
         _copyType(resolved, t, edge.target, this[t]!.cast(edge.cast));
       } else if (edge is MultiSourceRelation) {
@@ -146,7 +147,7 @@ class TypeGraph {
     }
   }
 
-  void _copyType(List<Typeable?> resolved, Typeable? from, Typeable to,
+  void _copyType(List<Typeable> resolved, Typeable from, Typeable to,
       [ResolvedType? type]) {
     // if the target hasn't been resolved yet, copy the current type and
     // visit the target later
@@ -199,7 +200,7 @@ class TypeGraph {
   void _indexRelations() {
     _edges.clear();
 
-    void put(Typeable? t, TypeRelation r) {
+    void put(Typeable t, TypeRelation r) {
       _edges.putIfAbsent(t, () => []).add(r);
     }
 
@@ -217,8 +218,9 @@ class TypeGraph {
       } else if (relation is CopyEncapsulating) {
         putAll(relation);
       } else if (relation is HaveSameType) {
-        put(relation.first, relation);
-        put(relation.second, relation);
+        for (final element in relation.elements) {
+          put(element, relation);
+        }
       } else if (relation is DefaultType) {
         _defaultTypes.add(relation);
       } else if (relation is CopyAndCast) {
@@ -240,12 +242,12 @@ abstract class TypeRelation {}
 /// Relation that only has an effect on one [Typeable] -- namely, [target].
 abstract class DirectedRelation implements TypeRelation {
   /// The only [Typeable] effected by this relation.
-  Typeable? get target;
+  Typeable get target;
 }
 
 /// Relation where the type of multiple [Typeable] instances must be known.
 abstract class MultiSourceRelation implements DirectedRelation {
-  List<Typeable?> get from;
+  List<Typeable> get from;
 }
 
 /// Keeps track of resolved variable types so that they can be re-used.
@@ -254,7 +256,7 @@ abstract class MultiSourceRelation implements DirectedRelation {
 class _ResolvedVariables {
   final Map<int, Variable> _referenceForIndex = {};
 
-  Typeable? normalize(Typeable? t) {
+  Typeable normalize(Typeable t) {
     if (t is! Variable) return t;
 
     final normalized = t;
@@ -262,7 +264,7 @@ class _ResolvedVariables {
     if (index != null) {
       return _referenceForIndex[index] ??= normalized;
     } else {
-      return null;
+      return t;
     }
   }
 }
