@@ -1,5 +1,5 @@
-import 'package:drift_core/drift_core.dart';
 import 'package:drift_core/dialect/sqlite3.dart' as sql;
+import 'package:drift_core/drift_core.dart';
 
 class Users extends SchemaTable {
   SchemaColumn<int> get id => column('id', sql.integer);
@@ -9,7 +9,7 @@ class Users extends SchemaTable {
   List<SchemaColumn> get columns => [id, username];
 
   @override
-  String get name => 'users';
+  String get tableName => 'users';
 }
 
 class Groups extends SchemaTable {
@@ -19,7 +19,7 @@ class Groups extends SchemaTable {
   @override
   List<SchemaColumn> get columns => [admin];
   @override
-  String get name => 'groups';
+  String get tableName => 'groups';
 }
 
 void main() {

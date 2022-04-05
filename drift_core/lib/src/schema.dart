@@ -5,7 +5,7 @@ import 'expressions/expression.dart';
 import 'types.dart';
 
 abstract class SchemaEntity {
-  String get name;
+  String get schemaName;
 }
 
 abstract class SchemaColumn<T> {
@@ -27,6 +27,11 @@ abstract class EntityWithResult implements SchemaEntity {
 }
 
 abstract class SchemaTable extends EntityWithResult {
+  String get tableName;
+
+  @override
+  String get schemaName => tableName;
+
   @protected
   SchemaColumn<T> column<T>(String name, SqlType<T> type) {
     return _SchemaColumn(this, name, type);
