@@ -727,7 +727,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
         InsertMode.insertOrFail: TokenType.fail,
         InsertMode.insertOrIgnore: TokenType.ignore,
       }[mode]!);
-      visitNullable(e.returning, arg);
     }
 
     _keyword(TokenType.into);
