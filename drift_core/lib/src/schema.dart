@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import 'expressions/column.dart';
 import 'expressions/expression.dart';
+import 'statements/select.dart';
 import 'types.dart';
 
 abstract class SchemaEntity {
@@ -35,6 +36,10 @@ abstract class SchemaTable extends EntityWithResult {
   @protected
   SchemaColumn<T> column<T>(String name, SqlType<T> type) {
     return _SchemaColumn(this, name, type);
+  }
+
+  SelectColumn star([String? tableAlais]) {
+    return StarColumn(this, tableAlais);
   }
 }
 

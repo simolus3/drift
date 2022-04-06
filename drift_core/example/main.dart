@@ -29,7 +29,7 @@ void main() {
 
   print(
     builder
-        .build((builder) => builder.select([users.id()])
+        .build((builder) => builder.select([users.star()])
           ..from(users)
           ..innerJoin(groups, on: groups.admin().eq(users.id())))
         .sql,

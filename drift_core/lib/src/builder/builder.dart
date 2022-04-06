@@ -1,5 +1,4 @@
 import '../dialect.dart';
-import '../expressions/expression.dart';
 import '../schema.dart';
 import '../statements/delete.dart';
 import '../statements/select.dart';
@@ -18,7 +17,7 @@ class QueryBuilder {
     return context;
   }
 
-  SelectStatement select(List<Expression> expressions) {
+  SelectStatement select(List<SelectColumn> expressions) {
     return SelectStatement(expressions);
   }
 

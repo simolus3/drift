@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../builder/context.dart';
 
+import '../statements/select.dart';
 import '../types.dart';
 import 'case_when.dart';
 import 'common.dart';
@@ -12,7 +13,7 @@ Expression<T> sqlVar<T>(T value) => Variable<T>(value);
 
 Expression<T> sqlConst<T>(T value) => Constant<T>(value);
 
-abstract class Expression<T> extends SqlComponent {
+abstract class Expression<T> extends SqlComponent implements SelectColumn {
   final Precedence precedence;
 
   const Expression({this.precedence = Precedence.unknown});
