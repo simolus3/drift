@@ -25,7 +25,7 @@ class ColumnReference<T> extends Expression<T> {
 
     if (scope.readsFromMultipleTables) {
       context.buffer
-        ..write(context.identifier(table.as ?? table.table.name))
+        ..write(context.identifier(table.as ?? table.table.schemaName))
         ..write('.');
     }
 

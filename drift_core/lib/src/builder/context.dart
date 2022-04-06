@@ -3,7 +3,6 @@ import 'package:collection/collection.dart';
 import '../common/escape.dart';
 import '../dialect.dart';
 import '../expressions/variable.dart';
-import '../schema.dart';
 
 /// A component is anything that can appear in a sql query.
 abstract class SqlComponent {
@@ -35,11 +34,11 @@ class GenerationContext {
   /// This is almost always the case, but not in a `CREATE VIEW` statement.
   final bool supportsVariables;
 
-  final List<dynamic> _boundVariables = [];
+  final List<BoundVariable> _boundVariables = [];
 
   /// The values of [introducedVariables] that will be sent to the underlying
   /// engine.
-  List<dynamic> get boundVariables => _boundVariables;
+  List<BoundVariable> get boundVariables => _boundVariables;
 
   /// All variables ("?" in sql) that were added to this context.
   final List<Variable> introducedVariables = [];
@@ -80,9 +79,9 @@ class GenerationContext {
   /// that the prepared statement can be executed with the variable. The value
   /// must be a type that is supported by the sqflite library. A list of
   /// supported types can be found [here](https://github.com/tekartik/sqflite#supported-sqlite-types).
-  void introduceVariable(Variable v, dynamic value) {
+  void introduceVariable(Variable v, String name, dynamic value) {
     introducedVariables.add(v);
-    _boundVariables.add(value);
+    _boundVariables.add(BoundVariable(value, name));
   }
 
   /// Shortcut to add a single space to the buffer because it's used very often.
@@ -101,6 +100,13 @@ class GenerationContext {
   String identifier(String identifier) {
     return escapeIfNeeded(dialect.keywords, identifier);
   }
+}
+
+class BoundVariable {
+  final Object? value;
+  final String sqlName;
+
+  BoundVariable(this.value, this.sqlName);
 }
 
 abstract class ContextScope {}

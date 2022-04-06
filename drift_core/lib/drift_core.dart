@@ -2,4 +2,7 @@
 library drift_core;
 
 export 'src/builder/builder.dart';
+export 'src/builder/context.dart';
+export 'src/expressions/expression.dart';
 export 'src/schema.dart';
+export 'src/statements/select.dart';

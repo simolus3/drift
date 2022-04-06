@@ -1,4 +1,3 @@
-@internal
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
@@ -8,7 +7,6 @@ import '../expressions/expression.dart';
 import '../schema.dart';
 import 'statement.dart';
 
-@internal
 mixin WhereClause {
   @internal
   Expression<bool>? whereClause;
@@ -76,7 +74,6 @@ mixin GeneralFrom on SqlStatement {
         .add(JoinedTable(JoinOperator.crossJoin, AddedTable(table, as)));
   }
 
-  @internal
   void writeFrom(GenerationContext context) {
     context.buffer.write('FROM ');
     primaryTables.forEachIndexed((index, table) {
@@ -97,7 +94,7 @@ class AddedTable extends TableInQuery {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write(context.identifier(table.name));
+    context.buffer.write(context.identifier(table.schemaName));
 
     if (as != null) {
       context.buffer

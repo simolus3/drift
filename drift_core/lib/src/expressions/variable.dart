@@ -17,12 +17,16 @@ class Variable<T> extends Expression<T> {
       return;
     }
 
+    String variableName;
+
     if (context.shouldUseIndexedVariables) {
-      context.buffer
-          .write(context.dialect.indexedVariable(context.nextVariableIndex));
+      variableName = context.dialect.indexedVariable(context.nextVariableIndex);
     } else {
-      context.buffer.write(context.dialect.indexedVariable(null));
+      variableName = context.dialect.indexedVariable(null);
     }
-    context.introduceVariable(this, context.dialect.mapToSqlVariable(_value));
+
+    context.buffer.write(variableName);
+    context.introduceVariable(
+        this, variableName, context.dialect.mapToSqlVariable(_value));
   }
 }
