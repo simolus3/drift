@@ -304,6 +304,10 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         testFormat('INSERT INTO foo DEFAULT VALUES RETURNING *');
       });
 
+      test('with returning and insert mode', () {
+        testFormat('INSERT OR IGNORE INTO foo DEFAULT VALUES RETURNING *');
+      });
+
       test('upsert - do nothing', () {
         testFormat(
             'INSERT OR REPLACE INTO foo DEFAULT VALUES ON CONFLICT DO NOTHING');
