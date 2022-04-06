@@ -5,6 +5,12 @@ import '../builder/context.dart';
 import '../types.dart';
 import 'case_when.dart';
 import 'common.dart';
+import 'constant.dart';
+import 'variable.dart';
+
+Expression<T> sqlVar<T>(T value) => Variable<T>(value);
+
+Expression<T> sqlConst<T>(T value) => Constant<T>(value);
 
 abstract class Expression<T> extends SqlComponent {
   final Precedence precedence;

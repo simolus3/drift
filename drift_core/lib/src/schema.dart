@@ -14,7 +14,7 @@ abstract class SchemaColumn<T> {
   String get name;
   SqlType<T> get type;
 
-  Expression<T> ref([String? tableOrViewAlias]) {
+  Expression<T> call([String? tableOrViewAlias]) {
     return ColumnReference(this, tableOrViewAlias);
   }
 }
