@@ -29,9 +29,9 @@ void main() {
 
   print(
     builder
-        .build((builder) => builder.select([users.id.ref()])
+        .build((builder) => builder.select([users.id()])
           ..from(users)
-          ..innerJoin(groups, on: groups.admin.ref().eq(users.id.ref())))
+          ..innerJoin(groups, on: groups.admin().eq(users.id())))
         .sql,
   );
 
