@@ -85,6 +85,7 @@ jobs:
 
   drift_dev:
     runs-on: ubuntu-20.04
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: drift_dev
