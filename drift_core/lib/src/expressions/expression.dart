@@ -23,7 +23,8 @@ abstract class Expression<T> extends SqlComponent implements SelectColumn {
   bool get isLiteral => false;
 
   Expression<bool> eq(Expression<T> compareTo) {
-    return BinaryExpression(this, '=', compareTo);
+    return BinaryExpression(this, '=', compareTo,
+        precedence: Precedence.comparisonEq);
   }
 
   Expression<T2> dartCast<T2>() => _DartCastExpression<T, T2>(this);

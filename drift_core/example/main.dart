@@ -27,13 +27,13 @@ void main() {
   final users = Users();
   final groups = Groups();
 
-  print(
-    builder
-        .build((builder) => builder.select([users.star()])
-          ..from(users)
-          ..innerJoin(groups, on: groups.admin().eq(users.id())))
-        .sql,
-  );
+  final context = builder.build((builder) => builder.select([users.star()])
+    ..from(users)
+    ..where(users.id().eq(sqlVar(3)))
+    ..innerJoin(groups, on: groups.admin().eq(users.id())));
+
+  print(context.sql);
+  print(context.boundVariables);
 
   print(
     builder.build((builder) => builder.delete(from: users)).sql,

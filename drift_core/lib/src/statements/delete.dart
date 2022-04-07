@@ -1,8 +1,7 @@
-import 'package:drift_core/src/statements/statement.dart';
-
 import '../builder/context.dart';
 import '../schema.dart';
 import 'clauses.dart';
+import 'statement.dart';
 
 class DeleteStatement extends SqlStatement with WhereClause, SingleFrom {
   @override

@@ -107,6 +107,11 @@ class BoundVariable {
   final String sqlName;
 
   BoundVariable(this.value, this.sqlName);
+
+  @override
+  String toString() {
+    return '$sqlName: $value';
+  }
 }
 
 abstract class ContextScope {}
