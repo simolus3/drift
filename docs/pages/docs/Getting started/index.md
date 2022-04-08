@@ -12,6 +12,8 @@ aliases:
 _Note:_ If you prefer a tutorial video, Reso Coder has made a detailed video explaining
 how to get started. You can watch it [here](https://youtu.be/zpWsedYMczM).
 
+A complete cross-platform Flutter app using drift is also available [here](https://github.com/simolus3/drift/tree/develop/examples/app).
+
 ## Adding the dependency
 First, lets add drift to your project's `pubspec.yaml`.
 At the moment, the current version of `drift` is [![Drift version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift)
