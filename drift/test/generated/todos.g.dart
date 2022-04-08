@@ -249,8 +249,6 @@ class $CategoriesTable extends Categories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Category.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -860,8 +858,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -1042,8 +1038,6 @@ class $SharedTodosTable extends SharedTodos
   @override
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     return SharedTodo.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -1197,8 +1191,6 @@ class $TableWithoutPKTable extends TableWithoutPK
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1356,8 +1348,6 @@ class $PureDefaultsTable extends PureDefaults
 
   @override
   Set<GeneratedColumn> get $primaryKey => {txt};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     return PureDefault.fromData(data,

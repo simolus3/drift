@@ -30,7 +30,6 @@ const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
 const String _methodGenerated = 'generatedAs';
 const Set<String> _addsSqlConstraint = {
-  _methodNamed,
   _methodReferences,
   _methodAutoIncrement,
   _methodUnique,
