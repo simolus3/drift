@@ -3,9 +3,12 @@ import 'package:collection/collection.dart';
 import '../builder/context.dart';
 import '../schema.dart';
 import 'clauses.dart';
+import 'insert.dart';
 import 'statement.dart';
 
-class SelectStatement extends SqlStatement with WhereClause, GeneralFrom {
+class SelectStatement extends SqlStatement
+    with WhereClause, GeneralFrom
+    implements InsertSource {
   final List<SelectColumn> _columns;
 
   SelectStatement(this._columns);
@@ -24,9 +27,13 @@ class SelectStatement extends SqlStatement with WhereClause, GeneralFrom {
     context.writeWhitespace();
     writeFrom(context);
     writeWhere(context);
-    context.buffer.write(';');
-
     context.popScope();
+
+    // If this select statement isn't part of another statement, write a
+    // semicolon
+    if (context.scope<StatementScope>() == null) {
+      context.buffer.write(';');
+    }
   }
 }
 

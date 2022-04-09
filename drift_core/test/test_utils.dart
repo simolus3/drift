@@ -25,7 +25,7 @@ class Groups extends SchemaTable {
 
 /// Matcher for [SqlComponent]-subclasses. Expect that a component generates the
 /// matching [sql] and, optionally, the matching [variables].
-Matcher generates(dynamic sql, [dynamic variables]) {
+Matcher generates(dynamic sql, [dynamic variables = isEmpty]) {
   final variablesMatcher = variables != null ? wrapMatcher(variables) : isEmpty;
   return _GeneratesSqlMatcher(wrapMatcher(sql), variablesMatcher);
 }
