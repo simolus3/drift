@@ -18,6 +18,11 @@ abstract class SchemaColumn<T> {
   Expression<T> call([String? tableOrViewAlias]) {
     return ColumnReference(this, tableOrViewAlias);
   }
+
+  @override
+  String toString() {
+    return '${entity.schemaName}.$name';
+  }
 }
 
 /// Base classes for schema entity with a result set.

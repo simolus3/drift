@@ -17,8 +17,11 @@ class ColumnReference<T> extends Expression<T> {
     final table = scope.findTable(column.entity, tableAlias);
 
     if (table == null) {
+      final columnDesc =
+          tableAlias == null ? column.toString() : '$tableAlias.${column.name}';
+
       throw ArgumentError(
-        'Statement contains a reference to $column, but its table has not '
+        'Statement contains a reference to $columnDesc, but its table has not '
         'been added to the statement.',
       );
     }
