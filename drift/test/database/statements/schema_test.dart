@@ -45,7 +45,7 @@ void main() {
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
           "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
-          'CHECK(creation_time > -631155600)'
+          'CHECK(creation_time > -631152000)'
           ');',
           []));
 
@@ -99,7 +99,7 @@ void main() {
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
           "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
-          'CHECK(creation_time > -631155600)'
+          'CHECK(creation_time > -631152000)'
           ');',
           []));
     });
