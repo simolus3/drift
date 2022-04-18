@@ -72,6 +72,23 @@ class Items {
 }
 ```
 
+## Checks
+
+If you know that a column (or a row) may only contain certain values, you can use a `CHECK` constraint
+in SQL to enforce custom constraints on data.
+
+In Dart, the `check` method on the column builder adds a check constraint to the generated column:
+
+```dart
+  // sqlite3 will enforce that this column only contains timestamps happening after (the beginning of) 1950.
+  DateTimeColumn get creationTime => dateTime()
+      .check(creationTime.isBiggerThan(Constant(DateTime(1950))))
+      .withDefault(currentDateAndTime)();
+```
+
+Note that these `CHECK` constraints are part of the `CREATE TABLE` statement.
+If you want to change or remove a `check` constraint, write a [schema migration]({{ '../Advanced Features/migrations.md#changing-column-constraints' | pageUrl }}) to re-create the table without the constraint.
+
 ## Default values
 
 You can set a default value for a column. When not explicitly set, the default value will

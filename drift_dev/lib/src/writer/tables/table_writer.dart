@@ -33,6 +33,10 @@ abstract class TableOrViewWriter {
 
         additionalParams['additionalChecks'] = buffer.toString();
       }
+
+      if (feature is DartCheckExpression) {
+        additionalParams['check'] = '() => ${feature.dartExpression}';
+      }
     }
 
     additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';

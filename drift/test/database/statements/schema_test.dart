@@ -38,13 +38,15 @@ void main() {
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS users '
-          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          'CREATE TABLE IF NOT EXISTS users ('
+          'id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           'name TEXT NOT NULL UNIQUE, '
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
-          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)));",
+          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
+          'CHECK(creation_time > -631155600)'
+          ');',
           []));
 
       verify(mockExecutor.runCustom(
@@ -96,7 +98,9 @@ void main() {
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
-          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)));",
+          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
+          'CHECK(creation_time > -631155600)'
+          ');',
           []));
     });
 

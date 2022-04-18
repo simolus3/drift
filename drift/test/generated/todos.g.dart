@@ -810,6 +810,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedColumn<DateTime?> creationTime =
       GeneratedColumn<DateTime?>('creation_time', aliasedName, false,
+          check: () => creationTime.isBiggerThan(Constant(DateTime(1950))),
           type: const IntType(),
           requiredDuringInsert: false,
           defaultValue: currentDateAndTime);

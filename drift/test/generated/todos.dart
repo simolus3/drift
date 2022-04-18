@@ -32,8 +32,9 @@ class Users extends Table with AutoIncrement {
   BoolColumn get isAwesome => boolean().withDefault(const Constant(true))();
 
   BlobColumn get profilePicture => blob()();
-  DateTimeColumn get creationTime =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get creationTime => dateTime()
+      .check(creationTime.isBiggerThan(Constant(DateTime(1950))))
+      .withDefault(currentDateAndTime)();
 }
 
 @DataClassName('Category')

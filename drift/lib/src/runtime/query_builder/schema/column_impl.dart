@@ -30,6 +30,18 @@ class GeneratedColumn<T> extends Column<T> {
   /// specified. Can be null if no default value is set.
   final Expression<T>? defaultValue;
 
+  /// A `CHECK` column constraint present on this column.
+  ///
+  /// These constraints are evaluated as a boolean during inserts or upserts.
+  /// When they evaluate to `false`, the causing statement is rejected.
+  ///
+  /// Note that this field isn't always set: `CHECK` constraints for tables
+  /// defined in `.drift` files are written as raw constraints during build
+  /// time.
+  /// This field is defined as a lazy function because the check constraint
+  /// typically depends on the column itself.
+  final Expression<bool?> Function()? check;
+
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
   /// Dart, not SQL. It's a compile-time error to declare columns where both
@@ -76,6 +88,7 @@ class GeneratedColumn<T> extends Column<T> {
     this.additionalChecks,
     this.requiredDuringInsert = false,
     this.generatedAs,
+    this.check,
   }) : _defaultConstraints = defaultConstraints;
 
   /// Applies a type converter to this column.
@@ -96,6 +109,7 @@ class GeneratedColumn<T> extends Column<T> {
       additionalChecks,
       requiredDuringInsert,
       generatedAs,
+      check,
     );
   }
 
@@ -136,6 +150,13 @@ class GeneratedColumn<T> extends Column<T> {
         into.buffer
           ..write(') ')
           ..write(generated.stored ? 'STORED' : 'VIRTUAL');
+      }
+
+      final checkExpr = check?.call();
+      if (checkExpr != null) {
+        into.buffer.write(' CHECK(');
+        checkExpr.writeInto(into);
+        into.buffer.write(')');
       }
 
       // these custom constraints refer to builtin constraints from drift
@@ -253,6 +274,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
     VerificationResult Function(S, VerificationMeta)? additionalChecks,
     bool requiredDuringInsert,
     GeneratedAs? generatedAs,
+    Expression<bool?> Function()? check,
   ) : super(
           name,
           tableName,
@@ -265,6 +287,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
           additionalChecks: additionalChecks,
           requiredDuringInsert: requiredDuringInsert,
           generatedAs: generatedAs,
+          check: check,
         );
 
   /// Compares this column against the mapped [dartValue].
