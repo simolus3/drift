@@ -10,13 +10,18 @@ class SelectStatement extends SqlStatement
     with WhereClause, GeneralFrom
     implements InsertSource {
   final List<SelectColumn> _columns;
+  final bool _distinct;
 
-  SelectStatement(this._columns);
+  SelectStatement(this._columns, {bool distinct = false})
+      : _distinct = distinct;
 
   @override
   void writeInto(GenerationContext context) {
     context.pushScope(StatementScope(this));
     context.buffer.write('SELECT ');
+    if (_distinct) {
+      context.buffer.write('DISTINCT ');
+    }
 
     _columns.forEachIndexed((index, column) {
       if (index != 0) context.buffer.write(',');

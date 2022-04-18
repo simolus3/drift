@@ -17,8 +17,9 @@ class QueryBuilder {
     return context;
   }
 
-  SelectStatement select(List<SelectColumn> expressions) {
-    return SelectStatement(expressions);
+  SelectStatement select(List<SelectColumn> expressions,
+      {bool distinct = false}) {
+    return SelectStatement(expressions, distinct: distinct);
   }
 
   DeleteStatement delete({required SchemaTable from}) {

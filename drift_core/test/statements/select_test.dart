@@ -10,4 +10,11 @@ void main() {
     expect(SelectStatement([users.id(), users.username()])..from(users),
         generates('SELECT id,name FROM users;'));
   });
+
+  test('distinct select', () {
+    expect(
+        SelectStatement([users.id(), users.username()], distinct: true)
+          ..from(users),
+        generates('SELECT DISTINCT id,name FROM users;'));
+  });
 }
