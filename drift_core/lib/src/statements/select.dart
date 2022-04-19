@@ -10,10 +10,12 @@ class SelectStatement extends SqlStatement
     with WhereClause, GeneralFrom
     implements InsertSource {
   final List<SelectColumn> _columns;
-  final bool _distinct;
+  bool _distinct;
 
   SelectStatement(this._columns, {bool distinct = false})
       : _distinct = distinct;
+
+  void distinct() => _distinct = true;
 
   @override
   void writeInto(GenerationContext context) {
