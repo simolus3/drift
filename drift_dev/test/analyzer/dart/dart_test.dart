@@ -30,8 +30,8 @@ void main() {
     final task = session.startTask(backendTask);
 
     final library = await backendTask.resolveDart(input);
-    final parser = MoorDartParser(
-        ParseDartStep(task, session.registerFile(input), library));
+    final parser = MoorDartParser(ParseDartStep(
+        task, session.registerFile(input), library, await task.helper));
 
     Future<MethodDeclaration> _loadDeclaration(Element element) async {
       final node = await parser.loadElementDeclaration(element);

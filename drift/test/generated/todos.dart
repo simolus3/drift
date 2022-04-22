@@ -95,7 +95,8 @@ class CustomRowClass {
 
 class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
-  TextColumn get txt => text().named('insert').nullable()();
+  TextColumn get txt =>
+      text().named('insert').map(const CustomJsonConverter()).nullable()();
 
   @override
   Set<Column> get primaryKey => {txt};
@@ -106,6 +107,14 @@ class MyCustomObject {
   final String data;
 
   MyCustomObject(this.data);
+
+  @override
+  int get hashCode => data.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is MyCustomObject && other.data == data;
+  }
 }
 
 class CustomConverter extends TypeConverter<MyCustomObject, String> {
@@ -120,6 +129,11 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   String? mapToSql(MyCustomObject? value) {
     return value?.data;
   }
+}
+
+class CustomJsonConverter extends CustomConverter
+    with JsonTypeConverter<MyCustomObject, String> {
+  const CustomJsonConverter();
 }
 
 abstract class CategoryTodoCountView extends View {

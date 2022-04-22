@@ -351,9 +351,13 @@ class ColumnParser {
     UsedTypeConverter? converter;
     if (createdTypeConverter != null && typeConverterRuntime != null) {
       converter = UsedTypeConverter(
-          expression: createdTypeConverter.toSource(),
-          mappedType: typeConverterRuntime,
-          sqlType: columnType);
+        expression: createdTypeConverter.toSource(),
+        mappedType: typeConverterRuntime,
+        sqlType: columnType,
+        alsoAppliesToJsonConversion: base.step.resolvedHelper
+            .isJsonAwareTypeConverter(
+                createdTypeConverter.staticType, base.step.library),
+      );
     }
 
     if (foundStartMethod == startEnum) {

@@ -166,9 +166,8 @@ void main() {
   });
 
   test('escaped when column name is keyword', () async {
-    await db
-        .into(db.pureDefaults)
-        .insert(PureDefaultsCompanion.insert(txt: const Value('foo')));
+    await db.into(db.pureDefaults).insert(
+        PureDefaultsCompanion.insert(txt: Value(MyCustomObject('foo'))));
 
     verify(executor
         .runInsert('INSERT INTO pure_defaults ("insert") VALUES (?)', ['foo']));

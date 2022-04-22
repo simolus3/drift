@@ -23,7 +23,6 @@ void main() {
       const {
         'a|lib/main.moor': _moorFile,
       },
-      enableAnalyzer: false,
     );
 
     final file = await state.analyze('package:a/main.moor');
@@ -46,7 +45,6 @@ void main() {
       const {
         'a|lib/main.moor': _moorFile,
       },
-      enableAnalyzer: false,
       options: const MoorOptions.defaults(
         sqliteAnalysisOptions: SqliteAnalysisOptions(
           version: SqliteVersion.v3_35,

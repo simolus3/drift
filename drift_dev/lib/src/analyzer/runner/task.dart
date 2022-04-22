@@ -8,6 +8,8 @@ import 'package:drift_dev/src/analyzer/session.dart';
 import 'package:drift_dev/src/backends/backend.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../helper.dart';
+
 /// A task is used to fully parse and analyze files based on an input file. To
 /// analyze that file, all transitive imports will have to be analyzed as well.
 ///
@@ -27,10 +29,16 @@ class Task {
   final Set<FoundFile> _analyzedFiles = {};
   final List<FoundFile> _unhandled = [];
 
+  HelperLibrary? _helper;
+
   Task(this.session, this.input, this.backend);
 
   /// Returns an iterable of [FoundFile]s that were analyzed by this task.
   Iterable<FoundFile> get analyzedFiles => _analyzedFiles;
+
+  Future<HelperLibrary> get helper async {
+    return _helper ??= await HelperLibrary.resolveWith(backend);
+  }
 
   Future runTask() async {
     // step 1: parse all files included by the input
@@ -128,7 +136,8 @@ class Task {
           file.type = FileType.other;
           break;
         }
-        final step = createdStep = ParseDartStep(this, file, library);
+        final step =
+            createdStep = ParseDartStep(this, file, library, await helper);
 
         final parsed = await step.parse();
         file.currentResult = parsed;

@@ -141,7 +141,8 @@ void main() {
     final moorTask = session.startTask(task);
     final file = session.registerFile(uri);
 
-    dartStep = ParseDartStep(moorTask, file, await task.resolveDart(uri));
+    dartStep = ParseDartStep(
+        moorTask, file, await task.resolveDart(uri), await moorTask.helper);
     parser = MoorDartParser(dartStep);
   });
 

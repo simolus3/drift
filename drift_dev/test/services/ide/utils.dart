@@ -3,11 +3,14 @@ import 'package:drift_dev/src/analyzer/session.dart';
 import 'package:drift_dev/src/services/ide/moor_ide.dart';
 
 import 'package:path/path.dart';
+import 'package:test/scaffolding.dart';
 
 import '../../utils/test_backend.dart';
 
 MoorIde spawnIde(Map<AssetId, String> content) {
-  final backend = TestBackend(content, enableDartAnalyzer: false);
+  final backend = TestBackend(content);
+  addTearDown(backend.finish);
+
   final session = MoorSession(backend);
   return MoorIde(session, _FileManagementForTesting(session, backend));
 }

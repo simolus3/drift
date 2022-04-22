@@ -20,6 +20,20 @@ abstract class TypeConverter<D, S> {
   D? mapToDart(S? fromDb);
 }
 
+/// A mixin for [TypeConverter]s that should also apply to drift's builtin
+/// JSON serialization of data classes.
+mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
+  /// Map a value from the Data class to json.
+  ///
+  /// Defaults to doing the same conversion as for Dart -> SQL, [mapToSql].
+  S? toJson(D? value) => mapToSql(value);
+
+  /// Map a value from json to something understood by the data class.
+  ///
+  /// Defaults to doing the same conversion as for SQL -> Dart, [mapToSql].
+  D? fromJson(S? json) => mapToDart(json);
+}
+
 /// Implementation for an enum to int converter that uses the index of the enum
 /// as the value stored in the database.
 class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {

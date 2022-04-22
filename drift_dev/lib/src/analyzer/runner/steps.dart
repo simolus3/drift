@@ -18,6 +18,8 @@ import 'package:drift_dev/src/analyzer/view/view_analyzer.dart';
 import 'package:drift_dev/src/utils/entity_reference_sorter.dart';
 import 'package:source_gen/source_gen.dart';
 
+import '../helper.dart';
+
 part 'steps/analyze_dart.dart';
 part 'steps/analyze_moor.dart';
 part 'steps/parse_dart.dart';

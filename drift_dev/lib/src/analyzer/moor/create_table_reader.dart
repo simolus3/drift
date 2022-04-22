@@ -13,6 +13,7 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../custom_row_class.dart';
+import '../helper.dart';
 import 'find_dart_class.dart';
 
 class CreateTableReader {
@@ -20,12 +21,14 @@ class CreateTableReader {
   final TableInducingStatement stmt;
   final Step step;
   final List<ImportStatement> imports;
+  final HelperLibrary helper;
 
   static const _schemaReader = SchemaFromCreateTable(driftExtensions: true);
   static final RegExp _enumRegex =
       RegExp(r'^enum\((\w+)\)$', caseSensitive: false);
 
-  CreateTableReader(this.stmt, this.step, [this.imports = const []]);
+  CreateTableReader(this.stmt, this.step, this.helper,
+      [this.imports = const []]);
 
   Future<MoorTable?> extractTable(TypeMapper mapper) async {
     Table table;
@@ -265,9 +268,12 @@ class CreateTableReader {
     final typeInDart = asTypeConverter.typeArguments.first;
 
     return UsedTypeConverter(
-        expression: code,
-        mappedType: DriftDartType.of(typeInDart),
-        sqlType: sqlType);
+      expression: code,
+      mappedType: DriftDartType.of(typeInDart),
+      sqlType: sqlType,
+      alsoAppliesToJsonConversion:
+          helper.isJsonAwareTypeConverter(type, type.element.library),
+    );
   }
 
   Future<DartType?> _readDartType(String typeIdentifier) async {

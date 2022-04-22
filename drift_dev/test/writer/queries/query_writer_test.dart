@@ -15,7 +15,7 @@ void main() {
 
         query: SELECT * FROM tbl WHERE id IN :idList;
       ''',
-    }, enableAnalyzer: false);
+    });
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
@@ -38,7 +38,7 @@ void main() {
 
         query: SELECT * FROM tbl LIMIT :offset, :limit;
       ''',
-    }, enableAnalyzer: false);
+    });
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
@@ -67,7 +67,7 @@ void main() {
 
         query: SELECT t.** AS tableName FROM tbl AS t;
       ''',
-    }, enableAnalyzer: false);
+    });
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
