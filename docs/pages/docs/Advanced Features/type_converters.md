@@ -8,70 +8,25 @@ template: layouts/docs/single
 ---
 
 Drift supports a variety of types out of the box, but sometimes you need to store more complex data.
-You can achieve this by using `TypeConverters`. In this example, we'll use the the 
+You can achieve this by using `TypeConverters`. In this example, we'll use the the
 [json_serializable](https://pub.dev/packages/json_annotation) package to store a custom object in a
 text column. Drift supports any Dart type for which you provide a `TypeConverter`, we're using that
 package here to make the example simpler.
 
+{% assign dart = 'package:moor_documentation/snippets/type_converters/converters.dart.excerpt.json' | readString | json_decode %}
+
 ## Using converters in Dart
 
-```dart
-import 'dart:convert';
-
-import 'package:json_annotation/json_annotation.dart' as j;
-import 'package:drift/drift.dart';
-
-part 'database.g.dart';
-
-@j.JsonSerializable()
-class Preferences {
-  bool receiveEmails;
-  String selectedTheme;
-
-  Preferences(this.receiveEmails, this.selectedTheme);
-
-  factory Preferences.fromJson(Map<String, dynamic> json) =>
-      _$PreferencesFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PreferencesToJson(this);
-}
-```
+{% include "blocks/snippet" snippets = dart name = 'start' %}
 
 Next, we have to tell drift how to store a `Preferences` object in the database. We write
 a `TypeConverter` for that:
-```dart
-// stores preferences as strings
-class PreferenceConverter extends TypeConverter<Preferences, String> {
-  const PreferenceConverter();
-  @override
-  Preferences? mapToDart(String? fromDb) {
-    if (fromDb == null) {
-      return null;
-    }
-    return Preferences.fromJson(json.decode(fromDb) as Map<String, dynamic>);
-  }
 
-  @override
-  String? mapToSql(Preferences? value) {
-    if (value == null) {
-      return null;
-    }
-
-    return json.encode(value.toJson());
-  }
-}
-```
+{% include "blocks/snippet" snippets = dart name = 'converter' %}
 
 Finally, we can use that converter in a table declaration:
-```dart
-class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
 
-  TextColumn get preferences =>
-      text().map(const PreferenceConverter()).nullable()();
-}
-```
+{% include "blocks/snippet" snippets = dart name = 'table' %}
 
 The generated `User` class will then have a `preferences` column of type 
 `Preferences`. Drift will automatically take care of storing and loading
@@ -158,3 +113,16 @@ CREATE TABLE tasks (
 ```
 
 Of course, the warning about automatic enum converters also applies to drift files.
+
+## Type converters and json serialization
+
+By default, type converters only apply to the conversion from Dart to the database. They don't impact how
+values are serialized to and from JSON.
+If you want to apply the same conversion to JSON as well, make your type converter mix-in the
+`JsonTypeConverter` class.
+You can also override the `toJson` and `fromJson` methods to customize serialization as long as the types
+stay the compatible.
+
+If you want to serialize to a different JSON type (e.g. you have a type converter `<MyObject, int>` in SQL but
+want to map to a string in JSON), you'll have to write a custom [`ValueSerializer`](https://drift.simonbinder.eu/api/drift/valueserializer-class)
+and pass it to the serialization methods.

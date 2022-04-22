@@ -6,6 +6,10 @@ part of 'sql_types.dart';
 /// Dart currently supports [DateTime], [double], [int], [Uint8List], [bool]
 /// and [String] for [S].
 ///
+/// Using a type converter does impact the way drift serializes data classes to
+/// JSON by default. To control that, use a [JsonTypeConverter] or a custom
+/// [ValueSerializer].
+///
 /// Also see [BuildGeneralColumn.map] for details.
 abstract class TypeConverter<D, S> {
   /// Empty constant constructor so that subclasses can have a constant
@@ -22,6 +26,12 @@ abstract class TypeConverter<D, S> {
 
 /// A mixin for [TypeConverter]s that should also apply to drift's builtin
 /// JSON serialization of data classes.
+///
+/// By default, a [TypeConverter] only applies to the serialization from Dart
+/// to SQL (and vice-versa).
+/// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
+/// `.drift` files) refers to a type converter that inherits from
+/// [JsonTypeConverter], it will also be used to conversion from and to json.
 mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
