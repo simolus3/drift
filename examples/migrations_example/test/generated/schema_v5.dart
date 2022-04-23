@@ -174,8 +174,6 @@ class Users extends Table with TableInfo<Users, UsersData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
     return UsersData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -397,8 +395,6 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     return GroupsData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -415,15 +411,136 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   bool get dontWriteConstraints => true;
 }
 
+class GroupCountData extends DataClass {
+  final int id;
+  final String name;
+  final int? nextUser;
+  final int groupCount;
+  GroupCountData(
+      {required this.id,
+      required this.name,
+      this.nextUser,
+      required this.groupCount});
+  factory GroupCountData.fromData(Map<String, dynamic> data, {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return GroupCountData(
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      nextUser: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
+      groupCount: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}group_count'])!,
+    );
+  }
+  factory GroupCountData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroupCountData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      nextUser: serializer.fromJson<int?>(json['nextUser']),
+      groupCount: serializer.fromJson<int>(json['groupCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'nextUser': serializer.toJson<int?>(nextUser),
+      'groupCount': serializer.toJson<int>(groupCount),
+    };
+  }
+
+  GroupCountData copyWith(
+          {int? id, String? name, int? nextUser, int? groupCount}) =>
+      GroupCountData(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        nextUser: nextUser ?? this.nextUser,
+        groupCount: groupCount ?? this.groupCount,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('GroupCountData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('nextUser: $nextUser, ')
+          ..write('groupCount: $groupCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, nextUser, groupCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroupCountData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.nextUser == this.nextUser &&
+          other.groupCount == this.groupCount);
+}
+
+class GroupCount extends ViewInfo<GroupCount, GroupCountData>
+    implements HasResultSet {
+  final String? _alias;
+  @override
+  final DatabaseAtV5 attachedDatabase;
+  GroupCount(this.attachedDatabase, [this._alias]);
+  @override
+  List<GeneratedColumn> get $columns => [id, name, nextUser, groupCount];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'group_count';
+  @override
+  String? get createViewStmt => null;
+  @override
+  GroupCount get asDslTable => this;
+  @override
+  GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    return GroupCountData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<int?> id =
+      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      type: const StringType());
+  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      'next_user', aliasedName, true,
+      type: const IntType());
+  late final GeneratedColumn<int?> groupCount = GeneratedColumn<int?>(
+      'group_count', aliasedName, false,
+      type: const IntType());
+  @override
+  GroupCount createAlias(String alias) {
+    return GroupCount(attachedDatabase, alias);
+  }
+
+  @override
+  Query? get query => null;
+  @override
+  Set<String> get readTables => const {};
+}
+
 class DatabaseAtV5 extends GeneratedDatabase {
   DatabaseAtV5(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   DatabaseAtV5.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
+  late final GroupCount groupCount = GroupCount(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [users, groups];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [users, groups, groupCount];
   @override
   int get schemaVersion => 5;
 }

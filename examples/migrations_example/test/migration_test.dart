@@ -8,6 +8,8 @@ import 'generated/schema.dart';
 
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
+import 'generated/schema_v4.dart' as v4;
+import 'generated/schema_v5.dart' as v5;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -60,5 +62,40 @@ void main() {
 
     await verifier.migrateAndValidate(db, 5);
     await db.close();
+  });
+
+  test('view works after upgrade from v4 to v5', () async {
+    final schema = await verifier.schemaAt(4);
+
+    final oldDb = v4.DatabaseAtV4.connect(schema.newConnection());
+    await oldDb.batch((batch) {
+      batch
+        ..insert(oldDb.users, v4.UsersCompanion.insert(id: Value(1)))
+        ..insert(oldDb.users, v4.UsersCompanion.insert(id: Value(2)))
+        ..insert(
+            oldDb.groups, v4.GroupsCompanion.insert(title: 'Test', owner: 1));
+    });
+    await oldDb.close();
+
+    // Run the migration and verify that it adds the view.
+    final db = Database(schema.newConnection());
+    await verifier.migrateAndValidate(db, 5);
+    await db.close();
+
+    // Make sure the view works!
+    final migratedDb = v5.DatabaseAtV5.connect(schema.newConnection());
+    final viewCount = await migratedDb.select(migratedDb.groupCount).get();
+
+    expect(
+        viewCount,
+        contains(isA<v5.GroupCountData>()
+            .having((e) => e.id, 'id', 1)
+            .having((e) => e.groupCount, 'groupCount', 1)));
+    expect(
+        viewCount,
+        contains(isA<v5.GroupCountData>()
+            .having((e) => e.id, 'id', 2)
+            .having((e) => e.groupCount, 'groupCount', 0)));
+    await migratedDb.close();
   });
 }

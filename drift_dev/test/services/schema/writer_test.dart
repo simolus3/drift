@@ -40,6 +40,8 @@ CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN
 END;
 
 CREATE INDEX groups_name ON "groups"(name);
+
+CREATE VIEW my_view AS SELECT id FROM "groups";
       ''',
       'foo|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -281,6 +283,33 @@ const expected = r'''
         },
         {
             "id": 5,
+            "references": [
+                0
+            ],
+            "type": "view",
+            "data": {
+                "name": "my_view",
+                "sql": "CREATE VIEW my_view AS SELECT id FROM \"groups\"",
+                "dart_data_name": "MyViewData",
+                "dart_info_name": "MyView",
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "ColumnType.integer",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
             "references": [
 
             ],
