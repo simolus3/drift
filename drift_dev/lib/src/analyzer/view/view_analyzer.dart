@@ -4,7 +4,6 @@ import 'package:drift_dev/src/analyzer/moor/find_dart_class.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
-import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../custom_row_class.dart';
@@ -32,6 +31,7 @@ class ViewAnalyzer extends BaseAnalyzer {
               .readView(ctx, declaration);
 
       final columns = <MoorColumn>[];
+      final columnDartNames = <String>{};
       for (final column in parserView.resolvedColumns) {
         final type = column.type;
         UsedTypeConverter? converter;
@@ -43,10 +43,12 @@ class ViewAnalyzer extends BaseAnalyzer {
           type: mapper.resolvedToMoor(type),
           name: ColumnName.explicitly(column.name),
           nullable: type?.nullable == true,
-          dartGetterName: ReCase(column.name).camelCase,
+          dartGetterName:
+              dartNameForSqlColumn(column.name, existingNames: columnDartNames),
           typeConverter: converter,
         );
         columns.add(moorColumn);
+        columnDartNames.add(moorColumn.dartGetterName);
       }
 
       view.columns = columns;

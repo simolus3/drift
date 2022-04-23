@@ -77,7 +77,8 @@ abstract class TableOrViewWriter {
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer
       ..write(type)
-      ..write("('${column.name.name}', aliasedName, $isNullable, ");
+      ..write(
+          '(${asDartLiteral(column.name.name)}, aliasedName, $isNullable, ');
 
     var first = true;
     additionalParams.forEach((name, value) {
