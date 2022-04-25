@@ -145,7 +145,7 @@ class DataClassWriter {
         final type = column.innerColumnType(scope.generationOptions);
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final notNull =
-          !column.nullable && scope.generationOptions.nnbd ? '!' : '';
+            !column.nullable && scope.generationOptions.nnbd ? '!' : '';
         deserialized =
             '${typeConverter.tableAndField}.fromJson($fromConverter)$notNull';
       } else {
