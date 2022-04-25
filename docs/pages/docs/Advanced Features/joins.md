@@ -37,7 +37,7 @@ Stream<List<EntryWithCategory>> entriesWithCategory() {
 ## Parsing results
 
 Calling `get()` or `watch` on a select statement with join returns a `Future` or `Stream` of
-`List<TypedResult>`, respectively. Each `TypedResult` represents a row from which data can be 
+`List<TypedResult>`, respectively. Each `TypedResult` represents a row from which data can be
 read. It contains a `rawData` getter to obtain the raw columns. But more importantly, the
 `readTable` method can be used to read a data class from a table.
 
@@ -77,7 +77,7 @@ Future<List<EntryWithImportance>> loadEntries() {
   return select(todos).addColumns([isImportant]).map((row) {
     final entry = row.readTable(todos);
     final entryIsImportant = row.read(isImportant);
-    
+
     return EntryWithImportance(entry, entryIsImportant);
   }).get();
 }
@@ -125,7 +125,7 @@ Future<List<RouteWithPoints>> loadRoutes() async {
   // create aliases for the geoPoints table so that we can reference it twice
   final start = alias(geoPoints, 's');
   final destination = alias(geoPoints, 'd');
- 
+
   final rows = await select(routes).join([
     innerJoin(start, start.id.equalsExp(routes.start)),
     innerJoin(destination, destination.id.equalsExp(routes.destination)),
@@ -142,11 +142,11 @@ Future<List<RouteWithPoints>> loadRoutes() async {
 ```
 The generated statement then looks like this:
 ```sql
-SELECT 
+SELECT
     routes.id, routes.name, routes.start, routes.destination,
     s.id, s.name, s.latitude, s.longitude,
-    d.id, d.name, d.latitude, d.longitude 
-FROM routes 
+    d.id, d.name, d.latitude, d.longitude
+FROM routes
     INNER JOIN geo_points s ON s.id = routes.start
     INNER JOIN geo_points d ON d.id = routes.destination
 ```
@@ -174,6 +174,8 @@ with the right table by default).
 
 ## Group by
 
+{% assign snippets = 'package:moor_documentation/snippets/queries.dart.excerpt.json' | readString | json_decode %}
+
 Sometimes, you need to run queries that _aggregate_ data, meaning that data you're interested in
 comes from multiple rows. Common questions include
 
@@ -193,26 +195,7 @@ We're going to select all categories and join each todo entry for each category.
 We only care about how many there are. By default, drift would attempt to read each todo item when it appears
 in a join.
 
-```dart
-final amountOfTodos = todos.id.count();
-
-final query = db.select(categories).join([
-  innerJoin(
-    todos,
-    todos.category.equalsExp(categories.id),
-    useColumns: false,
-  )
-]);
-query
-  ..addColumns([amountOfTodos])
-  ..groupBy([categories.id]);
-
-final result = await query.get();
-
-for (final row in result) {
-  print('there are ${row.read(amountOfTodos)} entries in ${row.readTable(todos)}');
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'countTodosInCategories' %}
 
 To find the average length of a todo entry, we use `avg`. In this case, we don't even have to use
 a `join` since all the data comes from a single table (todos).
@@ -223,11 +206,4 @@ Drift provides a special method for this case - instead of using `select`, we us
 The "only" means that drift will only report columns we added via "addColumns". In a regular select,
 all columns from the table would be selected, which is what you'd usually need.
 
-```dart
-Stream<double> averageItemLength() {
-  final avgLength = todos.content.length.avg();
-  final query = selectOnly(todos)..addColumns([avgLength]);
-
-  return query.map((row) => row.read(avgLength)).watchSingle();
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'averageItemLength' %}
