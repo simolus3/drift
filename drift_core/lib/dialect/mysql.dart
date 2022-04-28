@@ -6,15 +6,19 @@ import '../src/common/escape.dart';
 import 'common.dart';
 import '' as self;
 
-final dialect = Sqlite3Dialect._();
+final dialect = MySqlDialect._();
 
-const SqlType<String> text = _SqliteType('TEXT');
-const SqlType<int> integer = _SqliteType('INTEGER');
-const SqlType<double> real = _SqliteType('REAL');
-const SqlType<List<int>> blob = _SqliteType('BLOB');
+const SqlType<String> text = _MysqlType('TEXT');
+const SqlType<int> integer = _MysqlType('INTEGER');
+const SqlType<double> real = _MysqlType('REAL');
+const SqlType<List<int>> blob = _MysqlType('BLOB');
 
-class Sqlite3Dialect extends CommonSqlDialect {
-  Sqlite3Dialect._();
+SqlType<String> char(int length) => _MysqlType('CHAR($length)');
+
+SqlType<String> varchar(int length) => _MysqlType('VARCHAR($length)');
+
+class MySqlDialect extends CommonSqlDialect {
+  MySqlDialect._();
 
   @override
   SqlType typeFor(CommonSqlType kind) {
@@ -67,8 +71,8 @@ class Sqlite3Dialect extends CommonSqlDialect {
   Object? mapToSqlVariable(Object? dart) => dart;
 }
 
-class _SqliteType<T> implements SqlType<T> {
-  const _SqliteType(this.name);
+class _MysqlType<T> implements SqlType<T> {
+  const _MysqlType(this.name);
 
   @override
   SqlDialect get dialect => self.dialect;

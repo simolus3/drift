@@ -1,6 +1,8 @@
 import 'common/escape.dart';
 
 abstract class SqlDialect {
+  const SqlDialect();
+
   DialectCapabilities get capabilites;
 
   Set<String> get keywords => baseKeywords;
@@ -16,7 +18,7 @@ class DialectCapabilities {
   final bool supportsAnonymousVariables;
   final bool supportsNullVariables;
 
-  DialectCapabilities({
+  const DialectCapabilities({
     this.supportsAnonymousVariables = false,
     this.supportsNullVariables = false,
   });
