@@ -1,4 +1,6 @@
 import 'package:convert/convert.dart';
+import 'package:drift_core/src/schema.dart';
+import 'package:drift_core/src/builder/context.dart';
 
 import '../dialect.dart';
 
@@ -69,6 +71,11 @@ class MySqlDialect extends CommonSqlDialect {
 
   @override
   Object? mapToSqlVariable(Object? dart) => dart;
+
+  @override
+  SqlComponent createTable(SchemaTable table) {
+    throw UnimplementedError();
+  }
 }
 
 class _MysqlType<T> implements SqlType<T> {

@@ -1,3 +1,4 @@
+import '../drift_core.dart';
 import 'common/escape.dart';
 
 abstract class SqlDialect {
@@ -12,6 +13,8 @@ abstract class SqlDialect {
   String indexedVariable(int? index);
 
   Object? mapToDart(Object? sql);
+
+  SqlComponent createTable(SchemaTable table);
 }
 
 class DialectCapabilities {

@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:drift_core/src/schema.dart';
+
+import 'package:drift_core/src/builder/context.dart';
+
 import '../dialect.dart';
 import '' as self;
 
@@ -65,6 +69,10 @@ class _DelegatingDialect extends SqlDialect {
   @override
   Object? mapToSqlVariable(Object? dart) =>
       _currentDialect.mapToSqlVariable(dart);
+
+  @override
+  SqlComponent createTable(SchemaTable table) =>
+      _currentDialect.createTable(table);
 }
 
 class _SqliteType<T> implements SqlType<T> {

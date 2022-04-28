@@ -26,5 +26,9 @@ class QueryBuilder {
     return DeleteStatement(from);
   }
 
+  SqlComponent createTable(SchemaTable table) {
+    return _dialect.createTable(table);
+  }
+
   GenerationContext newContext() => GenerationContext(_dialect);
 }

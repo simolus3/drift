@@ -10,12 +10,20 @@ class SelectStatement extends SqlStatement
     with WhereClause, GeneralFrom
     implements InsertSource {
   final List<SelectColumn> _columns;
+
+  int? _limitCount, _limitOffset;
+
   bool _distinct;
 
   SelectStatement(this._columns, {bool distinct = false})
       : _distinct = distinct;
 
   void distinct() => _distinct = true;
+
+  void limit(int count, {int? offset}) {
+    _limitCount = count;
+    _limitOffset = offset;
+  }
 
   @override
   void writeInto(GenerationContext context) {
@@ -34,6 +42,14 @@ class SelectStatement extends SqlStatement
     context.writeWhitespace();
     writeFrom(context);
     writeWhere(context);
+
+    if (_limitCount != null) {
+      context.buffer.write(' LIMIT $_limitCount');
+      if (_limitOffset != null) {
+        context.buffer.write(' OFFSET $_limitOffset');
+      }
+    }
+
     context.popScope();
 
     // If this select statement isn't part of another statement, write a
