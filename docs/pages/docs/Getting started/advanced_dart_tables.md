@@ -1,7 +1,7 @@
 ---
 data:
   title: "Dart tables"
-  description: Further information on defining tables in Dart.
+  description: "Further information on defining tables in Dart. This page describes advanced features like constraints, nullability, references and views"
   weight: 150
 template: layouts/docs/single
 ---
@@ -50,7 +50,7 @@ class EnabledCategories extends Table {
 
 The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
 
-To update the name of a column when serializing data to json, annotate the getter with 
+To update the name of a column when serializing data to json, annotate the getter with
 [`@JsonKey`](https://pub.dev/documentation/drift/latest/drift/JsonKey-class.html).
 
 You can change the name of the generated data class too. By default, drift will stip a trailing
