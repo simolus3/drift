@@ -43,8 +43,8 @@ abstract class SchemaTable extends EntityWithResult {
     return _SchemaColumn(this, name, type);
   }
 
-  SelectColumn star([String? tableAlais]) {
-    return StarColumn(this, tableAlais);
+  SelectColumn star([String? tableAlias]) {
+    return StarColumn(this, tableAlias);
   }
 }
 
