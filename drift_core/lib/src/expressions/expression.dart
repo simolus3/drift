@@ -18,6 +18,9 @@ abstract class Expression<T> extends SqlComponent implements SelectColumn {
 
   const Expression({this.precedence = Precedence.unknown});
 
+  factory Expression.sql(String sql, {Precedence precedence}) =
+      _CustomExpression;
+
   /// Whether this expression is a literal. Some use-sites need to put
   /// parentheses around non-literals.
   bool get isLiteral => false;
@@ -208,5 +211,17 @@ class _CastInSqlExpression<D1, D2> extends Expression<D2> {
     context.buffer.write('CAST(');
     inner.writeInto(context);
     context.buffer.write(' AS ${type.name})');
+  }
+}
+
+class _CustomExpression<T> extends Expression<T> {
+  final String _sql;
+
+  _CustomExpression(this._sql, {Precedence precedence = Precedence.unknown})
+      : super(precedence: precedence);
+
+  @override
+  void writeInto(GenerationContext context) {
+    context.buffer.write(_sql);
   }
 }

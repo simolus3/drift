@@ -87,6 +87,19 @@ class GenerationContext {
   /// Shortcut to add a single space to the buffer because it's used very often.
   void writeWhitespace() => buffer.write(' ');
 
+  void join(Iterable<SqlComponent> components, String separator) {
+    var isFirst = true;
+
+    for (final component in components) {
+      if (!isFirst) {
+        buffer.write(separator);
+      }
+
+      component.writeInto(this);
+      isFirst = false;
+    }
+  }
+
   void pushScope(ContextScope scope) => _scopeStack.add(scope);
   void popScope() => _scopeStack.removeLast();
   Scope? scope<Scope extends ContextScope>() {
