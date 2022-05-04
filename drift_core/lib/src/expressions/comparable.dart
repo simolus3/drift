@@ -20,14 +20,14 @@ extension ComparableExpr<T extends Comparable<Object?>> on Expression<T> {
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other expression.
-  Expression<bool?> isSmallerThan(Expression<T> other) {
+  Expression<bool> isSmallerThan(Expression<T> other) {
     return BinaryExpression(this, '<', other,
         precedence: Precedence.comparison);
   }
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
-  Expression<bool?> isSmallerOrEqual(Expression<T> other) {
+  Expression<bool> isSmallerOrEqual(Expression<T> other) {
     return BinaryExpression(this, '<=', other,
         precedence: Precedence.comparison);
   }
@@ -37,14 +37,14 @@ extension ComparableExpr<T extends Comparable<Object?>> on Expression<T> {
   ///
   /// If [not] is set, the expression will be negated. To compare this
   /// expression against two values, see
-  Expression<bool?> isBetween(Expression<T> lower, Expression<T> higher,
+  Expression<bool> isBetween(Expression<T> lower, Expression<T> higher,
       {bool not = false}) {
     return _BetweenExpression(
         target: this, lower: lower, higher: higher, not: not);
   }
 }
 
-class _BetweenExpression extends Expression<bool?> {
+class _BetweenExpression extends Expression<bool> {
   final Expression target;
 
   // https://www.sqlite.org/lang_expr.html#between

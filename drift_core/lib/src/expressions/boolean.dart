@@ -1,12 +1,12 @@
 import 'common.dart';
 import 'expression.dart';
 
-extension BooleanExpressions<Bool extends bool?> on Expression<Bool> {
-  Expression<Bool> operator &(Expression<Bool> other) {
+extension BooleanExpressions on Expression<bool> {
+  Expression<bool> operator &(Expression<bool> other) {
     return BinaryExpression(this, '&', other, precedence: Precedence.and);
   }
 
-  Expression<Bool> operator |(Expression<Bool> other) {
+  Expression<bool> operator |(Expression<bool> other) {
     return BinaryExpression(this, '|', other, precedence: Precedence.or);
   }
 }
