@@ -11,10 +11,10 @@ void main() {
         Expression<int>.sql('compare', precedence: Precedence.primary);
 
     final comparisons = {
-      expression.isSmallerThan: '<',
-      expression.isSmallerOrEqual: '<=',
-      expression.isBiggerOrEqual: '>=',
-      expression.isBiggerThan: '>'
+      expression.lessThan: '<',
+      expression.lessThanOrEqual: '<=',
+      expression.greaterThanOrEqual: '>=',
+      expression.greaterThan: '>'
     };
 
     comparisons.forEach((fn, value) {
@@ -29,8 +29,8 @@ void main() {
     final high = Expression<int>.sql('high', precedence: Precedence.primary);
 
     expect(
-        expression.isBetween(low, high), generates('col BETWEEN low AND high'));
-    expect(expression.isBetween(low, high, not: true),
+        expression.between(low, high), generates('col BETWEEN low AND high'));
+    expect(expression.between(low, high, not: true),
         generates('col NOT BETWEEN low AND high'));
   });
 }

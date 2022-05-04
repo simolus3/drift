@@ -4,30 +4,30 @@ import 'expression.dart';
 
 /// Defines extension functions to express comparisons in sql
 extension ComparableExpr<T extends Comparable<Object?>> on Expression<T> {
-  /// Returns an expression that is true if this expression is strictly bigger
+  /// Returns an expression that is true if this expression is strictly greater
   /// than the other expression.
-  Expression<bool> isBiggerThan(Expression<T> other) {
+  Expression<bool> greaterThan(Expression<T> other) {
     return BinaryExpression(this, '>', other,
         precedence: Precedence.comparison);
   }
 
-  /// Returns an expression that is true if this expression is bigger than or
+  /// Returns an expression that is true if this expression is greater than or
   /// equal to he other expression.
-  Expression<bool> isBiggerOrEqual(Expression<T> other) {
+  Expression<bool> greaterThanOrEqual(Expression<T> other) {
     return BinaryExpression(this, '>=', other,
         precedence: Precedence.comparison);
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other expression.
-  Expression<bool> isSmallerThan(Expression<T> other) {
+  Expression<bool> lessThan(Expression<T> other) {
     return BinaryExpression(this, '<', other,
         precedence: Precedence.comparison);
   }
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
-  Expression<bool> isSmallerOrEqual(Expression<T> other) {
+  Expression<bool> lessThanOrEqual(Expression<T> other) {
     return BinaryExpression(this, '<=', other,
         precedence: Precedence.comparison);
   }
@@ -37,7 +37,7 @@ extension ComparableExpr<T extends Comparable<Object?>> on Expression<T> {
   ///
   /// If [not] is set, the expression will be negated. To compare this
   /// expression against two values, see
-  Expression<bool> isBetween(Expression<T> lower, Expression<T> higher,
+  Expression<bool> between(Expression<T> lower, Expression<T> higher,
       {bool not = false}) {
     return _BetweenExpression(
         target: this, lower: lower, higher: higher, not: not);
