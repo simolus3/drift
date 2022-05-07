@@ -1,6 +1,10 @@
+## 1.7.0-dev
+
+- Add `filter` and `distinct` support to `groupConcat`.
+
 ## 1.6.0
 
-- Add the `unique()` method to columns and the `uniqueKeys` override to tables
+- Add the `unique()` method to columns and the `uniqueKeys` override for tables
   to define unique constraints in Dart tables.
 - Add the `check()` method to the Dart column builder to generate `CHECK` column
   constraints.

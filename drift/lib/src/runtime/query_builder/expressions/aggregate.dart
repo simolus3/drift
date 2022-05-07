@@ -12,7 +12,7 @@ part of '../query_builder.dart';
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
 Expression<int> countAll({Expression<bool?>? filter}) {
-  return _AggregateExpression('COUNT', const _StarFunctionParameter(),
+  return _AggregateExpression('COUNT', const [_StarFunctionParameter()],
       filter: filter);
 }
 
@@ -25,8 +25,8 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// If [distinct] is set (defaults to false), duplicate values will not be
   /// counted twice.
   /// {@macro drift_aggregate_filter}
-  Expression<int> count({bool? distinct, Expression<bool?>? filter}) {
-    return _AggregateExpression('COUNT', this,
+  Expression<int> count({bool distinct = false, Expression<bool?>? filter}) {
+    return _AggregateExpression('COUNT', [this],
         filter: filter, distinct: distinct);
   }
 
@@ -36,17 +36,30 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// The order of the concatenated elements is arbitrary. If no non-null values
   /// exist in the group, `NULL` is returned.
   ///
+  /// If [distinct] is set to `true` (it defaults to `false`), duplicate
+  /// elements are not added to the combined string twice.
+  ///
+  /// {@macro drift_aggregate_filter}
+  ///
   /// See also:
   ///  - the sqlite documentation: https://www.sqlite.org/lang_aggfunc.html#groupconcat
   ///  - the conceptually similar [Iterable.join]
-  Expression<String?> groupConcat({String separator = ','}) {
+  Expression<String?> groupConcat({
+    String separator = ',',
+    bool distinct = false,
+    Expression<bool?>? filter,
+  }) {
     const sqliteDefaultSeparator = ',';
-    if (separator == sqliteDefaultSeparator) {
-      return _AggregateExpression('GROUP_CONCAT', this);
-    } else {
-      return FunctionCallExpression(
-          'GROUP_CONCAT', [this, Variable.withString(separator)]);
-    }
+
+    return _AggregateExpression(
+      'GROUP_CONCAT',
+      [
+        this,
+        if (separator != sqliteDefaultSeparator) Variable.withString(separator)
+      ],
+      distinct: distinct,
+      filter: filter,
+    );
   }
 }
 
@@ -56,21 +69,21 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   ///
   /// {@macro drift_aggregate_filter}
   Expression<double?> avg({Expression<bool?>? filter}) =>
-      _AggregateExpression('AVG', this, filter: filter);
+      _AggregateExpression('AVG', [this], filter: filter);
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
   Expression<DT?> max({Expression<bool?>? filter}) =>
-      _AggregateExpression('MAX', this, filter: filter);
+      _AggregateExpression('MAX', [this], filter: filter);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
   Expression<DT?> min({Expression<bool?>? filter}) =>
-      _AggregateExpression('MIN', this, filter: filter);
+      _AggregateExpression('MIN', [this], filter: filter);
 
   /// Calculate the sum of all non-null values in the group.
   ///
@@ -82,7 +95,7 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   /// value and doesn't throw an overflow exception.
   /// {@macro drift_aggregate_filter}
   Expression<DT?> sum({Expression<bool?>? filter}) =>
-      _AggregateExpression('SUM', this, filter: filter);
+      _AggregateExpression('SUM', [this], filter: filter);
 
   /// Calculate the sum of all non-null values in the group.
   ///
@@ -90,7 +103,7 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   /// uses floating-point values internally.
   /// {@macro drift_aggregate_filter}
   Expression<double?> total({Expression<bool?>? filter}) =>
-      _AggregateExpression('TOTAL', this, filter: filter);
+      _AggregateExpression('TOTAL', [this], filter: filter);
 }
 
 /// Provides aggregate functions that are available on date time expressions.
@@ -105,27 +118,26 @@ extension DateTimeAggregate on Expression<DateTime?> {
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
   Expression<DateTime> max({Expression<bool?>? filter}) =>
-      _AggregateExpression('MAX', this, filter: filter);
+      _AggregateExpression('MAX', [this], filter: filter);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
   Expression<DateTime> min({Expression<bool?>? filter}) =>
-      _AggregateExpression('MIN', this, filter: filter);
+      _AggregateExpression('MIN', [this], filter: filter);
 }
 
 class _AggregateExpression<D> extends Expression<D> {
   final String functionName;
   final bool distinct;
-  final FunctionParameter parameter;
+  final List<FunctionParameter> parameter;
 
   final Where? filter;
 
   _AggregateExpression(this.functionName, this.parameter,
-      {Expression<bool?>? filter, bool? distinct})
-      : filter = filter != null ? Where(filter) : null,
-        distinct = distinct ?? false;
+      {Expression<bool?>? filter, this.distinct = false})
+      : filter = filter != null ? Where(filter) : null;
 
   @override
   final Precedence precedence = Precedence.primary;
@@ -139,8 +151,7 @@ class _AggregateExpression<D> extends Expression<D> {
     if (distinct) {
       context.buffer.write('DISTINCT ');
     }
-
-    parameter.writeInto(context);
+    _writeCommaSeparated(context, parameter);
     context.buffer.write(')');
 
     if (filter != null) {
