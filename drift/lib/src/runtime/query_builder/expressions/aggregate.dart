@@ -54,7 +54,7 @@ extension BaseAggregate<DT> on Expression<DT> {
     // Distinct aggregates can only have one argument
     if (distinct && separator != sqliteDefaultSeparator) {
       throw ArgumentError(
-          'Cannot use groupConcat with distinct: true and a custom serparator');
+          'Cannot use groupConcat with distinct: true and a custom separator');
     }
 
     return _AggregateExpression(
