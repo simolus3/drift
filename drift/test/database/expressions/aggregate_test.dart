@@ -83,21 +83,6 @@ void main() {
       expect(foo.groupConcat(distinct: true),
           generates('GROUP_CONCAT(DISTINCT foo)', isEmpty));
 
-      expect(foo.groupConcat(distinct: true, separator: ' and '),
-          generates('GROUP_CONCAT(DISTINCT foo, ?)', [' and ']));
-
-      expect(
-        foo.groupConcat(
-          distinct: true,
-          separator: ' and ',
-          filter: foo.isSmallerThan(const Variable(3)),
-        ),
-        generates(
-          'GROUP_CONCAT(DISTINCT foo, ?) FILTER (WHERE foo < ?)',
-          [' and ', 3],
-        ),
-      );
-
       expect(
         foo.groupConcat(
           distinct: true,
@@ -107,6 +92,20 @@ void main() {
           'GROUP_CONCAT(DISTINCT foo) FILTER (WHERE foo < ?)',
           [3],
         ),
+      );
+    });
+
+    test('does not allow distinct with a custom separator', () {
+      expect(() => foo.groupConcat(distinct: true, separator: ' and '),
+          throwsArgumentError);
+
+      expect(
+        () => foo.groupConcat(
+          distinct: true,
+          separator: ' and ',
+          filter: foo.isSmallerThan(const Variable(3)),
+        ),
+        throwsArgumentError,
       );
     });
   });

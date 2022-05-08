@@ -51,6 +51,12 @@ extension BaseAggregate<DT> on Expression<DT> {
   }) {
     const sqliteDefaultSeparator = ',';
 
+    // Distinct aggregates can only have one argument
+    if (distinct && separator != sqliteDefaultSeparator) {
+      throw ArgumentError(
+          'Cannot use groupConcat with distinct: true and a custom serparator');
+    }
+
     return _AggregateExpression(
       'GROUP_CONCAT',
       [
