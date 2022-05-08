@@ -89,6 +89,13 @@ class Parser {
     return false;
   }
 
+  Token? _matchOneAndGet(TokenType type) {
+    if (_matchOne(type)) {
+      return _previous;
+    }
+    return null;
+  }
+
   /// Returns true if the next token is [type] or if the next two tokens are
   /// "NOT" followed by [type]. Does not consume any tokens.
   bool _checkWithNot(TokenType type) {
@@ -901,7 +908,7 @@ class Parser {
       return ExprFunctionParameters(parameters: const [])..synthetic = true;
     }
 
-    final distinct = _matchOne(TokenType.distinct);
+    final distinct = _matchOneAndGet(TokenType.distinct);
     final parameters = <Expression>[];
     final first = _peek;
 
@@ -909,7 +916,9 @@ class Parser {
       parameters.add(expression());
     } while (_matchOne(TokenType.comma));
 
-    return ExprFunctionParameters(distinct: distinct, parameters: parameters)
+    return ExprFunctionParameters(
+        distinct: distinct != null, parameters: parameters)
+      ..distinctKeyword = distinct
       ..setSpan(first, _previous);
   }
 

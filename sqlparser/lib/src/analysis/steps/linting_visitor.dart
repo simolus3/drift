@@ -205,6 +205,19 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitExpressionFunctionParameters(ExprFunctionParameters e, void arg) {
+    if (e.distinct && e.parameters.length != 1) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.distinctAggregateWithWrongParameterCount,
+        message: 'A `DISTINCT` aggregate must have exactly one argument',
+        relevantNode: e.distinctKeyword ?? e,
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInvocation(SqlInvocation e, void arg) {
     final lowercaseCall = e.name.toLowerCase();
     if (options.addedFunctions.containsKey(lowercaseCall)) {

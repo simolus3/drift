@@ -1,3 +1,7 @@
+## 0.21.1-dev
+
+- Lint for `DISTINCT` misuse in aggregate function calls.
+
 ## 0.21.0
 
 - Analysis support for new features in sqlite version 3.38.

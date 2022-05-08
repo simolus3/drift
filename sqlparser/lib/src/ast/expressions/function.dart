@@ -66,6 +66,7 @@ class StarFunctionParameter extends FunctionParameters {
 
 class ExprFunctionParameters extends FunctionParameters {
   final bool distinct;
+  Token? distinctKeyword;
   List<Expression> parameters;
 
   ExprFunctionParameters({this.parameters = const [], this.distinct = false});
