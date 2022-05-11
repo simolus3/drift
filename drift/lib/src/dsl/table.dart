@@ -105,6 +105,14 @@ abstract class Table extends HasResultSet {
   @protected
   ColumnBuilder<int> integer() => _isGenerated();
 
+  /// Use this as the body of a getter to declare a column that holds BigInts.
+  /// Example (inside the body of a table class):
+  /// ```
+  /// BigIntColumn get bigNumber => bigInt()();
+  /// ```
+  @protected
+  ColumnBuilder<BigInt> bigInt() => _isGenerated();
+
   /// Creates a column to store an `enum` class [T].
   ///
   /// In the database, the column will be represented as an integer

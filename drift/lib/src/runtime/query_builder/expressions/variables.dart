@@ -31,6 +31,11 @@ class Variable<T> extends Expression<T> {
     return Variable(value);
   }
 
+  /// Creates a variable that holds the specified BigInt.
+  static Variable<BigInt> withBigInt(BigInt value) {
+    return Variable(value);
+  }
+
   /// Creates a variable that holds the specified string.
   static Variable<String> withString(String value) {
     return Variable(value);

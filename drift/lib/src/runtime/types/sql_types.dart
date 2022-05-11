@@ -121,6 +121,32 @@ class IntType extends SqlType<int> {
   }
 }
 
+/// Maps [BigInt] values from and to sql
+@_deprecated
+class BigIntType extends SqlType<BigInt> {
+  /// Constant constructor used by the type system
+  const BigIntType();
+
+  @override
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
+
+  @override
+  BigInt? mapFromDatabaseResponse(dynamic response) {
+    if (response == null || response is BigInt?) return response as BigInt?;
+    if (response is int) return BigInt.from(response);
+    return BigInt.parse(response.toString());
+  }
+
+  @override
+  String mapToSqlConstant(BigInt? content) => content?.toString() ?? 'NULL';
+
+  @override
+  BigInt? mapToSqlVariable(BigInt? content) {
+    return content;
+  }
+}
+
 /// Maps [DateTime] values from and to sql
 @_deprecated
 class DateTimeType extends SqlType<DateTime> {

@@ -45,6 +45,9 @@ abstract class Column<T> extends Expression<T> {
 /// A column that stores int values.
 typedef IntColumn = Column<int?>;
 
+/// A column that stores BigInt values.
+typedef BigIntColumn = Column<BigInt?>;
+
 /// A column that stores boolean values. Booleans will be stored as an integer
 /// that can either be 0 (false) or 1 (true).
 typedef BoolColumn = Column<bool?>;

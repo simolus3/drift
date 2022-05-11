@@ -101,6 +101,11 @@ class IsDateTime extends TypeHint {
   const IsDateTime();
 }
 
+/// Type hint to mark that this type will contain a date time value.
+class IsBigInt extends TypeHint {
+  const IsBigInt();
+}
+
 /// Result of resolving a type. This can either have the resolved [type] set,
 /// or it can inform the called that it [needsContext] to resolve the type
 /// properly. Failure to resolve the type will have the [unknown] flag set.

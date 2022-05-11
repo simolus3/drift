@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' as m;
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/model/column.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
@@ -53,6 +54,9 @@ class TypeMapper {
     switch (type) {
       case ColumnType.integer:
         return ResolvedType(type: BasicType.int, hint: overrideHint);
+      case ColumnType.bigInt:
+        return ResolvedType(
+            type: BasicType.int, hint: overrideHint ?? const IsBigInt());
       case ColumnType.text:
         return ResolvedType(type: BasicType.text, hint: overrideHint);
       case ColumnType.boolean:
@@ -82,6 +86,8 @@ class TypeMapper {
           return ColumnType.boolean;
         } else if (type.hint is IsDateTime) {
           return ColumnType.datetime;
+        } else if (type.hint is IsBigInt) {
+          return ColumnType.bigInt;
         }
         return ColumnType.integer;
       case BasicType.real:

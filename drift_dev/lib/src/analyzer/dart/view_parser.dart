@@ -170,6 +170,7 @@ class ViewParser {
       'bool': ColumnType.boolean,
       'String': ColumnType.text,
       'int': ColumnType.integer,
+      'BigInt': ColumnType.bigInt,
       'DateTime': ColumnType.datetime,
       'Uint8List': ColumnType.blob,
       'double': ColumnType.real,
