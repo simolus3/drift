@@ -34,4 +34,14 @@ class ColumnReference<T> extends Expression<T> {
 
     context.buffer.write(context.identifier(column.name));
   }
+
+  @override
+  int get hashCode => Object.hash(ColumnReference, column, tableAlias);
+
+  @override
+  bool operator ==(Object other) {
+    return other is ColumnReference &&
+        other.column == column &&
+        other.tableAlias == tableAlias;
+  }
 }

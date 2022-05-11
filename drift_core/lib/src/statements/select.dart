@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import '../builder/context.dart';
+import '../expressions/expression.dart';
 import '../schema.dart';
 import 'clauses.dart';
 import 'insert.dart';
@@ -26,8 +28,9 @@ class SelectStatement extends SqlStatement
   }
 
   @override
-  void writeInto(GenerationContext context) {
-    context.pushScope(StatementScope(this));
+  SelectStatementScope writeInto(GenerationContext context) {
+    final scope = SelectStatementScope(this);
+    context.pushScope(scope);
     context.buffer.write('SELECT ');
     if (_distinct) {
       context.buffer.write('DISTINCT ');
@@ -36,7 +39,17 @@ class SelectStatement extends SqlStatement
     _columns.forEachIndexed((index, column) {
       if (index != 0) context.buffer.write(',');
 
-      column.writeInto(context);
+      if (column is Expression) {
+        final name = scope._writeColumn(column);
+
+        column.writeInto(context);
+        context.buffer
+          ..write(' ')
+          ..write(name);
+      } else {
+        assert(column is StarColumn, 'Unknown select column type $column');
+        column.writeInto(context);
+      }
     });
 
     context.writeWhitespace();
@@ -57,11 +70,33 @@ class SelectStatement extends SqlStatement
     if (context.scope<StatementScope>() == null) {
       context.buffer.write(';');
     }
+    return scope;
+  }
+}
+
+class SelectStatementScope extends StatementScope {
+  final Map<Expression, String> _columnAliases = {};
+
+  SelectStatementScope(SelectStatement statement) : super(statement);
+
+  String _writeColumn(Expression expression) {
+    return _columnAliases.putIfAbsent(expression, () {
+      return 'c${_columnAliases.length}';
+    });
+  }
+
+  String columnName(Expression expression) {
+    return _columnAliases[expression]!;
+  }
+
+  String columnNameInTable(SchemaColumn column, {String? tableAlias}) {
+    return columnName(column(tableAlias));
   }
 }
 
 SelectColumn star() => StarColumn(null, null);
 
+@sealed
 abstract class SelectColumn extends SqlComponent {}
 
 class StarColumn implements SelectColumn {
@@ -73,15 +108,27 @@ class StarColumn implements SelectColumn {
   @override
   void writeInto(GenerationContext context) {
     if (table != null) {
-      final stmt = context.requireScope<StatementScope>();
-      final addedTable = stmt.findTable(table!, tableName)!;
+      final scope = context.requireScope<SelectStatementScope>();
 
-      context.buffer
-        ..write(
-            context.identifier(addedTable.as ?? addedTable.table.schemaName))
-        ..write('.');
+      var first = true;
+      for (final column in table!.columns) {
+        if (!first) {
+          context.buffer.write(', ');
+        }
+
+        final expr = column(tableName);
+        expr.writeInto(context);
+
+        final alias = scope._writeColumn(expr);
+        context.buffer
+          ..write(' ')
+          ..write(alias);
+
+        first = false;
+      }
+    } else {
+      // todo: This needs to be desured into a column list as well
+      context.buffer.write('*');
     }
-
-    context.buffer.write('*');
   }
 }

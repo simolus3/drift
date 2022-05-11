@@ -33,15 +33,19 @@ void main() {
 
         print(builder.build((builder) => builder.createTable(users)).sql);
 
-        final context =
-            builder.build((builder) => builder.select([users.star()])
-              ..from(users)
-              ..where(users.id().eq(sqlVar(3)))
-              ..innerJoin(groups, on: groups.admin().eq(users.id()))
-              ..limit(10));
+        final customExpr = users.id() + sqlVar(3);
+        final select = builder.select([users.star(), customExpr])
+          ..from(users)
+          ..where(users.id().eq(sqlVar(3)))
+          ..innerJoin(groups, on: groups.admin().eq(users.id()))
+          ..limit(10);
+        final context = builder.newContext();
+        final mapping = select.writeInto(context);
 
         print(context.sql);
         print(context.boundVariables);
+        print(mapping.columnNameInTable(users.id));
+        print(mapping.columnName(customExpr));
 
         print(
           builder.build((builder) => builder.delete(from: users)).sql,

@@ -57,4 +57,15 @@ class _SchemaColumn<T> extends SchemaColumn<T> {
   final SqlType<T> type;
 
   _SchemaColumn(this.entity, this.name, this.type);
+
+  @override
+  int get hashCode => Object.hash(_SchemaColumn, entity, name, type);
+
+  @override
+  bool operator ==(Object other) {
+    return other is _SchemaColumn &&
+        other.entity == entity &&
+        other.name == name &&
+        other.type == type;
+  }
 }
