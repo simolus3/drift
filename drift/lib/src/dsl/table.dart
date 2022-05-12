@@ -98,6 +98,8 @@ abstract class Table extends HasResultSet {
   List<String> get customConstraints => [];
 
   /// Use this as the body of a getter to declare a column that holds integers.
+  /// Caution! Compiled to web [int] can only hold maximum of 52 bits! To
+  /// store values higher than this, use [int64()] instead.
   /// Example (inside the body of a table class):
   /// ```
   /// IntColumn get id => integer().autoIncrement()();
@@ -105,13 +107,16 @@ abstract class Table extends HasResultSet {
   @protected
   ColumnBuilder<int> integer() => _isGenerated();
 
-  /// Use this as the body of a getter to declare a column that holds BigInts.
+  /// Use this as the body of a getter to declare a column that holds web-safe
+  /// 64-bit integer. Although this is a BigInt type, the database can only
+  /// hold a maximum of 64 bits. Trying to store a value that exceeds this will
+  /// case an exception.
   /// Example (inside the body of a table class):
   /// ```
-  /// BigIntColumn get bigNumber => bigInt()();
+  /// Int64Column get int64Number => int64()();
   /// ```
   @protected
-  ColumnBuilder<BigInt> bigInt() => _isGenerated();
+  ColumnBuilder<BigInt> int64() => _isGenerated();
 
   /// Creates a column to store an `enum` class [T].
   ///

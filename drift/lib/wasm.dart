@@ -55,6 +55,9 @@ class WasmDatabase extends DelegatedDatabase {
   }) {
     return WasmDatabase._(_WasmDelegate(sqlite3, null, setup), logStatements);
   }
+
+  @override
+  bool get supportsBigInt => true;
 }
 
 class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {

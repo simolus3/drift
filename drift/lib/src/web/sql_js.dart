@@ -70,7 +70,7 @@ class _QueryExecResult {
 class _SqlJsStatement {
   external void bind(List<Object?> values);
   external bool step();
-  external List<Object?> get();
+  external List<Object?> get(Object? params, dynamic config);
   external List<String> getColumnNames();
   external void free();
 }
@@ -100,6 +100,9 @@ class SqlJsModule {
     }
   }
 }
+
+@JS('BigInt')
+external Object _bigInt(Object s);
 
 /// Dart wrapper around a sql database provided by the sql.js library.
 class SqlJsDatabase {
@@ -134,7 +137,15 @@ class SqlJsDatabase {
       // matches the behavior from a `NativeDatabase`.
       _obj.run(sql, _undefined);
     } else {
-      _obj.run(sql, args);
+      _obj.run(
+          sql,
+          args.map((e) {
+            if (e != null && e is BigInt) {
+              return _bigInt(e);
+            } else {
+              return e;
+            }
+          }).toList());
     }
   }
 
@@ -177,7 +188,8 @@ class PreparedStatement {
   bool step() => _obj.step();
 
   /// Reads the current from the underlying js api
-  List<dynamic> currentRow() => _obj.get();
+  List<dynamic> currentRow([bool useBigInt = false]) =>
+      _obj.get(null, jsify({'useBigInt': useBigInt}));
 
   /// The columns returned by this statement. This will only be available after
   /// [step] has been called once.

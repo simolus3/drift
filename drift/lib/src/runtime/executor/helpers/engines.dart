@@ -139,6 +139,9 @@ class _TransactionExecutor extends _BaseExecutor
   @override
   SqlDialect get dialect => _db.dialect;
 
+  @override
+  bool get supportsBigInt => _db.supportsBigInt;
+
   final Completer<void> _sendCalled = Completer();
   Completer<bool>? _openingCompleter;
 
@@ -278,6 +281,7 @@ class DelegatedDatabase extends _BaseExecutor {
 
   @override
   bool logStatements;
+
   @override
   final bool isSequential;
 
@@ -285,7 +289,10 @@ class DelegatedDatabase extends _BaseExecutor {
   QueryDelegate get impl => delegate;
 
   @override
-  SqlDialect get dialect => delegate.dialect;
+  SqlDialect get dialect => SqlDialect.sqlite;
+
+  @override
+  bool get supportsBigInt => false;
 
   final Lock _openingLock = Lock();
 
@@ -401,4 +408,10 @@ class _BeforeOpeningExecutor extends _BaseExecutor {
 
   @override
   bool get logStatements => _base.logStatements;
+
+  @override
+  bool get supportsBigInt => _base.supportsBigInt;
+
+  @override
+  SqlDialect get dialect => _base.dialect;
 }

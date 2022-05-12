@@ -36,6 +36,9 @@ class GenerationContext {
   /// This is almost always the case, but not in a `CREATE VIEW` statement.
   final bool supportsVariables;
 
+  /// Whether executor supports BigInt type
+  bool get supportsBigInt => executor?.executor.supportsBigInt ?? false;
+
   final List<dynamic> _boundVariables = [];
 
   /// The values of [introducedVariables] that will be sent to the underlying

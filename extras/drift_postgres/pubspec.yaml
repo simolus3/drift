@@ -6,19 +6,12 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  drift: ^1.0.1
-  postgres: ^2.4.1+2
+  drift: ^1.6.0
+  postgres: ^2.4.3
 
 dev_dependencies:
-  build_runner: ^2.1.5
-  drift_dev:
+  build_runner: ^2.0.0
 
 dependency_overrides:
   drift:
     path: ../../drift
-  drift_dev:
-    path: ../../drift_dev
-  sqlparser:
-    path: ../../sqlparser
-  moor:
-    path: ../../moor

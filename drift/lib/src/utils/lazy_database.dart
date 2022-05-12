@@ -14,6 +14,9 @@ class LazyDatabase extends QueryExecutor {
 
   Completer<void>? _openDelegate;
 
+  @override
+  bool get supportsBigInt => _delegate.supportsBigInt;
+
   /// The function that will open the database when this [LazyDatabase] gets
   /// opened for the first time.
   final DatabaseOpener opener;

@@ -127,6 +127,9 @@ class NativeDatabase extends DelegatedDatabase {
   static void closeExistingInstances() {
     tracker.closeExisting();
   }
+
+  @override
+  bool get supportsBigInt => true;
 }
 
 class _NativeDelegate extends Sqlite3Delegate<Database> {

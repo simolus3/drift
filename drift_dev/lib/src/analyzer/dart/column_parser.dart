@@ -1,7 +1,7 @@
 part of 'parser.dart';
 
 const String startInt = 'integer';
-const String startBigInt = 'bigInt';
+const String startInt64 = 'int64';
 const String startEnum = 'intEnum';
 const String startString = 'text';
 const String startBool = 'boolean';
@@ -11,7 +11,7 @@ const String startReal = 'real';
 
 const Set<String> starters = {
   startInt,
-  startBigInt,
+  startInt64,
   startEnum,
   startString,
   startBool,
@@ -444,7 +444,7 @@ class ColumnParser {
       startBool: ColumnType.boolean,
       startString: ColumnType.text,
       startInt: ColumnType.integer,
-      startBigInt: ColumnType.bigInt,
+      startInt64: ColumnType.bigInt,
       startEnum: ColumnType.integer,
       startDateTime: ColumnType.datetime,
       startBlob: ColumnType.blob,

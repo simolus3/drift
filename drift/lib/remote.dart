@@ -55,7 +55,6 @@ import 'package:stream_channel/stream_channel.dart';
 
 import 'drift.dart';
 import 'remote.dart' as self;
-
 import 'src/remote/client_impl.dart';
 import 'src/remote/communication.dart';
 import 'src/remote/protocol.dart';
@@ -126,8 +125,10 @@ abstract class DriftServer {
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
 DatabaseConnection remote(StreamChannel<Object?> channel,
-    {bool debugLog = false, bool serialize = true}) {
-  final client = DriftClient(channel, debugLog, serialize);
+    {bool debugLog = false,
+    bool serialize = true,
+    bool supportsBigInt = false}) {
+  final client = DriftClient(channel, debugLog, serialize, supportsBigInt);
   return client.connection;
 }
 

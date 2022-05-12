@@ -18,6 +18,12 @@ typedef WebSetup = FutureOr<void> Function(SqlJsDatabase database);
 /// Experimental drift backend for the web. To use this platform, you need to
 /// include the latest version of `sql.js` in your html.
 class WebDatabase extends DelegatedDatabase {
+  /// Enable BigInt support in sql.js
+  final bool useBigInt;
+
+  @override
+  bool get supportsBigInt => useBigInt;
+
   /// A database executor that works on the web.
   ///
   /// [name] can be used to identify multiple databases. The optional
@@ -36,7 +42,8 @@ class WebDatabase extends DelegatedDatabase {
     bool logStatements = false,
     CreateWebDatabase? initializer,
     WebSetup? setup,
-  }) : super(_WebDelegate(DriftWebStorage(name), initializer, setup),
+    this.useBigInt = false,
+  }) : super(_WebDelegate(DriftWebStorage(name), initializer, setup, useBigInt),
             logStatements: logStatements, isSequential: true);
 
   /// A database executor that works on the web.
@@ -59,7 +66,8 @@ class WebDatabase extends DelegatedDatabase {
     bool logStatements = false,
     CreateWebDatabase? initializer,
     WebSetup? setup,
-  }) : super(_WebDelegate(storage, initializer, setup),
+    this.useBigInt = false,
+  }) : super(_WebDelegate(storage, initializer, setup, useBigInt),
             logStatements: logStatements, isSequential: true);
 }
 
@@ -67,13 +75,14 @@ class _WebDelegate extends DatabaseDelegate {
   final DriftWebStorage storage;
   final CreateWebDatabase? initializer;
   final WebSetup? setup;
+  final bool useBigInt;
 
   late SqlJsDatabase _db;
   bool _isOpen = false;
 
   bool _inTransaction = false;
 
-  _WebDelegate(this.storage, this.initializer, this.setup);
+  _WebDelegate(this.storage, this.initializer, this.setup, this.useBigInt);
 
   @override
   set isInTransaction(bool value) {
@@ -166,7 +175,7 @@ class _WebDelegate extends DatabaseDelegate {
 
     while (stmt.step()) {
       columnNames ??= stmt.columnNames();
-      rows.add(stmt.currentRow());
+      rows.add(stmt.currentRow(useBigInt));
     }
 
     columnNames ??= []; // assume no column names when there were no rows

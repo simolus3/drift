@@ -9,14 +9,17 @@ class PgDatabase extends DelegatedDatabase {
   PgDatabase(PostgreSQLConnection connection)
       : super(_PgDelegate(connection, connection),
             isSequential: true, logStatements: true);
+
+  @override
+  SqlDialect get dialect => SqlDialect.postgres;
+
+  @override
+  bool get supportsBigInt => true;
 }
 
 class _PgDelegate extends DatabaseDelegate {
   final PostgreSQLConnection _db;
   final PostgreSQLExecutionContext _ec;
-
-  @override
-  SqlDialect get dialect => SqlDialect.postgres;
 
   _PgDelegate(this._db, this._ec) : closeUnderlyingWhenClosed = false;
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/src/runtime/api/runtime_api.dart';
 import 'package:drift/src/runtime/executor/executor.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/query_builder/query_builder.dart';
 import 'package:drift/src/runtime/types/sql_types.dart';
 import 'package:stream_channel/stream_channel.dart';
 
@@ -13,6 +14,9 @@ import 'protocol.dart';
 /// The client part of a remote drift communication scheme.
 class DriftClient {
   final DriftCommunication _channel;
+
+  /// Whether executor supports BigInt
+  final bool supportsBigInt;
 
   late final _RemoteStreamQueryStore _streamStore =
       _RemoteStreamQueryStore(this);
@@ -28,7 +32,8 @@ class DriftClient {
   late QueryExecutorUser _connectedDb;
 
   /// Starts relaying database operations over the request channel.
-  DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize)
+  DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize,
+      this.supportsBigInt)
       : _channel = DriftCommunication(channel,
             debugLog: debugLog, serialize: serialize) {
     _channel.setRequestHandler(_handleRequest);
@@ -118,6 +123,12 @@ class _RemoteQueryExecutor extends _BaseExecutor {
   Future<bool>? _serverIsOpen;
 
   @override
+  bool get supportsBigInt => client.supportsBigInt;
+
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
+
+  @override
   TransactionExecutor beginTransaction() {
     return _RemoteTransactionExecutor(client, _executorId);
   }
@@ -153,6 +164,12 @@ class _RemoteTransactionExecutor extends _BaseExecutor
 
   Completer<bool>? _pendingOpen;
   bool _done = false;
+
+  @override
+  bool get supportsBigInt => client.supportsBigInt;
+
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
   TransactionExecutor beginTransaction() {
