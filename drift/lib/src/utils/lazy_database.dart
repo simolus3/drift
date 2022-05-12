@@ -9,21 +9,36 @@ typedef DatabaseOpener = FutureOr<QueryExecutor> Function();
 /// A special database executor that delegates work to another [QueryExecutor].
 /// The other executor is lazily opened by a [DatabaseOpener].
 class LazyDatabase extends QueryExecutor {
-  late QueryExecutor _delegate;
+  /// Underlying executor
+  late final QueryExecutor _delegate;
+
   bool _delegateAvailable = false;
+  final SqlDialect _dialect;
 
   Completer<void>? _openDelegate;
 
   @override
   bool get supportsBigInt => _delegate.supportsBigInt;
 
+  @override
+  SqlDialect get dialect {
+    // Drift reads dialect before database opened, so we must know in advance
+    if (_delegateAvailable && _dialect != _delegate.dialect) {
+      throw Exception('LazyDatabase created with $_dialect, but underlying '
+          'database is ${_delegate.dialect}.');
+    }
+    return _dialect;
+  }
+
   /// The function that will open the database when this [LazyDatabase] gets
   /// opened for the first time.
   final DatabaseOpener opener;
 
   /// Declares a [LazyDatabase] that will run [opener] when the database is
-  /// first requested to be opened.
-  LazyDatabase(this.opener);
+  /// first requested to be opened. You must specify the same [dialect] as the
+  /// underlying database has
+  LazyDatabase(this.opener, {SqlDialect dialect = SqlDialect.sqlite})
+      : _dialect = dialect;
 
   Future<void> _awaitOpened() {
     if (_delegateAvailable) {

@@ -292,7 +292,7 @@ class DelegatedDatabase extends _BaseExecutor {
   SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
-  bool get supportsBigInt => false;
+  bool get supportsBigInt => true;
 
   final Lock _openingLock = Lock();
 
