@@ -262,8 +262,7 @@ dependency_overrides:
   moor:
     path: /foo/bar
   moor_generator:
-    hosted:
-      url: foo
+    hosted: foo
     version: ^1.2.3
 ''');
 
@@ -289,8 +288,7 @@ dependency_overrides:
   drift:
     path: /foo/bar
   drift_dev:
-    hosted:
-      url: foo
+    hosted: foo
     version: ^1.2.3
 '''),
     ]).validate();
