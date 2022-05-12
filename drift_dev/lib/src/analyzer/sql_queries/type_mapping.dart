@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart' as m;
 import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/model/column.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
