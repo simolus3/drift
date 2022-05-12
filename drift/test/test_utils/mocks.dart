@@ -9,6 +9,7 @@ class MockExecutor extends Mock implements QueryExecutor {
 
   MockExecutor([this.openingDetails]) {
     when(dialect).thenReturn(SqlDialect.sqlite);
+    when(supportsBigInt).thenReturn(true);
     when(runSelect(any, any)).thenAnswer((_) {
       assert(_opened);
       return Future.value([]);
@@ -54,6 +55,9 @@ class MockExecutor extends Mock implements QueryExecutor {
   @override
   SqlDialect get dialect =>
       _nsm(Invocation.getter(#dialect), SqlDialect.sqlite);
+
+  @override
+  bool get supportsBigInt => _nsm(Invocation.getter(#supportsBigInt), true);
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser? user) =>

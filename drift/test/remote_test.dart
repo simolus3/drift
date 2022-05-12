@@ -1,3 +1,4 @@
+@TestOn('vm')
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
