@@ -141,7 +141,7 @@ class SqlJsDatabase {
           sql,
           args.map((e) {
             if (e != null && e is BigInt) {
-              return _bigInt(e);
+              return _bigInt(e.checkRange.toString());
             } else {
               return e;
             }
@@ -197,4 +197,16 @@ class PreparedStatement {
 
   /// Calls `free` on the underlying js api
   void free() => _obj.free();
+}
+
+extension _BigIntRangeCheck on BigInt {
+  static final _bigIntMinValue64 = BigInt.parse('-9223372036854775808');
+  static final _bigIntMaxValue64 = BigInt.parse('9223372036854775807');
+
+  BigInt get checkRange {
+    if (this < _bigIntMinValue64 || this > _bigIntMaxValue64) {
+      throw Exception('BigInt value exceeds the range of 64 bits');
+    }
+    return this;
+  }
 }

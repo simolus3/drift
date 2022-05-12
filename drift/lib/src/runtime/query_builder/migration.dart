@@ -456,8 +456,10 @@ class Migrator {
     if (!context.supportsBigInt) {
       final hasBigInt = resultSet.$columns.any((c) => c.type is BigIntType);
       if (hasBigInt) {
-        throw Exception('${context.executor?.executor.runtimeType} executor '
-            'not supports BigInt type (is it enabled?)');
+        // We assume only WebDatabase cannot support BigInt
+        throw Exception(
+            'BigInt support is not enabled in WebDatabase. To use this feature '
+            'set `useBigInt` parameter to true');
       }
     }
   }
