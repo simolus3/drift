@@ -55,6 +55,7 @@ abstract class _BaseExecutor extends QueryExecutor {
   final DriftClient client;
   int? _executorId;
 
+  // ignore: unused_element
   _BaseExecutor(this.client, [this._executorId]);
 
   @override
