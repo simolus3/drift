@@ -36,3 +36,8 @@ dependency_overrides:
     path: ../drift_dev
   sqlparser:
     path: ../sqlparser
+  sqlite3:
+    git:
+      url: https://github.com/simolus3/sqlite3.dart
+      ref: main
+      path: sqlite3
