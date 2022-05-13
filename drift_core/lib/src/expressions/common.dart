@@ -4,6 +4,8 @@ import 'package:meta/meta.dart';
 
 import 'expression.dart';
 
+const _equality = ListEquality();
+
 @internal
 class BinaryExpression<T> extends Expression<T> {
   final Expression<Object?> _left, _right;
@@ -30,8 +32,6 @@ class BinaryExpression<T> extends Expression<T> {
 /// this class, consider [creating an issue](https://github.com/simolus3/drift/issues/new)
 /// to request native support in drift.
 class FunctionCallExpression<R> extends Expression<R> {
-  static const _equality = ListEquality();
-
   /// The name of the function to call
   final String functionName;
 
@@ -55,12 +55,40 @@ class FunctionCallExpression<R> extends Expression<R> {
   }
 
   @override
-  int get hashCode => Object.hash(functionName, _equality);
+  int get hashCode => Object.hash(functionName, _equality.hash(arguments));
 
   @override
   bool operator ==(Object other) {
     return other is FunctionCallExpression &&
         other.functionName == functionName &&
         _equality.equals(other.arguments, arguments);
+  }
+}
+
+@internal
+class InExpression<T> extends Expression<bool> {
+  final Expression _expression;
+  final List<T> _values;
+
+  InExpression(this._expression, this._values)
+      : super(precedence: Precedence.comparisonEq);
+
+  @override
+  void writeInto(GenerationContext context) {
+    writeInner(context, _expression);
+
+    context.buffer.write(' IN (');
+    context.join(_values.map(sqlVar), ',');
+    context.buffer.write(')');
+  }
+
+  @override
+  int get hashCode => Object.hash(_expression, _equality.hash(_values));
+
+  @override
+  bool operator ==(Object other) {
+    return other is InExpression &&
+        other._expression == _expression &&
+        _equality.equals(other._values, _values);
   }
 }

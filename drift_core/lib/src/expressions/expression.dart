@@ -70,6 +70,9 @@ abstract class Expression<T> extends SqlComponent implements SelectColumn {
     return CaseWhenExpression<T2>(this, when.entries.toList(), orElse);
   }
 
+  /// Whether the result of this expression is contained in the [values].
+  Expression<bool> isIn(List<T> values) => InExpression(this, values);
+
   Expression<T2> cast<T2>(SqlType<T2> type) => _CastInSqlExpression(this, type);
 
   /// Writes this expression into the [GenerationContext], assuming that there's

@@ -48,7 +48,7 @@ class _InExpression<T> extends _BaseInExpression {
   }
 
   @override
-  int get hashCode => Object.hash(_expression, _equality, _not);
+  int get hashCode => Object.hash(_expression, _equality.hash(_values), _not);
 
   @override
   bool operator ==(Object other) {
