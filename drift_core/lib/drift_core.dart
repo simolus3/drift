@@ -7,6 +7,7 @@ export 'src/expressions/boolean.dart';
 export 'src/expressions/comparable.dart';
 export 'src/expressions/expression.dart';
 export 'src/expressions/math.dart';
+export 'src/expressions/text.dart';
 export 'src/schema.dart';
 export 'src/statements/statement.dart' show SqlStatement;
 export 'src/statements/delete.dart';

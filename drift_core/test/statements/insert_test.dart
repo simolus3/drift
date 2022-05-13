@@ -30,7 +30,7 @@ void main() {
         columns: [users.id],
         source: SelectStatement([users.id()])..from(users),
       ),
-      generates('INSERT INTO users (id) SELECT id FROM users'),
+      generates('INSERT INTO users (id) SELECT id c0 FROM users'),
     );
   });
 }
