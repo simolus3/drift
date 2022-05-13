@@ -14,9 +14,9 @@ builders:
 targets:
   prepare:
     builders:
-      "|versions":
+      ":versions":
         enabled: true
-      "|code_snippets":
+      ":code_snippets":
         enabled: true
         generate_for:
           - "lib/snippets/**/*.dart"
@@ -36,7 +36,7 @@ targets:
       built_site:
         release_options:
           environment: "preview"
-      build_web_compilers|entrypoint:
+      build_web_compilers:entrypoint:
         release_options:
           # Turn of null assertions for release builds, it looks like this
           # makes generated code slightly smaller.
