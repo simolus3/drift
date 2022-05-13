@@ -1,6 +1,8 @@
-## 1.6.0-dev
+## 1.6.0
 
 - Write Dart references into schema files.
+- Support new drift features from version 1.6.0, like `check` and `unique`
+  column constraints in Dart tables.
 
 ## 1.5.2
 

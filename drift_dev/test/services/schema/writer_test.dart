@@ -40,6 +40,8 @@ CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN
 END;
 
 CREATE INDEX groups_name ON "groups"(name);
+
+CREATE VIEW my_view AS SELECT id FROM "groups";
       ''',
       'foo|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -89,235 +91,274 @@ class Database {}
 
 const expected = r'''
 {
-   "_meta":{
-      "description":"This file contains a serialized version of schema entities for moor.",
-      "version":"0.1.0-dev-preview"
-   },
-   "entities":[
-      {
-         "id":0,
-         "references":[],
-         "type":"table",
-         "data":{
-            "name":"groups",
-            "was_declared_in_moor":true,
-            "columns":[
-               {
-                  "name":"id",
-                  "getter_name": "id",
-                  "moor_type":"ColumnType.integer",
-                  "nullable":false,
-                  "customConstraints":"NOT NULL PRIMARY KEY AUTOINCREMENT",
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
-                     "primary-key",
-                     "auto-increment"
-                  ]
-               },
-               {
-                  "name":"name",
-                  "getter_name": "name",
-                  "moor_type":"ColumnType.text",
-                  "nullable":false,
-                  "customConstraints":"NOT NULL",
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
+    "_meta": {
+        "description": "This file contains a serialized version of schema entities for moor.",
+        "version": "0.1.0-dev-preview"
+    },
+    "entities": [
+        {
+            "id": 0,
+            "references": [
 
-                  ]
-               }
             ],
-            "is_virtual":false,
-            "constraints":[
-               "UNIQUE(name)"
-            ]
-         }
-      },
-      {
-         "id":1,
-         "references":[],
-         "type":"table",
-         "data":{
-            "name":"users",
-            "was_declared_in_moor":false,
-            "columns":[
-               {
-                  "name":"id",
-                  "getter_name": "id",
-                  "moor_type":"ColumnType.integer",
-                  "nullable":false,
-                  "customConstraints":null,
-                  "defaultConstraints":"PRIMARY KEY AUTOINCREMENT",
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
-                     "auto-increment",
-                     "primary-key"
-                  ]
-               },
-               {
-                  "name":"name",
-                  "getter_name": "name",
-                  "moor_type":"ColumnType.text",
-                  "nullable":false,
-                  "customConstraints":null,
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
+            "type": "table",
+            "data": {
+                "name": "groups",
+                "was_declared_in_moor": true,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "ColumnType.integer",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "primary-key",
+                            "auto-increment"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
 
-                  ]
-               },
-               {
-                  "name":"setting",
-                  "getter_name": "settings",
-                  "moor_type":"ColumnType.text",
-                  "nullable":false,
-                  "customConstraints":null,
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
-
-                  ],
-                  "type_converter":{
-                     "dart_expr":"const SettingsConverter()",
-                     "dart_type_name":"Settings"
-                  }
-               }
-            ],
-            "is_virtual":false
-         }
-      },
-      {
-         "id":2,
-         "references":[
-            0,
-            1
-         ],
-         "type":"table",
-         "data":{
-            "name":"group_members",
-            "was_declared_in_moor":true,
-            "columns":[
-               {
-                  "name":"group",
-                  "getter_name": "group",
-                  "moor_type":"ColumnType.integer",
-                  "nullable":false,
-                  "customConstraints":"NOT NULL REFERENCES \"groups\"(id)",
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
-
-                  ]
-               },
-               {
-                  "name":"user",
-                  "getter_name": "user",
-                  "moor_type":"ColumnType.integer",
-                  "nullable":false,
-                  "customConstraints":"NOT NULL REFERENCES users(id)",
-                  "default_dart":null,
-                  "default_client_dart":null,
-                  "dsl_features":[
-
-                  ]
-               },
-               {
-                  "name":"is_admin",
-                  "getter_name": "isAdmin",
-                  "moor_type":"ColumnType.boolean",
-                  "nullable":false,
-                  "customConstraints":"NOT NULL DEFAULT FALSE",
-                  "default_dart":"const CustomExpression<bool>('FALSE')",
-                  "default_client_dart":null,
-                  "dsl_features":[
-
-                  ]
-               }
-            ],
-            "is_virtual":false,
-            "constraints":[
-               "PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE"
-            ],
-            "explicit_pk":[
-               "group",
-               "user"
-            ]
-         }
-      },
-      {
-         "id":3,
-         "references":[
-            2,
-            0
-         ],
-         "type":"trigger",
-         "data":{
-            "on":2,
-            "refences_in_body":[
-               0,
-               2
-            ],
-            "name":"delete_empty_groups",
-            "sql":"CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN\n  DELETE FROM \"groups\"\n    WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);\nEND;"
-         }
-      },
-      {
-         "id":4,
-         "references":[
-            0
-         ],
-         "type":"index",
-         "data":{
-            "on":0,
-            "name":"groups_name",
-            "sql":"CREATE INDEX groups_name ON \"groups\"(name);"
-         }
-      },
-      {
-        "id": 5,
-        "references": [],
-        "type": "table",
-        "data": {
-          "name": "email",
-          "was_declared_in_moor": true,
-          "columns": [
-            {
-              "name": "sender",
-              "getter_name": "sender",
-              "moor_type": "ColumnType.text",
-              "nullable": false,
-              "customConstraints": "",
-              "default_dart": null,
-              "default_client_dart": null,
-              "dsl_features": []
-            },
-            {
-              "name": "title",
-              "getter_name": "title",
-              "moor_type": "ColumnType.text",
-              "nullable": false,
-              "customConstraints": "",
-              "default_dart": null,
-              "default_client_dart": null,
-              "dsl_features": []
-            },
-            {
-              "name": "body",
-              "getter_name": "body",
-              "moor_type": "ColumnType.text",
-              "nullable": false,
-              "customConstraints": "",
-              "default_dart": null,
-              "default_client_dart": null,
-              "dsl_features": []
+                        ]
+                    }
+                ],
+                "is_virtual": false,
+                "constraints": [
+                    "UNIQUE(name)"
+                ]
             }
-          ],
-          "is_virtual": true,
-          "create_virtual_stmt": "CREATE VIRTUAL TABLE email USING fts5(sender, title, body);"
+        },
+        {
+            "id": 1,
+            "references": [
+
+            ],
+            "type": "table",
+            "data": {
+                "name": "users",
+                "was_declared_in_moor": false,
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "ColumnType.integer",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                            "auto-increment",
+                            "primary-key"
+                        ]
+                    },
+                    {
+                        "name": "name",
+                        "getter_name": "name",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    },
+                    {
+                        "name": "setting",
+                        "getter_name": "settings",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ],
+                        "type_converter": {
+                            "dart_expr": "const SettingsConverter()",
+                            "dart_type_name": "Settings"
+                        }
+                    }
+                ],
+                "is_virtual": false
+            }
+        },
+        {
+            "id": 2,
+            "references": [
+                0,
+                1
+            ],
+            "type": "table",
+            "data": {
+                "name": "group_members",
+                "was_declared_in_moor": true,
+                "columns": [
+                    {
+                        "name": "group",
+                        "getter_name": "group",
+                        "moor_type": "ColumnType.integer",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL REFERENCES \"groups\"(id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    },
+                    {
+                        "name": "user",
+                        "getter_name": "user",
+                        "moor_type": "ColumnType.integer",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL REFERENCES users(id)",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    },
+                    {
+                        "name": "is_admin",
+                        "getter_name": "isAdmin",
+                        "moor_type": "ColumnType.boolean",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL DEFAULT FALSE",
+                        "default_dart": "const CustomExpression<bool>('FALSE')",
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    }
+                ],
+                "is_virtual": false,
+                "constraints": [
+                    "PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE"
+                ],
+                "explicit_pk": [
+                    "group",
+                    "user"
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "references": [
+                2,
+                0
+            ],
+            "type": "trigger",
+            "data": {
+                "on": 2,
+                "refences_in_body": [
+                    0,
+                    2
+                ],
+                "name": "delete_empty_groups",
+                "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN\n  DELETE FROM \"groups\"\n    WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);\nEND;"
+            }
+        },
+        {
+            "id": 4,
+            "references": [
+                0
+            ],
+            "type": "index",
+            "data": {
+                "on": 0,
+                "name": "groups_name",
+                "sql": "CREATE INDEX groups_name ON \"groups\"(name);"
+            }
+        },
+        {
+            "id": 5,
+            "references": [
+                0
+            ],
+            "type": "view",
+            "data": {
+                "name": "my_view",
+                "sql": "CREATE VIEW my_view AS SELECT id FROM \"groups\"",
+                "dart_data_name": "MyViewData",
+                "dart_info_name": "MyView",
+                "columns": [
+                    {
+                        "name": "id",
+                        "getter_name": "id",
+                        "moor_type": "ColumnType.integer",
+                        "nullable": false,
+                        "customConstraints": null,
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "references": [
+
+            ],
+            "type": "table",
+            "data": {
+                "name": "email",
+                "was_declared_in_moor": true,
+                "columns": [
+                    {
+                        "name": "sender",
+                        "getter_name": "sender",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    },
+                    {
+                        "name": "title",
+                        "getter_name": "title",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    },
+                    {
+                        "name": "body",
+                        "getter_name": "body",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+
+                        ]
+                    }
+                ],
+                "is_virtual": true,
+                "create_virtual_stmt": "CREATE VIRTUAL TABLE email USING fts5(sender, title, body);"
+            }
         }
-      }
-   ]
+    ]
 }
 ''';

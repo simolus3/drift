@@ -253,8 +253,8 @@ class DriftProtocol {
   }
 
   Object? _decodeDbValue(Object? wire) {
-    if (wire is List) {
-      return wire.cast<int>();
+    if (wire is List && wire is! Uint8List) {
+      return Uint8List.fromList(wire.cast());
     } else {
       return wire;
     }

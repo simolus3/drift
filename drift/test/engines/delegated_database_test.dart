@@ -167,6 +167,30 @@ void main() {
       ]);
     });
 
+    test('when committing or rolling back fails', () async {
+      when(delegate.transactionDelegate)
+          .thenReturn(const NoTransactionDelegate());
+      await db.ensureOpen(_FakeExecutorUser());
+      when(delegate.runCustom('COMMIT TRANSACTION', []))
+          .thenAnswer((i) => Future.error('cannot commit'));
+      when(delegate.runCustom('ROLLBACK TRANSACTION', []))
+          .thenAnswer((i) => Future.error('cannot rollback'));
+
+      final transaction = db.beginTransaction();
+      await transaction.ensureOpen(_FakeExecutorUser());
+      await transaction.runSelect('SELECT 1;', const []);
+      await expectLater(() async {
+        try {
+          await transaction.send();
+        } catch (e) {
+          await transaction.rollback();
+        }
+      }, throwsA('cannot rollback'));
+
+      // Ensure that the database is still usable after this mishap
+      await db.runSelect('SELECT 1', const []);
+    });
+
     test('when the database supports transactions', () async {
       final transactionDelegate = _MockTransactionDelegate();
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) {

@@ -249,8 +249,6 @@ class $CategoriesTable extends Categories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Category.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -812,6 +810,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedColumn<DateTime?> creationTime =
       GeneratedColumn<DateTime?>('creation_time', aliasedName, false,
+          check: () => creationTime.isBiggerThan(Constant(DateTime.utc(1950))),
           type: const IntType(),
           requiredDuringInsert: false,
           defaultValue: currentDateAndTime);
@@ -859,8 +858,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     return User.fromData(data,
@@ -1042,8 +1039,6 @@ class $SharedTodosTable extends SharedTodos
   @override
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     return SharedTodo.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -1198,8 +1193,6 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CustomRowClass.map(
@@ -1222,20 +1215,21 @@ class $TableWithoutPKTable extends TableWithoutPK
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
-  final String? txt;
+  final MyCustomObject? txt;
   PureDefault({this.txt});
   factory PureDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return PureDefault(
-      txt: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}insert']),
+      txt: $PureDefaultsTable.$converter0.mapToDart(const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}insert'])),
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || txt != null) {
-      map['insert'] = Variable<String?>(txt);
+      final converter = $PureDefaultsTable.$converter0;
+      map['insert'] = Variable<String?>(converter.mapToSql(txt));
     }
     return map;
   }
@@ -1250,7 +1244,8 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
-      txt: serializer.fromJson<String?>(json['txt']),
+      txt: $PureDefaultsTable.$converter0
+          .fromJson(serializer.fromJson<String?>(json['txt'])),
     );
   }
   factory PureDefault.fromJsonString(String encodedJson,
@@ -1262,11 +1257,12 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'txt': serializer.toJson<String?>(txt),
+      'txt': serializer
+          .toJson<String?>($PureDefaultsTable.$converter0.toJson(txt)),
     };
   }
 
-  PureDefault copyWith({Value<String?> txt = const Value.absent()}) =>
+  PureDefault copyWith({Value<MyCustomObject?> txt = const Value.absent()}) =>
       PureDefault(
         txt: txt.present ? txt.value : this.txt,
       );
@@ -1286,7 +1282,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
 }
 
 class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
-  final Value<String?> txt;
+  final Value<MyCustomObject?> txt;
   const PureDefaultsCompanion({
     this.txt = const Value.absent(),
   });
@@ -1294,14 +1290,14 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     this.txt = const Value.absent(),
   });
   static Insertable<PureDefault> custom({
-    Expression<String?>? txt,
+    Expression<MyCustomObject?>? txt,
   }) {
     return RawValuesInsertable({
       if (txt != null) 'insert': txt,
     });
   }
 
-  PureDefaultsCompanion copyWith({Value<String?>? txt}) {
+  PureDefaultsCompanion copyWith({Value<MyCustomObject?>? txt}) {
     return PureDefaultsCompanion(
       txt: txt ?? this.txt,
     );
@@ -1311,7 +1307,8 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (txt.present) {
-      map['insert'] = Variable<String?>(txt.value);
+      final converter = $PureDefaultsTable.$converter0;
+      map['insert'] = Variable<String?>(converter.mapToSql(txt.value));
     }
     return map;
   }
@@ -1333,9 +1330,10 @@ class $PureDefaultsTable extends PureDefaults
   $PureDefaultsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
   @override
-  late final GeneratedColumn<String?> txt = GeneratedColumn<String?>(
-      'insert', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+  late final GeneratedColumnWithTypeConverter<MyCustomObject, String?> txt =
+      GeneratedColumn<String?>('insert', aliasedName, true,
+              type: const StringType(), requiredDuringInsert: false)
+          .withConverter<MyCustomObject>($PureDefaultsTable.$converter0);
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override
@@ -1347,17 +1345,12 @@ class $PureDefaultsTable extends PureDefaults
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('insert')) {
-      context.handle(
-          _txtMeta, txt.isAcceptableOrUnknown(data['insert']!, _txtMeta));
-    }
+    context.handle(_txtMeta, const VerificationResult.success());
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {txt};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     return PureDefault.fromData(data,
@@ -1368,6 +1361,9 @@ class $PureDefaultsTable extends PureDefaults
   $PureDefaultsTable createAlias(String alias) {
     return $PureDefaultsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter<MyCustomObject, String> $converter0 =
+      const CustomJsonConverter();
 }
 
 class CategoryTodoCountViewData extends DataClass {

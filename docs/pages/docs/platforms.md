@@ -28,7 +28,7 @@ This table list all supported drift implementations and on which platforms they 
 | `WasmDatabase` from `package:drift/web.dart` | Web | Potentially faster than a `WebDatabase`, but still experimental and not yet production ready. See [this]({{ 'Other engines/web.md#drift-wasm' | pageUrl }}) for details. |
 
 To support all platforms in a shared codebase, you only need to change how you open your database, all other usages can stay the same.
-[This repository](https://github.com/rodydavis/moor_shared) gives an example on how to do that with conditional imports.
+[This repository](https://github.com/simolus3/drift/tree/develop/examples/app) gives an example on how to do that with conditional imports.
 
 ## Mobile (Android and iOS)
 

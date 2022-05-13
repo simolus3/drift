@@ -112,4 +112,28 @@ void main() {
       ),
     );
   }, skip: ifOlderThanSqlite335(sqlite3Version));
+
+  test('generates working check constraints', () async {
+    // creationTime has a constraint ensuring that the value must be larger than
+    // 1950.
+    expect(
+        db.into(db.users).insert(
+              UsersCompanion.insert(
+                name: 'user name',
+                profilePicture: Uint8List(0),
+                creationTime: Value(DateTime(1949)),
+              ),
+            ),
+        throwsException);
+
+    expect(
+        db.into(db.users).insert(
+              UsersCompanion.insert(
+                name: 'user name',
+                profilePicture: Uint8List(0),
+                creationTime: Value(DateTime(1960)),
+              ),
+            ),
+        completes);
+  });
 }

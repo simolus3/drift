@@ -4,6 +4,11 @@
 /// This library is highly experimental and not production readdy at the moment.
 /// It exists for development and testing purposes for interested users.
 ///
+/// While this library is marked as [experimental], it is not subject to
+/// semantic versioning. Future drift updates with a minor update might break
+/// APIs defined in this package or change the way data is persisted in
+/// backwards-incompatible ways.
+///
 /// To use drift on the web, use the `package:drift/web.dart` library as
 /// described in the [documentation](https://drift.simonbinder.eu/web/).
 @experimental

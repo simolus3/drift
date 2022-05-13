@@ -244,18 +244,29 @@ class _TransactionExecutor extends _BaseExecutor
     // don't do anything if the transaction completes before it was opened
     if (_openingCompleter == null) return;
 
-    if (_sendOnRollback != null) {
-      await runCustom(_sendOnRollback!, const []);
-      _db.delegate.isInTransaction = false;
-    }
+    try {
+      if (_sendOnRollback != null) {
+        await runCustom(_sendOnRollback!, const []);
+      }
+    } finally {
+      // Note: When send() is called and throws an exception, we don't mark this
+      // transaction is closed (as the commit should either be retried or the
+      // whole transaction should be aborted).
+      // When aborting fails too, something is seriously wrong already. Let's
+      // at least make sure that we don't block the rest of the db by pretending
+      // the transaction is still open.
+      if (_sendOnRollback != null) {
+        _db.delegate.isInTransaction = false;
+      }
 
-    if (_sendFakeErrorOnRollback) {
-      _sendCalled.completeError(
-          Exception('artificial exception to rollback the transaction'));
-    } else {
-      _sendCalled.complete();
+      if (_sendFakeErrorOnRollback) {
+        _sendCalled.completeError(
+            Exception('artificial exception to rollback the transaction'));
+      } else {
+        _sendCalled.complete();
+      }
+      _closed = true;
     }
-    _closed = true;
   }
 }
 

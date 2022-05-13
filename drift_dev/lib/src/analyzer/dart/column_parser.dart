@@ -29,13 +29,14 @@ const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
 const String _methodGenerated = 'generatedAs';
+const String _methodCheck = 'check';
 const Set<String> _addsSqlConstraint = {
-  _methodNamed,
   _methodReferences,
   _methodAutoIncrement,
   _methodUnique,
   _methodDefault,
-  _methodGenerated
+  _methodGenerated,
+  _methodCheck,
 };
 
 const String _errorMessage = 'This getter does not create a valid column that '
@@ -327,6 +328,10 @@ class ColumnParser {
                 .substring(generatedExpression.offset, generatedExpression.end);
             generatedAs = ColumnGeneratedAs(code, stored);
           }
+          break;
+        case _methodCheck:
+          final expr = remainingExpr.argumentList.arguments.first.toSource();
+          foundFeatures.add(DartCheckExpression(expr));
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -346,9 +351,13 @@ class ColumnParser {
     UsedTypeConverter? converter;
     if (createdTypeConverter != null && typeConverterRuntime != null) {
       converter = UsedTypeConverter(
-          expression: createdTypeConverter.toSource(),
-          mappedType: typeConverterRuntime,
-          sqlType: columnType);
+        expression: createdTypeConverter.toSource(),
+        mappedType: typeConverterRuntime,
+        sqlType: columnType,
+        alsoAppliesToJsonConversion: base.step.resolvedHelper
+            .isJsonAwareTypeConverter(
+                createdTypeConverter.staticType, base.step.library),
+      );
     }
 
     if (foundStartMethod == startEnum) {

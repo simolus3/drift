@@ -1,7 +1,7 @@
 ---
 data:
   title: "Dart tables"
-  description: Further information on defining tables in Dart.
+  description: "Further information on defining tables in Dart. This page describes advanced features like constraints, nullability, references and views"
   weight: 150
 template: layouts/docs/single
 ---
@@ -50,7 +50,7 @@ class EnabledCategories extends Table {
 
 The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
 
-To update the name of a column when serializing data to json, annotate the getter with 
+To update the name of a column when serializing data to json, annotate the getter with
 [`@JsonKey`](https://pub.dev/documentation/drift/latest/drift/JsonKey-class.html).
 
 You can change the name of the generated data class too. By default, drift will stip a trailing
@@ -71,6 +71,23 @@ class Items {
     // ...
 }
 ```
+
+## Checks
+
+If you know that a column (or a row) may only contain certain values, you can use a `CHECK` constraint
+in SQL to enforce custom constraints on data.
+
+In Dart, the `check` method on the column builder adds a check constraint to the generated column:
+
+```dart
+  // sqlite3 will enforce that this column only contains timestamps happening after (the beginning of) 1950.
+  DateTimeColumn get creationTime => dateTime()
+      .check(creationTime.isBiggerThan(Constant(DateTime(1950))))
+      .withDefault(currentDateAndTime)();
+```
+
+Note that these `CHECK` constraints are part of the `CREATE TABLE` statement.
+If you want to change or remove a `check` constraint, write a [schema migration]({{ '../Advanced Features/migrations.md#changing-column-constraints' | pageUrl }}) to re-create the table without the constraint.
 
 ## Default values
 

@@ -289,3 +289,10 @@ class DefaultConstraintsFromSchemaFile extends ColumnFeature {
 
   DefaultConstraintsFromSchemaFile(this.defaultConstraints);
 }
+
+/// A column with a `CHECK()` generated from a Dart expression.
+class DartCheckExpression extends ColumnFeature {
+  final String dartExpression;
+
+  DartCheckExpression(this.dartExpression);
+}

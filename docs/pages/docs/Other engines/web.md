@@ -111,7 +111,7 @@ export 'unsupported.dart'
   if (dart.library.html) 'web.dart';
 ```
 
-A ready example of this construct can also be found [here](https://github.com/rodydavis/moor_shared/blob/master/lib/src/database/database/unsupported.dart).
+A ready example of this construct can also be found [here](https://github.com/simolus3/drift/blob/develop/examples/app/lib/database/connection/connection.dart).
 
 ## Debugging
 You can see all queries sent from drift to the underlying database engine by enabling the `logStatements`

@@ -27,8 +27,7 @@ CREATE TABLE bar (
 Future<void> main() async {
   final mapper = TypeMapper();
   final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
-  final state =
-      TestState.withContent({'a|lib/foo.drift': 'foo'}, enableAnalyzer: false);
+  final state = TestState.withContent({'a|lib/foo.drift': 'foo'});
   tearDownAll(state.close);
   final task = await state.runTask('package:a/foo.drift');
 
@@ -36,11 +35,13 @@ Future<void> main() async {
       task, FoundFile(Uri.parse('file://foo'), FileType.moor), '');
 
   final parsedFoo = engine.parse(createFoo).rootNode as CreateTableStatement;
-  final foo = await CreateTableReader(parsedFoo, step).extractTable(mapper);
+  final foo = await CreateTableReader(parsedFoo, step, await task.helper)
+      .extractTable(mapper);
   engine.registerTable(mapper.extractStructure(foo!));
 
   final parsedBar = engine.parse(createBar).rootNode as CreateTableStatement;
-  final bar = await CreateTableReader(parsedBar, step).extractTable(mapper);
+  final bar = await CreateTableReader(parsedBar, step, await task.helper)
+      .extractTable(mapper);
   engine.registerTable(mapper.extractStructure(bar!));
 
   SqlQuery parse(String sql) {
@@ -95,7 +96,7 @@ FROM routes
   INNER JOIN points "from" ON "from".id = routes.from
   INNER JOIN points "to" ON "to".id = routes."to";
       ''',
-    }, enableAnalyzer: false);
+    });
 
     final file = await state.analyze('package:foo/main.moor');
     final result = file.currentResult as ParsedMoorFile;
@@ -142,7 +143,7 @@ INNER JOIN tableB1 -- not nullable
 LEFT JOIN tableB1 AS tableB2 -- nullable
    ON FALSE;
       ''',
-    }, enableAnalyzer: false);
+    });
 
     final file = await state.analyze('package:foo/main.moor');
     final result = file.currentResult as ParsedMoorFile;
@@ -171,7 +172,7 @@ CREATE VIEW my_view AS SELECT 'foo', 2;
 
 query: SELECT * FROM my_view;
       ''',
-    }, enableAnalyzer: false);
+    });
 
     final file = await state.analyze('package:foo/main.moor');
     expect(file.errors.errors, isEmpty);
@@ -194,7 +195,7 @@ CREATE VIEW my_view AS SELECT 'foo', 2;
 
 query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
       ''',
-    }, enableAnalyzer: false);
+    });
 
     final file = await state.analyze('package:foo/main.moor');
     expect(file.errors.errors, isEmpty);

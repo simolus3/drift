@@ -449,11 +449,7 @@ abstract class DatabaseConnectionUser {
           success = true;
           return result;
         } catch (e, s) {
-          try {
-            await transactionExecutor.rollback();
-          } catch (rollBackException) {
-            throw CouldNotRollBackException(e, s, rollBackException);
-          }
+          await transactionExecutor.rollbackAfterException(e, s);
 
           // pass the exception on to the one who called transaction()
           rethrow;
@@ -461,9 +457,9 @@ abstract class DatabaseConnectionUser {
           if (success) {
             try {
               await transaction.complete();
-            } catch (e) {
+            } catch (e, s) {
               // Couldn't commit -> roll back then.
-              await transactionExecutor.rollback();
+              await transactionExecutor.rollbackAfterException(e, s);
               rethrow;
             }
           }
@@ -684,5 +680,16 @@ extension TableOperations<Tbl extends Table, Row>
   /// See also [SingleTableQueryMixin.where].
   Future<int> deleteWhere(Expression<bool?> Function(Tbl tbl) filter) {
     return (delete()..where(filter)).go();
+  }
+}
+
+extension on TransactionExecutor {
+  Future<void> rollbackAfterException(
+      Object exception, StackTrace trace) async {
+    try {
+      await rollback();
+    } catch (rollBackException) {
+      throw CouldNotRollBackException(exception, trace, rollBackException);
+    }
   }
 }

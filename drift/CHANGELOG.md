@@ -1,11 +1,22 @@
-## 1.6.0-dev
+## 1.7.0-dev
 
-- Add the `unique()` method to columns and the `uniqueKeys` override to tables
+- Add `filter` and `distinct` support to `groupConcat`.
+
+## 1.6.0
+
+- Add the `unique()` method to columns and the `uniqueKeys` override for tables
   to define unique constraints in Dart tables.
+- Add the `check()` method to the Dart column builder to generate `CHECK` column
+  constraints.
+- Also apply type converters for json serialization and deserialization if they
+  mix in `JsonTypeConverter`.
 - Add the very experimental `package:drift/wasm.dart` library. It uses WebAssembly
   to access sqlite3 without any external JavaScript libraries, but requires you to
   add a [WebAssembly module](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3#wasm-web-support)
   to the `web/` folder.
+  Please note that this specific library is not subject to semantic versioning
+  until it leaves its experimental state. It also isn't suitable for production
+  use at the moment.
 - Internally use `package:js` to wrap sql.js.
 
 ## 1.5.0

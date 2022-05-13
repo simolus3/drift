@@ -100,9 +100,9 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
       },
       options: const MoorOptions.defaults(modules: [SqlModule.moor_ffi]),
     );
+    addTearDown(state.close);
 
     final fileA = await state.analyze('package:foo/a.moor');
-    state.close();
 
     expect(fileA.errors.errors, isEmpty);
     final resultA = fileA.currentResult as ParsedMoorFile;

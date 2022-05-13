@@ -26,6 +26,10 @@ class UsedTypeConverter {
   /// The type that will be written to the database.
   final ColumnType sqlType;
 
+  /// Whether this type converter should also be used in the generated JSON
+  /// serialization.
+  final bool alsoAppliesToJsonConversion;
+
   /// Type converters are stored as static fields in the table that created
   /// them. This will be the field name for this converter.
   String get fieldName => '\$converter$index';
@@ -37,6 +41,7 @@ class UsedTypeConverter {
     required this.expression,
     required this.mappedType,
     required this.sqlType,
+    this.alsoAppliesToJsonConversion = false,
   });
 
   bool get hasNullableDartType =>
@@ -71,7 +76,10 @@ class UsedTypeConverter {
   /// A suitable typename to store an instance of the type converter used here.
   String converterNameInCode(GenerationOptions options) {
     final sqlDartType = dartTypeNames[sqlType];
-    return 'TypeConverter<${mappedType.codeString(options)}, $sqlDartType>';
+    final className =
+        alsoAppliesToJsonConversion ? 'JsonTypeConverter' : 'TypeConverter';
+
+    return '$className<${mappedType.codeString(options)}, $sqlDartType>';
   }
 }
 

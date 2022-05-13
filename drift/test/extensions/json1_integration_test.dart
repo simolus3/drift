@@ -19,9 +19,8 @@ void main() {
         'three',
       ],
     };
-    await db
-        .into(db.pureDefaults)
-        .insert(PureDefaultsCompanion(txt: Value(json.encode(jsonObject))));
+    await db.into(db.pureDefaults).insert(PureDefaultsCompanion(
+        txt: Value(MyCustomObject(json.encode(jsonObject)))));
 
     final arrayLengthExpr = db.pureDefaults.txt.jsonArrayLength(r'$.array');
     final query = db.select(db.pureDefaults).addColumns([arrayLengthExpr]);

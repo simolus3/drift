@@ -172,4 +172,22 @@ void main() {
           .having((e) => e.exception, 'exception', rollbackException)),
     );
   });
+
+  test('reports original exception when rollback throws after failed commit',
+      () {
+    const rollbackException = 'rollback';
+    const commitException = 'commit';
+
+    final transactions = executor.transactions;
+    when(transactions.send()).thenAnswer((_) => Future.error(commitException));
+    when(transactions.rollback())
+        .thenAnswer((_) => Future.error(rollbackException));
+
+    return expectLater(
+      db.transaction(Future.value),
+      throwsA(isA<CouldNotRollBackException>()
+          .having((e) => e.cause, 'cause', commitException)
+          .having((e) => e.exception, 'exception', rollbackException)),
+    );
+  });
 }

@@ -6,6 +6,10 @@ part of 'sql_types.dart';
 /// Dart currently supports [DateTime], [double], [int], [Uint8List], [bool]
 /// and [String] for [S].
 ///
+/// Using a type converter does impact the way drift serializes data classes to
+/// JSON by default. To control that, use a [JsonTypeConverter] or a custom
+/// [ValueSerializer].
+///
 /// Also see [BuildGeneralColumn.map] for details.
 abstract class TypeConverter<D, S> {
   /// Empty constant constructor so that subclasses can have a constant
@@ -18,6 +22,26 @@ abstract class TypeConverter<D, S> {
 
   /// Maps a column from the database back to Dart.
   D? mapToDart(S? fromDb);
+}
+
+/// A mixin for [TypeConverter]s that should also apply to drift's builtin
+/// JSON serialization of data classes.
+///
+/// By default, a [TypeConverter] only applies to the serialization from Dart
+/// to SQL (and vice-versa).
+/// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
+/// `.drift` files) refers to a type converter that inherits from
+/// [JsonTypeConverter], it will also be used to conversion from and to json.
+mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
+  /// Map a value from the Data class to json.
+  ///
+  /// Defaults to doing the same conversion as for Dart -> SQL, [mapToSql].
+  S? toJson(D? value) => mapToSql(value);
+
+  /// Map a value from json to something understood by the data class.
+  ///
+  /// Defaults to doing the same conversion as for SQL -> Dart, [mapToSql].
+  D? fromJson(S? json) => mapToDart(json);
 }
 
 /// Implementation for an enum to int converter that uses the index of the enum

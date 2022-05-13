@@ -84,6 +84,13 @@ class NestedQueryAnalyzer extends RecursiveVisitor<_AnalyzerState, void> {
   }
 
   @override
+  void visitVariable(Variable e, _AnalyzerState arg) {
+    arg.actualAndAddedVariables.add(e);
+
+    super.visitVariable(e, arg);
+  }
+
+  @override
   void visitReference(Reference e, _AnalyzerState arg) {
     final resultEntity = e.resultEntity;
     final container = arg.container;

@@ -31,7 +31,7 @@ provide helpful and descriptive lints.
 - __⚡ Fast__: Even though drift lets you write powerful queries, it can keep
 up with the performance of key-value stores. Drift is the only major persistence library with builtin threading support, allowing you to run database code across isolates with zero additional effort.
 - __Reactive__: Turn any sql query into an auto-updating stream! This includes complex queries across many tables
-- __⚙️ Cross-Platform support__: Drift works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/rodydavis/moor_shared) is a Flutter todo app that works on all platforms
+- __⚙️ Cross-Platform support__: Drift works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/simolus3/drift/tree/develop/examples/app) is a Flutter todo app that works on all platforms
 - __🗡️ Battle tested and production ready__: Drift is stable and well tested with a wide range of unit and integration tests. It powers production Flutter apps.
 
 drift moor, persistence on Flutter is fun!

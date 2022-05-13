@@ -16,13 +16,12 @@ class TestState {
   TestState(this.backend, this.session);
 
   factory TestState.withContent(Map<String, String> content,
-      {MoorOptions? options, bool enableAnalyzer = true}) {
+      {MoorOptions? options}) {
     final backend = TestBackend(
       {
         for (final entry in content.entries)
           AssetId.parse(entry.key): entry.value,
       },
-      enableDartAnalyzer: enableAnalyzer,
     );
     final session = MoorSession(backend);
     if (options != null) {

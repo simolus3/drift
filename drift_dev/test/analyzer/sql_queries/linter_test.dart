@@ -91,37 +91,6 @@ in: INSERT INTO foo (id) $placeholder;
     );
   });
 
-  group('warns about wrong types in subexpressions', () {
-    test('strings in arithmetic', () {
-      final result = engine.analyze("SELECT 'foo' + 3;");
-      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
-
-      expect(
-        moorQuery.lints,
-        contains(isA<AnalysisError>().having(
-            (e) => e.message, 'message', contains('should be numeric'))),
-      );
-    });
-
-    test('allows numerics in arithmetic', () {
-      final result = engine.analyze('SELECT 3.6 * 3;');
-      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
-
-      expect(moorQuery.lints, isEmpty);
-    });
-
-    test('real in binary', () {
-      final result = engine.analyze('SELECT 3.5 | 3;');
-      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
-
-      expect(
-        moorQuery.lints,
-        contains(isA<AnalysisError>()
-            .having((e) => e.message, 'message', contains('should be an int'))),
-      );
-    });
-  });
-
   test(
     'warns when nested results appear in compound statements',
     () async {

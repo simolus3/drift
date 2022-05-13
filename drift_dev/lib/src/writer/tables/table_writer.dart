@@ -33,6 +33,10 @@ abstract class TableOrViewWriter {
 
         additionalParams['additionalChecks'] = buffer.toString();
       }
+
+      if (feature is DartCheckExpression) {
+        additionalParams['check'] = '() => ${feature.dartExpression}';
+      }
     }
 
     additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';
@@ -73,7 +77,8 @@ abstract class TableOrViewWriter {
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer
       ..write(type)
-      ..write("('${column.name.name}', aliasedName, $isNullable, ");
+      ..write(
+          '(${asDartLiteral(column.name.name)}, aliasedName, $isNullable, ');
 
     var first = true;
     additionalParams.forEach((name, value) {
@@ -391,15 +396,15 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writeUniqueKeyOverride() {
-    buffer.write('@override\nList<Set<GeneratedColumn>> get uniqueKeys => ');
     final uniqueKeys = table.uniqueKeys ?? [];
-
     if (uniqueKeys.isEmpty) {
-      buffer.write('[];');
+      // We inherit from `TableInfo` which defaults this getter to an empty
+      // list.
       return;
     }
 
-    buffer.write('[');
+    buffer.write('@override\nList<Set<GeneratedColumn>> get uniqueKeys => [');
+
     for (final uniqueKey in uniqueKeys) {
       buffer.write('{');
       final uqList = uniqueKey.toList();

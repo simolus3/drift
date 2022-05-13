@@ -31,8 +31,6 @@ class Users extends Table with TableInfo {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   Never map(Map<String, dynamic> data, {String? tablePrefix}) {
     throw UnsupportedError('TableInfo.map in schema verification code');
   }
@@ -81,8 +79,6 @@ class Groups extends Table with TableInfo {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   Never map(Map<String, dynamic> data, {String? tablePrefix}) {
     throw UnsupportedError('TableInfo.map in schema verification code');
   }
@@ -98,15 +94,59 @@ class Groups extends Table with TableInfo {
   bool get dontWriteConstraints => true;
 }
 
+class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
+  final String? _alias;
+  @override
+  final DatabaseAtV5 attachedDatabase;
+  GroupCount(this.attachedDatabase, [this._alias]);
+  @override
+  List<GeneratedColumn> get $columns => [id, name, nextUser, groupCount];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'group_count';
+  @override
+  String? get createViewStmt => null;
+  @override
+  GroupCount get asDslTable => this;
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  late final GeneratedColumn<int?> id =
+      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      type: const StringType());
+  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      'next_user', aliasedName, true,
+      type: const IntType());
+  late final GeneratedColumn<int?> groupCount = GeneratedColumn<int?>(
+      'group_count', aliasedName, false,
+      type: const IntType());
+  @override
+  GroupCount createAlias(String alias) {
+    return GroupCount(attachedDatabase, alias);
+  }
+
+  @override
+  Query? get query => null;
+  @override
+  Set<String> get readTables => const {};
+}
+
 class DatabaseAtV5 extends GeneratedDatabase {
   DatabaseAtV5(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   DatabaseAtV5.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
+  late final GroupCount groupCount = GroupCount(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [users, groups];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [users, groups, groupCount];
   @override
   int get schemaVersion => 5;
 }

@@ -138,9 +138,23 @@ class DataClassWriter {
     for (final column in columns) {
       final getter = column.dartGetterName;
       final jsonKey = column.getJsonKey(scope.options);
-      final type = column.dartTypeCode(scope.generationOptions);
+      String deserialized;
 
-      _buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
+      final typeConverter = column.typeConverter;
+      if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
+        final type = column.innerColumnType(scope.generationOptions);
+        final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
+        final notNull =
+            !column.nullable && scope.generationOptions.nnbd ? '!' : '';
+        deserialized =
+            '${typeConverter.tableAndField}.fromJson($fromConverter)$notNull';
+      } else {
+        final type = column.dartTypeCode(scope.generationOptions);
+
+        deserialized = "serializer.fromJson<$type>(json['$jsonKey'])";
+      }
+
+      _buffer.write('$getter: $deserialized,');
     }
 
     _buffer.write(');}\n');
@@ -165,8 +179,14 @@ class DataClassWriter {
       final name = column.getJsonKey(scope.options);
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
-      final value = needsThis ? 'this.$getter' : getter;
-      final dartType = column.dartTypeCode(scope.generationOptions);
+      var value = needsThis ? 'this.$getter' : getter;
+      var dartType = column.dartTypeCode(scope.generationOptions);
+
+      final typeConverter = column.typeConverter;
+      if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
+        value = '${typeConverter.tableAndField}.toJson($value)';
+        dartType = '${column.innerColumnType(scope.generationOptions)}';
+      }
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");
     }

@@ -193,6 +193,26 @@ extension BuildColumn<T> on ColumnBuilder<T> {
     _isGenerated();
   }
 
+  /// Adds a `CHECK` constraint to this column.
+  ///
+  /// The check, encoded as a boolean [Expression], is evaluated when a new row
+  /// is added into the table or when this column is updated.
+  /// If, at that time, the [condition] evaluates to `false`, the insert or
+  /// update is rejected (it fails with an exception).
+  ///
+  /// ```dart
+  ///   // Column that can only be set to times after 1950.
+  ///   DateTimeColumn get creationTime => dateTime()
+  ///    .check(creationTime.isBiggerThan(Constant(DateTime(1950))))
+  ///    .withDefault(currentDateAndTime)();
+  /// ```
+  ///
+  /// Note that the [condition] is written into the database schema (it is
+  /// part of a `CREATE TABLE` statement). As a consequence, changes to the
+  /// [condition] need to be updated in the database schema with an explicit
+  /// [schema migration](https://drift.simonbinder.eu/docs/advanced-features/migrations/).
+  ColumnBuilder<T> check(Expression<bool?> condition) => _isGenerated();
+
   /// Declare a generated column.
   ///
   /// Generated columns are backed by an expression, declared with

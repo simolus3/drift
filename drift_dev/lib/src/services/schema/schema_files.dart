@@ -60,6 +60,22 @@ class SchemaWriter {
         'name': entity.name,
         'sql': entity.createStmt,
       };
+    } else if (entity is MoorView) {
+      if (entity.declaration is! MoorViewDeclaration) {
+        throw UnsupportedError(
+            'Exporting Dart-defined views into a schema is not '
+            'currently supported');
+      }
+
+      type = 'view';
+      data = {
+        'name': entity.name,
+        'sql': entity
+            .createSql(const MoorOptions.defaults(newSqlCodeGeneration: true)),
+        'dart_data_name': entity.dartTypeName,
+        'dart_info_name': entity.entityInfoName,
+        'columns': [for (final column in entity.columns) _columnData(column)],
+      };
     } else if (entity is SpecialQuery) {
       type = 'special-query';
       data = {
@@ -200,6 +216,9 @@ class SchemaReader {
       case 'table':
         entity = _readTable(content);
         break;
+      case 'view':
+        entity = _readView(content);
+        break;
       case 'special-query':
         // Not relevant for the schema.
         return;
@@ -282,6 +301,18 @@ class SchemaReader {
       overrideWithoutRowId: withoutRowId,
       declaration: const CustomTableDeclaration(),
     );
+  }
+
+  MoorView _readView(Map<String, dynamic> content) {
+    return MoorView(
+      declaration: null,
+      name: content['name'] as String,
+      dartTypeName: content['dart_data_name'] as String,
+      entityInfoName: content['dart_info_name'] as String,
+    )..columns = [
+        for (final column in content['columns'])
+          _readColumn(column as Map<String, dynamic>)
+      ];
   }
 
   MoorColumn _readColumn(Map<String, dynamic> data) {

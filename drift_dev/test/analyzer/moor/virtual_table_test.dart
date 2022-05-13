@@ -33,7 +33,6 @@ exampleSearch: SELECT example_table.**, s.* FROM example_table
     ON s.rowid = example_table.rowid;
 ''',
       },
-      enableAnalyzer: false,
       options: const MoorOptions.defaults(modules: [SqlModule.fts5]),
     );
     addTearDown(state.close);
@@ -64,7 +63,6 @@ SELECT rowid, highlight(example_table_search, 0, '[match]', '[match]') name,
         FROM example_table_search WHERE example_table_search MATCH simple_query(:search);
         ''',
       },
-      enableAnalyzer: false,
       options: const MoorOptions.defaults(modules: [SqlModule.fts5]),
     );
     addTearDown(state.close);

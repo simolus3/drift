@@ -3,19 +3,11 @@ import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
-import 'package:drift_dev/src/model/base_entity.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import 'column.dart';
-import 'table.dart';
-import 'types.dart';
-import 'used_type_converter.dart';
-import 'view.dart';
-
-final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
-final _leadingDigits = RegExp(r'^\d*');
+import 'model.dart';
 
 /// Represents the declaration of a compile-time query that will be analyzed
 /// by moor_generator.
@@ -412,22 +404,12 @@ class InferredResultSet {
       ..addAll(names);
   }
 
-  /// Suggests an appropriate name that can be used as a dart field.
+  /// Suggests an appropriate name that can be used as a dart field for the
+  /// [column].
   String dartNameFor(ResultColumn column) {
     return _dartNames.putIfAbsent(column, () {
-      // remove chars which cannot appear in dart identifiers, also strip away
-      // leading digits
-      var name = column.name
-          .replaceAll(_illegalChars, '')
-          .replaceFirst(_leadingDigits, '');
-
-      if (name.isEmpty) {
-        name = 'empty';
-      }
-
-      name = ReCase(name).camelCase;
-
-      return _appendNumbersIfExists(name);
+      return dartNameForSqlColumn(column.name,
+          existingNames: _dartNames.values);
     });
   }
 
@@ -445,16 +427,6 @@ class InferredResultSet {
 
     return columnsEquality.equals(columns, other.columns) &&
         nestedEquality.equals(nestedResults, other.nestedResults);
-  }
-
-  String _appendNumbersIfExists(String name) {
-    final originalName = name;
-    var counter = 1;
-    while (_dartNames.values.contains(name)) {
-      name = originalName + counter.toString();
-      counter++;
-    }
-    return name;
   }
 }
 
@@ -697,7 +669,7 @@ class FoundVariable extends FoundElement implements HasType {
   @override
   String get dartParameterName {
     if (name != null) {
-      return name!.replaceAll(_illegalChars, '');
+      return dartNameForSqlColumn(name!);
     } else {
       return 'var${variable.resolvedIndex}';
     }

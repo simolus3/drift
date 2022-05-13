@@ -9,3 +9,9 @@ CREATE TABLE "groups" (
 
     PRIMARY KEY (id)
 );
+
+-- This view was added in schema version 5
+CREATE VIEW group_count AS SELECT
+    users.*,
+    (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count
+  FROM users;

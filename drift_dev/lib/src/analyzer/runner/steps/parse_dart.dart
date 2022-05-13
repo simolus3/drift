@@ -14,6 +14,7 @@ class ParseDartStep extends Step {
   static const _useDaoChecker = TypeChecker.fromRuntime(DriftAccessor);
 
   final LibraryElement library;
+  final HelperLibrary resolvedHelper;
 
   late MoorDartParser _parser;
   MoorDartParser get parser => _parser;
@@ -21,7 +22,8 @@ class ParseDartStep extends Step {
   final Map<ClassElement, MoorTable> _tables = {};
   final Map<ClassElement, MoorView> _views = {};
 
-  ParseDartStep(Task task, FoundFile file, this.library) : super(task, file) {
+  ParseDartStep(Task task, FoundFile file, this.library, this.resolvedHelper)
+      : super(task, file) {
     _parser = MoorDartParser(this);
   }
 

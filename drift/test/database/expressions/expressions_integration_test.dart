@@ -72,24 +72,65 @@ void main() {
         completion(DateTime(2021, 5, 10, 12)));
   });
 
-  test('aggregate filters', () async {
-    await db.delete(db.users).go();
+  group('aggregatte', () {
+    setUp(() => db.delete(db.users).go());
 
-    await db
-        .into(db.tableWithoutPK)
-        .insert(TableWithoutPKCompanion.insert(notReallyAnId: 3, someFloat: 7));
-    await db
-        .into(db.tableWithoutPK)
-        .insert(TableWithoutPKCompanion.insert(notReallyAnId: 2, someFloat: 1));
+    group('groupConcat', () {
+      setUp(() async {
+        for (var i = 0; i < 5; i++) {
+          await db.into(db.users).insert(UsersCompanion.insert(
+              name: 'User $i', profilePicture: Uint8List(0)));
+        }
+      });
 
-    expect(
-      eval(
-        db.tableWithoutPK.someFloat
-            .sum(filter: db.tableWithoutPK.someFloat.isBiggerOrEqualValue(3)),
-        onTable: db.tableWithoutPK,
-      ),
-      completion(7),
-    );
+      test('simple', () {
+        expect(eval(db.users.id.groupConcat()), completion('2,3,4,5,6'));
+      });
+
+      test('custom separator', () {
+        expect(eval(db.users.id.groupConcat(separator: '-')),
+            completion('2-3-4-5-6'));
+      });
+
+      test('distinct', () async {
+        for (var i = 0; i < 5; i++) {
+          await db
+              .into(db.todosTable)
+              .insert(TodosTableCompanion.insert(content: 'entry $i'));
+          await db
+              .into(db.todosTable)
+              .insert(TodosTableCompanion.insert(content: 'entry $i'));
+        }
+
+        expect(
+            eval(db.todosTable.content.groupConcat(distinct: true),
+                onTable: db.todosTable),
+            completion('entry 0,entry 1,entry 2,entry 3,entry 4'));
+      });
+
+      test('filter', () {
+        expect(
+            eval(db.users.id
+                .groupConcat(filter: db.users.id.isBiggerThanValue(3))),
+            completion('4,5,6'));
+      });
+    });
+
+    test('filters', () async {
+      await db.into(db.tableWithoutPK).insert(
+          TableWithoutPKCompanion.insert(notReallyAnId: 3, someFloat: 7));
+      await db.into(db.tableWithoutPK).insert(
+          TableWithoutPKCompanion.insert(notReallyAnId: 2, someFloat: 1));
+
+      expect(
+        eval(
+          db.tableWithoutPK.someFloat
+              .sum(filter: db.tableWithoutPK.someFloat.isBiggerOrEqualValue(3)),
+          onTable: db.tableWithoutPK,
+        ),
+        completion(7),
+      );
+    });
   });
 
   group('text', () {

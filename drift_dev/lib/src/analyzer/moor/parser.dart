@@ -5,10 +5,13 @@ import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../helper.dart';
+
 class MoorParser {
   final ParseMoorStep step;
+  final HelperLibrary helper;
 
-  MoorParser(this.step);
+  MoorParser(this.step, this.helper);
 
   Future<ParsedMoorFile> parseAndAnalyze() async {
     final engine = step.task.session.spawnEngine();
@@ -27,7 +30,7 @@ class MoorParser {
         importStatements.add(importStmt);
       } else if (parsedStmt is TableInducingStatement) {
         createdReaders
-            .add(CreateTableReader(parsedStmt, step, importStatements));
+            .add(CreateTableReader(parsedStmt, step, helper, importStatements));
       } else if (parsedStmt is CreateTriggerStatement) {
         // the table will be resolved in the analysis step
         createdEntities.add(MoorTrigger.fromMoor(parsedStmt, step.file));

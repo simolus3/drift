@@ -44,6 +44,9 @@ class Database extends _$Database {
           } else if (target == 5) {
             // Just add a new column that was added in version 5;
             await m.addColumn(users, users.nextUser);
+
+            // And create the view on users
+            await m.createView(groupCount);
           }
         }
       },

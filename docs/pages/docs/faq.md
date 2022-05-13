@@ -129,7 +129,7 @@ Sqlcool is a lightweight library around sqflite that makes writing queries and s
 auto-updating streams. It can be a decent alternative to drift if you don't want/need generated code to parse the
 result of your queries.
 
-## floor
+### floor
 Floor also has a lot of convenience features like auto-updating queries and schema migrations. Similar to drift, you
 define the structure of your database in Dart. Then, you have write queries in sql - the mapping code if generated
 by floor. Drift has a [similar feature]({{ "Using SQL/custom_queries.md" | pageUrl }}), but it can also verify that your queries are valid at compile time. Drift
@@ -140,7 +140,7 @@ By default, drift generates most classes for you, which can make it easier to us
 instances.
 Drift can also be used with [custom row classes]({{ 'Advanced Features/custom_row_classes.md' | pageUrl }}) though.
 
-## firebase
+### firebase
 Both the Realtime Database and Cloud Datastore are easy to use persistence libraries that can sync across devices while
 still working offline. Both of them feature auto-updating streams and a simple query api. However, neither of them is
 a relational database, so they don't support useful sql features like aggregate functions, joins, or complex filters.

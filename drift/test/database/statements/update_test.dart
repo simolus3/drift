@@ -43,7 +43,7 @@ void main() {
     test('with escaped column names', () async {
       await db
           .update(db.pureDefaults)
-          .write(const PureDefaultsCompanion(txt: Value('foo')));
+          .write(PureDefaultsCompanion(txt: Value(MyCustomObject('foo'))));
 
       verify(executor
           .runUpdate('UPDATE pure_defaults SET "insert" = ?;', ['foo']));

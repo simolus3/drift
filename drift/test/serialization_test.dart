@@ -64,6 +64,12 @@ void main() {
       expect(someTodoEntry.toJson(), equals(regularSerialized));
     });
 
+    test('applies json type converter', () {
+      expect(PureDefault(txt: MyCustomObject('foo')).toJson(), {'txt': 'foo'});
+      expect(PureDefault.fromJson({'txt': 'foo'}),
+          PureDefault(txt: MyCustomObject('foo')));
+    });
+
     test('with custom serializer', () {
       expect(someTodoEntry.toJson(serializer: CustomSerializer()),
           equals(customSerialized));

@@ -15,7 +15,7 @@ void main() {
 
         query: SELECT * FROM tbl WHERE id IN :idList;
       ''',
-    }, enableAnalyzer: false);
+    });
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
@@ -38,7 +38,7 @@ void main() {
 
         query: SELECT * FROM tbl LIMIT :offset, :limit;
       ''',
-    }, enableAnalyzer: false);
+    });
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
@@ -67,7 +67,7 @@ void main() {
 
         query: SELECT t.** AS tableName FROM tbl AS t;
       ''',
-    }, enableAnalyzer: false);
+    });
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
@@ -160,7 +160,11 @@ void main() {
             c TEXT
           );
 
-          query: SELECT a, LIST(SELECT b, c FROM tbl WHERE a = :a AND b = :b) FROM tbl WHERE a = :a;
+          query: 
+          SELECT 
+            parent.a, 
+            LIST(SELECT b, c FROM tbl WHERE a = :a OR a = parent.a AND b = :b) 
+          FROM tbl AS parent WHERE parent.a = :a;
         ''',
       });
     });
@@ -204,17 +208,32 @@ void main() {
       );
     });
 
-    test('with the new query generator', () {
+    test('should generate correct queries with variables', () {
       return _runTest(
         const MoorOptions.defaults(newSqlCodeGeneration: true),
         [
-          contains('SELECT a FROM tbl WHERE a = ?1'),
-          contains('SELECT b, c FROM tbl WHERE a = ?1 AND b = ?2'),
-          contains('nestedQuery0: await'),
-          contains('variables: [Variable<String?>(a), Variable<String?>(b)]'),
-          contains('b: row.read<String?>(\'b\')'),
-          contains('c: row.read<String?>(\'c\')'),
-          contains('class QueryNestedQuery0'),
+          contains(
+            r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
+          ),
+          contains(
+            r'[Variable<String?>(a)]',
+          ),
+          contains(
+            r'SELECT b, c FROM tbl WHERE a = ?1 OR a = ?2 AND b = ?3',
+          ),
+          contains(
+            r"[Variable<String?>(a), Variable<String>(row.read('\$n_0')), Variable<String?>(b)]",
+          ),
+        ],
+      );
+    });
+
+    test('should generate correct data class', () {
+      return _runTest(
+        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        [
+          contains('QueryNestedQuery0({this.b,this.c,})'),
+          contains('QueryResult({this.a,required this.nestedQuery0,})'),
         ],
       );
     });
