@@ -168,6 +168,7 @@ Drift supports a variety of column types out of the box. You can store custom cl
 | Dart type    | Column        | Corresponding SQLite type                           |
 |--------------|---------------|-----------------------------------------------------|
 | `int`        | `integer()`   | `INTEGER`                                           |
+| `BigInt`     | `int64()`     | `INTEGER` (useful for large values on the web)      |
 | `double`     | `real()`      | `REAL`                                              |
 | `boolean`    | `boolean()`   | `INTEGER`, which a `CHECK` to only allow `0` or `1` |
 | `String`     | `text()`      | `TEXT`                                              |
@@ -179,6 +180,44 @@ the database.
 They don't affect JSON serialization at all. For instance, `boolean` values are expected as `true` or `false`
 in the `fromJson` factory, even though they would be saved as `0` or `1` in the database.
 If you want a custom mapping for JSON, you need to provide your own [`ValueSerializer`](https://pub.dev/documentation/drift/latest/drift/ValueSerializer-class.html).
+
+### `BigInt` support
+
+Drift supports the `int64()` column builder to indicate that a column stores
+large integers and should be mapped to Dart as a `BigInt`.
+
+This is mainly useful for Dart apps compiled to JavaScript, where an `int`
+really is a `double` that can't store large integers without loosing information.
+Here, representing integers as `BigInt` (and passing those to the underlying
+database implementation) ensures that you can store large intergers without any
+loss of precision.
+Be aware that `BigInt`s have a higher overhead than `int`s, so we recommend using
+`int64()` only for columns where this is necessary:
+
+{% block "blocks/alert" title="You might not need this!" color="warning" %}
+In sqlite3, an `INTEGER` column is stored as a 64-bit integer.
+For apps running in the Dart VM (e.g. on everything except for the web), the `int`
+type in Dart is the _perfect_ match for that since it's also a 64-bit int.
+For those apps, we recommend using the regular `integer()` column builder.
+
+Essentially, you should use `int64()` if both of these are true:
+
+- you're building an app that needs to work on the web, _and_
+- the column in question may store values larger than 2^52.
+
+In all other cases, using a regular `integer()` column is more efficient.
+{% endblock %}
+
+Here are some more pointers on using `BigInt`s in drift:
+
+- Since an `integer()` and a `int64()` is the same column in sqlite3, you can
+  switch between the two without writing a schema migration.
+- In addition to large columns, it may also be that you have a complex expression
+  in a select query that would be better represented as a `BigInt`. You can use
+  `dartCast()` for this: For an expression
+  `(table.columnA * table.columnB).dartCast<BigInt>()`, drift will report the
+  resulting value as a `BigInt` even if `columnA` and `columnB` were defined
+  as regular integers.
 
 ## Custom constraints
 
