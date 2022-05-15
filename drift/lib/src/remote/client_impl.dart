@@ -55,7 +55,7 @@ abstract class _BaseExecutor extends QueryExecutor {
   final DriftClient client;
   int? _executorId;
 
-  // ignore: unused_element
+  // ignore: unused_element, https://github.com/dart-lang/sdk/issues/49007
   _BaseExecutor(this.client, [this._executorId]);
 
   @override

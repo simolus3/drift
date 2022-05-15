@@ -82,14 +82,17 @@ Future<void> _createApiDocumentation(Directory output) async {
   // todo: Use `dart doc` after https://github.com/dart-lang/sdk/issues/46100#issuecomment-1033899215
   // gets clarified.
   final dartDoc = await Process.start(
-    'dartdoc',
+    'dart',
     [
+      'run',
+      'dartdoc',
       '--rel-canonical-prefix=https://pub.dev/documentation/drift/latest',
       '--link-to-source-revision=$rev',
       '--link-to-source-root=..',
       '--link-to-source-uri-template=$source',
+      '--input=../drift',
+      '--output=../drift/doc/api',
     ],
-    workingDirectory: '../drift',
   );
   await _waitForProcess(dartDoc, 'dartdoc');
 
