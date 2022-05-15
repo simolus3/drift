@@ -46,40 +46,36 @@ extension ArithmeticExpr<DT extends num?> on Expression<DT> {
 extension ArithmeticBigIntExpr<DT extends BigInt?> on Expression<DT> {
   /// Performs an addition (`this` + [other]) in sql.
   Expression<DT> operator +(Expression<DT> other) {
-    return _BaseInfixOperator(this, '+', other,
-        precedence: Precedence.plusMinus);
+    return (dartCast<int>() + other.dartCast<int>()).dartCast<DT>();
   }
 
   /// Performs a subtraction (`this` - [other]) in sql.
   Expression<DT> operator -(Expression<DT> other) {
-    return _BaseInfixOperator(this, '-', other,
-        precedence: Precedence.plusMinus);
+    return (dartCast<int>() - other.dartCast<int>()).dartCast<DT>();
   }
 
   /// Returns the negation of this value.
   Expression<DT> operator -() {
-    return _UnaryMinus(this);
+    return (-dartCast<int>()).dartCast<DT>();
   }
 
   /// Performs a multiplication (`this` * [other]) in sql.
   Expression<DT> operator *(Expression<DT> other) {
-    return _BaseInfixOperator(this, '*', other,
-        precedence: Precedence.mulDivide);
+    return (dartCast<int>() * other.dartCast<int>()).dartCast<DT>();
   }
 
   /// Performs a division (`this` / [other]) in sql.
   Expression<DT> operator /(Expression<DT> other) {
-    return _BaseInfixOperator(this, '/', other,
-        precedence: Precedence.mulDivide);
+    return (dartCast<int>() / other.dartCast<int>()).dartCast<DT>();
   }
 
   /// Calculates the absolute value of this number.
   Expression<DT> abs() {
-    return FunctionCallExpression('abs', [this]);
+    return dartCast<int>().abs().dartCast<DT>();
   }
 
   /// Rounds this expression to the nearest integer.
   Expression<int?> roundToInt() {
-    return FunctionCallExpression('round', [this]).cast<int>();
+    return dartCast<int>().roundToInt();
   }
 }
