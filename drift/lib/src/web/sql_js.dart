@@ -67,10 +67,16 @@ class _QueryExecResult {
 
 @JS()
 @anonymous
+class _SqlJsStatementGetOptions {
+  external _SqlJsStatementGetOptions({bool useBigInt = false});
+}
+
+@JS()
+@anonymous
 class _SqlJsStatement {
   external void bind(List<Object?> values);
   external bool step();
-  external List<Object?> get(Object? params, dynamic config);
+  external List<Object?> get(Object? params, _SqlJsStatementGetOptions config);
   external List<String> getColumnNames();
   external void free();
 }
@@ -137,15 +143,10 @@ class SqlJsDatabase {
       // matches the behavior from a `NativeDatabase`.
       _obj.run(sql, _undefined);
     } else {
-      _obj.run(
-          sql,
-          args.map((e) {
-            if (e != null && e is BigInt) {
-              return _bigInt(e.checkRange.toString());
-            } else {
-              return e;
-            }
-          }).toList());
+      _obj.run(sql, [
+        for (final arg in args)
+          if (arg is BigInt) _bigInt(arg.checkRange.toString()) else arg
+      ]);
     }
   }
 
@@ -189,7 +190,7 @@ class PreparedStatement {
 
   /// Reads the current from the underlying js api
   List<dynamic> currentRow([bool useBigInt = false]) =>
-      _obj.get(null, jsify({'useBigInt': useBigInt}));
+      _obj.get(null, _SqlJsStatementGetOptions(useBigInt: useBigInt));
 
   /// The columns returned by this statement. This will only be available after
   /// [step] has been called once.
