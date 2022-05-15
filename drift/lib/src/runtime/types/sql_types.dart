@@ -109,6 +109,7 @@ class IntType extends SqlType<int> {
   @override
   int? mapFromDatabaseResponse(dynamic response) {
     if (response == null || response is int?) return response as int?;
+    if (response is BigInt) return response.toInt();
     return int.parse(response.toString());
   }
 
