@@ -46,6 +46,13 @@ abstract class Column<T> extends Expression<T> {
 typedef IntColumn = Column<int?>;
 
 /// A column that stores BigInt values.
+///
+/// In a database, this is the exact same thing as an [IntColumn]. However,
+/// unlike an [IntColumn], the resulting value is mapped to a [BigInt] in Dart.
+/// As sqlite3 only supports 64-big integers (the same range that an [int] in
+/// Dart can represent), there is no need to use an [Int64Column] for native
+/// apps. For Dart compiled to JavaScript though, it may be beneficial to use
+/// [BigInt]s to avoid loosing precision for values larger than 2⁵².
 typedef Int64Column = Column<BigInt?>;
 
 /// A column that stores boolean values. Booleans will be stored as an integer

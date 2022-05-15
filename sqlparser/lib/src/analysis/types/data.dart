@@ -101,7 +101,8 @@ class IsDateTime extends TypeHint {
   const IsDateTime();
 }
 
-/// Type hint to mark that this type will contain a date time value.
+/// A type hint to mark that this type might contain a large integer that should
+/// be mapped to Dart as a [BigInt].
 class IsBigInt extends TypeHint {
   const IsBigInt();
 }
