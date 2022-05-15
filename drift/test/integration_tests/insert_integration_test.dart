@@ -138,7 +138,7 @@ void main() {
   });
 
   test('insert and select BigInt', () async {
-    await db.into(db.tableWithoutPK).insert(CustomRowClass.map(1, 0.0,
+    await db.into(db.tableWithoutPK).insert(CustomRowClass.map(1, 0,
             webSafeInt: BigInt.parse('9223372036854775807'),
             custom: MyCustomObject('custom'))
         .toInsertable());

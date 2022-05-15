@@ -33,7 +33,8 @@ void main() {
     });
 
     test('big int', () {
-      expect(Variable<dynamic>(BigInt.from(123)), generates('?', [123]));
+      expect(Variable<dynamic>(BigInt.from(123)),
+          generates('?', [BigInt.from(123)]));
     });
 
     test('date time', () {

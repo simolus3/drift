@@ -36,7 +36,8 @@ void main() {
 
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
-        '(not_really_an_id, some_float, custom) VALUES (?, ?, ?)',
+        '(not_really_an_id, some_float, web_safe_int, custom) '
+        'VALUES (?, ?, NULL, ?)',
         [42, 3.1415, anything]));
   });
 
@@ -47,8 +48,9 @@ void main() {
 
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
-        '(not_really_an_id, some_float, custom) VALUES (?, ?, ?)',
-        [42, 3.1415, anything]));
+        '(not_really_an_id, some_float, web_safe_int, custom) '
+        'VALUES (?, ?, ?, ?)',
+        [42, 0.0, BigInt.one, anything]));
   });
 
   test('generates insert or replace statements', () async {

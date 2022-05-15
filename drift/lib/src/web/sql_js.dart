@@ -68,7 +68,7 @@ class _QueryExecResult {
 @JS()
 @anonymous
 class _SqlJsStatementGetOptions {
-  external _SqlJsStatementGetOptions({bool useBigInt = false});
+  external factory _SqlJsStatementGetOptions({bool useBigInt = false});
 }
 
 @JS()

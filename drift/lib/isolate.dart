@@ -88,8 +88,12 @@ class DriftIsolate {
   /// background isolate. Setting the [isolateDebugLog] is only helpful when
   /// debugging drift itself.
   // todo: breaking: Make synchronous in drift 2
-  Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
-    return remote(_open(), debugLog: isolateDebugLog, serialize: serialize);
+  Future<DatabaseConnection> connect(
+      {bool isolateDebugLog = false, bool supportsBigInt = false}) async {
+    return remote(_open(),
+        debugLog: isolateDebugLog,
+        serialize: serialize,
+        supportsBigInt: supportsBigInt);
   }
 
   /// Stops the background isolate and disconnects all [DatabaseConnection]s

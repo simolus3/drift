@@ -458,8 +458,9 @@ class Migrator {
       if (hasBigInt) {
         // We assume only WebDatabase cannot support BigInt
         throw Exception(
-            'BigInt support is not enabled in WebDatabase. To use this feature '
-            'set `useBigInt` parameter to true');
+            'BigInt support is not enabled in WebDatabase or in DriftClient. '
+            'To use this feature set `useBigInt`/`supportsBigInt` '
+            'parameter to true');
       }
     }
   }

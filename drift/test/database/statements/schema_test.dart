@@ -64,6 +64,7 @@ void main() {
           'table_without_p_k ('
           'not_really_an_id INTEGER NOT NULL, '
           'some_float REAL NOT NULL, '
+          'web_safe_int INTEGER NULL, '
           'custom TEXT NOT NULL'
           ');',
           []));
