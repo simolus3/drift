@@ -11,7 +11,7 @@ dependencies:
   drift_postgres:
    git:
     url: https://github.com/simolus3/drift.git
-    path: extras/dirft_postgres
+    path: extras/drift_postgres
 ```
 
 To connect your drift database class to postgres, use a `PgDatabase` from `package:drift_postgres/postgres.dart`.
