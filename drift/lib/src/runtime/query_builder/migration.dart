@@ -110,8 +110,6 @@ class Migrator {
   Future<void> createTable(TableInfo table) async {
     final context = _createContext();
 
-    _assertBigIntSupport(context, table);
-
     if (table is VirtualTableInfo) {
       _writeCreateVirtual(table, context);
     } else {
@@ -352,7 +350,6 @@ class Migrator {
       await _issueCustomQuery(stmt, const []);
     } else if (view.query != null) {
       final context = GenerationContext.fromDb(_db, supportsVariables: false);
-      _assertBigIntSupport(context, view);
       context.generatingForView = view.entityName;
       context.buffer.write('CREATE VIEW IF NOT EXISTS ${view.entityName} AS ');
       view.query!.writeInto(context);
@@ -449,20 +446,6 @@ class Migrator {
 
   Future<void> _issueCustomQuery(String sql, [List<dynamic>? args]) {
     return _db.customStatement(sql, args);
-  }
-
-  void _assertBigIntSupport(GenerationContext context,
-      ResultSetImplementation<dynamic, dynamic> resultSet) {
-    if (!context.supportsBigInt) {
-      final hasBigInt = resultSet.$columns.any((c) => c.type is BigIntType);
-      if (hasBigInt) {
-        // We assume only WebDatabase cannot support BigInt
-        throw Exception(
-            'BigInt support is not enabled in WebDatabase or in DriftClient. '
-            'To use this feature set `useBigInt`/`supportsBigInt` '
-            'parameter to true');
-      }
-    }
   }
 }
 

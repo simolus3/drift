@@ -104,9 +104,6 @@ class _MultiExecutorImpl extends MultiExecutor {
   final QueryExecutor _write;
 
   @override
-  bool get supportsBigInt => _write.supportsBigInt;
-
-  @override
   SqlDialect get dialect => _write.dialect;
 
   _MultiExecutorImpl({

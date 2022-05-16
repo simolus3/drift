@@ -90,10 +90,7 @@ class DriftIsolate {
   // todo: breaking: Make synchronous in drift 2
   Future<DatabaseConnection> connect(
       {bool isolateDebugLog = false, bool supportsBigInt = false}) async {
-    return remote(_open(),
-        debugLog: isolateDebugLog,
-        serialize: serialize,
-        supportsBigInt: supportsBigInt);
+    return remote(_open(), debugLog: isolateDebugLog, serialize: serialize);
   }
 
   /// Stops the background isolate and disconnects all [DatabaseConnection]s

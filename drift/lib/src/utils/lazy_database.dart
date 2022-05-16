@@ -18,9 +18,6 @@ class LazyDatabase extends QueryExecutor {
   Completer<void>? _openDelegate;
 
   @override
-  bool get supportsBigInt => _delegate.supportsBigInt;
-
-  @override
   SqlDialect get dialect {
     // Drift reads dialect before database opened, so we must know in advance
     if (_delegateAvailable && _dialect != _delegate.dialect) {

@@ -26,9 +26,6 @@ class GenerationContext {
   /// The [SqlDialect] that should be respected when generating the query.
   SqlDialect get dialect => executor?.executor.dialect ?? SqlDialect.sqlite;
 
-  /// Whether executor supports BigInt type
-  bool get supportsBigInt => executor?.executor.supportsBigInt ?? true;
-
   /// The actual [DatabaseConnectionUser] that's going to execute the generated
   /// query.
   final DatabaseConnectionUser? executor;

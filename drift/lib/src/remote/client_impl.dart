@@ -15,9 +15,6 @@ import 'protocol.dart';
 class DriftClient {
   final DriftCommunication _channel;
 
-  /// Whether executor supports BigInt
-  final bool supportsBigInt;
-
   late final _RemoteStreamQueryStore _streamStore =
       _RemoteStreamQueryStore(this);
 
@@ -32,8 +29,7 @@ class DriftClient {
   late QueryExecutorUser _connectedDb;
 
   /// Starts relaying database operations over the request channel.
-  DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize,
-      this.supportsBigInt)
+  DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize)
       : _channel = DriftCommunication(channel,
             debugLog: debugLog, serialize: serialize) {
     _channel.setRequestHandler(_handleRequest);
@@ -124,9 +120,6 @@ class _RemoteQueryExecutor extends _BaseExecutor {
   Future<bool>? _serverIsOpen;
 
   @override
-  bool get supportsBigInt => client.supportsBigInt;
-
-  @override
   SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
@@ -165,9 +158,6 @@ class _RemoteTransactionExecutor extends _BaseExecutor
 
   Completer<bool>? _pendingOpen;
   bool _done = false;
-
-  @override
-  bool get supportsBigInt => client.supportsBigInt;
 
   @override
   SqlDialect get dialect => SqlDialect.sqlite;

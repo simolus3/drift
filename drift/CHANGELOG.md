@@ -1,5 +1,9 @@
 ## 1.7.0-dev
 
+- Add the `int64()` column builder to store large integers. These integers are
+  still stores as 64-bit ints in the database, but represented as a `BigInt` in
+  Dart. This enables better web support for integers larger than 2^52.
+  More details are in [the documentation](https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#bigint-support).
 - Add `filter` and `distinct` support to `groupConcat`.
 
 ## 1.6.0

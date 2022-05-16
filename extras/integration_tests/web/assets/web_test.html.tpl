@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
-    <link rel="x-dart-test" href="saves_after_migration_regression_test.dart">
+    <title>{{testName}} Test</title>
+    {{testScript}}
     <script src="sql-wasm.js"></script>
     <script src="packages/test/dart.js"></script>
 </head>

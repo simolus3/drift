@@ -17,9 +17,6 @@ abstract class QueryExecutor {
   /// The [SqlDialect] to use for this database engine.
   SqlDialect get dialect;
 
-  /// Whether executor supports BigInt;
-  bool get supportsBigInt;
-
   /// Opens the executor, if it has not yet been opened.
   Future<bool> ensureOpen(QueryExecutorUser user);
 

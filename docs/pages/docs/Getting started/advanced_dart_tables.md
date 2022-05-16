@@ -218,6 +218,10 @@ Here are some more pointers on using `BigInt`s in drift:
   `(table.columnA * table.columnB).dartCast<BigInt>()`, drift will report the
   resulting value as a `BigInt` even if `columnA` and `columnB` were defined
   as regular integers.
+- `BigInt`s are not currently supported by `moor_flutter` and `drift_sqflite`.
+- To use `BigInt` support on a `WebDatabase`, set the `readIntsAsBigInt: true`
+  flag when instantiating it.
+- Both `NativeDatabase` and `WasmDatabase` have builtin support for bigints.
 
 ## Custom constraints
 

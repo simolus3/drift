@@ -125,10 +125,8 @@ abstract class DriftServer {
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
 DatabaseConnection remote(StreamChannel<Object?> channel,
-    {bool debugLog = false,
-    bool serialize = true,
-    bool supportsBigInt = false}) {
-  final client = DriftClient(channel, debugLog, serialize, supportsBigInt);
+    {bool debugLog = false, bool serialize = true}) {
+  final client = DriftClient(channel, debugLog, serialize);
   return client.connection;
 }
 

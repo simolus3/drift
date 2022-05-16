@@ -4,6 +4,7 @@ environment:
   sdk: '>=2.4.0 <3.0.0'
 
 dependencies:
+  drift:
   tests:
     path: ../tests
 

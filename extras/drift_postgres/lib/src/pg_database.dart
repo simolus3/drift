@@ -12,9 +12,6 @@ class PgDatabase extends DelegatedDatabase {
 
   @override
   SqlDialect get dialect => SqlDialect.postgres;
-
-  @override
-  bool get supportsBigInt => true;
 }
 
 class _PgDelegate extends DatabaseDelegate {
