@@ -38,6 +38,7 @@ void main() {
           ..from(users)
           ..where(users.id().eq(sqlVar(3)))
           ..innerJoin(groups, on: groups.admin().eq(users.id()))
+          ..where(groups.admin().eq(sqlVar(5)))
           ..limit(10);
         final context = builder.newContext();
         final mapping = select.writeInto(context);
