@@ -78,7 +78,7 @@ void main() {
 
   test('errors propagate across isolates', () async {
     final isolate = await DriftIsolate.spawn(_backgroundConnection);
-    final db = TodoDb.connect(await isolate.connect(supportsBigInt: true));
+    final db = TodoDb.connect(await isolate.connect());
 
     try {
       await db.customStatement('UPDATE non_existing_table SET foo = bar');
@@ -134,7 +134,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
     isolate = await spawner();
 
     database = TodoDb.connect(
-      DatabaseConnection.delayed(isolate.connect(supportsBigInt: true)),
+      DatabaseConnection.delayed(isolate.connect()),
     );
   });
 
@@ -297,7 +297,7 @@ DatabaseConnection _backgroundConnection() {
 }
 
 Future<void> _writeTodoEntryInBackground(_BackgroundEntryMessage msg) async {
-  final connection = await msg.isolate.connect(supportsBigInt: true);
+  final connection = await msg.isolate.connect();
   final database = TodoDb.connect(connection);
 
   await database
