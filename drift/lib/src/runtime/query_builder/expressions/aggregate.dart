@@ -112,6 +112,49 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
       _AggregateExpression('TOTAL', [this], filter: filter);
 }
 
+/// Provides aggregate functions that are available for BigInt expressions.
+extension BigIntAggregates<DT extends BigInt> on Expression<DT?> {
+  /// Return the average of all non-null values in this group.
+  ///
+  /// {@macro drift_aggregate_filter}
+  Expression<double?> avg({Expression<bool?>? filter}) =>
+      dartCast<int>().avg(filter: filter);
+
+  /// Return the maximum of all non-null values in this group.
+  ///
+  /// If there are no non-null values in the group, returns null.
+  /// {@macro drift_aggregate_filter}
+  Expression<DT?> max({Expression<bool?>? filter}) =>
+      dartCast<int>().max(filter: filter).dartCast<DT?>();
+
+  /// Return the minimum of all non-null values in this group.
+  ///
+  /// If there are no non-null values in the group, returns null.
+  /// {@macro drift_aggregate_filter}
+  Expression<DT?> min({Expression<bool?>? filter}) =>
+      dartCast<int>().min(filter: filter).dartCast<DT?>();
+
+  /// Calculate the sum of all non-null values in the group.
+  ///
+  /// If all values are null, evaluates to null as well. If an overflow occurs
+  /// during calculation, sqlite will terminate the query with an "integer
+  /// overflow" exception.
+  ///
+  /// See also [total], which behaves similarly but returns a floating point
+  /// value and doesn't throw an overflow exception.
+  /// {@macro drift_aggregate_filter}
+  Expression<DT?> sum({Expression<bool?>? filter}) =>
+      dartCast<int>().sum(filter: filter).dartCast<DT?>();
+
+  /// Calculate the sum of all non-null values in the group.
+  ///
+  /// If all values in the group are null, [total] returns `0.0`. This function
+  /// uses floating-point values internally.
+  /// {@macro drift_aggregate_filter}
+  Expression<double?> total({Expression<bool?>? filter}) =>
+      dartCast<int>().total(filter: filter);
+}
+
 /// Provides aggregate functions that are available on date time expressions.
 extension DateTimeAggregate on Expression<DateTime?> {
   /// Return the average of all non-null values in this group.

@@ -36,8 +36,21 @@ void main() {
 
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
-        '(not_really_an_id, some_float, custom) VALUES (?, ?, ?)',
+        '(not_really_an_id, some_float, web_safe_int, custom) '
+        'VALUES (?, ?, NULL, ?)',
         [42, 3.1415, anything]));
+  });
+
+  test('can insert BigInt values', () async {
+    await db.into(db.tableWithoutPK).insert(CustomRowClass.map(42, 0,
+            webSafeInt: BigInt.one, custom: MyCustomObject('custom'))
+        .toInsertable());
+
+    verify(executor.runInsert(
+        'INSERT INTO table_without_p_k '
+        '(not_really_an_id, some_float, web_safe_int, custom) '
+        'VALUES (?, ?, ?, ?)',
+        [42, 0.0, BigInt.one, anything]));
   });
 
   test('generates insert or replace statements', () async {

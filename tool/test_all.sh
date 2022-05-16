@@ -7,6 +7,7 @@ dart format -o none --set-exit-if-changed .
 dart analyze --fatal-infos --fatal-warnings
 dart run build_runner build --delete-conflicting-outputs
 dart test
+dart test -p chrome
 
 cd ../drift_dev
 rm -rf .dart_tool

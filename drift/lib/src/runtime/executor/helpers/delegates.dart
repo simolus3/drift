@@ -62,9 +62,6 @@ abstract class DatabaseDelegate extends QueryDelegate {
   void notifyDatabaseOpened(OpeningDetails details) {
     // default no-op
   }
-
-  /// The [SqlDialect] understood by this database engine.
-  SqlDialect get dialect => SqlDialect.sqlite;
 }
 
 /// An interface which can execute sql statements.

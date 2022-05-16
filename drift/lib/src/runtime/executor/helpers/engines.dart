@@ -278,6 +278,7 @@ class DelegatedDatabase extends _BaseExecutor {
 
   @override
   bool logStatements;
+
   @override
   final bool isSequential;
 
@@ -285,7 +286,7 @@ class DelegatedDatabase extends _BaseExecutor {
   QueryDelegate get impl => delegate;
 
   @override
-  SqlDialect get dialect => delegate.dialect;
+  SqlDialect get dialect => SqlDialect.sqlite;
 
   final Lock _openingLock = Lock();
 
@@ -401,4 +402,7 @@ class _BeforeOpeningExecutor extends _BaseExecutor {
 
   @override
   bool get logStatements => _base.logStatements;
+
+  @override
+  SqlDialect get dialect => _base.dialect;
 }

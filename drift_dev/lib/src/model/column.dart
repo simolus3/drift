@@ -11,7 +11,7 @@ import 'types.dart';
 import 'used_type_converter.dart';
 
 /// The column types in sql.
-enum ColumnType { integer, text, boolean, datetime, blob, real }
+enum ColumnType { integer, bigInt, text, boolean, datetime, blob, real }
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -122,6 +122,7 @@ class MoorColumn implements HasDeclaration, HasType {
         ColumnType.boolean: 'BoolColumn',
         ColumnType.text: 'TextColumn',
         ColumnType.integer: 'IntColumn',
+        ColumnType.bigInt: 'BigIntColumn',
         ColumnType.datetime: 'DateTimeColumn',
         ColumnType.blob: 'BlobColumn',
         ColumnType.real: 'RealColumn',
@@ -134,6 +135,9 @@ class MoorColumn implements HasDeclaration, HasType {
     switch (type) {
       case ColumnType.integer:
         code = 'int';
+        break;
+      case ColumnType.bigInt:
+        code = 'BigInt';
         break;
       case ColumnType.text:
         code = 'String';
@@ -161,6 +165,8 @@ class MoorColumn implements HasDeclaration, HasType {
     switch (type) {
       case ColumnType.integer:
         return const IntType();
+      case ColumnType.bigInt:
+        return const BigIntType();
       case ColumnType.boolean:
         return const BoolType();
       case ColumnType.datetime:

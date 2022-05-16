@@ -1053,26 +1053,31 @@ class $SharedTodosTable extends SharedTodos
 class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
+  final Value<BigInt?> webSafeInt;
   final Value<MyCustomObject> custom;
   const TableWithoutPKCompanion({
     this.notReallyAnId = const Value.absent(),
     this.someFloat = const Value.absent(),
+    this.webSafeInt = const Value.absent(),
     this.custom = const Value.absent(),
   });
   TableWithoutPKCompanion.insert({
     required int notReallyAnId,
     required double someFloat,
+    this.webSafeInt = const Value.absent(),
     this.custom = const Value.absent(),
   })  : notReallyAnId = Value(notReallyAnId),
         someFloat = Value(someFloat);
   static Insertable<CustomRowClass> createCustom({
     Expression<int>? notReallyAnId,
     Expression<double>? someFloat,
+    Expression<BigInt?>? webSafeInt,
     Expression<MyCustomObject>? custom,
   }) {
     return RawValuesInsertable({
       if (notReallyAnId != null) 'not_really_an_id': notReallyAnId,
       if (someFloat != null) 'some_float': someFloat,
+      if (webSafeInt != null) 'web_safe_int': webSafeInt,
       if (custom != null) 'custom': custom,
     });
   }
@@ -1080,10 +1085,12 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   TableWithoutPKCompanion copyWith(
       {Value<int>? notReallyAnId,
       Value<double>? someFloat,
+      Value<BigInt?>? webSafeInt,
       Value<MyCustomObject>? custom}) {
     return TableWithoutPKCompanion(
       notReallyAnId: notReallyAnId ?? this.notReallyAnId,
       someFloat: someFloat ?? this.someFloat,
+      webSafeInt: webSafeInt ?? this.webSafeInt,
       custom: custom ?? this.custom,
     );
   }
@@ -1097,6 +1104,9 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
     if (someFloat.present) {
       map['some_float'] = Variable<double>(someFloat.value);
     }
+    if (webSafeInt.present) {
+      map['web_safe_int'] = Variable<BigInt?>(webSafeInt.value);
+    }
     if (custom.present) {
       final converter = $TableWithoutPKTable.$converter0;
       map['custom'] = Variable<String>(converter.mapToSql(custom.value)!);
@@ -1109,6 +1119,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
     return (StringBuffer('TableWithoutPKCompanion(')
           ..write('notReallyAnId: $notReallyAnId, ')
           ..write('someFloat: $someFloat, ')
+          ..write('webSafeInt: $webSafeInt, ')
           ..write('custom: $custom')
           ..write(')'))
         .toString();
@@ -1126,6 +1137,7 @@ class _$CustomRowClassInsertable implements Insertable<CustomRowClass> {
       notReallyAnId: Value(_object.notReallyAnId),
       someFloat: Value(_object.someFloat),
       custom: Value(_object.custom),
+      webSafeInt: Value(_object.webSafeInt),
     ).toColumns(false);
   }
 }
@@ -1153,6 +1165,11 @@ class $TableWithoutPKTable extends TableWithoutPK
   late final GeneratedColumn<double?> someFloat = GeneratedColumn<double?>(
       'some_float', aliasedName, false,
       type: const RealType(), requiredDuringInsert: true);
+  final VerificationMeta _webSafeIntMeta = const VerificationMeta('webSafeInt');
+  @override
+  late final GeneratedColumn<BigInt?> webSafeInt = GeneratedColumn<BigInt?>(
+      'web_safe_int', aliasedName, true,
+      type: const BigIntType(), requiredDuringInsert: false);
   final VerificationMeta _customMeta = const VerificationMeta('custom');
   @override
   late final GeneratedColumnWithTypeConverter<MyCustomObject, String?> custom =
@@ -1162,7 +1179,8 @@ class $TableWithoutPKTable extends TableWithoutPK
               clientDefault: _uuid.v4)
           .withConverter<MyCustomObject>($TableWithoutPKTable.$converter0);
   @override
-  List<GeneratedColumn> get $columns => [notReallyAnId, someFloat, custom];
+  List<GeneratedColumn> get $columns =>
+      [notReallyAnId, someFloat, webSafeInt, custom];
   @override
   String get aliasedName => _alias ?? 'table_without_p_k';
   @override
@@ -1186,6 +1204,12 @@ class $TableWithoutPKTable extends TableWithoutPK
     } else if (isInserting) {
       context.missing(_someFloatMeta);
     }
+    if (data.containsKey('web_safe_int')) {
+      context.handle(
+          _webSafeIntMeta,
+          webSafeInt.isAcceptableOrUnknown(
+              data['web_safe_int']!, _webSafeIntMeta));
+    }
     context.handle(_customMeta, const VerificationResult.success());
     return context;
   }
@@ -1202,6 +1226,8 @@ class $TableWithoutPKTable extends TableWithoutPK
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
       custom: $TableWithoutPKTable.$converter0.mapToDart(const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
+      webSafeInt: const BigIntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}web_safe_int']),
     );
   }
 

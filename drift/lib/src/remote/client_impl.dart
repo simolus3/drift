@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/src/runtime/api/runtime_api.dart';
 import 'package:drift/src/runtime/executor/executor.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/query_builder/query_builder.dart';
 import 'package:drift/src/runtime/types/sql_types.dart';
 import 'package:stream_channel/stream_channel.dart';
 
@@ -119,6 +120,9 @@ class _RemoteQueryExecutor extends _BaseExecutor {
   Future<bool>? _serverIsOpen;
 
   @override
+  SqlDialect get dialect => SqlDialect.sqlite;
+
+  @override
   TransactionExecutor beginTransaction() {
     return _RemoteTransactionExecutor(client, _executorId);
   }
@@ -154,6 +158,9 @@ class _RemoteTransactionExecutor extends _BaseExecutor
 
   Completer<bool>? _pendingOpen;
   bool _done = false;
+
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
   TransactionExecutor beginTransaction() {

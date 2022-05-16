@@ -53,6 +53,9 @@ class TypeMapper {
     switch (type) {
       case ColumnType.integer:
         return ResolvedType(type: BasicType.int, hint: overrideHint);
+      case ColumnType.bigInt:
+        return ResolvedType(
+            type: BasicType.int, hint: overrideHint ?? const IsBigInt());
       case ColumnType.text:
         return ResolvedType(type: BasicType.text, hint: overrideHint);
       case ColumnType.boolean:
@@ -82,6 +85,8 @@ class TypeMapper {
           return ColumnType.boolean;
         } else if (type.hint is IsDateTime) {
           return ColumnType.datetime;
+        } else if (type.hint is IsBigInt) {
+          return ColumnType.bigInt;
         }
         return ColumnType.integer;
       case BasicType.real:

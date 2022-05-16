@@ -1,1 +1,7 @@
 platforms: [chrome, firefox]
+custom_html_template_path: assets/web_test.html.tpl
+
+override_platforms:
+  firefox:
+    settings:
+      arguments: "-headless"

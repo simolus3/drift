@@ -32,6 +32,11 @@ void main() {
       expect(const Variable<dynamic>(123), generates('?', [123]));
     });
 
+    test('big int', () {
+      expect(Variable<dynamic>(BigInt.from(123)),
+          generates('?', [BigInt.from(123)]));
+    });
+
     test('date time', () {
       const stamp = 12345678;
       final dateTime = DateTime.fromMillisecondsSinceEpoch(stamp * 1000);

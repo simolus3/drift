@@ -24,7 +24,7 @@ class GenerationContext {
   final SqlTypeSystem typeSystem;
 
   /// The [SqlDialect] that should be respected when generating the query.
-  final SqlDialect dialect;
+  SqlDialect get dialect => executor?.executor.dialect ?? SqlDialect.sqlite;
 
   /// The actual [DatabaseConnectionUser] that's going to execute the generated
   /// query.
@@ -58,14 +58,12 @@ class GenerationContext {
   /// Constructs a [GenerationContext] by copying the relevant fields from the
   /// database.
   GenerationContext.fromDb(this.executor, {this.supportsVariables = true})
-      : typeSystem = executor?.typeSystem ?? SqlTypeSystem.defaultInstance,
-        // ignore: invalid_null_aware_operator, (doesn't seem to actually work)
-        dialect = executor?.executor?.dialect ?? SqlDialect.sqlite;
+      : typeSystem = executor?.typeSystem ?? SqlTypeSystem.defaultInstance;
 
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.
   GenerationContext(this.typeSystem, this.executor,
-      {this.dialect = SqlDialect.sqlite, this.supportsVariables = true});
+      {this.supportsVariables = true});
 
   /// Introduces a variable that will be sent to the database engine. Whenever
   /// this method is called, a question mark should be added to the [buffer] so

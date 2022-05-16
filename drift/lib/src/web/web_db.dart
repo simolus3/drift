@@ -18,6 +18,11 @@ typedef WebSetup = FutureOr<void> Function(SqlJsDatabase database);
 /// Experimental drift backend for the web. To use this platform, you need to
 /// include the latest version of `sql.js` in your html.
 class WebDatabase extends DelegatedDatabase {
+  /// Whether sql.js should report integers as [BigInt].
+  ///
+  /// Enabling this is required for [Table.int64] columns.
+  final bool readIntsAsBigInt;
+
   /// A database executor that works on the web.
   ///
   /// [name] can be used to identify multiple databases. The optional
@@ -36,8 +41,12 @@ class WebDatabase extends DelegatedDatabase {
     bool logStatements = false,
     CreateWebDatabase? initializer,
     WebSetup? setup,
-  }) : super(_WebDelegate(DriftWebStorage(name), initializer, setup),
-            logStatements: logStatements, isSequential: true);
+    this.readIntsAsBigInt = false,
+  }) : super(
+            _WebDelegate(
+                DriftWebStorage(name), initializer, setup, readIntsAsBigInt),
+            logStatements: logStatements,
+            isSequential: true);
 
   /// A database executor that works on the web.
   ///
@@ -59,7 +68,8 @@ class WebDatabase extends DelegatedDatabase {
     bool logStatements = false,
     CreateWebDatabase? initializer,
     WebSetup? setup,
-  }) : super(_WebDelegate(storage, initializer, setup),
+    this.readIntsAsBigInt = false,
+  }) : super(_WebDelegate(storage, initializer, setup, readIntsAsBigInt),
             logStatements: logStatements, isSequential: true);
 }
 
@@ -67,13 +77,15 @@ class _WebDelegate extends DatabaseDelegate {
   final DriftWebStorage storage;
   final CreateWebDatabase? initializer;
   final WebSetup? setup;
+  final bool readIntsAsBigInt;
 
   late SqlJsDatabase _db;
   bool _isOpen = false;
 
   bool _inTransaction = false;
 
-  _WebDelegate(this.storage, this.initializer, this.setup);
+  _WebDelegate(
+      this.storage, this.initializer, this.setup, this.readIntsAsBigInt);
 
   @override
   set isInTransaction(bool value) {
@@ -122,6 +134,15 @@ class _WebDelegate extends DatabaseDelegate {
     _isOpen = true;
   }
 
+  void _checkArgs(List<Object?> args) {
+    assert(
+      readIntsAsBigInt || args.whereType<BigInt>().isEmpty,
+      "You're using drift with `BigInt` columns, but this `WebDatabase` does "
+      'not have them enabled. Please create your `WebDatabase` with '
+      '`readIntsAsBigInt: true`.',
+    );
+  }
+
   @override
   Future<void> runBatched(BatchedStatements statements) {
     final preparedStatements = [
@@ -130,6 +151,7 @@ class _WebDelegate extends DatabaseDelegate {
 
     for (final application in statements.arguments) {
       final stmt = preparedStatements[application.statementIndex];
+      _checkArgs(application.arguments);
 
       stmt
         ..executeWith(application.arguments)
@@ -144,12 +166,14 @@ class _WebDelegate extends DatabaseDelegate {
 
   @override
   Future<void> runCustom(String statement, List<Object?> args) {
+    _checkArgs(args);
     _db.runWithArgs(statement, args);
     return Future.value();
   }
 
   @override
   Future<int> runInsert(String statement, List<Object?> args) async {
+    _checkArgs(args);
     _db.runWithArgs(statement, args);
     final insertId = _db.lastInsertId();
     await _handlePotentialUpdate();
@@ -158,6 +182,7 @@ class _WebDelegate extends DatabaseDelegate {
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) {
+    _checkArgs(args);
     // todo at least for stream queries we should cache prepared statements.
     final stmt = _db.prepare(statement)..executeWith(args);
 
@@ -166,7 +191,7 @@ class _WebDelegate extends DatabaseDelegate {
 
     while (stmt.step()) {
       columnNames ??= stmt.columnNames();
-      rows.add(stmt.currentRow());
+      rows.add(stmt.currentRow(readIntsAsBigInt));
     }
 
     columnNames ??= []; // assume no column names when there were no rows
@@ -177,6 +202,7 @@ class _WebDelegate extends DatabaseDelegate {
 
   @override
   Future<int> runUpdate(String statement, List<Object?> args) {
+    _checkArgs(args);
     _db.runWithArgs(statement, args);
     return _handlePotentialUpdate();
   }

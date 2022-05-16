@@ -21,9 +21,6 @@ Future<WasmSqlite3> get sqlite3 {
   });
 }
 
-// At some point, we should use a `WasmDatabase` here since it was compiled
-// in a reasonable way and will be must more reliable than proxying to a VM,
-// but this is the easiest setup for now.
 DatabaseConnection testInMemoryDatabase() {
   return DatabaseConnection.fromExecutor(LazyDatabase(() async {
     final sqlite = await sqlite3;

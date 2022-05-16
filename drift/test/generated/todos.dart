@@ -70,6 +70,7 @@ const _uuid = Uuid();
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();
+  Int64Column get webSafeInt => int64().nullable()();
 
   TextColumn get custom =>
       text().map(const CustomConverter()).clientDefault(_uuid.v4)();
@@ -78,18 +79,20 @@ class TableWithoutPK extends Table {
 class CustomRowClass {
   final int notReallyAnId;
   final double anotherName;
+  final BigInt? webSafeInt;
   final MyCustomObject custom;
 
   final String? notFromDb;
 
   double get someFloat => anotherName;
 
-  CustomRowClass._(
-      this.notReallyAnId, this.anotherName, this.custom, this.notFromDb);
+  CustomRowClass._(this.notReallyAnId, this.anotherName, this.webSafeInt,
+      this.custom, this.notFromDb);
 
   factory CustomRowClass.map(int notReallyAnId, double someFloat,
-      {required MyCustomObject custom, String? notFromDb}) {
-    return CustomRowClass._(notReallyAnId, someFloat, custom, notFromDb);
+      {required MyCustomObject custom, BigInt? webSafeInt, String? notFromDb}) {
+    return CustomRowClass._(
+        notReallyAnId, someFloat, webSafeInt, custom, notFromDb);
   }
 }
 

@@ -98,12 +98,40 @@ abstract class Table extends HasResultSet {
   List<String> get customConstraints => [];
 
   /// Use this as the body of a getter to declare a column that holds integers.
+  ///
   /// Example (inside the body of a table class):
   /// ```
   /// IntColumn get id => integer().autoIncrement()();
   /// ```
+  ///
+  /// In sqlite3, an integer column stores 64-big integers. This column maps
+  /// values to an [int] in Dart, which works well on native platforms. On the
+  /// web, be aware that [int]s are [double]s internally which means that only
+  /// integers smaller than 2⁵² can safely be stored.
+  /// If you need web support __and__ a column that potential stores integers
+  /// larger than what fits into 52 bits, consider using a [int64] column
+  /// instead. That column stores the same value in a database, but makes drift
+  /// report the values as a [BigInt] in Dart.
+
   @protected
   ColumnBuilder<int> integer() => _isGenerated();
+
+  /// Use this as the body of a getter to declare a column that holds a 64-big
+  /// integer as a [BigInt].
+  ///
+  /// The main purpose of this column is to support large integers for web apps
+  /// compiled to JavaScript, where using an [int] does not reliably work for
+  /// numbers larger than 2⁵².
+  /// It stores the exact same data as an [integer] column (and supports the
+  /// same options), but instructs drift to generate a data class with a
+  /// [BigInt] field and a database conversion aware of large intergers.
+  ///
+  /// __Note__: The use of [int64] is only necessary for apps that need to work
+  /// on the web __and__ use columns that are likely to store values larger than
+  /// 2⁵². In all other cases, using [integer] directly is much more efficient
+  /// and recommended.
+  @protected
+  ColumnBuilder<BigInt> int64() => _isGenerated();
 
   /// Creates a column to store an `enum` class [T].
   ///

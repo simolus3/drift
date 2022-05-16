@@ -12,6 +12,9 @@ external Object /*Promise<_SqlJs>*/ _initSqlJs();
 @JS('undefined')
 external Null get _undefined;
 
+@JS('eval')
+external Object? _eval(String source);
+
 // We write our own mapping code to js instead of depending on package:js
 // This way, projects using drift can run on flutter as long as they don't
 // import this file.
@@ -67,10 +70,16 @@ class _QueryExecResult {
 
 @JS()
 @anonymous
+class _SqlJsStatementGetOptions {
+  external factory _SqlJsStatementGetOptions({bool useBigInt = false});
+}
+
+@JS()
+@anonymous
 class _SqlJsStatement {
   external void bind(List<Object?> values);
   external bool step();
-  external List<Object?> get();
+  external List<Object?> get(Object? params, _SqlJsStatementGetOptions? config);
   external List<String> getColumnNames();
   external void free();
 }
@@ -99,6 +108,19 @@ class SqlJsModule {
       return callConstructor<_SqlJsDatabase>(_obj.Database, const []);
     }
   }
+}
+
+@JS('BigInt')
+external Object _bigInt(Object s);
+
+final bool Function(Object?) _isBigInt =
+    _eval("(x)=>typeof x == 'bigint'") as bool Function(Object?);
+
+List<Object?> _replaceDartBigInts(List<Object?> dartList) {
+  return [
+    for (final arg in dartList)
+      if (arg is BigInt) _bigInt(arg.checkRange.toString()) else arg
+  ];
 }
 
 /// Dart wrapper around a sql database provided by the sql.js library.
@@ -134,7 +156,7 @@ class SqlJsDatabase {
       // matches the behavior from a `NativeDatabase`.
       _obj.run(sql, _undefined);
     } else {
-      _obj.run(sql, args);
+      _obj.run(sql, _replaceDartBigInts(args));
     }
   }
 
@@ -171,13 +193,26 @@ class PreparedStatement {
   PreparedStatement._(this._obj);
 
   /// Executes this statement with the bound [args].
-  void executeWith(List<dynamic> args) => _obj.bind(args);
+  void executeWith(List<dynamic> args) => _obj.bind(_replaceDartBigInts(args));
 
   /// Performs `step` on the underlying js api
   bool step() => _obj.step();
 
   /// Reads the current from the underlying js api
-  List<dynamic> currentRow() => _obj.get();
+  List<dynamic> currentRow([bool useBigInt = false]) {
+    if (useBigInt) {
+      final result = _obj.get(null, _SqlJsStatementGetOptions(useBigInt: true));
+      for (var i = 0; i < result.length; i++) {
+        if (_isBigInt(result[i])) {
+          final toString = callMethod<String>(result[i]!, 'toString', const []);
+          result[i] = BigInt.parse(toString);
+        }
+      }
+      return result;
+    } else {
+      return _obj.get(null, null);
+    }
+  }
 
   /// The columns returned by this statement. This will only be available after
   /// [step] has been called once.
@@ -185,4 +220,16 @@ class PreparedStatement {
 
   /// Calls `free` on the underlying js api
   void free() => _obj.free();
+}
+
+extension _BigIntRangeCheck on BigInt {
+  static final _bigIntMinValue64 = BigInt.parse('-9223372036854775808');
+  static final _bigIntMaxValue64 = BigInt.parse('9223372036854775807');
+
+  BigInt get checkRange {
+    if (this < _bigIntMinValue64 || this > _bigIntMaxValue64) {
+      throw Exception('BigInt value exceeds the range of 64 bits');
+    }
+    return this;
+  }
 }

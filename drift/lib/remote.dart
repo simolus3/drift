@@ -55,7 +55,6 @@ import 'package:stream_channel/stream_channel.dart';
 
 import 'drift.dart';
 import 'remote.dart' as self;
-
 import 'src/remote/client_impl.dart';
 import 'src/remote/communication.dart';
 import 'src/remote/protocol.dart';

@@ -158,6 +158,9 @@ extension on TypeProvider {
     switch (type) {
       case ColumnType.integer:
         return intType;
+      case ColumnType.bigInt:
+        return intElement.library.getType('BigInt')!.instantiate(
+            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case ColumnType.text:
         return stringType;
       case ColumnType.boolean:

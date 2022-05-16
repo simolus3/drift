@@ -101,6 +101,12 @@ class IsDateTime extends TypeHint {
   const IsDateTime();
 }
 
+/// A type hint to mark that this type might contain a large integer that should
+/// be mapped to Dart as a [BigInt].
+class IsBigInt extends TypeHint {
+  const IsBigInt();
+}
+
 /// Result of resolving a type. This can either have the resolved [type] set,
 /// or it can inform the called that it [needsContext] to resolve the type
 /// properly. Failure to resolve the type will have the [unknown] flag set.

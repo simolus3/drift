@@ -136,4 +136,14 @@ void main() {
             ),
         completes);
   });
+
+  test('insert and select BigInt', () async {
+    await db.into(db.tableWithoutPK).insert(CustomRowClass.map(1, 0,
+            webSafeInt: BigInt.parse('9223372036854775807'),
+            custom: MyCustomObject('custom'))
+        .toInsertable());
+
+    final row = await db.select(db.tableWithoutPK).getSingle();
+    expect(row.webSafeInt, BigInt.parse('9223372036854775807'));
+  });
 }

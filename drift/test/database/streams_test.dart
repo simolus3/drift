@@ -63,8 +63,6 @@ void main() {
     final second = db.select(db.users).watch();
     expect(second, emits(isEmpty));
 
-    // calling executor.dialect is ok, it's needed to construct the statement
-    verify(executor.dialect);
     verifyNoMoreInteractions(executor);
   });
 
