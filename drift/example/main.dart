@@ -27,7 +27,6 @@ abstract class TodoCategoryItemCount extends View {
   TodoCategories get todoCategories;
 
   Expression<int> get itemCount => todoItems.id.count();
-  //
 
   @override
   Query as() => select([
