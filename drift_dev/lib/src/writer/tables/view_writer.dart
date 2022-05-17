@@ -49,9 +49,16 @@ class ViewWriter extends TableOrViewWriter {
 
     final declaration = view.declaration;
     if (declaration is DartViewDeclaration) {
+      // A view may read from the same table more than once, so we implicitly
+      // introduce aliases for tables.
+      var tableCounter = 0;
+
       for (final ref in declaration.staticReferences) {
-        final declaration = '${ref.table.entityInfoName} get ${ref.name} => '
-            'attachedDatabase.${ref.table.dbGetterName};';
+        final table = ref.table;
+        final alias = asDartLiteral('t${tableCounter++}');
+
+        final declaration = '${table.entityInfoName} get ${ref.name} => '
+            'attachedDatabase.${table.dbGetterName}.createAlias($alias);';
         buffer.writeln(declaration);
       }
     }
@@ -59,7 +66,7 @@ class ViewWriter extends TableOrViewWriter {
     if (view.viewQuery == null) {
       writeGetColumnsOverride();
     } else {
-      final columns = view.viewQuery!.columns.keys.join(', ');
+      final columns = view.viewQuery!.columns.map((e) => e.key).join(', ');
       buffer.write('@override\nList<GeneratedColumn> get \$columns => '
           '[$columns];\n');
     }
@@ -80,7 +87,8 @@ class ViewWriter extends TableOrViewWriter {
     writeAsDslTable();
     writeMappingMethod(scope);
 
-    for (final column in view.viewQuery?.columns.values ?? view.columns) {
+    final columns = view.viewQuery?.columns.map((e) => e.value) ?? view.columns;
+    for (final column in columns) {
       writeColumnGetter(column, scope.generationOptions, false);
     }
 

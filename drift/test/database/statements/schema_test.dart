@@ -70,22 +70,24 @@ void main() {
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS category_todo_count_view AS SELECT '
-          'categories."desc" || \'!\' AS "description", '
-          'COUNT(todos.id) AS "item_count" '
-          'FROM categories '
-          'INNER JOIN todos '
-          'ON todos.category = categories.id '
-          'GROUP BY categories.id',
+          'CREATE VIEW IF NOT EXISTS category_todo_count_view '
+          '(description, item_count) AS SELECT '
+          't1."desc" || \'!\' AS "description", '
+          'COUNT(t0.id) AS "item_count" '
+          'FROM categories t1 '
+          'INNER JOIN todos t0 '
+          'ON t0.category = t1.id '
+          'GROUP BY t1.id',
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS todo_with_category_view AS SELECT '
-          'todos.title AS "todos.title", '
-          'categories."desc" AS "categories.desc" '
-          'FROM todos '
-          'INNER JOIN categories '
-          'ON categories.id = todos.category',
+          'CREATE VIEW IF NOT EXISTS todo_with_category_view '
+          '(title, "desc") AS SELECT '
+          't0.title AS "t0.title", '
+          't1."desc" AS "t1.desc" '
+          'FROM todos t0 '
+          'INNER JOIN categories t1 '
+          'ON t1.id = t0.category',
           []));
     });
 
@@ -105,17 +107,18 @@ void main() {
           []));
     });
 
-    test('creates views through `create()`', () async {
+    test('creates views through create()', () async {
       await db.createMigrator().create(db.categoryTodoCountView);
 
       verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS category_todo_count_view AS SELECT '
-          'categories."desc" || \'!\' AS "description", '
-          'COUNT(todos.id) AS "item_count" '
-          'FROM categories '
-          'INNER JOIN todos '
-          'ON todos.category = categories.id '
-          'GROUP BY categories.id',
+          'CREATE VIEW IF NOT EXISTS category_todo_count_view '
+          '(description, item_count) AS SELECT '
+          't1."desc" || \'!\' AS "description", '
+          'COUNT(t0.id) AS "item_count" '
+          'FROM categories t1 '
+          'INNER JOIN todos t0 '
+          'ON t0.category = t1.id '
+          'GROUP BY t1.id',
           []));
     });
 

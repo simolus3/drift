@@ -155,11 +155,12 @@ class ViewParser {
       final expression = (node.body as ExpressionFunctionBody).expression;
 
       return MoorColumn(
-          type: sqlType,
-          dartGetterName: field.name,
-          name: ColumnName.implicitly(ReCase(field.name).snakeCase),
-          nullable: dartType.nullabilitySuffix == NullabilitySuffix.question,
-          generatedAs: ColumnGeneratedAs(expression.toString(), false));
+        type: sqlType,
+        dartGetterName: field.name,
+        name: ColumnName.implicitly(ReCase(field.name).snakeCase),
+        nullable: dartType.nullabilitySuffix == NullabilitySuffix.question,
+        generatedAs: ColumnGeneratedAs(expression.toString(), false),
+      );
     }).toList());
 
     return results.whereType();
@@ -275,8 +276,7 @@ class ViewParser {
           final column =
               columns.firstWhere((col) => col.dartGetterName == parts[0]);
           return MapEntry('${column.dartGetterName}', column);
-        });
-        final columnMap = Map.fromEntries(columnList);
+        }).toList();
 
         target = target.parent as MethodInvocation;
         if (target.methodName.toString() != 'from') {
@@ -291,7 +291,7 @@ class ViewParser {
         final query =
             body.expression.toString().substring(target.toString().length);
 
-        return ViewQueryInformation(columnMap, from, query);
+        return ViewQueryInformation(columnList, from, query);
       } catch (e) {
         print(e);
         throw analysisError(

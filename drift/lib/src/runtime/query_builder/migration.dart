@@ -350,8 +350,11 @@ class Migrator {
       await _issueCustomQuery(stmt, const []);
     } else if (view.query != null) {
       final context = GenerationContext.fromDb(_db, supportsVariables: false);
+      final columnNames = view.$columns.map((e) => e.escapedName).join(', ');
+
       context.generatingForView = view.entityName;
-      context.buffer.write('CREATE VIEW IF NOT EXISTS ${view.entityName} AS ');
+      context.buffer.write(
+          'CREATE VIEW IF NOT EXISTS ${view.entityName} ($columnNames) AS ');
       view.query!.writeInto(context);
       await _issueCustomQuery(context.sql, const []);
     }
