@@ -668,9 +668,8 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
-      'id', aliasedName, false,
-      type: const IntType(), defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+  late final GeneratedColumn<int?> id =
+      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
       type: const StringType(),

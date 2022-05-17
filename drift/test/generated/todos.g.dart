@@ -1592,13 +1592,11 @@ class $TodoWithCategoryViewView
   }
 
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
-      'title', aliasedName, true,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
+      'title', aliasedName, false,
       type: const StringType());
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
       'desc', aliasedName, false,
-      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+      type: const StringType());
   @override
   $TodoWithCategoryViewView createAlias(String alias) {
     return $TodoWithCategoryViewView(attachedDatabase, alias);

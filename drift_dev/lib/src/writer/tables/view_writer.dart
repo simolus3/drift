@@ -89,7 +89,19 @@ class ViewWriter extends TableOrViewWriter {
 
     final columns = view.viewQuery?.columns.map((e) => e.value) ?? view.columns;
     for (final column in columns) {
-      writeColumnGetter(column, scope.generationOptions, false);
+      if (view.columns.contains(column)) {
+        writeColumnGetter(column, scope.generationOptions, false);
+      } else {
+        // This column only exists as a getter so that it can be referenced in
+        // Dart, but it wasn't defined by the user. Instead, the column is
+        // implicitly generated from a entry in the `select()` query clause.
+        // We can drop all information from it since only the name is relevant.
+        final shortColumn = MoorColumn(
+            type: column.type,
+            dartGetterName: column.dartGetterName,
+            name: column.name);
+        writeColumnGetter(shortColumn, scope.generationOptions, false);
+      }
     }
 
     _writeAliasGenerator();
