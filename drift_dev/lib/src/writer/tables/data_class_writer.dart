@@ -38,7 +38,7 @@ class DataClassWriter {
     // write view columns
     final view = table;
     if (view is MoorView && view.viewQuery != null) {
-      columns.addAll(view.viewQuery!.columns.values);
+      columns.addAll(view.viewQuery!.columns.map((e) => e.value));
     } else {
       columns.addAll(table.columns);
     }

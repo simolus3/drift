@@ -538,8 +538,9 @@ class $TodoCategoryItemCountView
   @override
   final _$Database attachedDatabase;
   $TodoCategoryItemCountView(this.attachedDatabase, [this._alias]);
-  $TodoItemsTable get todoItems => attachedDatabase.todoItems;
-  $TodoCategoriesTable get todoCategories => attachedDatabase.todoCategories;
+  $TodoItemsTable get todoItems => attachedDatabase.todoItems.createAlias('t0');
+  $TodoCategoriesTable get todoCategories =>
+      attachedDatabase.todoCategories.createAlias('t1');
   @override
   List<GeneratedColumn> get $columns => [todoCategories.name, itemCount];
   @override
@@ -647,8 +648,9 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   @override
   final _$Database attachedDatabase;
   $TodoItemWithCategoryNameViewView(this.attachedDatabase, [this._alias]);
-  $TodoItemsTable get todoItems => attachedDatabase.todoItems;
-  $TodoCategoriesTable get todoCategories => attachedDatabase.todoCategories;
+  $TodoItemsTable get todoItems => attachedDatabase.todoItems.createAlias('t0');
+  $TodoCategoriesTable get todoCategories =>
+      attachedDatabase.todoCategories.createAlias('t1');
   @override
   List<GeneratedColumn> get $columns => [todoItems.id, title];
   @override
@@ -666,9 +668,8 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
-      'id', aliasedName, false,
-      type: const IntType(), defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+  late final GeneratedColumn<int?> id =
+      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
       type: const StringType(),

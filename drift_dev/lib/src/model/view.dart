@@ -101,7 +101,9 @@ class MoorView extends MoorEntityWithResultSet {
 }
 
 class ViewQueryInformation {
-  final Map<String, MoorColumn> columns;
+  /// All columns from this Dart-defined view, in the order in which they were
+  /// added to the `query` getter.
+  final List<MapEntry<String, MoorColumn>> columns;
   final String from;
   final String query;
 

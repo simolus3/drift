@@ -1460,8 +1460,9 @@ class $CategoryTodoCountViewView
   @override
   final _$TodoDb attachedDatabase;
   $CategoryTodoCountViewView(this.attachedDatabase, [this._alias]);
-  $TodosTableTable get todos => attachedDatabase.todosTable;
-  $CategoriesTable get categories => attachedDatabase.categories;
+  $TodosTableTable get todos => attachedDatabase.todosTable.createAlias('t0');
+  $CategoriesTable get categories =>
+      attachedDatabase.categories.createAlias('t1');
   @override
   List<GeneratedColumn> get $columns => [description, itemCount];
   @override
@@ -1570,8 +1571,9 @@ class $TodoWithCategoryViewView
   @override
   final _$TodoDb attachedDatabase;
   $TodoWithCategoryViewView(this.attachedDatabase, [this._alias]);
-  $TodosTableTable get todos => attachedDatabase.todosTable;
-  $CategoriesTable get categories => attachedDatabase.categories;
+  $TodosTableTable get todos => attachedDatabase.todosTable.createAlias('t0');
+  $CategoriesTable get categories =>
+      attachedDatabase.categories.createAlias('t1');
   @override
   List<GeneratedColumn> get $columns => [todos.title, categories.description];
   @override
@@ -1590,13 +1592,11 @@ class $TodoWithCategoryViewView
   }
 
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
-      'title', aliasedName, true,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
+      'title', aliasedName, false,
       type: const StringType());
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
       'desc', aliasedName, false,
-      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+      type: const StringType());
   @override
   $TodoWithCategoryViewView createAlias(String alias) {
     return $TodoWithCategoryViewView(attachedDatabase, alias);
