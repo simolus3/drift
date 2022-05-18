@@ -24,6 +24,7 @@ class DriftProtocol {
   static const _tag_DirectValue = 10;
   static const _tag_SelectResult = 11;
   static const _tag_RequestCancellation = 12;
+  static const _tag_BigInt = 'bigint';
 
   Object? serialize(Message message) {
     if (message is Request) {
@@ -247,17 +248,22 @@ class DriftProtocol {
   dynamic _encodeDbValue(dynamic variable) {
     if (variable is List<int> && variable is! Uint8List) {
       return Uint8List.fromList(variable);
+    } else if (variable is BigInt) {
+      return [_tag_BigInt, variable.toString()];
     } else {
       return variable;
     }
   }
 
   Object? _decodeDbValue(Object? wire) {
-    if (wire is List && wire is! Uint8List) {
+    if (wire is List) {
+      if (wire.length == 2 && wire[0] == _tag_BigInt) {
+        return BigInt.parse(wire[1].toString());
+      }
+
       return Uint8List.fromList(wire.cast());
-    } else {
-      return wire;
     }
+    return wire;
   }
 }
 
