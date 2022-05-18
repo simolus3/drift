@@ -124,7 +124,7 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
   if (library.isNonNullableByDefault &&
       nullableDartType &&
       !typesystem.isNullable(type) &&
-      element.isNotOptional) {
+      element.isRequired) {
     error('Expected this parameter to be nullable');
     return;
   }
