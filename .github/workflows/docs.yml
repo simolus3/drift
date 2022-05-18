@@ -38,9 +38,9 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
-      - name: Check for dead links
-        working-directory: docs
-        run: dart run tool/ci_check.dart
+#      - name: Check for dead links
+#        working-directory: docs
+#        run: dart run tool/ci_check.dart
 
       - name: Deploy to netlify (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
