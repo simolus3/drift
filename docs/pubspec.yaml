@@ -23,8 +23,7 @@ dev_dependencies:
   shelf: ^1.2.0
   shelf_static: ^1.1.0
   # `dart doc` is missing some options, so we run `dart run dartdoc` instead.
-  # 5.1.0 release is broken: https://github.com/dart-lang/dartdoc/issues/3041
-  dartdoc: '5.0.1'
+  dartdoc: ^5.1.2
   code_snippets:
     hosted: https://simonbinder.eu
     version: ^0.0.4
