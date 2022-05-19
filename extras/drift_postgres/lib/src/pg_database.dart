@@ -93,11 +93,17 @@ class _PgDelegate extends DatabaseDelegate {
       result = await _ec.query(statement);
     } else {
       result = await _ec.query(statement,
-          substitutionValues: args
-              .asMap()
-              .map((key, value) => MapEntry((key + 1).toString(), value)));
+          substitutionValues: args.asMap().map((key, value) =>
+              MapEntry((key + 1).toString(), _convertValue(value))));
     }
     return result.firstOrNull?[0] as int? ?? 0;
+  }
+
+  Object? _convertValue(Object? value) {
+    if (value is BigInt) {
+      return value.toInt();
+    }
+    return value;
   }
 
   @override
