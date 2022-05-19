@@ -59,9 +59,8 @@ class _PgDelegate extends DatabaseDelegate {
       final args = row.arguments;
 
       await _ec.execute(stmt,
-          substitutionValues: args
-              .asMap()
-              .map((key, value) => MapEntry((key + 1).toString(), value)));
+          substitutionValues: args.asMap().map((key, value) =>
+              MapEntry((key + 1).toString(), _convertValue(value))));
     }
 
     return Future.value();
@@ -74,9 +73,8 @@ class _PgDelegate extends DatabaseDelegate {
       return _ec.execute(statement);
     } else {
       return _ec.execute(statement,
-          substitutionValues: args
-              .asMap()
-              .map((key, value) => MapEntry((key + 1).toString(), value)));
+          substitutionValues: args.asMap().map((key, value) =>
+              MapEntry((key + 1).toString(), _convertValue(value))));
     }
   }
 
@@ -99,13 +97,6 @@ class _PgDelegate extends DatabaseDelegate {
     return result.firstOrNull?[0] as int? ?? 0;
   }
 
-  Object? _convertValue(Object? value) {
-    if (value is BigInt) {
-      return value.toInt();
-    }
-    return value;
-  }
-
   @override
   Future<int> runUpdate(String statement, List<Object?> args) async {
     return _runWithArgs(statement, args);
@@ -115,9 +106,8 @@ class _PgDelegate extends DatabaseDelegate {
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     await _ensureOpen();
     final result = await _ec.query(statement,
-        substitutionValues: args
-            .asMap()
-            .map((key, value) => MapEntry((key + 1).toString(), value)));
+        substitutionValues: args.asMap().map((key, value) =>
+            MapEntry((key + 1).toString(), _convertValue(value))));
 
     return Future.value(QueryResult.fromRows(
         result.map((e) => e.toColumnMap()).toList(growable: false)));
@@ -128,6 +118,13 @@ class _PgDelegate extends DatabaseDelegate {
     if (closeUnderlyingWhenClosed) {
       await _db.close();
     }
+  }
+
+  Object? _convertValue(Object? value) {
+    if (value is BigInt) {
+      return value.toInt();
+    }
+    return value;
   }
 }
 
