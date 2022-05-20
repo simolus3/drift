@@ -45,16 +45,7 @@ class DriftDartType {
   String getDisplayString({required bool withNullability}) {
     final source = overiddenSource;
     if (source != null) {
-      if (withNullability) {
-        switch (nullabilitySuffix) {
-          case NullabilitySuffix.question:
-            return '$source?';
-          case NullabilitySuffix.star:
-            return '$source*';
-          case NullabilitySuffix.none:
-            return source;
-        }
-      }
+      return source;
     }
 
     return type.getDisplayString(withNullability: withNullability);

@@ -298,7 +298,7 @@ class ColumnParser {
               type: type,
               overiddenSource:
                   remainingExpr.typeArguments!.arguments[0].toSource(),
-              nullabilitySuffix: NullabilitySuffix.none,
+              nullabilitySuffix: type.nullabilitySuffix,
             );
           } else {
             typeConverterRuntime = DriftDartType.of(type);
