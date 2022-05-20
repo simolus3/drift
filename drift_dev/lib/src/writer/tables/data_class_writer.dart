@@ -203,13 +203,15 @@ class DataClassWriter {
       final column = columns[i];
       final last = i == columns.length - 1;
       final isNullable = column.nullableInDart;
+      final dartTypeIsNullable = isNullable;
+      //    column.dartTypeNeedsSuffix(scope.generationOptions) ?? isNullable;
 
       final typeName = column.dartTypeCode(scope.generationOptions);
-      if (wrapNullableInValue && isNullable) {
+      if (wrapNullableInValue && dartTypeIsNullable) {
         _buffer
           ..write('Value<$typeName> ${column.dartGetterName} ')
           ..write('= const Value.absent()');
-      } else if (!isNullable && scope.generationOptions.nnbd) {
+      } else if (!dartTypeIsNullable && scope.generationOptions.nnbd) {
         // We always use nullable parameters in copyWith, since all parameters
         // are optional. The !isNullable check is there to avoid a duplicate
         // question mark in the type name.
@@ -231,7 +233,7 @@ class DataClassWriter {
       // we can use field.present ? field.value : this.field
       final getter = column.dartGetterName;
 
-      if (wrapNullableInValue && column.nullable) {
+      if (wrapNullableInValue && column.nullableInDart) {
         _buffer
             .write('$getter: $getter.present ? $getter.value : this.$getter,');
       } else {
@@ -255,7 +257,8 @@ class DataClassWriter {
       // We include all columns that are not null. If nullToAbsent is false, we
       // also include null columns. When generating NNBD code, we can include
       // non-nullable columns without an additional null check.
-      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      final needsNullCheck =
+          column.nullableInDart || !scope.generationOptions.nnbd;
       final needsScope = needsNullCheck || column.typeConverter != null;
       if (needsNullCheck) {
         _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null)');
@@ -315,7 +318,8 @@ class DataClassWriter {
         ..write(dartName)
         ..write(': ');
 
-      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      final needsNullCheck =
+          column.nullableInDart || !scope.generationOptions.nnbd;
       if (needsNullCheck) {
         _buffer
           ..write(dartName)

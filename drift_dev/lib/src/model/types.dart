@@ -75,7 +75,7 @@ class DriftDartType {
 extension OperationOnTypes on HasType {
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
-    return (nullable && !isArray) || typeConverter?.hasNullableDartType == true;
+    return typeConverter?.hasNullableDartType ?? nullable && !isArray;
   }
 
   /// the Dart type of this column that can be handled by moors type mapping.
