@@ -204,7 +204,6 @@ class DataClassWriter {
       final last = i == columns.length - 1;
       final isNullable = column.nullableInDart;
       final dartTypeIsNullable = isNullable;
-      //    column.dartTypeNeedsSuffix(scope.generationOptions) ?? isNullable;
 
       final typeName = column.dartTypeCode(scope.generationOptions);
       if (wrapNullableInValue && dartTypeIsNullable) {
