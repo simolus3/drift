@@ -132,12 +132,12 @@ class NativeDatabase extends DelegatedDatabase {
 class _NativeDelegate extends Sqlite3Delegate<Database> {
   final File? file;
 
-  _NativeDelegate(this.file, DatabaseSetup? setup) : super(setup);
+  _NativeDelegate(this.file, DatabaseSetup? setup) : super(setup, false);
 
   _NativeDelegate.opened(
       Database db, DatabaseSetup? setup, bool closeUnderlyingWhenClosed)
       : file = null,
-        super.opened(db, setup, closeUnderlyingWhenClosed);
+        super.opened(db, setup, closeUnderlyingWhenClosed, false);
 
   @override
   Database openDatabase() {

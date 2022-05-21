@@ -38,13 +38,21 @@ class WasmDatabase extends DelegatedDatabase {
 
   /// Creates a wasm database at [path] in the virtual file system of the
   /// [sqlite3] module.
+  /// If [synchronizedPersistence] is enabled, the data is guaranteed to be
+  /// stored in the IndexedDB when the request is complete. Attention!
+  /// Insert/update queries may be slower when this option enabled. If you want
+  /// to insert more than one rows, be sure you run in a transaction if
+  /// possible.
   factory WasmDatabase({
     required CommmonSqlite3 sqlite3,
     required String path,
     WasmDatabaseSetup? setup,
+    bool synchronizedPersistence = false,
     bool logStatements = false,
   }) {
-    return WasmDatabase._(_WasmDelegate(sqlite3, path, setup), logStatements);
+    return WasmDatabase._(
+        _WasmDelegate(sqlite3, path, setup, synchronizedPersistence),
+        logStatements);
   }
 
   /// Creates an in-memory database in the loaded [sqlite3] database.
@@ -53,7 +61,8 @@ class WasmDatabase extends DelegatedDatabase {
     WasmDatabaseSetup? setup,
     bool logStatements = false,
   }) {
-    return WasmDatabase._(_WasmDelegate(sqlite3, null, setup), logStatements);
+    return WasmDatabase._(
+        _WasmDelegate(sqlite3, null, setup, false), logStatements);
   }
 }
 
@@ -61,8 +70,9 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   final CommmonSqlite3 _sqlite3;
   final String? _path;
 
-  _WasmDelegate(this._sqlite3, this._path, WasmDatabaseSetup? setup)
-      : super(setup);
+  _WasmDelegate(
+      this._sqlite3, this._path, WasmDatabaseSetup? setup, bool syncPersistence)
+      : super(setup, syncPersistence);
 
   @override
   CommonDatabase openDatabase() {

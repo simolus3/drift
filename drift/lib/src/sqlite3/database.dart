@@ -17,15 +17,18 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   bool _hasCreatedDatabase = false;
   bool _isOpen = false;
 
+  final bool _syncPersistence;
   final void Function(DB)? _setup;
   final bool _closeUnderlyingWhenClosed;
 
   /// A delegate that will call [openDatabase] to open the database.
-  Sqlite3Delegate(this._setup) : _closeUnderlyingWhenClosed = true;
+  Sqlite3Delegate(this._setup, this._syncPersistence)
+      : _closeUnderlyingWhenClosed = true;
 
-  /// A delegate using an underlying sqlite3 database object that has alreaddy
+  /// A delegate using an underlying sqlite3 database object that has already
   /// been opened.
-  Sqlite3Delegate.opened(this._db, this._setup, this._closeUnderlyingWhenClosed)
+  Sqlite3Delegate.opened(this._db, this._setup, this._closeUnderlyingWhenClosed,
+      this._syncPersistence)
       : _hasCreatedDatabase = true {
     _initializeDatabase();
   }
@@ -88,6 +91,10 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       stmt.dispose();
     }
 
+    if (_syncPersistence) {
+      await _db.flush();
+    }
+
     return Future.value();
   }
 
@@ -98,6 +105,10 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       final stmt = _db.prepare(statement, checkNoTail: true);
       stmt.execute(args);
       stmt.dispose();
+    }
+
+    if (_syncPersistence) {
+      await _db.flush();
     }
   }
 
@@ -132,6 +143,9 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     if (_closeUnderlyingWhenClosed) {
       beforeClose(_db);
       _db.dispose();
+      if (_syncPersistence) {
+        await _db.flush();
+      }
     }
   }
 }
