@@ -36,8 +36,3 @@ dependency_overrides:
     path: ../drift_dev
   sqlparser:
     path: ../sqlparser
-  sqlite3:
-    git:
-      url: https://github.com/westito/sqlite3.dart.git
-      ref: indexeddb-improvements
-      path: sqlite3
