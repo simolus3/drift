@@ -1,5 +1,6 @@
 @internal
-import 'package:drift/src/sqlite3/persistence_handler.dart';
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 
@@ -48,6 +49,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   @override
   Future<bool> get isOpen => Future.value(_isOpen);
 
+  /// Flush pending writes to the file system on platforms where that is
+  /// necessary.
+  ///
+  /// At the moment, we only support this for the WASM backend.
+  FutureOr<void> flush() => null;
+
   @override
   Future<void> open(QueryExecutorUser db) async {
     if (!_hasCreatedDatabase) {
@@ -89,8 +96,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       stmt.dispose();
     }
 
-    if (this is PersistenceHandler) {
-      await (this as PersistenceHandler).flush();
+    if (!isInTransaction) {
+      await flush();
     }
 
     return Future.value();
@@ -105,8 +112,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       stmt.dispose();
     }
 
-    if (this is PersistenceHandler) {
-      await (this as PersistenceHandler).flush();
+    if (!isInTransaction) {
+      await flush();
     }
   }
 
@@ -141,9 +148,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     if (_closeUnderlyingWhenClosed) {
       beforeClose(_db);
       _db.dispose();
-      if (this is PersistenceHandler) {
-        await (this as PersistenceHandler).flush();
-      }
+
+      await flush();
     }
   }
 }

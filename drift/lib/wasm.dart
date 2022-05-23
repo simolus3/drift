@@ -14,7 +14,6 @@
 @experimental
 library drift.wasm;
 
-import 'package:drift/src/sqlite3/persistence_handler.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 import 'package:sqlite3/wasm.dart';
@@ -67,8 +66,7 @@ class WasmDatabase extends DelegatedDatabase {
   }
 }
 
-class _WasmDelegate extends Sqlite3Delegate<CommonDatabase>
-    implements PersistenceHandler {
+class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   final CommmonSqlite3 _sqlite3;
   final String? _path;
   final IndexedDbFileSystem? _fileSystem;
