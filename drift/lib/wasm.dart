@@ -16,6 +16,7 @@ library drift.wasm;
 
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
+import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
 import 'src/sqlite3/database.dart';
@@ -38,13 +39,20 @@ class WasmDatabase extends DelegatedDatabase {
 
   /// Creates a wasm database at [path] in the virtual file system of the
   /// [sqlite3] module.
+  /// If [fileSystem] provided, the data is guaranteed to be
+  /// stored in the IndexedDB when the request is complete. Attention!
+  /// Insert/update queries may be slower when this option enabled. If you want
+  /// to insert more than one rows, be sure you run in a transaction if
+  /// possible.
   factory WasmDatabase({
     required CommmonSqlite3 sqlite3,
     required String path,
     WasmDatabaseSetup? setup,
+    IndexedDbFileSystem? fileSystem,
     bool logStatements = false,
   }) {
-    return WasmDatabase._(_WasmDelegate(sqlite3, path, setup), logStatements);
+    return WasmDatabase._(
+        _WasmDelegate(sqlite3, path, setup, fileSystem), logStatements);
   }
 
   /// Creates an in-memory database in the loaded [sqlite3] database.
@@ -53,15 +61,18 @@ class WasmDatabase extends DelegatedDatabase {
     WasmDatabaseSetup? setup,
     bool logStatements = false,
   }) {
-    return WasmDatabase._(_WasmDelegate(sqlite3, null, setup), logStatements);
+    return WasmDatabase._(
+        _WasmDelegate(sqlite3, null, setup, null), logStatements);
   }
 }
 
 class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   final CommmonSqlite3 _sqlite3;
   final String? _path;
+  final IndexedDbFileSystem? _fileSystem;
 
-  _WasmDelegate(this._sqlite3, this._path, WasmDatabaseSetup? setup)
+  _WasmDelegate(
+      this._sqlite3, this._path, WasmDatabaseSetup? setup, this._fileSystem)
       : super(setup);
 
   @override
@@ -72,5 +83,10 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
     } else {
       return _sqlite3.open(path);
     }
+  }
+
+  @override
+  Future<void> flush() async {
+    await _fileSystem?.flush();
   }
 }

@@ -1,4 +1,6 @@
 @internal
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 
@@ -23,7 +25,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// A delegate that will call [openDatabase] to open the database.
   Sqlite3Delegate(this._setup) : _closeUnderlyingWhenClosed = true;
 
-  /// A delegate using an underlying sqlite3 database object that has alreaddy
+  /// A delegate using an underlying sqlite3 database object that has already
   /// been opened.
   Sqlite3Delegate.opened(this._db, this._setup, this._closeUnderlyingWhenClosed)
       : _hasCreatedDatabase = true {
@@ -46,6 +48,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   Future<bool> get isOpen => Future.value(_isOpen);
+
+  /// Flush pending writes to the file system on platforms where that is
+  /// necessary.
+  ///
+  /// At the moment, we only support this for the WASM backend.
+  FutureOr<void> flush() => null;
 
   @override
   Future<void> open(QueryExecutorUser db) async {
@@ -88,6 +96,10 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       stmt.dispose();
     }
 
+    if (!isInTransaction) {
+      await flush();
+    }
+
     return Future.value();
   }
 
@@ -98,6 +110,10 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       final stmt = _db.prepare(statement, checkNoTail: true);
       stmt.execute(args);
       stmt.dispose();
+    }
+
+    if (!isInTransaction) {
+      await flush();
     }
   }
 
@@ -132,6 +148,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     if (_closeUnderlyingWhenClosed) {
       beforeClose(_db);
       _db.dispose();
+
+      await flush();
     }
   }
 }
