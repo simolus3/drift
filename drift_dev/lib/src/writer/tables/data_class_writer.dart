@@ -363,10 +363,7 @@ class RowMappingWriter {
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(MoorColumn column) {
-      var columnName = column.name.name;
-      if (column.table != null && column.table != table) {
-        columnName = '${column.table!.sqlName}.${column.name.name}';
-      }
+      final columnName = column.name.name;
       final rawData = "data['\${effectivePrefix}$columnName']";
       final sqlType = 'const ${sqlTypes[column.type]}()';
       var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';

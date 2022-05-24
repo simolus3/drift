@@ -1512,9 +1512,9 @@ class TodoWithCategoryViewData extends DataClass {
     final effectivePrefix = prefix ?? '';
     return TodoWithCategoryViewData(
       title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}todos.title']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}title']),
       description: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}categories.desc'])!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
     );
   }
   factory TodoWithCategoryViewData.fromJson(Map<String, dynamic> json,

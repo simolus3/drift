@@ -479,8 +479,8 @@ class TodoCategoryItemCountData extends DataClass {
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return TodoCategoryItemCountData(
-      name: const StringType().mapFromDatabaseResponse(
-          data['${effectivePrefix}todo_categories.name'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       itemCount: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}item_count'])!,
     );
@@ -590,7 +590,7 @@ class TodoItemWithCategoryNameViewData extends DataClass {
     final effectivePrefix = prefix ?? '';
     return TodoItemWithCategoryNameViewData(
       id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}todo_items.id'])!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       title: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
     );
