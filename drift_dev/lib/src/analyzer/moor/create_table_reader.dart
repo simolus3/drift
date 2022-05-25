@@ -34,7 +34,8 @@ class CreateTableReader {
     Table table;
     try {
       table = _schemaReader.read(stmt);
-    } catch (e) {
+    } catch (e, s) {
+      print(s);
       step.reportError(ErrorInMoorFile(
         span: stmt.tableNameToken!.span,
         message: 'Could not extract schema information for this table: $e',

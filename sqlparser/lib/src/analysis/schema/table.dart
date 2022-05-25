@@ -80,6 +80,9 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   String humanReadableDescription() {
     return name;
   }
+
+  @override
+  String toString() => 'Table $name';
 }
 
 class TableAlias extends NamedResultSet implements HumanReadable {

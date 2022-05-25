@@ -43,8 +43,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     if (e.entityName != null) {
       // first find the referenced table or view,
       // then use the column on that table or view.
-      final entityResolver =
-          scope.resolve<ResultSetAvailableInStatement>(e.entityName!);
+      final entityResolver = scope.resolveResultSet(e.entityName!);
       final resultSet = entityResolver?.resultSet.resultSet;
 
       if (resultSet == null) {
@@ -68,15 +67,19 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     } else {
       // find any column with the referenced name.
       // todo special case for USING (...) in joins?
-      final columns =
-          scope.availableColumns.where((c) => c.name == e.columnName).toSet();
+      final found = scope.resolveUnqualifiedReference(
+        e.columnName,
+        // According to https://www.sqlite.org/lang_select.html#the_order_by_clause,
+        // a simple reference in an ordering term can refer to an output column.
+        allowReferenceToResultColumn: e.parent is OrderingTerm,
+      );
 
-      if (columns.isEmpty) {
+      if (found.isEmpty) {
         _reportUnknownColumnError(e);
       } else {
-        if (columns.length > 1) {
+        if (found.length > 1) {
           final description =
-              columns.map((c) => c.humanReadableDescription()).join(', ');
+              found.map((c) => c.humanReadableDescription()).join(', ');
 
           context.reportError(AnalysisError(
             type: AnalysisErrorType.ambiguousReference,
@@ -85,7 +88,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
           ));
         }
 
-        e.resolved = columns.first;
+        e.resolved = found.first;
       }
     }
 
@@ -108,23 +111,25 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   @override
   void visitWindowFunctionInvocation(WindowFunctionInvocation e, void arg) {
     if (e.windowName != null && e.resolved == null) {
-      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName!);
-      e.resolved = resolved;
+      e.resolved =
+          StatementScope.cast(e.scope).windowDeclarations[e.windowName!];
     }
 
     visitChildren(e, arg);
   }
 
   void _reportUnknownColumnError(Reference e, {Iterable<Column>? columns}) {
-    columns ??= e.scope.availableColumns;
-    final columnNames = e.scope.availableColumns
-        .map((c) => c.humanReadableDescription())
-        .join(', ');
+    final msg = StringBuffer('Unknown column.');
+    if (columns != null) {
+      final columnNames =
+          columns.map((c) => c.humanReadableDescription()).join(', ');
+      msg.write(' Thesecolumns are available: $columnNames');
+    }
 
     context.reportError(AnalysisError(
       type: AnalysisErrorType.referencedUnknownColumn,
       relevantNode: e,
-      message: 'Unknown column. These columns are available: $columnNames',
+      message: msg.toString(),
     ));
   }
 

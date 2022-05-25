@@ -16,7 +16,7 @@ class SchemaFromCreateTable {
     if (stmt is CreateTableStatement) {
       return _readCreateTable(stmt);
     } else if (stmt is CreateVirtualTableStatement) {
-      final module = stmt.scope.resolve<Module>(stmt.moduleName);
+      final module = stmt.scope.rootScope.knownModules[stmt.moduleName];
 
       if (module == null) {
         throw CantReadSchemaException('Unknown module "${stmt.moduleName}", '

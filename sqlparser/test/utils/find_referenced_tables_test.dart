@@ -67,6 +67,7 @@ void main() {
         INSERT INTO logins (user, timestamp) VALUES (new.id, 0);
       END;
     ''');
+    expect(ctx.errors, isEmpty);
     final body = (ctx.root as CreateTriggerStatement).action;
 
     // Users referenced via "new" in body.

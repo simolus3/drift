@@ -304,8 +304,7 @@ class TypeMapper {
       },
     );
 
-    final availableResults =
-        placeholder.scope.allOf<ResultSetAvailableInStatement>();
+    final availableResults = placeholder.statementScope.allAvailableResultSets;
     final availableMoorResults = <AvailableMoorResultSet>[];
     for (final available in availableResults) {
       final aliasedResultSet = available.resultSet.resultSet;

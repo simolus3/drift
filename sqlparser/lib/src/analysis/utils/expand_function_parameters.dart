@@ -6,7 +6,7 @@ extension ExpandParameters on SqlInvocation {
   /// Returns the expanded parameters of a function call.
   ///
   /// When a [StarFunctionParameter] is used, it's expanded to the
-  /// [ReferenceScope.availableColumns].
+  /// [ReferenceScope.expansionOfStarColumn].
   /// Elements of the result are either an [Expression] or a [Column].
   List<Typeable> expandParameters() {
     final sqlParameters = parameters;
@@ -16,7 +16,8 @@ extension ExpandParameters on SqlInvocation {
     } else if (sqlParameters is StarFunctionParameter) {
       // if * is used as a parameter, it refers to all columns in all tables
       // that are available in the current scope.
-      final allColumns = scope.availableColumns;
+      final allColumns = scope.expansionOfStarColumn;
+      if (allColumns == null) return const [];
 
       // When we look at `SELECT SUM(*), foo FROM ...`, the star in `SUM`
       // shouldn't expand to include itself.
