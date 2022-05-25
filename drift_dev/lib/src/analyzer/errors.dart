@@ -92,8 +92,8 @@ class ErrorInMoorFile extends MoorError {
     // version
     var msg = error.message ?? error.type.toString();
     if (error.type == AnalysisErrorType.notSupportedInDesiredVersion) {
-      msg = '$msg\nNote: You can change the sqlite version with build options. '
-          'See https://drift.simonbinder.eu/options/ for details!';
+      msg = '$msg\nNote: You can change the assumed sqlite version with build '
+          'options. See https://drift.simonbinder.eu/options/#assumed-sql-environment for details!';
     }
 
     final defaultSeverity =
