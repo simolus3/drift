@@ -34,7 +34,8 @@ void main() {
         'message',
         allOf(
           contains('require sqlite version 3.35 or later'),
-          contains('You can change the sqlite version with build options.'),
+          contains(
+              'You can change the assumed sqlite version with build options.'),
         ),
       ),
     );
