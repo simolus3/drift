@@ -429,23 +429,27 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           ? TableAlias(resolvedInSchema, createdName)
           : resolvedInSchema;
     } else {
-      final available = StatementScope.cast(scope)
-          .allAvailableResultSets
-          .where((e) => e.resultSet.resultSet != null)
-          .map((t) {
-        final resultSet = t.resultSet.resultSet;
-        if (resultSet is HumanReadable) {
-          return (resultSet as HumanReadable).humanReadableDescription();
-        }
+      Iterable<String>? available;
 
-        return t.toString();
-      });
+      if (scope is StatementScope) {
+        available = StatementScope.cast(scope)
+            .allAvailableResultSets
+            .where((e) => e.resultSet.resultSet != null)
+            .map((t) {
+          final resultSet = t.resultSet.resultSet;
+          if (resultSet is HumanReadable) {
+            return (resultSet as HumanReadable).humanReadableDescription();
+          }
+
+          return t.toString();
+        });
+      }
 
       context.reportError(UnresolvedReferenceError(
         type: AnalysisErrorType.referencedUnknownTable,
         relevantNode: r,
         reference: r.tableName,
-        available: available,
+        available: available ?? const Iterable.empty(),
       ));
     }
 

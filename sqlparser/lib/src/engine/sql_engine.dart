@@ -186,7 +186,6 @@ class SqlEngine {
       {AnalyzeStatementOptions? stmtOptions}) {
     final context = _createContext(node, file, stmtOptions);
     _analyzeContext(context);
-    node.scope = context.rootScope;
     return context;
   }
 
