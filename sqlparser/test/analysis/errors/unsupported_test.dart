@@ -118,4 +118,17 @@ void main() {
     currentEngine.analyze(sql).expectNoError();
     currentEngine.analyze(notSql).expectNoError();
   });
+
+  test('warns about right and full joins', () {
+    const right = 'SELECT * FROM demo RIGHT JOIN demo';
+    const full = 'SELECT * FROM demo NATURAL FULL JOIN demo';
+
+    minimumEngine.analyze(right).expectError('RIGHT JOIN',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    minimumEngine.analyze(full).expectError('NATURAL FULL JOIN',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+
+    currentEngine.analyze(right).expectNoError();
+    currentEngine.analyze(full).expectNoError();
+  });
 }

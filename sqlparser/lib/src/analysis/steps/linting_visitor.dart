@@ -277,6 +277,21 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitJoinOperator(JoinOperator e, void arg) {
+    if ((e.operator == JoinOperatorKind.right ||
+            e.operator == JoinOperatorKind.full) &&
+        options.version < SqliteVersion.v3_39) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message: '`RIGHT` and `FULL` joins require sqlite 3.39.',
+          relevantNode: e,
+        ),
+      );
+    }
+  }
+
+  @override
   void visitRaiseExpression(RaiseExpression e, void arg) {
     if (_isTopLevelStatement) {
       context.reportError(AnalysisError(
