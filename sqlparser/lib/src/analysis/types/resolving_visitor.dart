@@ -46,7 +46,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
           currentColumnIndex++;
         } else if (child is StarResultColumn) {
-          currentColumnIndex += child.scope.availableColumns.length;
+          currentColumnIndex += child.scope.expansionOfStarColumn?.length ?? 1;
         } else if (child is NestedQueryColumn) {
           visit(child.select, arg);
         }
@@ -413,6 +413,19 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     session._checkAndResolve(e, type, arg);
     session._addRelation(NullableIfSomeOtherIs(e, [e.operand]));
     visit(e.operand, const NoTypeExpectation());
+  }
+
+  @override
+  void visitStarFunctionParameter(
+      StarFunctionParameter e, TypeExpectation arg) {
+    final available = e.scope.expansionOfStarColumn;
+    if (available != null) {
+      // Make sure we resolve these columns, the type of some function
+      // invocation could depend on it.
+      for (final column in available) {
+        _handleColumn(column, e);
+      }
+    }
   }
 
   @override

@@ -13,6 +13,11 @@ class AnalysisContext {
   /// The raw sql statement that was used to construct this [AnalysisContext].
   final String sql;
 
+  /// The root scope used when analyzing SQL statements.
+  ///
+  /// This contains information about known tables and modules.
+  final RootScope rootScope;
+
   /// Additional information about variables in this context, passed from the
   /// outside.
   final AnalyzeStatementOptions stmtOptions;
@@ -34,7 +39,7 @@ class AnalysisContext {
   late final TypeInferenceResults types2;
 
   /// Constructs a new analysis context from the AST and the source sql.
-  AnalysisContext(this.root, this.sql, this.engineOptions,
+  AnalysisContext(this.root, this.sql, this.rootScope, this.engineOptions,
       {AnalyzeStatementOptions? stmtOptions, required this.schemaSupport})
       : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions();
 

@@ -21,16 +21,15 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
-    final scope = e.scope = e.scope.createChild();
-    final registeredTable = scope.resolve(e.tableName) as Table?;
+    final scope = e.scope = StatementScope.forStatement(context.rootScope, e);
+    final knownTable = context.rootScope.knownTables[e.tableName];
 
     // This is used so that tables can refer to their own columns. Code using
     // tables would first register the table and then run analysis again.
-    if (registeredTable != null) {
-      scope.availableColumns = registeredTable.resolvedColumns;
-      for (final column in registeredTable.resolvedColumns) {
-        scope.register(column.name, column);
-      }
+    if (knownTable is Table) {
+      scope
+        ..expansionOfStarColumn = knownTable.resolvedColumns
+        ..resultSets[null] = ResultSetAvailableInStatement(e, knownTable);
     }
 
     visitChildren(e, arg);
@@ -38,7 +37,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitCreateViewStatement(CreateViewStatement e, void arg) {
-    e.scope = e.scope.createChild();
+    e.scope = StatementScope.forStatement(context.rootScope, e);
     visitChildren(e, arg);
   }
 
@@ -54,20 +53,21 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     //   (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
     // it won't work.
     final isInFROM = e.parent is Queryable;
-    final scope = e.scope;
+    StatementScope scope;
 
     if (isInFROM) {
-      final surroundingSelect =
-          e.parents.firstWhere((node) => node is HasFrom).scope;
-      final forked = surroundingSelect.createSibling();
-      e.scope = forked;
+      final surroundingSelect = e.parents
+          .firstWhere((node) => node is HasFrom)
+          .scope as StatementScope;
+      scope = StatementScope(SubqueryInFromScope(surroundingSelect));
     } else {
-      final forked = scope.createChild();
-      e.scope = forked;
+      scope = StatementScope.forStatement(context.rootScope, e);
     }
 
+    e.scope = scope;
+
     for (final windowDecl in e.windowDeclarations) {
-      e.scope.register(windowDecl.name, windowDecl);
+      scope.windowDeclarations[windowDecl.name] = windowDecl;
     }
 
     // only the last statement in a compound select statement may have an order
@@ -108,18 +108,6 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitResultColumn(ResultColumn e, void arg) {
-    if (e is StarResultColumn) {
-      // doesn't need special treatment, star expressions can't be referenced
-    } else if (e is ExpressionResultColumn) {
-      if (e.as != null) {
-        e.scope.register(e.as!, e);
-      }
-    }
-    visitChildren(e, arg);
-  }
-
-  @override
   void defaultQueryable(Queryable e, void arg) {
     final scope = e.scope;
 
@@ -128,14 +116,12 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         final added = ResultSetAvailableInStatement(table, table);
         table.availableResultSet = added;
 
-        scope.register(table.as ?? table.tableName, added);
+        scope.addResolvedResultSet(table.as ?? table.tableName, added);
       },
       isSelect: (select) {
-        if (select.as != null) {
-          final added = ResultSetAvailableInStatement(select, select.statement);
-          select.availableResultSet = added;
-          scope.register(select.as!, added);
-        }
+        final added = ResultSetAvailableInStatement(select, select.statement);
+        select.availableResultSet = added;
+        scope.addResolvedResultSet(select.as, added);
       },
       isJoin: (join) {
         // the join can contain multiple tables. Luckily for us, all of them are
@@ -145,7 +131,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       isTableFunction: (function) {
         final added = ResultSetAvailableInStatement(function, function);
         function.availableResultSet = added;
-        scope.register(function.as ?? function.name, added);
+        scope.addResolvedResultSet(function.as ?? function.name, added);
       },
     );
 
@@ -154,7 +140,13 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
-    e.scope.register(e.cteTableName, e);
+    StatementScope.cast(e.scope).additionalKnownTables[e.cteTableName] = e;
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitForeignKeyClause(ForeignKeyClause e, void arg) {
+    e.scope = SingleTableReferenceScope(e.scope);
     visitChildren(e, arg);
   }
 
@@ -203,16 +195,11 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     }
   }
 
-  void _forkScope(AstNode node, {bool? inheritAvailableColumns}) {
-    node.scope = node.scope
-        .createChild(inheritAvailableColumns: inheritAvailableColumns);
-  }
-
   @override
   void defaultNode(AstNode e, void arg) {
     // hack to fork scopes on statements (selects are handled above)
     if (e is Statement && e is! SelectStatement) {
-      _forkScope(e);
+      e.scope = StatementScope.forStatement(context.rootScope, e);
     }
 
     visitChildren(e, arg);
@@ -244,7 +231,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     // "excluded" can be referred. Setting that row happens in the column
     // resolver
     if (e.action is DoUpdate) {
-      _forkScope(e.action, inheritAvailableColumns: true);
+      e.action.scope = MiscStatementSubScope(e.scope as StatementScope);
     }
 
     visitChildren(e, null);
@@ -257,7 +244,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       // create a new scope for the nested query to differentiate between
       // references that can be resolved in the nested query and references
       // which require data from the parent query
-      e.select.scope = e.scope.createChild();
+      e.select.scope = MiscStatementSubScope(e.scope as StatementScope);
       AstPreparingVisitor(context: context).start(e.select);
     } else {
       super.visitDriftSpecificNode(e, arg);

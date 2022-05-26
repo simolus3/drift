@@ -18,24 +18,18 @@ void main() {
 
     final model = JoinModel.of(stmt)!;
     expect(
-      model.isNullableTable(stmt.scope
-          .resolve<ResultSetAvailableInStatement>('a1')!
-          .resultSet
-          .resultSet!),
+      model.isNullableTable(
+          stmt.scope.resolveResultSet('a1')!.resultSet.resultSet!),
       isFalse,
     );
     expect(
-      model.isNullableTable(stmt.scope
-          .resolve<ResultSetAvailableInStatement>('a2')!
-          .resultSet
-          .resultSet!),
+      model.isNullableTable(
+          stmt.scope.resolveResultSet('a2')!.resultSet.resultSet!),
       isTrue,
     );
     expect(
-      model.isNullableTable(stmt.scope
-          .resolve<ResultSetAvailableInStatement>('a3')!
-          .resultSet
-          .resultSet!),
+      model.isNullableTable(
+          stmt.scope.resolveResultSet('a3')!.resultSet.resultSet!),
       isFalse,
     );
   });

@@ -75,14 +75,15 @@ class SqlEngine {
     options.addTableValuedFunctionHandler(handler);
   }
 
-  ReferenceScope _constructRootScope({ReferenceScope? parent}) {
-    final scope = parent == null ? ReferenceScope(null) : parent.createChild();
+  RootScope _constructRootScope() {
+    final scope = RootScope();
+
     for (final resultSet in knownResultSets) {
-      scope.register(resultSet.name, resultSet);
+      scope.knownTables[resultSet.name] = resultSet;
     }
 
     for (final module in _knownModules) {
-      scope.register(module.name, module);
+      scope.knownModules[module.name] = module;
     }
 
     return scope;
@@ -127,7 +128,7 @@ class SqlEngine {
         Parser(tokensForParser, useDrift: true, autoComplete: autoComplete);
 
     final driftFile = parser.driftFile();
-    _attachRootScope(driftFile);
+    driftFile.scope = _constructRootScope();
 
     return ParseResult._(
         driftFile, tokens, parser.errors, content, autoComplete);
@@ -190,13 +191,13 @@ class SqlEngine {
 
   AnalysisContext _createContext(
       AstNode node, String sql, AnalyzeStatementOptions? stmtOptions) {
-    return AnalysisContext(node, sql, options,
+    return AnalysisContext(node, sql, _constructRootScope(), options,
         stmtOptions: stmtOptions, schemaSupport: schemaReader);
   }
 
   void _analyzeContext(AnalysisContext context) {
     final node = context.root;
-    _attachRootScope(node);
+    node.scope = context.rootScope;
 
     try {
       AstPreparingVisitor(context: context).start(node);
@@ -214,16 +215,6 @@ class SqlEngine {
     } catch (_) {
       rethrow;
     }
-  }
-
-  void _attachRootScope(AstNode root) {
-    // calling node.referenceScope throws when no scope is set, we use the
-    // nullable variant here
-    final safeScope = root.selfAndParents
-        .map((node) => node.meta<ReferenceScope>())
-        .firstWhere((e) => e != null, orElse: () => null);
-
-    root.scope = _constructRootScope(parent: safeScope);
   }
 }
 

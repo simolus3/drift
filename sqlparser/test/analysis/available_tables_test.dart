@@ -43,14 +43,14 @@ void main() {
         );
       ''');
 
-    final result = engine.analyze(r''' 
+    final result = engine.analyze(r'''
       SELECT d.*, c.** FROM with_defaults d
       LEFT OUTER JOIN with_constraints c
         ON d.a = c.a AND d.b = c.b
       WHERE $predicate;
     ''');
 
-    final scope = result.root.scope;
-    expect(scope.allOf<ResultSetAvailableInStatement>(), hasLength(2));
+    final scope = result.root.statementScope;
+    expect(scope.resultSets, hasLength(2));
   });
 }

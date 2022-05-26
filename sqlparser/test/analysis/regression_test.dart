@@ -53,19 +53,19 @@ void main() {
     final result = engine.analyze('''
       WITH RECURSIVE
       employeeHierarchy(id, name, manager_id) AS (
-        SELECT id, 
+        SELECT id,
                name,
                manager_id
           FROM employees
           WHERE manager_id IS NULL
           UNION ALL
-        SELECT e.id, 
+        SELECT e.id,
                e.name,
                e.manager_id
           FROM employees e
           JOIN employeeHierarchy ON e.manager_id = employeeHierarchy.id
       )
-      SELECT e.id, 
+      SELECT e.id,
             e.name,
             e.manager_id,
             n.note
@@ -155,5 +155,37 @@ CREATE TABLE downloads (
         isA<ResolvedType>()
             .having((e) => e.type, 'type', BasicType.int)
             .having((e) => e.nullable, 'nullable', isFalse));
+  });
+
+  test('regression test for #1858', () {
+    // https://github.com/simolus3/drift/issues/1858
+    final engine = SqlEngine(
+        EngineOptions(useDriftExtensions: true, version: SqliteVersion.v3_38));
+
+    engine.registerTableFromSql('''
+CREATE TABLE IF NOT EXISTS contract_has_add_fees
+(
+   position_id INTEGER NOT NULL,
+   position_db INTEGER NOT NULL,
+   addfee      TEXT    NOT NULL,
+   amount      REAL    NOT NULL,
+   changed     DATETIME,
+   removed     BOOLEAN NOT NULL DEFAULT FALSE,
+   PRIMARY KEY (position_id, position_db, addfee)
+) WITHOUT ROWID;
+''');
+
+    final result = engine.analyze(r'''
+DELETE
+FROM contract_has_add_fees
+WHERE EXISTS(SELECT *
+             FROM json_each(:json) AS j
+             WHERE position_id = json_extract(j.value, '$.positionid')
+               AND position_db = json_extract(j.value, '$.positiondb')
+               AND addfee = json_extract(j.value, '$.addfee')
+         );
+''');
+
+    expect(result.errors, isEmpty);
   });
 }

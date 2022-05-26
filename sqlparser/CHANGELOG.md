@@ -1,5 +1,6 @@
-## 0.21.1-dev
+## 0.22.0-dev
 
+- Refactor how tables and columns are resolved internally.
 - Lint for `DISTINCT` misuse in aggregate function calls.
 
 ## 0.21.0

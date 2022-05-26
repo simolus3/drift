@@ -2,6 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import 'data.dart';
+import 'errors/utils.dart';
 
 void main() {
   late SqlEngine engine;
@@ -156,7 +157,7 @@ INSERT INTO demo VALUES (?, ?)
     final result = engine.analyze('''
       UPDATE inventory
         SET quantity = quantity - daily.amt
-        FROM (SELECT sum(quantity) AS amt, itemId FROM sales GROUP BY 2) 
+        FROM (SELECT sum(quantity) AS amt, itemId FROM sales GROUP BY 2)
           AS daily
         WHERE inventory.itemId = daily.itemId;
     ''');
@@ -237,5 +238,19 @@ INSERT INTO demo VALUES (?, ?)
 
       expect(root.resolvedTargetColumns, hasLength(1));
     });
+  });
+
+  test('does not allow a subquery in from to read outer values', () {
+    final result = engine.analyze(
+        'SELECT * FROM demo d1, (SELECT * FROM demo i WHERE i.id = d1.id) d2;');
+
+    result.expectError('d1.id', type: AnalysisErrorType.referencedUnknownTable);
+  });
+
+  test('allows subquery expressions to read outer values', () {
+    final result = engine.analyze('SELECT * FROM demo d1 WHERE '
+        'EXISTS (SELECT * FROM demo i WHERE i.id = d1.id);');
+
+    result.expectNoError();
   });
 }
