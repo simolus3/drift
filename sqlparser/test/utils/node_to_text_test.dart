@@ -257,8 +257,18 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
-      test('joins', () {
-        testFormat('''
+      group('joins', () {
+        for (final kind in ['LEFT', 'RIGHT', 'FULL']) {
+          test(kind, () {
+            testFormat('SELECT * FROM foo $kind JOIN bar;');
+            testFormat('SELECT * FROM foo $kind OUTER JOIN bar;');
+            testFormat('SELECT * FROM foo NATURAL $kind JOIN bar;');
+            testFormat('SELECT * FROM foo NATURAL $kind OUTER JOIN bar;');
+          });
+        }
+
+        test('complex', () {
+          testFormat('''
           SELECT * FROM
             foo AS f,
             bar
@@ -269,6 +279,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             INNER JOIN (SELECT * FROM bar) AS b
             INNER JOIN table_valued_function(foo)
         ''');
+        });
       });
 
       test('table references', () {
