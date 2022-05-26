@@ -198,6 +198,18 @@ final Map<String, Expression> _testCases = {
     entityName: 'bar',
     columnName: 'baz',
   ),
+  'foo IS DISTINCT FROM bar': IsExpression(
+    false,
+    Reference(columnName: 'foo'),
+    Reference(columnName: 'bar'),
+    distinctFromSyntax: true,
+  ),
+  'foo IS NOT DISTINCT FROM bar': IsExpression(
+    true,
+    Reference(columnName: 'foo'),
+    Reference(columnName: 'bar'),
+    distinctFromSyntax: true,
+  ),
 };
 
 void main() {

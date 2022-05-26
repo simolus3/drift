@@ -759,7 +759,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.left, arg);
     _keyword(TokenType.$is);
 
-    if (e.negated) {
+    // Avoid writing `DISTINCT FROM`, but be aware that it effectively negates
+    // the generated `IS` again.
+    final negated = e.negated ^ e.distinctFromSyntax;
+
+    if (negated) {
       _keyword(TokenType.not);
     }
     visit(e.right, arg);

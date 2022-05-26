@@ -372,6 +372,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitIsExpression(IsExpression e, void arg) {
     final current = _currentAs<IsExpression>(e);
     _assert(current.negated == e.negated, e);
+    _assert(current.distinctFromSyntax == e.distinctFromSyntax, e);
     _checkChildren(e);
   }
 

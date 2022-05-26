@@ -2,6 +2,8 @@
 
 - Refactor how tables and columns are resolved internally.
 - Lint for `DISTINCT` misuse in aggregate function calls.
+- Support `IS DISTINCT FROM` and `IS NOT DISTINCT FROM` syntax added in sqlite
+  3.39.0.
 
 ## 0.21.0
 

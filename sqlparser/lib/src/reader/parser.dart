@@ -531,10 +531,24 @@ class Parser {
       } else if (_match(ops)) {
         final operator = _previous;
         if (operator.type == TokenType.$is) {
-          final not = _match(const [TokenType.not]);
-          // special case: is not expression
-          expression = IsExpression(not, expression, _comparison())
-            ..setSpan(first!, _previous);
+          final isToken = _previous;
+          final not = _matchOne(TokenType.not);
+          // Ansi sql `DISTINCT FROM` syntax introduced by sqlite 3.39
+          var distinctFrom = false;
+          Token? distinct, from;
+
+          if (_matchOne(TokenType.distinct)) {
+            distinct = _previous;
+            from = _consume(TokenType.from, 'Expected DISTINCT FROM');
+            distinctFrom = true;
+          }
+
+          expression = IsExpression(not, expression, _comparison(),
+              distinctFromSyntax: distinctFrom)
+            ..setSpan(first!, _previous)
+            ..$is = isToken
+            ..distinct = distinct
+            ..from = from;
         } else {
           expression = BinaryExpression(expression, operator, _comparison())
             ..setSpan(first!, _previous);

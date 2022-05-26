@@ -105,4 +105,17 @@ void main() {
         type: AnalysisErrorType.notSupportedInDesiredVersion);
     currentEngine.analyze(sql).expectNoError();
   });
+
+  test('warns about `IS DISTINCT FROM`', () {
+    const sql = 'SELECT id IS DISTINCT FROM content FROM demo;';
+    const notSql = 'SELECT id IS NOT DISTINCT FROM content FROM demo;';
+
+    minimumEngine.analyze(sql).expectError('DISTINCT FROM',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    minimumEngine.analyze(notSql).expectError('DISTINCT FROM',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+
+    currentEngine.analyze(sql).expectNoError();
+    currentEngine.analyze(notSql).expectNoError();
+  });
 }
