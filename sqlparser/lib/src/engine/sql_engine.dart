@@ -148,8 +148,7 @@ class SqlEngine {
 
     // Add parsing errors that occurred at the beginning since they are the most
     // prominent problems.
-    analyzed.errors
-        .insertAll(0, result.errors.map((e) => AnalysisError.fromParser(e)));
+    analyzed.errors.insertAll(0, result.errors.map(AnalysisError.fromParser));
 
     return analyzed;
   }

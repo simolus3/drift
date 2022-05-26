@@ -30,6 +30,7 @@ abstract class AstVisitor<A, R> {
   R visitTableReference(TableReference e, A arg);
   R visitSelectStatementAsSource(SelectStatementAsSource e, A arg);
   R visitJoinClause(JoinClause e, A arg);
+  R visitJoinOperator(JoinOperator e, A arg);
   R visitTableValuedFunction(TableValuedFunction e, A arg);
 
   R visitJoin(Join e, A arg);
@@ -289,6 +290,9 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   R? visitJoinClause(JoinClause e, A arg) {
     return defaultQueryable(e, arg);
   }
+
+  @override
+  R? visitJoinOperator(JoinOperator e, A arg) => defaultNode(e, arg);
 
   @override
   R? visitTableValuedFunction(TableValuedFunction e, A arg) {

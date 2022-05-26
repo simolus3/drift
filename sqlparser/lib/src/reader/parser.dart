@@ -52,8 +52,7 @@ class Parser {
   }
 
   void _suggestHintForTokens(Iterable<TokenType> types) {
-    final relevant =
-        types.where(isKeyword).map((type) => HintDescription.token(type));
+    final relevant = types.where(isKeyword).map(HintDescription.token);
     final description = CombinedDescription()..descriptions.addAll(relevant);
     _suggestHint(description);
   }
@@ -1353,7 +1352,7 @@ class Parser {
   }
 
   JoinClause? _joinClause(TableOrSubquery start) {
-    var operator = _parseJoinOperator();
+    var operator = _optionalJoinOperator();
     if (operator == null) {
       return null;
     }
@@ -1365,30 +1364,15 @@ class Parser {
 
       final subquery = _tableOrSubquery();
       final constraint = _joinConstraint();
-      JoinOperator resolvedOperator;
-      if (operator.contains(TokenType.left)) {
-        resolvedOperator = operator.contains(TokenType.outer)
-            ? JoinOperator.leftOuter
-            : JoinOperator.left;
-      } else if (operator.contains(TokenType.inner)) {
-        resolvedOperator = JoinOperator.inner;
-      } else if (operator.contains(TokenType.cross)) {
-        resolvedOperator = JoinOperator.cross;
-      } else if (operator.contains(TokenType.comma)) {
-        resolvedOperator = JoinOperator.comma;
-      } else {
-        resolvedOperator = JoinOperator.none;
-      }
 
       joins.add(Join(
-        natural: operator.contains(TokenType.natural),
-        operator: resolvedOperator,
+        operator: operator,
         query: subquery,
         constraint: constraint,
       )..setSpan(first, _previous));
 
       // parse the next operator, if there is more than one join
-      operator = _parseJoinOperator();
+      operator = _optionalJoinOperator();
     }
 
     return JoinClause(primary: start, joins: joins)
@@ -1396,39 +1380,46 @@ class Parser {
   }
 
   /// Parses https://www.sqlite.org/syntax/join-operator.html
-  List<TokenType>? _parseJoinOperator() {
-    const _startJoinOperators = [
-      TokenType.natural,
-      TokenType.left,
-      TokenType.inner,
-      TokenType.cross,
-      TokenType.join,
-      TokenType.comma,
-    ];
-
-    if (_match(_startJoinOperators)) {
-      final operators = [_previous.type];
-
-      if (_previous.type == TokenType.join ||
-          _previous.type == TokenType.comma) {
-        // just join or comma, without any specific operators
-        return operators;
-      } else {
-        // natural is a prefix, another operator can follow.
-        if (_previous.type == TokenType.natural) {
-          if (_match([TokenType.left, TokenType.inner, TokenType.cross])) {
-            operators.add(_previous.type);
-          }
-        }
-        if (_previous.type == TokenType.left && _matchOne(TokenType.outer)) {
-          operators.add(_previous.type);
-        }
-
-        _consume(TokenType.join, 'Expected to see a join keyword here');
-        return operators;
-      }
+  JoinOperator? _optionalJoinOperator() {
+    if (_matchOne(TokenType.comma) || _matchOne(TokenType.join)) {
+      return JoinOperator(_previous.type == TokenType.comma
+          ? JoinOperatorKind.comma
+          : JoinOperatorKind.none)
+        ..setSpan(_previous, _previous);
     }
-    return null;
+
+    const canAppearAfterNatural = {
+      TokenType.left: JoinOperatorKind.left,
+      TokenType.right: JoinOperatorKind.right,
+      TokenType.full: JoinOperatorKind.full,
+      TokenType.inner: JoinOperatorKind.inner,
+    };
+
+    final first = _peek;
+    var kind = JoinOperatorKind.none;
+    var natural = false;
+    var outer = false;
+
+    if (_matchOne(TokenType.natural)) {
+      natural = true;
+      if (_match(canAppearAfterNatural.keys)) {
+        kind = canAppearAfterNatural[_previous.type]!;
+      }
+    } else if (_match(canAppearAfterNatural.keys)) {
+      kind = canAppearAfterNatural[_previous.type]!;
+    } else if (_matchOne(TokenType.cross)) {
+      kind = JoinOperatorKind.cross;
+    } else {
+      return null;
+    }
+
+    if (kind.supportsOuterKeyword && _matchOne(TokenType.outer)) {
+      outer = true;
+    }
+
+    _consume(TokenType.join);
+    return JoinOperator(kind, natural: natural, outer: outer)
+      ..setSpan(first, _previous);
   }
 
   /// Parses https://www.sqlite.org/syntax/join-constraint.html

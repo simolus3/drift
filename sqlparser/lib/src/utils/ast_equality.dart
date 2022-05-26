@@ -387,10 +387,6 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitJoin(Join e, void arg) {
     final current = _currentAs<Join>(e);
 
-    if (current.natural != e.natural || current.operator != e.operator) {
-      _notEqual(e);
-    }
-
     final constraint = current.constraint;
     if (constraint is OnConstraint) {
       _assert(e.constraint is OnConstraint, e);
@@ -406,6 +402,18 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
           e);
     }
 
+    _checkChildren(e);
+  }
+
+  @override
+  void visitJoinOperator(JoinOperator e, void arg) {
+    final current = _currentAs<JoinOperator>(e);
+
+    _assert(
+        e.natural == current.natural &&
+            e.outer == current.outer &&
+            e.operator == current.operator,
+        e);
     _checkChildren(e);
   }
 

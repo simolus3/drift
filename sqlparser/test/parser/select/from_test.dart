@@ -35,7 +35,7 @@ void main() {
           primary: TableReference('tbl', as: 'test'),
           joins: [
             Join(
-              operator: JoinOperator.comma,
+              operator: JoinOperator.comma(),
               query: TableReference('table2'),
             ),
           ],
@@ -54,7 +54,7 @@ void main() {
           primary: TableReference('tbl', as: 'test'),
           joins: [
             Join(
-              operator: JoinOperator.comma,
+              operator: JoinOperator.comma(),
               query: TableReference('table2'),
               constraint: OnConstraint(
                 expression: BooleanLiteral.withTrue(token(TokenType.$true)),
@@ -77,7 +77,7 @@ void main() {
           primary: TableReference('table1'),
           joins: [
             Join(
-              operator: JoinOperator.comma,
+              operator: JoinOperator.comma(),
               query: SelectStatementAsSource(
                 statement: SelectStatement(
                   columns: [StarResultColumn(null)],
@@ -140,12 +140,12 @@ void main() {
           primary: TableReference('table1'),
           joins: [
             Join(
-              operator: JoinOperator.inner,
+              operator: JoinOperator(JoinOperatorKind.inner),
               query: TableReference('table2'),
               constraint: UsingConstraint(columnNames: ['test']),
             ),
             Join(
-              operator: JoinOperator.leftOuter,
+              operator: JoinOperator(JoinOperatorKind.left, outer: true),
               query: TableReference('table3'),
               constraint: OnConstraint(
                 expression: BooleanLiteral.withTrue(token(TokenType.$true)),
@@ -174,7 +174,7 @@ WHERE json_each.value LIKE '704-%';
             primary: TableReference('user'),
             joins: [
               Join(
-                operator: JoinOperator.comma,
+                operator: JoinOperator.comma(),
                 query: TableValuedFunction(
                   'json_each',
                   ExprFunctionParameters(parameters: [
@@ -191,6 +191,133 @@ WHERE json_each.value LIKE '704-%';
           ),
         ),
       );
+    });
+  });
+
+  group('join kinds', () {
+    SelectStatement selectWith(Queryable from) {
+      return SelectStatement(
+        columns: [StarResultColumn()],
+        from: from,
+      );
+    }
+
+    test('comma', () {
+      testStatement(
+        'SELECT * FROM foo, bar',
+        selectWith(
+          JoinClause(primary: TableReference('foo'), joins: [
+            Join(operator: JoinOperator.comma(), query: TableReference('bar'))
+          ]),
+        ),
+      );
+    });
+
+    test('none', () {
+      testStatement(
+        'SELECT * FROM foo JOIN bar',
+        selectWith(
+          JoinClause(primary: TableReference('foo'), joins: [
+            Join(
+                operator: JoinOperator(JoinOperatorKind.none),
+                query: TableReference('bar'))
+          ]),
+        ),
+      );
+    });
+
+    test('natural none', () {
+      testStatement(
+        'SELECT * FROM foo NATURAL JOIN bar',
+        selectWith(
+          JoinClause(primary: TableReference('foo'), joins: [
+            Join(
+                operator: JoinOperator(JoinOperatorKind.none, natural: true),
+                query: TableReference('bar'))
+          ]),
+        ),
+      );
+    });
+
+    test('cross', () {
+      testStatement(
+        'SELECT * FROM foo CROSS JOIN bar',
+        selectWith(
+          JoinClause(primary: TableReference('foo'), joins: [
+            Join(
+                operator: JoinOperator(JoinOperatorKind.cross),
+                query: TableReference('bar'))
+          ]),
+        ),
+      );
+    });
+
+    for (final natural in [true, false]) {
+      group('with natural: $natural', () {
+        final naturalText = natural ? 'NATURAL' : '';
+
+        test('inner', () {
+          testStatement(
+            'SELECT * FROM foo $naturalText INNER JOIN bar',
+            selectWith(
+              JoinClause(primary: TableReference('foo'), joins: [
+                Join(
+                  operator: JoinOperator(
+                    JoinOperatorKind.inner,
+                    natural: natural,
+                  ),
+                  query: TableReference('bar'),
+                )
+              ]),
+            ),
+          );
+        });
+
+        for (final outer in [true, false]) {
+          final outerText = outer ? 'OUTER' : '';
+          const kinds = {
+            'LEFT': JoinOperatorKind.left,
+            'RIGHT': JoinOperatorKind.right,
+            'FULL': JoinOperatorKind.full,
+          };
+
+          group('with outer: $outer', () {
+            kinds.forEach((text, operatorKind) {
+              test('operator $text', () {
+                testStatement(
+                  'SELECT * FROM foo $naturalText $text $outerText JOIN bar',
+                  selectWith(
+                    JoinClause(primary: TableReference('foo'), joins: [
+                      Join(
+                        operator: JoinOperator(
+                          operatorKind,
+                          natural: natural,
+                          outer: outer,
+                        ),
+                        query: TableReference('bar'),
+                      )
+                    ]),
+                  ),
+                );
+              });
+            });
+          });
+        }
+      });
+    }
+
+    test('does not allow natural with comma', () {
+      expectParseError('SELECT * FROM foo NATURAL, bar', span: ',');
+    });
+
+    test('does not allow natural with cross', () {
+      expectParseError('SELECT * FROM foo NATURAL CROSS JOIN bar',
+          span: 'CROSS');
+    });
+
+    test('does not allow INNER OUTER', () {
+      expectParseError('SELECT * FROM foo INNER OUTER CROSS JOIN bar',
+          span: 'OUTER');
     });
   });
 }
