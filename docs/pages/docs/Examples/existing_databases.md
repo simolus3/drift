@@ -1,13 +1,23 @@
 ---
 data:
-  title: "Existing databases"
+  title: "Importing and exporting databases"
   description: Using drift with an existing database
 template: layouts/docs/single
 ---
 
 You can use drift with a pre-propulated database that you ship with your app.
+This page also describes how to export the underlying sqlite3 database used
+by drift into a file.
 
-## Including the database
+## Using an existing database
+
+You can use a `LazyDatabase` wrapper to run an asynchronous computation before drift
+opens a database.
+This is a good place to check if the target database file exists, and, if it doesnt,
+create one.
+This example shows how to do that from assets.
+
+### Including the database
 
 First, create the sqlite3 database you want to ship with your app.
 You can create a database with the [sqlite3 CLI tool](https://sqlite.org/cli.html)
@@ -24,7 +34,7 @@ flutter:
     - assets/my_database.db
 ```
 
-## Extracting the database
+### Extracting the database
 
 To initialize the database before using drift, you need to extract the asset from your
 app onto the device.
@@ -41,7 +51,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'app.db'));
-    
+
     if (!await file.exists()) {
         // Extract the pre-populated database file from assets
         final blob = await rootBundle.load('assets/my_database.db');
@@ -63,3 +73,25 @@ class MyDatabase extends _$MyDatabase {
 
   // ...
 ```
+
+## Exporting a databasee
+
+To export a sqlite3 database into a file, you can use the `VACUUM INTO` statement.
+Inside your database class, this could look like the following:
+
+```dart
+Future<void> exportInto(File file) async {
+  // Make sure the directory of the target file exists
+  await file.parent.create(recursive: true);
+
+  // Override an existing backup, sqlite expects the target file to be empty
+  if (file.existsSync()) {
+    file.deleteSync();
+  }
+
+  await customStatement('VACUUM INTO ?', [file.path]);
+}
+```
+
+You can now export this file containing the database of your app with another
+package like `flutter_share` or other backup approaches.
