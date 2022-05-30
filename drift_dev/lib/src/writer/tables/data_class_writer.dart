@@ -231,7 +231,7 @@ class DataClassWriter {
       // we can use field.present ? field.value : this.field
       final getter = column.dartGetterName;
 
-      if (wrapNullableInValue && column.nullable) {
+      if (wrapNullableInValue && column.nullableInDart) {
         _buffer
             .write('$getter: $getter.present ? $getter.value : this.$getter,');
       } else {
