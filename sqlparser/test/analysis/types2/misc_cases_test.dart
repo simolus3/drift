@@ -51,6 +51,7 @@ const Map<String, ResolvedType?> _types = {
   "SELECT 'a' -> ? = 'b'": ResolvedType(type: BasicType.text, nullable: false),
   "SELECT 'a' ->> ? = 'b'": ResolvedType(type: BasicType.text, nullable: false),
   'SELECT MAX(id, ?) FROM demo': ResolvedType(type: BasicType.int),
+  'SELECT SUM(id = 2) = ? FROM demo': ResolvedType(type: BasicType.int),
 };
 
 SqlEngine _spawnEngine() {

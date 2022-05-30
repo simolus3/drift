@@ -5,6 +5,7 @@
 - Support the `RIGHT` and `FULL` join operators added in sqlite 3.39.0.
 - Support `IS DISTINCT FROM` and `IS NOT DISTINCT FROM` syntax added in sqlite
   3.39.0.
+- Fix type inference for `SUM()` calls around int "subtypes" (like booleans).
 
 ## 0.21.0
 

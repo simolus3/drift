@@ -108,7 +108,8 @@ class TypeGraph {
           _copyType(resolved, t, other);
         }
       } else if (edge is CopyAndCast) {
-        _copyType(resolved, t, edge.target, this[t]!.cast(edge.cast));
+        _copyType(resolved, t, edge.target,
+            this[t]!.cast(edge.cast, edge.dropTypeHint));
       } else if (edge is MultiSourceRelation) {
         // handle many-to-one changes, if all targets have been resolved or
         // lax handling is enabled.
@@ -131,7 +132,7 @@ class TypeGraph {
 
         if (encapsulated != null) {
           if (edge.cast != null) {
-            encapsulated = encapsulated.cast(edge.cast!);
+            encapsulated = encapsulated.cast(edge.cast!, false);
           }
           this[edge.target] = encapsulated;
           resolved.add(edge.target);
@@ -270,11 +271,24 @@ class _ResolvedVariables {
 }
 
 extension ResolvedTypeUtils on ResolvedType {
-  ResolvedType cast(CastMode mode) {
+  ResolvedType cast(CastMode mode, bool dropTypeHint) {
     switch (mode) {
       case CastMode.numeric:
       case CastMode.numericPreferInt:
-        if (type == BasicType.int || type == BasicType.real) return this;
+        if (type == BasicType.int || type == BasicType.real) {
+          final newHint = dropTypeHint ? null : hint;
+
+          if (newHint != hint) {
+            return ResolvedType(
+              type: type,
+              hint: newHint,
+              nullable: nullable,
+              isArray: isArray,
+            );
+          } else {
+            return this;
+          }
+        }
 
         return mode == CastMode.numeric
             ? const ResolvedType(type: BasicType.real)
