@@ -1,5 +1,8 @@
 import 'package:build/build.dart';
 
+/// Builder that copies the (hidden, `build_to: cache`) output of
+/// `build_web_compilers` into `web/` (visible, this builder is defined with
+/// `build_to: source`).
 class CopyCompiledJs extends Builder {
   CopyCompiledJs([BuilderOptions? options]);
 

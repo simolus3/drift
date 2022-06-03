@@ -36,12 +36,12 @@ targets:
       # Configuring this builder isn't required for most apps. In our case, we
       # want to compile the web worker in `web/worker.dart` to JS and we use the
       # build system for that.
-      build_web_compilers|entrypoint:
+      build_web_compilers:entrypoint:
         generate_for:
           - web/worker.dart
         options:
           compiler: dart2js
-      "|copy_compiled_worker_js":
+      ":copy_compiled_worker_js":
         enabled: true
 
 
