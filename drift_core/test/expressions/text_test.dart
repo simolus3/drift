@@ -6,6 +6,8 @@ import '../test_utils.dart';
 void main() {
   group('like', () {
     final expr = Expression<String>.sql('left', precedence: Precedence.primary);
+    final other =
+        Expression<String>.sql('other', precedence: Precedence.primary);
 
     test('with string literal pattern', () {
       expect(expr.like('foo%'), generates('left LIKE ?', ['foo%']));
@@ -13,10 +15,12 @@ void main() {
     });
 
     test('with dynamic expressions', () {
-      expect(
-          expr.likeExpr(
-              Expression<String>.sql('other', precedence: Precedence.primary)),
-          generates('left LIKE other'));
+      expect(expr.likeExpr(other), generates('left LIKE other'));
+    });
+
+    test('negated', () {
+      expect(expr.notLike('foo%'), generates('left NOT LIKE ?', ['foo%']));
+      expect(expr.notLikeExpr(other), generates('left NOT LIKE other'));
     });
   });
 

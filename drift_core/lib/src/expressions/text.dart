@@ -26,6 +26,15 @@ extension TextOperators on Expression<String> {
         precedence: Precedence.comparisonEq);
   }
 
+  Expression<bool> notLike(String pattern) {
+    return notLikeExpr(sqlVar(pattern));
+  }
+
+  Expression<bool> notLikeExpr(Expression<String> pattern) {
+    return BinaryExpression(this, 'NOT LIKE', pattern,
+        precedence: Precedence.comparisonEq);
+  }
+
   /// A `UPPER` call in SQL, returning the all-uppercase variant of this string.
   Expression<String> get upper => FunctionCallExpression('UPPER', [this]);
 

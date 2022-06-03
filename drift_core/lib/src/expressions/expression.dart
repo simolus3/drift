@@ -148,24 +148,27 @@ class Precedence implements Comparable<Precedence> {
   /// Precedence for the `AND` operator in sql
   static const Precedence and = Precedence._(11);
 
+  /// Precedence for the `NOT` operator in sql
+  static const Precedence not = Precedence._(12);
+
   /// Precedence for most of the comparisons operators in sql, including
   /// equality, is (not) checks, in, like, glob, match, regexp.
-  static const Precedence comparisonEq = Precedence._(12);
+  static const Precedence comparisonEq = Precedence._(13);
 
   /// Precedence for the <, <=, >, >= operators in sql
-  static const Precedence comparison = Precedence._(13);
+  static const Precedence comparison = Precedence._(14);
 
   /// Precedence for bitwise operators in sql
-  static const Precedence bitwise = Precedence._(14);
+  static const Precedence bitwise = Precedence._(15);
 
   /// Precedence for the (binary) plus and minus operators in sql
-  static const Precedence plusMinus = Precedence._(15);
+  static const Precedence plusMinus = Precedence._(16);
 
   /// Precedence for the *, / and % operators in sql
-  static const Precedence mulDivide = Precedence._(16);
+  static const Precedence mulDivide = Precedence._(17);
 
   /// Precedence for the || operator in sql
-  static const Precedence stringConcatenation = Precedence._(17);
+  static const Precedence stringConcatenation = Precedence._(18);
 
   /// Precedence for unary operators in sql
   static const Precedence unary = Precedence._(20);
