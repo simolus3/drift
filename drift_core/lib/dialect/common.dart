@@ -69,10 +69,6 @@ class _DelegatingDialect extends SqlDialect {
   @override
   Object? mapToSqlVariable(Object? dart) =>
       _currentDialect.mapToSqlVariable(dart);
-
-  @override
-  SqlComponent createTable(SchemaTable table) =>
-      _currentDialect.createTable(table);
 }
 
 class _SqliteType<T> implements SqlType<T> {

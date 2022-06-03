@@ -66,11 +66,6 @@ class Sqlite3Dialect extends CommonSqlDialect {
 
   @override
   Object? mapToSqlVariable(Object? dart) => dart;
-
-  @override
-  SqlComponent createTable(SchemaTable table) {
-    return _SqliteCreateTableStatement(table);
-  }
 }
 
 class _SqliteType<T> implements SqlType<T> {
@@ -81,33 +76,4 @@ class _SqliteType<T> implements SqlType<T> {
 
   @override
   final String name;
-}
-
-class _SqliteCreateTableStatement extends SqlComponent {
-  final SchemaTable table;
-
-  _SqliteCreateTableStatement(this.table);
-
-  @override
-  void writeInto(GenerationContext context) {
-    context.buffer
-      ..write('CREATE TABLE ')
-      ..write(context.identifier(table.tableName))
-      ..write('(');
-
-    var first = true;
-    for (final column in table.columns) {
-      if (!first) {
-        context.buffer.write(', ');
-      }
-      first = false;
-
-      context.buffer
-        ..write(context.identifier(column.name))
-        ..write(' ')
-        ..write(column.type.name);
-    }
-
-    context.buffer.write(')');
-  }
 }

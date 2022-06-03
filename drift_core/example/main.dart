@@ -1,5 +1,6 @@
 import 'package:drift_core/dialect/common.dart' as sql;
 import 'package:drift_core/dialect/sqlite3.dart' as sqlite3;
+import 'package:drift_core/dialect/mysql.dart' as mysql;
 import 'package:drift_core/drift_core.dart';
 
 class Users extends SchemaTable {
@@ -24,9 +25,14 @@ class Groups extends SchemaTable {
 }
 
 void main() {
-  sql.runWithDialect(
-      dialect: sqlite3.dialect,
+  final dialects = [sqlite3.dialect, mysql.dialect];
+
+  for (final dialect in dialects) {
+    sql.runWithDialect(
+      dialect: dialect,
       body: () {
+        print('With $dialect:');
+
         final builder = QueryBuilder(sql.dialect);
         final users = Users();
         final groups = Groups();
@@ -51,5 +57,7 @@ void main() {
         print(
           builder.build((builder) => builder.delete(from: users)).sql,
         );
-      });
+      },
+    );
+  }
 }

@@ -1,5 +1,6 @@
 import '../dialect.dart';
 import '../schema.dart';
+import '../schema/create_table.dart';
 import '../statements/delete.dart';
 import '../statements/select.dart';
 import 'context.dart';
@@ -27,7 +28,7 @@ class QueryBuilder {
   }
 
   SqlComponent createTable(SchemaTable table) {
-    return _dialect.createTable(table);
+    return CreateTableStatement(table);
   }
 
   GenerationContext newContext() => GenerationContext(_dialect);
