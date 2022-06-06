@@ -125,6 +125,25 @@ without awaiting every statement in it.''');
 
 class _TransactionExecutor extends _BaseExecutor
     implements TransactionExecutor {
+  // We're doing some async hacks for database implementations which manage
+  // transactions for us (e.g. sqflite where we do `transaction((t) => ...)`)
+  // and can only use the transaction in that callback.
+  // Since drift's executor API works somewhat differently, our callback starts
+  // a completer which we await in that callback. Outside of that callback, we
+  // use the transaction and finally complete the completer with a bogus value
+  // or with an exception if we want to commit or rollback the transaction.
+  //
+  // This works fine, but there's a rare problem since `ensureOpen` is called by
+  // the first operation _inside_ drift's `transaction` block, NOT by the
+  // transaction block itself. In particular, if that first operation is a
+  // select, the zone calling `ensureOpen` is a cancellable error zone. This
+  // means that, in the case of a rollback (sent from an outer zone), an error
+  // event would cross error zone boundaries. This is blocked by Dart's async
+  // implementation, which replaces it with an uncaught error handler.
+  // We _do_ want to handle those errors though, so we make sure that this
+  // wrapping hack in `ensureOpen` runs in the zone that created this
+  // transaction runner and not in the zone that does the first operation.
+  final Zone _createdIn = Zone.current;
   final DelegatedDatabase _db;
 
   @override
@@ -194,16 +213,18 @@ class _TransactionExecutor extends _BaseExecutor
         await _sendCalled.future;
       }));
     } else if (transactionManager is SupportedTransactionDelegate) {
-      transactionManager.startTransaction((transaction) async {
-        impl = transaction;
-        // specs say that the db implementation will perform a rollback when
-        // this future completes with an error.
-        _sendFakeErrorOnRollback = true;
-        transactionStarted.complete();
+      _createdIn.run(() {
+        transactionManager.startTransaction((transaction) async {
+          impl = transaction;
+          // specs say that the db implementation will perform a rollback when
+          // this future completes with an error.
+          _sendFakeErrorOnRollback = true;
+          transactionStarted.complete();
 
-        // this callback must be running as long as the transaction, so we do
-        // that until send() was called.
-        await _sendCalled.future;
+          // this callback must be running as long as the transaction, so we do
+          // that until send() was called.
+          await _sendCalled.future;
+        });
       });
     } else if (transactionManager is WrappedTransactionDelegate) {
       unawaited(_db._synchronized(() async {

@@ -55,7 +55,42 @@ Future<void> main() async {
     );
     final database = Database.executor(executor);
     await database.executor.ensureOpen(database);
+    addTearDown(database.close);
 
     expect(didCallCreator, isTrue);
   });
+
+  test('can rollback transactions', () async {
+    final executor = SqfliteQueryExecutor(path: ':memory:');
+    final database = EmptyDb(executor);
+    addTearDown(database.close);
+
+    final expectedException = Exception('oops');
+
+    try {
+      await database
+          .customSelect('select 1')
+          .getSingle(); // ensure database is open/created
+
+      await database.transaction(() async {
+        await database.customSelect('select 1').watchSingle().first;
+        throw expectedException;
+      });
+    } catch (e) {
+      expect(e, expectedException);
+    } finally {
+      await database.customSelect('select 1').getSingle().timeout(
+            const Duration(milliseconds: 500),
+            onTimeout: () => fail('deadlock?'),
+          );
+    }
+  }, timeout: const Timeout.factor(100));
+}
+
+class EmptyDb extends GeneratedDatabase {
+  EmptyDb(QueryExecutor q) : super(SqlTypeSystem.defaultInstance, q);
+  @override
+  final List<TableInfo> allTables = const [];
+  @override
+  final schemaVersion = 1;
 }
