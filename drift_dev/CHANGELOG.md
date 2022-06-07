@@ -1,3 +1,8 @@
+## 1.7.0
+
+- Support for new drift 1.7 features like `int64` columns.
+- Analysis support for upcoming sqlite 3.39 features in `.drift` files.
+
 ## 1.6.0
 
 - Write Dart references into schema files.

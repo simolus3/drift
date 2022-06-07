@@ -1,4 +1,4 @@
-## 0.22.0-dev
+## 0.22.0
 
 - Refactor how tables and columns are resolved internally.
 - Lint for `DISTINCT` misuse in aggregate function calls.
