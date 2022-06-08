@@ -4,7 +4,7 @@ import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:sqflite/sqflite.dart' show getDatabasesPath, DatabaseException;
 import 'package:test/test.dart';
 import 'package:tests/tests.dart';
 
@@ -84,7 +84,25 @@ Future<void> main() async {
             onTimeout: () => fail('deadlock?'),
           );
     }
-  }, timeout: const Timeout.factor(100));
+  });
+
+  test('handles failing commits', () async {
+    final executor = SqfliteQueryExecutor(path: ':memory:');
+    final database = EmptyDb(executor);
+    addTearDown(database.close);
+
+    await database.customStatement('PRAGMA foreign_keys = ON;');
+    await database.customStatement('CREATE TABLE x (foo INTEGER PRIMARY KEY);');
+    await database.customStatement('CREATE TABLE y (foo INTEGER PRIMARY KEY '
+        'REFERENCES x (foo) DEFERRABLE INITIALLY DEFERRED);');
+
+    await expectLater(
+      database.transaction(() async {
+        await database.customStatement('INSERT INTO y VALUES (2);');
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+  });
 }
 
 class EmptyDb extends GeneratedDatabase {

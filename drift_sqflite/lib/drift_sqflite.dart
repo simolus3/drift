@@ -92,14 +92,10 @@ class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
   _SqfliteTransactionDelegate(this.delegate);
 
   @override
-  void startTransaction(Future<void> Function(QueryDelegate) run) {
-    delegate.db.transaction((transaction) async {
+  Future<void> startTransaction(Future<void> Function(QueryDelegate) run) {
+    return delegate.db.transaction((transaction) async {
       final executor = _SqfliteTransactionExecutor(transaction);
       await run(executor);
-    }).catchError((_) {
-      // Ignore the error! We send a fake exception to indicate a rollback.
-      // sqflite will rollback, but the exception will bubble up. Here we stop
-      // the exception.
     });
   }
 }

@@ -155,13 +155,16 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
   }
 }
 
-class _PgTransactionDelegate extends WrappedTransactionDelegate {
+class _PgTransactionDelegate extends SupportedTransactionDelegate {
   final PostgreSQLConnection _db;
 
   const _PgTransactionDelegate(this._db);
 
   @override
-  Future runInTransaction(Future Function(QueryDelegate p1) run) async {
+  bool get managesLockInternally => false;
+
+  @override
+  Future startTransaction(Future Function(QueryDelegate) run) async {
     await _db.transaction((connection) => run(_PgDelegate(_db, connection)));
   }
 }

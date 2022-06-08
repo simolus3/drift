@@ -1,3 +1,8 @@
+## 1.8.0-dev
+
+- Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
+  across database implementations.
+
 ## 1.7.0
 
 - Add the `int64()` column builder to store large integers. These integers are
