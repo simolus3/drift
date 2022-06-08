@@ -65,7 +65,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     _sourceTable.validateIntegrity(entity).throwIfInvalid(entity);
 
     _updatedFields = entity.toColumns(true)
-      ..remove((_, value) => value == null);
+      ..removeWhere((_, value) => value == null);
 
     if (_updatedFields.isEmpty) {
       // nothing to update, we're done
