@@ -83,8 +83,8 @@ Input? _parseInputFromSchemaRow(
     Map<String, Object?> row, List<String> virtualTables) {
   final name = row['name'] as String;
 
-  // Skip sqlite-internal tables
-  if (name.startsWith('sqlite_autoindex')) return null;
+  // Skip sqlite-internal tables, https://www.sqlite.org/fileformat2.html#intschema
+  if (name.startsWith('sqlite_')) return null;
   if (virtualTables.any((v) => name.startsWith('${v}_'))) return null;
 
   return Input(name, row['sql'] as String);
