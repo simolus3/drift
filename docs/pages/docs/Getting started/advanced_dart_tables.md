@@ -174,6 +174,7 @@ Drift supports a variety of column types out of the box. You can store custom cl
 | `String`     | `text()`      | `TEXT`                                              |
 | `DateTime`   | `dateTime()`  | `INTEGER` (Unix timestamp in seconds)               |
 | `Uint8List`  | `blob()`      | `BLOB`                                              |
+| `Enum`       | `intEnum()`   | `INTEGER` (more information available [here]({{ "../Advanced Features/type_converters.md#implicit-enum-converters" | pageUrl }})). |
 
 Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
 the database.
@@ -194,7 +195,7 @@ loss of precision.
 Be aware that `BigInt`s have a higher overhead than `int`s, so we recommend using
 `int64()` only for columns where this is necessary:
 
-{% block "blocks/alert" title="You might not need this!" color="warning" %}
+{% block "blocks/alert" title="You might not need this!" color="info" %}
 In sqlite3, an `INTEGER` column is stored as a 64-bit integer.
 For apps running in the Dart VM (e.g. on everything except for the web), the `int`
 type in Dart is the _perfect_ match for that since it's also a 64-bit int.
@@ -203,7 +204,7 @@ For those apps, we recommend using the regular `integer()` column builder.
 Essentially, you should use `int64()` if both of these are true:
 
 - you're building an app that needs to work on the web, _and_
-- the column in question may store values larger than 2^52.
+- the column in question may store values larger than 2<sup>52</sup>.
 
 In all other cases, using a regular `integer()` column is more efficient.
 {% endblock %}
