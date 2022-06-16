@@ -523,7 +523,6 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'datetime':
       case 'julianday':
       case 'strftime':
-      case 'unixepoch':
       case 'char':
       case 'hex':
       case 'quote':
@@ -588,6 +587,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           .._addRelation(CopyEncapsulating(e, params))
           .._addRelation(HaveSameType(params));
         return null;
+      case 'unixepoch':
+        return const ResolvedType(
+            type: BasicType.int, nullable: true, hint: IsDateTime());
     }
 
     final extensionHandler = _functionHandlerFor(e);
