@@ -18,6 +18,8 @@ In most cases, you're writing an expression that combines other expressions. Any
 column name is a valid expression, so for most `where` clauses you'll be writing
 a expression that wraps a column name in some kind of comparison.
 
+{% assign snippets = 'package:moor_documentation/snippets/expressions.dart.excerpt.json' | readString | json_decode %}
+
 ## Comparisons
 Every expression can be compared to a value by using `equals`. If you want to compare
 an expression to another expression, you can use `equalsExpr`. For numeric and datetime
@@ -233,13 +235,7 @@ The subquery must return exactly one column, but it is allowed to return more th
 The `existsQuery` and `notExistsQuery` functions can be used to check if a subquery contains
 any rows. For instance, we could use this to find empty categories:
 
-```dart
-Future<List<Category>> emptyCategories() {
-  final hasNoTodo = notExistsQuery(
-      select(todos)..where((row) => row.category.equalsExp(categories.id)));
-  return select(categories)..where((row) => hasNoTodo);
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'emptyCategories' %}
 
 ## Custom expressions
 If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.
