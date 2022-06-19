@@ -83,7 +83,7 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
         // CategoryWithCount. As we defined the Category table earlier, drift knows how to parse
         // a category. The only thing left to do manually is extracting the amount
         return rows
-          .map((row) => CategoryWithCount(Category.fromData(row.data, this), row.readInt('amount')))
+          .map((row) => CategoryWithCount(Category.fromData(row.data, this), row.read<int>('amount')))
           .toList();
     });
   }
@@ -100,7 +100,7 @@ Stream<int> amountOfTodosInCategory(int id) {
     'SELECT COUNT(*) AS c FROM todos WHERE category = ?',
     variables: [Variable.withInt(id)],
     readsFrom: {todos},
-  ).map((row) => row.readInt('c')).watch();
+  ).map((row) => row.read<int>('c')).watch();
 }
 ```
 
