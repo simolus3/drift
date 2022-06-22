@@ -1,7 +1,8 @@
-## 1.8.0-dev
+## 2.0.0-dev
 
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
+- Fix nullability of `min`, `max` and `avg` in the Dart query builder.
 
 ## 1.7.0
 

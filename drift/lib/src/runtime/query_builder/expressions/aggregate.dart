@@ -159,21 +159,21 @@ extension BigIntAggregates<DT extends BigInt> on Expression<DT?> {
 extension DateTimeAggregate on Expression<DateTime?> {
   /// Return the average of all non-null values in this group.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> avg({Expression<bool?>? filter}) =>
+  Expression<DateTime?> avg({Expression<bool?>? filter}) =>
       secondsSinceEpoch.avg(filter: filter).roundToInt().dartCast();
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> max({Expression<bool?>? filter}) =>
+  Expression<DateTime?> max({Expression<bool?>? filter}) =>
       _AggregateExpression('MAX', [this], filter: filter);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> min({Expression<bool?>? filter}) =>
+  Expression<DateTime?> min({Expression<bool?>? filter}) =>
       _AggregateExpression('MIN', [this], filter: filter);
 }
 
