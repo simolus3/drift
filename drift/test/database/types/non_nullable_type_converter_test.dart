@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:drift/drift.dart';
+import 'package:test/test.dart';
 
 import '../../generated/converter.dart';
 

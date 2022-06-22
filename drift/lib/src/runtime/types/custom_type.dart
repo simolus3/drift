@@ -96,7 +96,7 @@ abstract class NullAwareTypeConverter<D, S extends Object>
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
   const factory NullAwareTypeConverter.wrap(TypeConverter<D, S> inner) =
-      _NullWrappingTypeConverter;
+      _NullWrappingTypeConverter<D, S>;
 
   @override
   D? mapToDart(S? fromDb) {
