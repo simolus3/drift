@@ -39,8 +39,8 @@ class ColorConverter extends NullAwareTypeConverter<Color, int> {
   const ColorConverter();
 
   @override
-  Color requireMapToDart(int fromDb) => Color(fromDb);
+  Color requireFromSql(int fromDb) => Color(fromDb);
 
   @override
-  int requireMapToSql(Color value) => value.value;
+  int requireToSql(Color value) => value.value;
 }

@@ -24,9 +24,9 @@ class Config extends DataClass implements Insertable<Config> {
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: ConfigTable.$converter0.mapToDart(const IntType()
+      syncState: ConfigTable.$converter0.fromSql(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: ConfigTable.$converter1.mapToDart(const IntType()
+      syncStateImplicit: ConfigTable.$converter1.fromSql(const IntType()
           .mapFromDatabaseResponse(
               data['${effectivePrefix}sync_state_implicit'])),
     );
@@ -40,12 +40,12 @@ class Config extends DataClass implements Insertable<Config> {
     }
     if (!nullToAbsent || syncState != null) {
       final converter = ConfigTable.$converter0;
-      map['sync_state'] = Variable<int?>(converter.mapToSql(syncState));
+      map['sync_state'] = Variable<int?>(converter.toSql(syncState));
     }
     if (!nullToAbsent || syncStateImplicit != null) {
       final converter = ConfigTable.$converter1;
       map['sync_state_implicit'] =
-          Variable<int?>(converter.mapToSql(syncStateImplicit));
+          Variable<int?>(converter.toSql(syncStateImplicit));
     }
     return map;
   }
@@ -183,12 +183,12 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     }
     if (syncState.present) {
       final converter = ConfigTable.$converter0;
-      map['sync_state'] = Variable<int?>(converter.mapToSql(syncState.value));
+      map['sync_state'] = Variable<int?>(converter.toSql(syncState.value));
     }
     if (syncStateImplicit.present) {
       final converter = ConfigTable.$converter1;
       map['sync_state_implicit'] =
-          Variable<int?>(converter.mapToSql(syncStateImplicit.value));
+          Variable<int?>(converter.toSql(syncStateImplicit.value));
     }
     return map;
   }
@@ -1476,9 +1476,9 @@ class MyViewData extends DataClass {
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: ConfigTable.$converter0.mapToDart(const IntType()
+      syncState: ConfigTable.$converter0.fromSql(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: ConfigTable.$converter1.mapToDart(const IntType()
+      syncStateImplicit: ConfigTable.$converter1.fromSql(const IntType()
           .mapFromDatabaseResponse(
               data['${effectivePrefix}sync_state_implicit'])),
     );
@@ -1677,10 +1677,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
-          Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
+          Variable<int?>(ConfigTable.$converter0.toSql(var1)),
           ...generatedpred.introducedVariables,
-          for (var $ in var2)
-            Variable<int?>(ConfigTable.$converter1.mapToSql($))
+          for (var $ in var2) Variable<int?>(ConfigTable.$converter1.toSql($))
         ],
         readsFrom: {
           config,
@@ -1777,9 +1776,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         configKey: row.read<String>('config_key'),
         configValue: row.read<String?>('config_value'),
         syncState:
-            ConfigTable.$converter0.mapToDart(row.read<int?>('sync_state')),
+            ConfigTable.$converter0.fromSql(row.read<int?>('sync_state')),
         syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.read<int?>('sync_state_implicit')),
+            .fromSql(row.read<int?>('sync_state_implicit')),
       );
     });
   }

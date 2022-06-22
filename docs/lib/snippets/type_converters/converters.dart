@@ -27,12 +27,12 @@ class PreferenceConverter extends NullAwareTypeConverter<Preferences, String>
   const PreferenceConverter();
 
   @override
-  Preferences requireMapToDart(String fromDb) {
+  Preferences requireFromSql(String fromDb) {
     return Preferences.fromJson(json.decode(fromDb) as Map<String, dynamic>);
   }
 
   @override
-  String requireMapToSql(Preferences value) {
+  String requireToSql(Preferences value) {
     return json.encode(value.toJson());
   }
 }

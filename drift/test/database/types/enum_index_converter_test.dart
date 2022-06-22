@@ -9,13 +9,13 @@ void main() {
 
   group('encodes', () {
     values.forEach((key, value) {
-      test('$key as $value', () => expect(converter.mapToSql(key), value));
+      test('$key as $value', () => expect(converter.toSql(key), value));
     });
   });
 
   group('decodes', () {
     values.forEach((key, value) {
-      test('$key as $value', () => expect(converter.mapToDart(value), key));
+      test('$key as $value', () => expect(converter.fromSql(value), key));
     });
   });
 }

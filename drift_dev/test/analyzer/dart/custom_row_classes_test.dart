@@ -60,9 +60,9 @@ class MyConverter extends TypeConverter<int, String> {
   const MyConverter();
 
   @override
-  int? mapToDart(String? fromDb) => throw 'stub';
+  int? fromSql(String? fromDb) => throw 'stub';
   @override
-  String? mapToSql(int? value) => throw 'stub';
+  String? toSql(int? value) => throw 'stub';
 }
 
 class RowClass {

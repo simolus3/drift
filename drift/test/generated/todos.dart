@@ -126,12 +126,12 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
 
   @override
-  MyCustomObject mapToDart(String fromDb) {
+  MyCustomObject fromSql(String fromDb) {
     return MyCustomObject(fromDb);
   }
 
   @override
-  String mapToSql(MyCustomObject value) {
+  String toSql(MyCustomObject value) {
     return value.data;
   }
 }

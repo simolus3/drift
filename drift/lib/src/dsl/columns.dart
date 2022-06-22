@@ -306,12 +306,12 @@ extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
   ///   // json or any other method of your choice.
   ///   const CustomConverter();
   ///   @override
-  ///   MyCustomObject mapToDart(String fromDb) {
+  ///   MyCustomObject fromSql(String fromDb) {
   ///     return fromDb == null ? null : MyCustomObject(fromDb);
   ///   }
   ///
   ///   @override
-  ///   String mapToSql(MyCustomObject value) {
+  ///   String toSql(MyCustomObject value) {
   ///     return value?.data;
   ///   }
   /// }

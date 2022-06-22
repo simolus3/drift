@@ -6,32 +6,32 @@ import '../../generated/converter.dart';
 void main() {
   test('test null in null aware type converters', () {
     const typeConverter = NullAwareSyncTypeConverter();
-    expect(typeConverter.mapToDart(typeConverter.mapToSql(null)), null);
-    expect(typeConverter.mapToSql(typeConverter.mapToDart(null)), null);
+    expect(typeConverter.fromSql(typeConverter.toSql(null)), null);
+    expect(typeConverter.toSql(typeConverter.fromSql(null)), null);
   });
 
   test('test value in null aware type converters', () {
     const typeConverter = NullAwareSyncTypeConverter();
     const value = SyncType.synchronized;
-    expect(typeConverter.mapToDart(typeConverter.mapToSql(value)), value);
-    expect(typeConverter.mapToSql(typeConverter.mapToDart(value.index)),
-        value.index);
+    expect(typeConverter.fromSql(typeConverter.toSql(value)), value);
+    expect(
+        typeConverter.toSql(typeConverter.fromSql(value.index)), value.index);
   });
 
   test('test invalid value in null aware type converters', () {
     const typeConverter = NullAwareSyncTypeConverter();
     const defaultValue = SyncType.locallyCreated;
-    expect(typeConverter.mapToDart(-1), defaultValue);
+    expect(typeConverter.fromSql(-1), defaultValue);
   });
 
   test('can wrap existing type converter', () {
     const converter =
         NullAwareTypeConverter.wrap(EnumIndexConverter(_MyEnum.values));
 
-    expect(converter.mapToDart(null), null);
-    expect(converter.mapToSql(null), null);
-    expect(converter.mapToDart(0), _MyEnum.foo);
-    expect(converter.mapToSql(_MyEnum.foo), 0);
+    expect(converter.fromSql(null), null);
+    expect(converter.toSql(null), null);
+    expect(converter.fromSql(0), _MyEnum.foo);
+    expect(converter.toSql(_MyEnum.foo), 0);
   });
 }
 
