@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart' hide log;
 import 'package:build/build.dart' as build show log;
 import 'package:drift_dev/src/analyzer/options.dart';
@@ -67,7 +66,7 @@ class BuildBackendTask extends BackendTask {
   }
 
   @override
-  Future<DartType> resolveTypeOf(
+  Future<Expression> resolveExpression(
       Uri context, String dartExpression, Iterable<String> imports) async {
     // we try to detect all calls of resolveTypeOf in an earlier builder and
     // prepare the result. See PreprocessBuilder for details
@@ -76,7 +75,7 @@ class BuildBackendTask extends BackendTask {
     final temporaryFile = _resolve(context).changeExtension('.temp.dart');
 
     if (!await step.canRead(preparedHelperFile)) {
-      throw CannotLoadTypeException('Generated helper file not found. '
+      throw CannotReadExpressionException('Generated helper file not found. '
           'Check the build log for earlier errors.');
     }
 
@@ -85,13 +84,21 @@ class BuildBackendTask extends BackendTask {
         (jsonDecode(content) as Map<String, dynamic>).cast<String, String>();
     final fieldName = json[dartExpression];
     if (fieldName == null) {
-      throw CannotLoadTypeException('Generated helper file does not contain '
+      throw CannotReadExpressionException(
+          'Generated helper file does not contain '
           '$dartExpression!');
     }
 
     final library = await step.resolver.libraryFor(temporaryFile);
     final field = library.units.first.topLevelVariables
         .firstWhere((element) => element.name == fieldName);
-    return field.type;
+    final fieldAst = await step.resolver.astNodeFor(field, resolve: true);
+
+    final initializer = (fieldAst as VariableDeclaration).initializer;
+    if (initializer == null) {
+      throw CannotReadExpressionException(
+          'Malformed helper file, this should never happen');
+    }
+    return initializer;
   }
 }

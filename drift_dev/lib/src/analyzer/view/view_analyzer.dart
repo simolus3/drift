@@ -6,7 +6,7 @@ import 'package:drift_dev/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import '../custom_row_class.dart';
+import '../dart_types.dart';
 
 class ViewAnalyzer extends BaseAnalyzer {
   final List<ImportStatement> imports;

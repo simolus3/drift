@@ -324,7 +324,7 @@ extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
   /// ```
   /// The generated row class will then use a `MyFancyClass` instead of a
   /// `String`, which would usually be used for [Table.text] columns.
-  ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T> converter) =>
+  ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T?> converter) =>
       _isGenerated();
 
   /// Turns this column builder into a column. This method won't actually be

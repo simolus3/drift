@@ -58,9 +58,8 @@ class DataClassWriter {
       ..write(table.dartTypeName)
       ..write('({')
       ..write(columns.map((column) {
-        final nullableDartType = column.typeConverter != null &&
-                scope.options.nullAwareTypeConverters
-            ? column.typeConverter!.hasNullableDartType
+        final nullableDartType = column.typeConverter != null
+            ? column.typeConverter!.mapsToNullableDart
             : column.nullable;
 
         if (nullableDartType) {
@@ -368,6 +367,10 @@ class RowMappingWriter {
       final sqlType = 'const ${sqlTypes[column.type]}()';
       var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';
 
+      if (!column.nullable && options.nnbd) {
+        loadType += '!';
+      }
+
       // run the loaded expression though the custom converter for the final
       // result.
       if (column.typeConverter != null) {
@@ -376,14 +379,6 @@ class RowMappingWriter {
         final loaded =
             '${converter.table!.entityInfoName}.${converter.fieldName}';
         loadType = '$loaded.mapToDart($loadType)';
-      }
-
-      final nullableDartType =
-          column.typeConverter != null && moorOptions.nullAwareTypeConverters
-              ? column.typeConverter!.hasNullableDartType
-              : column.nullable;
-      if (!nullableDartType && options.nnbd) {
-        loadType += '!';
       }
 
       return loadType;

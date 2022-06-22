@@ -16,7 +16,7 @@ import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
-import '../custom_row_class.dart';
+import '../dart_types.dart';
 
 part 'column_parser.dart';
 part 'table_parser.dart';

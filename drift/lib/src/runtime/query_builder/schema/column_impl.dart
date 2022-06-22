@@ -294,7 +294,27 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
   ///
   /// The value will be mapped using the [converter] applied to this column.
   Expression<bool> equalsValue(D? dartValue) {
-    return equals(converter.mapToSql(dartValue) as S);
+    S? mappedValue;
+
+    if ($nullable) {
+      // For nullable columns, the type converter needs to accept null values.
+      // ignore: unnecessary_cast, https://github.com/dart-lang/sdk/issues/34150
+      mappedValue = (converter as TypeConverter<D?, S>).mapToSql(dartValue);
+    } else {
+      if (dartValue == null) {
+        throw ArgumentError(
+            "This non-nullable column can't be equal to `null`.", 'dartValue');
+      }
+
+      mappedValue = converter.mapToSql(dartValue);
+    }
+
+    if (!$nullable && dartValue == null) {
+      throw ArgumentError(
+          "This non-nullable column can't be equal to `null`.", 'dartValue');
+    }
+
+    return mappedValue == null ? this.isNull() : equals(mappedValue);
   }
 }
 

@@ -224,12 +224,12 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       requiredDuringInsert: false,
       $customConstraints: '');
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
-  late final GeneratedColumnWithTypeConverter<SyncType, int?> syncState =
+  late final GeneratedColumnWithTypeConverter<SyncType?, int?> syncState =
       GeneratedColumn<int?>('sync_state', aliasedName, true,
               type: const IntType(),
               requiredDuringInsert: false,
               $customConstraints: '')
-          .withConverter<SyncType>(ConfigTable.$converter0);
+          .withConverter<SyncType?>(ConfigTable.$converter0);
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
   late final GeneratedColumnWithTypeConverter<SyncType?, int?>
@@ -281,9 +281,11 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
     return ConfigTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<SyncType, int> $converter0 = const SyncTypeConverter();
-  static TypeConverter<SyncType?, int> $converter1 =
-      const EnumIndexConverter<SyncType>(SyncType.values);
+  static TypeConverter<SyncType?, int?> $converter0 =
+      const NullAwareTypeConverter.wrap(SyncTypeConverter());
+  static TypeConverter<SyncType?, int?> $converter1 =
+      const NullAwareTypeConverter.wrap(
+          EnumIndexConverter<SyncType>(SyncType.values));
   @override
   bool get isStrict => true;
   @override
@@ -1574,10 +1576,10 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   late final GeneratedColumn<String?> configValue = GeneratedColumn<String?>(
       'config_value', aliasedName, true,
       type: const StringType());
-  late final GeneratedColumnWithTypeConverter<SyncType, int?> syncState =
+  late final GeneratedColumnWithTypeConverter<SyncType?, int?> syncState =
       GeneratedColumn<int?>('sync_state', aliasedName, true,
               type: const IntType())
-          .withConverter<SyncType>(ConfigTable.$converter0);
+          .withConverter<SyncType?>(ConfigTable.$converter0);
   late final GeneratedColumnWithTypeConverter<SyncType?, int?>
       syncStateImplicit = GeneratedColumn<int?>(
               'sync_state_implicit', aliasedName, true,

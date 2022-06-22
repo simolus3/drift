@@ -1,3 +1,4 @@
+import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/model/table.dart';
 import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:test/test.dart';
@@ -9,7 +10,7 @@ void main() {
 
   setUp(() {
     state = TestState.withContent({
-      'a|lib/main.dart': '''
+      'a|lib/json.dart': '''
 import 'package:drift/drift.dart';
 
 TypeConverter<String, String> withoutJson() => throw 'stub';
@@ -18,6 +19,17 @@ JsonTypeConverter<String, String> withJson() => throw 'stub';
 class Users extends Table {
   TextColumn get foo => text().map(withoutJson())();
   TextColumn get bar => text().map(withJson())();
+}
+''',
+      'a|lib/nullability.dart': '''
+import 'package:drift/drift.dart';
+
+TypeConverter<Dart, Sql> tc<Dart, Sql>() => throw 'stub';
+
+class Users extends Table {
+  TextColumn get wrongSqlType => text().map(tc<int, int>())();
+  TextColumn get illegalNull => text().map(tc<String, String?>())();
+  TextColumn get illegalNonNull => text().map(tc<String, String>()).nullable()();
 }
 ''',
       'a|lib/main.drift': '''
@@ -54,7 +66,28 @@ CREATE TABLE users (
   }
 
   test('recognizes json-capable type converters', () {
-    return testWith('package:a/main.dart');
+    return testWith('package:a/json.dart');
+  });
+
+  test('warns about type issues around converters', () async {
+    final result = await state.analyze('package:a/nullability.dart');
+
+    expect(
+      result.errors.errors,
+      [
+        isA<ErrorInDartCode>()
+            .having((e) => e.message, 'message', contains('must accept String'))
+            .having((e) => e.span?.text, 'span', 'tc<int, int>()'),
+        isA<ErrorInDartCode>()
+            .having((e) => e.message, 'message',
+                contains('has a type converter with a nullable SQL type'))
+            .having((e) => e.span?.text, 'span', 'tc<String, String?>()'),
+        isA<ErrorInDartCode>()
+            .having((e) => e.message, 'message',
+                contains('This column is nullable'))
+            .having((e) => e.span?.text, 'span', 'tc<String, String>()'),
+      ],
+    );
   });
 
   test('json converters in drift files', () {

@@ -4,7 +4,7 @@ import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/backends/backend.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import '../custom_row_class.dart';
+import '../dart_types.dart';
 
 /// Resolves a Dart class or generalized typedef pointing towards a Dart class.
 Future<FoundDartClass?> findDartClass(

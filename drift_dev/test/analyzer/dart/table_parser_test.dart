@@ -287,13 +287,12 @@ void main() {
         column.typeConverter,
         isA<UsedTypeConverter>()
             .having(
-              (e) => e.mappedType.overiddenSource,
+              (e) => e.dartType.overiddenSource,
               'mappedType.overriddenSource',
               hasOverriddenSource ? isNotNull : isNull,
             )
             .having(
-              (e) =>
-                  e.mappedType.codeString(const GenerationOptions(nnbd: true)),
+              (e) => e.dartType.codeString(const GenerationOptions(nnbd: true)),
               'mappedType.codeString',
               toString,
             ),

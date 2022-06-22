@@ -100,7 +100,7 @@ abstract class TableOrViewWriter {
     if (converter != null) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
-      final mappedType = converter.mappedType.codeString(options);
+      final mappedType = converter.dartType.codeString(options);
       type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
       expressionBuffer
         ..write('.withConverter<')

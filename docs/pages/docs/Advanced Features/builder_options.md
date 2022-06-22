@@ -80,7 +80,6 @@ At the moment, drift supports these options:
 * `scoped_dart_components`: Generates a function parameter for [Dart placeholders]({{ '../Using SQL/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
-* `null_aware_type_converters`: Consider the type of applied type converters to determine nullability of columns in Dart.
 
 ## Assumed SQL environment
 

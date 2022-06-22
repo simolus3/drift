@@ -49,22 +49,15 @@ class Preferences {
   Map<String, dynamic> toJson() => _$PreferencesToJson(this);
 }
 
-class PreferenceConverter extends TypeConverter<Preferences, String> {
+class PreferenceConverter extends NullAwareTypeConverter<Preferences, String> {
   const PreferenceConverter();
   @override
-  Preferences? mapToDart(String? fromDb) {
-    if (fromDb == null) {
-      return null;
-    }
+  Preferences requireMapToDart(String fromDb) {
     return Preferences.fromJson(json.decode(fromDb) as Map<String, dynamic>);
   }
 
   @override
-  String? mapToSql(Preferences? value) {
-    if (value == null) {
-      return null;
-    }
-
+  String requireMapToSql(Preferences value) {
     return json.encode(value.toJson());
   }
 }

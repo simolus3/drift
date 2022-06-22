@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
 
 /// A backend for the moor generator.
@@ -30,16 +29,18 @@ abstract class BackendTask {
 
   Future<String> readMoor(Uri uri);
 
-  /// Resolves the type of a Dart expression given as a string.
+  /// Resolves a Dart expression from a string.
   ///
   /// [context] is a file in which the expression should be resolved, which is
   /// relevant for relevant imports. [imports] is a list of (relative) imports
   /// which may be used to resolve the expression.
   ///
-  /// Throws a [CannotLoadTypeException] when the type could not be resolved.
-  Future<DartType> resolveTypeOf(
+  /// Throws a [CannotReadExpressionException] when the type could not be
+  /// resolved.
+  Future<Expression> resolveExpression(
       Uri context, String dartExpression, Iterable<String> imports) {
-    throw CannotLoadTypeException('Resolving dart expressions not supported');
+    throw CannotReadExpressionException(
+        'Resolving dart expressions not supported');
   }
 
   Future<AstNode?> loadElementDeclaration(Element element) async {
@@ -74,8 +75,13 @@ class NotALibraryException implements Exception {
   NotALibraryException(this.uri);
 }
 
-class CannotLoadTypeException implements Exception {
+class CannotReadExpressionException implements Exception {
   final String msg;
 
-  CannotLoadTypeException(this.msg);
+  CannotReadExpressionException(this.msg);
+
+  @override
+  String toString() {
+    return 'Could not read expression: $msg';
+  }
 }

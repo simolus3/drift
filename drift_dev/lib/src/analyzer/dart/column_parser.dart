@@ -81,8 +81,7 @@ class ColumnParser {
     String? foundCustomConstraint;
     Expression? foundDefaultExpression;
     Expression? clientDefaultExpression;
-    Expression? createdTypeConverter;
-    DriftDartType? typeConverterRuntime;
+    _PartialTypeConverterInformation? mappedAs;
     ColumnGeneratedAs? generatedAs;
     var nullable = false;
     var hasDefaultConstraints = false;
@@ -277,11 +276,6 @@ class ColumnParser {
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
 
-          // the map method has a parameter type that resolved to the runtime
-          // type of the custom object
-          final type = remainingExpr.typeArgumentTypes!.single;
-          createdTypeConverter = expression;
-
           // If the converter type references a class that doesn't exist yet,
           // (and is hence `dynamic`), we assume that it will be generated and
           // accessible in the code. In this case, we copy the source into the
@@ -289,20 +283,18 @@ class ColumnParser {
           final checkDynamic = _ContainsDynamicDueToMissingClass();
           remainingExpr.typeArguments?.accept(checkDynamic);
           expression.accept(checkDynamic);
+          DriftDartType? resolved;
 
-          // If converter type argument is dynamic, the referenced
-          // class is not exists yet. We assume it will be generated
-          if (checkDynamic.foundDynamicDueToMissingClass &&
-              remainingExpr.typeArguments != null) {
-            typeConverterRuntime = DriftDartType(
-              type: type,
+          if (checkDynamic.foundDynamicDueToMissingClass) {
+            resolved = DriftDartType(
+              type: remainingExpr.typeArgumentTypes!.single,
               overiddenSource:
                   remainingExpr.typeArguments!.arguments[0].toSource(),
               nullabilitySuffix: NullabilitySuffix.none,
             );
-          } else {
-            typeConverterRuntime = DriftDartType.of(type);
           }
+
+          mappedAs = _PartialTypeConverterInformation(expression, resolved);
           break;
         case _methodGenerated:
           Expression? generatedExpression;
@@ -349,16 +341,23 @@ class ColumnParser {
     }
 
     final columnType = _startMethodToColumnType(foundStartMethod);
-
     UsedTypeConverter? converter;
-    if (createdTypeConverter != null && typeConverterRuntime != null) {
-      converter = UsedTypeConverter(
-        expression: createdTypeConverter.toSource(),
-        mappedType: typeConverterRuntime,
-        sqlType: columnType,
-        alsoAppliesToJsonConversion: base.step.resolvedHelper
-            .isJsonAwareTypeConverter(
-                createdTypeConverter.staticType, base.step.library),
+
+    if (mappedAs != null) {
+      converter = readTypeConverter(
+        base.step.library,
+        mappedAs.dartExpression,
+        columnType,
+        nullable,
+        (message) => base.step.reportError(
+          ErrorInDartCode(
+            message: message,
+            affectedNode: mappedAs!.dartExpression,
+            affectedElement: element,
+          ),
+        ),
+        base.step.resolvedHelper,
+        resolvedDartType: mappedAs.literalDartType,
       );
     }
 
@@ -374,7 +373,8 @@ class ColumnParser {
 
       final enumType = remainingExpr.typeArgumentTypes![0];
       try {
-        converter = UsedTypeConverter.forEnumColumn(enumType, nullable);
+        converter = UsedTypeConverter.forEnumColumn(
+            enumType, nullable, base.step.library.typeProvider);
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
           message: e.errorDescription,
@@ -478,4 +478,21 @@ class _ContainsDynamicDueToMissingClass extends RecursiveAstVisitor<void> {
       super.visitNamedType(node);
     }
   }
+}
+
+/// Information used to resolve a type converter later.
+///
+/// To check whether a type converter is valid, we need to know the exact
+/// column type and whether `nullable` was called at some point.
+/// So we just store some information when we hit a `map` call and resolve the
+/// type converter after all other methods in the column builder chain have been
+/// evaluated.
+class _PartialTypeConverterInformation {
+  final Expression dartExpression;
+
+  /// An attempt to recover the syntactic type of [dartExpression] during
+  /// generation in case it hasn't been generated yet when the analyzer runs.
+  final DriftDartType? literalDartType;
+
+  _PartialTypeConverterInformation(this.dartExpression, this.literalDartType);
 }

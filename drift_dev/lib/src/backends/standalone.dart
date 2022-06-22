@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:logging/logging.dart';
 
@@ -80,7 +80,7 @@ class _StandaloneBackendTask extends BackendTask {
   }
 
   @override
-  Future<DartType> resolveTypeOf(
+  Future<Expression> resolveExpression(
       Uri context, String dartExpression, Iterable<String> imports) async {
     // Create a fake file next to the content
     final provider = backend.provider;
@@ -106,12 +106,20 @@ class _StandaloneBackendTask extends BackendTask {
           await backend.context.currentSession.getResolvedLibrary(pathForTemp);
 
       if (result is! ResolvedLibraryResult) {
-        throw CannotLoadTypeException(
+        throw CannotReadExpressionException(
             'Could not resolve temporary helper file');
       }
 
-      final field = result.element.units.first.topLevelVariables.first;
-      return field.type;
+      final compilationUnit = result.units.first.unit;
+
+      for (final member in compilationUnit.declarations) {
+        if (member is TopLevelVariableDeclaration) {
+          return member.variables.variables.first.initializer!;
+        }
+      }
+
+      throw CannotReadExpressionException(
+          'Temporary helper file contains no field.');
     } finally {
       provider.removeOverlay(pathForTemp);
     }

@@ -101,9 +101,6 @@ class MoorOptions {
   @JsonKey(name: 'scoped_dart_components', defaultValue: false)
   final bool scopedDartComponents;
 
-  @JsonKey(name: 'null_aware_type_converters', defaultValue: false)
-  final bool nullAwareTypeConverters;
-
   @internal
   const MoorOptions.defaults({
     this.generateFromJsonStringConstructor = false,
@@ -126,7 +123,6 @@ class MoorOptions {
     this.modules = const [],
     this.sqliteAnalysisOptions,
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
-    this.nullAwareTypeConverters = false,
   });
 
   MoorOptions({
@@ -149,7 +145,6 @@ class MoorOptions {
     required this.scopedDartComponents,
     required this.modules,
     required this.sqliteAnalysisOptions,
-    required this.nullAwareTypeConverters,
     this.dialect,
   }) {
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {

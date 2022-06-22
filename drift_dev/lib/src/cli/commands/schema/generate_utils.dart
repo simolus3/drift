@@ -157,8 +157,6 @@ class GenerateUtilsCommand extends Command {
         writeCompanions: companions,
         writeDataClasses: dataClasses,
         writeForMoorPackage: isForMoor,
-        nullAwareTypeConverters:
-            cli.project.moorOptions.nullAwareTypeConverters,
       ),
     );
     final file = File(p.join(output.path, _filenameForVersion(version)));

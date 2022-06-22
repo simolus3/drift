@@ -32,8 +32,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
             'named_parameters',
             'named_parameters_always_required',
             'new_sql_code_generation',
-            'scoped_dart_components',
-            'null_aware_type_converters',
+            'scoped_dart_components'
           ],
         );
         final val = MoorOptions(
@@ -77,7 +76,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
               'sqlite_modules',
               (v) =>
                   (v as List<dynamic>?)
-                      ?.map((e) => _$enumDecode(_$SqlModuleEnumMap, e))
+                      ?.map((e) => $enumDecode(_$SqlModuleEnumMap, e))
                       .toList() ??
                   []),
           sqliteAnalysisOptions: $checkedConvert(
@@ -86,8 +85,6 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
                   v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
-          nullAwareTypeConverters: $checkedConvert(
-              'null_aware_type_converters', (v) => v as bool? ?? false),
         );
         return val;
       },
@@ -111,39 +108,12 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
         'generateNamedParameters': 'named_parameters',
         'namedParametersAlwaysRequired': 'named_parameters_always_required',
         'newSqlCodeGeneration': 'new_sql_code_generation',
-        'nullAwareTypeConverters': 'null_aware_type_converters',
         'scopedDartComponents': 'scoped_dart_components',
         'modules': 'sqlite_modules',
         'sqliteAnalysisOptions': 'sqlite',
         'dialect': 'sql'
       },
     );
-
-K _$enumDecode<K, V>(
-  Map<K, V> enumValues,
-  Object? source, {
-  K? unknownValue,
-}) {
-  if (source == null) {
-    throw ArgumentError(
-      'A value must be provided. Supported values: '
-      '${enumValues.values.join(', ')}',
-    );
-  }
-
-  return enumValues.entries.singleWhere(
-    (e) => e.value == source,
-    orElse: () {
-      if (unknownValue == null) {
-        throw ArgumentError(
-          '`$source` is not one of the supported values: '
-          '${enumValues.values.join(', ')}',
-        );
-      }
-      return MapEntry(unknownValue, enumValues.values.first);
-    },
-  ).key;
-}
 
 const _$SqlModuleEnumMap = {
   SqlModule.json1: 'json1',
@@ -162,7 +132,7 @@ DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
         );
         final val = DialectOptions(
           $checkedConvert(
-              'dialect', (v) => _$enumDecode(_$SqlDialectEnumMap, v)),
+              'dialect', (v) => $enumDecode(_$SqlDialectEnumMap, v)),
           $checkedConvert(
               'options',
               (v) =>
@@ -192,7 +162,7 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
               'modules',
               (v) =>
                   (v as List<dynamic>?)
-                      ?.map((e) => _$enumDecode(_$SqlModuleEnumMap, e))
+                      ?.map((e) => $enumDecode(_$SqlModuleEnumMap, e))
                       .toList() ??
                   []),
           version: $checkedConvert(

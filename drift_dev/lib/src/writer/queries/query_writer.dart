@@ -183,9 +183,7 @@ class QueryWriter {
     var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
-      final nullableDartType = moorOptions.nullAwareTypeConverters
-          ? column.typeConverter!.hasNullableDartType
-          : column.nullable;
+      final nullableDartType = column.typeConverter!.mapsToNullableDart;
       final needsAssert = !nullableDartType && generationOptions.nnbd;
 
       final converter = column.typeConverter;

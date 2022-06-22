@@ -18,10 +18,10 @@ abstract class TypeConverter<D, S> {
 
   /// Map a value from an object in Dart into something that will be understood
   /// by the database.
-  S? mapToSql(D? value);
+  S mapToSql(D value);
 
   /// Maps a column from the database back to Dart.
-  D? mapToDart(S? fromDb);
+  D mapToDart(S fromDb);
 }
 
 /// A mixin for [TypeConverter]s that should also apply to drift's builtin
@@ -36,17 +36,28 @@ mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
   /// Defaults to doing the same conversion as for Dart -> SQL, [mapToSql].
-  S? toJson(D? value) => mapToSql(value);
+  S toJson(D value) => mapToSql(value);
 
   /// Map a value from json to something understood by the data class.
   ///
   /// Defaults to doing the same conversion as for SQL -> Dart, [mapToSql].
-  D? fromJson(S? json) => mapToDart(json);
+  D fromJson(S json) => mapToDart(json);
+
+  /// Wraps an [inner] type converter that only considers non-nullable values
+  /// as a type converter that handles null values too.
+  ///
+  /// The returned type converter will use the [inner] type converter for non-
+  /// null values. Further, `null` is mapped to `null` in both directions (from
+  /// Dart to SQL and vice-versa).
+  static JsonTypeConverter<D?, S?> asNullable<D, S extends Object>(
+      TypeConverter<D, S> inner) {
+    return _NullWrappingTypeConverterWithJson(inner);
+  }
 }
 
 /// Implementation for an enum to int converter that uses the index of the enum
 /// as the value stored in the database.
-class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {
+class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int> {
   /// All values of the enum.
   final List<T> values;
 
@@ -54,15 +65,13 @@ class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {
   const EnumIndexConverter(this.values);
 
   @override
-  T requireMapToDart(int fromDb) {
+  T mapToDart(int fromDb) {
     return values[fromDb];
   }
 
   @override
-  int requireMapToSql(T value) {
-    // In Dart 2.14: Cast to Enum instead of dynamic. Also add Enum as an upper
-    // bound for T.
-    return (value as dynamic).index as int;
+  int mapToSql(T value) {
+    return value.index;
   }
 }
 
@@ -76,9 +85,18 @@ class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {
 /// Apart from the implementation changes, subclasses of this converter can be
 /// used just like all other type converters.
 abstract class NullAwareTypeConverter<D, S extends Object>
-    extends TypeConverter<D, S> {
-  /// Constant default constructor.
+    extends TypeConverter<D?, S?> {
+  /// Constant default constructor, allowing subclasses to be constant.
   const NullAwareTypeConverter();
+
+  /// Wraps an [inner] type converter that only considers non-nullable values
+  /// as a type converter that handles null values too.
+  ///
+  /// The returned type converter will use the [inner] type converter for non-
+  /// null values. Further, `null` is mapped to `null` in both directions (from
+  /// Dart to SQL and vice-versa).
+  const factory NullAwareTypeConverter.wrap(TypeConverter<D, S> inner) =
+      _NullWrappingTypeConverter;
 
   @override
   D? mapToDart(S? fromDb) {
@@ -96,4 +114,30 @@ abstract class NullAwareTypeConverter<D, S extends Object>
   /// Map a non-null value from an object in Dart into something that will be
   /// understood by the database.
   S requireMapToSql(D value);
+}
+
+class _NullWrappingTypeConverter<D, S extends Object>
+    extends NullAwareTypeConverter<D, S> {
+  final TypeConverter<D, S> _inner;
+
+  const _NullWrappingTypeConverter(this._inner);
+
+  @override
+  D requireMapToDart(S fromDb) => _inner.mapToDart(fromDb);
+
+  @override
+  S requireMapToSql(D value) => _inner.mapToSql(value);
+}
+
+class _NullWrappingTypeConverterWithJson<D, S extends Object>
+    extends NullAwareTypeConverter<D, S> with JsonTypeConverter<D?, S?> {
+  final TypeConverter<D, S> _inner;
+
+  const _NullWrappingTypeConverterWithJson(this._inner);
+
+  @override
+  D requireMapToDart(S fromDb) => _inner.mapToDart(fromDb);
+
+  @override
+  S requireMapToSql(D value) => _inner.mapToSql(value);
 }

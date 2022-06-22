@@ -98,8 +98,10 @@ class CustomRowClass {
 
 class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
-  TextColumn get txt =>
-      text().named('insert').map(const CustomJsonConverter()).nullable()();
+  TextColumn get txt => text()
+      .named('insert')
+      .map(JsonTypeConverter.asNullable(const CustomJsonConverter()))
+      .nullable()();
 
   @override
   Set<Column> get primaryKey => {txt};
@@ -124,13 +126,13 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
 
   @override
-  MyCustomObject? mapToDart(String? fromDb) {
-    return fromDb == null ? null : MyCustomObject(fromDb);
+  MyCustomObject mapToDart(String fromDb) {
+    return MyCustomObject(fromDb);
   }
 
   @override
-  String? mapToSql(MyCustomObject? value) {
-    return value?.data;
+  String mapToSql(MyCustomObject value) {
+    return value.data;
   }
 }
 

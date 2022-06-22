@@ -130,7 +130,7 @@ class SchemaWriter {
       if (column.typeConverter != null)
         'type_converter': {
           'dart_expr': column.typeConverter!.expression,
-          'dart_type_name': column.typeConverter!.mappedType
+          'dart_type_name': column.typeConverter!.dartType
               .getDisplayString(withNullability: false),
         }
     };

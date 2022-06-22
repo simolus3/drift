@@ -25,7 +25,7 @@ class Category extends DataClass implements Insertable<Category> {
       description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
       priority: $CategoriesTable.$converter0.mapToDart(const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}priority'])!),
       descriptionInUpperCase: const StringType().mapFromDatabaseResponse(
           data['${effectivePrefix}description_in_upper_case'])!,
     );
@@ -1225,7 +1225,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       const RealType()
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
       custom: $TableWithoutPKTable.$converter0.mapToDart(const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}custom'])!),
       webSafeInt: const BigIntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}web_safe_int']),
     );
@@ -1356,10 +1356,10 @@ class $PureDefaultsTable extends PureDefaults
   $PureDefaultsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
   @override
-  late final GeneratedColumnWithTypeConverter<MyCustomObject, String?> txt =
+  late final GeneratedColumnWithTypeConverter<MyCustomObject?, String?> txt =
       GeneratedColumn<String?>('insert', aliasedName, true,
               type: const StringType(), requiredDuringInsert: false)
-          .withConverter<MyCustomObject>($PureDefaultsTable.$converter0);
+          .withConverter<MyCustomObject?>($PureDefaultsTable.$converter0);
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override
@@ -1388,8 +1388,8 @@ class $PureDefaultsTable extends PureDefaults
     return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter<MyCustomObject, String> $converter0 =
-      const CustomJsonConverter();
+  static JsonTypeConverter<MyCustomObject?, String?> $converter0 =
+      JsonTypeConverter.asNullable(const CustomJsonConverter());
 }
 
 class CategoryTodoCountViewData extends DataClass {

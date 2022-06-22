@@ -10,15 +10,13 @@ class SyncTypeConverter extends TypeConverter<SyncType, int> {
   const SyncTypeConverter();
 
   @override
-  SyncType? mapToDart(int? fromDb) {
-    if (fromDb == null) return null;
-
+  SyncType mapToDart(int fromDb) {
     return SyncType.values[fromDb];
   }
 
   @override
-  int? mapToSql(SyncType? value) {
-    return value?.index;
+  int mapToSql(SyncType value) {
+    return value.index;
   }
 }
 

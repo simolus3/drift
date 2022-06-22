@@ -39,7 +39,7 @@ void main() {
             contains('EnumIndexConverter<Fruits>'),
           )
           .having(
-            (e) => e.mappedType.getDisplayString(withNullability: false),
+            (e) => e.dartType.getDisplayString(withNullability: false),
             'mappedType',
             'Fruits',
           ),
@@ -61,19 +61,19 @@ void main() {
     final state = TestState.withContent({
       'foo|lib/a.moor': '''
          import 'enum.dart';
-         
+
          CREATE TABLE foo (
            fruit ENUM(Fruits) NOT NULL MAPPED BY `MyConverter()`
          );
       ''',
       'foo|lib/enum.dart': '''
         import 'package:drift/drift.dart';
-      
+
         enum Fruits {
           apple, orange, banane
         }
-        
-        class MyConverter extends TypeConverter<String, String> {}  
+
+        class MyConverter extends TypeConverter<String, String> {}
       ''',
     });
 
@@ -96,7 +96,7 @@ void main() {
     final state = TestState.withContent({
       'foo|lib/a.moor': '''
          import 'enum.dart';
-         
+
          CREATE TABLE foo (
            fruit ENUM(NotAnEnum) NOT NULL
          );

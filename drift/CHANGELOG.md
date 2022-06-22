@@ -1,5 +1,9 @@
 ## 2.0.0-dev
 
+- __Breaking__: Type converters now return the types that they were defined to return
+  (instead of the nullable variant of those types like before).
+  It is an error to use a non-nullable type converter on a column that is nullable in
+  SQL and vice-versa.
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
 - Fix nullability of `min`, `max` and `avg` in the Dart query builder.

@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/moor_generator.dart';
@@ -8,11 +9,10 @@ import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:drift_dev/src/backends/backend.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
-import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' hide Expression;
 
-import '../custom_row_class.dart';
+import '../dart_types.dart';
 import '../helper.dart';
 import 'find_dart_class.dart';
 
@@ -77,7 +77,10 @@ class CreateTableReader {
         } else {
           try {
             converter = UsedTypeConverter.forEnumColumn(
-                dartType, column.type.nullable != false);
+              dartType,
+              column.type.nullable != false,
+              helper.helperLibrary.typeProvider,
+            );
           } on InvalidTypeForEnumConverterException catch (e) {
             step.reportError(ErrorInMoorFile(
               message: e.errorDescription,
@@ -119,7 +122,8 @@ class CreateTableReader {
             continue;
           }
 
-          converter = await _readTypeConverter(moorType, constraint);
+          converter = await _readTypeConverter(
+              moorType, column.type.nullable ?? true, constraint);
           // don't write MAPPED BY constraints when creating the table, they're
           // a convenience feature by the compiler
           continue;
@@ -241,39 +245,28 @@ class CreateTableReader {
   }
 
   Future<UsedTypeConverter?> _readTypeConverter(
-      ColumnType sqlType, MappedBy mapper) async {
+      ColumnType sqlType, bool nullable, MappedBy mapper) async {
     final code = mapper.mapper.dartCode;
 
-    DartType type;
+    Expression expression;
     try {
-      type = await step.task.backend.resolveTypeOf(step.file.uri, code,
+      expression = await step.task.backend.resolveExpression(
+          step.file.uri,
+          code,
           imports.map((e) => e.importedFile).where((e) => e.endsWith('.dart')));
-    } on CannotLoadTypeException catch (e) {
+    } on CannotReadExpressionException catch (e) {
       step.reportError(ErrorInMoorFile(span: mapper.span!, message: e.msg));
       return null;
     }
 
-    if (type is! InterfaceType) {
-      step.reportError(
-        ErrorInMoorFile(
-            span: mapper.span!,
-            message: 'Must be an interface type (backed by a class)'),
-      );
-      return null;
-    }
-
-    final asTypeConverter = type.allSupertypes.firstWhere(
-        (type) => isFromMoor(type) && type.element.name == 'TypeConverter');
-
-    // TypeConverter<D, S>, where D is the type in Dart
-    final typeInDart = asTypeConverter.typeArguments.first;
-
-    return UsedTypeConverter(
-      expression: code,
-      mappedType: DriftDartType.of(typeInDart),
-      sqlType: sqlType,
-      alsoAppliesToJsonConversion:
-          helper.isJsonAwareTypeConverter(type, type.element.library),
+    return readTypeConverter(
+      helper.helperLibrary,
+      expression,
+      sqlType,
+      nullable,
+      (errorMsg) => step
+          .reportError(ErrorInMoorFile(span: mapper.span!, message: errorMsg)),
+      helper,
     );
   }
 

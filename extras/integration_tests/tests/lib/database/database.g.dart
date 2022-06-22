@@ -19,7 +19,7 @@ Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   /// The user id
   final int id;
@@ -263,10 +263,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
   @override
-  late final GeneratedColumnWithTypeConverter<Preferences, String?>
+  late final GeneratedColumnWithTypeConverter<Preferences?, String?>
       preferences = GeneratedColumn<String?>('preferences', aliasedName, true,
               type: const StringType(), requiredDuringInsert: false)
-          .withConverter<Preferences>($UsersTable.$converter0);
+          .withConverter<Preferences?>($UsersTable.$converter0);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
@@ -307,8 +307,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
@@ -319,7 +317,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     return $UsersTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<Preferences, String> $converter0 =
+  static TypeConverter<Preferences?, String?> $converter0 =
       const PreferenceConverter();
 }
 
@@ -532,8 +530,6 @@ class $FriendshipsTable extends Friendships
 
   @override
   Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
     return Friendship.fromData(data,

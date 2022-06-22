@@ -1,10 +1,14 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
+import 'package:analyzer/dart/element/type_system.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
+
+import 'helper.dart';
 
 class FoundDartClass {
   final ClassElement classElement;
@@ -63,7 +67,7 @@ ExistingRowClass? validateExistingClass(
     final column = unmatchedColumnsByName.remove(parameter.name);
     if (column != null) {
       columnsToParameter[column] = parameter;
-      _checkType(parameter, column, step);
+      _checkParameterType(parameter, column, step);
     } else if (!parameter.isOptional) {
       errors.report(ErrorInDartCode(
         affectedElement: parameter,
@@ -103,11 +107,68 @@ ExistingRowClass? validateExistingClass(
       typeInstantiation: dartClass.instantiation ?? const []);
 }
 
-void _checkType(ParameterElement element, MoorColumn column, Step step) {
+UsedTypeConverter? readTypeConverter(
+  LibraryElement library,
+  Expression dartExpression,
+  ColumnType columnType,
+  bool columnIsNullable,
+  void Function(String) reportError,
+  HelperLibrary helper, {
+  DriftDartType? resolvedDartType,
+}) {
+  final staticType = dartExpression.staticType;
+  final asTypeConverter =
+      staticType != null ? helper.asTypeConverter(staticType) : null;
+
+  if (asTypeConverter == null) {
+    reportError('Not a type converter');
+    return null;
+  }
+
+  final dartType = asTypeConverter.typeArguments[0];
+  final sqlType = asTypeConverter.typeArguments[1];
+
+  final typeSystem = library.typeSystem;
+  final dartTypeNullable = typeSystem.isNullable(dartType);
+  final sqlTypeNullable = typeSystem.isNullable(sqlType);
+
+  final appliesToJsonToo = helper.isJsonAwareTypeConverter(staticType, library);
+
+  if (sqlTypeNullable != columnIsNullable) {
+    if (columnIsNullable) {
+      final alternative = appliesToJsonToo
+          ? 'JsonTypeConverter.asNullable'
+          : 'NullAwareTypeConverter.wrap';
+
+      reportError('This column is nullable, but the type converter has a non-'
+          "nullable SQL type, meaning that it won't be able to map `null` "
+          'from the database to Dart.\n'
+          'Try wrapping the converter in `$alternative`');
+    } else {
+      reportError('This column is non-nullable in the database, but has a '
+          'type converter with a nullable SQL type, meaning that it may '
+          "potentially map to `null` which can't be stored in the database.");
+    }
+  }
+
+  _checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
+      library.typeSystem, reportError);
+
+  return UsedTypeConverter(
+    expression: dartExpression.toSource(),
+    dartType: resolvedDartType ?? DriftDartType.of(dartType),
+    sqlType: sqlType,
+    mapsToNullableDart: dartTypeNullable,
+    mapsToNullableSql: sqlTypeNullable,
+    alsoAppliesToJsonConversion: appliesToJsonToo,
+  );
+}
+
+void _checkParameterType(
+    ParameterElement element, MoorColumn column, Step step) {
   final type = element.type;
   final library = element.library!;
   final typesystem = library.typeSystem;
-  final provider = library.typeProvider;
 
   void error(String message) {
     step.errors.report(ErrorInDartCode(
@@ -116,9 +177,8 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
     ));
   }
 
-  final nullAware = step.task.session.options.nullAwareTypeConverters;
-  final nullableDartType = nullAware && column.typeConverter != null
-      ? column.typeConverter!.hasNullableDartType
+  final nullableDartType = column.typeConverter != null
+      ? column.typeConverter!.mapsToNullableDart
       : column.nullableInDart;
 
   if (library.isNonNullableByDefault &&
@@ -129,24 +189,43 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
     return;
   }
 
-  DriftDartType expectedDartType;
+  _checkType(
+    column.type,
+    column.nullable,
+    column.typeConverter,
+    element.type,
+    library.typeProvider,
+    library.typeSystem,
+    error,
+  );
+}
 
-  if (column.typeConverter != null) {
-    expectedDartType = column.typeConverter!.mappedType;
+void _checkType(
+  ColumnType columnType,
+  bool columnIsNullable,
+  UsedTypeConverter? typeConverter,
+  DartType typeToCheck,
+  TypeProvider typeProvider,
+  TypeSystem typeSystem,
+  void Function(String) error,
+) {
+  DriftDartType expectedDartType;
+  if (typeConverter != null) {
+    expectedDartType = typeConverter.dartType;
   } else {
-    expectedDartType = DriftDartType.of(provider.typeFor(column.type));
+    expectedDartType = DriftDartType.of(typeProvider.typeFor(columnType));
   }
 
   // BLOB columns should be stored in an Uint8List (or a supertype of that).
   // We don't get a Uint8List from the type provider unfortunately, but as it
   // cannot be extended we can just check for that manually.
-  final isAllowedUint8List = column.typeConverter == null &&
-      column.type == ColumnType.blob &&
-      type is InterfaceType &&
-      type.element.name == 'Uint8List' &&
-      type.element.library.name == 'dart.typed_data';
+  final isAllowedUint8List = typeConverter == null &&
+      columnType == ColumnType.blob &&
+      typeToCheck is InterfaceType &&
+      typeToCheck.element.name == 'Uint8List' &&
+      typeToCheck.element.library.name == 'dart.typed_data';
 
-  if (!typesystem.isAssignableTo(expectedDartType.type, type) &&
+  if (!typeSystem.isAssignableTo(expectedDartType.type, typeToCheck) &&
       !isAllowedUint8List) {
     error('Parameter must accept '
         '${expectedDartType.getDisplayString(withNullability: true)}');

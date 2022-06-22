@@ -1,3 +1,8 @@
+## 2.0.0-dev
+
+- Remove the `null_aware_type_converters` build option. Effectively, it is always
+  turned on now.
+
 ## 1.7.0
 
 - Support for new drift 1.7 features like `int64` columns.

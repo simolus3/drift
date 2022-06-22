@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+import 'package:drift/drift.dart';
 
 import '../../generated/converter.dart';
 
@@ -22,4 +23,16 @@ void main() {
     const defaultValue = SyncType.locallyCreated;
     expect(typeConverter.mapToDart(-1), defaultValue);
   });
+
+  test('can wrap existing type converter', () {
+    const converter =
+        NullAwareTypeConverter.wrap(EnumIndexConverter(_MyEnum.values));
+
+    expect(converter.mapToDart(null), null);
+    expect(converter.mapToSql(null), null);
+    expect(converter.mapToDart(0), _MyEnum.foo);
+    expect(converter.mapToSql(_MyEnum.foo), 0);
+  });
 }
+
+enum _MyEnum { foo, bar }
