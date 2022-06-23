@@ -274,7 +274,7 @@ class DataClassWriter {
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.mapToSql(${column.dartGetterName})');
+          ..write('(converter.toSql(${column.dartGetterName})');
         if (assertNotNull) _buffer.write('!');
         _buffer.write(');');
       } else {
@@ -378,7 +378,7 @@ class RowMappingWriter {
         final converter = column.typeConverter!;
         final loaded =
             '${converter.table!.entityInfoName}.${converter.fieldName}';
-        loadType = '$loaded.mapToDart($loadType)';
+        loadType = '$loaded.fromSql($loadType)';
       }
 
       return loadType;

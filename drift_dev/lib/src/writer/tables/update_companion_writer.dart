@@ -192,7 +192,7 @@ class UpdateCompanionWriter {
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.mapToSql($getterName.value)');
+          ..write('(converter.toSql($getterName.value)');
 
         if (!column.nullable && scope.generationOptions.nnbd) {
           _buffer.write('!');

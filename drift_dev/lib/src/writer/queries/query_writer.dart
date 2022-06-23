@@ -187,7 +187,7 @@ class QueryWriter {
       final needsAssert = !nullableDartType && generationOptions.nnbd;
 
       final converter = column.typeConverter;
-      code = '${_converter(converter!)}.mapToDart($code)';
+      code = '${_converter(converter!)}.fromSql($code)';
       if (needsAssert) code += '!';
     }
     return code;
@@ -855,7 +855,7 @@ class _ExpandedVariableWriter {
   void _writeVariable(FoundVariable element) {
     // Variables without type converters are written as:
     // `Variable<int>(x)`. When there's a type converter, we instead use
-    // `Variable<int>(typeConverter.mapToSql(x))`.
+    // `Variable<int>(typeConverter.toSql(x))`.
     // Finally, if we're dealing with a list, we use a collection for to
     // write all the variables sequentially.
     String constructVar(String dartExpr) {
@@ -867,8 +867,7 @@ class _ExpandedVariableWriter {
 
       if (element.typeConverter != null) {
         // Apply the converter
-        buffer
-            .write('${_converter(element.typeConverter!)}.mapToSql($dartExpr)');
+        buffer.write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
 
         final needsNullAssertion =
             !element.nullable && scope.generationOptions.nnbd;

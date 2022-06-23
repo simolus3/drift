@@ -18,10 +18,10 @@ abstract class TypeConverter<D, S> {
 
   /// Map a value from an object in Dart into something that will be understood
   /// by the database.
-  S mapToSql(D value);
+  S toSql(D value);
 
   /// Maps a column from the database back to Dart.
-  D mapToDart(S fromDb);
+  D fromSql(S fromDb);
 }
 
 /// A mixin for [TypeConverter]s that should also apply to drift's builtin
@@ -35,13 +35,13 @@ abstract class TypeConverter<D, S> {
 mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
-  /// Defaults to doing the same conversion as for Dart -> SQL, [mapToSql].
-  S toJson(D value) => mapToSql(value);
+  /// Defaults to doing the same conversion as for Dart -> SQL, [toSql].
+  S toJson(D value) => toSql(value);
 
   /// Map a value from json to something understood by the data class.
   ///
-  /// Defaults to doing the same conversion as for SQL -> Dart, [mapToSql].
-  D fromJson(S json) => mapToDart(json);
+  /// Defaults to doing the same conversion as for SQL -> Dart, [toSql].
+  D fromJson(S json) => fromSql(json);
 
   /// Wraps an [inner] type converter that only considers non-nullable values
   /// as a type converter that handles null values too.
@@ -65,12 +65,12 @@ class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int> {
   const EnumIndexConverter(this.values);
 
   @override
-  T mapToDart(int fromDb) {
+  T fromSql(int fromDb) {
     return values[fromDb];
   }
 
   @override
-  int mapToSql(T value) {
+  int toSql(T value) {
     return value.index;
   }
 }
@@ -78,8 +78,8 @@ class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int> {
 /// A type converter automatically mapping `null` values to `null` in both
 /// directions.
 ///
-/// Instead of overriding  [mapToDart] and [mapToSql], subclasses of this
-/// converter should implement [requireMapToDart] and [requireMapToSql], which
+/// Instead of overriding  [fromSql] and [toSql], subclasses of this
+/// converter should implement [requireFromSql] and [requireToSql], which
 /// are used to map non-null values to and from sql values, respectively.
 ///
 /// Apart from the implementation changes, subclasses of this converter can be
@@ -99,21 +99,21 @@ abstract class NullAwareTypeConverter<D, S extends Object>
       _NullWrappingTypeConverter<D, S>;
 
   @override
-  D? mapToDart(S? fromDb) {
-    return fromDb == null ? null : requireMapToDart(fromDb);
+  D? fromSql(S? fromDb) {
+    return fromDb == null ? null : requireFromSql(fromDb);
   }
 
   /// Maps a non-null column from the database back to Dart.
-  D requireMapToDart(S fromDb);
+  D requireFromSql(S fromDb);
 
   @override
-  S? mapToSql(D? value) {
-    return value == null ? null : requireMapToSql(value);
+  S? toSql(D? value) {
+    return value == null ? null : requireToSql(value);
   }
 
   /// Map a non-null value from an object in Dart into something that will be
   /// understood by the database.
-  S requireMapToSql(D value);
+  S requireToSql(D value);
 }
 
 class _NullWrappingTypeConverter<D, S extends Object>
@@ -123,10 +123,10 @@ class _NullWrappingTypeConverter<D, S extends Object>
   const _NullWrappingTypeConverter(this._inner);
 
   @override
-  D requireMapToDart(S fromDb) => _inner.mapToDart(fromDb);
+  D requireFromSql(S fromDb) => _inner.fromSql(fromDb);
 
   @override
-  S requireMapToSql(D value) => _inner.mapToSql(value);
+  S requireToSql(D value) => _inner.toSql(value);
 }
 
 class _NullWrappingTypeConverterWithJson<D, S extends Object>
@@ -136,8 +136,8 @@ class _NullWrappingTypeConverterWithJson<D, S extends Object>
   const _NullWrappingTypeConverterWithJson(this._inner);
 
   @override
-  D requireMapToDart(S fromDb) => _inner.mapToDart(fromDb);
+  D requireFromSql(S fromDb) => _inner.fromSql(fromDb);
 
   @override
-  S requireMapToSql(D value) => _inner.mapToSql(value);
+  S requireToSql(D value) => _inner.toSql(value);
 }

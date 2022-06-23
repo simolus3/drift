@@ -10,12 +10,12 @@ class SyncTypeConverter extends TypeConverter<SyncType, int> {
   const SyncTypeConverter();
 
   @override
-  SyncType mapToDart(int fromDb) {
+  SyncType fromSql(int fromDb) {
     return SyncType.values[fromDb];
   }
 
   @override
-  int mapToSql(SyncType value) {
+  int toSql(SyncType value) {
     return value.index;
   }
 }
@@ -24,7 +24,7 @@ class NullAwareSyncTypeConverter extends NullAwareTypeConverter<SyncType, int> {
   const NullAwareSyncTypeConverter();
 
   @override
-  SyncType requireMapToDart(int fromDb) {
+  SyncType requireFromSql(int fromDb) {
     const values = SyncType.values;
     if (fromDb < 0 || fromDb >= values.length) {
       return SyncType.locallyCreated;
@@ -33,7 +33,7 @@ class NullAwareSyncTypeConverter extends NullAwareTypeConverter<SyncType, int> {
   }
 
   @override
-  int requireMapToSql(SyncType value) {
+  int requireToSql(SyncType value) {
     return value.index;
   }
 }

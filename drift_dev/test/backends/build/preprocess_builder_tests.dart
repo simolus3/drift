@@ -28,9 +28,9 @@ import 'package:drift/drift.dart';
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();
 
-  int mapToSql(DateTime time) => time?.millisecondsSinceEpoch;
+  int toSql(DateTime time) => time?.millisecondsSinceEpoch;
 
-  DateTime mapToDart(int fromSql) {
+  DateTime fromSql(int fromSql) {
     if (fromSql == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(fromSql);
   }
@@ -76,9 +76,9 @@ import 'package:drift/drift.dart';
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();
 
-  int mapToSql(DateTime time) => time?.millisecondsSinceEpoch;
+  int toSql(DateTime time) => time?.millisecondsSinceEpoch;
 
-  DateTime mapToDart(int fromSql) {
+  DateTime fromSql(int fromSql) {
     if (fromSql == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(fromSql);
   }

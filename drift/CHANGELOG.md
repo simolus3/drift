@@ -4,6 +4,7 @@
   (instead of the nullable variant of those types like before).
   It is an error to use a non-nullable type converter on a column that is nullable in
   SQL and vice-versa.
+- __Breaking__: Mapping methods on type converters are now called `toSql` and `fromSql`.
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
 - Fix nullability of `min`, `max` and `avg` in the Dart query builder.

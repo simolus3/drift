@@ -57,8 +57,8 @@ class Settings {}
 class SettingsConverter extends TypeConverter<Settings, String> {
   const SettingsConverter();
 
-  String mapToSql(Settings s) => '';
-  Settings mapToDart(String db) => Settings();
+  String toSql(Settings s) => '';
+  Settings fromSql(String db) => Settings();
 }
 
 @DriftDatabase(include: {'a.moor'}, tables: [Users])

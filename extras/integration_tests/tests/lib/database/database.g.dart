@@ -48,7 +48,7 @@ class User extends DataClass implements Insertable<User> {
           .mapFromDatabaseResponse(data['${effectivePrefix}birth_date'])!,
       profilePicture: const BlobType()
           .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converter0.mapToDart(const StringType()
+      preferences: $UsersTable.$converter0.fromSql(const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}preferences'])),
     );
   }
@@ -63,7 +63,7 @@ class User extends DataClass implements Insertable<User> {
     }
     if (!nullToAbsent || preferences != null) {
       final converter = $UsersTable.$converter0;
-      map['preferences'] = Variable<String?>(converter.mapToSql(preferences));
+      map['preferences'] = Variable<String?>(converter.toSql(preferences));
     }
     return map;
   }
@@ -214,7 +214,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (preferences.present) {
       final converter = $UsersTable.$converter0;
       map['preferences'] =
-          Variable<String?>(converter.mapToSql(preferences.value));
+          Variable<String?>(converter.toSql(preferences.value));
     }
     return map;
   }
@@ -603,7 +603,7 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {
           users,
         }).map((QueryRow row) =>
-        $UsersTable.$converter0.mapToDart(row.read<String?>('preferences')));
+        $UsersTable.$converter0.fromSql(row.read<String?>('preferences')));
   }
 
   Selectable<User> usersById(List<int> var1) {

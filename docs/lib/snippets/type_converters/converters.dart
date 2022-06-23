@@ -26,12 +26,12 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
   const PreferenceConverter();
 
   @override
-  Preferences mapToDart(String fromDb) {
+  Preferences fromSql(String fromDb) {
     return Preferences.fromJson(json.decode(fromDb) as Map<String, dynamic>);
   }
 
   @override
-  String mapToSql(Preferences value) {
+  String toSql(Preferences value) {
     return json.encode(value.toJson());
   }
 }

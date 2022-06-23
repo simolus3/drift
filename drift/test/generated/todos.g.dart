@@ -24,7 +24,7 @@ class Category extends DataClass implements Insertable<Category> {
           .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converter0.mapToDart(const IntType()
+      priority: $CategoriesTable.$converter0.fromSql(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}priority'])!),
       descriptionInUpperCase: const StringType().mapFromDatabaseResponse(
           data['${effectivePrefix}description_in_upper_case'])!,
@@ -37,7 +37,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['desc'] = Variable<String>(description);
     {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.mapToSql(priority)!);
+      map['priority'] = Variable<int>(converter.toSql(priority)!);
     }
     return map;
   }
@@ -162,7 +162,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (priority.present) {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.mapToSql(priority.value)!);
+      map['priority'] = Variable<int>(converter.toSql(priority.value)!);
     }
     return map;
   }
@@ -1109,7 +1109,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
     }
     if (custom.present) {
       final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.mapToSql(custom.value)!);
+      map['custom'] = Variable<String>(converter.toSql(custom.value)!);
     }
     return map;
   }
@@ -1224,7 +1224,7 @@ class $TableWithoutPKTable extends TableWithoutPK
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
       const RealType()
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$converter0.mapToDart(const StringType()
+      custom: $TableWithoutPKTable.$converter0.fromSql(const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}custom'])!),
       webSafeInt: const BigIntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}web_safe_int']),
@@ -1246,7 +1246,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   factory PureDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return PureDefault(
-      txt: $PureDefaultsTable.$converter0.mapToDart(const StringType()
+      txt: $PureDefaultsTable.$converter0.fromSql(const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}insert'])),
     );
   }
@@ -1255,7 +1255,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     final map = <String, Expression>{};
     if (!nullToAbsent || txt != null) {
       final converter = $PureDefaultsTable.$converter0;
-      map['insert'] = Variable<String?>(converter.mapToSql(txt));
+      map['insert'] = Variable<String?>(converter.toSql(txt));
     }
     return map;
   }
@@ -1334,7 +1334,7 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     final map = <String, Expression>{};
     if (txt.present) {
       final converter = $PureDefaultsTable.$converter0;
-      map['insert'] = Variable<String?>(converter.mapToSql(txt.value));
+      map['insert'] = Variable<String?>(converter.toSql(txt.value));
     }
     return map;
   }
@@ -1688,8 +1688,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           tableWithoutPK,
-        }).map((QueryRow row) => $TableWithoutPKTable.$converter0
-        .mapToDart(row.read<String>('custom'))!);
+        }).map((QueryRow row) =>
+        $TableWithoutPKTable.$converter0.fromSql(row.read<String>('custom'))!);
   }
 
   @override
