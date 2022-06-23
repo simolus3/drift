@@ -1,3 +1,5 @@
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
@@ -7,7 +9,6 @@ import 'package:analyzer_plugin/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin/plugin/plugin.dart';
 import 'package:analyzer_plugin/protocol/protocol.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
-import 'package:analyzer_plugin/protocol/protocol_generated.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
@@ -26,11 +27,11 @@ import 'logger.dart';
 
 class MoorPlugin extends ServerPlugin
     with OutlineMixin, FoldingMixin, CompletionMixin, NavigationMixin {
-  final Map<ContextRoot, MoorDriver> drivers = {};
+  final Map<AnalysisContext, MoorDriver> drivers = {};
 
   late final ErrorService errorService = ErrorService(this);
 
-  MoorPlugin(ResourceProvider provider) : super(provider) {
+  MoorPlugin(ResourceProvider provider) : super(resourceProvider: provider) {
     setupLogger(this);
   }
 
@@ -61,11 +62,6 @@ class MoorPlugin extends ServerPlugin
     });
   }
 
-  @override
-  Never createAnalysisDriver(plugin.ContextRoot contextRoot) {
-    throw UnsupportedError('Using custom driver management');
-  }
-
   MoorDriver? _moorDriverForPath(String path) {
     for (final driver in drivers.values) {
       if (driver.context.contextRoot.isAnalyzed(path)) return driver;
@@ -86,35 +82,44 @@ class MoorPlugin extends ServerPlugin
   }
 
   @override
-  void contentChanged(String path) {
-    _moorDriverForPath(path)?.handleFileChanged(path);
+  Future<void> analyzeFile(
+      {required AnalysisContext analysisContext, required String path}) async {
+    // Do nothing here, we react to file changes by sending out notifications.
   }
 
   @override
-  Future<AnalysisSetContextRootsResult> handleAnalysisSetContextRoots(
-      AnalysisSetContextRootsParams parameters) {
-    final roots = parameters.roots;
-    final oldRoots = drivers.keys.toList();
-
-    for (final contextRoot in roots) {
-      if (!oldRoots.remove(contextRoot)) {
-        // The context is new! Create a driver for it
-        final driver = MoorDriver(
-          resourceProvider,
-          contextRoot: contextRoot.root,
-          sdkPath: sdkManager.defaultSdkDirectory,
-        );
-        _didCreateDriver(driver);
-        drivers[contextRoot] = driver;
-      }
+  Future<void> afterNewContextCollection({
+    required AnalysisContextCollection contextCollection,
+  }) async {
+    for (final context in contextCollection.contexts) {
+      final createdDriver =
+          drivers[context] = MoorDriver.forContext(resourceProvider, context);
+      _didCreateDriver(createdDriver);
     }
 
-    // All remaining contexts have been removed
-    for (final removed in oldRoots) {
-      drivers.remove(removed)?.dispose();
-    }
+    return super
+        .afterNewContextCollection(contextCollection: contextCollection);
+  }
 
-    return Future.value(plugin.AnalysisSetContextRootsResult());
+  @override
+  Future<void> beforeContextCollectionDispose({
+    required AnalysisContextCollection contextCollection,
+  }) async {
+    for (final driver in drivers.values) {
+      driver.dispose();
+    }
+    drivers.clear();
+  }
+
+  @override
+  Future<void> contentChanged(List<String> paths) async {
+    // Let the plugin class take care of updating Dart analysis
+    await super.contentChanged(paths);
+
+    // And then do drift analysis
+    for (final path in paths) {
+      _moorDriverForPath(path)?.handleFileChanged(path);
+    }
   }
 
   Future<FoundFile> _waitParsed(String path) async {

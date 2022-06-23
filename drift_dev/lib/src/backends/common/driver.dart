@@ -41,6 +41,12 @@ class MoorDriver {
     session = MoorSession(backend, options: options);
   }
 
+  MoorDriver.forContext(this._resourceProvider, this.context) {
+    final overlayed = OverlayResourceProvider(_resourceProvider);
+    backend = StandaloneBackend(context, overlayed);
+    session = MoorSession(backend, options: const MoorOptions.defaults());
+  }
+
   bool _ownsFile(String path) =>
       path.endsWith('.moor') ||
       path.endsWith('.drift') ||
