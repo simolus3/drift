@@ -1,5 +1,3 @@
-//@dart=2.6
-
 import 'dart:convert';
 import 'dart:isolate';
 
@@ -21,22 +19,19 @@ void main(List<String> args, SendPort sendPort) {
 class _PluginProxy {
   final SendPort sendToAnalysisServer;
 
-  ReceivePort _receive;
-  IOWebSocketChannel _channel;
-
   _PluginProxy(this.sendToAnalysisServer);
 
   Future<void> start() async {
-    _channel = IOWebSocketChannel.connect('ws://localhost:9999');
-    _receive = ReceivePort();
-    sendToAnalysisServer.send(_receive.sendPort);
+    final channel = IOWebSocketChannel.connect('ws://localhost:9999');
+    final receive = ReceivePort();
+    sendToAnalysisServer.send(receive.sendPort);
 
-    _receive.listen((data) {
+    receive.listen((data) {
       // the server will send messages as maps, convert to json
-      _channel.sink.add(json.encode(data));
+      channel.sink.add(json.encode(data));
     });
 
-    _channel.stream.listen((data) {
+    channel.stream.listen((data) {
       sendToAnalysisServer.send(json.decode(data as String));
     });
   }
