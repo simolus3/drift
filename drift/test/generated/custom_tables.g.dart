@@ -282,7 +282,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   }
 
   static TypeConverter<SyncType?, int?> $converter0 =
-      const NullAwareTypeConverter.wrap(SyncTypeConverter());
+      NullAwareTypeConverter.wrap(const SyncTypeConverter());
   static TypeConverter<SyncType?, int?> $converter1 =
       const NullAwareTypeConverter.wrap(
           EnumIndexConverter<SyncType>(SyncType.values));

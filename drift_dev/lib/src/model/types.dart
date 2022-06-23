@@ -110,7 +110,8 @@ extension OperationOnTypes on HasType {
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
     final converter = typeConverter;
     if (converter != null) {
-      final inner = converter.dartType.codeString(options);
+      var inner = converter.dartType.codeString(options);
+      if (converter.skipForNulls) inner += '?';
       return isArray ? 'List<$inner>' : inner;
     }
 

@@ -1,4 +1,5 @@
 import 'package:drift_dev/src/analyzer/errors.dart';
+import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/model/table.dart';
 import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:test/test.dart';
@@ -29,7 +30,8 @@ TypeConverter<Dart, Sql> tc<Dart, Sql>() => throw 'stub';
 class Users extends Table {
   TextColumn get wrongSqlType => text().map(tc<int, int>())();
   TextColumn get illegalNull => text().map(tc<String, String?>())();
-  TextColumn get illegalNonNull => text().map(tc<String, String>()).nullable()();
+  TextColumn get illegalNonNull => text().map(tc<String?, String>()).nullable()();
+  TextColumn get implicitlyNullAware => text().map(tc<String, String>()).nullable()();
 }
 ''',
       'a|lib/main.drift': '''
@@ -71,6 +73,8 @@ CREATE TABLE users (
 
   test('warns about type issues around converters', () async {
     final result = await state.analyze('package:a/nullability.dart');
+    final table =
+        (result.currentResult as ParsedDartFile).declaredTables.single;
 
     expect(
       result.errors.errors,
@@ -85,9 +89,12 @@ CREATE TABLE users (
         isA<ErrorInDartCode>()
             .having((e) => e.message, 'message',
                 contains('This column is nullable'))
-            .having((e) => e.span?.text, 'span', 'tc<String, String>()'),
+            .having((e) => e.span?.text, 'span', 'tc<String?, String>()'),
       ],
     );
+
+    final implicitlyNullAware = table.columns[3];
+    expect(implicitlyNullAware.typeConverter?.skipForNulls, isTrue);
   });
 
   test('json converters in drift files', () {

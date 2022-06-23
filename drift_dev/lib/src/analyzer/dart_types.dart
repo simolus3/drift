@@ -134,8 +134,17 @@ UsedTypeConverter? readTypeConverter(
 
   final appliesToJsonToo = helper.isJsonAwareTypeConverter(staticType, library);
 
+  // Make the type converter support nulls by just mapping null to null if this
+  // converter is otherwise non-nullable in both directions but applied on a
+  // nullable column
+  final skipForNull = !dartTypeNullable && !sqlTypeNullable && columnIsNullable;
+
   if (sqlTypeNullable != columnIsNullable) {
-    if (columnIsNullable) {
+    if (!columnIsNullable) {
+      reportError('This column is non-nullable in the database, but has a '
+          'type converter with a nullable SQL type, meaning that it may '
+          "potentially map to `null` which can't be stored in the database.");
+    } else if (!skipForNull) {
       final alternative = appliesToJsonToo
           ? 'JsonTypeConverter.asNullable'
           : 'NullAwareTypeConverter.wrap';
@@ -144,23 +153,20 @@ UsedTypeConverter? readTypeConverter(
           "nullable SQL type, meaning that it won't be able to map `null` "
           'from the database to Dart.\n'
           'Try wrapping the converter in `$alternative`');
-    } else {
-      reportError('This column is non-nullable in the database, but has a '
-          'type converter with a nullable SQL type, meaning that it may '
-          "potentially map to `null` which can't be stored in the database.");
     }
   }
 
-  _checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
+  _checkType(columnType, null, sqlType, library.typeProvider,
       library.typeSystem, reportError);
 
   return UsedTypeConverter(
     expression: dartExpression.toSource(),
     dartType: resolvedDartType ?? DriftDartType.of(dartType),
     sqlType: sqlType,
-    mapsToNullableDart: dartTypeNullable,
-    mapsToNullableSql: sqlTypeNullable,
+    dartTypeIsNullable: dartTypeNullable,
+    sqlTypeIsNullable: sqlTypeNullable,
     alsoAppliesToJsonConversion: appliesToJsonToo,
+    skipForNulls: skipForNull,
   );
 }
 
@@ -191,7 +197,6 @@ void _checkParameterType(
 
   _checkType(
     column.type,
-    column.nullable,
     column.typeConverter,
     element.type,
     library.typeProvider,
@@ -202,7 +207,6 @@ void _checkParameterType(
 
 void _checkType(
   ColumnType columnType,
-  bool columnIsNullable,
   UsedTypeConverter? typeConverter,
   DartType typeToCheck,
   TypeProvider typeProvider,
@@ -212,6 +216,9 @@ void _checkType(
   DriftDartType expectedDartType;
   if (typeConverter != null) {
     expectedDartType = typeConverter.dartType;
+    if (typeConverter.skipForNulls) {
+      typeToCheck = typeSystem.promoteToNonNull(typeToCheck);
+    }
   } else {
     expectedDartType = DriftDartType.of(typeProvider.typeFor(columnType));
   }

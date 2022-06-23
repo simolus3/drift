@@ -98,10 +98,8 @@ class CustomRowClass {
 
 class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
-  TextColumn get txt => text()
-      .named('insert')
-      .map(JsonTypeConverter.asNullable(const CustomJsonConverter()))
-      .nullable()();
+  TextColumn get txt =>
+      text().named('insert').map(const CustomJsonConverter()).nullable()();
 
   @override
   Set<Column> get primaryKey => {txt};

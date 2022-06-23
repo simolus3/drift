@@ -100,7 +100,8 @@ abstract class TableOrViewWriter {
     if (converter != null) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
-      final mappedType = converter.dartType.codeString(options);
+      final mappedType = converter.dartTypeCode(options);
+
       type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
       expressionBuffer
         ..write('.withConverter<')
@@ -310,7 +311,16 @@ class TableWriter extends TableOrViewWriter {
   void _writeConvertersAsStaticFields() {
     for (final converter in table.converters) {
       final typeName = converter.converterNameInCode(scope.generationOptions);
-      final code = converter.expression;
+      var code = converter.expression;
+
+      if (converter.skipForNulls) {
+        if (converter.alsoAppliesToJsonConversion) {
+          code = 'JsonTypeConverter.asNullable($code)';
+        } else {
+          code = 'NullAwareTypeConverter.wrap($code)';
+        }
+      }
+
       buffer.write('static $typeName ${converter.fieldName} = $code;');
     }
   }
