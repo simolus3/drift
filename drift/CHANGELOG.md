@@ -7,6 +7,7 @@
 - __Breaking__: Mapping methods on type converters are now called `toSql` and `fromSql`.
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
+- Support nested transactions.
 - Fix nullability of `min`, `max` and `avg` in the Dart query builder.
 
 ## 1.7.0

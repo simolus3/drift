@@ -427,15 +427,48 @@ abstract class DatabaseConnectionUser {
   ///   successful or not, streams created in it will close. Writes happening
   ///   outside of this transaction will not affect the stream.
   ///
-  /// Please note that nested transactions are not supported. Creating another
-  /// transaction inside a transaction returns the parent transaction.
+  /// Starting from drift version 2.0, nested transactions are supported on most
+  /// database implementations (including `NativeDatabase`, TODO list). When
+  /// calling [transaction] inside a [transaction] block on supported database
+  /// implementations, a new transaction will be started.
+  /// For backwards-compatibility, the current transaction will be re-used if
+  /// a nested transaction is started with a database implementation not
+  /// supporting nested transactions. The [requireNew] parameter can be set to
+  /// instead turn this case into a runtime error.
+  ///
+  /// Nested transactions are conceptionally similar to regular, top-level
+  /// transactions in the sense that their writes are not seen by users outside
+  /// of the transaction until it is commited. However, their behavior around
+  /// completions is different:
+  ///
+  /// - When a nested transaction completes, nothing is being persisted right
+  ///   away. The parent transaction can now see changes from the child
+  ///   transaction and continues to run. When the outermost transaction
+  ///   completes, its changes (including changes from child transactions) are
+  ///   written to the database.
+  /// - When a nested transaction is aborted (which happens due to exceptions),
+  ///   only changes in that inner transaction are reverted. The outer
+  ///   transaction can continue to run if it catched the exception thrown by
+  ///   the inner transaction when it aborted.
   ///
   /// See also:
   ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
-  Future<T> transaction<T>(Future<T> Function() action) async {
+  Future<T> transaction<T>(Future<T> Function() action,
+      {bool requireNew = false}) async {
     final resolved = resolvedEngine;
+
+    // Are we about to start a nested transaction?
     if (resolved is Transaction) {
-      return action();
+      final executor = resolved.executor as TransactionExecutor;
+      if (!executor.supportsNestedTransactions) {
+        if (requireNew) {
+          throw UnsupportedError('The current database implementation does '
+              'not support nested transactions.');
+        } else {
+          // Just run the block in the current transaction zone.
+          return action();
+        }
+      }
     }
 
     return await resolved.doWhenOpened((executor) {

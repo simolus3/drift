@@ -98,8 +98,14 @@ class MockExecutor extends Mock implements QueryExecutor {
 class MockTransactionExecutor extends MockExecutor
     implements TransactionExecutor {
   MockTransactionExecutor() {
+    when(supportsNestedTransactions).thenReturn(true);
     when(send()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));
+  }
+
+  @override
+  bool get supportsNestedTransactions {
+    return _nsm(Invocation.getter(#supportsNestedTransactions), true);
   }
 
   @override

@@ -152,6 +152,9 @@ abstract class _TransactionExecutor extends _BaseExecutor
 
   @override
   bool get isSequential => _db.isSequential;
+
+  @override
+  bool get supportsNestedTransactions => false;
 }
 
 /// A transaction implementation that sends `BEGIN` and `COMMIT` statements
@@ -162,7 +165,25 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   Completer<bool>? _opened;
   final Completer<void> _done = Completer();
 
-  _StatementBasedTransactionExecutor(super._db, this._delegate);
+  final _StatementBasedTransactionExecutor? _parent;
+
+  final String _startCommand;
+  final String _commitCommand;
+  final String _rollbackCommand;
+
+  _StatementBasedTransactionExecutor(super._db, this._delegate)
+      : _startCommand = _delegate.start,
+        _commitCommand = _delegate.commit,
+        _rollbackCommand = _delegate.rollback,
+        _parent = null;
+
+  _StatementBasedTransactionExecutor.nested(
+      _StatementBasedTransactionExecutor this._parent, int depth)
+      : _delegate = _parent._delegate,
+        _startCommand = 'SAVEPOINT s$depth',
+        _commitCommand = 'RELEASE s$depth',
+        _rollbackCommand = 'ROLLBACK TO s$depth',
+        super(_parent._db);
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
@@ -171,10 +192,11 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
 
     if (opened == null) {
       opened = _opened = Completer();
-      // Block the main database interface while this transaction is active.
-      unawaited(_db._synchronized(() async {
+      // Block the main database or the parent transaction while this
+      // transaction is active.
+      unawaited((_parent ?? _db)._synchronized(() async {
         try {
-          await runCustom(_delegate.start);
+          await runCustom(_startCommand);
           _db.delegate.isInTransaction = true;
           _opened!.complete(true);
         } catch (e, s) {
@@ -193,14 +215,27 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   QueryDelegate get impl => _db.delegate;
 
   @override
+  bool get supportsNestedTransactions => true;
+
+  @override
+  TransactionExecutor beginTransaction() {
+    var ownDepth = 0;
+    var ancestor = _parent;
+    while (ancestor != null) {
+      ownDepth++;
+      ancestor = ancestor._parent;
+    }
+
+    return _StatementBasedTransactionExecutor.nested(this, ownDepth);
+  }
+
+  @override
   Future<void> send() async {
     // don't do anything if the transaction completes before it was opened
     if (!_ensureOpenCalled) return;
 
-    await runCustom(_delegate.commit, const []);
-    _db.delegate.isInTransaction = false;
-    _done.complete();
-    _closed = true;
+    await runCustom(_commitCommand, const []);
+    _afterCommitOrRollback();
   }
 
   @override
@@ -208,7 +243,7 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
     if (!_ensureOpenCalled) return;
 
     try {
-      await runCustom(_delegate.rollback, const []);
+      await runCustom(_rollbackCommand, const []);
     } finally {
       // Note: When send() is called and throws an exception, we don't mark this
       // transaction is closed (as the commit should either be retried or the
@@ -216,11 +251,17 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
       // When aborting fails too, something is seriously wrong already. Let's
       // at least make sure that we don't block the rest of the db by pretending
       // the transaction is still open.
-      _db.delegate.isInTransaction = false;
-
-      _done.complete();
-      _closed = true;
+      _afterCommitOrRollback();
     }
+  }
+
+  void _afterCommitOrRollback() {
+    if (_parent == null) {
+      _db.delegate.isInTransaction = false;
+    }
+
+    _done.complete();
+    _closed = true;
   }
 }
 

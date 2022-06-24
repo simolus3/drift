@@ -143,6 +143,10 @@ class ArgumentsForBatchedStatement {
 
 /// A [QueryExecutor] that runs multiple queries atomically.
 abstract class TransactionExecutor extends QueryExecutor {
+  /// Whether this transaction executor supports nesting transactions by calling
+  /// [beginTransaction] on it.
+  bool get supportsNestedTransactions;
+
   /// Completes the transaction. No further queries may be sent to to this
   /// [QueryExecutor] after this method was called.
   ///

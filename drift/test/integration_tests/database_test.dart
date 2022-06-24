@@ -42,4 +42,54 @@ void main() {
     await expectLater(
         driftDb.select(driftDb.categories).get(), completion(hasLength(1)));
   });
+
+  group('nested transactions', () {
+    test(
+      'outer transaction does not see inner writes after rollback',
+      () async {
+        final db = TodoDb(NativeDatabase.memory());
+
+        await db.transaction(() async {
+          await db
+              .into(db.categories)
+              .insert(CategoriesCompanion.insert(description: 'outer'));
+
+          try {
+            await db.transaction(() async {
+              await db
+                  .into(db.categories)
+                  .insert(CategoriesCompanion.insert(description: 'inner'));
+
+              expect(await db.select(db.categories).get(), hasLength(2));
+              throw Exception('rollback inner');
+            });
+          } on Exception {
+            // Expected rollback, let's continue
+          }
+
+          final categories = await db.select(db.categories).get();
+          expect(categories, hasLength(1));
+          expect(categories.single.description, 'outer');
+        });
+      },
+    );
+
+    test('inner writes are visible after completion', () async {
+      final db = TodoDb(NativeDatabase.memory());
+
+      await db.transaction(() async {
+        await db
+            .into(db.categories)
+            .insert(CategoriesCompanion.insert(description: 'outer'));
+
+        await db.transaction(() async {
+          await db
+              .into(db.categories)
+              .insert(CategoriesCompanion.insert(description: 'inner'));
+        });
+
+        expect(await db.select(db.categories).get(), hasLength(2));
+      });
+    });
+  });
 }
