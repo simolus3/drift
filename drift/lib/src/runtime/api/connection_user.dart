@@ -428,9 +428,11 @@ abstract class DatabaseConnectionUser {
   ///   outside of this transaction will not affect the stream.
   ///
   /// Starting from drift version 2.0, nested transactions are supported on most
-  /// database implementations (including `NativeDatabase`, TODO list). When
-  /// calling [transaction] inside a [transaction] block on supported database
-  /// implementations, a new transaction will be started.
+  /// database implementations (including `NativeDatabase`, `WebDatabase`,
+  /// `WasmDatabase`, `SqfliteQueryExecutor`, databases relayed through
+  /// isolates or web workers).
+  /// When calling [transaction] inside a [transaction] block on supported
+  /// database implementations, a new transaction will be started.
   /// For backwards-compatibility, the current transaction will be re-used if
   /// a nested transaction is started with a database implementation not
   /// supporting nested transactions. The [requireNew] parameter can be set to
