@@ -4,11 +4,14 @@ import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath, DatabaseException;
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:test/test.dart';
 import 'package:tests/tests.dart';
 
 class SqfliteExecutor extends TestExecutor {
+  @override
+  bool get supportsNestedTransactions => true;
+
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(
@@ -100,7 +103,7 @@ Future<void> main() async {
       database.transaction(() async {
         await database.customStatement('INSERT INTO y VALUES (2);');
       }),
-      throwsA(isA<DatabaseException>()),
+      throwsA(isA<CouldNotRollBackException>()),
     );
   });
 }

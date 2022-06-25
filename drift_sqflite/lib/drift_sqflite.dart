@@ -17,8 +17,7 @@ import 'package:sqflite/sqflite.dart' as s;
 /// doesn't exist.
 typedef DatabaseCreator = FutureOr<void> Function(File file);
 
-class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
-  @override
+class _SqfliteDelegate extends DatabaseDelegate {
   late s.Database db;
   bool _isOpen = false;
 
@@ -35,8 +34,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   late final DbVersionDelegate versionDelegate = _SqfliteVersionDelegate(db);
 
   @override
-  TransactionDelegate get transactionDelegate =>
-      _SqfliteTransactionDelegate(this);
+  TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
   @override
   bool get isOpen => _isOpen;
@@ -67,48 +65,6 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   Future<void> close() {
     return db.close();
   }
-}
-
-class _SqfliteVersionDelegate extends DynamicVersionDelegate {
-  final s.Database _db;
-
-  _SqfliteVersionDelegate(this._db);
-
-  @override
-  Future<int> get schemaVersion async {
-    final result = await _db.rawQuery('PRAGMA user_version;');
-    return result.single.values.first as int;
-  }
-
-  @override
-  Future<void> setSchemaVersion(int version) async {
-    await _db.rawUpdate('PRAGMA user_version = $version;');
-  }
-}
-
-class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
-  final _SqfliteDelegate delegate;
-
-  _SqfliteTransactionDelegate(this.delegate);
-
-  @override
-  Future<void> startTransaction(Future<void> Function(QueryDelegate) run) {
-    return delegate.db.transaction((transaction) async {
-      final executor = _SqfliteTransactionExecutor(transaction);
-      await run(executor);
-    });
-  }
-}
-
-class _SqfliteTransactionExecutor extends QueryDelegate with _SqfliteExecutor {
-  @override
-  final s.DatabaseExecutor db;
-
-  _SqfliteTransactionExecutor(this.db);
-}
-
-mixin _SqfliteExecutor on QueryDelegate {
-  s.DatabaseExecutor get db;
 
   @override
   Future<void> runBatched(BatchedStatements statements) async {
@@ -143,6 +99,23 @@ mixin _SqfliteExecutor on QueryDelegate {
   }
 }
 
+class _SqfliteVersionDelegate extends DynamicVersionDelegate {
+  final s.Database _db;
+
+  _SqfliteVersionDelegate(this._db);
+
+  @override
+  Future<int> get schemaVersion async {
+    final result = await _db.rawQuery('PRAGMA user_version;');
+    return result.single.values.first as int;
+  }
+
+  @override
+  Future<void> setSchemaVersion(int version) async {
+    await _db.rawUpdate('PRAGMA user_version = $version;');
+  }
+}
+
 /// A query executor that uses sqflite internally.
 class SqfliteQueryExecutor extends DelegatedDatabase {
   /// A query executor that will store the database in the file declared by
@@ -154,7 +127,7 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   /// migrations might behave differently when populating the database this way.
   /// For instance, a database created by an [creator] will not receive the
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
-  /// moor.
+  /// drift.
   SqfliteQueryExecutor(
       {required String path,
       bool? logStatements,
@@ -175,7 +148,7 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   /// migrations might behave differently when populating the database this way.
   /// For instance, a database created by an [creator] will not receive the
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
-  /// moor.
+  /// drift.
   SqfliteQueryExecutor.inDatabaseFolder(
       {required String path,
       bool? logStatements,
@@ -186,17 +159,18 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
                 singleInstance: singleInstance, creator: creator),
             logStatements: logStatements);
 
-  /// The underlying sqflite [s.Database] object used by moor to send queries.
+  /// The underlying sqflite [s.Database] object used by drift to send queries.
   ///
-  /// Using the sqflite database can cause unexpected behavior in moor. For
+  /// Using the sqflite database can cause unexpected behavior in drift. For
   /// instance, stream queries won't update for updates sent to the [s.Database]
-  /// directly.
+  /// directly. Further, drift assumes full control over the database for its
+  /// internal connection management.
   /// For this reason, projects shouldn't use this getter unless they absolutely
-  /// need to. The database is exposed to make migrating from sqflite to moor
+  /// need to. The database is exposed to make migrating from sqflite to drift
   /// easier.
   ///
-  /// Note that this returns null until the moor database has been opened.
-  /// A moor database is opened lazily when the first query runs.
+  /// Note that this returns null until the drifft database has been opened.
+  /// A drift database is opened lazily when the first query runs.
   s.Database? get sqfliteDb {
     final sqfliteDelegate = delegate as _SqfliteDelegate;
     return sqfliteDelegate.isOpen ? sqfliteDelegate.db : null;
@@ -205,7 +179,7 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   @override
   // We're not really required to be sequential since sqflite has an internal
   // lock to bring statements into a sequential order.
-  // Setting isSequential here helps with moor cancellations in stream queries
+  // Setting isSequential here helps with cancellations in stream queries
   // though.
   bool get isSequential => true;
 }

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 import 'package:tests/data/sample_data.dart' as people;
 import 'package:tests/database/database.dart';
@@ -59,4 +60,40 @@ void transactionTests(TestExecutor executor) {
     await db.transaction(() => Future.value(null));
     await executor.clearDatabaseAndClose(db);
   });
+
+  test(
+    'nested transactions',
+    () async {
+      final db = Database(executor.createConnection());
+      await db.users.delete().go();
+
+      await db.transaction(() async {
+        expect(await db.select(db.users).get(), isEmpty);
+
+        await db.transaction(() async {
+          await db.users.insertOne(UsersCompanion.insert(
+              name: 'first user', birthDate: DateTime.now()));
+          expect(await db.select(db.users).get(), hasLength(1));
+        });
+
+        expect(await db.select(db.users).get(), hasLength(1));
+
+        final rollback = Exception('rollback');
+        await expectLater(db.transaction(() async {
+          await db.users.insertOne(UsersCompanion.insert(
+              name: 'second user', birthDate: DateTime.now()));
+          expect(await db.select(db.users).get(), hasLength(2));
+
+          throw rollback;
+        }), throwsA(rollback));
+
+        expect(await db.select(db.users).get(), hasLength(1));
+      });
+
+      expect(await db.select(db.users).get(), hasLength(1));
+    },
+    skip: executor.supportsNestedTransactions
+        ? false
+        : 'Tested implementation does not support nested transactions',
+  );
 }

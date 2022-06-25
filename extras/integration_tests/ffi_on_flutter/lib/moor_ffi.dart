@@ -15,6 +15,9 @@ class FfiExecutor extends TestExecutor {
   FfiExecutor(this.dbPath);
 
   @override
+  bool get supportsNestedTransactions => true;
+
+  @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(
         VmDatabase(File(join(dbPath, 'app_ffi.db'))));

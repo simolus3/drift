@@ -10,6 +10,9 @@ class VmExecutor extends TestExecutor {
   final File file = File(join(Directory.systemTemp.path, fileName));
 
   @override
+  bool get supportsNestedTransactions => true;
+
+  @override
   bool get supportsReturning {
     final version = sqlite3.version;
     return version.versionNumber > 3035000;

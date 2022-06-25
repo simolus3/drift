@@ -10,6 +10,7 @@ abstract class TestExecutor {
   DatabaseConnection createConnection();
 
   bool get supportsReturning => false;
+  bool get supportsNestedTransactions => false;
 
   /// Delete the data that would be written by the executor.
   Future deleteData();
