@@ -98,6 +98,57 @@ void main() {
       Uint8List(12),
     ]));
   });
+
+  test('nested transactions', () async {
+    final controller = StreamChannelController();
+    final executor = MockExecutor();
+    final outerTransaction = executor.transactions;
+    // avoid this object being created implicitly in the beginTransaction() when
+    // stub because that breaks mockito.
+    outerTransaction.transactions; // ignore: unnecessary_statements
+    final innerTransactions = <MockTransactionExecutor>[];
+
+    TransactionExecutor newTransaction(Invocation _) {
+      final transaction = MockTransactionExecutor()..transactions;
+      innerTransactions.add(transaction);
+      when(transaction.beginTransaction()).thenAnswer(newTransaction);
+      return transaction;
+    }
+
+    when(outerTransaction.beginTransaction()).thenAnswer(newTransaction);
+
+    final server = DriftServer(DatabaseConnection.fromExecutor(executor));
+    server.serve(controller.foreign);
+    addTearDown(server.shutdown);
+
+    final db = TodoDb.connect(remote(controller.local));
+    addTearDown(db.close);
+
+    await db.transaction(() async {
+      final abortException = Exception('abort');
+
+      await expectLater(db.transaction(() async {
+        await db.select(db.todosTable).get();
+        throw abortException;
+      }), throwsA(abortException));
+
+      await db.transaction(() async {
+        await db.select(db.todosTable).get();
+
+        await db.transaction(() => db.select(db.todosTable).get());
+      });
+    });
+
+    verify(outerTransaction.beginTransaction());
+    verify(innerTransactions[0].ensureOpen(any));
+    verify(innerTransactions[0].rollback());
+    verify(innerTransactions[1].ensureOpen(any));
+    verify(innerTransactions[1].beginTransaction());
+    verify(innerTransactions[2].ensureOpen(any));
+    verify(innerTransactions[2].send());
+    verify(innerTransactions[1].send());
+    verify(outerTransaction.send());
+  });
 }
 
 Stream<Object?> _checkStreamOfSimple(Stream<Object?> source) {

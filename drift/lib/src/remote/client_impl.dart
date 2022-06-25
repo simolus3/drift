@@ -163,11 +163,11 @@ class _RemoteTransactionExecutor extends _BaseExecutor
   SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
-  bool get supportsNestedTransactions => false;
+  bool get supportsNestedTransactions => true;
 
   @override
   TransactionExecutor beginTransaction() {
-    throw UnsupportedError('Nested transactions');
+    return _RemoteTransactionExecutor(client, _executorId);
   }
 
   @override
