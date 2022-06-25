@@ -20,7 +20,7 @@ class DriftWasmExecutor extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(
-        WasmDatabase(sqlite3: sqlite3(), path: 'drift_test.db'));
+        WasmDatabase(sqlite3: sqlite3(), path: '/drift_test.db'));
   }
 
   @override
@@ -39,7 +39,8 @@ void main() {
 
     final response =
         await http.get(Uri.parse('http://localhost:$port/sqlite3.wasm'));
-    sqlite3 = await WasmSqlite3.load(response.bodyBytes);
+    sqlite3 = await WasmSqlite3.load(
+        response.bodyBytes, SqliteEnvironment(fileSystem: fs));
   });
 
   runAllTests(DriftWasmExecutor(fs, () => sqlite3));

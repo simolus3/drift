@@ -92,6 +92,7 @@ void transactionTests(TestExecutor executor) {
       });
 
       expect(await db.select(db.users).get(), hasLength(1));
+      await executor.clearDatabaseAndClose(db);
     },
     skip: executor.supportsNestedTransactions
         ? false
