@@ -10,7 +10,9 @@ dependencies:
   postgres: ^2.4.3
 
 dev_dependencies:
-  build_runner: ^2.0.0
+  test: ^1.18.0
+  drift_testcases:
+    path: ../integration_tests/drift_testcases
 
 dependency_overrides:
   drift:

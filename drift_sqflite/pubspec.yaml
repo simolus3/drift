@@ -16,10 +16,18 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_lints: ^1.0.4
   flutter_test:
     sdk: flutter
+  drift_testcases:
+    path: ../extras/integration_tests/drift_testcases
 
 dependency_overrides:
   drift:
     path: ../drift/
+
+flutter:
+  assets:
+    - test_asset.db

@@ -1,15 +1,20 @@
 @TestOn('browser')
 import 'dart:html';
 
+import 'package:drift/drift.dart';
 import 'package:drift/web.dart';
+import 'package:drift_testcases/database/database.dart';
+import 'package:drift_testcases/suite/suite.dart';
 import 'package:test/test.dart';
-import 'package:tests/tests.dart';
 
 class WebExecutor extends TestExecutor {
   final String name = 'db';
 
   @override
   bool get supportsReturning => true;
+
+  @override
+  bool get supportsNestedTransactions => true;
 
   @override
   DatabaseConnection createConnection() {

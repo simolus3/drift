@@ -5,8 +5,8 @@ environment:
 
 dependencies:
   drift:
-  tests:
-    path: ../tests
+  drift_testcases:
+    path: ../drift_testcases
 
 dev_dependencies:
   test: ^1.5.0
