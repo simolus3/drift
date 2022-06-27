@@ -442,14 +442,19 @@ void main() {
       () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));
 
-    DriftWrappedException wrappedException;
-    try {
-      await db.select(db.todosTable).join([crossJoin(db.todosTable)]).get();
-      fail('expected this to throw');
-    } on DriftWrappedException catch (e) {
-      wrappedException = e;
-    }
+    expect(
+      db.select(db.todosTable).join([crossJoin(db.todosTable)]).get(),
+      throwsA(isA<DriftWrappedException>()
+          .having((e) => e.toString(), 'toString', contains('possible cause'))),
+    );
 
-    expect(wrappedException.toString(), contains('possible cause'));
+    // Joining with aliases should not throw
+    final t1 = db.alias(db.todosTable, 't1');
+    final t2 = db.alias(db.todosTable, 't2');
+
+    expect(
+      db.select(t1).join([crossJoin(t2)]).get(),
+      throwsA(isNot(isA<DriftWrappedException>())),
+    );
   });
 }

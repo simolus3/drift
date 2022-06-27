@@ -224,7 +224,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       } catch (e, s) {
         final foundTables = <String>{};
         for (final table in _queriedTables()) {
-          if (!foundTables.add(table.entityName)) {
+          if (!foundTables.add(table.aliasedName)) {
             _warnAboutDuplicate(e, s, table);
           }
         }
