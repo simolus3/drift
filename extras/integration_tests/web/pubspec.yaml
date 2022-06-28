@@ -1,7 +1,7 @@
 name: web
 description: Run integration tests for Moor on the web
 environment:
-  sdk: '>=2.4.0 <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
   drift:

@@ -1,0 +1,23 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          override_hash_and_equals_in_result_sets: true
+          use_column_name_as_json_key_when_defined_in_moor_file: true
+          generate_connect_constructor: true
+          compact_query_methods: true
+          write_from_json_string_constructor: true
+          raw_result_set_data: false
+          apply_converters_on_variables: true
+          generate_values_in_copy_with: true
+          named_parameters: false
+          new_sql_code_generation: true
+          scoped_dart_components: true
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.37"
+              modules:
+                - json1
+                - fts5

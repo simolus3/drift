@@ -164,7 +164,7 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
                   (v as List<dynamic>?)
                       ?.map((e) => $enumDecode(_$SqlModuleEnumMap, e))
                       .toList() ??
-                  []),
+                  const []),
           version: $checkedConvert(
               'version', (v) => _parseSqliteVersion(v as String?)),
         );

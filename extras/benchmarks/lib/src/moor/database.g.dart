@@ -6,7 +6,7 @@ part of 'database.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;
   final String value;
@@ -168,8 +168,6 @@ class $KeyValuesTable extends KeyValues
 
   @override
   Set<GeneratedColumn> get $primaryKey => {key};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
     return KeyValue.fromData(data,
