@@ -135,16 +135,15 @@ UsedTypeConverter? readTypeConverter(
   final appliesToJsonToo = helper.isJsonAwareTypeConverter(staticType, library);
 
   // Make the type converter support nulls by just mapping null to null if this
-  // converter is otherwise non-nullable in both directions but applied on a
-  // nullable column
-  final skipForNull = !dartTypeNullable && !sqlTypeNullable && columnIsNullable;
+  // converter is otherwise non-nullable in both directions.
+  final canBeSkippedForNulls = !dartTypeNullable && !sqlTypeNullable;
 
   if (sqlTypeNullable != columnIsNullable) {
     if (!columnIsNullable) {
       reportError('This column is non-nullable in the database, but has a '
           'type converter with a nullable SQL type, meaning that it may '
           "potentially map to `null` which can't be stored in the database.");
-    } else if (!skipForNull) {
+    } else if (!canBeSkippedForNulls) {
       final alternative = appliesToJsonToo
           ? 'JsonTypeConverter.asNullable'
           : 'NullAwareTypeConverter.wrap';
@@ -156,7 +155,7 @@ UsedTypeConverter? readTypeConverter(
     }
   }
 
-  _checkType(columnType, null, sqlType, library.typeProvider,
+  _checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
       library.typeSystem, reportError);
 
   return UsedTypeConverter(
@@ -166,7 +165,7 @@ UsedTypeConverter? readTypeConverter(
     dartTypeIsNullable: dartTypeNullable,
     sqlTypeIsNullable: sqlTypeNullable,
     alsoAppliesToJsonConversion: appliesToJsonToo,
-    skipForNulls: skipForNull,
+    canBeSkippedForNulls: canBeSkippedForNulls,
   );
 }
 
@@ -184,7 +183,7 @@ void _checkParameterType(
   }
 
   final nullableDartType = column.typeConverter != null
-      ? column.typeConverter!.mapsToNullableDart
+      ? column.typeConverter!.mapsToNullableDart(column.nullable)
       : column.nullableInDart;
 
   if (library.isNonNullableByDefault &&
@@ -197,6 +196,7 @@ void _checkParameterType(
 
   _checkType(
     column.type,
+    column.nullable,
     column.typeConverter,
     element.type,
     library.typeProvider,
@@ -207,6 +207,7 @@ void _checkParameterType(
 
 void _checkType(
   ColumnType columnType,
+  bool columnIsNullable,
   UsedTypeConverter? typeConverter,
   DartType typeToCheck,
   TypeProvider typeProvider,
@@ -216,7 +217,7 @@ void _checkType(
   DriftDartType expectedDartType;
   if (typeConverter != null) {
     expectedDartType = typeConverter.dartType;
-    if (typeConverter.skipForNulls) {
+    if (typeConverter.canBeSkippedForNulls && columnIsNullable) {
       typeToCheck = typeSystem.promoteToNonNull(typeToCheck);
     }
   } else {

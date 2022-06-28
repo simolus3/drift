@@ -75,7 +75,8 @@ class DriftDartType {
 extension OperationOnTypes on HasType {
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
-    return (nullable && !isArray) || typeConverter?.mapsToNullableDart == true;
+    return (nullable && !isArray) ||
+        typeConverter?.mapsToNullableDart(nullable) == true;
   }
 
   /// the Dart type of this column that can be handled by moors type mapping.
@@ -111,7 +112,7 @@ extension OperationOnTypes on HasType {
     final converter = typeConverter;
     if (converter != null) {
       var inner = converter.dartType.codeString(options);
-      if (converter.skipForNulls) inner += '?';
+      if (converter.canBeSkippedForNulls && nullable) inner += '?';
       return isArray ? 'List<$inner>' : inner;
     }
 

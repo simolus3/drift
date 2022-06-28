@@ -182,9 +182,18 @@ class QueryWriter {
     final dartLiteral = asDartLiteral(specialName ?? column.name);
     var code = 'row.read<$rawDartType>($dartLiteral)';
 
-    if (column.typeConverter != null) {
-      final converter = column.typeConverter;
-      code = '${_converter(converter!)}.fromSql($code)';
+    final converter = column.typeConverter;
+    if (converter != null) {
+      if (converter.canBeSkippedForNulls && column.nullable) {
+        // The type converter maps non-nullable types, but the column may be
+        // nullable in SQL => just map null to null and only invoke the type
+        // converter for non-null values.
+        code = 'NullAwareTypeConverter.wrapFromSql(${_converter(converter)}, '
+            '$code)';
+      } else {
+        // Just apply the type converter directly.
+        code = '${_converter(converter)}.fromSql($code)';
+      }
     }
     return code;
   }
@@ -861,9 +870,16 @@ class _ExpandedVariableWriter {
       final buffer = StringBuffer('Variable<$type>(');
       final capture = element.forCaptured;
 
-      if (element.typeConverter != null) {
-        // Apply the converter
-        buffer.write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
+      final converter = element.typeConverter;
+      if (converter != null) {
+        // Apply the converter.
+        if (element.nullable && converter.canBeSkippedForNulls) {
+          buffer.write('NullAwareTypeConverter.wrapToSql('
+              '${_converter(element.typeConverter!)}, $dartExpr)');
+        } else {
+          buffer
+              .write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
+        }
 
         final needsNullAssertion =
             !element.nullable && scope.generationOptions.nnbd;

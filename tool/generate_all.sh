@@ -4,13 +4,12 @@ set -e
 function generate() {
     echo "------------- Generate: $1 -------------"
     pushd $1 > /dev/null
-    rm -rf .dart_tool
-    dart pub get
+    dart pub upgrade
     dart run build_runner build --delete-conflicting-outputs
     popd > /dev/null
 }
 
-cd ..
+cd "$(dirname "$0")/.."
 generate 'drift'
 generate 'drift_dev'
 generate 'docs'

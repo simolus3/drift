@@ -1,4 +1,32 @@
 targets:
+  # This setup exists so that the main entrypoint (web/main.dart) gets compiled
+  # with dartdevc for debug builds while the worker is compiled with dart2js
+  # (since workers don't support the JS moduled emitted by dartdevc).
+  # In release builds (`--release` on the CLI), both entrypoints are compiled
+  # with dart2js.
+  #
+  # If you're ok with compiling everything with dart2js, just use
+  # `compiler: dartj2s` on the options of the default target and ignore the two
+  # additional targets here.
+  dart2js_archives:
+    auto_apply_builders: false
+    dependencies: [":$default", ":worker"]
+    builders:
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: true
+  worker:
+    auto_apply_builders: false
+    dependencies: [":$default"]
+    builders:
+      build_web_compilers:entrypoint:
+        enabled: true
+        generate_for:
+          - web/worker.dart
+        options:
+          compiler: dart2js
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
+
   $default:
     builders:
       drift_dev:
@@ -9,9 +37,11 @@ targets:
           generate_values_in_copy_with: true
           named_parameters: true
           new_sql_code_generation: true
-      build_web_compilers|entrypoint:
-        enabled: true
+      build_web_compilers:entrypoint:
         generate_for:
-          - web/worker.dart
-        options:
-          compiler: dart2js
+          # This one is compiled in the other target
+          exclude:
+            - "web/worker.dart"
+      # We have a designated target for this step.
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false

@@ -100,14 +100,17 @@ abstract class TableOrViewWriter {
     if (converter != null) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
-      final mappedType = converter.dartTypeCode(options);
+      final mappedType = converter.dartTypeCode(options, column.nullable);
+
+      final converterCode =
+          converter.tableAndField(forNullableColumn: column.nullable);
 
       type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
       expressionBuffer
         ..write('.withConverter<')
         ..write(mappedType)
         ..write('>(')
-        ..write(converter.tableAndField)
+        ..write(converterCode)
         ..write(')');
     }
 
@@ -311,17 +314,31 @@ class TableWriter extends TableOrViewWriter {
   void _writeConvertersAsStaticFields() {
     for (final converter in table.converters) {
       final typeName = converter.converterNameInCode(scope.generationOptions);
-      var code = converter.expression;
-
-      if (converter.skipForNulls) {
-        if (converter.alsoAppliesToJsonConversion) {
-          code = 'JsonTypeConverter.asNullable($code)';
-        } else {
-          code = 'NullAwareTypeConverter.wrap($code)';
-        }
-      }
+      final code = converter.expression;
 
       buffer.write('static $typeName ${converter.fieldName} = $code;');
+    }
+
+    // Generate wrappers for non-nullable type converters that are applied to
+    // nullable converters.
+    for (final column in table.columns) {
+      final converter = column.typeConverter;
+      if (converter != null &&
+          converter.canBeSkippedForNulls &&
+          column.nullable) {
+        final nullableTypeName = converter
+            .converterNameInCode(scope.generationOptions, makeNullable: true);
+
+        final wrap = converter.alsoAppliesToJsonConversion
+            ? 'JsonTypeConverter.asNullable'
+            : 'NullAwareTypeConverter.wrap';
+
+        final code = '$wrap(${converter.fieldName})';
+
+        buffer
+            .write('static $nullableTypeName ${converter.nullableFieldName} = '
+                '$code;');
+      }
     }
   }
 
