@@ -6,8 +6,6 @@ environment:
   sdk: '>=2.15.0 <3.0.0'
 
 dependencies:
-  json_annotation: ^4.5.0
-  json_serializable: ^6.2.0
   docsy:
     hosted: https://simonbinder.eu
     version: ^0.2.2
