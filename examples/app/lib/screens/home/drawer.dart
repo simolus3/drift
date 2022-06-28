@@ -69,7 +69,7 @@ class _CategoryDrawerEntry extends ConsumerWidget {
           padding: const EdgeInsets.only(right: 10),
           child: GestureDetector(
             onTap: () async {
-              final newColor = await _selectColor(context, category.color);
+              final newColor = await _selectColor(context, category.color!);
               if (newColor != null) {
                 final update = ref
                     .read(AppDatabase.provider)

@@ -6,7 +6,7 @@ part of 'saves_after_migration_regression_test.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class Foo extends DataClass implements Insertable<Foo> {
   final int id;
   Foo({@required this.id});
@@ -136,8 +136,6 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   Foo map(Map<String, dynamic> data, {String tablePrefix}) {
     return Foo.fromData(data,
@@ -279,8 +277,6 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
   @override
   Bar map(Map<String, dynamic> data, {String tablePrefix}) {
     return Bar.fromData(data,

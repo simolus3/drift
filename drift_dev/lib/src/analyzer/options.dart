@@ -203,7 +203,7 @@ class DialectOptions {
 
 @JsonSerializable()
 class SqliteAnalysisOptions {
-  @JsonKey(name: 'modules', defaultValue: [])
+  @JsonKey(name: 'modules')
   final List<SqlModule> modules;
 
   @JsonKey(fromJson: _parseSqliteVersion)

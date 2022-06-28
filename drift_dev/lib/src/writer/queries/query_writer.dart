@@ -183,12 +183,8 @@ class QueryWriter {
     var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
-      final nullableDartType = column.typeConverter!.mapsToNullableDart;
-      final needsAssert = !nullableDartType && generationOptions.nnbd;
-
       final converter = column.typeConverter;
       code = '${_converter(converter!)}.fromSql($code)';
-      if (needsAssert) code += '!';
     }
     return code;
   }

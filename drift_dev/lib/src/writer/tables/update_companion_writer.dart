@@ -194,7 +194,9 @@ class UpdateCompanionWriter {
           ..write(mapSetter)
           ..write('(converter.toSql($getterName.value)');
 
-        if (!column.nullable && scope.generationOptions.nnbd) {
+        if (!column.nullable &&
+            converter.sqlTypeIsNullable &&
+            scope.generationOptions.nnbd) {
           _buffer.write('!');
         }
         _buffer.write(');');

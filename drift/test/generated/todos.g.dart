@@ -37,7 +37,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['desc'] = Variable<String>(description);
     {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.toSql(priority)!);
+      map['priority'] = Variable<int>(converter.toSql(priority));
     }
     return map;
   }
@@ -162,7 +162,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (priority.present) {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.toSql(priority.value)!);
+      map['priority'] = Variable<int>(converter.toSql(priority.value));
     }
     return map;
   }
@@ -1109,7 +1109,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
     }
     if (custom.present) {
       final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.toSql(custom.value)!);
+      map['custom'] = Variable<String>(converter.toSql(custom.value));
     }
     return map;
   }
@@ -1689,7 +1689,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           tableWithoutPK,
         }).map((QueryRow row) =>
-        $TableWithoutPKTable.$converter0.fromSql(row.read<String>('custom'))!);
+        $TableWithoutPKTable.$converter0.fromSql(row.read<String>('custom')));
   }
 
   @override

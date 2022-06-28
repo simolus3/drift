@@ -10,8 +10,8 @@ part of 'database.dart';
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String name;
-  final Color color;
-  Category({required this.id, required this.name, required this.color});
+  final Color? color;
+  Category({required this.id, required this.name, this.color});
   factory Category.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Category(
@@ -20,7 +20,7 @@ class Category extends DataClass implements Insertable<Category> {
       name: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       color: $CategoriesTable.$converter0.fromSql(const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}color']))!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}color'])!),
     );
   }
   @override
@@ -49,7 +49,7 @@ class Category extends DataClass implements Insertable<Category> {
     return Category(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      color: serializer.fromJson<Color>(json['color']),
+      color: serializer.fromJson<Color?>(json['color']),
     );
   }
   @override
@@ -58,14 +58,18 @@ class Category extends DataClass implements Insertable<Category> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'color': serializer.toJson<Color>(color),
+      'color': serializer.toJson<Color?>(color),
     };
   }
 
-  Category copyWith({int? id, String? name, Color? color}) => Category(
+  Category copyWith(
+          {int? id,
+          String? name,
+          Value<Color?> color = const Value.absent()}) =>
+      Category(
         id: id ?? this.id,
         name: name ?? this.name,
-        color: color ?? this.color,
+        color: color.present ? color.value : this.color,
       );
   @override
   String toString() {
@@ -91,7 +95,7 @@ class Category extends DataClass implements Insertable<Category> {
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> name;
-  final Value<Color> color;
+  final Value<Color?> color;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -100,13 +104,13 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     required String name,
-    required Color color,
+    required Color? color,
   })  : name = Value(name),
         color = Value(color);
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<Color>? color,
+    Expression<Color?>? color,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -116,7 +120,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   }
 
   CategoriesCompanion copyWith(
-      {Value<int>? id, Value<String>? name, Value<Color>? color}) {
+      {Value<int>? id, Value<String>? name, Value<Color?>? color}) {
     return CategoriesCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -171,10 +175,10 @@ class $CategoriesTable extends Categories
       type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
-  late final GeneratedColumnWithTypeConverter<Color, int?> color =
+  late final GeneratedColumnWithTypeConverter<Color?, int?> color =
       GeneratedColumn<int?>('color', aliasedName, false,
               type: const IntType(), requiredDuringInsert: true)
-          .withConverter<Color>($CategoriesTable.$converter0);
+          .withConverter<Color?>($CategoriesTable.$converter0);
   @override
   List<GeneratedColumn> get $columns => [id, name, color];
   @override
@@ -212,7 +216,7 @@ class $CategoriesTable extends Categories
     return $CategoriesTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<Color, int> $converter0 = const ColorConverter();
+  static TypeConverter<Color?, int?> $converter0 = const ColorConverter();
 }
 
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {

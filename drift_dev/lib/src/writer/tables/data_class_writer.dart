@@ -269,8 +269,9 @@ class DataClassWriter {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
         final fieldName = converter!.tableAndField;
-        final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
-
+        final assertNotNull = !column.nullable &&
+            converter.sqlTypeIsNullable &&
+            scope.generationOptions.nnbd;
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)

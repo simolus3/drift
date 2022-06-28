@@ -171,8 +171,6 @@ class Users extends Table with TableInfo<Users, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   User map(Map<String, dynamic> data, {String tablePrefix}) {
     return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
