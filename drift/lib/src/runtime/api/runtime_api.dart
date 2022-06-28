@@ -26,7 +26,8 @@ class DriftRuntimeOptions {
   ///
   /// This is the function used with `logStatements: true` on databases and
   /// `debugLog` on isolates.
-  void Function(String) debugPrint = print;
+  void Function(String) debugPrint = (text) =>
+      RegExp('.{1,300}').allMatches(text).map((m) => m.group(0)).forEach(print);
 }
 
 /// Stores the [DriftRuntimeOptions] describing global drift behavior across
