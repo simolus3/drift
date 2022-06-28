@@ -94,7 +94,7 @@ CREATE TABLE users (
     );
 
     final implicitlyNullAware = table.columns[3];
-    expect(implicitlyNullAware.typeConverter?.skipForNulls, isTrue);
+    expect(implicitlyNullAware.typeConverter?.canBeSkippedForNulls, isTrue);
   });
 
   test('json converters in drift files', () {

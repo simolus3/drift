@@ -24,7 +24,7 @@ class Config extends DataClass implements Insertable<Config> {
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: ConfigTable.$converter0.fromSql(const IntType()
+      syncState: ConfigTable.$converter0n.fromSql(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
       syncStateImplicit: ConfigTable.$converter1.fromSql(const IntType()
           .mapFromDatabaseResponse(
@@ -39,7 +39,7 @@ class Config extends DataClass implements Insertable<Config> {
       map['config_value'] = Variable<String?>(configValue);
     }
     if (!nullToAbsent || syncState != null) {
-      final converter = ConfigTable.$converter0;
+      final converter = ConfigTable.$converter0n;
       map['sync_state'] = Variable<int?>(converter.toSql(syncState));
     }
     if (!nullToAbsent || syncStateImplicit != null) {
@@ -182,7 +182,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['config_value'] = Variable<String?>(configValue.value);
     }
     if (syncState.present) {
-      final converter = ConfigTable.$converter0;
+      final converter = ConfigTable.$converter0n;
       map['sync_state'] = Variable<int?>(converter.toSql(syncState.value));
     }
     if (syncStateImplicit.present) {
@@ -229,7 +229,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
               type: const IntType(),
               requiredDuringInsert: false,
               $customConstraints: '')
-          .withConverter<SyncType?>(ConfigTable.$converter0);
+          .withConverter<SyncType?>(ConfigTable.$converter0n);
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
   late final GeneratedColumnWithTypeConverter<SyncType?, int?>
@@ -281,11 +281,12 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
     return ConfigTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<SyncType?, int?> $converter0 =
-      NullAwareTypeConverter.wrap(const SyncTypeConverter());
+  static TypeConverter<SyncType, int> $converter0 = const SyncTypeConverter();
   static TypeConverter<SyncType?, int?> $converter1 =
       const NullAwareTypeConverter.wrap(
           EnumIndexConverter<SyncType>(SyncType.values));
+  static TypeConverter<SyncType?, int?> $converter0n =
+      NullAwareTypeConverter.wrap($converter0);
   @override
   bool get isStrict => true;
   @override
@@ -1476,7 +1477,7 @@ class MyViewData extends DataClass {
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: ConfigTable.$converter0.fromSql(const IntType()
+      syncState: ConfigTable.$converter0n.fromSql(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
       syncStateImplicit: ConfigTable.$converter1.fromSql(const IntType()
           .mapFromDatabaseResponse(
@@ -1579,7 +1580,7 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   late final GeneratedColumnWithTypeConverter<SyncType?, int?> syncState =
       GeneratedColumn<int?>('sync_state', aliasedName, true,
               type: const IntType())
-          .withConverter<SyncType?>(ConfigTable.$converter0);
+          .withConverter<SyncType?>(ConfigTable.$converter0n);
   late final GeneratedColumnWithTypeConverter<SyncType?, int?>
       syncStateImplicit = GeneratedColumn<int?>(
               'sync_state_implicit', aliasedName, true,
@@ -1677,7 +1678,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
-          Variable<int?>(ConfigTable.$converter0.toSql(var1)),
+          Variable<int?>(
+              NullAwareTypeConverter.wrapToSql(ConfigTable.$converter0, var1)),
           ...generatedpred.introducedVariables,
           for (var $ in var2) Variable<int?>(ConfigTable.$converter1.toSql($))
         ],
@@ -1775,8 +1777,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         rowid: row.read<int>('rowid'),
         configKey: row.read<String>('config_key'),
         configValue: row.read<String?>('config_value'),
-        syncState:
-            ConfigTable.$converter0.fromSql(row.read<int?>('sync_state')),
+        syncState: NullAwareTypeConverter.wrapFromSql(
+            ConfigTable.$converter0, row.read<int?>('sync_state')),
         syncStateImplicit: ConfigTable.$converter1
             .fromSql(row.read<int?>('sync_state_implicit')),
       );

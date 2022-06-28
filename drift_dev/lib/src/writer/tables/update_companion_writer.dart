@@ -188,16 +188,13 @@ class UpdateCompanionWriter {
       final converter = column.typeConverter;
       if (converter != null) {
         // apply type converter before writing the variable
-        final fieldName = '${table.entityInfoName}.${converter.fieldName}';
+        final fieldName =
+            converter.tableAndField(forNullableColumn: column.nullable);
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.toSql($getterName.value)');
-
-        if (!column.nullable && scope.generationOptions.nnbd) {
-          _buffer.write('!');
-        }
-        _buffer.write(');');
+          ..write('(converter.toSql($getterName.value)')
+          ..write(');');
       } else {
         // no type converter. Write variable directly
         _buffer

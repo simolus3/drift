@@ -37,7 +37,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['desc'] = Variable<String>(description);
     {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.toSql(priority)!);
+      map['priority'] = Variable<int>(converter.toSql(priority));
     }
     return map;
   }
@@ -162,7 +162,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (priority.present) {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.toSql(priority.value)!);
+      map['priority'] = Variable<int>(converter.toSql(priority.value));
     }
     return map;
   }
@@ -1109,7 +1109,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
     }
     if (custom.present) {
       final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.toSql(custom.value)!);
+      map['custom'] = Variable<String>(converter.toSql(custom.value));
     }
     return map;
   }
@@ -1246,7 +1246,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   factory PureDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return PureDefault(
-      txt: $PureDefaultsTable.$converter0.fromSql(const StringType()
+      txt: $PureDefaultsTable.$converter0n.fromSql(const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}insert'])),
     );
   }
@@ -1254,7 +1254,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || txt != null) {
-      final converter = $PureDefaultsTable.$converter0;
+      final converter = $PureDefaultsTable.$converter0n;
       map['insert'] = Variable<String?>(converter.toSql(txt));
     }
     return map;
@@ -1270,7 +1270,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
-      txt: $PureDefaultsTable.$converter0
+      txt: $PureDefaultsTable.$converter0n
           .fromJson(serializer.fromJson<String?>(json['txt'])),
     );
   }
@@ -1284,7 +1284,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'txt': serializer
-          .toJson<String?>($PureDefaultsTable.$converter0.toJson(txt)),
+          .toJson<String?>($PureDefaultsTable.$converter0n.toJson(txt)),
     };
   }
 
@@ -1333,7 +1333,7 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (txt.present) {
-      final converter = $PureDefaultsTable.$converter0;
+      final converter = $PureDefaultsTable.$converter0n;
       map['insert'] = Variable<String?>(converter.toSql(txt.value));
     }
     return map;
@@ -1359,7 +1359,7 @@ class $PureDefaultsTable extends PureDefaults
   late final GeneratedColumnWithTypeConverter<MyCustomObject?, String?> txt =
       GeneratedColumn<String?>('insert', aliasedName, true,
               type: const StringType(), requiredDuringInsert: false)
-          .withConverter<MyCustomObject?>($PureDefaultsTable.$converter0);
+          .withConverter<MyCustomObject?>($PureDefaultsTable.$converter0n);
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override
@@ -1388,8 +1388,10 @@ class $PureDefaultsTable extends PureDefaults
     return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter<MyCustomObject?, String?> $converter0 =
-      JsonTypeConverter.asNullable(const CustomJsonConverter());
+  static JsonTypeConverter<MyCustomObject, String> $converter0 =
+      const CustomJsonConverter();
+  static JsonTypeConverter<MyCustomObject?, String?> $converter0n =
+      JsonTypeConverter.asNullable($converter0);
 }
 
 class CategoryTodoCountViewData extends DataClass {
@@ -1689,7 +1691,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           tableWithoutPK,
         }).map((QueryRow row) =>
-        $TableWithoutPKTable.$converter0.fromSql(row.read<String>('custom'))!);
+        $TableWithoutPKTable.$converter0.fromSql(row.read<String>('custom')));
   }
 
   @override

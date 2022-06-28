@@ -20,7 +20,7 @@ class Category extends DataClass implements Insertable<Category> {
       name: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       color: $CategoriesTable.$converter0.fromSql(const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}color']))!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}color'])!),
     );
   }
   @override
@@ -30,7 +30,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['name'] = Variable<String>(name);
     {
       final converter = $CategoriesTable.$converter0;
-      map['color'] = Variable<int>(converter.toSql(color)!);
+      map['color'] = Variable<int>(converter.toSql(color));
     }
     return map;
   }
@@ -135,7 +135,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (color.present) {
       final converter = $CategoriesTable.$converter0;
-      map['color'] = Variable<int>(converter.toSql(color.value)!);
+      map['color'] = Variable<int>(converter.toSql(color.value));
     }
     return map;
   }
@@ -646,7 +646,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       return CategoriesWithCountResult(
         id: row.read<int?>('id'),
         name: row.read<String?>('name'),
-        color: $CategoriesTable.$converter0.fromSql(row.read<int?>('color')),
+        color: NullAwareTypeConverter.wrapFromSql(
+            $CategoriesTable.$converter0, row.read<int?>('color')),
         amount: row.read<int>('amount'),
       );
     });

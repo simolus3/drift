@@ -59,7 +59,7 @@ class DataClassWriter {
       ..write('({')
       ..write(columns.map((column) {
         final nullableDartType = column.typeConverter != null
-            ? column.typeConverter!.mapsToNullableDart
+            ? column.typeConverter!.mapsToNullableDart(column.nullable)
             : column.nullable;
 
         if (nullableDartType) {
@@ -143,10 +143,11 @@ class DataClassWriter {
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
         final type = column.innerColumnType(scope.generationOptions);
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
+        final converterField =
+            typeConverter.tableAndField(forNullableColumn: column.nullable);
         final notNull =
             !column.nullable && scope.generationOptions.nnbd ? '!' : '';
-        deserialized =
-            '${typeConverter.tableAndField}.fromJson($fromConverter)$notNull';
+        deserialized = '$converterField.fromJson($fromConverter)$notNull';
       } else {
         final type = column.dartTypeCode(scope.generationOptions);
 
@@ -183,7 +184,9 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        value = '${typeConverter.tableAndField}.toJson($value)';
+        final converterField =
+            typeConverter.tableAndField(forNullableColumn: column.nullable);
+        value = '$converterField.toJson($value)';
         dartType = '${column.innerColumnType(scope.generationOptions)}';
       }
 
@@ -268,14 +271,13 @@ class DataClassWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName = converter!.tableAndField;
-        final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
+        final fieldName =
+            converter!.tableAndField(forNullableColumn: column.nullable);
 
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
           ..write('(converter.toSql(${column.dartGetterName})');
-        if (assertNotNull) _buffer.write('!');
         _buffer.write(');');
       } else {
         // no type converter. Write variable directly
@@ -375,9 +377,8 @@ class RowMappingWriter {
       // result.
       if (column.typeConverter != null) {
         // stored as a static field
-        final converter = column.typeConverter!;
-        final loaded =
-            '${converter.table!.entityInfoName}.${converter.fieldName}';
+        final loaded = column.typeConverter!
+            .tableAndField(forNullableColumn: column.nullable);
         loadType = '$loaded.fromSql($loadType)';
       }
 
