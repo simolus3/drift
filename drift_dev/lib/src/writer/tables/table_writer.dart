@@ -73,7 +73,7 @@ abstract class TableOrViewWriter {
       }
     }
 
-    final innerType = column.innerColumnType(options);
+    final innerType = column.innerColumnType(options: options);
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer
       ..write(type)

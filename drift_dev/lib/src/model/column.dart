@@ -128,8 +128,10 @@ class MoorColumn implements HasDeclaration, HasType {
         ColumnType.real: 'RealColumn',
       }[type]!;
 
-  String innerColumnType(
-      [GenerationOptions options = const GenerationOptions()]) {
+  String innerColumnType({
+    GenerationOptions options = const GenerationOptions(),
+    bool checkNullable = false,
+  }) {
     String code;
 
     switch (type) {
@@ -158,7 +160,7 @@ class MoorColumn implements HasDeclaration, HasType {
 
     // We currently use nullable columns everywhere because it's not clear how
     // to express nullability in joins otherwise.
-    return options.nnbd ? '$code?' : code;
+    return options.nnbd && (!checkNullable || nullable) ? '$code?' : code;
   }
 
   SqlType sqlType() {

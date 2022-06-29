@@ -141,13 +141,12 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        final type = column.innerColumnType(scope.generationOptions);
+        final type = column.innerColumnType(
+            options: scope.generationOptions, checkNullable: true);
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
-        final notNull =
-            !column.nullable && scope.generationOptions.nnbd ? '!' : '';
-        deserialized = '$converterField.fromJson($fromConverter)$notNull';
+        deserialized = '$converterField.fromJson($fromConverter)';
       } else {
         final type = column.dartTypeCode(scope.generationOptions);
 
@@ -187,7 +186,8 @@ class DataClassWriter {
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
         value = '$converterField.toJson($value)';
-        dartType = '${column.innerColumnType(scope.generationOptions)}';
+        dartType =
+            '${column.innerColumnType(options: scope.generationOptions)}';
       }
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");
