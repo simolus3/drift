@@ -159,7 +159,8 @@ class MoorColumn implements HasDeclaration, HasType {
     }
 
     // We currently use nullable columns everywhere because it's not clear how
-    // to express nullability in joins otherwise.
+    // to express nullability in joins otherwise. When serializing data with
+    // JsonTypeConverter it needs to match the nullability of the column
     return options.nnbd && (!checkNullable || nullable) ? '$code?' : code;
   }
 
