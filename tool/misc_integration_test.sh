@@ -2,11 +2,11 @@
 
 EXIT_CODE=0
 
-#pushd extras/drift_postgres
-#echo "Running integration tests with Postgres"
-#dart pub upgrade
-#dart test || EXIT_CODE=$?
-#popd
+pushd extras/drift_postgres
+echo "Running integration tests with Postgres"
+dart pub upgrade
+dart test || EXIT_CODE=$?
+popd
 
 pushd examples/with_built_value
 echo "Running build runner in with_built_value"
