@@ -15,7 +15,7 @@ targets:
           new_sql_code_generation: true
           scoped_dart_components: true
           sql:
-            dialect: sqlite
+            dialect: postgres
             options:
               version: "3.37"
               modules:

@@ -37,6 +37,8 @@ targets:
           generate_values_in_copy_with: true
           named_parameters: true
           new_sql_code_generation: true
+          sql:
+            dialect: postgres
       build_web_compilers:entrypoint:
         generate_for:
           # This one is compiled in the other target
