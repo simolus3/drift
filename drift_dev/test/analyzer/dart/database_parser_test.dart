@@ -18,7 +18,10 @@ class MyDatabase extends _$MyDatabase {
     });
     addTearDown(state.close);
 
-    final file = (await state.analyze('package:a/main.dart')).currentResult!;
+    final fileState = await state.analyze('package:a/main.dart');
+    expect(fileState.errors.errors, isEmpty);
+
+    final file = fileState.currentResult!;
     final db = (file as ParsedDartFile).declaredDatabases.single;
 
     expect(db.schemaVersion, 13);
@@ -38,9 +41,35 @@ class MyDatabase extends _$MyDatabase {
     });
     addTearDown(state.close);
 
-    final file = (await state.analyze('package:a/main.dart')).currentResult!;
+    final fileState = await state.analyze('package:a/main.dart');
+    expect(fileState.errors.errors, isEmpty);
+
+    final file = fileState.currentResult!;
     final db = (file as ParsedDartFile).declaredDatabases.single;
 
     expect(db.schemaVersion, 23);
+  });
+
+  test('does not warn about missing tables parameter', () async {
+    final state = TestState.withContent({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'foo.drift'})
+class MyDatabase extends _$MyDatabase {
+
+}
+
+@DriftDatabase(include: {'foo.drift'}, tables: [])
+class MyDatabase2 extends _$MyDatabase {
+
+}
+''',
+      'a|lib/foo.drift': '',
+    });
+    addTearDown(state.close);
+
+    final fileState = await state.analyze('package:a/main.dart');
+    expect(fileState.errors.errors, isEmpty);
   });
 }
