@@ -17,7 +17,7 @@ class DataClassWriter {
     _buffer = scope.leaf();
   }
 
-  String get serializerType => scope.nullableType('ValueSerializer');
+  String get serializerType => 'ValueSerializer?';
 
   String get _runtimeOptions => scope.generationOptions.writeForMoorPackage
       ? 'moorRuntimeOptions'
@@ -65,7 +65,7 @@ class DataClassWriter {
         if (nullableDartType) {
           return 'this.${column.dartGetterName}';
         } else {
-          return '${scope.required} this.${column.dartGetterName}';
+          return 'required this.${column.dartGetterName}';
         }
       }).join(', '))
       ..write('});');
@@ -108,7 +108,7 @@ class DataClassWriter {
       ..write('factory $dataClassName.fromData')
       ..write('(Map<String, dynamic> data, ')
       ..write(includeUnusedDbColumn ? ' GeneratedDatabase db,' : '')
-      ..write('{${scope.nullableType('String')} prefix}) { \n')
+      ..write('{String? prefix}) { \n')
       ..write("final effectivePrefix = prefix ?? '';");
 
     final writer = RowMappingWriter(
@@ -211,7 +211,7 @@ class DataClassWriter {
         _buffer
           ..write('Value<$typeName> ${column.dartGetterName} ')
           ..write('= const Value.absent()');
-      } else if (!isNullable && scope.generationOptions.nnbd) {
+      } else if (!isNullable) {
         // We always use nullable parameters in copyWith, since all parameters
         // are optional. The !isNullable check is there to avoid a duplicate
         // question mark in the type name.
@@ -255,9 +255,9 @@ class DataClassWriter {
       if (column.isGenerated) continue;
 
       // We include all columns that are not null. If nullToAbsent is false, we
-      // also include null columns. When generating NNBD code, we can include
-      // non-nullable columns without an additional null check.
-      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      // also include null columns. Since we' generating NNBD code, we can
+      // include non-nullable columns without an additional null check.
+      final needsNullCheck = column.nullable;
       final needsScope = needsNullCheck || column.typeConverter != null;
       if (needsNullCheck) {
         _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null)');
@@ -316,7 +316,7 @@ class DataClassWriter {
         ..write(dartName)
         ..write(': ');
 
-      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      final needsNullCheck = column.nullable;
       if (needsNullCheck) {
         _buffer
           ..write(dartName)
@@ -369,7 +369,7 @@ class RowMappingWriter {
       final sqlType = 'const ${sqlTypes[column.type]}()';
       var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';
 
-      if (!column.nullable && options.nnbd) {
+      if (!column.nullable) {
         loadType += '!';
       }
 

@@ -20,11 +20,10 @@ mixin MoorBuilder on Builder {
   MoorOptions get options;
   bool get isForNewDriftPackage;
 
-  Writer createWriter({bool nnbd = false}) {
+  Writer createWriter() {
     return Writer(
       options,
       generationOptions: GenerationOptions(
-        nnbd: nnbd,
         writeForMoorPackage: !isForNewDriftPackage,
       ),
     );

@@ -43,7 +43,7 @@ usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25;
     expect(table.columns.map((c) => c.dartGetterName),
         ['id', 'name', 'field', 'another', 'differentJson']);
     expect(table.columns.map((c) => c.dartTypeCode()),
-        ['int', 'String', 'bool', 'DateTime', 'int']);
+        ['int', 'String', 'bool?', 'DateTime?', 'int?']);
     expect(table.columns.map((c) => c.getJsonKey()),
         ['id', 'name', 'field', 'another', 'myJsonKey']);
 

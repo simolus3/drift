@@ -28,32 +28,24 @@ class Database extends _$Database {}
 ''';
 
 void main() {
-  group('generates mutable classes if needed', () {
-    Future<void> _testWith(bool nnbd) async {
-      await testBuilder(
-        MoorPartBuilder(const BuilderOptions({'mutable_classes': true})),
-        {'a|lib/main.dart': nnbd ? _testInput : '//@dart=2.6\n$_testInput'},
-        reader: await PackageAssetReader.currentIsolate(),
-        outputs: {
-          'a|lib/main.moor.dart': _GeneratesWithoutFinalFields(
-            {'User', 'UsersCompanion', 'SomeQueryResult'},
-            isNullSafe: nnbd,
-          ),
-        },
-      );
-    }
-
-    test('null-safety', () => _testWith(true));
-    test('legacy', () => _testWith(false));
+  test('generates mutable classes if needed', () async {
+    await testBuilder(
+      MoorPartBuilder(const BuilderOptions({'mutable_classes': true})),
+      const {'a|lib/main.dart': _testInput},
+      reader: await PackageAssetReader.currentIsolate(),
+      outputs: const {
+        'a|lib/main.moor.dart': _GeneratesWithoutFinalFields(
+          {'User', 'UsersCompanion', 'SomeQueryResult'},
+        ),
+      },
+    );
   }, tags: 'analyzer');
 }
 
 class _GeneratesWithoutFinalFields extends Matcher {
   final Set<String> expectedWithoutFinals;
-  final bool isNullSafe;
 
-  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals,
-      {this.isNullSafe = false});
+  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals);
 
   @override
   Description describe(Description description) {
@@ -77,7 +69,7 @@ class _GeneratesWithoutFinalFields extends Matcher {
     final parsed = parseFile(
       path: '/foo.dart',
       featureSet: FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(2, isNullSafe ? 12 : 6, 0),
+        sdkLanguageVersion: Version(2, 12, 0),
         flags: const [],
       ),
       resourceProvider: resourceProvider,
@@ -122,6 +114,7 @@ class _GeneratesWithoutFinalFields extends Matcher {
   @override
   Description describeMismatch(dynamic item, Description mismatchDescription,
       Map matchState, bool verbose) {
-    return mismatchDescription.add(matchState['desc'] as String);
+    return mismatchDescription
+        .add((matchState['desc'] as String?) ?? 'Had syntax errors');
   }
 }

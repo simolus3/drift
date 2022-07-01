@@ -13,8 +13,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
     final parsed = await builder.analyzeDartFile(buildStep);
-    final writer =
-        builder.createWriter(nnbd: library.element.isNonNullableByDefault);
+    final writer = builder.createWriter();
 
     for (final dao in parsed.declaredDaos) {
       final classScope = writer.child();

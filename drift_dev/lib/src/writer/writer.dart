@@ -108,9 +108,6 @@ class GenerationOptions {
   /// source.
   final int? forSchema;
 
-  /// Whether to generate Dart code that supports non-nullable types.
-  final bool nnbd;
-
   /// Whether data classes should be generated.
   final bool writeDataClasses;
 
@@ -123,7 +120,6 @@ class GenerationOptions {
 
   const GenerationOptions({
     this.forSchema,
-    this.nnbd = false,
     this.writeDataClasses = true,
     this.writeCompanions = true,
     this.writeForMoorPackage = false,
@@ -132,10 +128,6 @@ class GenerationOptions {
   /// Whether, instead of generating the full database code, we're only
   /// generating a subset needed for schema verification.
   bool get isGeneratingForSchema => forSchema != null;
-
-  String nullableType(String withoutSuffix) {
-    return nnbd ? '$withoutSuffix?' : withoutSuffix;
-  }
 }
 
 class _LeafNode extends _Node {
@@ -180,15 +172,5 @@ extension WriterUtilsForColumns on MoorColumn {
     }
 
     return dartGetterName;
-  }
-}
-
-extension ScopeUtils on Scope {
-  String get required {
-    return generationOptions.nnbd ? 'required' : '@required';
-  }
-
-  String nullableType(String withoutSuffix) {
-    return generationOptions.nullableType(withoutSuffix);
   }
 }

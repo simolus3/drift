@@ -34,6 +34,6 @@ extension TypeUtils on DartType {
       return getDisplayString(withNullability: false);
     }
 
-    return getDisplayString(withNullability: options.nnbd);
+    return getDisplayString(withNullability: true);
   }
 }

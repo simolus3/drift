@@ -41,7 +41,7 @@ class ViewWriter extends TableOrViewWriter {
     buffer.writeln(' implements HasResultSet {');
 
     buffer
-      ..writeln('final ${scope.nullableType('String')} _alias;')
+      ..writeln('final String? _alias;')
       ..writeln(
           '@override final ${databaseWriter.dbClassName} attachedDatabase;')
       ..writeln('${view.entityInfoName}(this.attachedDatabase, '

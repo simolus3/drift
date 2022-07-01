@@ -21,9 +21,8 @@ void main() {
     final file = await state.analyze('package:a/main.moor');
     final fileState = file.currentResult as ParsedMoorFile;
 
-    final writer = Writer(
-        const MoorOptions.defaults(generateNamedParameters: true),
-        generationOptions: const GenerationOptions(nnbd: true));
+    final writer =
+        Writer(const MoorOptions.defaults(generateNamedParameters: true));
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(writer.writeGenerated(), contains('required List<int?> idList'));
@@ -44,9 +43,8 @@ void main() {
     final file = await state.analyze('package:a/main.moor');
     final fileState = file.currentResult as ParsedMoorFile;
 
-    final writer = Writer(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
-        generationOptions: const GenerationOptions(nnbd: true));
+    final writer =
+        Writer(const MoorOptions.defaults(newSqlCodeGeneration: true));
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -73,9 +71,8 @@ void main() {
     final file = await state.analyze('package:a/main.moor');
     final fileState = file.currentResult as ParsedMoorFile;
 
-    final writer = Writer(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
-        generationOptions: const GenerationOptions(nnbd: true));
+    final writer =
+        Writer(const MoorOptions.defaults(newSqlCodeGeneration: true));
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -112,10 +109,7 @@ void main() {
 
       expect(file.errors.errors, isEmpty);
 
-      final writer = Writer(
-        options,
-        generationOptions: const GenerationOptions(nnbd: true),
-      );
+      final writer = Writer(options);
       QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
       expect(writer.writeGenerated(), expectation);
@@ -178,10 +172,7 @@ void main() {
 
       expect(file.errors.errors, isEmpty);
 
-      final writer = Writer(
-        options,
-        generationOptions: const GenerationOptions(nnbd: true),
-      );
+      final writer = Writer(options);
       QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
       final result = writer.writeGenerated();
@@ -196,10 +187,8 @@ void main() {
 
       expect(file.errors.errors, isEmpty);
 
-      final writer = Writer(
-        const MoorOptions.defaults(newSqlCodeGeneration: false),
-        generationOptions: const GenerationOptions(nnbd: true),
-      );
+      final writer =
+          Writer(const MoorOptions.defaults(newSqlCodeGeneration: false));
 
       expect(
         () => QueryWriter(writer.child())

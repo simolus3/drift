@@ -85,7 +85,7 @@ class UpdateCompanionWriter {
         requiredColumns.add(column);
         final typeName = column.dartTypeCode(scope.generationOptions);
 
-        _buffer.write('${scope.required} $typeName $param,');
+        _buffer.write('required $typeName $param,');
       } else {
         _buffer.write('this.$param = const Value.absent(),');
       }
@@ -124,8 +124,7 @@ class UpdateCompanionWriter {
     for (final column in columns) {
       // todo (breaking change): This should not consider type converters.
       final typeName = column.dartTypeCode(scope.generationOptions);
-      final type = scope.nullableType('Expression<$typeName>');
-      _buffer.write('$type ${column.dartGetterName}, \n');
+      _buffer.write('Expression<$typeName>? ${column.dartGetterName}, \n');
     }
 
     _buffer
@@ -154,8 +153,7 @@ class UpdateCompanionWriter {
       first = false;
 
       final typeName = column.dartTypeCode(scope.generationOptions);
-      final valueType = scope.nullableType('Value<$typeName>');
-      _buffer.write('$valueType ${column.dartGetterName}');
+      _buffer.write('Value<$typeName>? ${column.dartGetterName}');
     }
 
     _buffer

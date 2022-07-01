@@ -170,7 +170,7 @@ class QueryWriter {
   String readingCode(ResultColumn column, GenerationOptions generationOptions,
       MoorOptions moorOptions) {
     var rawDartType = dartTypeNames[column.type];
-    if (column.nullable && generationOptions.nnbd) {
+    if (column.nullable) {
       rawDartType = '$rawDartType?';
     }
 
@@ -419,9 +419,7 @@ class QueryWriter {
             (!isNullable || isMarkedAsRequired) && defaultCode == null ||
                 options.namedParametersAlwaysRequired;
         if (isRequired) {
-          _buffer
-            ..write(scope.required)
-            ..write(' ');
+          _buffer.write('required ');
         }
 
         _buffer.write('$type ${optional.dartParameterName}');
@@ -881,9 +879,7 @@ class _ExpandedVariableWriter {
               .write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
         }
 
-        final needsNullAssertion =
-            !element.nullable && scope.generationOptions.nnbd;
-        if (needsNullAssertion) {
+        if (!element.nullable) {
           buffer.write('!');
         }
       } else if (capture != null) {

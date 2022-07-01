@@ -7,7 +7,6 @@ import 'package:drift_dev/src/analyzer/dart/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
-import 'package:drift_dev/writer.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
@@ -292,7 +291,7 @@ void main() {
               hasOverriddenSource ? isNotNull : isNull,
             )
             .having(
-              (e) => e.dartType.codeString(const GenerationOptions(nnbd: true)),
+              (e) => e.dartType.codeString(),
               'mappedType.codeString',
               toString,
             ),

@@ -134,7 +134,7 @@ class UsedTypeConverter {
 
   String dartTypeCode(GenerationOptions options, bool nullableInSql) {
     var type = dartType.codeString(options);
-    if (options.nnbd && (canBeSkippedForNulls && nullableInSql)) type += '?';
+    if (canBeSkippedForNulls && nullableInSql) type += '?';
 
     return type;
   }
@@ -142,7 +142,7 @@ class UsedTypeConverter {
   /// A suitable typename to store an instance of the type converter used here.
   String converterNameInCode(GenerationOptions options,
       {bool makeNullable = false}) {
-    var sqlDartType = sqlType.getDisplayString(withNullability: options.nnbd);
+    var sqlDartType = sqlType.getDisplayString(withNullability: true);
     if (makeNullable) sqlDartType += '?';
 
     final className =

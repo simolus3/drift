@@ -88,7 +88,7 @@ class ExistingRowClass {
             typeArguments: typeInstantiation,
             nullabilitySuffix: NullabilitySuffix.none,
           )
-          .getDisplayString(withNullability: options.nnbd);
+          .getDisplayString(withNullability: true);
     }
   }
 }

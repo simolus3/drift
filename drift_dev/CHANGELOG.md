@@ -2,6 +2,11 @@
 
 - Remove the `null_aware_type_converters` build option. Effectively, it is always
   turned on now.
+- Starting from this version, drift only supports generating non-nullable Dart code.
+  You'll have to at least opt your database code into null-safety to use this and
+  upcoming drift releases.
+
+These changes help reduce complexity in the generator.
 
 ## 1.7.0
 

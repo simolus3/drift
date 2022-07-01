@@ -1,26 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/features.dart';
 import 'package:args/command_runner.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/cli/cli.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:drift_dev/writer.dart';
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 
 class GenerateUtilsCommand extends Command {
   final MoorCli cli;
 
   GenerateUtilsCommand(this.cli) {
-    argParser.addFlag(
-      'null-safety',
-      defaultsTo: null,
-      help: 'Whether to generate null-safe test code.',
-    );
     argParser.addFlag(
       'data-classes',
       defaultsTo: false,
@@ -48,9 +40,6 @@ class GenerateUtilsCommand extends Command {
 
   @override
   Future<void> run() async {
-    final isNnbd = (argResults?['null-safety'] as bool?) ??
-        await _isCurrentPackageNullSafe();
-
     final isForMoor = argResults!.arguments.contains('moor_generator');
 
     final rest = argResults!.rest;
@@ -78,46 +67,15 @@ class GenerateUtilsCommand extends Command {
         outputDir,
         version,
         entities,
-        isNnbd,
         argResults?['data-classes'] as bool,
         argResults?['companions'] as bool,
         isForMoor,
       );
     }
 
-    await _writeLibraryFile(outputDir, schema.keys, isNnbd, isForMoor);
+    await _writeLibraryFile(outputDir, schema.keys, isForMoor);
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
-  }
-
-  Future<bool> _isCurrentPackageNullSafe() async {
-    PackageConfig? config;
-    try {
-      config = await findPackageConfig(Directory.current);
-    } on Object {
-      stderr.write('Could not determine whether to use null-safety. Please '
-          'run this command in a Dart project, or try running `pub get` first');
-      return false;
-    }
-
-    if (config == null) {
-      return false;
-    }
-
-    // Just use any file in the current package, the file doesn't have to exist.
-    final ownPackage =
-        config.packageOf(Uri.file(File('pubspec.yaml').absolute.path));
-    if (ownPackage == null) return false;
-
-    final version = ownPackage.languageVersion;
-    if (version == null) return false;
-
-    final featureSet = FeatureSet.fromEnableFlags2(
-      sdkLanguageVersion: Version(version.major, version.minor, 0),
-      flags: const [],
-    );
-
-    return featureSet.isEnabled(Feature.non_nullable);
   }
 
   Future<Map<int, List<MoorSchemaEntity>>> _parseSchema(
@@ -144,7 +102,6 @@ class GenerateUtilsCommand extends Command {
     Directory output,
     int version,
     List<MoorSchemaEntity> entities,
-    bool nnbd,
     bool dataClasses,
     bool companions,
     bool isForMoor,
@@ -153,7 +110,6 @@ class GenerateUtilsCommand extends Command {
       cli.project.moorOptions,
       generationOptions: GenerationOptions(
         forSchema: version,
-        nnbd: nnbd,
         writeCompanions: companions,
         writeDataClasses: dataClasses,
         writeForMoorPackage: isForMoor,
@@ -163,7 +119,7 @@ class GenerateUtilsCommand extends Command {
 
     final leaf = writer.leaf()
       ..writeln(_prefix)
-      ..writeDartVersion(nnbd);
+      ..writeln('//@dart=2.12');
 
     if (isForMoor) {
       leaf.writeln("import 'package:moor/moor.dart';");
@@ -181,11 +137,11 @@ class GenerateUtilsCommand extends Command {
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
   }
 
-  Future<void> _writeLibraryFile(Directory output, Iterable<int> versions,
-      bool nnbd, bool useMoorImports) {
+  Future<void> _writeLibraryFile(
+      Directory output, Iterable<int> versions, bool useMoorImports) {
     final buffer = StringBuffer()
       ..writeln(_prefix)
-      ..writeDartVersion(nnbd);
+      ..writeln('//@dart=2.12');
 
     if (useMoorImports) {
       buffer
@@ -229,10 +185,4 @@ class GenerateUtilsCommand extends Command {
   static final _filenames = RegExp(r'(?:moor|drift)_schema_v(\d+)\.json');
   static final _dartfmt = DartFormatter();
   static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.';
-}
-
-extension on StringBuffer {
-  void writeDartVersion(bool isNnbd) {
-    writeln(isNnbd ? '//@dart=2.12' : '//@dart=2.9');
-  }
 }

@@ -65,7 +65,7 @@ class DriftDartType {
       if (nullabilitySuffix == NullabilitySuffix.star) {
         return getDisplayString(withNullability: false);
       }
-      return getDisplayString(withNullability: options.nnbd);
+      return getDisplayString(withNullability: true);
     } else {
       return type.codeString(options);
     }
@@ -101,8 +101,7 @@ extension OperationOnTypes on HasType {
 
   String variableTypeCodeWithoutArray(
       [GenerationOptions options = const GenerationOptions()]) {
-    final innerHasSuffix = nullable && options.nnbd;
-    return innerHasSuffix ? '$variableTypeName?' : variableTypeName;
+    return nullable ? '$variableTypeName?' : variableTypeName;
   }
 
   /// The dart type that matches the values of this column. For instance, if a

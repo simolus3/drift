@@ -119,17 +119,15 @@ abstract class TableOrViewWriter {
       getterName: column.dartGetterName,
       returnType: type,
       code: expressionBuffer.toString(),
-      options: options,
       hasOverride: isOverride,
     );
   }
 
   void writeMappingMethod(Scope scope) {
     if (!scope.generationOptions.writeDataClasses) {
-      final nullableString = scope.nullableType('String');
       buffer.writeln('''
         @override
-        Never map(Map<String, dynamic> data, {$nullableString tablePrefix}) {
+        Never map(Map<String, dynamic> data, {$String? tablePrefix}) {
           throw UnsupportedError('TableInfo.map in schema verification code');
         }
       ''');
@@ -139,7 +137,7 @@ abstract class TableOrViewWriter {
     final dataClassName = tableOrView.dartTypeCode(scope.generationOptions);
 
     buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
-        '{${scope.nullableType('String')} tablePrefix}) {\n');
+        '{String? tablePrefix}) {\n');
 
     if (tableOrView.hasExistingRowClass) {
       buffer.write('final effectivePrefix = '
@@ -275,7 +273,7 @@ class TableWriter extends TableOrViewWriter {
       ..writeln('{')
       // write a GeneratedDatabase reference that is set in the constructor
       ..writeln('@override final GeneratedDatabase attachedDatabase;')
-      ..writeln('final ${scope.nullableType('String')} _alias;')
+      ..writeln('final String? _alias;')
       ..writeln(
           '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
 
@@ -363,8 +361,6 @@ class TableWriter extends TableOrViewWriter {
 
     const locals = {'instance', 'isInserting', 'context', 'data'};
 
-    final nonNullAssert = scope.generationOptions.nnbd ? '!' : '';
-
     for (final column in table.columns) {
       final getterName = column.thisIfNeeded(locals);
       final metaName = _fieldNameForColumnMeta(column);
@@ -383,7 +379,7 @@ class TableWriter extends TableOrViewWriter {
         ..write('context.handle('
             '$metaName, '
             '$getterName.isAcceptableOrUnknown('
-            'data[$columnNameString]$nonNullAssert, $metaName));')
+            'data[$columnNameString]!, $metaName));')
         ..write('}');
 
       if (table.isColumnRequiredForInsert(column)) {
