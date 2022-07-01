@@ -10,10 +10,10 @@ class _$Foo extends Foo {
   @override
   final User moorField;
 
-  factory _$Foo([void Function(FooBuilder) updates]) =>
+  factory _$Foo([void Function(FooBuilder)? updates]) =>
       (new FooBuilder()..update(updates))._build();
 
-  _$Foo._({this.moorField}) : super._() {
+  _$Foo._({required this.moorField}) : super._() {
     BuiltValueNullFieldError.checkNotNull(moorField, r'Foo', 'moorField');
   }
 
@@ -43,11 +43,11 @@ class _$Foo extends Foo {
 }
 
 class FooBuilder implements Builder<Foo, FooBuilder> {
-  _$Foo _$v;
+  _$Foo? _$v;
 
-  User _moorField;
-  User get moorField => _$this._moorField;
-  set moorField(User moorField) => _$this._moorField = moorField;
+  User? _moorField;
+  User? get moorField => _$this._moorField;
+  set moorField(User? moorField) => _$this._moorField = moorField;
 
   FooBuilder();
 
@@ -67,7 +67,7 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
   }
 
   @override
-  void update(void Function(FooBuilder) updates) {
+  void update(void Function(FooBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
