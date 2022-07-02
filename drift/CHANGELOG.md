@@ -10,6 +10,11 @@
 - Support nested transactions.
 - Fix nullability of `min`, `max` and `avg` in the Dart query builder.
 
+## 1.7.1
+
+- Fix the `NativeDatabase` not disposing statements if running them threw an
+  exception [#1917](https://github.com/simolus3/drift/issues/1917).
+
 ## 1.7.0
 
 - Add the `int64()` column builder to store large integers. These integers are
