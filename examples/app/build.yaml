@@ -20,7 +20,7 @@ targets:
           # features will be available. We depend on `sqlite3_flutter_libs`, which lets us use the latest
           # version with fts5 enabled.
           sql:
-            dialect: postgres
+            dialect: sqlite
             options:
               version: "3.38"
               modules: [fts5]
