@@ -15,6 +15,8 @@ targets:
           new_sql_code_generation: true
           scoped_dart_components: true
           sql:
+            # As sqlite3 is compatible with the postgres dialect (but not vice-versa), we're
+            # using this dialect so that we can run the tests on postgres as well.
             dialect: postgres
             options:
               version: "3.37"
