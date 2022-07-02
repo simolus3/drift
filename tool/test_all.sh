@@ -4,7 +4,6 @@ set -e
 function run_test() {
     echo "------------- Running test: $1 -------------"
     pushd $1 > /dev/null
-    rm -rf .dart_tool
     dart pub upgrade
     dart format -o none --set-exit-if-changed .
     dart analyze --fatal-infos --fatal-warnings
@@ -22,7 +21,6 @@ function run_test() {
 function run_test_flutter() {
     echo "------------- Running flutter test: $1 -------------"
     pushd $1 > /dev/null
-    rm -rf .dart_tool
     flutter pub upgrade
     flutter clean
     dart format -o none --set-exit-if-changed .
