@@ -191,7 +191,7 @@ abstract class _$MyDatabase extends GeneratedDatabase {
 
   Future<int> addEntry(String var1) {
     return customInsert(
-      'INSERT INTO entries (text) VALUES (?1)',
+      'INSERT INTO entries (text) VALUES (@1)',
       variables: [Variable<String>(var1)],
       updates: {entries},
     );

@@ -6,9 +6,9 @@ import 'package:postgres/postgres.dart';
 class PgDatabase extends DelegatedDatabase {
   /// Creates a drift database implementation from a postgres database
   /// [connection].
-  PgDatabase(PostgreSQLConnection connection)
+  PgDatabase(PostgreSQLConnection connection, {bool logStatements = false})
       : super(_PgDelegate(connection, connection),
-            isSequential: true, logStatements: true);
+            isSequential: true, logStatements: logStatements);
 
   @override
   SqlDialect get dialect => SqlDialect.postgres;

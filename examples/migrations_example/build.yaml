@@ -4,3 +4,4 @@ targets:
       drift_dev:
         options:
           generate_connect_constructor: true
+          new_sql_code_generation: true
