@@ -5,7 +5,7 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('VmDatabase.opened', () {
+  group('NativeDatabase.opened', () {
     test('disposes the underlying database by default', () async {
       final underlying = sqlite3.openInMemory();
       final db = NativeDatabase.opened(underlying);

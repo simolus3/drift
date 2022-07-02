@@ -81,26 +81,27 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   Future<void> runBatched(BatchedStatements statements) async {
-    final prepared = [
-      for (final stmt in statements.statements)
-        _db.prepare(stmt, checkNoTail: true),
-    ];
+    final prepared = <CommonPreparedStatement>[];
 
-    for (final application in statements.arguments) {
-      final stmt = prepared[application.statementIndex];
+    try {
+      for (final stmt in statements.statements) {
+        prepared.add(_db.prepare(stmt, checkNoTail: true));
+      }
 
-      stmt.execute(application.arguments);
-    }
+      for (final application in statements.arguments) {
+        final stmt = prepared[application.statementIndex];
 
-    for (final stmt in prepared) {
-      stmt.dispose();
+        stmt.execute(application.arguments);
+      }
+    } finally {
+      for (final stmt in prepared) {
+        stmt.dispose();
+      }
     }
 
     if (!isInTransaction) {
       await flush();
     }
-
-    return Future.value();
   }
 
   Future _runWithArgs(String statement, List<Object?> args) async {
@@ -108,8 +109,11 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       _db.execute(statement);
     } else {
       final stmt = _db.prepare(statement, checkNoTail: true);
-      stmt.execute(args);
-      stmt.dispose();
+      try {
+        stmt.execute(args);
+      } finally {
+        stmt.dispose();
+      }
     }
 
     if (!isInTransaction) {
@@ -137,10 +141,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _db.prepare(statement, checkNoTail: true);
-    final result = stmt.select(args);
-    stmt.dispose();
-
-    return Future.value(QueryResult.fromRows(result.toList()));
+    try {
+      final result = stmt.select(args);
+      return QueryResult.fromRows(result.toList());
+    } finally {
+      stmt.dispose();
+    }
   }
 
   @override
