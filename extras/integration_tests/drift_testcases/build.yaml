@@ -12,7 +12,6 @@ targets:
           apply_converters_on_variables: true
           generate_values_in_copy_with: true
           named_parameters: false
-          new_sql_code_generation: true
           scoped_dart_components: true
           sql:
             # As sqlite3 is compatible with the postgres dialect (but not vice-versa), we're

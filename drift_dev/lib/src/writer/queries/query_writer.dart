@@ -1,5 +1,3 @@
-import 'dart:math' show max;
-
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.dart';
@@ -12,9 +10,6 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'sql_writer.dart';
 
 const highestAssignedIndexVar = '\$arrayStartIndex';
-
-int _compareNodes(AstNode a, AstNode b) =>
-    a.firstPosition.compareTo(b.firstPosition);
 
 /// Writes the handling code for a query. The code emitted will be a method that
 /// should be included in a generated database or dao class.
@@ -37,14 +32,17 @@ class QueryWriter {
       ResultSetWriter(query, resultSetScope).write();
     }
 
-    // The new sql code generation generates query code from the parsed AST,
-    // which eliminates unnecessary whitespace and comments. These can sometimes
-    // have a semantic meaning though, for instance when they're used in
-    // columns. So, we transform the query to add an explicit alias to every
-    // column!
+    // We generate the Dart string literal for the SQL query by walking the
+    // parsed AST. This eliminates unecessary whitespace and comments in the
+    // generated code.
+    // In some cases, the whitespace has an impact on the semantic of the
+    // query. For instance, `SELECT 1 + 2` has a different column name than
+    // `SELECT 1+2`. To work around this, we transform the query to add an
+    // explicit alias to every column (since whitespace doesn't matter if the
+    // query is written as `SELECT 1+2 AS c0`).
     // We do this transformation so late because it shouldn't have an impact on
     // analysis, Dart getter names stay the same.
-    if (resultSet != null && options.newSqlCodeGeneration) {
+    if (resultSet != null) {
       _transformer = ExplicitAliasTransformer();
       _transformer.rewrite(query.root!);
 
@@ -66,13 +64,6 @@ class QueryWriter {
   }
 
   void _writeSelect(SqlSelectQuery select) {
-    if (select.hasNestedQuery && !scope.options.newSqlCodeGeneration) {
-      throw UnsupportedError(
-        'Using nested result queries (with `LIST`) requires the '
-        '`new_sql_code_generation` build option.',
-      );
-    }
-
     _writeSelectStatementCreator(select);
 
     if (!select.declaredInMoorFile && !options.compactQueryMethods) {
@@ -174,10 +165,7 @@ class QueryWriter {
       rawDartType = '$rawDartType?';
     }
 
-    String? specialName;
-    if (options.newSqlCodeGeneration) {
-      specialName = _transformer.newNameFor(column.sqlParserColumn!);
-    }
+    final specialName = _transformer.newNameFor(column.sqlParserColumn!);
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
     var code = 'row.read<$rawDartType>($dartLiteral)';
@@ -455,100 +443,7 @@ class QueryWriter {
   /// been expanded. For instance, 'SELECT * FROM t WHERE x IN ?' will be turned
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode(SqlQuery query) {
-    if (scope.options.newSqlCodeGeneration) {
-      return SqlWriter(scope.options, query: query).write();
-    } else {
-      return _legacyQueryCode(query);
-    }
-  }
-
-  String _legacyQueryCode(SqlQuery query) {
-    final root = query.root!;
-    final sql = query.fromContext!.sql;
-
-    // sort variables and placeholders by the order in which they appear
-    final toReplace = root.allDescendants
-        .where((node) =>
-            node is Variable ||
-            node is DartPlaceholder ||
-            node is NestedStarResultColumn)
-        .toList()
-      ..sort(_compareNodes);
-
-    final buffer = StringBuffer("'");
-
-    // Index nested results by their syntactic origin for faster lookups later
-    var doubleStarColumnToResolvedTable =
-        const <NestedStarResultColumn, NestedResultTable>{};
-    if (query is SqlSelectQuery) {
-      doubleStarColumnToResolvedTable = {
-        for (final nestedResult in query.resultSet.nestedResults)
-          if (nestedResult is NestedResultTable) nestedResult.from: nestedResult
-      };
-    }
-
-    var lastIndex = root.firstPosition;
-
-    void replaceNode(AstNode node, String content) {
-      // write everything that comes before this var into the buffer
-      final currentIndex = node.firstPosition;
-      final queryPart = sql.substring(lastIndex, currentIndex);
-      buffer.write(escapeForDart(queryPart));
-      lastIndex = node.lastPosition;
-
-      // write the replaced content
-      buffer.write(content);
-    }
-
-    for (final rewriteTarget in toReplace) {
-      if (rewriteTarget is Variable) {
-        final moorVar = query.variables.singleWhere(
-            (f) => f.variable.resolvedIndex == rewriteTarget.resolvedIndex);
-
-        if (moorVar.isArray) {
-          replaceNode(rewriteTarget, '(\$${expandedName(moorVar)})');
-        }
-      } else if (rewriteTarget is DartPlaceholder) {
-        final moorPlaceholder =
-            query.placeholders.singleWhere((p) => p.astNode == rewriteTarget);
-
-        replaceNode(rewriteTarget,
-            '\${${placeholderContextName(moorPlaceholder)}.sql}');
-      } else if (rewriteTarget is NestedStarResultColumn) {
-        final result = doubleStarColumnToResolvedTable[rewriteTarget];
-        if (result == null) continue;
-
-        // weird cast here :O
-        final prefix =
-            (query as SqlSelectQuery).resultSet.nestedPrefixFor(result);
-        final table = rewriteTarget.tableName;
-
-        // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
-        final expanded = StringBuffer();
-        var isFirst = true;
-
-        for (final column in result.table.columns) {
-          if (isFirst) {
-            isFirst = false;
-          } else {
-            expanded.write(', ');
-          }
-
-          final columnName = column.name.name;
-          expanded.write('"$table"."$columnName" AS "$prefix.$columnName"');
-        }
-
-        replaceNode(rewriteTarget, expanded.toString());
-      }
-    }
-
-    // write the final part after the last variable, plus the ending '
-    final lastPosition = root.lastPosition;
-    buffer
-      ..write(escapeForDart(sql.substring(lastIndex, lastPosition)))
-      ..write("'");
-
-    return buffer.toString();
+    return SqlWriter(scope.options, query: query).write();
   }
 
   void _writeReadsFrom(SqlSelectQuery select) {
@@ -604,10 +499,30 @@ class _ExpandedDeclarationWriter {
   _ExpandedDeclarationWriter(this.query, this.options, this._buffer);
 
   void writeExpandedDeclarations() {
-    if (options.newSqlCodeGeneration) {
-      _writeExpandedDeclarationsForNewQueryCode();
-    } else {
-      _writeLegacyExpandedDeclarations();
+    // When the SQL query is written to a Dart string, we give each variable an
+    // eplixit index (e.g `?2`), regardless of how it was declared in the
+    // source.
+    // Array variables are converted into multiple variables at runtime, but
+    // let's give variables before that an index, all other variables can be
+    // turned into explicit indices though. We ensure that array variables have
+    // higher indices than other variables.
+    var index = 0;
+    for (final variable in query.variables) {
+      if (!variable.isArray) {
+        // Re-assign continous indices to non-array variables
+        highestIndexBeforeArray = variable.index = ++index;
+      }
+    }
+
+    needsIndexCounter = true;
+    for (final element in query.elementsWithNestedQueries()) {
+      if (element is FoundVariable) {
+        if (element.isArray) {
+          _writeArrayVariable(element);
+        }
+      } else if (element is FoundDartPlaceholder) {
+        _writeDartPlaceholder(element);
+      }
     }
   }
 
@@ -652,57 +567,6 @@ class _ExpandedDeclarationWriter {
     }
   }
 
-  void _writeLegacyExpandedDeclarations() {
-    for (final variable in query.variables) {
-      // Variables use an explicit index, we need to know the start index at
-      // runtime (can be dynamic when placeholders or other arrays appear before
-      // this one)
-      if (variable.isArray) {
-        needsIndexCounter = true;
-        break;
-      }
-
-      highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
-    }
-
-    // query.elements are guaranteed to be sorted in the order in which they're
-    // going to have an effect when expanded. See TypeMapper.extractElements for
-    // the gory details.
-    for (final element in query.elements) {
-      if (element is FoundVariable) {
-        if (element.isArray) {
-          _writeArrayVariable(element);
-        }
-      } else if (element is FoundDartPlaceholder) {
-        _writeDartPlaceholder(element);
-      }
-    }
-  }
-
-  void _writeExpandedDeclarationsForNewQueryCode() {
-    // In the new code generation, each variable is given an explicit index,
-    // regardless of how it was declared. in the source. We then start writing
-    // expanded declarations with higher indices, but otherwise in order.
-    var index = 0;
-    for (final variable in query.variables) {
-      if (!variable.isArray) {
-        // Re-assign continous indices to non-array variables
-        highestIndexBeforeArray = variable.index = ++index;
-      }
-    }
-
-    needsIndexCounter = true;
-    for (final element in query.elementsWithNestedQueries()) {
-      if (element is FoundVariable) {
-        if (element.isArray) {
-          _writeArrayVariable(element);
-        }
-      } else if (element is FoundDartPlaceholder) {
-        _writeDartPlaceholder(element);
-      }
-    }
-  }
-
   void _writeDartPlaceholder(FoundDartPlaceholder element) {
     String useExpression() {
       if (element.writeAsScopedFunction(options)) {
@@ -738,11 +602,9 @@ class _ExpandedDeclarationWriter {
         ..write(r'$writeInsertable(this.')
         ..write(table?.dbGetterName)
         ..write(', ')
-        ..write(useExpression());
+        ..write(useExpression())
+        ..write(', startIndex: $highestAssignedIndexVar');
 
-      if (options.newSqlCodeGeneration) {
-        _buffer.write(', startIndex: $highestAssignedIndexVar');
-      }
       _buffer.write(');\n');
     } else {
       _buffer
@@ -751,11 +613,9 @@ class _ExpandedDeclarationWriter {
       if (query.hasMultipleTables) {
         _buffer.write(', hasMultipleTables: true');
       }
-      if (options.newSqlCodeGeneration) {
-        _buffer.write(', startIndex: $highestAssignedIndexVar');
-      }
-
-      _buffer.write(');\n');
+      _buffer
+        ..write(', startIndex: $highestAssignedIndexVar')
+        ..write(');\n');
     }
 
     // similar to the case for expanded array variables, we need to
@@ -794,13 +654,7 @@ class _ExpandedVariableWriter {
 
   void writeVariables() {
     _buffer.write('variables: [');
-
-    if (scope.options.newSqlCodeGeneration) {
-      _writeNewVariables();
-    } else {
-      _writeLegacyVariables();
-    }
-
+    _writeNewVariables();
     _buffer.write(']');
   }
 
@@ -832,18 +686,6 @@ class _ExpandedVariableWriter {
         _writeElement(element);
         first = false;
       }
-    }
-  }
-
-  void _writeLegacyVariables() {
-    var first = true;
-    for (final element in query.elements) {
-      if (!first) {
-        _buffer.write(', ');
-      }
-      first = false;
-
-      _writeElement(element);
     }
   }
 

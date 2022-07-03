@@ -30,7 +30,6 @@ targets:
           # These options are generally recommended: https://drift.simonbinder.eu/docs/advanced-features/builder_options/#recommended-options
           apply_converters_on_variables: true
           generate_values_in_copy_with: true
-          new_sql_code_generation: true
           scoped_dart_components: true
 
       # Configuring this builder isn't required for most apps. In our case, we

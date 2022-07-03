@@ -38,7 +38,7 @@ class SpecialQuery implements MoorSchemaEntity {
 
   String formattedSql(MoorOptions options) {
     final decl = declaration;
-    if (decl is MoorSpecialQueryDeclaration && options.newSqlCodeGeneration) {
+    if (decl is MoorSpecialQueryDeclaration) {
       final writer = SqlWriter(options, escapeForDart: false);
       return writer.writeSql(decl.node.statement);
     }

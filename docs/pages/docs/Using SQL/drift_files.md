@@ -201,9 +201,6 @@ Internally, drift will split this query into two separate queries:
 While `LIST()` subqueries are a very powerful feature, they can be costly when the outer query
 has lots of rows (as the inner query is executed for each outer row).
 
-Also, as `LIST()` needs a semantic rewrite of the original statement, this feature is only
-supported with the `new_sql_code_generation` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}).
-
 ## Dart interop
 Drift files work perfectly together with drift's existing Dart API:
 

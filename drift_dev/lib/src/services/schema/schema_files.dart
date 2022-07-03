@@ -70,8 +70,7 @@ class SchemaWriter {
       type = 'view';
       data = {
         'name': entity.name,
-        'sql': entity
-            .createSql(const MoorOptions.defaults(newSqlCodeGeneration: true)),
+        'sql': entity.createSql(const MoorOptions.defaults()),
         'dart_data_name': entity.dartTypeName,
         'dart_info_name': entity.entityInfoName,
         'columns': [for (final column in entity.columns) _columnData(column)],

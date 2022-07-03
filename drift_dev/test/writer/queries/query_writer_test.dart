@@ -43,8 +43,7 @@ void main() {
     final file = await state.analyze('package:a/main.moor');
     final fileState = file.currentResult as ParsedMoorFile;
 
-    final writer =
-        Writer(const MoorOptions.defaults(newSqlCodeGeneration: true));
+    final writer = Writer(const MoorOptions.defaults());
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -71,8 +70,7 @@ void main() {
     final file = await state.analyze('package:a/main.moor');
     final fileState = file.currentResult as ParsedMoorFile;
 
-    final writer =
-        Writer(const MoorOptions.defaults(newSqlCodeGeneration: true));
+    final writer = Writer(const MoorOptions.defaults());
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -115,22 +113,9 @@ void main() {
       expect(writer.writeGenerated(), expectation);
     }
 
-    test('with the old query generator', () {
-      return _runTest(
-        const MoorOptions.defaults(),
-        allOf(
-          contains(r'var $arrayStartIndex = 2;'),
-          contains(r'SELECT * FROM tbl WHERE a = :a AND b IN ($expandedb) '
-              'AND c = :c'),
-          contains(r'variables: [Variable<String?>(a), for (var $ in b) '
-              r'Variable<String?>($), Variable<String?>(c)]'),
-        ),
-      );
-    });
-
     test('with the new query generator', () {
       return _runTest(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        const MoorOptions.defaults(),
         allOf(
           contains(r'var $arrayStartIndex = 3;'),
           contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
@@ -181,25 +166,9 @@ void main() {
       }
     }
 
-    test('should error with old generator', () async {
-      final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedMoorFile;
-
-      expect(file.errors.errors, isEmpty);
-
-      final writer =
-          Writer(const MoorOptions.defaults(newSqlCodeGeneration: false));
-
-      expect(
-        () => QueryWriter(writer.child())
-            .write(fileState.resolvedQueries!.single),
-        throwsA(isA<UnsupportedError>()),
-      );
-    });
-
     test('should generate correct queries with variables', () {
       return _runTest(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        const MoorOptions.defaults(),
         [
           contains(
             r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
@@ -219,7 +188,7 @@ void main() {
 
     test('should generate correct data class', () {
       return _runTest(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        const MoorOptions.defaults(),
         [
           contains('QueryNestedQuery0({this.b,this.c,})'),
           contains('QueryResult({this.a,required this.nestedQuery0,})'),
