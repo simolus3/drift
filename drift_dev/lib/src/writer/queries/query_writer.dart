@@ -19,7 +19,7 @@ class QueryWriter {
   late final ExplicitAliasTransformer _transformer;
   final StringBuffer _buffer;
 
-  MoorOptions get options => scope.writer.options;
+  DriftOptions get options => scope.writer.options;
 
   QueryWriter(this.scope) : _buffer = scope.leaf();
 
@@ -159,7 +159,7 @@ class QueryWriter {
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
   String readingCode(ResultColumn column, GenerationOptions generationOptions,
-      MoorOptions moorOptions) {
+      DriftOptions moorOptions) {
     var rawDartType = dartTypeNames[column.type];
     if (column.nullable) {
       rawDartType = '$rawDartType?';
@@ -489,7 +489,7 @@ String _converter(UsedTypeConverter converter) {
 
 class _ExpandedDeclarationWriter {
   final SqlQuery query;
-  final MoorOptions options;
+  final DriftOptions options;
   final StringBuffer _buffer;
 
   bool indexCounterWasDeclared = false;

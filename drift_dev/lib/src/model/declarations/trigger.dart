@@ -5,14 +5,15 @@ abstract class TriggerDeclaration extends Declaration {
   String get createSql;
 }
 
-class MoorTriggerDeclaration implements MoorDeclaration, TriggerDeclaration {
+class DriftTriggerDeclaration
+    implements DriftFileDeclaration, TriggerDeclaration {
   @override
   final SourceRange declaration;
 
   @override
   final CreateTriggerStatement node;
 
-  MoorTriggerDeclaration.fromNodeAndFile(this.node, FoundFile file)
+  DriftTriggerDeclaration.fromNodeAndFile(this.node, FoundFile file)
       : declaration = SourceRange.fromNodeAndFile(node, file);
 
   @override

@@ -61,8 +61,8 @@ class Task {
     // todo we force that moor files are analyzed first because they contain
     // resolved queries which are copied into database accessors. Can we find
     // a way to remove this special-handling?
-    final moorFiles = _analyzedFiles.where((f) => f.type == FileType.moor);
-    final otherFiles = _analyzedFiles.where((f) => f.type != FileType.moor);
+    final moorFiles = _analyzedFiles.where((f) => f.type == FileType.drift);
+    final otherFiles = _analyzedFiles.where((f) => f.type != FileType.drift);
 
     for (final moorFile in moorFiles) {
       moorFile.errors.clearNonParsingErrors();
@@ -95,15 +95,15 @@ class Task {
     final resolvedImports = <FoundFile>{};
 
     switch (file.type) {
-      case FileType.moor:
+      case FileType.drift:
         final content = await backend.readMoor(file.uri);
         final step = createdStep = ParseMoorStep(this, file, content);
 
-        ParsedMoorFile parsed;
+        ParsedDriftFile parsed;
         try {
           parsed = await step.parseFile();
         } on Exception catch (e) {
-          file.errors.report(MoorError(
+          file.errors.report(DriftError(
             severity: Severity.error,
             message: 'Could not parse file: $e',
           )..wasDuringParsing = true);
@@ -115,7 +115,7 @@ class Task {
         for (final import in parsed.imports) {
           final found = await _resolveOrReportError(file, import.importedFile,
               (errorMsg) {
-            step.reportError(ErrorInMoorFile(
+            step.reportError(ErrorInDriftFile(
               span: import.importString!.span,
               severity: Severity.error,
               message: errorMsg,
@@ -143,7 +143,7 @@ class Task {
         file.currentResult = parsed;
 
         final daosAndDatabases = parsed.declaredDaos
-            .cast<BaseMoorAccessor>()
+            .cast<BaseDriftAccessor>()
             .followedBy(parsed.declaredDatabases);
 
         for (final accessor in daosAndDatabases) {
@@ -212,9 +212,10 @@ class Task {
       yield available;
 
       var importsFromHere = const Iterable<FoundFile>.empty();
-      if (available.type == FileType.moor) {
-        importsFromHere =
-            (available.currentResult as ParsedMoorFile).resolvedImports!.values;
+      if (available.type == FileType.drift) {
+        importsFromHere = (available.currentResult as ParsedDriftFile)
+            .resolvedImports!
+            .values;
       }
 
       for (final next in importsFromHere) {
@@ -235,7 +236,7 @@ class Task {
       case FileType.dartLibrary:
         step = AnalyzeDartStep(this, file)..analyze();
         break;
-      case FileType.moor:
+      case FileType.drift:
         final analyzeMoor = step = AnalyzeMoorStep(this, file);
         await analyzeMoor.analyze();
         break;

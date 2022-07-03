@@ -37,7 +37,7 @@ void main() {
     expect(file.errors.errors, hasLength(1));
     expect(
       file.errors.errors.single,
-      isA<ErrorInMoorFile>()
+      isA<ErrorInDriftFile>()
           .having(
             (e) => e.message,
             'message',

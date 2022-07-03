@@ -28,7 +28,7 @@ class MoorDriver {
   MoorDriver(this._resourceProvider,
       {required String contextRoot,
       String? sdkPath,
-      MoorOptions options = const MoorOptions.defaults()}) {
+      DriftOptions options = const DriftOptions.defaults()}) {
     final overlayed = OverlayResourceProvider(_resourceProvider);
     final collection = AnalysisContextCollection(
         includedPaths: [contextRoot],
@@ -44,7 +44,7 @@ class MoorDriver {
   MoorDriver.forContext(this._resourceProvider, this.context) {
     final overlayed = OverlayResourceProvider(_resourceProvider);
     backend = StandaloneBackend(context, overlayed);
-    session = MoorSession(backend, options: const MoorOptions.defaults());
+    session = MoorSession(backend, options: const DriftOptions.defaults());
   }
 
   bool _ownsFile(String path) =>
@@ -85,7 +85,7 @@ class MoorDriver {
     }
   }
 
-  /// Attempt to load the appropriate [MoorOptions] by reading the `build.yaml`
+  /// Attempt to load the appropriate [DriftOptions] by reading the `build.yaml`
   /// located in the context root.
   ///
   /// When something fails, the default options will be used an an error message

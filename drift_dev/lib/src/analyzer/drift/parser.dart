@@ -1,6 +1,6 @@
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/drift/create_table_reader.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/moor/create_table_reader.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -13,7 +13,7 @@ class MoorParser {
 
   MoorParser(this.step, this.helper);
 
-  Future<ParsedMoorFile> parseAndAnalyze() async {
+  Future<ParsedDriftFile> parseAndAnalyze() async {
     final engine = step.task.session.spawnEngine();
     final result = engine.parseDriftFile(step.content);
     final parsedFile = result.rootNode as DriftFile;
@@ -22,7 +22,7 @@ class MoorParser {
     final queryDeclarations = <DeclaredMoorQuery>[];
     final importStatements = <ImportStatement>[];
 
-    final createdEntities = <MoorSchemaEntity>[];
+    final createdEntities = <DriftSchemaEntity>[];
 
     for (final parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
@@ -48,7 +48,7 @@ class MoorParser {
               parsedStmt.identifier as SpecialStatementIdentifier;
           if (identifier.specialName != 'create') {
             step.reportError(
-              ErrorInMoorFile(
+              ErrorInDriftFile(
                 span: identifier.nameToken!.span,
                 message: 'Only @create is supported at the moment.',
               ),
@@ -61,7 +61,7 @@ class MoorParser {
     }
 
     for (final error in result.errors) {
-      step.reportError(ErrorInMoorFile(
+      step.reportError(ErrorInDriftFile(
         severity: Severity.error,
         span: error.token.span,
         message: error.message,
@@ -75,7 +75,7 @@ class MoorParser {
       }
     }
 
-    final analyzedFile = ParsedMoorFile(
+    final analyzedFile = ParsedDriftFile(
       result,
       declaredEntities: createdEntities,
       queries: queryDeclarations,

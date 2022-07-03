@@ -41,7 +41,7 @@ CREATE TABLE friendships (
       expect(
         table.references,
         [
-          const TypeMatcher<MoorTable>()
+          const TypeMatcher<DriftTable>()
               .having((table) => table.displayName, 'displayName', 'users'),
         ],
       );
@@ -75,9 +75,9 @@ END;
       expect(
         trigger.references,
         {
-          const TypeMatcher<MoorTable>().having(
+          const TypeMatcher<DriftTable>().having(
               (table) => table.displayName, 'displayName', 'friendships'),
-          const TypeMatcher<MoorTable>()
+          const TypeMatcher<DriftTable>()
               .having((table) => table.displayName, 'displayName', 'users'),
         },
       );
@@ -102,7 +102,7 @@ CREATE INDEX idx ON users (name);
 
       final trigger = file.currentResult!.declaredEntities.single as MoorIndex;
       expect(trigger.references, {
-        const TypeMatcher<MoorTable>()
+        const TypeMatcher<DriftTable>()
             .having((table) => table.displayName, 'displayName', 'users'),
       });
     });

@@ -14,7 +14,7 @@ part 'options.g.dart';
   fieldRename: FieldRename.snake,
   createToJson: false,
 )
-class MoorOptions {
+class DriftOptions {
   static const _defaultSqliteVersion = SqliteVersion.v3(34);
 
   /// Whether moor should generate a `fromJsonString` factory for data classes.
@@ -99,7 +99,7 @@ class MoorOptions {
   final bool scopedDartComponents;
 
   @internal
-  const MoorOptions.defaults({
+  const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
     this.compactQueryMethods = false,
@@ -121,7 +121,7 @@ class MoorOptions {
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
   });
 
-  MoorOptions({
+  DriftOptions({
     required this.generateFromJsonStringConstructor,
     required this.overrideHashAndEqualsInResultSets,
     required this.compactQueryMethods,
@@ -161,7 +161,7 @@ class MoorOptions {
     }
   }
 
-  factory MoorOptions.fromJson(Map json) => _$MoorOptionsFromJson(json);
+  factory DriftOptions.fromJson(Map json) => _$DriftOptionsFromJson(json);
 
   SqliteAnalysisOptions? get sqliteOptions {
     return dialect?.options ?? sqliteAnalysisOptions;

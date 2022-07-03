@@ -13,7 +13,7 @@ import 'package:sqlparser/utils/find_referenced_tables.dart';
 import 'required_variables.dart';
 
 abstract class BaseAnalyzer {
-  final List<MoorTable> tables;
+  final List<DriftTable> tables;
   final List<MoorView> views;
   final Step step;
 
@@ -38,13 +38,13 @@ abstract class BaseAnalyzer {
   }
 
   @protected
-  Iterable<MoorSchemaEntity> findReferences(AstNode node,
+  Iterable<DriftSchemaEntity> findReferences(AstNode node,
       {bool includeViews = true}) {
     final finder = ReferencedTablesVisitor();
     node.acceptWithoutArg(finder);
 
     var entities =
-        finder.foundTables.map<MoorSchemaEntity?>(mapper.tableToMoor);
+        finder.foundTables.map<DriftSchemaEntity?>(mapper.tableToMoor);
     if (includeViews) {
       entities = entities.followedBy(finder.foundViews.map(mapper.viewToMoor));
     }
@@ -65,11 +65,11 @@ abstract class BaseAnalyzer {
   @protected
   void report(AnalysisError error,
       {String Function()? msg, Severity? severity}) {
-    if (step.file.type == FileType.moor) {
+    if (step.file.type == FileType.drift) {
       step.reportError(
-          ErrorInMoorFile.fromSqlParser(error, overrideSeverity: severity));
+          ErrorInDriftFile.fromSqlParser(error, overrideSeverity: severity));
     } else {
-      step.reportError(MoorError(
+      step.reportError(DriftError(
         severity: severity!,
         message: msg!(),
       ));
@@ -93,7 +93,7 @@ class SqlAnalyzer extends BaseAnalyzer {
 
   final List<SqlQuery> foundQueries = [];
 
-  SqlAnalyzer(Step step, List<MoorTable> tables, List<MoorView> views,
+  SqlAnalyzer(Step step, List<DriftTable> tables, List<MoorView> views,
       this.definedQueries)
       : super(tables, views, step);
 
@@ -125,7 +125,7 @@ class SqlAnalyzer extends BaseAnalyzer {
           }
         }
       } catch (e, s) {
-        step.reportError(MoorError(
+        step.reportError(DriftError(
             severity: Severity.criticalError,
             message: 'Error while trying to parse $name: $e, $s'));
         continue;

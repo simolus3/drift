@@ -6,8 +6,8 @@ part of 'options.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
-      'MoorOptions',
+DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
+      'DriftOptions',
       json,
       ($checkedConvert) {
         $checkKeys(
@@ -34,7 +34,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
             'scoped_dart_components'
           ],
         );
-        final val = MoorOptions(
+        final val = DriftOptions(
           generateFromJsonStringConstructor: $checkedConvert(
               'write_from_json_string_constructor', (v) => v as bool? ?? false),
           overrideHashAndEqualsInResultSets: $checkedConvert(

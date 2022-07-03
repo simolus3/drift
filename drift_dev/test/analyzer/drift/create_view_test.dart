@@ -28,7 +28,7 @@ void main() {
 
     expect(column.type!.type, BasicType.text);
     expect(view.references,
-        contains(isA<MoorTable>().having((t) => t.sqlName, 'sqlName', 't')));
+        contains(isA<DriftTable>().having((t) => t.sqlName, 'sqlName', 't')));
     expect(file.errors.errors, isEmpty);
   });
 
@@ -82,7 +82,7 @@ void main() {
 
     expect(
         file.errors.errors,
-        contains(isA<MoorError>().having(
+        contains(isA<DriftError>().having(
           (e) => e.message,
           'message',
           contains('Could not find t.'),
@@ -104,7 +104,7 @@ void main() {
 
     expect(
         file.errors.errors,
-        contains(isA<MoorError>().having(
+        contains(isA<DriftError>().having(
           (e) => e.message,
           'message',
           contains('Nested star columns may only appear in a top-level select '

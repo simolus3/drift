@@ -3,7 +3,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../../model/column.dart';
 
-String defaultConstraints(MoorColumn column) {
+String defaultConstraints(DriftColumn column) {
   final defaultConstraints = <String>[];
 
   var wrotePkConstraint = false;

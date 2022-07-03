@@ -12,7 +12,7 @@ enum SpecialQueryMode {
 /// A special query, such as the ones executes when the database was created.
 ///
 /// Those are generated from `@created:` queries in moor files.
-class SpecialQuery implements MoorSchemaEntity {
+class SpecialQuery implements DriftSchemaEntity {
   final String sql;
   final SpecialQueryMode mode;
   @override
@@ -23,7 +23,7 @@ class SpecialQuery implements MoorSchemaEntity {
 
   factory SpecialQuery.fromMoor(DeclaredStatement stmt, FoundFile file) {
     return SpecialQuery(stmt.statement.span!.text,
-        MoorSpecialQueryDeclaration.fromNodeAndFile(stmt, file));
+        DriftSpecialQueryDeclaration.fromNodeAndFile(stmt, file));
   }
 
   @override
@@ -34,11 +34,11 @@ class SpecialQuery implements MoorSchemaEntity {
       throw UnsupportedError("Special queries don't have a name");
 
   @override
-  List<MoorTable> references = [];
+  List<DriftTable> references = [];
 
-  String formattedSql(MoorOptions options) {
+  String formattedSql(DriftOptions options) {
     final decl = declaration;
-    if (decl is MoorSpecialQueryDeclaration) {
+    if (decl is DriftSpecialQueryDeclaration) {
       final writer = SqlWriter(options, escapeForDart: false);
       return writer.writeSql(decl.node.statement);
     }

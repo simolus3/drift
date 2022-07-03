@@ -76,8 +76,9 @@ class FileGraph {
 }
 
 enum FileType {
-  /// A `.moor` file, containing `CREATE TABLE` statements and queries.
-  moor,
+  /// A `.drift` (or `.moor`) file, containing `CREATE TABLE` statements and
+  /// queries.
+  drift,
 
   /// A dart library. Note that, in particular, this doesn't include `part of`
   /// files, as those aren't libraries.

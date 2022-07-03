@@ -5,9 +5,9 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/dart/parser.dart';
+import 'package:drift_dev/src/analyzer/drift/entity_handler.dart';
+import 'package:drift_dev/src/analyzer/drift/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/moor/entity_handler.dart';
-import 'package:drift_dev/src/analyzer/moor/parser.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/task.dart';
@@ -37,7 +37,7 @@ abstract class Step {
 
   Step(this.task, this.file);
 
-  void reportError(MoorError error) =>
+  void reportError(DriftError error) =>
       errors.report(error..wasDuringParsing = isParsing);
 }
 
@@ -47,13 +47,13 @@ abstract class AnalyzingStep extends Step {
   @override
   final bool isParsing = false;
 
-  Iterable<MoorSchemaEntity> _availableEntities(Iterable<FoundFile> imports) {
-    return imports.expand<MoorSchemaEntity>((file) =>
+  Iterable<DriftSchemaEntity> _availableEntities(Iterable<FoundFile> imports) {
+    return imports.expand<DriftSchemaEntity>((file) =>
         file.currentResult?.declaredEntities ?? const Iterable.empty());
   }
 
-  Iterable<MoorTable> _availableTables(Iterable<FoundFile> imports) {
-    return _availableEntities(imports).whereType<MoorTable>();
+  Iterable<DriftTable> _availableTables(Iterable<FoundFile> imports) {
+    return _availableEntities(imports).whereType<DriftTable>();
   }
 
   Iterable<MoorView> _availableViews(Iterable<FoundFile> imports) {

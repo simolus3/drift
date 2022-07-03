@@ -9,7 +9,7 @@ class AnalyzeViewsInDriftFileStep extends AnalyzingStep {
       return;
     }
 
-    final parseResult = file.currentResult as ParsedMoorFile;
+    final parseResult = file.currentResult as ParsedDriftFile;
     final availableTables =
         _availableTables(task.crawlImports(parseResult.resolvedImports!.values))
             .followedBy(parseResult.declaredTables)
@@ -30,7 +30,7 @@ class AnalyzeMoorStep extends AnalyzingStep {
       return;
     }
 
-    final parseResult = file.currentResult as ParsedMoorFile;
+    final parseResult = file.currentResult as ParsedDriftFile;
 
     final transitiveImports =
         task.crawlImports(parseResult.resolvedImports!.values).toList();
@@ -38,7 +38,7 @@ class AnalyzeMoorStep extends AnalyzingStep {
     // Check that all imports are valid
     parseResult.resolvedImports!.forEach((node, fileRef) {
       if (fileRef.type == FileType.other) {
-        reportError(ErrorInMoorFile(
+        reportError(ErrorInDriftFile(
           span: node.span!,
           message: "Invalid import (the file exists, but couldn't be parsed). "
               'Is it a part file?',

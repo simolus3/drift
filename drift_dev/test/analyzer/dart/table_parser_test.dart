@@ -15,7 +15,7 @@ import '../utils.dart';
 void main() {
   late TestBackend backend;
   late ParseDartStep dartStep;
-  late MoorDartParser parser;
+  late DriftDartParser parser;
 
   setUpAll(() {
     backend = TestBackend({
@@ -142,10 +142,10 @@ void main() {
 
     dartStep = ParseDartStep(
         moorTask, file, await task.resolveDart(uri), await moorTask.helper);
-    parser = MoorDartParser(dartStep);
+    parser = DriftDartParser(dartStep);
   });
 
-  Future<MoorTable?> parse(String name) async {
+  Future<DriftTable?> parse(String name) async {
     return parser.parseTable(dartStep.library.getType(name)!);
   }
 
@@ -281,7 +281,7 @@ void main() {
     final c = table.columns.singleWhere((c) => c.name.name == 'c');
 
     void expectType(
-        MoorColumn column, bool hasOverriddenSource, String toString) {
+        DriftColumn column, bool hasOverriddenSource, String toString) {
       expect(
         column.typeConverter,
         isA<UsedTypeConverter>()

@@ -4,10 +4,10 @@ import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 abstract class FileResult {
-  final List<MoorSchemaEntity> declaredEntities;
+  final List<DriftSchemaEntity> declaredEntities;
 
-  Iterable<MoorTable> get declaredTables =>
-      declaredEntities.whereType<MoorTable>();
+  Iterable<DriftTable> get declaredTables =>
+      declaredEntities.whereType<DriftTable>();
   Iterable<MoorView> get declaredViews =>
       declaredEntities.whereType<MoorView>();
 
@@ -20,18 +20,18 @@ class ParsedDartFile extends FileResult {
   final List<Dao> declaredDaos;
   final List<Database> declaredDatabases;
 
-  Iterable<BaseMoorAccessor> get dbAccessors =>
-      declaredDatabases.cast<BaseMoorAccessor>().followedBy(declaredDaos);
+  Iterable<BaseDriftAccessor> get dbAccessors =>
+      declaredDatabases.cast<BaseDriftAccessor>().followedBy(declaredDaos);
 
   ParsedDartFile(
       {required this.library,
-      List<MoorTable> declaredTables = const [],
+      List<DriftTable> declaredTables = const [],
       this.declaredDaos = const [],
       this.declaredDatabases = const []})
       : super(declaredTables);
 }
 
-class ParsedMoorFile extends FileResult {
+class ParsedDriftFile extends FileResult {
   final ParseResult parseResult;
   DriftFile get parsedFile => parseResult.rootNode as DriftFile;
 
@@ -45,9 +45,9 @@ class ParsedMoorFile extends FileResult {
   List<SqlQuery>? resolvedQueries;
   Map<ImportStatement, FoundFile>? resolvedImports;
 
-  ParsedMoorFile(
+  ParsedDriftFile(
     this.parseResult, {
-    List<MoorSchemaEntity> declaredEntities = const [],
+    List<DriftSchemaEntity> declaredEntities = const [],
     this.queries = const [],
     this.imports = const [],
     this.otherComponents = const [],

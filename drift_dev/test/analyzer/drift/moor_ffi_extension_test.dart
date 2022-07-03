@@ -1,6 +1,6 @@
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/drift/moor_ffi_extension.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/moor/moor_ffi_extension.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
@@ -98,14 +98,14 @@ import 'a.moor';
 wrongArgs: SELECT sin(oid, foo) FROM numbers;
         '''
       },
-      options: const MoorOptions.defaults(modules: [SqlModule.moor_ffi]),
+      options: const DriftOptions.defaults(modules: [SqlModule.moor_ffi]),
     );
     addTearDown(state.close);
 
     final fileA = await state.analyze('package:foo/a.moor');
 
     expect(fileA.errors.errors, isEmpty);
-    final resultA = fileA.currentResult as ParsedMoorFile;
+    final resultA = fileA.currentResult as ParsedDriftFile;
 
     final queryInA = resultA.resolvedQueries!.single as SqlSelectQuery;
     expect(
@@ -116,7 +116,7 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
 
     final fileB = await state.analyze('package:foo/b.moor');
     expect(fileB.errors.errors, [
-      const TypeMatcher<ErrorInMoorFile>()
+      const TypeMatcher<ErrorInDriftFile>()
           .having((e) => e.span.text, 'span.text', 'sin(oid, foo)')
     ]);
   });

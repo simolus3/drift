@@ -1,14 +1,14 @@
 import 'package:build/build.dart';
-import 'package:drift_dev/src/backends/build/moor_builder.dart';
+import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:source_gen/source_gen.dart';
 
 final _minLanguageVersion = Version(2, 12, 0);
 
-class MoorGenerator extends Generator implements BaseGenerator {
+class DriftDatabaseGenerator extends Generator implements BaseGenerator {
   @override
-  late MoorBuilder builder;
+  late DriftBuilder builder;
 
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {

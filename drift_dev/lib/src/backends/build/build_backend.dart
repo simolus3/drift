@@ -9,9 +9,9 @@ import 'package:drift_dev/src/backends/backend.dart';
 import 'package:logging/logging.dart';
 
 class BuildBackend extends Backend {
-  final MoorOptions options;
+  final DriftOptions options;
 
-  BuildBackend([this.options = const MoorOptions.defaults()]);
+  BuildBackend([this.options = const DriftOptions.defaults()]);
 
   BuildBackendTask createTask(BuildStep step) {
     return BuildBackendTask(step, this);
@@ -71,7 +71,7 @@ class BuildBackendTask extends BackendTask {
     // we try to detect all calls of resolveTypeOf in an earlier builder and
     // prepare the result. See PreprocessBuilder for details
     final preparedHelperFile =
-        _resolve(context).changeExtension('.dart_in_moor');
+        _resolve(context).changeExtension('.dart_in_drift');
     final temporaryFile = _resolve(context).changeExtension('.temp.dart');
 
     if (!await step.canRead(preparedHelperFile)) {

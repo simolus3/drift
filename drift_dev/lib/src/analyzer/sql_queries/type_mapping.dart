@@ -9,15 +9,15 @@ import 'required_variables.dart';
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
 class TypeMapper {
-  final Map<Table, MoorTable> _engineTablesToSpecified = {};
+  final Map<Table, DriftTable> _engineTablesToSpecified = {};
   final Map<View, MoorView> _engineViewsToSpecified = {};
   final bool applyTypeConvertersToVariables;
 
   TypeMapper({this.applyTypeConvertersToVariables = false});
 
-  /// Convert a [MoorTable] from moor into something that can be understood
+  /// Convert a [DriftTable] from moor into something that can be understood
   /// by the sqlparser library.
-  Table extractStructure(MoorTable table) {
+  Table extractStructure(DriftTable table) {
     if (table.parserTable != null) {
       final parserTbl = table.parserTable!;
       _engineTablesToSpecified[parserTbl] = table;
@@ -34,7 +34,7 @@ class TypeMapper {
 
       final column = TableColumn(specified.name.name, type,
           isGenerated: specified.isGenerated);
-      column.setMeta<MoorColumn>(specified);
+      column.setMeta<DriftColumn>(specified);
 
       columns.add(column);
     }
@@ -44,7 +44,7 @@ class TypeMapper {
       resolvedColumns: columns,
       isVirtual: table.isVirtualTable,
     );
-    engineTable.setMeta<MoorTable>(table);
+    engineTable.setMeta<DriftTable>(table);
     _engineTablesToSpecified[engineTable] = table;
     return engineTable;
   }
@@ -317,7 +317,7 @@ class TypeMapper {
         continue;
       }
 
-      MoorEntityWithResultSet moorEntity;
+      DriftEntityWithResultSet moorEntity;
 
       if (resultSet is Table) {
         moorEntity = tableToMoor(resultSet)!;
@@ -337,7 +337,7 @@ class TypeMapper {
       ..astNode = placeholder;
   }
 
-  MoorTable? tableToMoor(Table table) {
+  DriftTable? tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
   }
 
@@ -345,7 +345,7 @@ class TypeMapper {
     return _engineViewsToSpecified[view];
   }
 
-  MoorEntityWithResultSet? viewOrTableToMoor(dynamic entity) {
+  DriftEntityWithResultSet? viewOrTableToMoor(dynamic entity) {
     if (entity is Table) {
       return tableToMoor(entity);
     } else if (entity is View) {

@@ -114,7 +114,7 @@ class _GenerateFromScratch extends GeneratedDatabase {
   int get schemaVersion => 1;
 }
 
-/// The implementation of this class is generated through the `moor_generator`
+/// The implementation of this class is generated through the `drift_dev`
 /// CLI tool.
 abstract class SchemaInstantiationHelper {
   GeneratedDatabase databaseForVersion(QueryExecutor db, int version);
@@ -180,14 +180,14 @@ class InitializedSchema {
   ///
   /// All connections returned by this method point to the [rawDatabase].
   /// However, each call to [newConnection] returns an independent connection
-  /// that is considered closed from moor's point of view. This means that the
+  /// that is considered closed from drift's point of view. This means that the
   /// [rawDatabase] can be used by multiple generated database classes that
   /// can independently be opened and closed, albeit not simultaneously.
   ///
   /// ## Example
   ///
   /// When generating the schema helpers with the `--data-classes` and the
-  /// `--companions` command-line flags, this method can be used to create moor
+  /// `--companions` command-line flags, this method can be used to create drift
   /// databases inserting data at specific versions:
   ///
   /// ```dart

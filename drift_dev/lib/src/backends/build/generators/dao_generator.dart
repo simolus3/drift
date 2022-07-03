@@ -1,5 +1,5 @@
 import 'package:build/build.dart';
-import 'package:drift_dev/src/backends/build/moor_builder.dart';
+import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:source_gen/source_gen.dart';
@@ -8,7 +8,7 @@ import '../../../model/base_entity.dart';
 
 class DaoGenerator extends Generator implements BaseGenerator {
   @override
-  late MoorBuilder builder;
+  late DriftBuilder builder;
 
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
@@ -25,7 +25,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
           'DatabaseAccessor<$dbTypeName> {\n');
 
-      for (final entity in dao.entities.whereType<MoorEntityWithResultSet>()) {
+      for (final entity in dao.entities.whereType<DriftEntityWithResultSet>()) {
         final infoType = entity.entityInfoName;
         final getterName = entity.dbGetterName;
         classScope.leaf().write(

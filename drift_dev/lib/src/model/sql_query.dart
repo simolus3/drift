@@ -35,7 +35,7 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
   final DeclaredStatement astNode;
-  ParsedMoorFile? file;
+  ParsedDriftFile? file;
 
   DeclaredMoorQuery(String name, this.astNode) : super(name);
 
@@ -176,7 +176,7 @@ abstract class SqlQuery {
 }
 
 class SqlSelectQuery extends SqlQuery {
-  final List<MoorSchemaEntity> readsFrom;
+  final List<DriftSchemaEntity> readsFrom;
   @override
   final InferredResultSet resultSet;
   @override
@@ -205,10 +205,10 @@ class SqlSelectQuery extends SqlQuery {
     this.nestedContainer,
   ) : super(name, elements, hasMultipleTables: readsFrom.length > 1);
 
-  Set<MoorTable> get readsFromTables {
+  Set<DriftTable> get readsFromTables {
     return {
       for (final entity in readsFrom)
-        if (entity is MoorTable)
+        if (entity is DriftTable)
           entity
         else if (entity is MoorView)
           ...entity.transitiveTableReferences,
@@ -435,8 +435,8 @@ class InferredResultSet {
 ///
 /// We still need to handle column aliases.
 class MatchingMoorTable {
-  final MoorEntityWithResultSet table;
-  final Map<String, MoorColumn> aliasToColumn;
+  final DriftEntityWithResultSet table;
+  final Map<String, DriftColumn> aliasToColumn;
 
   MatchingMoorTable(this.table, this.aliasToColumn);
 
@@ -524,7 +524,7 @@ class NestedResultTable extends NestedResult {
   final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
-  final MoorEntityWithResultSet table;
+  final DriftEntityWithResultSet table;
 
   NestedResultTable(this.from, this.name, this.table, {this.isNullable = true});
 
@@ -747,7 +747,7 @@ class ExpressionDartPlaceholderType extends DartPlaceholderType {
 }
 
 class InsertableDartPlaceholderType extends DartPlaceholderType {
-  final MoorTable? table;
+  final DriftTable? table;
 
   InsertableDartPlaceholderType(this.table);
 
@@ -838,7 +838,7 @@ class FoundDartPlaceholder extends FoundElement {
 
   /// Whether we should write this parameter as a function having available
   /// result sets as parameters.
-  bool writeAsScopedFunction(MoorOptions options) {
+  bool writeAsScopedFunction(DriftOptions options) {
     return options.scopedDartComponents &&
         availableResultSets.isNotEmpty &&
         // Don't generate scoped functions for insertables, where the Dart type
@@ -856,7 +856,7 @@ class AvailableMoorResultSet {
   final String name;
 
   /// The table or view that is available.
-  final MoorEntityWithResultSet entity;
+  final DriftEntityWithResultSet entity;
 
   final ResultSetAvailableInStatement? source;
 

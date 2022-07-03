@@ -9,11 +9,11 @@ import '../utils/column_constraints.dart';
 ///
 /// Both classes need to generate column getters and a mapping function.
 abstract class TableOrViewWriter {
-  MoorEntityWithResultSet get tableOrView;
+  DriftEntityWithResultSet get tableOrView;
   StringBuffer get buffer;
 
   void writeColumnGetter(
-      MoorColumn column, GenerationOptions options, bool isOverride) {
+      DriftColumn column, GenerationOptions options, bool isOverride) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
@@ -41,8 +41,8 @@ abstract class TableOrViewWriter {
 
     additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';
 
-    if (tableOrView is MoorTable) {
-      additionalParams['requiredDuringInsert'] = (tableOrView as MoorTable)
+    if (tableOrView is DriftTable) {
+      additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)
           .isColumnRequiredForInsert(column)
           .toString();
     }
@@ -144,8 +144,8 @@ abstract class TableOrViewWriter {
           "tablePrefix != null ? '\$tablePrefix.' : '';");
 
       final info = tableOrView.existingRowClass!;
-      final positionalToIndex = <MoorColumn, int>{};
-      final named = <MoorColumn, String>{};
+      final positionalToIndex = <DriftColumn, int>{};
+      final named = <DriftColumn, String>{};
 
       final parameters = info.constructor.parameters;
       info.mapping.forEach((column, parameter) {
@@ -186,7 +186,7 @@ abstract class TableOrViewWriter {
     } else {
       // Use default .fromData constructor in the moor-generated data class
       final hasDbParameter = scope.generationOptions.writeForMoorPackage &&
-          tableOrView is MoorTable;
+          tableOrView is DriftTable;
       if (hasDbParameter) {
         buffer.write('return $dataClassName.fromData(data, attachedDatabase, '
             "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
@@ -213,14 +213,14 @@ abstract class TableOrViewWriter {
 }
 
 class TableWriter extends TableOrViewWriter {
-  final MoorTable table;
+  final DriftTable table;
   final Scope scope;
 
   @override
   late StringBuffer buffer;
 
   @override
-  MoorTable get tableOrView => table;
+  DriftTable get tableOrView => table;
 
   TableWriter(this.table, this.scope);
 
@@ -340,7 +340,7 @@ class TableWriter extends TableOrViewWriter {
     }
   }
 
-  void _writeColumnVerificationMeta(MoorColumn column) {
+  void _writeColumnVerificationMeta(DriftColumn column) {
     if (!_skipVerification) {
       buffer
         ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
@@ -392,7 +392,7 @@ class TableWriter extends TableOrViewWriter {
     buffer.write('return context;\n}\n');
   }
 
-  String _fieldNameForColumnMeta(MoorColumn column) {
+  String _fieldNameForColumnMeta(DriftColumn column) {
     return '_${column.dartGetterName}Meta';
   }
 

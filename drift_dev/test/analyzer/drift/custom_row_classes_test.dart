@@ -39,11 +39,11 @@ class ExistingForView {
     final file = await state.analyze('package:a/db.moor');
     expect(file.errors.errors, isEmpty);
 
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     final customName = result.declaredEntities
-        .singleWhere((e) => e.displayName == 'custom_name') as MoorTable;
+        .singleWhere((e) => e.displayName == 'custom_name') as DriftTable;
     final existing = result.declaredEntities
-        .singleWhere((e) => e.displayName == 'existing') as MoorTable;
+        .singleWhere((e) => e.displayName == 'existing') as DriftTable;
     final existingView = result.declaredEntities
         .singleWhere((e) => e.displayName == 'existing_view') as MoorView;
 
@@ -86,7 +86,7 @@ CREATE TABLE moor_ints (
     final file = await state.analyze('package:a/generic.moor');
     expect(file.errors.errors, isEmpty);
 
-    final tables = (file.currentResult as ParsedMoorFile).declaredTables;
+    final tables = (file.currentResult as ParsedDriftFile).declaredTables;
     final strings = tables.singleWhere((e) => e.sqlName == 'moor_strings');
     final ints = tables.singleWhere((e) => e.sqlName == 'moor_ints');
 

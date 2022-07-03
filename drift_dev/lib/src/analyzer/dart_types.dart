@@ -21,7 +21,7 @@ class FoundDartClass {
 }
 
 ExistingRowClass? validateExistingClass(
-    Iterable<MoorColumn> columns,
+    Iterable<DriftColumn> columns,
     FoundDartClass dartClass,
     String constructor,
     bool generateInsertable,
@@ -61,7 +61,7 @@ ExistingRowClass? validateExistingClass(
     for (final column in columns) column.dartGetterName: column
   };
 
-  final columnsToParameter = <MoorColumn, ParameterElement>{};
+  final columnsToParameter = <DriftColumn, ParameterElement>{};
 
   for (final parameter in ctor.parameters) {
     final column = unmatchedColumnsByName.remove(parameter.name);
@@ -170,7 +170,7 @@ UsedTypeConverter? readTypeConverter(
 }
 
 void _checkParameterType(
-    ParameterElement element, MoorColumn column, Step step) {
+    ParameterElement element, DriftColumn column, Step step) {
   final type = element.type;
   final library = element.library!;
   final typesystem = library.typeSystem;

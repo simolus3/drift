@@ -48,7 +48,7 @@ void main() {
     expect(
       file.errors.errors,
       contains(
-        isA<MoorError>().having(
+        isA<DriftError>().having(
           (e) => e.message,
           'message',
           contains('Type DoesNotExist could not be found'),
@@ -83,7 +83,7 @@ void main() {
     expect(
       file.errors.errors,
       contains(
-        isA<MoorError>().having(
+        isA<DriftError>().having(
           (e) => e.message,
           'message',
           contains("can't apply another converter"),
@@ -112,7 +112,7 @@ void main() {
     expect(
       file.errors.errors,
       contains(
-        isA<ErrorInMoorFile>()
+        isA<ErrorInDriftFile>()
             .having(
               (e) => e.message,
               'message',

@@ -11,7 +11,7 @@ import 'package:stream_transform/stream_transform.dart';
 class MoorProject {
   /// The build configuration for this project.
   final BuildConfig buildConfig;
-  final MoorOptions moorOptions;
+  final DriftOptions moorOptions;
 
   final Directory directory;
 

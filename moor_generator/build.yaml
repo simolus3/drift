@@ -14,7 +14,7 @@ builders:
   preparing_builder:
     import: "package:moor_generator/integrations/build.dart"
     builder_factories: ["preparingBuilder"]
-    build_extensions: {".moor": [".temp.dart", ".dart_in_moor"]}
+    build_extensions: {".moor": [".temp.dart", ".dart_in_drift"]}
     build_to: cache
     auto_apply: dependents
     applies_builders: ["moor_generator|moor_cleanup"]
@@ -25,7 +25,7 @@ builders:
     build_extensions: {".dart": [".moor.g.part"]}
     auto_apply: dependents
     build_to: cache
-    required_inputs: [".dart_in_moor"]
+    required_inputs: [".dart_in_drift"]
     applies_builders: ["source_gen|combining_builder"]
 
   moor_generator_not_shared:
@@ -34,7 +34,7 @@ builders:
     build_extensions: {".dart": [".moor.dart"]}
     build_to: source
     auto_apply: none
-    required_inputs: [".dart_in_moor"]
+    required_inputs: [".dart_in_drift"]
 
 post_process_builders:
   moor_cleanup:

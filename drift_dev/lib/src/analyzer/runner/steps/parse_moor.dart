@@ -6,7 +6,7 @@ class ParseMoorStep extends Step {
 
   ParseMoorStep(Task task, FoundFile file, this.content) : super(task, file);
 
-  Future<ParsedMoorFile> parseFile() async {
+  Future<ParsedDriftFile> parseFile() async {
     final parser = MoorParser(this, await task.helper);
     return parser.parseAndAnalyze();
   }

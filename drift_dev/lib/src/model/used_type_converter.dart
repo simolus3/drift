@@ -13,7 +13,7 @@ class UsedTypeConverter {
   int? index;
 
   /// The table using this type converter.
-  MoorTable? table;
+  DriftTable? table;
 
   /// The expression that will construct the type converter at runtime. The
   /// type converter constructed will map a [dartType] to the [sqlType] and

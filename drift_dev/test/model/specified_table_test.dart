@@ -4,15 +4,15 @@ import 'package:test/test.dart';
 
 void main() {
   test('companion names', () {
-    final table = MoorTable(
+    final table = DriftTable(
         sqlName: 'user', overriddenName: 'GoogleUser', dartTypeName: 'User');
 
-    expect(table.getNameForCompanionClass(const MoorOptions.defaults()),
+    expect(table.getNameForCompanionClass(const DriftOptions.defaults()),
         'GoogleUserCompanion');
 
     expect(
       table.getNameForCompanionClass(
-          const MoorOptions.defaults(useDataClassNameForCompanions: true)),
+          const DriftOptions.defaults(useDataClassNameForCompanions: true)),
       'UserCompanion',
     );
   });

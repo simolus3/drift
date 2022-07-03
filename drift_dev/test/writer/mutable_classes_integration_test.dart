@@ -4,7 +4,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:drift_dev/src/backends/build/moor_builder.dart';
+import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
@@ -30,7 +30,7 @@ class Database extends _$Database {}
 void main() {
   test('generates mutable classes if needed', () async {
     await testBuilder(
-      MoorPartBuilder(const BuilderOptions({'mutable_classes': true})),
+      DriftPartBuilder(const BuilderOptions({'mutable_classes': true})),
       const {'a|lib/main.dart': _testInput},
       reader: await PackageAssetReader.currentIsolate(),
       outputs: const {

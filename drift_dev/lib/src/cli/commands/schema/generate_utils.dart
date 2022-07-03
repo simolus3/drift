@@ -78,9 +78,9 @@ class GenerateUtilsCommand extends Command {
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
 
-  Future<Map<int, List<MoorSchemaEntity>>> _parseSchema(
+  Future<Map<int, List<DriftSchemaEntity>>> _parseSchema(
       Directory directory) async {
-    final results = <int, List<MoorSchemaEntity>>{};
+    final results = <int, List<DriftSchemaEntity>>{};
 
     await for (final entity in directory.list()) {
       final basename = p.basename(entity.path);
@@ -101,7 +101,7 @@ class GenerateUtilsCommand extends Command {
   Future<void> _writeSchemaFile(
     Directory output,
     int version,
-    List<MoorSchemaEntity> entities,
+    List<DriftSchemaEntity> entities,
     bool dataClasses,
     bool companions,
     bool isForMoor,

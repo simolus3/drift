@@ -1,7 +1,7 @@
 part of '../steps.dart';
 
 /// Extracts the following information from a Dart file:
-/// - [MoorTable]s, which are read from Dart classes extending `Table`.
+/// - [DriftTable]s, which are read from Dart classes extending `Table`.
 /// - [Database]s, which are read from `@UseMoor`-annotated classes
 /// - [Dao]s, which are read from `@UseDao`-annotated classes.
 ///
@@ -16,15 +16,15 @@ class ParseDartStep extends Step {
   final LibraryElement library;
   final HelperLibrary resolvedHelper;
 
-  late MoorDartParser _parser;
-  MoorDartParser get parser => _parser;
+  late DriftDartParser _parser;
+  DriftDartParser get parser => _parser;
 
-  final Map<ClassElement, MoorTable> _tables = {};
+  final Map<ClassElement, DriftTable> _tables = {};
   final Map<ClassElement, MoorView> _views = {};
 
   ParseDartStep(Task task, FoundFile file, this.library, this.resolvedHelper)
       : super(task, file) {
-    _parser = MoorDartParser(this);
+    _parser = DriftDartParser(this);
   }
 
   Future<ParsedDartFile> parse() async {
@@ -58,7 +58,7 @@ class ParseDartStep extends Step {
     );
   }
 
-  Future<MoorTable?> _parseTable(ClassElement element) async {
+  Future<DriftTable?> _parseTable(ClassElement element) async {
     if (!_tables.containsKey(element)) {
       final table = await parser.parseTable(element);
 
@@ -71,7 +71,7 @@ class ParseDartStep extends Step {
   }
 
   Future<MoorView?> _parseView(
-      ClassElement element, List<MoorTable> tables) async {
+      ClassElement element, List<DriftTable> tables) async {
     if (!_views.containsKey(element)) {
       final view = await parser.parseView(element, tables);
 
@@ -82,7 +82,7 @@ class ParseDartStep extends Step {
     return _views[element];
   }
 
-  void _lintDartTable(MoorTable table, ClassElement from) {
+  void _lintDartTable(DriftTable table, ClassElement from) {
     if (table.primaryKey != null) {
       final hasAdditional = table.columns.any((c) {
         final isPk = c.features.any((f) => f is PrimaryKey);
@@ -106,7 +106,7 @@ class ParseDartStep extends Step {
   /// annotation.
   Future<Database?> parseDatabase(
       ClassElement element, ConstantReader annotation) {
-    return UseMoorParser(this).parseDatabase(element, annotation);
+    return DriftDatabaseParser(this).parseDatabase(element, annotation);
   }
 
   /// Parses a [Dao] from a class declaration that has a `UseDao`
@@ -115,11 +115,11 @@ class ParseDartStep extends Step {
     return UseDaoParser(this).parseDao(element, annotation);
   }
 
-  /// Resolves a [MoorTable] for the class of each [DartType] in [types].
+  /// Resolves a [DriftTable] for the class of each [DartType] in [types].
   /// The [initializedBy] element should be the piece of code that caused the
   /// parsing (e.g. the database class that is annotated with `@DriftDatabase`).
   /// This will allow for more descriptive error messages.
-  Future<List<MoorTable>> parseTables(
+  Future<List<DriftTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
       if (!_tableTypeChecker.isAssignableFrom(type.element!)) {
@@ -142,8 +142,8 @@ class ParseDartStep extends Step {
   /// The [initializedBy] element should be the piece of code that caused the
   /// parsing (e.g. the database class that is annotated with `@DriftDatabase`).
   /// This will allow for more descriptive error messages.
-  Future<List<MoorView>> parseViews(
-      Iterable<DartType> types, Element initializedBy, List<MoorTable> tables) {
+  Future<List<MoorView>> parseViews(Iterable<DartType> types,
+      Element initializedBy, List<DriftTable> tables) {
     return Future.wait(types.map((type) {
       if (!_viewTypeChecker.isAssignableFrom(type.element!)) {
         reportError(ErrorInDartCode(

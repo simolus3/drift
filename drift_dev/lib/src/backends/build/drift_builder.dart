@@ -6,7 +6,7 @@ import 'package:drift_dev/src/analyzer/runner/task.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
 import 'package:drift_dev/src/backends/build/build_backend.dart';
 import 'package:drift_dev/src/backends/build/generators/dao_generator.dart';
-import 'package:drift_dev/src/backends/build/generators/moor_generator.dart';
+import 'package:drift_dev/src/backends/build/generators/database_generator.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -16,8 +16,8 @@ class _BuilderFlags {
 
 final _flags = Resource(() => _BuilderFlags());
 
-mixin MoorBuilder on Builder {
-  MoorOptions get options;
+mixin DriftBuilder on Builder {
+  DriftOptions get options;
   bool get isForNewDriftPackage;
 
   Writer createWriter() {
@@ -48,14 +48,14 @@ mixin MoorBuilder on Builder {
   }
 }
 
-T _createBuilder<T extends MoorBuilder>(
+T _createBuilder<T extends DriftBuilder>(
   BuilderOptions options,
-  T Function(List<Generator> generators, MoorOptions parsedOptions) creator,
+  T Function(List<Generator> generators, DriftOptions parsedOptions) creator,
 ) {
-  final parsedOptions = MoorOptions.fromJson(options.config);
+  final parsedOptions = DriftOptions.fromJson(options.config);
 
   final generators = <Generator>[
-    MoorGenerator(),
+    DriftDatabaseGenerator(),
     DaoGenerator(),
   ];
 
@@ -68,21 +68,21 @@ T _createBuilder<T extends MoorBuilder>(
   return builder;
 }
 
-class MoorSharedPartBuilder extends SharedPartBuilder with MoorBuilder {
+class DriftSharedPartBuilder extends SharedPartBuilder with DriftBuilder {
   @override
-  final MoorOptions options;
+  final DriftOptions options;
 
   @override
   final bool isForNewDriftPackage;
 
-  MoorSharedPartBuilder._(List<Generator> generators, String name, this.options,
-      this.isForNewDriftPackage)
+  DriftSharedPartBuilder._(List<Generator> generators, String name,
+      this.options, this.isForNewDriftPackage)
       : super(generators, name);
 
-  factory MoorSharedPartBuilder(BuilderOptions options,
+  factory DriftSharedPartBuilder(BuilderOptions options,
       {bool isForNewDriftPackage = false}) {
     return _createBuilder(options, (generators, parsedOptions) {
-      return MoorSharedPartBuilder._(
+      return DriftSharedPartBuilder._(
           generators, 'moor', parsedOptions, isForNewDriftPackage);
     });
   }
@@ -102,21 +102,21 @@ class MoorSharedPartBuilder extends SharedPartBuilder with MoorBuilder {
   }
 }
 
-class MoorPartBuilder extends PartBuilder with MoorBuilder {
+class DriftPartBuilder extends PartBuilder with DriftBuilder {
   @override
-  final MoorOptions options;
+  final DriftOptions options;
 
   @override
   final bool isForNewDriftPackage;
 
-  MoorPartBuilder._(List<Generator> generators, String extension, this.options,
+  DriftPartBuilder._(List<Generator> generators, String extension, this.options,
       this.isForNewDriftPackage)
       : super(generators, extension);
 
-  factory MoorPartBuilder(BuilderOptions options,
+  factory DriftPartBuilder(BuilderOptions options,
       {bool isForNewDriftPackage = false}) {
     return _createBuilder(options, (generators, parsedOptions) {
-      return MoorPartBuilder._(
+      return DriftPartBuilder._(
           generators,
           isForNewDriftPackage ? '.drift.dart' : '.moor.dart',
           parsedOptions,
@@ -126,5 +126,5 @@ class MoorPartBuilder extends PartBuilder with MoorBuilder {
 }
 
 abstract class BaseGenerator {
-  late MoorBuilder builder;
+  late DriftBuilder builder;
 }

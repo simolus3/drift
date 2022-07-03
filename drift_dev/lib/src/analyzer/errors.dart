@@ -9,13 +9,13 @@ typedef LogFunction = void Function(dynamic message,
     [Object? error, StackTrace? stackTrace]);
 
 /// Base class for errors that can be presented to a user.
-class MoorError {
+class DriftError {
   final Severity severity;
   final String message;
 
   bool wasDuringParsing = true;
 
-  MoorError({required this.severity, required this.message});
+  DriftError({required this.severity, required this.message});
 
   bool get isError =>
       severity == Severity.criticalError || severity == Severity.error;
@@ -32,7 +32,7 @@ class MoorError {
   }
 }
 
-class ErrorInDartCode extends MoorError {
+class ErrorInDartCode extends DriftError {
   final Element? affectedElement;
   final dart.AstNode? affectedNode;
 
@@ -77,16 +77,16 @@ class ErrorInDartCode extends MoorError {
   }
 }
 
-class ErrorInMoorFile extends MoorError {
+class ErrorInDriftFile extends DriftError {
   final FileSpan span;
 
-  ErrorInMoorFile(
+  ErrorInDriftFile(
       {required this.span,
       required String message,
       Severity severity = Severity.warning})
       : super(message: message, severity: severity);
 
-  factory ErrorInMoorFile.fromSqlParser(AnalysisError error,
+  factory ErrorInDriftFile.fromSqlParser(AnalysisError error,
       {Severity? overrideSeverity}) {
     // Describe how to change the sqlite version for errors caused by a wrong
     // version
@@ -99,7 +99,7 @@ class ErrorInMoorFile extends MoorError {
     final defaultSeverity =
         error.type == AnalysisErrorType.hint ? Severity.hint : Severity.error;
 
-    return ErrorInMoorFile(
+    return ErrorInDriftFile(
       span: error.span!,
       message: msg,
       severity: overrideSeverity ?? defaultSeverity,
@@ -113,10 +113,10 @@ class ErrorInMoorFile extends MoorError {
 }
 
 class ErrorSink {
-  final List<MoorError> _errors = [];
-  UnmodifiableListView<MoorError> get errors => UnmodifiableListView(_errors);
+  final List<DriftError> _errors = [];
+  UnmodifiableListView<DriftError> get errors => UnmodifiableListView(_errors);
 
-  void report(MoorError error) {
+  void report(DriftError error) {
     _errors.add(error);
   }
 

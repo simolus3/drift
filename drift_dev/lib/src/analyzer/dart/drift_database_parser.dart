@@ -1,9 +1,9 @@
 part of 'parser.dart';
 
-class UseMoorParser {
+class DriftDatabaseParser {
   final ParseDartStep step;
 
-  UseMoorParser(this.step);
+  DriftDatabaseParser(this.step);
 
   /// If [element] has a `@UseMoor` annotation, parses the database model
   /// declared by that class and the referenced tables.
@@ -69,7 +69,7 @@ class UseMoorParser {
     final element = dbClass.thisType.getGetter('schemaVersion')?.variable;
     if (element == null) return null;
 
-    final helper = MoorDartParser(step);
+    final helper = DriftDartParser(step);
 
     if (element.isSynthetic) {
       // Getter, read from `=>` body if possible.

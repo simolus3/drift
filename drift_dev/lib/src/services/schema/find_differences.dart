@@ -1,4 +1,4 @@
-import 'package:drift_dev/src/analyzer/moor/moor_ffi_extension.dart';
+import 'package:drift_dev/src/analyzer/drift/moor_ffi_extension.dart';
 import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/utils/ast_equality.dart';

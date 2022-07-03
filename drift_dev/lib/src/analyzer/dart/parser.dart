@@ -21,28 +21,28 @@ import '../dart_types.dart';
 part 'column_parser.dart';
 part 'table_parser.dart';
 part 'use_dao_parser.dart';
-part 'use_moor_parser.dart';
+part 'drift_database_parser.dart';
 part 'view_parser.dart';
 
-class MoorDartParser {
+class DriftDartParser {
   final ParseDartStep step;
 
   late ColumnParser _columnParser;
   late TableParser _tableParser;
   late ViewParser _viewParser;
 
-  MoorDartParser(this.step) {
+  DriftDartParser(this.step) {
     _columnParser = ColumnParser(this);
     _tableParser = TableParser(this);
     _viewParser = ViewParser(this);
   }
 
-  Future<MoorTable?> parseTable(ClassElement classElement) {
+  Future<DriftTable?> parseTable(ClassElement classElement) {
     return _tableParser.parseTable(classElement);
   }
 
   Future<MoorView?> parseView(
-      ClassElement classElement, List<MoorTable> tables) {
+      ClassElement classElement, List<DriftTable> tables) {
     return _viewParser.parseView(classElement, tables);
   }
 
@@ -50,7 +50,7 @@ class MoorDartParser {
   ///
   /// When the column is invalid, an error will be logged and `null` is
   /// returned.
-  Future<MoorColumn?> parseColumn(
+  Future<DriftColumn?> parseColumn(
       MethodDeclaration declaration, Element element) {
     return Future.value(_columnParser.parse(declaration, element));
   }

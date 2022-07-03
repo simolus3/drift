@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:drift_dev/src/analyzer/drift/moor_ffi_extension.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/moor/moor_ffi_extension.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/task.dart';
 import 'package:drift_dev/src/backends/backend.dart';
@@ -11,8 +11,8 @@ import 'package:sqlparser/sqlparser.dart';
 import 'options.dart';
 
 const _fileEndings = {
-  '.moor': FileType.moor,
-  '.drift': FileType.moor,
+  '.moor': FileType.drift,
+  '.drift': FileType.drift,
   '.dart': FileType.dartLibrary,
 };
 
@@ -20,12 +20,12 @@ const _fileEndings = {
 class MoorSession {
   final FileGraph fileGraph = FileGraph();
   final Backend backend;
-  MoorOptions options;
+  DriftOptions options;
 
   final _completedTasks = StreamController<Task>.broadcast();
   final _changedFiles = StreamController<List<FoundFile>>.broadcast();
 
-  MoorSession(this.backend, {this.options = const MoorOptions.defaults()});
+  MoorSession(this.backend, {this.options = const DriftOptions.defaults()});
 
   /// Stream that emits a [Task] that has been completed.
   Stream<Task> get completedTasks => _completedTasks.stream;
@@ -83,7 +83,7 @@ class MoorSession {
   }
 
   /// Finds all current errors in the [file] and transitive imports thereof.
-  Iterable<MoorError> errorsInFileAndImports(FoundFile file) {
+  Iterable<DriftError> errorsInFileAndImports(FoundFile file) {
     final targetFiles = [file, ...fileGraph.crawl(file)];
 
     return targetFiles.fold(const Iterable.empty(), (errors, file) {

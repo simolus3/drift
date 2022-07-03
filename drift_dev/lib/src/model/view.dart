@@ -9,7 +9,7 @@ import '../../writer.dart';
 import 'model.dart';
 
 /// A parsed view
-class MoorView extends MoorEntityWithResultSet {
+class MoorView extends DriftEntityWithResultSet {
   @override
   final ViewDeclaration? declaration;
 
@@ -17,15 +17,15 @@ class MoorView extends MoorEntityWithResultSet {
   /// sql queries. Note that this field is set lazily.
   View? parserView;
 
-  ParsedMoorFile? file;
+  ParsedDriftFile? file;
 
   final String name;
 
   @override
-  List<MoorSchemaEntity> references = [];
+  List<DriftSchemaEntity> references = [];
 
   @override
-  late List<MoorColumn> columns;
+  late List<DriftColumn> columns;
 
   @override
   String dartTypeName;
@@ -61,10 +61,10 @@ class MoorView extends MoorEntityWithResultSet {
   ///
   /// This includes all tables in [references]. If this view references other
   /// views, their [transitiveTableReferences] will be included as well.
-  Set<MoorTable> get transitiveTableReferences {
+  Set<DriftTable> get transitiveTableReferences {
     return {
       for (final reference in references)
-        if (reference is MoorTable)
+        if (reference is DriftTable)
           reference
         else if (reference is MoorView)
           ...reference.transitiveTableReferences,
@@ -76,7 +76,7 @@ class MoorView extends MoorEntityWithResultSet {
     final dataClassName = dataClassNameForClassName(entityInfoName);
 
     return MoorView(
-      declaration: MoorViewDeclaration(stmt, file),
+      declaration: DriftViewDeclaration(stmt, file),
       name: stmt.viewName,
       dartTypeName: dataClassName,
       entityInfoName: entityInfoName,
@@ -84,8 +84,8 @@ class MoorView extends MoorEntityWithResultSet {
   }
 
   /// The `CREATE VIEW` statement that can be used to create this view.
-  String createSql(MoorOptions options) {
-    final decl = declaration as MoorViewDeclaration?;
+  String createSql(DriftOptions options) {
+    final decl = declaration as DriftViewDeclaration?;
     if (decl == null) {
       throw StateError('Cannot show SQL for views without a declaration');
     }
@@ -103,7 +103,7 @@ class MoorView extends MoorEntityWithResultSet {
 class ViewQueryInformation {
   /// All columns from this Dart-defined view, in the order in which they were
   /// added to the `query` getter.
-  final List<MapEntry<String, MoorColumn>> columns;
+  final List<MapEntry<String, DriftColumn>> columns;
   final String from;
   final String query;
 

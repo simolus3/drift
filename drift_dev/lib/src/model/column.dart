@@ -45,7 +45,7 @@ class ColumnName {
 }
 
 /// A column, as specified by a getter in a table.
-class MoorColumn implements HasDeclaration, HasType {
+class DriftColumn implements HasDeclaration, HasType {
   /// The getter name of this column in the table class. It will also be used
   /// as getter name in the TableInfo class (as it needs to override the field)
   /// and in the generated data class that will be generated for each table.
@@ -68,7 +68,7 @@ class MoorColumn implements HasDeclaration, HasType {
 
   /// An (optional) name to use as a json key instead of the [dartGetterName].
   final String? overriddenJsonName;
-  String getJsonKey([MoorOptions options = const MoorOptions.defaults()]) {
+  String getJsonKey([DriftOptions options = const DriftOptions.defaults()]) {
     if (overriddenJsonName != null) return overriddenJsonName!;
 
     final useColumnName = options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
@@ -112,7 +112,7 @@ class MoorColumn implements HasDeclaration, HasType {
   bool get isGenerated => generatedAs != null;
 
   /// Parent table
-  MoorTable? table;
+  DriftTable? table;
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
@@ -186,7 +186,7 @@ class MoorColumn implements HasDeclaration, HasType {
   @override
   bool get isArray => false;
 
-  MoorColumn({
+  DriftColumn({
     required this.type,
     required this.dartGetterName,
     required this.name,
@@ -273,8 +273,8 @@ class UnresolvedDartForeignKeyReference extends ColumnFeature {
 }
 
 class ResolvedDartForeignKeyReference extends ColumnFeature {
-  final MoorTable otherTable;
-  final MoorColumn otherColumn;
+  final DriftTable otherTable;
+  final DriftColumn otherColumn;
   final ReferenceAction? onUpdate;
   final ReferenceAction? onDelete;
 

@@ -33,18 +33,18 @@ class DartTableDeclaration implements TableDeclaration, DartDeclaration {
   }
 }
 
-class MoorTableDeclaration
-    implements TableDeclaration, MoorDeclaration, TableDeclarationWithSql {
+class DriftTableDeclaration
+    implements TableDeclaration, DriftFileDeclaration, TableDeclarationWithSql {
   @override
   final SourceRange declaration;
 
   @override
   final TableInducingStatement node;
 
-  MoorTableDeclaration._(this.declaration, this.node);
+  DriftTableDeclaration._(this.declaration, this.node);
 
-  factory MoorTableDeclaration(TableInducingStatement node, FoundFile file) {
-    return MoorTableDeclaration._(
+  factory DriftTableDeclaration(TableInducingStatement node, FoundFile file) {
+    return DriftTableDeclaration._(
       SourceRange.fromNodeAndFile(node, file),
       node,
     );

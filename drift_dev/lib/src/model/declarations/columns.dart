@@ -27,17 +27,18 @@ class DartColumnDeclaration implements DartDeclaration, ColumnDeclaration {
   bool get isDefinedInMoorFile => false;
 }
 
-class MoorColumnDeclaration implements MoorDeclaration, ColumnDeclaration {
+class DriftColumnDeclaration
+    implements DriftFileDeclaration, ColumnDeclaration {
   @override
   final SourceRange declaration;
 
   @override
   final AstNode node;
 
-  MoorColumnDeclaration._(this.declaration, this.node);
+  DriftColumnDeclaration._(this.declaration, this.node);
 
-  factory MoorColumnDeclaration(AstNode node, FoundFile file) {
-    return MoorColumnDeclaration._(
+  factory DriftColumnDeclaration(AstNode node, FoundFile file) {
+    return DriftColumnDeclaration._(
       SourceRange.fromNodeAndFile(node, file),
       node,
     );

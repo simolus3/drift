@@ -1,5 +1,5 @@
 import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/moor/create_table_reader.dart';
+import 'package:drift_dev/src/analyzer/drift/create_table_reader.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
@@ -32,7 +32,7 @@ Future<void> main() async {
   final task = await state.runTask('package:a/foo.drift');
 
   final step = ParseMoorStep(
-      task, FoundFile(Uri.parse('file://foo'), FileType.moor), '');
+      task, FoundFile(Uri.parse('file://foo'), FileType.drift), '');
 
   final parsedFoo = engine.parse(createFoo).rootNode as CreateTableStatement;
   final foo = await CreateTableReader(parsedFoo, step, await task.helper)
@@ -99,7 +99,7 @@ FROM routes
     });
 
     final file = await state.analyze('package:foo/main.moor');
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     state.close();
 
     expect(file.errors.errors, isEmpty);
@@ -146,7 +146,7 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
     });
 
     final file = await state.analyze('package:foo/main.moor');
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     state.close();
 
     expect(file.errors.errors, isEmpty);
@@ -177,7 +177,7 @@ query: SELECT * FROM my_view;
     final file = await state.analyze('package:foo/main.moor');
     expect(file.errors.errors, isEmpty);
 
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
 
     final query = result.resolvedQueries!.single;
     expect(
@@ -200,7 +200,7 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
     final file = await state.analyze('package:foo/main.moor');
     expect(file.errors.errors, isEmpty);
 
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     final query = result.resolvedQueries!.single;
 
     expect(query.resultSet!.nestedResults, hasLength(2));

@@ -4,7 +4,7 @@ import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 
 /// Abstract class for database and dao elements.
-abstract class BaseMoorAccessor implements HasDeclaration {
+abstract class BaseDriftAccessor implements HasDeclaration {
   @override
   final DatabaseOrDaoDeclaration? declaration;
 
@@ -16,7 +16,7 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// This contains the `tables` field from a `UseMoor` or `UseDao` annotation,
   /// but not tables that are declared in imported moor files. Use [tables] for
   /// that.
-  final List<MoorTable> declaredTables;
+  final List<DriftTable> declaredTables;
 
   /// All views that have been declared on this accessor directly.
   ///
@@ -33,11 +33,11 @@ abstract class BaseMoorAccessor implements HasDeclaration {
 
   /// All entities for this database accessor. This contains [declaredTables]
   /// and all tables, triggers and other entities available through includes.
-  List<MoorSchemaEntity> entities = [];
+  List<DriftSchemaEntity> entities = [];
 
   /// All tables for this database accessor. This contains the [declaredTables]
   /// and all tables that are reachable through includes.
-  Iterable<MoorTable> get tables => entities.whereType();
+  Iterable<DriftTable> get tables => entities.whereType();
 
   /// All views for this database accesssor.
   Iterable<MoorView> get views => entities.whereType();
@@ -51,12 +51,12 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// Resolved imports from this file.
   List<FoundFile>? imports = [];
 
-  BaseMoorAccessor._(this.declaration, this.declaredTables, this.declaredViews,
+  BaseDriftAccessor._(this.declaration, this.declaredTables, this.declaredViews,
       this.declaredIncludes, this.declaredQueries);
 }
 
 /// A database, declared via a `UseMoor` annotation on a Dart class.
-class Database extends BaseMoorAccessor {
+class Database extends BaseDriftAccessor {
   final List<DartType> daos;
 
   /// If the source database class overrides `schemaVersion` and returns a
@@ -70,7 +70,7 @@ class Database extends BaseMoorAccessor {
     this.daos = const [],
     this.schemaVersion,
     DatabaseOrDaoDeclaration? declaration,
-    List<MoorTable> declaredTables = const [],
+    List<DriftTable> declaredTables = const [],
     List<MoorView> declaredViews = const [],
     List<String> declaredIncludes = const [],
     List<DeclaredQuery> declaredQueries = const [],
@@ -79,14 +79,14 @@ class Database extends BaseMoorAccessor {
 }
 
 /// A dao, declared via an `UseDao` annotation on a Dart class.
-class Dao extends BaseMoorAccessor {
+class Dao extends BaseDriftAccessor {
   /// The database class this dao belongs to.
   final DartType dbClass;
 
   Dao({
     required this.dbClass,
     DatabaseOrDaoDeclaration? declaration,
-    required List<MoorTable> declaredTables,
+    required List<DriftTable> declaredTables,
     List<MoorView> declaredViews = const [],
     required List<String> declaredIncludes,
     required List<DeclaredQuery> declaredQueries,

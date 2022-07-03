@@ -58,7 +58,7 @@ all ($limit = 3): SELECT * FROM foo LIMIT $limit;
 
     expect(
       result.errors.errors,
-      contains(isA<MoorError>().having(
+      contains(isA<DriftError>().having(
         (e) => e.message,
         'message',
         contains('only supported for expressions'),
@@ -83,7 +83,7 @@ in: INSERT INTO foo (id) $placeholder;
 
     expect(
       result.errors.errors,
-      contains(isA<MoorError>().having(
+      contains(isA<DriftError>().having(
         (e) => e.message,
         'message',
         contains("Dart placeholders can't be used here"),
@@ -110,7 +110,7 @@ all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
 
       expect(
         result.errors.errors,
-        contains(isA<MoorError>().having(
+        contains(isA<DriftError>().having(
           (e) => e.message,
           'message',
           contains('columns may only appear in a top-level select'),
@@ -139,7 +139,7 @@ all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
 
       expect(
         result.errors.errors,
-        contains(isA<MoorError>().having(
+        contains(isA<DriftError>().having(
           (e) => e.message,
           'message',
           contains('query may only appear in a top-level select'),
@@ -158,7 +158,7 @@ all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
       final file = await state!.analyze('package:foo/a.moor');
       expect(
         file.errors.errors,
-        contains(const TypeMatcher<MoorError>().having(
+        contains(const TypeMatcher<DriftError>().having(
             (e) => e.message, 'message', 'Expected tuple to have 2 values')),
       );
     }

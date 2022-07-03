@@ -56,7 +56,7 @@ WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
     expect(file.state, FileState.analyzed);
     expect(file.errors.errors, isEmpty);
 
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     final query = result.resolvedQueries!.firstWhere((q) => q.name == 'test')
         as SqlSelectQuery;
 
@@ -73,7 +73,7 @@ WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
 
   test('finds the underlying table when aliased through CFE', () {
     final file = session.registerFile(Uri.parse('package:foo/test.moor'));
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     final query = result.resolvedQueries!.firstWhere((q) => q.name == 'test2')
         as SqlSelectQuery;
 

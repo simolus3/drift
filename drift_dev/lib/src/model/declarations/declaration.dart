@@ -34,22 +34,22 @@ abstract class DartDeclaration extends Declaration {
 }
 
 /// Declaration for elements that are declared in a `.moor` file.
-abstract class MoorDeclaration extends Declaration {
+abstract class DriftFileDeclaration extends Declaration {
   /// The ast node from a moor file for this declaration.
   AstNode get node;
 }
 
-extension ToSql on MoorDeclaration {
-  String exportSql(MoorOptions options) {
+extension ToSql on DriftFileDeclaration {
+  String exportSql(DriftOptions options) {
     final writer = SqlWriter(options, escapeForDart: false);
     return writer.writeSql(node);
   }
 }
 
 extension ToSqlIfAvailable on Declaration {
-  String? formatSqlIfAvailable(MoorOptions options) {
+  String? formatSqlIfAvailable(DriftOptions options) {
     final $this = this;
-    if ($this is MoorDeclaration) {
+    if ($this is DriftFileDeclaration) {
       return $this.exportSql(options);
     }
 
@@ -60,5 +60,5 @@ extension ToSqlIfAvailable on Declaration {
 extension DeclarationUtils on HasDeclaration {
   bool get isDeclaredInDart => declaration is DartDeclaration;
 
-  bool get isDeclaredInDriftFile => declaration is MoorDeclaration;
+  bool get isDeclaredInDriftFile => declaration is DriftFileDeclaration;
 }

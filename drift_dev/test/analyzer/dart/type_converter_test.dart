@@ -47,7 +47,7 @@ CREATE TABLE users (
 
   Future<void> testWith(String fileName) async {
     final result = await state.analyze(fileName);
-    final table = result.currentResult!.declaredEntities.single as MoorTable;
+    final table = result.currentResult!.declaredEntities.single as DriftTable;
 
     final foo = table.columns[0];
     final bar = table.columns[1];

@@ -25,18 +25,18 @@ import 'package:drift_dev/src/services/ide/moor_ide.dart';
 
 import 'logger.dart';
 
-class MoorPlugin extends ServerPlugin
+class DriftPlugin extends ServerPlugin
     with OutlineMixin, FoldingMixin, CompletionMixin, NavigationMixin {
   final Map<AnalysisContext, MoorDriver> drivers = {};
 
   late final ErrorService errorService = ErrorService(this);
 
-  MoorPlugin(ResourceProvider provider) : super(resourceProvider: provider) {
+  DriftPlugin(ResourceProvider provider) : super(resourceProvider: provider) {
     setupLogger(this);
   }
 
-  factory MoorPlugin.forProduction() {
-    return MoorPlugin(PhysicalResourceProvider.INSTANCE);
+  factory DriftPlugin.forProduction() {
+    return DriftPlugin(PhysicalResourceProvider.INSTANCE);
   }
 
   @override
@@ -136,7 +136,7 @@ class MoorPlugin extends ServerPlugin
   }
 
   void _checkIsMoorFile(FoundFile file) {
-    if (file.type != FileType.moor) {
+    if (file.type != FileType.drift) {
       throw RequestFailure(
         plugin.RequestError(plugin.RequestErrorCode.INVALID_PARAMETER,
             'Not a moor file: ${file.uri}'),

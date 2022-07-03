@@ -54,7 +54,7 @@ class DatabaseWriter {
           '$className.connect(DatabaseConnection c): super.connect(c); \n');
     }
 
-    final entityGetters = <MoorSchemaEntity, String>{};
+    final entityGetters = <DriftSchemaEntity, String>{};
 
     for (final entity in db.entities) {
       final getterName = entity.dbGetterName;
@@ -62,7 +62,7 @@ class DatabaseWriter {
         entityGetters[entity] = getterName;
       }
 
-      if (entity is MoorTable) {
+      if (entity is DriftTable) {
         final tableClassName = entity.entityInfoName;
 
         writeMemoizedGetter(

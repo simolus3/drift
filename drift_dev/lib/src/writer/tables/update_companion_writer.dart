@@ -5,12 +5,12 @@ import 'package:drift_dev/src/writer/utils/override_toString.dart';
 import 'package:drift_dev/writer.dart';
 
 class UpdateCompanionWriter {
-  final MoorTable table;
+  final DriftTable table;
   final Scope scope;
 
   late StringBuffer _buffer;
 
-  late final List<MoorColumn> columns = [
+  late final List<DriftColumn> columns = [
     for (final column in table.columns)
       if (!column.isGenerated) column,
   ];
@@ -65,7 +65,7 @@ class UpdateCompanionWriter {
   /// absent during insert are marked `@required` here. Also, we don't need to
   /// use value wrappers here - `Value.absent` simply isn't an option.
   void _writeInsertConstructor() {
-    final requiredColumns = <MoorColumn>{};
+    final requiredColumns = <DriftColumn>{};
 
     // can't be constant because we use initializers (this.a = Value(a)).
     // for a parameter a which is only potentially constant.

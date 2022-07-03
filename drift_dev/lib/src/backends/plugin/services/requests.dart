@@ -12,15 +12,15 @@ import 'package:source_span/source_span.dart';
 mixin _MoorBaseRequest {
   FoundFile get file;
 
-  bool get isMoor => file.type == FileType.moor;
+  bool get isMoor => file.type == FileType.drift;
   bool get isMoorAndParsed => isMoor && file.isParsed;
   bool get isMoorAndAnalyzed => isMoor && file.isAnalyzed;
 
   String get path => file.uri.path;
 
-  ParsedMoorFile get parsedMoor {
+  ParsedDriftFile get parsedMoor {
     assert(isMoorAndParsed);
-    return file.currentResult as ParsedMoorFile;
+    return file.currentResult as ParsedDriftFile;
   }
 }
 

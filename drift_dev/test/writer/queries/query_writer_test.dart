@@ -19,10 +19,10 @@ void main() {
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedMoorFile;
+    final fileState = file.currentResult as ParsedDriftFile;
 
     final writer =
-        Writer(const MoorOptions.defaults(generateNamedParameters: true));
+        Writer(const DriftOptions.defaults(generateNamedParameters: true));
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(writer.writeGenerated(), contains('required List<int?> idList'));
@@ -41,9 +41,9 @@ void main() {
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedMoorFile;
+    final fileState = file.currentResult as ParsedDriftFile;
 
-    final writer = Writer(const MoorOptions.defaults());
+    final writer = Writer(const DriftOptions.defaults());
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -68,9 +68,9 @@ void main() {
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedMoorFile;
+    final fileState = file.currentResult as ParsedDriftFile;
 
-    final writer = Writer(const MoorOptions.defaults());
+    final writer = Writer(const DriftOptions.defaults());
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -101,9 +101,9 @@ void main() {
 
     tearDown(() => state.close());
 
-    Future<void> _runTest(MoorOptions options, Matcher expectation) async {
+    Future<void> _runTest(DriftOptions options, Matcher expectation) async {
       final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedMoorFile;
+      final fileState = file.currentResult as ParsedDriftFile;
 
       expect(file.errors.errors, isEmpty);
 
@@ -115,7 +115,7 @@ void main() {
 
     test('with the new query generator', () {
       return _runTest(
-        const MoorOptions.defaults(),
+        const DriftOptions.defaults(),
         allOf(
           contains(r'var $arrayStartIndex = 3;'),
           contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
@@ -151,9 +151,9 @@ void main() {
     tearDown(() => state.close());
 
     Future<void> _runTest(
-        MoorOptions options, List<Matcher> expectation) async {
+        DriftOptions options, List<Matcher> expectation) async {
       final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedMoorFile;
+      final fileState = file.currentResult as ParsedDriftFile;
 
       expect(file.errors.errors, isEmpty);
 
@@ -168,7 +168,7 @@ void main() {
 
     test('should generate correct queries with variables', () {
       return _runTest(
-        const MoorOptions.defaults(),
+        const DriftOptions.defaults(),
         [
           contains(
             r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
@@ -188,7 +188,7 @@ void main() {
 
     test('should generate correct data class', () {
       return _runTest(
-        const MoorOptions.defaults(),
+        const DriftOptions.defaults(),
         [
           contains('QueryNestedQuery0({this.b,this.c,})'),
           contains('QueryResult({this.a,required this.nestedQuery0,})'),

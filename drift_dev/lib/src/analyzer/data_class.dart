@@ -23,7 +23,7 @@ String dataClassNameForClassName(String tableName) {
 }
 
 String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
-    ClassElement element, MoorDartParser base) {
+    ClassElement element, DriftDartParser base) {
   final extending = dataClassName.getField('extending');
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();

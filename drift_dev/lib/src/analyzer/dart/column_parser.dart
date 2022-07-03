@@ -58,11 +58,11 @@ const String _errorMessage = 'This getter does not create a valid column that '
 /// the invocations on our way, we can extract the constraint for the column
 /// (e.g. its name, whether it has auto increment, is a primary key and so on).
 class ColumnParser {
-  final MoorDartParser base;
+  final DriftDartParser base;
 
   ColumnParser(this.base);
 
-  MoorColumn? parse(MethodDeclaration getter, Element element) {
+  DriftColumn? parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
     if (expr is! FunctionExpressionInvocation) {
@@ -422,7 +422,7 @@ class ColumnParser {
 
     final docString =
         getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
-    return MoorColumn(
+    return DriftColumn(
       type: columnType,
       dartGetterName: getter.name.name,
       name: name,

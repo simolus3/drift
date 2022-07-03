@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 
 void main() {
   test('throws cyclic exception when two tables reference each other', () {
-    final first = MoorTable(sqlName: 'a', dartTypeName: 'a');
-    final second = MoorTable(sqlName: 'b', dartTypeName: 'b');
+    final first = DriftTable(sqlName: 'a', dartTypeName: 'a');
+    final second = DriftTable(sqlName: 'b', dartTypeName: 'b');
     first.references.add(second);
     second.references.add(first);
 
@@ -15,10 +15,10 @@ void main() {
   });
 
   test('throws cyclic exception on a circular reference with three tables', () {
-    final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
-    final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
-    final c = MoorTable(sqlName: 'c', dartTypeName: 'c');
-    final d = MoorTable(sqlName: 'd', dartTypeName: 'd');
+    final a = DriftTable(sqlName: 'a', dartTypeName: 'a');
+    final b = DriftTable(sqlName: 'b', dartTypeName: 'b');
+    final c = DriftTable(sqlName: 'c', dartTypeName: 'c');
+    final d = DriftTable(sqlName: 'd', dartTypeName: 'd');
 
     a.references.add(b);
     b.references.add(c);
@@ -31,10 +31,10 @@ void main() {
   });
 
   test('sorts tables topologically when no cycles exist', () {
-    final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
-    final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
-    final c = MoorTable(sqlName: 'c', dartTypeName: 'c');
-    final d = MoorTable(sqlName: 'd', dartTypeName: 'd');
+    final a = DriftTable(sqlName: 'a', dartTypeName: 'a');
+    final b = DriftTable(sqlName: 'b', dartTypeName: 'b');
+    final c = DriftTable(sqlName: 'c', dartTypeName: 'c');
+    final d = DriftTable(sqlName: 'd', dartTypeName: 'd');
 
     a.references.add(b);
     b.references.add(c);
@@ -45,8 +45,8 @@ void main() {
 
   test('accepts self-references', () {
     // https://github.com/simolus3/drift/issues/586
-    final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
-    final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
+    final a = DriftTable(sqlName: 'a', dartTypeName: 'a');
+    final b = DriftTable(sqlName: 'b', dartTypeName: 'b');
 
     a.references
       ..add(a)
@@ -57,7 +57,7 @@ void main() {
   });
 }
 
-CircularReferenceException _expectFails(Iterable<MoorTable> table) {
+CircularReferenceException _expectFails(Iterable<DriftTable> table) {
   try {
     sortEntitiesTopologically(table);
     fail('Expected sortTablesTopologically to throw here');

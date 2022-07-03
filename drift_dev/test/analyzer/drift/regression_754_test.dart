@@ -25,7 +25,7 @@ CREATE TRIGGER tbl_au AFTER UPDATE ON tbl BEGIN
   INSERT INTO fts_idx(rowid, b, c) VALUES (new.a, new.b, new.c);
 END;
       ''',
-    }, options: const MoorOptions.defaults(modules: [SqlModule.fts5]));
+    }, options: const DriftOptions.defaults(modules: [SqlModule.fts5]));
 
     final result = await state.analyze('package:foo/a.moor');
 

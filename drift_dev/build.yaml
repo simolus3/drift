@@ -14,31 +14,31 @@ builders:
   preparing_builder:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["preparingBuilder"]
-    build_extensions: 
-      ".moor": [".temp.dart", ".dart_in_moor"]
-      ".drift": [".temp.dart", ".dart_in_moor"]
+    build_extensions:
+      ".moor": [".temp.dart", ".dart_in_drift"]
+      ".drift": [".temp.dart", ".dart_in_drift"]
     build_to: cache
     auto_apply: dependents
-    applies_builders: ["drift_dev|cleanup"]
+    applies_builders: ["drift_dev:cleanup"]
 
   drift_dev:
     import: "package:drift_dev/integrations/build.dart"
-    builder_factories: ["moorBuilder"]
+    builder_factories: ["driftBuilder"]
     build_extensions: {".dart": [".moor.g.part"]}
     auto_apply: dependents
     build_to: cache
-    required_inputs: [".dart_in_moor"]
-    applies_builders: ["source_gen|combining_builder"]
+    required_inputs: [".dart_in_drift"]
+    applies_builders: ["source_gen:combining_builder"]
 
   not_shared:
     import: "package:drift_dev/integrations/build.dart"
-    builder_factories: ["moorBuilderNotShared"]
+    builder_factories: ["driftBuilderNotShared"]
     build_extensions: {".dart": [".drift.dart"]}
     build_to: source
     auto_apply: none
-    required_inputs: [".dart_in_moor"]
+    required_inputs: [".dart_in_drift"]
 
 post_process_builders:
   cleanup:
     import: "package:drift_dev/integrations/build.dart"
-    builder_factory: "moorCleanup"
+    builder_factory: "driftCleanup"

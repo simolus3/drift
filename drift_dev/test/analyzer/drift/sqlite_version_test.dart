@@ -29,7 +29,7 @@ void main() {
     expect(file.errors.errors, hasLength(1));
     expect(
       file.errors.errors.single,
-      isA<ErrorInMoorFile>().having(
+      isA<ErrorInDriftFile>().having(
         (e) => e.message,
         'message',
         allOf(
@@ -46,7 +46,7 @@ void main() {
       const {
         'a|lib/main.moor': _moorFile,
       },
-      options: const MoorOptions.defaults(
+      options: const DriftOptions.defaults(
         sqliteAnalysisOptions: SqliteAnalysisOptions(
           version: SqliteVersion.v3_35,
         ),

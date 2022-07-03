@@ -2,12 +2,12 @@ part of 'parser.dart';
 
 /// Parses a [MoorView] from a Dart class.
 class ViewParser {
-  final MoorDartParser base;
+  final DriftDartParser base;
 
   ViewParser(this.base);
 
   Future<MoorView?> parseView(
-      ClassElement element, List<MoorTable> tables) async {
+      ClassElement element, List<DriftTable> tables) async {
     final name = await _parseViewName(element);
     final columns = (await _parseColumns(element)).toList();
     final staticReferences = await _parseStaticReferences(element, tables);
@@ -34,7 +34,7 @@ class ViewParser {
   }
 
   _DataClassInformation _readDataClassInformation(
-      List<MoorColumn> columns, ClassElement element) {
+      List<DriftColumn> columns, ClassElement element) {
     DartObject? useRowClass;
     DartObject? driftView;
     String? customParentClass;
@@ -114,7 +114,7 @@ class ViewParser {
     return ReCase(element.name).snakeCase;
   }
 
-  Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
+  Future<Iterable<DriftColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
         .map((t) => t.element)
         .followedBy([element])
@@ -154,7 +154,7 @@ class ViewParser {
           await base.loadElementDeclaration(field.getter!) as MethodDeclaration;
       final expression = (node.body as ExpressionFunctionBody).expression;
 
-      return MoorColumn(
+      return DriftColumn(
         type: sqlType,
         dartGetterName: field.name,
         name: ColumnName.implicitly(ReCase(field.name).snakeCase),
@@ -179,7 +179,7 @@ class ViewParser {
   }
 
   Future<List<TableReferenceInDartView>> _parseStaticReferences(
-      ClassElement element, List<MoorTable> tables) async {
+      ClassElement element, List<DriftTable> tables) async {
     return await Stream.fromIterable(element.allSupertypes
             .map((t) => t.element)
             .followedBy([element]).expand((e) => e.fields))
@@ -190,7 +190,7 @@ class ViewParser {
   }
 
   Future<TableReferenceInDartView?> _getStaticReference(
-      FieldElement field, List<MoorTable> tables) async {
+      FieldElement field, List<DriftTable> tables) async {
     if (field.getter != null) {
       try {
         final node = await base.loadElementDeclaration(field.getter!);
@@ -210,7 +210,7 @@ class ViewParser {
   Future<ViewQueryInformation> _parseQuery(
       ClassElement element,
       List<TableReferenceInDartView> references,
-      List<MoorColumn> columns) async {
+      List<DriftColumn> columns) async {
     final as =
         element.methods.where((method) => method.name == 'as').firstOrNull;
 

@@ -18,7 +18,7 @@ import 'package:drift_dev/src/analyzer/errors.dart';
 /// matching table. This restriction might be lifted in the future, but it makes
 /// the implementation easier.
 class CustomResultClassTransformer {
-  final BaseMoorAccessor accessor;
+  final BaseDriftAccessor accessor;
 
   CustomResultClassTransformer(this.accessor);
 

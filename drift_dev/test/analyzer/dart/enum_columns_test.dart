@@ -55,7 +55,7 @@ void main() {
 
     expect(
       errors,
-      contains(isA<MoorError>().having((e) => e.message, 'message',
+      contains(isA<DriftError>().having((e) => e.message, 'message',
           allOf(contains('Not an enum'), contains('NotAnEnum')))),
     );
   });

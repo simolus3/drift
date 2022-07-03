@@ -16,7 +16,7 @@ class TestState {
   TestState(this.backend, this.session);
 
   factory TestState.withContent(Map<String, String> content,
-      {MoorOptions? options}) {
+      {DriftOptions? options}) {
     final backend = TestBackend(
       {
         for (final entry in content.entries)

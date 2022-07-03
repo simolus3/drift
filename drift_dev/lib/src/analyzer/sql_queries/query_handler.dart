@@ -147,7 +147,7 @@ class QueryHandler {
     _applyFoundTables(tableFinder);
 
     final moorTables =
-        _foundTables.map(mapper.tableToMoor).whereType<MoorTable>().toList();
+        _foundTables.map(mapper.tableToMoor).whereType<DriftTable>().toList();
     final moorViews =
         _foundViews.map(mapper.viewToMoor).whereType<MoorView>().toList();
 
@@ -212,7 +212,7 @@ class QueryHandler {
       }
 
       final resultEntryToColumn = <ResultColumn, String>{};
-      final resultColumnNameToMoor = <String, MoorColumn>{};
+      final resultColumnNameToMoor = <String, DriftColumn>{};
       var matches = true;
 
       // go trough all columns of the table in question

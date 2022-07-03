@@ -5,11 +5,11 @@ import 'package:drift_dev/src/writer/utils/override_toString.dart';
 import 'package:drift_dev/writer.dart';
 
 class DataClassWriter {
-  final MoorEntityWithResultSet table;
+  final DriftEntityWithResultSet table;
   final Scope scope;
-  final columns = <MoorColumn>[];
+  final columns = <DriftColumn>[];
 
-  bool get isInsertable => table is MoorTable;
+  bool get isInsertable => table is DriftTable;
 
   late StringBuffer _buffer;
 
@@ -102,7 +102,7 @@ class DataClassWriter {
     // The GeneratedDatabase db parameter is not actually used, but we need to
     // keep it on tables for backwards compatibility.
     final includeUnusedDbColumn =
-        scope.generationOptions.writeForMoorPackage && table is MoorTable;
+        scope.generationOptions.writeForMoorPackage && table is DriftTable;
 
     _buffer
       ..write('factory $dataClassName.fromData')
@@ -296,7 +296,7 @@ class DataClassWriter {
   }
 
   void _writeToCompanion() {
-    final asTable = table as MoorTable;
+    final asTable = table as DriftTable;
 
     _buffer
       ..write(asTable.getNameForCompanionClass(scope.options))
@@ -353,17 +353,17 @@ class DataClassWriter {
 /// Generates code mapping a row (represented as a `Map`) to positional and
 /// named Dart arguments.
 class RowMappingWriter {
-  final List<MoorColumn> positional;
-  final Map<MoorColumn, String> named;
-  final MoorEntityWithResultSet table;
+  final List<DriftColumn> positional;
+  final Map<DriftColumn, String> named;
+  final DriftEntityWithResultSet table;
   final GenerationOptions options;
-  final MoorOptions moorOptions;
+  final DriftOptions moorOptions;
 
   RowMappingWriter(
       this.positional, this.named, this.table, this.options, this.moorOptions);
 
   void writeArguments(StringBuffer buffer) {
-    String readAndMap(MoorColumn column) {
+    String readAndMap(DriftColumn column) {
       final columnName = column.name.name;
       final rawData = "data['\${effectivePrefix}$columnName']";
       final sqlType = 'const ${sqlTypes[column.type]}()';

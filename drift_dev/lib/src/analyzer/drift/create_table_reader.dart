@@ -30,13 +30,13 @@ class CreateTableReader {
   CreateTableReader(this.stmt, this.step, this.helper,
       [this.imports = const []]);
 
-  Future<MoorTable?> extractTable(TypeMapper mapper) async {
+  Future<DriftTable?> extractTable(TypeMapper mapper) async {
     Table table;
     try {
       table = _schemaReader.read(stmt);
     } catch (e, s) {
       print(s);
-      step.reportError(ErrorInMoorFile(
+      step.reportError(ErrorInDriftFile(
         span: stmt.tableNameToken!.span,
         message: 'Could not extract schema information for this table: $e',
       ));
@@ -44,8 +44,8 @@ class CreateTableReader {
       return null;
     }
 
-    final foundColumns = <String, MoorColumn>{};
-    Set<MoorColumn>? primaryKeyFromTableConstraint;
+    final foundColumns = <String, DriftColumn>{};
+    Set<DriftColumn>? primaryKeyFromTableConstraint;
 
     for (final column in table.resultColumns) {
       final features = <ColumnFeature>[];
@@ -68,7 +68,7 @@ class CreateTableReader {
         final dartType = await _readDartType(dartTypeName);
 
         if (dartType == null) {
-          step.reportError(ErrorInMoorFile(
+          step.reportError(ErrorInDriftFile(
             message: 'Type $dartTypeName could not be found. Are you missing '
                 'an import?',
             severity: Severity.error,
@@ -82,7 +82,7 @@ class CreateTableReader {
               helper.helperLibrary.typeProvider,
             );
           } on InvalidTypeForEnumConverterException catch (e) {
-            step.reportError(ErrorInMoorFile(
+            step.reportError(ErrorInDriftFile(
               message: e.errorDescription,
               severity: Severity.error,
               span: column.definition!.typeNames!.span,
@@ -112,7 +112,7 @@ class CreateTableReader {
         if (constraint is MappedBy) {
           if (converter != null) {
             // Already has a converter from an ENUM type
-            step.reportError(ErrorInMoorFile(
+            step.reportError(ErrorInDriftFile(
               message: 'This column has an ENUM type, which implicitly creates '
                   "a type converter. You can't apply another converter to such "
                   'column. ',
@@ -148,13 +148,13 @@ class CreateTableReader {
       // if the column definition isn't set - which can happen for CREATE
       // VIRTUAL TABLE statements - use the entire statement as declaration.
       final declaration =
-          MoorColumnDeclaration(column.definition ?? stmt, step.file);
+          DriftColumnDeclaration(column.definition ?? stmt, step.file);
 
       if (converter != null) {
         column.applyTypeHint(TypeConverterHint(converter));
       }
 
-      final parsed = MoorColumn(
+      final parsed = DriftColumn(
         type: moorType,
         nullable: column.type.nullable != false,
         dartGetterName: overriddenDartName ?? dartName,
@@ -182,7 +182,7 @@ class CreateTableReader {
       if (moorTableInfo.useExistingDartClass) {
         final clazz = await findDartClass(step, imports, overriddenNames);
         if (clazz == null) {
-          step.reportError(ErrorInMoorFile(
+          step.reportError(ErrorInDriftFile(
             span: stmt.tableNameToken!.span,
             message: 'Existing Dart class $overriddenNames was not found, are '
                 'you missing an import?',
@@ -221,7 +221,7 @@ class CreateTableReader {
       }
     }
 
-    final moorTable = MoorTable(
+    final moorTable = DriftTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
@@ -232,14 +232,14 @@ class CreateTableReader {
       overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
       // we take care of writing the primary key ourselves
       overrideDontWriteConstraints: true,
-      declaration: MoorTableDeclaration(stmt, step.file),
+      declaration: DriftTableDeclaration(stmt, step.file),
       existingRowClass: existingRowClass,
       isStrict: table.isStrict,
     )..parserTable = table;
 
     // Having a mapping from parser table to moor tables helps with IDE features
     // like "go to definition"
-    table.setMeta<MoorTable>(moorTable);
+    table.setMeta<DriftTable>(moorTable);
 
     return moorTable;
   }
@@ -255,7 +255,7 @@ class CreateTableReader {
           code,
           imports.map((e) => e.importedFile).where((e) => e.endsWith('.dart')));
     } on CannotReadExpressionException catch (e) {
-      step.reportError(ErrorInMoorFile(span: mapper.span!, message: e.msg));
+      step.reportError(ErrorInDriftFile(span: mapper.span!, message: e.msg));
       return null;
     }
 
@@ -265,7 +265,7 @@ class CreateTableReader {
       sqlType,
       nullable,
       (errorMsg) => step
-          .reportError(ErrorInMoorFile(span: mapper.span!, message: errorMsg)),
+          .reportError(ErrorInDriftFile(span: mapper.span!, message: errorMsg)),
       helper,
     );
   }

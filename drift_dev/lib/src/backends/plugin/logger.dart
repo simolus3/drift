@@ -7,7 +7,7 @@ var _initialized = false;
 /// Configures the [Logger.root] logger to work with the plugin. Sadly, we don't
 /// really have a way to view [print] outputs from plugins, so we use the
 /// diagnostics notification for that.
-void setupLogger(MoorPlugin plugin) {
+void setupLogger(DriftPlugin plugin) {
   assert(!_initialized, 'Logger initialized multiple times');
 
   Logger.root.level = Level.ALL;

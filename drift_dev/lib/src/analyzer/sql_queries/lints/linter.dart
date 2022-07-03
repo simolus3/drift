@@ -1,4 +1,4 @@
-import 'package:drift_dev/moor_generator.dart' show MoorColumn;
+import 'package:drift_dev/moor_generator.dart' show DriftColumn;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../query_handler.dart';
@@ -173,7 +173,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
     // second, check that no required columns are left out
     final resolved = e.table.resolved;
-    List<MoorColumn> required;
+    List<DriftColumn> required;
     if (resolved is Table) {
       final specifiedTable =
           linter.mapper.tableToMoor(e.table.resolved as Table)!;

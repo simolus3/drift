@@ -11,7 +11,7 @@ import 'package:drift_dev/src/analyzer/options.dart';
 /// passing a [Scope] we will always be able to write code in a parent scope.
 class Writer {
   late final Scope _root;
-  final MoorOptions options;
+  final DriftOptions options;
   final GenerationOptions generationOptions;
 
   Writer(this.options, {this.generationOptions = const GenerationOptions()}) {
@@ -62,7 +62,7 @@ class Scope extends _Node {
         writer = writer ?? parent!.writer,
         super(parent);
 
-  MoorOptions get options => writer.options;
+  DriftOptions get options => writer.options;
 
   GenerationOptions get generationOptions => writer.generationOptions;
 
@@ -160,11 +160,11 @@ class DartScope {
   }
 }
 
-extension WriterUtilsForOptions on MoorOptions {
+extension WriterUtilsForOptions on DriftOptions {
   String get fieldModifier => generateMutableClasses ? '' : 'final';
 }
 
-extension WriterUtilsForColumns on MoorColumn {
+extension WriterUtilsForColumns on DriftColumn {
   /// Adds an `this.` prefix is the [dartGetterName] is in [locals].
   String thisIfNeeded(Set<String> locals) {
     if (locals.contains(dartGetterName)) {

@@ -1,6 +1,6 @@
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/drift/find_dart_class.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/moor/find_dart_class.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
@@ -11,15 +11,15 @@ import '../dart_types.dart';
 class ViewAnalyzer extends BaseAnalyzer {
   final List<ImportStatement> imports;
 
-  ViewAnalyzer(Step step, List<MoorTable> tables, this.imports)
+  ViewAnalyzer(Step step, List<DriftTable> tables, this.imports)
       : super(tables, const [], step);
 
   /// Resolves all the views in topological order.
   Future<void> resolve(Iterable<MoorView> viewsToAnalyze) async {
     // Going through the topologically sorted list and analyzing each view.
     for (final view in viewsToAnalyze) {
-      if (view.declaration is! MoorViewDeclaration) continue;
-      final viewDeclaration = view.declaration as MoorViewDeclaration;
+      if (view.declaration is! DriftViewDeclaration) continue;
+      final viewDeclaration = view.declaration as DriftViewDeclaration;
 
       final ctx =
           engine.analyzeNode(viewDeclaration.node, view.file!.parseResult.sql);
@@ -30,7 +30,7 @@ class ViewAnalyzer extends BaseAnalyzer {
           const SchemaFromCreateTable(driftExtensions: true)
               .readView(ctx, declaration);
 
-      final columns = <MoorColumn>[];
+      final columns = <DriftColumn>[];
       final columnDartNames = <String>{};
       for (final column in parserView.resolvedColumns) {
         final type = column.type;
@@ -39,7 +39,7 @@ class ViewAnalyzer extends BaseAnalyzer {
           converter = (type.hint as TypeConverterHint).converter;
         }
 
-        final moorColumn = MoorColumn(
+        final moorColumn = DriftColumn(
           type: mapper.resolvedToMoor(type),
           name: ColumnName.explicitly(column.name),
           nullable: type?.nullable == true,
@@ -59,7 +59,7 @@ class ViewAnalyzer extends BaseAnalyzer {
         if (desiredNames.useExistingDartClass) {
           final clazz = await findDartClass(step, imports, dataClassName);
           if (clazz == null) {
-            step.reportError(ErrorInMoorFile(
+            step.reportError(ErrorInDriftFile(
               span: declaration.viewNameToken!.span,
               message: 'Existing Dart class $dataClassName was not found, are '
                   'you missing an import?',

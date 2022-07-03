@@ -9,16 +9,16 @@ import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 /// Handles `REFERENCES` clauses in tables by resolving their columns and
 /// reporting errors if they don't exist. Further, sets the
-/// [MoorTable.references] field for tables declared in moor.
+/// [DriftTable.references] field for tables declared in moor.
 class EntityHandler extends BaseAnalyzer {
-  final ParsedMoorFile file;
+  final ParsedDriftFile file;
 
   AnalyzeMoorStep get moorStep => step as AnalyzeMoorStep;
 
   EntityHandler(
     AnalyzeMoorStep step,
     this.file,
-    List<MoorTable> availableTables,
+    List<DriftTable> availableTables,
   ) :
         // we'll analyze views later, so pass an empty list for now. Otherwise
         // the incomplete views would be added to the engine.
@@ -27,17 +27,17 @@ class EntityHandler extends BaseAnalyzer {
   }
 
   final Map<CreateTriggerStatement, MoorTrigger> _triggers = {};
-  final Map<TableInducingStatement, MoorTable> _tables = {};
+  final Map<TableInducingStatement, DriftTable> _tables = {};
   final Map<CreateIndexStatement, MoorIndex> _indexes = {};
 
   late _ReferenceResolvingVisitor _referenceResolver;
 
   void handle() {
     for (final entity in file.declaredEntities) {
-      if (entity is MoorTable) {
+      if (entity is DriftTable) {
         entity.references.clear();
         final node =
-            _handleMoorDeclaration<MoorTableDeclaration>(entity, _tables);
+            _handleMoorDeclaration<DriftTableDeclaration>(entity, _tables);
         _lint(node, entity.sqlName);
       } else if (entity is MoorTrigger) {
         entity.clearResolvedReferences();
@@ -55,9 +55,9 @@ class EntityHandler extends BaseAnalyzer {
       } else if (entity is MoorIndex) {
         entity.table = null;
 
-        _handleMoorDeclaration<MoorIndexDeclaration>(entity, _indexes);
+        _handleMoorDeclaration<DriftIndexDeclaration>(entity, _indexes);
       } else if (entity is SpecialQuery) {
-        final node = (entity.declaration as MoorSpecialQueryDeclaration).node;
+        final node = (entity.declaration as DriftSpecialQueryDeclaration).node;
 
         _lint(node, 'special @create table');
         entity.references.addAll(_findTables(node.statement));
@@ -73,7 +73,7 @@ class EntityHandler extends BaseAnalyzer {
     lintContext(context, displayName);
   }
 
-  Iterable<MoorTable> _findTables(AstNode node) {
+  Iterable<DriftTable> _findTables(AstNode node) {
     return findReferences(node, includeViews: false).cast();
   }
 
@@ -83,7 +83,7 @@ class EntityHandler extends BaseAnalyzer {
     return finder.writtenTables.map(mapper.writtenToMoor);
   }
 
-  AstNode _handleMoorDeclaration<T extends MoorDeclaration>(
+  AstNode _handleMoorDeclaration<T extends DriftFileDeclaration>(
     HasDeclaration e,
     Map<AstNode, HasDeclaration> map,
   ) {
@@ -94,7 +94,7 @@ class EntityHandler extends BaseAnalyzer {
     return declaration.node;
   }
 
-  MoorTable? _inducedTable(TableInducingStatement stmt) {
+  DriftTable? _inducedTable(TableInducingStatement stmt) {
     return _tables[stmt];
   }
 
@@ -112,7 +112,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
 
   _ReferenceResolvingVisitor(this.handler);
 
-  MoorTable? _resolveTable(TableReference reference) {
+  DriftTable? _resolveTable(TableReference reference) {
     return handler.tables
         .firstWhereOrNull((t) => t.sqlName == reference.tableName);
   }
@@ -121,7 +121,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
   void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
     final table = _resolveTable(e.onTable);
     if (table == null) {
-      handler.step.reportError(ErrorInMoorFile(
+      handler.step.reportError(ErrorInDriftFile(
         severity: Severity.error,
         span: e.onTable.span!,
         message: 'Target table ${e.onTable.tableName} could not be found.',
@@ -136,7 +136,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
   void visitCreateIndexStatement(CreateIndexStatement e, void arg) {
     final table = _resolveTable(e.on);
     if (table == null) {
-      handler.step.reportError(ErrorInMoorFile(
+      handler.step.reportError(ErrorInDriftFile(
         severity: Severity.error,
         span: e.on.span!,
         message: 'Target table ${e.on.tableName} could not be found.',
@@ -153,7 +153,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
     final referencedTable = _resolveTable(clause.foreignTable);
 
     if (referencedTable == null) {
-      handler.step.reportError(ErrorInMoorFile(
+      handler.step.reportError(ErrorInDriftFile(
         severity: Severity.error,
         span: clause.span!,
         message:
