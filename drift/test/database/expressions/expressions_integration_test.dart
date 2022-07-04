@@ -52,6 +52,10 @@ void main() {
     expect(eval(expr.date()), completion('2020-09-03'));
     expect(eval(expr.time()), completion('23:55:00'));
     expect(eval(expr.datetime()), completion('2020-09-03 23:55:00'));
+    expect(eval(expr.julianday()), completion('2459096.496527778'));
+    expect(eval(expr.unixepoch()), completion('1599177300'));
+    expect(eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
+        completion('2020-09-03 23:55:00'));
 
     // Really hacky...
     final localDate = local.toIso8601String().substring(0, 10);
