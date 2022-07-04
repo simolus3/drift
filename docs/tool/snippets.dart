@@ -6,20 +6,11 @@ import 'package:sqlparser/sqlparser.dart';
 
 class SnippetsBuilder extends CodeExcerptBuilder {
   // ignore: avoid_unused_constructor_parameters
-  SnippetsBuilder([BuilderOptions? options]);
+  SnippetsBuilder([BuilderOptions? options]) : super(dropIndendation: true);
 
   @override
   bool shouldEmitFor(AssetId input, Excerpter excerpts) {
     return true;
-  }
-
-  @override
-  String Function(
-          Excerpt excerpt, ContinousRegion last, ContinousRegion upcoming)
-      writePlasterFor(AssetId id) {
-    return (excerpt, last, upcoming) {
-      return '\n';
-    };
   }
 
   @override
