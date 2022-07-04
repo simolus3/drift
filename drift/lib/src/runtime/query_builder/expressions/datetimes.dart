@@ -46,6 +46,22 @@ extension DateTimeExpressions on Expression<DateTime?> {
     );
   }
 
+  /// Formats this datetime in the format `hour:minute:second`.
+  Expression<String?> get time {
+    return FunctionCallExpression(
+      'TIME',
+      [this, const Constant<String>('unixepoch')],
+    );
+  }
+
+  /// Formats this datetime in the format `year-month-day hour:minute:second`.
+  Expression<String?> get datetime {
+    return FunctionCallExpression(
+      'DATETIME',
+      [this, const Constant<String>('unixepoch')],
+    );
+  }
+
   /// Returns an expression containing the amount of seconds from the unix
   /// epoch (January 1st, 1970) to `this` datetime expression. The datetime is
   /// assumed to be in utc.
