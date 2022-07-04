@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 import '../../test_utils/test_utils.dart';
 
-typedef _Extractor = Expression<int?> Function(Expression<DateTime?> d);
+typedef _Extractor = Expression Function(Expression<DateTime?> d);
 
 void main() {
   const column =
@@ -17,15 +17,14 @@ void main() {
       (d) => d.hour: "CAST(strftime('%H', val, 'unixepoch') AS INTEGER)",
       (d) => d.minute: "CAST(strftime('%M', val, 'unixepoch') AS INTEGER)",
       (d) => d.second: "CAST(strftime('%S', val, 'unixepoch') AS INTEGER)",
+      (d) => d.date: "DATE(val, 'unixepoch')",
+      (d) => d.datetime: "DATETIME(val, 'unixepoch')",
+      (d) => d.time: "TIME(val, 'unixepoch')",
     };
 
     expectedResults.forEach((key, value) {
       test('should extract field', () {
-        final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
-        key(column).writeInto(ctx);
-
-        expect(ctx.sql, value);
-
+        expect(key(column), generates(value));
         expectEquals(key(column), key(column));
       });
     });

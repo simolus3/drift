@@ -13,9 +13,8 @@ void expectNotEquals(dynamic a, dynamic expected) {
 
 /// Matcher for [Component]-subclasses. Expect that a component generates the
 /// matching [sql] and, optionally, the matching [variables].
-Matcher generates(dynamic sql, [dynamic variables]) {
-  final variablesMatcher = variables != null ? wrapMatcher(variables) : isEmpty;
-  return _GeneratesSqlMatcher(wrapMatcher(sql), variablesMatcher);
+Matcher generates(dynamic sql, [dynamic variables = isEmpty]) {
+  return _GeneratesSqlMatcher(wrapMatcher(sql), wrapMatcher(variables));
 }
 
 class _GeneratesSqlMatcher extends Matcher {
