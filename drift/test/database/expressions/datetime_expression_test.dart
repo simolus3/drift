@@ -17,9 +17,15 @@ void main() {
       (d) => d.hour: "CAST(strftime('%H', val, 'unixepoch') AS INTEGER)",
       (d) => d.minute: "CAST(strftime('%M', val, 'unixepoch') AS INTEGER)",
       (d) => d.second: "CAST(strftime('%S', val, 'unixepoch') AS INTEGER)",
-      (d) => d.date: "DATE(val, 'unixepoch')",
-      (d) => d.datetime: "DATETIME(val, 'unixepoch')",
-      (d) => d.time: "TIME(val, 'unixepoch')",
+      (d) => d.date(): "DATE(val, 'unixepoch')",
+      (d) => d.datetime(): "DATETIME(val, 'unixepoch')",
+      (d) => d.time(): "TIME(val, 'unixepoch')",
+      (d) => d.date([unixEpochModifier, localTimeModifier]):
+          "DATE(val, 'unixepoch', 'localtime')",
+      (d) => d.datetime([unixEpochModifier, localTimeModifier]):
+          "DATETIME(val, 'unixepoch', 'localtime')",
+      (d) => d.time([unixEpochModifier, localTimeModifier]):
+          "TIME(val, 'unixepoch', 'localtime')",
     };
 
     expectedResults.forEach((key, value) {

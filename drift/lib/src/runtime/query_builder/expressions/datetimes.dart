@@ -10,6 +10,137 @@ const Expression<DateTime> currentDate =
 const Expression<DateTime> currentDateAndTime =
     _CustomDateTimeExpression("strftime('%s', CURRENT_TIMESTAMP)");
 
+/// The "n days" modifiers simply add the specified amount of time to the date
+/// and time specified by the arguments to the left. Note that "±NNN months"
+/// works by rendering the original date into the YYYY-MM-DD format, adding the
+/// ±NNN to the MM month value, then normalizing the result. Thus, for example,
+/// the date 2001-03-31 modified by '+1 month' initially yields 2001-04-31, but
+/// April only has 30 days so the date is normalized to 2001-05-01. A similar
+/// effect occurs when the original date is February 29 of a leapyear and the
+/// modifier is ±N years where N is not a multiple of four.
+DateTimeModifier nDaysModifier(int days) => DateTimeModifier._('$days days');
+
+/// The "n hours" modifiers simply add the specified amount of time to the date
+/// and time specified by the arguments to the left. Note that "±NNN months"
+/// works by rendering the original date into the YYYY-MM-DD format, adding the
+/// ±NNN to the MM month value, then normalizing the result. Thus, for example,
+/// the date 2001-03-31 modified by '+1 month' initially yields 2001-04-31, but
+/// April only has 30 days so the date is normalized to 2001-05-01. A similar
+/// effect occurs when the original date is February 29 of a leapyear and the
+/// modifier is ±N years where N is not a multiple of four.
+DateTimeModifier nHoursModifier(int hours) =>
+    DateTimeModifier._('$hours hours');
+
+/// The "n minutes" modifiers simply add the specified amount of time to the
+/// date and time specified by the arguments to the left. Note that
+/// "±NNN months" works by rendering the original date into the YYYY-MM-DD
+/// format, adding the ±NNN to the MM month value, then normalizing the result.
+/// Thus, for example, the date 2001-03-31 modified by '+1 month' initially
+/// yields 2001-04-31, but April only has 30 days so the date is normalized to
+/// 2001-05-01. A similar effect occurs when the original date is February 29 of
+/// a leapyear and the modifier is ±N years where N is not a multiple of four.
+DateTimeModifier nMinutesModifier(int minutes) =>
+    DateTimeModifier._('$minutes minutes');
+
+/// The "n seconds" modifiers simply add the specified amount of time to the
+/// date and time specified by the arguments to the left. Note that
+/// "±NNN months" works by rendering the original date into the YYYY-MM-DD
+/// format, adding the ±NNN to the MM month value, then normalizing the result.
+/// Thus, for example, the date 2001-03-31 modified by '+1 month' initially
+/// yields 2001-04-31, but April only has 30 days so the date is normalized to
+/// 2001-05-01. A similar effect occurs when the original date is February 29 of
+/// a leapyear and the modifier is ±N years where N is not a multiple of four.
+DateTimeModifier nSecondsModifier(double seconds) =>
+    DateTimeModifier._('$seconds seconds');
+
+/// The "n months" modifiers simply add the specified amount of time to the date
+/// and time specified by the arguments to the left. Note that "±NNN months"
+/// works by rendering the original date into the YYYY-MM-DD format, adding the
+/// ±NNN to the MM month value, then normalizing the result. Thus, for example,
+/// the date 2001-03-31 modified by '+1 month' initially yields 2001-04-31, but
+/// April only has 30 days so the date is normalized to 2001-05-01. A similar
+/// effect occurs when the original date is February 29 of a leapyear and the
+/// modifier is ±N years where N is not a multiple of four.
+DateTimeModifier nMonthsModifier(int months) =>
+    DateTimeModifier._('$months months');
+
+/// The "n years" modifiers simply add the specified amount of time to the date
+/// and time specified by the arguments to the left. Note that "±NNN months"
+/// works by rendering the original date into the YYYY-MM-DD format, adding the
+/// ±NNN to the MM month value, then normalizing the result. Thus, for example,
+/// the date 2001-03-31 modified by '+1 month' initially yields 2001-04-31, but
+/// April only has 30 days so the date is normalized to 2001-05-01. A similar
+/// effect occurs when the original date is February 29 of a leapyear and the
+/// modifier is ±N years where N is not a multiple of four.
+DateTimeModifier nYearsModifier(int years) =>
+    DateTimeModifier._('$years years');
+
+/// The "start of day" modifier shift the date backwards to the beginning of the
+/// day.
+const startOfDayModifier = DateTimeModifier._('start of day');
+
+/// The "start of month" modifier shift the date backwards to the beginning of
+/// the month.
+const startOfMonthModifier = DateTimeModifier._('start of month');
+
+/// The "start of year" modifier shift the date backwards to the beginning of
+/// the year.
+const startOfYearModifier = DateTimeModifier._('start of year');
+
+/// The "weekday" modifier advances the date forward, if necessary, to the next
+/// date where the weekday number is N. Sunday is 0, Monday is 1, and so forth.
+/// If the date is already on the desired weekday, the "weekday" modifier leaves
+/// the date unchanged.
+DateTimeModifier weekdayNModifier(WeekdayOffset weekday) =>
+    DateTimeModifier._('weekday ${weekday.index}');
+
+/// The "unixepoch" modifier only works if it immediately follows a time
+/// value in the DDDDDDDDDD format. This modifier causes the DDDDDDDDDD to be
+/// interpreted not as a Julian day number as it normally would be, but as
+/// Unix Time - the number of seconds since 1970. If the "unixepoch" modifier
+/// does not follow a time value of the form DDDDDDDDDD which expresses the
+/// number of seconds since 1970 or if other modifiers separate the "unixepoch"
+/// modifier from prior DDDDDDDDDD then the behavior is undefined. For SQLite
+/// versions before 3.16.0 (2017-01-02), the "unixepoch" modifier only works
+/// for dates between 0000-01-01 00:00:00 and 5352-11-01 10:52:47 (unix times of
+/// -62167219200 through 106751991167).
+const unixEpochModifier = DateTimeModifier._('unixepoch');
+
+/// The "julianday" modifier must immediately follow the initial time-value
+/// which must be of the form DDDDDDDDD. Any other use of the 'julianday'
+/// modifier is an error and causes the function to return NULL. The 'julianday'
+/// modifier forces the time-value number to be interpreted as a julian-day
+/// number. As this is the default behavior, the 'julianday' modifier is
+/// scarcely more than a no-op. The only difference is that adding 'julianday'
+/// forces the DDDDDDDDD time-value format, and causes a NULL to be returned if
+/// any other time-value format is used.
+const julianDayModifier = DateTimeModifier._('julianday');
+
+/// The "auto" modifier must immediately follow the initial time-value. If the
+/// time-value is numeric (the DDDDDDDDDD format) then the 'auto' modifier
+/// causes the time-value to interpreted as either a julian day number or a unix
+/// timestamp, depending on its magnitude. If the value is between 0.0 and
+/// 5373484.499999, then it is interpreted as a julian day number (corresponding
+/// to dates between -4713-11-24 12:00:00 and 9999-12-31 23:59:59, inclusive).
+/// For numeric values outside of the range of valid julian day numbers, but
+/// within the range of -210866760000 to 253402300799, the 'auto' modifier
+/// causes the value to be interpreted as a unix timestamp. Other numeric values
+/// are out of range and cause a NULL return. The 'auto' modifier is a no-op for
+/// text time-values.
+const autoModifier = DateTimeModifier._('auto');
+
+/// The "localtime" modifier (14) assumes the time value to its left is in
+/// Universal Coordinated Time (UTC) and adjusts that time value so that it is
+/// in localtime. If "localtime" follows a time that is not UTC, then the
+/// behavior is undefined.
+const localTimeModifier = DateTimeModifier._('localtime');
+
+/// The "utc" modifier is the opposite of "localtime". "utc" assumes that the
+/// time value to its left is in the local timezone and adjusts that time value
+/// to be in UTC. If the time to the left is not in localtime, then the result
+/// of "utc" is undefined.
+const utcModifier = DateTimeModifier._('utc');
+
 class _CustomDateTimeExpression extends CustomExpression<DateTime> {
   @override
   Precedence get precedence => Precedence.primary;
@@ -39,27 +170,60 @@ extension DateTimeExpressions on Expression<DateTime?> {
   Expression<int?> get second => _StrftimeSingleFieldExpression('%S', this);
 
   /// Formats this datetime in the format `year-month-day`.
-  Expression<String?> get date {
-    return FunctionCallExpression(
-      'DATE',
-      [this, const Constant<String>('unixepoch')],
-    );
+  Expression<String?> date(
+      [Iterable<DateTimeModifier> modifiers = const [unixEpochModifier]]) {
+    return FunctionCallExpression('DATE', [this, ...modifiers]);
   }
 
   /// Formats this datetime in the format `hour:minute:second`.
-  Expression<String?> get time {
-    return FunctionCallExpression(
-      'TIME',
-      [this, const Constant<String>('unixepoch')],
-    );
+  Expression<String?> time(
+      [Iterable<DateTimeModifier> modifiers = const [unixEpochModifier]]) {
+    return FunctionCallExpression('TIME', [this, ...modifiers]);
   }
 
   /// Formats this datetime in the format `year-month-day hour:minute:second`.
-  Expression<String?> get datetime {
+  Expression<String?> datetime(
+      [Iterable<DateTimeModifier> modifiers = const [unixEpochModifier]]) {
+    return FunctionCallExpression('DATETIME', [this, ...modifiers]);
+  }
+
+  /// Formats this datetime as a unix timestamp - the number of seconds since
+  /// 1970-01-01 00:00:00 UTC. The unixepoch() always returns an integer, even
+  /// if the input time-value has millisecond precision.
+  Expression<String?> unixepoch(
+      [Iterable<DateTimeModifier> modifiers = const [unixEpochModifier]]) {
+    return FunctionCallExpression('UNIXEPOCH', [this, ...modifiers]);
+  }
+
+  /// Formats this datetime in the Julian day format - a fractional number of
+  /// days since noon in Greenwich on November 24, 4714 B.C.
+  Expression<String?> julianday(
+      [Iterable<DateTimeModifier> modifiers = const [unixEpochModifier]]) {
+    return FunctionCallExpression('JULIANDAY', [this, ...modifiers]);
+  }
+
+  /// Formats this datetime according to the format string specified as the
+  /// first argument. The format string supports the most common substitutions
+  /// found in the strftime() function from the standard C library plus two new
+  /// substitutions, %f and %J. The following is a complete list of valid
+  /// strftime() substitutions:
+  /// * %d		day of month: 00
+  /// * %f		fractional seconds: SS.SSS
+  /// * %H		hour: 00-24
+  /// * %j		day of year: 001-366
+  /// * %J		Julian day number (fractional)
+  /// * %m		month: 01-12
+  /// * %M		minute: 00-59
+  /// * %s		seconds since 1970-01-01
+  /// * %S		seconds: 00-59
+  /// * %w		day of week 0-6 with Sunday==0
+  /// * %W		week of year: 00-53
+  /// * %Y		year: 0000-9999
+  /// * %%		%
+  Expression<String?> strftime(String format,
+      [Iterable<DateTimeModifier> modifiers = const [unixEpochModifier]]) {
     return FunctionCallExpression(
-      'DATETIME',
-      [this, const Constant<String>('unixepoch')],
-    );
+        'STRFTIME', [Constant<String>(format), this, ...modifiers]);
   }
 
   /// Returns an expression containing the amount of seconds from the unix
@@ -106,4 +270,33 @@ class _StrftimeSingleFieldExpression extends Expression<int?> {
         other.format == format &&
         other.date == date;
   }
+}
+
+/// DateTime modifier constants
+class DateTimeModifier extends Constant<String> {
+  const DateTimeModifier._(super.value);
+}
+
+/// Weekday offset to be used with [weekdayNModifier]
+enum WeekdayOffset {
+  /// Sunday (+0)
+  sunday,
+
+  /// Monday (+1)
+  monday,
+
+  /// Tueday (+2)
+  tuesday,
+
+  /// Wednesday (+3)
+  wednesday,
+
+  /// Thursday (+4)
+  thursday,
+
+  /// Friday (+5)
+  friday,
+
+  /// Saturday (+6)
+  saturday,
 }

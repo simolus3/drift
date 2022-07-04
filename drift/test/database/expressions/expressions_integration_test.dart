@@ -38,18 +38,25 @@ void main() {
   });
 
   test('extracting values from datetime', () {
-    final expr = Variable.withDateTime(DateTime.utc(2020, 09, 04, 8, 55));
+    final expr = Variable.withDateTime(DateTime.utc(2020, 09, 03, 23, 55));
 
     expect(eval(expr.year), completion(2020));
     expect(eval(expr.month), completion(9));
-    expect(eval(expr.day), completion(4));
-    expect(eval(expr.hour), completion(8));
+    expect(eval(expr.day), completion(3));
+    expect(eval(expr.hour), completion(23));
     expect(eval(expr.minute), completion(55));
     expect(eval(expr.second), completion(0));
 
-    expect(eval(expr.date), completion('2020-09-04'));
-    expect(eval(expr.time), completion('08:55:00'));
-    expect(eval(expr.datetime), completion('2020-09-04 08:55:00'));
+    expect(eval(expr.date()), completion('2020-09-03'));
+    expect(eval(expr.time()), completion('23:55:00'));
+    expect(eval(expr.datetime()), completion('2020-09-03 23:55:00'));
+
+    expect(eval(expr.date([unixEpochModifier, localTimeModifier])),
+        completion('2020-09-04'));
+    expect(eval(expr.time([unixEpochModifier, localTimeModifier])),
+        completion('00:55:00'));
+    expect(eval(expr.datetime([unixEpochModifier, localTimeModifier])),
+        completion('2020-09-04 00:55:00'));
   });
 
   test('rowid', () {
