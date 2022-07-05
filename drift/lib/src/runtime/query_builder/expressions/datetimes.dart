@@ -40,26 +40,26 @@ extension DateTimeExpressions on Expression<DateTime?> {
 
   /// Formats this datetime in the format `year-month-day`.
   Expression<String?> get date => FunctionCallExpression(
-      'DATE', [this, const DateTimeModifier.unixEpoch()]);
+      'DATE', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime in the format `hour:minute:second`.
   Expression<String?> get time => FunctionCallExpression(
-      'TIME', [this, const DateTimeModifier.unixEpoch()]);
+      'TIME', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime in the format `year-month-day hour:minute:second`.
   Expression<String?> get datetime => FunctionCallExpression(
-      'DATETIME', [this, const DateTimeModifier.unixEpoch()]);
+      'DATETIME', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime as a unix timestamp - the number of seconds since
   /// 1970-01-01 00:00:00 UTC. The unixepoch() always returns an integer, even
   /// if the input time-value has millisecond precision.
   Expression<int?> get unixepoch => FunctionCallExpression(
-      'UNIXEPOCH', [this, const DateTimeModifier.unixEpoch()]);
+      'UNIXEPOCH', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime in the Julian day format - a fractional number of
   /// days since noon in Greenwich on November 24, 4714 B.C.
   Expression<double?> get julianday => FunctionCallExpression(
-      'JULIANDAY', [this, const DateTimeModifier.unixEpoch()]);
+      'JULIANDAY', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime according to the format string specified as the
   /// first argument. The format string supports the most common substitutions
@@ -81,14 +81,14 @@ extension DateTimeExpressions on Expression<DateTime?> {
   /// * %%		%
   Expression<String?> strftime(String format) => FunctionCallExpression(
       'STRFTIME',
-      [Constant<String>(format), this, const DateTimeModifier.unixEpoch()]);
+      [Constant<String>(format), this, const DateTimeModifier._unixEpoch()]);
 
   /// Apply a modifier that alters the date and/or time.
   Expression<DateTime?> modify(DateTimeModifier modifier) =>
       FunctionCallExpression('strftime', [
         const Constant<String>('%s'),
         this,
-        const DateTimeModifier.unixEpoch(),
+        const DateTimeModifier._unixEpoch(),
         modifier
       ]);
 
@@ -99,7 +99,7 @@ extension DateTimeExpressions on Expression<DateTime?> {
       FunctionCallExpression('strftime', [
         const Constant<String>('%s'),
         this,
-        const DateTimeModifier.unixEpoch(),
+        const DateTimeModifier._unixEpoch(),
         ...modifiers
       ]);
 
@@ -248,30 +248,30 @@ class DateTimeModifier extends Constant<String> {
   /// For SQLite versions before 3.16.0 (2017-01-02), the "unixepoch" modifier
   /// only works for dates between 0000-01-01 00:00:00 and 5352-11-01 10:52:47
   /// (unix times of -62167219200 through 106751991167).
-  const DateTimeModifier.unixEpoch() : this._('unixepoch');
+  const DateTimeModifier._unixEpoch() : this._('unixepoch');
 
-  /// The "julianday" modifier must immediately follow the initial time-value
-  /// which must be of the form DDDDDDDDD. Any other use of the 'julianday'
-  /// modifier is an error and causes the function to return NULL. The
-  /// 'julianday' modifier forces the time-value number to be interpreted as a
-  /// julian-day number. As this is the default behavior, the 'julianday'
-  /// modifier is scarcely more than a no-op. The only difference is that adding
-  /// 'julianday' forces the DDDDDDDDD time-value format, and causes a NULL to
-  /// be returned if any other time-value format is used.
-  const DateTimeModifier.julianDay() : this._('julianday');
+  // The "julianday" modifier must immediately follow the initial time-value
+  // which must be of the form DDDDDDDDD. Any other use of the 'julianday'
+  // modifier is an error and causes the function to return NULL. The
+  // 'julianday' modifier forces the time-value number to be interpreted as a
+  // julian-day number. As this is the default behavior, the 'julianday'
+  // modifier is scarcely more than a no-op. The only difference is that adding
+  // 'julianday' forces the DDDDDDDDD time-value format, and causes a NULL to
+  // be returned if any other time-value format is used.
+  //const DateTimeModifier.julianDay() : this._('julianday');
 
-  /// The "auto" modifier must immediately follow the initial time-value. If the
-  /// time-value is numeric (the DDDDDDDDDD format) then the 'auto' modifier
-  /// causes the time-value to interpreted as either a julian day number or a
-  /// unix timestamp, depending on its magnitude. If the value is between 0.0
-  /// and 5373484.499999, then it is interpreted as a julian day number
-  /// (corresponding to dates between -4713-11-24 12:00:00 and 9999-12-31
-  /// 23:59:59, inclusive). For numeric values outside of the range of valid
-  /// julian day numbers, but within the range of -210866760000 to 253402300799,
-  /// the 'auto' modifier causes the value to be interpreted as a unix
-  /// timestamp. Other numeric values are out of range and cause a NULL return.
-  /// The 'auto' modifier is a no-op for text time-values.
-  const DateTimeModifier.auto() : this._('auto');
+  // The "auto" modifier must immediately follow the initial time-value. If the
+  // time-value is numeric (the DDDDDDDDDD format) then the 'auto' modifier
+  // causes the time-value to interpreted as either a julian day number or a
+  // unix timestamp, depending on its magnitude. If the value is between 0.0
+  // and 5373484.499999, then it is interpreted as a julian day number
+  // (corresponding to dates between -4713-11-24 12:00:00 and 9999-12-31
+  // 23:59:59, inclusive). For numeric values outside of the range of valid
+  // julian day numbers, but within the range of -210866760000 to 253402300799,
+  // the 'auto' modifier causes the value to be interpreted as a unix
+  // timestamp. Other numeric values are out of range and cause a NULL return.
+  // The 'auto' modifier is a no-op for text time-values.
+  //const DateTimeModifier.auto() : this._('auto');
 
   /// The "localtime" modifier (14) assumes the time value to its left is in
   /// Universal Coordinated Time (UTC) and adjusts that time value so that it is
