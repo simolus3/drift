@@ -84,24 +84,21 @@ extension DateTimeExpressions on Expression<DateTime?> {
       [Constant<String>(format), this, const DateTimeModifier._unixEpoch()]);
 
   /// Apply a modifier that alters the date and/or time.
+  ///
+  /// See the factories on [DateTimeModifier] for a list of modifiers that can
+  /// be used with this method.
   Expression<DateTime?> modify(DateTimeModifier modifier) =>
-      FunctionCallExpression('strftime', [
-        const Constant<String>('%s'),
-        this,
-        const DateTimeModifier._unixEpoch(),
-        modifier
-      ]);
+      FunctionCallExpression(
+          'unixepoch', [this, const DateTimeModifier._unixEpoch(), modifier]);
 
-  /// Applies modifiers that alters the date and/or time. Each modifier is a
-  /// transformation that is applied to the time value to its left. Modifiers
-  /// are applied from left to right; order is important.
-  Expression<DateTime?> modifyThough(Iterable<DateTimeModifier> modifiers) =>
-      FunctionCallExpression('strftime', [
-        const Constant<String>('%s'),
-        this,
-        const DateTimeModifier._unixEpoch(),
-        ...modifiers
-      ]);
+  /// Applies modifiers that alters the date and/or time.
+  ///
+  /// The [modifiers] are applied in sequence from left to right.
+  /// For a list of modifiers and how they behave, see the docs on
+  /// [DateTimeModifier] factories.
+  Expression<DateTime?> modifyAll(Iterable<DateTimeModifier> modifiers) =>
+      FunctionCallExpression('unixepoch',
+          [this, const DateTimeModifier._unixEpoch(), ...modifiers]);
 
   /// Returns an expression containing the amount of seconds from the unix
   /// epoch (January 1st, 1970) to `this` datetime expression. The datetime is
@@ -110,13 +107,23 @@ extension DateTimeExpressions on Expression<DateTime?> {
   // anything when converting
   Expression<int> get secondsSinceEpoch => dartCast();
 
-  /// Adds [duration] from this date.
+  /// Adds a [duration] to this date.
+  ///
+  /// Note that the curation is added as a value in seconds. Thus, adding a
+  /// `Duration(days: 1)` will not necessary yield the same time tomorrow in all
+  /// cases (due to daylight saving time switches).
+  /// To change the value in terms of calendar units, see [modify].
   Expression<DateTime> operator +(Duration duration) {
     return _BaseInfixOperator(this, '+', Variable<int>(duration.inSeconds),
         precedence: Precedence.plusMinus);
   }
 
   /// Subtracts [duration] from this date.
+  ///
+  /// Note that the curation is subtracted as a value in seconds. Thus,
+  /// subtracting a `Duration(days: 1)` will not necessary yield the same time
+  /// yesterday in all cases (due to daylight saving time switches). To change
+  /// the value in terms of calendar units, see [modify].
   Expression<DateTime> operator -(Duration duration) {
     return _BaseInfixOperator(this, '-', Variable<int>(duration.inSeconds),
         precedence: Precedence.plusMinus);
@@ -149,163 +156,109 @@ class _StrftimeSingleFieldExpression extends Expression<int?> {
   }
 }
 
-/// DateTime modifier constants
+/// DateTime modifier constants.
+///
+/// These modifiers are used on [DateTimeExpressions.modify] and
+/// [DateTimeExpressions.modifyAll] to apply transformations on date time
+/// values.
+///
+/// For instance, [DateTimeModifier.days] can be used to add or subtract
+/// calendar days from a date time value. Note that this is different from
+/// just subtracting a duration with [DateTimeExpressions.+], which only adds a
+/// duration as seconds without respecting calendar units.
+///
+/// For another explanation of modifiers, see the [sqlite3 docs].
+///
+/// [sqlite3 docs]: https://sqlite.org/lang_datefunc.html#modifiers
 class DateTimeModifier extends Constant<String> {
   const DateTimeModifier._(super.value);
 
-  /// The "n days" modifiers simply add the specified amount of time to the date
-  /// and time specified by the arguments to the left. Note that "±NNN months"
-  /// works by rendering the original date into the YYYY-MM-DD format, adding
-  /// the ±NNN to the MM month value, then normalizing the result. Thus, for
-  /// example, the date 2001-03-31 modified by '+1 month' initially yields
-  /// 2001-04-31, but April only has 30 days so the date is normalized to
-  /// 2001-05-01. A similar effect occurs when the original date is February 29
-  /// of a leapyear and the modifier is ±N years where N is not a multiple of
-  /// four.
+  /// Adds or subtracts [days] calendar days from the date time value.
   const DateTimeModifier.days(int days) : this._('$days days');
 
-  /// The "n hours" modifiers simply add the specified amount of time to the
-  /// date and time specified by the arguments to the left. Note that "±NNN
-  /// months" works by rendering the original date into the YYYY-MM-DD format,
-  /// adding the ±NNN to the MM month value, then normalizing the result. Thus,
-  /// for example, the date 2001-03-31 modified by '+1 month' initially yields
-  /// 2001-04-31, but April only has 30 days so the date is normalized to
-  /// 2001-05-01. A similar effect occurs when the original date is February 29
-  /// of a leapyear and the modifier is ±N years where N is not a multiple of
-  /// four.
-  DateTimeModifier.hours(int hours) : this._('$hours hours');
+  /// Adds or subtracts [hours] hours from this date time value.
+  const DateTimeModifier.hours(int hours) : this._('$hours hours');
 
-  /// The "n minutes" modifiers simply add the specified amount of time to the
-  /// date and time specified by the arguments to the left. Note that "±NNN
-  /// months" works by rendering the original date into the YYYY-MM-DD format,
-  /// adding the ±NNN to the MM month value, then normalizing the result. Thus,
-  /// for example, the date 2001-03-31 modified by '+1 month' initially yields
-  /// 2001-04-31, but April only has 30 days so the date is normalized to
-  /// 2001-05-01. A similar effect occurs when the original date is February 29
-  /// of a leapyear and the modifier is ±N years where N is not a multiple of
-  /// four.
-  DateTimeModifier.minutes(int minutes) : this._('$minutes minutes');
+  /// Adds or subtracts [minutes] minutes from this date time value.
+  const DateTimeModifier.minutes(int minutes) : this._('$minutes minutes');
 
-  /// The "n seconds" modifiers simply add the specified amount of time to the
-  /// date and time specified by the arguments to the left. Note that "±NNN
-  /// months" works by rendering the original date into the YYYY-MM-DD format,
-  /// adding the ±NNN to the MM month value, then normalizing the result. Thus,
-  /// for example, the date 2001-03-31 modified by '+1 month' initially yields
-  /// 2001-04-31, but April only has 30 days so the date is normalized to
-  /// 2001-05-01. A similar effect occurs when the original date is February 29
-  /// of a leapyear and the modifier is ±N years where N is not a multiple of
-  /// four.
-  DateTimeModifier.seconds(num seconds) : this._('$seconds seconds');
+  /// Adds or subtracts [seconds] seconds from this date time value.
+  ///
+  /// Note that drift assumes date time values to be encoded as unix timestamps
+  /// (with second accuracy) in the database. So adding seconds with a
+  /// fractional value may not always be preserved in a chain of computation.
+  const DateTimeModifier.seconds(num seconds) : this._('$seconds seconds');
 
-  /// The "n months" modifiers simply add the specified amount of time to the
-  /// date and time specified by the arguments to the left. Note that "±NNN
-  /// months" works by rendering the original date into the YYYY-MM-DD format,
-  /// adding the ±NNN to the MM month value, then normalizing the result. Thus,
-  /// for example, the date 2001-03-31 modified by '+1 month' initially yields
-  /// 2001-04-31, but April only has 30 days so the date is normalized to
-  /// 2001-05-01. A similar effect occurs when the original date is February 29
-  /// of a leapyear and the modifier is ±N years where N is not a multiple of
-  /// four.
-  DateTimeModifier.months(int months) : this._('$months months');
+  /// Adds or subtracts [months] months from this date time value.
+  ///
+  /// Note that this works by rendering the original date into the `YYYY-MM-DD`
+  /// format, adding the [months] value to the `MM` field and normalizing the
+  /// result. Thus, for example, the date 2001-03-31 modified by '+1 month'
+  /// nitially yields 2001-04-31, but April only has 30 days so the date is
+  /// normalized to 2001-05-01.
+  const DateTimeModifier.months(int months) : this._('$months months');
 
-  /// The "n years" modifiers simply add the specified amount of time to the
-  /// date and time specified by the arguments to the left. Note that "±NNN
-  /// months" works by rendering the original date into the YYYY-MM-DD format,
-  /// adding the ±NNN to the MM month value, then normalizing the result. Thus,
-  /// for example, the date 2001-03-31 modified by '+1 month' initially yields
-  /// 2001-04-31, but April only has 30 days so the date is normalized to
-  /// 2001-05-01. A similar effect occurs when the original date is February 29
-  /// of a leapyear and the modifier is ±N years where N is not a multiple of
-  /// four.
-  DateTimeModifier.years(int years) : this._('$years years');
+  /// Adds or subtracts [years] years from this date time value.
+  ///
+  /// Similar to the transformation on [DateTimeModifier.months], it may not
+  /// always be possible to keep the day and month field the same for this
+  /// transformation. For instance, if the original date is February 29 of a
+  /// leapyear and one year is added, the result will be in March 1 of the next
+  /// year as there is no February 29.
+  const DateTimeModifier.years(int years) : this._('$years years');
 
-  /// The "start of day" modifier shift the date backwards to the beginning of
+  /// The "start of day" modifier shifts the date backwards to the beginning of
   /// the day.
   const DateTimeModifier.startOfDay() : this._('start of day');
 
-  /// The "start of month" modifier shift the date backwards to the beginning of
-  /// the month.
+  /// The "start of month" modifier shifts the date backwards to the beginning
+  /// of the month.
   const DateTimeModifier.startOfMonth() : this._('start of month');
 
-  /// The "start of year" modifier shift the date backwards to the beginning of
+  /// The "start of year" modifier shifts the date backwards to the beginning of
   /// the year.
   const DateTimeModifier.startOfYear() : this._('start of year');
 
-  /// The "weekday" modifier advances the date forward, if necessary, to the
-  /// next date where the weekday number is N. Sunday is 0, Monday is 1, and so
-  /// forth. If the date is already on the desired weekday, the "weekday"
-  /// modifier leaves the date unchanged.
+  /// The "weekday" modifier shifts the date forward to the next date where the
+  /// weekday is the [weekday] provided here.
+  ///
+  /// If the source date is on the desired weekday, no transformation happens.
   DateTimeModifier.weekday(DateTimeWeekday weekday)
       : this._('weekday ${weekday.index}');
 
-  /// The "unixepoch" modifier only works if it immediately follows a time
-  /// value in the DDDDDDDDDD format. This modifier causes the DDDDDDDDDD to be
-  /// interpreted not as a Julian day number as it normally would be, but as
-  /// Unix Time - the number of seconds since 1970. If the "unixepoch" modifier
-  /// does not follow a time value of the form DDDDDDDDDD which expresses the
-  /// number of seconds since 1970 or if other modifiers separate the
-  /// "unixepoch" modifier from prior DDDDDDDDDD then the behavior is undefined.
-  /// For SQLite versions before 3.16.0 (2017-01-02), the "unixepoch" modifier
-  /// only works for dates between 0000-01-01 00:00:00 and 5352-11-01 10:52:47
-  /// (unix times of -62167219200 through 106751991167).
   const DateTimeModifier._unixEpoch() : this._('unixepoch');
 
-  // The "julianday" modifier must immediately follow the initial time-value
-  // which must be of the form DDDDDDDDD. Any other use of the 'julianday'
-  // modifier is an error and causes the function to return NULL. The
-  // 'julianday' modifier forces the time-value number to be interpreted as a
-  // julian-day number. As this is the default behavior, the 'julianday'
-  // modifier is scarcely more than a no-op. The only difference is that adding
-  // 'julianday' forces the DDDDDDDDD time-value format, and causes a NULL to
-  // be returned if any other time-value format is used.
-  //const DateTimeModifier.julianDay() : this._('julianday');
-
-  // The "auto" modifier must immediately follow the initial time-value. If the
-  // time-value is numeric (the DDDDDDDDDD format) then the 'auto' modifier
-  // causes the time-value to interpreted as either a julian day number or a
-  // unix timestamp, depending on its magnitude. If the value is between 0.0
-  // and 5373484.499999, then it is interpreted as a julian day number
-  // (corresponding to dates between -4713-11-24 12:00:00 and 9999-12-31
-  // 23:59:59, inclusive). For numeric values outside of the range of valid
-  // julian day numbers, but within the range of -210866760000 to 253402300799,
-  // the 'auto' modifier causes the value to be interpreted as a unix
-  // timestamp. Other numeric values are out of range and cause a NULL return.
-  // The 'auto' modifier is a no-op for text time-values.
-  //const DateTimeModifier.auto() : this._('auto');
-
-  /// The "localtime" modifier (14) assumes the time value to its left is in
-  /// Universal Coordinated Time (UTC) and adjusts that time value so that it is
-  /// in localtime. If "localtime" follows a time that is not UTC, then the
-  /// behavior is undefined.
+  /// Move a date time that is in UTC to the local time zone.
+  ///
+  /// See also: [DateTime.toLocal].
   const DateTimeModifier.localTime() : this._('localtime');
 
-  /// The "utc" modifier is the opposite of "localtime". "utc" assumes that the
-  /// time value to its left is in the local timezone and adjusts that time
-  /// value to be in UTC. If the time to the left is not in localtime, then the
-  /// result of "utc" is undefined.
+  /// Move a date time that is in the local time zone back to UTC.
+  ///
+  /// See also: [DateTime.toLocal].
   const DateTimeModifier.utc() : this._('utc');
 }
 
 /// Weekday offset to be used with [DateTimeModifier.weekday]
 enum DateTimeWeekday {
-  /// Sunday (+0)
+  /// Sunday (+0 on [DateTimeModifier.weekday])
   sunday,
 
-  /// Monday (+1)
+  /// Monday (+1 on [DateTimeModifier.weekday])
   monday,
 
-  /// Tueday (+2)
+  /// Tueday (+2 on [DateTimeModifier.weekday])
   tuesday,
 
-  /// Wednesday (+3)
+  /// Wednesday (+3 on [DateTimeModifier.weekday])
   wednesday,
 
-  /// Thursday (+4)
+  /// Thursday (+4 on [DateTimeModifier.weekday])
   thursday,
 
-  /// Friday (+5)
+  /// Friday (+5 on [DateTimeModifier.weekday])
   friday,
 
-  /// Saturday (+6)
-  saturday,
+  /// Saturday (+6 on [DateTimeModifier.weekday])
+  saturday
 }
