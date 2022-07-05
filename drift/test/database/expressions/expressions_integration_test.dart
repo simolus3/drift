@@ -38,18 +38,70 @@ void main() {
   });
 
   test('extracting values from datetime', () {
-    final expr = Variable.withDateTime(DateTime.utc(2020, 09, 04, 8, 55));
+    final expr = Variable.withDateTime(DateTime.utc(2020, 09, 03, 23, 55));
 
     expect(eval(expr.year), completion(2020));
     expect(eval(expr.month), completion(9));
-    expect(eval(expr.day), completion(4));
-    expect(eval(expr.hour), completion(8));
+    expect(eval(expr.day), completion(3));
+    expect(eval(expr.hour), completion(23));
     expect(eval(expr.minute), completion(55));
     expect(eval(expr.second), completion(0));
 
-    expect(eval(expr.date), completion('2020-09-04'));
-    expect(eval(expr.time), completion('08:55:00'));
-    expect(eval(expr.datetime), completion('2020-09-04 08:55:00'));
+    expect(eval(expr.date), completion('2020-09-03'));
+    expect(eval(expr.modify(const DateTimeModifier.days(3)).date),
+        completion('2020-09-06'));
+    expect(eval(expr.time), completion('23:55:00'));
+    expect(eval(expr.datetime), completion('2020-09-03 23:55:00'));
+    expect(eval(expr.julianday), completion(2459096.496527778));
+    expect(eval(expr.unixepoch), completion(1599177300));
+    expect(eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
+        completion('2020-09-03 23:55:00'));
+  });
+
+  test('date time modifiers', () {
+    final expr = Variable.withDateTime(DateTime.utc(2022, 07, 05));
+
+    expect(eval(expr.modify(const DateTimeModifier.days(2))),
+        completion(DateTime.utc(2022, 07, 07).toLocal()));
+    expect(eval(expr.modify(const DateTimeModifier.months(-2))),
+        completion(DateTime.utc(2022, 05, 05).toLocal()));
+    expect(eval(expr.modify(const DateTimeModifier.years(1))),
+        completion(DateTime.utc(2023, 07, 05).toLocal()));
+
+    expect(eval(expr.modify(const DateTimeModifier.hours(12))),
+        completion(DateTime.utc(2022, 07, 05, 12).toLocal()));
+    expect(eval(expr.modify(const DateTimeModifier.minutes(30))),
+        completion(DateTime.utc(2022, 07, 05, 0, 30).toLocal()));
+    expect(eval(expr.modify(const DateTimeModifier.seconds(30))),
+        completion(DateTime.utc(2022, 07, 05, 0, 0, 30).toLocal()));
+
+    expect(eval(expr.modify(const DateTimeModifier.startOfDay())),
+        completion(DateTime.utc(2022, 07, 05).toLocal()));
+    expect(eval(expr.modify(const DateTimeModifier.startOfMonth())),
+        completion(DateTime.utc(2022, 07, 01).toLocal()));
+    expect(eval(expr.modify(const DateTimeModifier.startOfYear())),
+        completion(DateTime.utc(2022, 01, 01).toLocal()));
+
+    // The original expression is a Tuesday
+    expect(eval(expr.modify(DateTimeModifier.weekday(DateTimeWeekday.tuesday))),
+        completion(DateTime.utc(2022, 07, 05).toLocal()));
+    expect(
+      eval(expr.modify(DateTimeModifier.weekday(DateTimeWeekday.saturday))),
+      completion(DateTime.utc(2022, 07, 09).toLocal()),
+    );
+
+    // drift interprets date time values as timestamps, so going to UTC means
+    // subtracting the UTC offset in SQL. Interpreting that timestamp in Dart
+    // will effectively add it back, so we have the same value bit without the
+    // UTC flag in Dart.
+    expect(eval(expr.modify(const DateTimeModifier.utc())),
+        completion(DateTime(2022, 07, 05)));
+
+    // And vice-versa (note that original expr is in UTC, this one isn't)
+    expect(
+        eval(Variable.withDateTime(DateTime(2022, 07, 05))
+            .modify(const DateTimeModifier.localTime())),
+        completion(DateTime.utc(2022, 07, 05).toLocal()));
   });
 
   test('rowid', () {
