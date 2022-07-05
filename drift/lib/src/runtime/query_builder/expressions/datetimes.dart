@@ -195,7 +195,7 @@ class DateTimeModifier extends Constant<String> {
   /// 2001-05-01. A similar effect occurs when the original date is February 29
   /// of a leapyear and the modifier is ±N years where N is not a multiple of
   /// four.
-  DateTimeModifier.seconds(double seconds) : this._('$seconds seconds');
+  DateTimeModifier.seconds(num seconds) : this._('$seconds seconds');
 
   /// The "n months" modifiers simply add the specified amount of time to the
   /// date and time specified by the arguments to the left. Note that "±NNN
