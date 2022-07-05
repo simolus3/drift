@@ -34,7 +34,7 @@ up with the performance of key-value stores. Drift is the only major persistence
 - __⚙️ Cross-Platform support__: Drift works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/simolus3/drift/tree/develop/examples/app) is a Flutter todo app that works on all platforms
 - __🗡️ Battle tested and production ready__: Drift is stable and well tested with a wide range of unit and integration tests. It powers production Flutter apps.
 
-drift moor, persistence on Flutter is fun!
+With drift, persistence on Flutter is fun!
 
 __To start using drift, read our detailed [docs](https://drift.simonbinder.eu/docs/getting-started/).__
 
