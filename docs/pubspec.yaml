@@ -6,6 +6,8 @@ environment:
   sdk: '>=2.15.0 <3.0.0'
 
 dependencies:
+  drift:
+  path: ^1.8.2
   json_annotation: ^4.6.0
   docsy:
     hosted: https://simonbinder.eu
@@ -35,7 +37,6 @@ dev_dependencies:
   moor:
   moor_generator:
   sqlparser:
-  drift:
   drift_dev:
 
 dependency_overrides:

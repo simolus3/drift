@@ -33,6 +33,8 @@ targets:
         enabled: true
       drift_dev:drift_dev:
         enabled: true
+        options:
+          generate_connect_constructor: true
       json_serializable:
         enabled: true
     sources:
