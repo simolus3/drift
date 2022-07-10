@@ -41,12 +41,14 @@ Future<void> _waitForProcess(Process p, String name) async {
 }
 
 Future<void> _runBuildAndCopyFiles(Directory output, bool isRelease) async {
+  final siteEnv = isRelease ? 'prod' : 'preview';
+
   final buildArgs = [
     'run',
     'build_runner',
     'build',
     '--release',
-    if (isRelease) '--config=deploy',
+    '--define=built_site=environment=$siteEnv',
   ];
   final build = await Process.start('dart', buildArgs);
   await _waitForProcess(build, 'build');

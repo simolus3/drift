@@ -6,6 +6,7 @@ environment:
   sdk: '>=2.15.0 <3.0.0'
 
 dependencies:
+  json_annotation: ^4.6.0
   docsy:
     hosted: https://simonbinder.eu
     version: ^0.2.2
@@ -18,13 +19,12 @@ dev_dependencies:
     hosted: https://simonbinder.eu
     version: ^0.2.9
   linkcheck: ^2.0.19
-  json_annotation: ^4.4.0
   json_serializable: ^6.1.6
   shelf: ^1.2.0
   shelf_static: ^1.1.0
   code_snippets:
     hosted: https://simonbinder.eu
-    version: ^0.0.6
+    version: ^0.0.7
 
   # Fake path_provider for snippets
   path_provider:

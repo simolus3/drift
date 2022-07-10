@@ -1,9 +1,18 @@
+@use "sass:color";
+
+$background: #f8f8f8;
+
+.hljs a {
+  color: inherit;
+  text-decoration: underline dashed color.adjust($background, $lightness: -15%);
+  text-decoration-thickness: 1px;
+}
+
 .hljs {
   display: block;
   overflow-x: auto;
-  padding: 0.5em;
   color: #333;
-  background: #f8f8f8;
+  background: $background;
 }
 
 .hljs-comment,
