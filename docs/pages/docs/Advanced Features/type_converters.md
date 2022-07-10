@@ -13,7 +13,7 @@ You can achieve this by using `TypeConverters`. In this example, we'll use the t
 text column. Drift supports any Dart type for which you provide a `TypeConverter`, we're using that
 package here to make the example simpler.
 
-{% assign dart = 'package:moor_documentation/snippets/type_converters/converters.dart.excerpt.json' | readString | json_decode %}
+{% assign dart = 'package:drift_docs/snippets/type_converters/converters.dart.excerpt.json' | readString | json_decode %}
 
 ## Using converters in Dart
 

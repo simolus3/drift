@@ -11,9 +11,9 @@ aliases:
 template: layouts/docs/single
 ---
 
-{% assign dart_snippets = "package:moor_documentation/snippets/drift_files/database.dart.excerpt.json" | readString | json_decode %}
-{% assign drift_tables = "package:moor_documentation/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
-{% assign small = "package:moor_documentation/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
+{% assign dart_snippets = "package:drift_docs/snippets/drift_files/database.dart.excerpt.json" | readString | json_decode %}
+{% assign drift_tables = "package:drift_docs/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
+{% assign small = "package:drift_docs/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
 
 Drift files are a new feature that lets you write all your database code in SQL - drift will generate typesafe APIs for them.
 
@@ -125,7 +125,7 @@ know from Dart.
 
 ## Nested results
 
-{% assign nested = "package:moor_documentation/snippets/drift_files/nested.drift.excerpt.json" | readString | json_decode %}
+{% assign nested = "package:drift_docs/snippets/drift_files/nested.drift.excerpt.json" | readString | json_decode %}
 
 Many queries fetch all columns from some table, typically by using the
 `SELECT table.*` syntax. That approach can become a bit tedious when applied

@@ -9,7 +9,7 @@ aliases:
   - /transactions/
 ---
 
-{% assign snippets = "package:moor_documentation/snippets/transactions.dart.excerpt.json" | readString | json_decode %}
+{% assign snippets = "package:drift_docs/snippets/transactions.dart.excerpt.json" | readString | json_decode %}
 
 Drift has support for transactions and allows multiple statements to run atomically,
 so that none of their changes is visible to the main database until the transaction

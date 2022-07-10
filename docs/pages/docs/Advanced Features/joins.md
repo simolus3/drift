@@ -174,7 +174,7 @@ with the right table by default).
 
 ## Group by
 
-{% assign snippets = 'package:moor_documentation/snippets/queries.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/queries.dart.excerpt.json' | readString | json_decode %}
 
 Sometimes, you need to run queries that _aggregate_ data, meaning that data you're interested in
 comes from multiple rows. Common questions include

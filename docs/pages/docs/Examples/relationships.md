@@ -5,7 +5,7 @@ data:
 template: layouts/docs/single
 ---
 
-{% assign snippets = 'package:moor_documentation/snippets/many_to_many_relationships.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/many_to_many_relationships.dart.excerpt.json' | readString | json_decode %}
 
 ## Defining the model
 

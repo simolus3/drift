@@ -41,7 +41,7 @@ DynamicLibrary _openOnLinux() {
 
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
 add both the `drift` and `sqlite3_flutter_libs` dependencies:
-{% assign versions = 'package:moor_documentation/versions.json' | readString | json_decode %}
+{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
 
 ```yaml
 dependencies:

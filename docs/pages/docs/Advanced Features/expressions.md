@@ -18,7 +18,7 @@ In most cases, you're writing an expression that combines other expressions. Any
 column name is a valid expression, so for most `where` clauses you'll be writing
 a expression that wraps a column name in some kind of comparison.
 
-{% assign snippets = 'package:moor_documentation/snippets/expressions.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/expressions.dart.excerpt.json' | readString | json_decode %}
 
 ## Comparisons
 Every expression can be compared to a value by using `equals`. If you want to compare

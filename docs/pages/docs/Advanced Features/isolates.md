@@ -13,7 +13,7 @@ With Drift's isolate setup, you only need to change how you _open_ your database
 Drift will apply its magic and send all database operations to an internal server running on
 a background isolate. Zero code changes are needed for queries!
 
-{% assign snippets = 'package:moor_documentation/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
 
 ## Preparations
 

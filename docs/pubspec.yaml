@@ -1,5 +1,5 @@
-name: moor_documentation
-description: Documentation of the moor packages
+name: drift_docs
+description: Documentation website for the drift project.
 publish_to: none
 
 environment:
@@ -34,16 +34,12 @@ dev_dependencies:
   # Used in examples
   rxdart: ^0.27.3
 
-  moor:
-  moor_generator:
   sqlparser:
   drift_dev:
 
 dependency_overrides:
   # Waiting for dartdoc, https://github.com/dart-lang/dartdoc/pull/3033
   analyzer: ^4.0.0
-  moor:
-    path: ../moor
   moor_generator:
     path: ../moor_generator
   drift:

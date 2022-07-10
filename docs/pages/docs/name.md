@@ -68,7 +68,7 @@ The following sections will describe each of the steps.
 
 ### New dependencies
 
-{% assign versions = 'package:moor_documentation/versions.json' | readString | json_decode %}
+{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
 
 First, replace the `moor` dependency with `drift` and `moor_generator` with `drift_dev`, respectively:
 

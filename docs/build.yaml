@@ -83,8 +83,6 @@ targets:
         enabled: false
       source_gen:combining_builder:
         enabled: false
-      moor_generator:
-        enabled: false
       json_serializable:
         enabled: false
     sources:

@@ -11,7 +11,7 @@ __Prefer sql?__ If you prefer, you can also declare tables via `CREATE TABLE` st
 Drift's sql analyzer will generate matching Dart code. [Details]({{ "starting_with_sql.md" | pageUrl }}).
 {% endblock %}
 
-{% assign snippets = 'package:moor_documentation/snippets/tables/advanced.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/tables/advanced.dart.excerpt.json' | readString | json_decode %}
 
 As shown in the [getting started guide]({{ "index.md" | pageUrl }}), sql tables can be written in Dart:
 ```dart
