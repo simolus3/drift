@@ -13,7 +13,7 @@ and provides additional features, like:
 
 - __Type safety__: Instead of writing sql queries manually and parsing the `List<Map<String, dynamic>>` that they 
 return, drift turns rows into objects of your choice.
-- __Stream queries__: Drift let's you "watch" your queries with zero additional effort. Any query can be turned into
+- __Stream queries__: Drift lets you "watch" your queries with zero additional effort. Any query can be turned into
  an auto-updating stream that emits new items when the underlying data changes.
 - __Fluent queries__: Drift generates a Dart api that you can use to write queries and automatically get their results.
  Keep an updated list of all users with `select(users).watch()`. That's it! No sql to write, no rows to parse.

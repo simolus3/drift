@@ -80,7 +80,7 @@ abstract class DatabaseConnectionUser {
   /// Inside a [transaction] block, drift will replace this [resolvedEngine]
   /// with an engine specific to the transaction. All other methods on this
   /// class implicitly use the [resolvedEngine] to run their SQL statements.
-  /// This let's users call methods on their top-level database or dao class
+  /// This lets users call methods on their top-level database or dao class
   /// but run them in a transaction-specific executor.
   @internal
   DatabaseConnectionUser get resolvedEngine {

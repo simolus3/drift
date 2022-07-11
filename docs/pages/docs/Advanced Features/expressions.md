@@ -239,7 +239,7 @@ any rows. For instance, we could use this to find empty categories:
 
 ## Custom expressions
 If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.
-It takes a `sql` parameter that let's you write custom expressions:
+It takes a `sql` parameter that lets you write custom expressions:
 ```dart
 const inactive = CustomExpression<bool, BoolType>("julianday('now') - julianday(last_login) > 60");
 select(users)..where((u) => inactive);

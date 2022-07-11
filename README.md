@@ -25,15 +25,15 @@ _Note: Moor has been renamed to drift_
 | [![Main version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift) | [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev) |
 
 Drift is a reactive persistence library for Flutter and Dart, built on top of
-sqlite. 
+sqlite.
 Drift is
 
-- __Flexible__: Drift let's you write queries in both SQL and Dart, 
-providing fluent apis for both languages. You can filter and order results 
-or use joins to run queries on multiple tables. You can even use complex 
+- __Flexible__: Drift lets you write queries in both SQL and Dart,
+providing fluent apis for both languages. You can filter and order results
+or use joins to run queries on multiple tables. You can even use complex
 sql features like `WITH` and `WINDOW` clauses.
-- __🔥 Feature rich__: Drift has builtin support for transactions, schema 
-migrations, complex filters and expressions, batched updates and joins. We 
+- __🔥 Feature rich__: Drift has builtin support for transactions, schema
+migrations, complex filters and expressions, batched updates and joins. We
 even have a builtin IDE for SQL!
 - __📦 Modular__: Thanks to builtin support for daos and `import`s in sql files, drift helps you keep your database code simple.
 - __🛡️ Safe__: Drift generates typesafe code based on your tables and queries. If you make a mistake in your queries, drift will find it at compile time and
@@ -57,8 +57,8 @@ project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/drift/
 Important packages in this repo:
 
 - `drift`: The main runtime for drift, which provides most apis
-- `drift_dev`: The compiler for drift tables, databases and daos. It 
+- `drift_dev`: The compiler for drift tables, databases and daos. It
    also contains a fully-featured sql ide for the Dart analyzer.
 - `sqlparser`: A sql parser and static analyzer, written in pure Dart. This package can be used without drift to perform analysis on sql statements.
-It's on pub at 
+It's on pub at
 [![sqlparser](https://img.shields.io/pub/v/sqlparser.svg)](https://pub.dev/packages/sqlparser)
