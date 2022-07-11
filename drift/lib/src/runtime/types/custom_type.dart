@@ -31,7 +31,8 @@ abstract class TypeConverter<D, S> {
 /// to SQL (and vice-versa).
 /// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
 /// `.drift` files) refers to a type converter that inherits from
-/// [JsonTypeConverter], it will also be used to conversion from and to json.
+/// [JsonTypeConverter], it will also be used for the conversion from and to
+/// JSON.
 mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
