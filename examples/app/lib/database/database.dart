@@ -76,8 +76,9 @@ class AppDatabase extends _$AppDatabase {
   /// Returns an auto-updating stream of all todo entries in a given category
   /// id.
   Stream<List<TodoEntryWithCategory>> entriesInCategory(int? categoryId) {
-    final query = select(todoEntries).join(
-        [leftOuterJoin(categories, categories.id.equalsExp(todoEntries.id))]);
+    final query = select(todoEntries).join([
+      leftOuterJoin(categories, categories.id.equalsExp(todoEntries.category))
+    ]);
 
     if (categoryId != null) {
       query.where(categories.id.equals(categoryId));
