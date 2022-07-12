@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
@@ -162,25 +161,6 @@ class DriftColumn implements HasDeclaration, HasType {
     // to express nullability in joins otherwise. When serializing data with
     // JsonTypeConverter it needs to match the nullability of the column
     return (!checkNullable || nullable) ? '$code?' : code;
-  }
-
-  SqlType sqlType() {
-    switch (type) {
-      case ColumnType.integer:
-        return const IntType();
-      case ColumnType.bigInt:
-        return const BigIntType();
-      case ColumnType.boolean:
-        return const BoolType();
-      case ColumnType.datetime:
-        return const IntType();
-      case ColumnType.text:
-        return const StringType();
-      case ColumnType.blob:
-        return const BlobType();
-      case ColumnType.real:
-        return const RealType();
-    }
   }
 
   @override

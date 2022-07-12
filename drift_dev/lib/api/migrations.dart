@@ -101,7 +101,7 @@ class _GenerateFromScratch extends GeneratedDatabase {
   final GeneratedDatabase reference;
 
   _GenerateFromScratch(this.reference, QueryExecutor executor)
-      : super(SqlTypeSystem.defaultInstance, executor);
+      : super(executor);
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables => reference.allTables;

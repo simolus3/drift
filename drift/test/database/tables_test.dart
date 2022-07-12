@@ -40,7 +40,7 @@ void main() {
       user: Value(4),
     );
 
-    final user = db.sharedTodos.mapFromCompanion(companion);
+    final user = db.sharedTodos.mapFromCompanion(companion, db);
     expect(
       user,
       SharedTodo(todo: 3, user: 4),

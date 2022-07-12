@@ -13,13 +13,15 @@ abstract class DatabaseConnectionUser {
   @protected
   final DatabaseConnection connection;
 
+  /// The [DriftDatabaseOptions] to use here.
+  ///
+  /// Mainly, these options describe how values are mapped from Dart to SQL
+  /// values. In the future, they could be expanded to dialect-specific options.
+  DriftDatabaseOptions get options => attachedDatabase.options;
+
   /// The database class that this user is attached to.
   @visibleForOverriding
   GeneratedDatabase get attachedDatabase;
-
-  /// The type system to use with this database. The type system is responsible
-  /// for mapping Dart objects into sql expressions and vice-versa.
-  SqlTypeSystem get typeSystem => connection.typeSystem;
 
   /// The executor to use when queries are executed.
   QueryExecutor get executor => connection.executor;
@@ -31,21 +33,17 @@ abstract class DatabaseConnectionUser {
 
   /// Constructs a database connection user, which is responsible to store query
   /// streams, wrap the underlying executor and perform type mapping.
-  DatabaseConnectionUser(SqlTypeSystem typeSystem, QueryExecutor executor,
+  DatabaseConnectionUser(QueryExecutor executor,
       {StreamQueryStore? streamQueries})
-      : connection = DatabaseConnection(
-            typeSystem, executor, streamQueries ?? StreamQueryStore());
+      : connection = DatabaseConnection(executor, streamQueries: streamQueries);
 
   /// Creates another [DatabaseConnectionUser] by referencing the implementation
   /// from the [other] user.
   DatabaseConnectionUser.delegate(DatabaseConnectionUser other,
-      {SqlTypeSystem? typeSystem,
-      QueryExecutor? executor,
-      StreamQueryStore? streamQueries})
+      {QueryExecutor? executor, StreamQueryStore? streamQueries})
       : connection = DatabaseConnection(
-          typeSystem ?? other.connection.typeSystem,
           executor ?? other.connection.executor,
-          streamQueries ?? other.connection.streamQueries,
+          streamQueries: streamQueries ?? other.connection.streamQueries,
         );
 
   /// Constructs a [DatabaseConnectionUser] that will use the provided

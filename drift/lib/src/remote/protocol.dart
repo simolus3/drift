@@ -11,7 +11,6 @@ class DriftProtocol {
   static const _tag_Response_error = 2;
   static const _tag_Response_cancelled = 3;
 
-  static const _tag_NoArgsRequest_getTypeSystem = 0;
   static const _tag_NoArgsRequest_terminateAll = 1;
 
   static const _tag_ExecuteQuery = 3;
@@ -20,7 +19,6 @@ class DriftProtocol {
   static const _tag_EnsureOpen = 6;
   static const _tag_RunBeforeOpen = 7;
   static const _tag_NotifyTablesUpdated = 8;
-  static const _tag_DefaultSqlTypeSystem = 9;
   static const _tag_DirectValue = 10;
   static const _tag_SelectResult = 11;
   static const _tag_RequestCancellation = 12;
@@ -121,10 +119,6 @@ class DriftProtocol {
             update.kind?.index,
           ]
       ];
-    } else if (payload is SqlTypeSystem) {
-      // assume connection uses SqlTypeSystem.defaultInstance, this can't
-      // possibly be encoded.
-      return _tag_DefaultSqlTypeSystem;
     } else if (payload is SelectResult) {
       // We can't necessary transport maps, so encode as list
       final rows = payload.rows;
@@ -169,8 +163,6 @@ class DriftProtocol {
     int? readNullableInt(int index) => fullMessage![index] as int?;
 
     switch (tag) {
-      case _tag_NoArgsRequest_getTypeSystem:
-        return NoArgsRequest.getTypeSystem;
       case _tag_NoArgsRequest_terminateAll:
         return NoArgsRequest.terminateAll;
       case _tag_ExecuteQuery:
@@ -202,8 +194,6 @@ class DriftProtocol {
           OpeningDetails(readNullableInt(1), readInt(2)),
           readInt(3),
         );
-      case _tag_DefaultSqlTypeSystem:
-        return SqlTypeSystem.defaultInstance;
       case _tag_NotifyTablesUpdated:
         final updates = <TableUpdate>[];
         for (var i = 1; i < fullMessage!.length; i++) {
@@ -327,10 +317,6 @@ class CancelledResponse extends Message {
 
 /// A request without further parameters
 enum NoArgsRequest {
-  /// Sent from the client to the server. The server will reply with the
-  /// [SqlTypeSystem] of the connection it's managing.
-  getTypeSystem,
-
   /// Close the background isolate, disconnect all clients, release all
   /// associated resources
   terminateAll,

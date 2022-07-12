@@ -253,7 +253,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         final value = row[aliasedColumn.value];
 
         final type = expr.findType(ctx.typeSystem);
-        readColumns[expr] = type.mapFromDatabaseResponse(value);
+        readColumns[expr] = ctx.options.types.read(type, value);
       }
 
       return TypedResult(readTables, QueryRow(row, database), readColumns);

@@ -68,7 +68,9 @@ abstract class Expression<D> implements FunctionParameter {
   /// Note that this does not do a meaningful conversion for drift-only types
   /// like `bool` or `DateTime`. Both would simply generate a `CAST AS INT`
   /// expression.
-  Expression<D2> cast<D2>() => _CastInSqlExpression<D, D2>(this);
+  Expression<D2?> cast<D2 extends Object>() {
+    return _CastInSqlExpression<D, D2>(this);
+  }
 
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
@@ -163,11 +165,6 @@ abstract class Expression<D> implements FunctionParameter {
     assert(precedence != Precedence.unknown,
         "Expressions with unknown precedence shouldn't have inner expressions");
     inner.writeAroundPrecedence(ctx, precedence);
-  }
-
-  /// Finds the runtime implementation of [D] in the provided [types].
-  SqlType<D> findType(SqlTypeSystem types) {
-    return types.forDartType<D>();
   }
 }
 
@@ -400,7 +397,7 @@ class _DartCastExpression<D1, D2> extends Expression<D2> {
   }
 }
 
-class _CastInSqlExpression<D1, D2> extends Expression<D2> {
+class _CastInSqlExpression<D1, D2 extends Object> extends Expression<D2?> {
   final Expression<D1> inner;
 
   @override
@@ -410,11 +407,11 @@ class _CastInSqlExpression<D1, D2> extends Expression<D2> {
 
   @override
   void writeInto(GenerationContext context) {
-    final type = context.typeSystem.forDartType<D2>();
+    final type = DriftSqlType.forType<D2>();
 
     context.buffer.write('CAST(');
     inner.writeInto(context);
-    context.buffer.write(' AS ${type.sqlName(context.dialect)})');
+    context.buffer.write(' AS ${type.sqlTypeName(context)})');
   }
 }
 

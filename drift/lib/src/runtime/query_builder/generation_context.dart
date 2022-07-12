@@ -19,9 +19,8 @@ class GenerationContext {
   /// All tables that the generated query reads from.
   final List<ResultSetImplementation> watchedTables = [];
 
-  /// The [SqlTypeSystem] to use when mapping variables to values that the
-  /// underlying database understands.
-  final SqlTypeSystem typeSystem;
+  /// The options to use when mapping values from and to the database.
+  final DriftDatabaseOptions options;
 
   /// The [SqlDialect] that should be respected when generating the query.
   SqlDialect get dialect => executor?.executor.dialect ?? SqlDialect.sqlite;
@@ -57,12 +56,13 @@ class GenerationContext {
 
   /// Constructs a [GenerationContext] by copying the relevant fields from the
   /// database.
-  GenerationContext.fromDb(this.executor, {this.supportsVariables = true})
-      : typeSystem = executor?.typeSystem ?? SqlTypeSystem.defaultInstance;
+  GenerationContext.fromDb(DatabaseConnectionUser this.executor,
+      {this.supportsVariables = true})
+      : options = executor.options;
 
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.
-  GenerationContext(this.typeSystem, this.executor,
+  GenerationContext(this.options, this.executor,
       {this.supportsVariables = true});
 
   /// Introduces a variable that will be sent to the database engine. Whenever

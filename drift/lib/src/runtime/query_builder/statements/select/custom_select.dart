@@ -74,10 +74,20 @@ class QueryRow {
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
   /// The dart type [T] must be supported by the type system of the database
   /// used (mostly contains booleans, strings, numbers and dates).
-  T read<T>(String key) {
-    final type = _db.typeSystem.forDartType<T>();
+  T read<T extends Object>(String key) {
+    final result = readNullable<T>(key);
+    if (result == null) {
+      throw StateError(
+          'Called read<$T>($key) which would have returned `null`. Please use '
+          '`readNullable` for reads that might be null instead.');
+    } else {
+      return result;
+    }
+  }
 
-    return type.mapFromDatabaseResponse(data[key]) as T;
+  T? readNullable<T extends Object>(String key) {
+    final type = DriftSqlType.forType<T>();
+    return _db.options.types.read(type, data[key]);
   }
 
   /// Reads a bool from the column named [key].

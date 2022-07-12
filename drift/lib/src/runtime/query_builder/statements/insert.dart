@@ -239,7 +239,7 @@ class InsertStatement<T extends Table, D> {
     } else if (ctx.dialect == SqlDialect.postgres) {
       if (table.$primaryKey.length == 1) {
         final id = table.$primaryKey.firstOrNull;
-        if (id != null && id.type is IntType) {
+        if (id != null && id.type == DriftSqlType.int) {
           ctx.buffer.write(' RETURNING ${id.name}');
         }
       }

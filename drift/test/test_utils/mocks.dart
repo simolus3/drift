@@ -149,8 +149,8 @@ class MockStreamQueries extends Mock implements StreamQueryStore {
 
 DatabaseConnection createConnection(QueryExecutor executor,
     [StreamQueryStore? streams]) {
-  return DatabaseConnection(
-      SqlTypeSystem.defaultInstance, executor, streams ?? StreamQueryStore());
+  return DatabaseConnection(executor,
+      streamQueries: streams ?? StreamQueryStore());
 }
 
 extension on Mock {

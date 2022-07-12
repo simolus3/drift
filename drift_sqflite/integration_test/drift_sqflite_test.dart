@@ -14,7 +14,7 @@ class SqfliteExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(
+    return DatabaseConnection(
       SqfliteQueryExecutor.inDatabaseFolder(
         path: 'app.db',
         singleInstance: false,
@@ -109,7 +109,7 @@ Future<void> main() async {
 }
 
 class EmptyDb extends GeneratedDatabase {
-  EmptyDb(QueryExecutor q) : super(SqlTypeSystem.defaultInstance, q);
+  EmptyDb(QueryExecutor q) : super(q);
   @override
   final List<TableInfo> allTables = const [];
   @override

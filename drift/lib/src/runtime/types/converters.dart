@@ -1,4 +1,6 @@
-part of 'sql_types.dart';
+import 'dart:typed_data';
+import '../../dsl/dsl.dart';
+import '../data_class.dart';
 
 /// Maps a custom dart object of type [D] into a primitive type [S] understood
 /// by the sqlite backend.

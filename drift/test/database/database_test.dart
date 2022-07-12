@@ -6,7 +6,7 @@ import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
 
 class _FakeDb extends GeneratedDatabase {
-  _FakeDb(SqlTypeSystem types, QueryExecutor executor) : super(types, executor);
+  _FakeDb(QueryExecutor executor) : super(executor);
 
   @override
   MigrationStrategy get migration {
@@ -49,7 +49,7 @@ void main() {
 
     setUp(() {
       executor = MockExecutor();
-      db = _FakeDb(SqlTypeSystem.defaultInstance, executor);
+      db = _FakeDb(executor);
     });
 
     test('onCreate', () async {

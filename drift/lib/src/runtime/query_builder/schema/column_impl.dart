@@ -53,12 +53,8 @@ class GeneratedColumn<T> extends Column<T> {
   /// Additional checks performed on values before inserts or updates.
   final VerificationResult Function(T, VerificationMeta)? additionalChecks;
 
-  /// The sql type, such as `StringType` for texts.
-  final SqlType type;
-
-  /// The sql type name, such as `TEXT` for texts.
-  @Deprecated('Use type.sqlName instead')
-  String get typeName => type.sqlName(SqlDialect.sqlite);
+  /// The sql type to use for this column.
+  final DriftSqlType type;
 
   /// If this column is generated (that is, it is a SQL expression of other)
   /// columns, contains information about how to generate this column.
@@ -122,7 +118,7 @@ class GeneratedColumn<T> extends Column<T> {
     if (isSerial) {
       into.buffer.write('$escapedName bigserial PRIMARY KEY NOT NULL');
     } else {
-      into.buffer.write('$escapedName ${type.sqlName(into.dialect)}');
+      into.buffer.write('$escapedName ${type.sqlTypeName(into)}');
     }
 
     if ($customConstraints == null) {
@@ -267,7 +263,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
     String tableName,
     bool nullable,
     S Function()? clientDefault,
-    SqlType type,
+    DriftSqlType type,
     String? defaultConstraints,
     String? customConstraints,
     Expression<S>? defaultValue,

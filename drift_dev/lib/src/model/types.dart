@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/model/model.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
@@ -116,6 +117,26 @@ extension OperationOnTypes on HasType {
     }
 
     return variableTypeCode(options);
+  }
+
+  DriftSqlType sqlType() {
+    // todo: Just replace ColumnType with DriftSqlType now?
+    switch (type) {
+      case ColumnType.integer:
+        return DriftSqlType.int;
+      case ColumnType.bigInt:
+        return DriftSqlType.bigInt;
+      case ColumnType.boolean:
+        return DriftSqlType.bool;
+      case ColumnType.datetime:
+        return DriftSqlType.dateTime;
+      case ColumnType.text:
+        return DriftSqlType.string;
+      case ColumnType.blob:
+        return DriftSqlType.blob;
+      case ColumnType.real:
+        return DriftSqlType.double;
+    }
   }
 }
 

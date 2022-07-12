@@ -72,7 +72,10 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   /// Converts a [companion] to the real model class, [D].
   ///
   /// Values that are [Value.absent] in the companion will be set to `null`.
-  D mapFromCompanion(Insertable<D> companion) {
+  /// The [database] instance is used so that the raw values from the companion
+  /// can properly be interpreted as the high-level Dart values exposed by the
+  /// data class.
+  D mapFromCompanion(Insertable<D> companion, DatabaseConnectionUser database) {
     final asColumnMap = companion.toColumns(false);
 
     if (asColumnMap.values.any((e) => e is! Variable)) {
@@ -81,7 +84,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
           'evaluated by a database engine.');
     }
 
-    final context = GenerationContext(SqlTypeSystem.defaultInstance, null);
+    final context = GenerationContext.fromDb(database);
     final rawValues = asColumnMap
         .cast<String, Variable>()
         .map((key, value) => MapEntry(key, value.mapToSimpleValue(context)));
@@ -175,6 +178,6 @@ extension RowIdExtension on TableInfo {
     }
 
     return GeneratedColumn<int?>('_rowid_', aliasedName, false,
-        type: const IntType());
+        type: DriftSqlType.int);
   }
 }

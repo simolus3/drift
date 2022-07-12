@@ -4,7 +4,6 @@ import 'package:drift/src/runtime/api/runtime_api.dart';
 import 'package:drift/src/runtime/executor/executor.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
-import 'package:drift/src/runtime/types/sql_types.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../runtime/cancellation_zone.dart';
@@ -21,9 +20,8 @@ class DriftClient {
   /// The resulting database connection. Operations on this connection are
   /// relayed through the remote communication channel.
   late final DatabaseConnection connection = DatabaseConnection(
-    SqlTypeSystem.defaultInstance,
     _RemoteQueryExecutor(this),
-    _streamStore,
+    streamQueries: _streamStore,
   );
 
   late QueryExecutorUser _connectedDb;

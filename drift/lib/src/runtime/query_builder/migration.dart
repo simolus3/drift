@@ -169,7 +169,7 @@ class Migrator {
 
       for (final row in schemaQuery) {
         final type = row.readString('type');
-        final sql = row.read<String?>('sql');
+        final sql = row.readNullable<String>('sql');
         final name = row.readString('name');
 
         if (sql == null) {
