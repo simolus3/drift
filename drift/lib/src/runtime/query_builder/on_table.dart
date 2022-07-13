@@ -15,7 +15,7 @@ extension TableOrViewStatements<Tbl extends HasResultSet, Row>
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
   JoinedSelectStatement<Tbl, Row> selectOnly(
-      {bool distinct = false, bool includeJoinedTableColumns = true}) {
+      {bool distinct = false, bool includeJoinedTableColumns = false}) {
     return attachedDatabase.selectOnly(this,
         distinct: distinct,
         includeJoinedTableColumns: includeJoinedTableColumns);

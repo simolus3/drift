@@ -259,7 +259,7 @@ abstract class DatabaseConnectionUser {
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
       {bool distinct = false,
-      bool includeJoinedTableColumns = true}) {
+      bool includeJoinedTableColumns = false}) {
     return JoinedSelectStatement<T, R>(
         resolvedEngine, table, [], distinct, false, includeJoinedTableColumns);
   }
@@ -628,7 +628,7 @@ class TableOrViewOperations<Tbl extends HasResultSet, Row> {
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
   JoinedSelectStatement<Tbl, Row> selectOnly(
-      {bool distinct = false, bool includeJoinedTableColumns = true}) {
+      {bool distinct = false, bool includeJoinedTableColumns = false}) {
     return _user.selectOnly(_sourceSet,
         distinct: distinct,
         includeJoinedTableColumns: includeJoinedTableColumns);
