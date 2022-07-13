@@ -5,6 +5,8 @@
   It is an error to use a non-nullable type converter on a column that is nullable in
   SQL and vice-versa.
 - __Breaking__: Mapping methods on type converters are now called `toSql` and `fromSql`.
+- __Breaking__: The `includeJoinedTableColumns` parameter on `selectOnly()` is now
+  disabled by default.
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
 - Support nested transactions.
