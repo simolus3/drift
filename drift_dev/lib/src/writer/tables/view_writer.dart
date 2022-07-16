@@ -132,8 +132,8 @@ class ViewWriter extends TableOrViewWriter {
     buffer.write('@override\nQuery? get query => ');
     final query = view.viewQuery;
     if (query != null) {
-      buffer.write('(attachedDatabase.selectOnly(${query.from}, '
-          'includeJoinedTableColumns: false)..addColumns(\$columns))'
+      buffer.write('(attachedDatabase.selectOnly(${query.from})'
+          '..addColumns(\$columns))'
           '${query.query};');
     } else {
       buffer.write('null;\n');

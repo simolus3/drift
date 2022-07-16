@@ -406,8 +406,7 @@ void main() {
     final categories = db.categories;
     final todos = db.todosTable;
 
-    final query =
-        db.selectOnly(categories, includeJoinedTableColumns: false).join([
+    final query = db.selectOnly(categories).join([
       innerJoin(
         todos,
         todos.category.equalsExp(categories.id),

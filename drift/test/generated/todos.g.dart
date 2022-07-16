@@ -1497,8 +1497,7 @@ class $CategoryTodoCountViewView
 
   @override
   Query? get query =>
-      (attachedDatabase.selectOnly(categories, includeJoinedTableColumns: false)
-            ..addColumns($columns))
+      (attachedDatabase.selectOnly(categories)..addColumns($columns))
           .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
         ..groupBy([categories.id]);
   @override
@@ -1605,9 +1604,7 @@ class $TodoWithCategoryViewView
   }
 
   @override
-  Query? get query => (attachedDatabase.selectOnly(todos,
-          includeJoinedTableColumns: false)
-        ..addColumns($columns))
+  Query? get query => (attachedDatabase.selectOnly(todos)..addColumns($columns))
       .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
   @override
   Set<String> get readTables => const {'todos', 'categories'};

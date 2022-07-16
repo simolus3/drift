@@ -571,10 +571,8 @@ class $TodoCategoryItemCountView
   }
 
   @override
-  Query? get query => (attachedDatabase.selectOnly(todoCategories,
-              includeJoinedTableColumns: false)
-            ..addColumns($columns))
-          .join([
+  Query? get query =>
+      (attachedDatabase.selectOnly(todoCategories)..addColumns($columns)).join([
         innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
   @override
@@ -686,9 +684,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 
   @override
   Query? get query =>
-      (attachedDatabase.selectOnly(todoItems, includeJoinedTableColumns: false)
-            ..addColumns($columns))
-          .join([
+      (attachedDatabase.selectOnly(todoItems)..addColumns($columns)).join([
         innerJoin(
             todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
       ]);

@@ -14,11 +14,8 @@ extension TableOrViewStatements<Tbl extends HasResultSet, Row>
   /// Composes a `SELECT` statement only selecting a subset of columns.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
-  JoinedSelectStatement<Tbl, Row> selectOnly(
-      {bool distinct = false, bool includeJoinedTableColumns = false}) {
-    return attachedDatabase.selectOnly(this,
-        distinct: distinct,
-        includeJoinedTableColumns: includeJoinedTableColumns);
+  JoinedSelectStatement<Tbl, Row> selectOnly({bool distinct = false}) {
+    return attachedDatabase.selectOnly(this, distinct: distinct);
   }
 }
 
