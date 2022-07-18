@@ -29,8 +29,7 @@ void main() {
   });
 
   test('generates COALESCE expressions', () {
-    final expr =
-        drift.coalesce([const Constant<int?>(null), const Constant(3)]);
+    final expr = drift.coalesce([const Constant<int>(null), const Constant(3)]);
 
     expect(expr, generates('COALESCE(NULL, 3)'));
   });

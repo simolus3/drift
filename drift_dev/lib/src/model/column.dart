@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/writer.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import 'declarations/declaration.dart';
@@ -126,42 +125,6 @@ class DriftColumn implements HasDeclaration, HasType {
         ColumnType.blob: 'BlobColumn',
         ColumnType.real: 'RealColumn',
       }[type]!;
-
-  String innerColumnType({
-    GenerationOptions options = const GenerationOptions(),
-    bool checkNullable = false,
-  }) {
-    String code;
-
-    switch (type) {
-      case ColumnType.integer:
-        code = 'int';
-        break;
-      case ColumnType.bigInt:
-        code = 'BigInt';
-        break;
-      case ColumnType.text:
-        code = 'String';
-        break;
-      case ColumnType.boolean:
-        code = 'bool';
-        break;
-      case ColumnType.datetime:
-        code = 'DateTime';
-        break;
-      case ColumnType.blob:
-        code = 'Uint8List';
-        break;
-      case ColumnType.real:
-        code = 'double';
-        break;
-    }
-
-    // We currently use nullable columns everywhere because it's not clear how
-    // to express nullability in joins otherwise. When serializing data with
-    // JsonTypeConverter it needs to match the nullability of the column
-    return (!checkNullable || nullable) ? '$code?' : code;
-  }
 
   @override
   bool get isArray => false;

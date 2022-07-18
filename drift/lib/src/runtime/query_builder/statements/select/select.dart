@@ -183,7 +183,7 @@ class TypedResult {
   /// as a column, for instance via [JoinedSelectStatement.addColumns].
   ///
   /// To access the underlying columns directly, use [rawData].
-  D read<D>(Expression<D> expr) {
+  D? read<D extends Object>(Expression<D> expr) {
     if (_parsedExpressions.containsKey(expr)) {
       return _parsedExpressions[expr] as D;
     }

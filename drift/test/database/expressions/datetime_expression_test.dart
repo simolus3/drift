@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 import '../../test_utils/test_utils.dart';
 
-typedef _Extractor = Expression Function(Expression<DateTime?> d);
+typedef _Extractor = Expression Function(Expression<DateTime> d);
 
 void main() {
   const column =
@@ -32,7 +32,7 @@ void main() {
 
   test('can cast datetimes to unix timestamps without rewriting', () {
     final expr = currentDateAndTime.secondsSinceEpoch + const Constant(10);
-    final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
+    final ctx = stubContext();
     expr.writeInto(ctx);
 
     expect(ctx.sql, 'strftime(\'%s\', CURRENT_TIMESTAMP) + 10');

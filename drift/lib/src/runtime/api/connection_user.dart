@@ -711,7 +711,7 @@ extension TableOperations<Tbl extends Table, Row>
   /// Deletes all rows matching the [filter] from the table.
   ///
   /// See also [SingleTableQueryMixin.where].
-  Future<int> deleteWhere(Expression<bool?> Function(Tbl tbl) filter) {
+  Future<int> deleteWhere(Expression<bool> Function(Tbl tbl) filter) {
     return (delete()..where(filter)).go();
   }
 }

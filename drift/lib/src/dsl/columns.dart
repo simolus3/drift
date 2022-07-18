@@ -28,7 +28,7 @@ enum KeyAction {
 
 /// Base class for columns in sql. Type [T] refers to the type a value of this
 /// column will have in Dart.
-abstract class Column<T> extends Expression<T> {
+abstract class Column<T extends Object> extends Expression<T> {
   @override
   final Precedence precedence = Precedence.primary;
 
@@ -43,7 +43,7 @@ abstract class Column<T> extends Expression<T> {
 }
 
 /// A column that stores int values.
-typedef IntColumn = Column<int?>;
+typedef IntColumn = Column<int>;
 
 /// A column that stores BigInt values.
 ///
@@ -53,41 +53,41 @@ typedef IntColumn = Column<int?>;
 /// Dart can represent), there is no need to use an [Int64Column] for native
 /// apps. For Dart compiled to JavaScript though, it may be beneficial to use
 /// [BigInt]s to avoid loosing precision for values larger than 2⁵².
-typedef Int64Column = Column<BigInt?>;
+typedef Int64Column = Column<BigInt>;
 
 /// A column that stores boolean values. Booleans will be stored as an integer
 /// that can either be 0 (false) or 1 (true).
-typedef BoolColumn = Column<bool?>;
+typedef BoolColumn = Column<bool>;
 
 /// A column that stores text.
-typedef TextColumn = Column<String?>;
+typedef TextColumn = Column<String>;
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-typedef DateTimeColumn = Column<DateTime?>;
+typedef DateTimeColumn = Column<DateTime>;
 
 /// A column that stores arbitrary blobs of data as a [Uint8List].
-typedef BlobColumn = Column<Uint8List?>;
+typedef BlobColumn = Column<Uint8List>;
 
 /// A column that stores floating point numeric values.
-typedef RealColumn = Column<double?>;
+typedef RealColumn = Column<double>;
 
-class _BaseColumnBuilder<T> {}
+class _BaseColumnBuilder<T extends Object> {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, the generator will take a look at your
 /// source code (specifically, it will analyze which of the methods you use) to
 /// figure out the column structure of a table.
-class ColumnBuilder<T> extends _BaseColumnBuilder<T> {}
+class ColumnBuilder<T extends Object> extends _BaseColumnBuilder<T> {}
 
 /// A column builder for virtual, generated columns.
 ///
 /// This is a different class so that some methods are not available
-class VirtualColumnBuilder<T> extends _BaseColumnBuilder<T> {}
+class VirtualColumnBuilder<T extends Object> extends _BaseColumnBuilder<T> {}
 
 /// DSL extension to define a column inside a drift table.
-extension BuildColumn<T> on ColumnBuilder<T> {
+extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   /// Tells drift to write a custom constraint after this column definition when
   /// writing this column, for instance in a CREATE TABLE statement.
   ///
@@ -221,7 +221,7 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// part of a `CREATE TABLE` statement). As a consequence, changes to the
   /// [condition] need to be updated in the database schema with an explicit
   /// [schema migration](https://drift.simonbinder.eu/docs/advanced-features/migrations/).
-  ColumnBuilder<T> check(Expression<bool?> condition) => _isGenerated();
+  ColumnBuilder<T> check(Expression<bool> condition) => _isGenerated();
 
   /// Declare a generated column.
   ///
@@ -258,13 +258,13 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// Note that generated columns are only available in sqlite3 version
   /// `3.31.0`. When using `sqlite3_flutter_libs` or a web database, this is not
   /// a problem.
-  VirtualColumnBuilder<T> generatedAs(Expression<T?> generatedAs,
+  VirtualColumnBuilder<T> generatedAs(Expression<T> generatedAs,
           {bool stored = false}) =>
       _isGenerated();
 }
 
 /// Column builders available for both virtual and non-virtual columns.
-extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
+extension BuildGeneralColumn<T extends Object> on _BaseColumnBuilder<T> {
   /// By default, the field name will be used as the column name, e.g.
   /// `IntColumn get id = integer()` will have "id" as its associated name.
   /// Columns made up of multiple words are expected to be in camelCase and will
@@ -280,13 +280,13 @@ extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
 
   /// Marks this column as nullable. Nullable columns should not appear in a
   /// primary key. Columns are non-null by default.
-  ColumnBuilder<T?> nullable() => _isGenerated();
+  ColumnBuilder<T> nullable() => _isGenerated();
 
   /// Adds UNIQUE constraint to column.
   ///
   /// Unique constraints spanning multiple keys can be added to a table by
   /// overriding [Table.uniqueKeys].
-  ColumnBuilder<T?> unique() => _isGenerated();
+  ColumnBuilder<T> unique() => _isGenerated();
 
   /// Uses a custom [converter] to store custom Dart objects in a single column
   /// and automatically mapping them from and to sql.
@@ -335,7 +335,7 @@ extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
 
 /// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
 /// for details.
-extension BuildIntColumn<T extends int?> on ColumnBuilder<T> {
+extension BuildIntColumn<T extends int> on ColumnBuilder<T> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
   ///
@@ -346,7 +346,7 @@ extension BuildIntColumn<T extends int?> on ColumnBuilder<T> {
 
 /// Tells the generator to build an [TextColumn]. See the docs at
 /// [ColumnBuilder] for details.
-extension BuildTextColumn<T extends String?> on ColumnBuilder<T> {
+extension BuildTextColumn<T extends String> on ColumnBuilder<T> {
   /// Puts a constraint on the minimum and maximum length of text that can be
   /// stored in this column.
   ///

@@ -5,9 +5,9 @@ part of '../query_builder.dart';
 
 /// An expression that represents the value of a dart object encoded to sql
 /// using prepared statements.
-class Variable<T> extends Expression<T> {
+class Variable<T extends Object> extends Expression<T> {
   /// The Dart value that will be sent to the database
-  final T value;
+  final T? value;
 
   // note that we keep the identity hash/equals here because each variable would
   // get its own index in sqlite and is thus different.
@@ -104,7 +104,7 @@ class Variable<T> extends Expression<T> {
 /// An expression that represents the value of a dart object encoded to sql
 /// by writing them into the sql statements. For most cases, consider using
 /// [Variable] instead.
-class Constant<T> extends Expression<T> {
+class Constant<T extends Object> extends Expression<T> {
   /// Constructs a new constant (sql literal) holding the [value].
   const Constant(this.value);
 
@@ -112,7 +112,7 @@ class Constant<T> extends Expression<T> {
   Precedence get precedence => Precedence.primary;
 
   /// The value that will be converted to an sql literal.
-  final T value;
+  final T? value;
 
   @override
   bool get isLiteral => true;

@@ -2,28 +2,28 @@ import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
 void main() {
-  const type = drift.RealType();
+  final typeSystem = drift.DriftDatabaseOptions().types;
 
   group('RealType', () {
     test('can be read from floating point values returned by sql', () {
-      expect(type.mapFromDatabaseResponse(3.1234), 3.1234);
+      expect(typeSystem.read(drift.DriftSqlType.double, 3.1234), 3.1234);
     });
 
     test('can read null value from sql', () {
-      expect(type.mapFromDatabaseResponse(null), isNull);
+      expect(typeSystem.read(drift.DriftSqlType.double, null), isNull);
     });
 
     test('can be mapped to sql constants', () {
-      expect(type.mapToSqlConstant(1.123), '1.123');
+      expect(typeSystem.mapToSqlLiteral(1.123), '1.123');
     });
 
     test('can be mapped to variables', () {
-      expect(type.mapToSqlVariable(1.123), 1.123);
+      expect(typeSystem.mapToSqlVariable(1.123), 1.123);
     });
 
     test('map null to null', () {
-      expect(type.mapToSqlConstant(null), 'NULL');
-      expect(type.mapToSqlVariable(null), null);
+      expect(typeSystem.mapToSqlLiteral(null), 'NULL');
+      expect(typeSystem.mapToSqlVariable(null), null);
     });
   });
 }

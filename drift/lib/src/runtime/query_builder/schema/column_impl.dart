@@ -5,7 +5,7 @@ const VerificationResult _invalidNull = VerificationResult.failure(
     "Null fields thus can't be inserted.");
 
 /// Implementation for a [Column] declared on a table.
-class GeneratedColumn<T> extends Column<T> {
+class GeneratedColumn<T extends Object> extends Column<T> {
   /// The sql name of this column.
   final String $name; // todo: Remove, replace with `name`
 
@@ -40,7 +40,7 @@ class GeneratedColumn<T> extends Column<T> {
   /// time.
   /// This field is defined as a lazy function because the check constraint
   /// typically depends on the column itself.
-  final Expression<bool?> Function()? check;
+  final Expression<bool> Function()? check;
 
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
@@ -54,7 +54,7 @@ class GeneratedColumn<T> extends Column<T> {
   final VerificationResult Function(T, VerificationMeta)? additionalChecks;
 
   /// The sql type to use for this column.
-  final DriftSqlType type;
+  final DriftSqlType<T> type;
 
   /// If this column is generated (that is, it is a SQL expression of other)
   /// columns, contains information about how to generate this column.
@@ -253,9 +253,10 @@ class GeneratedColumn<T> extends Column<T> {
 ///
 /// This provides the [equalsValue] method, which can be used to compare this
 /// column against a value mapped through a type converter.
-class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
+class GeneratedColumnWithTypeConverter<D, S extends Object>
+    extends GeneratedColumn<S> {
   /// The type converted used on this column.
-  final TypeConverter<D, S> converter;
+  final TypeConverter<D?, S?> converter;
 
   GeneratedColumnWithTypeConverter._(
     this.converter,
@@ -263,14 +264,14 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
     String tableName,
     bool nullable,
     S Function()? clientDefault,
-    DriftSqlType type,
+    DriftSqlType<S> type,
     String? defaultConstraints,
     String? customConstraints,
     Expression<S>? defaultValue,
     VerificationResult Function(S, VerificationMeta)? additionalChecks,
     bool requiredDuringInsert,
     GeneratedAs? generatedAs,
-    Expression<bool?> Function()? check,
+    Expression<bool> Function()? check,
   ) : super(
           name,
           tableName,

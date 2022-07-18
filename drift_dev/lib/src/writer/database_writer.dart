@@ -47,7 +47,7 @@ class DatabaseWriter {
 
     firstLeaf.write('class $className extends GeneratedDatabase {\n'
         '$className(QueryExecutor e) : '
-        'super(SqlTypeSystem.defaultInstance, e); \n');
+        'super(e); \n');
 
     if (dbScope.options.generateConnectConstructor) {
       firstLeaf.write(

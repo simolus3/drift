@@ -18,7 +18,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  Future<T> eval<T>(Expression<T> expr, {TableInfo? onTable}) {
+  Future<T?> eval<T extends Object>(Expression<T> expr, {TableInfo? onTable}) {
     final query = db.selectOnly(onTable ?? db.users)..addColumns([expr]);
     return query.getSingle().then((row) => row.read(expr));
   }
@@ -33,7 +33,7 @@ void main() {
           ..addColumns([nowStamp, tomorrowStamp]))
         .getSingle();
 
-    expect(row.read(tomorrowStamp) - row.read(nowStamp),
+    expect(row.read(tomorrowStamp)! - row.read(nowStamp)!,
         const Duration(days: 1).inSeconds);
   });
 

@@ -122,8 +122,7 @@ class UpdateCompanionWriter {
       ..write('({');
 
     for (final column in columns) {
-      // todo (breaking change): This should not consider type converters.
-      final typeName = column.dartTypeCode(scope.generationOptions);
+      final typeName = column.innerColumnType();
       _buffer.write('Expression<$typeName>? ${column.dartGetterName}, \n');
     }
 
@@ -179,7 +178,7 @@ class UpdateCompanionWriter {
       final getterName = column.thisIfNeeded(locals);
 
       _buffer.write('if ($getterName.present) {');
-      final typeName = column.variableTypeCode(scope.generationOptions);
+      final typeName = column.variableTypeCode(nullable: false);
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<$typeName>';
 

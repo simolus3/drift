@@ -7,7 +7,7 @@ part of '../query_builder.dart';
 /// See also:
 ///  - [currentDate] and [currentDateAndTime], which use a [CustomExpression]
 ///  internally.
-class CustomExpression<D> extends Expression<D> {
+class CustomExpression<D extends Object> extends Expression<D> {
   /// The SQL of this expression
   final String content;
 

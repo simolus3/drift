@@ -1,6 +1,6 @@
 part of '../query_builder.dart';
 
-abstract class _BaseInExpression extends Expression<bool?> {
+abstract class _BaseInExpression extends Expression<bool> {
   final Expression _expression;
   final bool _not;
 
@@ -25,7 +25,7 @@ abstract class _BaseInExpression extends Expression<bool?> {
   void _writeValues(GenerationContext context);
 }
 
-class _InExpression<T> extends _BaseInExpression {
+class _InExpression<T extends Object> extends _BaseInExpression {
   final List<T> _values;
 
   _InExpression(Expression expression, this._values, bool not)

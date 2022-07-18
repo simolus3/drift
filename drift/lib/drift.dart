@@ -4,10 +4,8 @@ library drift;
 // field.
 export 'dart:typed_data' show Uint8List;
 
-// needed for generated code which provides an @required parameter hint where
-// appropriate
-export 'package:meta/meta.dart' show required;
 export 'src/dsl/dsl.dart';
+export 'src/runtime/api/options.dart';
 export 'src/runtime/api/runtime_api.dart';
 export 'src/runtime/custom_result_set.dart';
 export 'src/runtime/data_class.dart';

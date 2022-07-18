@@ -22,7 +22,7 @@ extension SqlIsNull on Expression {
 
 /// Evaluates to the first expression in [expressions] that's not null, or
 /// null if all [expressions] evaluate to null.
-Expression<T> coalesce<T>(List<Expression<T?>> expressions) {
+Expression<T> coalesce<T extends Object>(List<Expression<T>> expressions) {
   assert(expressions.length >= 2,
       'expressions must be of length >= 2, got ${expressions.length}');
 

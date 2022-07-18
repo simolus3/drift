@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
+import 'test_utils.dart';
+
 void expectEquals(dynamic a, dynamic expected) {
   expect(a, equals(expected));
   expect(a.hashCode, equals(expected.hashCode));
@@ -66,7 +68,7 @@ class _GeneratesSqlMatcher extends Matcher {
       return false;
     }
 
-    final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
+    final ctx = stubContext();
     item.writeInto(ctx);
 
     var matches = true;

@@ -39,7 +39,7 @@ abstract class TableOrViewWriter {
       }
     }
 
-    additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';
+    additionalParams['type'] = column.sqlType().toString();
 
     if (tableOrView is DriftTable) {
       additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)
@@ -73,7 +73,7 @@ abstract class TableOrViewWriter {
       }
     }
 
-    final innerType = column.innerColumnType(options: options);
+    final innerType = column.innerColumnType();
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer
       ..write(type)
@@ -136,13 +136,13 @@ abstract class TableOrViewWriter {
 
     final dataClassName = tableOrView.dartTypeCode(scope.generationOptions);
 
-    buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
-        '{String? tablePrefix}) {\n');
-
-    if (tableOrView.hasExistingRowClass) {
-      buffer.write('final effectivePrefix = '
+    buffer
+      ..write('@override\n$dataClassName map(Map<String, dynamic> data, '
+          '{String? tablePrefix}) {\n')
+      ..write('final effectivePrefix = '
           "tablePrefix != null ? '\$tablePrefix.' : '';");
 
+    if (tableOrView.hasExistingRowClass) {
       final info = tableOrView.existingRowClass!;
       final positionalToIndex = <DriftColumn, int>{};
       final named = <DriftColumn, String>{};
@@ -163,11 +163,11 @@ abstract class TableOrViewWriter {
             (a, b) => positionalToIndex[a]!.compareTo(positionalToIndex[b]!));
 
       final writer = RowMappingWriter(
-        positional,
-        named,
-        tableOrView,
-        scope.generationOptions,
-        scope.options,
+        positional: positional,
+        named: named,
+        table: tableOrView,
+        options: scope.generationOptions,
+        databaseGetter: 'attachedDatabase',
       );
 
       final classElement = info.targetClass;
@@ -184,16 +184,26 @@ abstract class TableOrViewWriter {
       writer.writeArguments(buffer);
       buffer.write(';\n');
     } else {
-      // Use default .fromData constructor in the moor-generated data class
-      final hasDbParameter = scope.generationOptions.writeForMoorPackage &&
-          tableOrView is DriftTable;
-      if (hasDbParameter) {
-        buffer.write('return $dataClassName.fromData(data, attachedDatabase, '
-            "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
+      List<DriftColumn> columns;
+
+      final view = tableOrView;
+      if (view is MoorView && view.viewQuery != null) {
+        columns = view.viewQuery!.columns.map((e) => e.value).toList();
       } else {
-        buffer.write('return $dataClassName.fromData(data, '
-            "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
+        columns = tableOrView.columns;
       }
+
+      final writer = RowMappingWriter(
+        positional: const [],
+        named: {for (final column in columns) column: column.dartGetterName},
+        table: tableOrView,
+        options: scope.generationOptions,
+        databaseGetter: 'attachedDatabase',
+      );
+
+      buffer.write('return ${tableOrView.dartTypeName}');
+      writer.writeArguments(buffer);
+      buffer.writeln(';');
     }
 
     buffer.write('}\n');

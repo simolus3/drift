@@ -705,8 +705,7 @@ class _ExpandedVariableWriter {
     // write all the variables sequentially.
     String constructVar(String dartExpr) {
       // No longer an array here, we apply a for loop if necessary
-      final type =
-          element.variableTypeCodeWithoutArray(scope.generationOptions);
+      final type = element.innerColumnType(nullable: false);
       final buffer = StringBuffer('Variable<$type>(');
       final capture = element.forCaptured;
 

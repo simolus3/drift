@@ -19,46 +19,46 @@ class _CustomDateTimeExpression extends CustomExpression<DateTime> {
 
 /// Provides expressions to extract information from date time values, or to
 /// calculate the difference between datetimes.
-extension DateTimeExpressions on Expression<DateTime?> {
+extension DateTimeExpressions on Expression<DateTime> {
   /// Extracts the (UTC) year from `this` datetime expression.
-  Expression<int?> get year => _StrftimeSingleFieldExpression('%Y', this);
+  Expression<int> get year => _StrftimeSingleFieldExpression('%Y', this);
 
   /// Extracts the (UTC) month from `this` datetime expression.
-  Expression<int?> get month => _StrftimeSingleFieldExpression('%m', this);
+  Expression<int> get month => _StrftimeSingleFieldExpression('%m', this);
 
   /// Extracts the (UTC) day from `this` datetime expression.
-  Expression<int?> get day => _StrftimeSingleFieldExpression('%d', this);
+  Expression<int> get day => _StrftimeSingleFieldExpression('%d', this);
 
   /// Extracts the (UTC) hour from `this` datetime expression.
-  Expression<int?> get hour => _StrftimeSingleFieldExpression('%H', this);
+  Expression<int> get hour => _StrftimeSingleFieldExpression('%H', this);
 
   /// Extracts the (UTC) minute from `this` datetime expression.
-  Expression<int?> get minute => _StrftimeSingleFieldExpression('%M', this);
+  Expression<int> get minute => _StrftimeSingleFieldExpression('%M', this);
 
   /// Extracts the (UTC) second from `this` datetime expression.
-  Expression<int?> get second => _StrftimeSingleFieldExpression('%S', this);
+  Expression<int> get second => _StrftimeSingleFieldExpression('%S', this);
 
   /// Formats this datetime in the format `year-month-day`.
-  Expression<String?> get date => FunctionCallExpression(
+  Expression<String> get date => FunctionCallExpression(
       'DATE', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime in the format `hour:minute:second`.
-  Expression<String?> get time => FunctionCallExpression(
+  Expression<String> get time => FunctionCallExpression(
       'TIME', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime in the format `year-month-day hour:minute:second`.
-  Expression<String?> get datetime => FunctionCallExpression(
+  Expression<String> get datetime => FunctionCallExpression(
       'DATETIME', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime as a unix timestamp - the number of seconds since
   /// 1970-01-01 00:00:00 UTC. The unixepoch() always returns an integer, even
   /// if the input time-value has millisecond precision.
-  Expression<int?> get unixepoch => FunctionCallExpression(
+  Expression<int> get unixepoch => FunctionCallExpression(
       'UNIXEPOCH', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime in the Julian day format - a fractional number of
   /// days since noon in Greenwich on November 24, 4714 B.C.
-  Expression<double?> get julianday => FunctionCallExpression(
+  Expression<double> get julianday => FunctionCallExpression(
       'JULIANDAY', [this, const DateTimeModifier._unixEpoch()]);
 
   /// Formats this datetime according to the format string specified as the
@@ -79,7 +79,7 @@ extension DateTimeExpressions on Expression<DateTime?> {
   /// * %W		week of year: 00-53
   /// * %Y		year: 0000-9999
   /// * %%		%
-  Expression<String?> strftime(String format) => FunctionCallExpression(
+  Expression<String> strftime(String format) => FunctionCallExpression(
       'STRFTIME',
       [Constant<String>(format), this, const DateTimeModifier._unixEpoch()]);
 
@@ -87,7 +87,7 @@ extension DateTimeExpressions on Expression<DateTime?> {
   ///
   /// See the factories on [DateTimeModifier] for a list of modifiers that can
   /// be used with this method.
-  Expression<DateTime?> modify(DateTimeModifier modifier) =>
+  Expression<DateTime> modify(DateTimeModifier modifier) =>
       FunctionCallExpression(
           'unixepoch', [this, const DateTimeModifier._unixEpoch(), modifier]);
 
@@ -96,7 +96,7 @@ extension DateTimeExpressions on Expression<DateTime?> {
   /// The [modifiers] are applied in sequence from left to right.
   /// For a list of modifiers and how they behave, see the docs on
   /// [DateTimeModifier] factories.
-  Expression<DateTime?> modifyAll(Iterable<DateTimeModifier> modifiers) =>
+  Expression<DateTime> modifyAll(Iterable<DateTimeModifier> modifiers) =>
       FunctionCallExpression('unixepoch',
           [this, const DateTimeModifier._unixEpoch(), ...modifiers]);
 
@@ -132,9 +132,9 @@ extension DateTimeExpressions on Expression<DateTime?> {
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.
-class _StrftimeSingleFieldExpression extends Expression<int?> {
+class _StrftimeSingleFieldExpression extends Expression<int> {
   final String format;
-  final Expression<DateTime?> date;
+  final Expression<DateTime> date;
 
   _StrftimeSingleFieldExpression(this.format, this.date);
 

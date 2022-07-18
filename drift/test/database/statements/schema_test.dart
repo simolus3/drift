@@ -190,9 +190,7 @@ void main() {
 }
 
 class _DefaultDb extends GeneratedDatabase {
-  _DefaultDb(QueryExecutor executor)
-      // ignore: prefer_const_constructors
-      : super(SqlTypeSystem.withDefaults(), executor);
+  _DefaultDb(QueryExecutor executor) : super(executor);
 
   @override
   List<TableInfo<Table, DataClass>> get allTables => [];

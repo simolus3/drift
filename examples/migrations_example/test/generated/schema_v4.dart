@@ -274,7 +274,7 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
   static Insertable<GroupsData> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<bool?>? deleted,
+    Expression<bool>? deleted,
     Expression<int>? owner,
   }) {
     return RawValuesInsertable({

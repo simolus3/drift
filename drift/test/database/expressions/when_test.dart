@@ -30,6 +30,7 @@ void main() {
   });
 
   test('does not allow empty WHEN map', () {
-    expect(() => x.caseMatch(when: const {}), throwsA(isA<ArgumentError>()));
+    expect(() => x.caseMatch<Object>(when: const {}),
+        throwsA(isA<ArgumentError>()));
   });
 }

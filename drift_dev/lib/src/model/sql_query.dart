@@ -742,7 +742,7 @@ class ExpressionDartPlaceholderType extends DartPlaceholderType {
     if (columnType == null) return 'Expression';
 
     final dartType = dartTypeNames[columnType]!;
-    return 'Expression<$dartType?>';
+    return 'Expression<$dartType>';
   }
 }
 

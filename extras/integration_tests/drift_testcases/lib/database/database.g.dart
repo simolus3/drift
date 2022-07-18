@@ -174,8 +174,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<int>? id,
     Expression<String>? name,
     Expression<DateTime>? birthDate,
-    Expression<Uint8List?>? profilePicture,
-    Expression<Preferences?>? preferences,
+    Expression<Uint8List>? profilePicture,
+    Expression<Preferences>? preferences,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,

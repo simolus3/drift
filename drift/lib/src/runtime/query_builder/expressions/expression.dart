@@ -17,7 +17,7 @@ abstract class FunctionParameter implements Component {}
 /// [JoinedSelectStatement], e.g. through [DatabaseConnectionUser.selectOnly]:
 ///
 /// ```dart
-///  Expression<int?> countUsers = users.id.count();
+///  Expression<int> countUsers = users.id.count();
 ///
 ///  // Add the expression to a select statement to evaluate it.
 ///  final query = selectOnly(users)..addColumns([countUsers]);
@@ -29,7 +29,7 @@ abstract class FunctionParameter implements Component {}
 ///
 /// It's important that all subclasses properly implement [hashCode] and
 /// [==].
-abstract class Expression<D> implements FunctionParameter {
+abstract class Expression<D extends Object> implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
@@ -59,7 +59,7 @@ abstract class Expression<D> implements FunctionParameter {
   /// in sql, use [cast].
   ///
   /// This method is used internally by drift.
-  Expression<D2> dartCast<D2>() {
+  Expression<D2> dartCast<D2 extends Object>() {
     return _DartCastExpression<D, D2>(this);
   }
 
@@ -68,19 +68,19 @@ abstract class Expression<D> implements FunctionParameter {
   /// Note that this does not do a meaningful conversion for drift-only types
   /// like `bool` or `DateTime`. Both would simply generate a `CAST AS INT`
   /// expression.
-  Expression<D2?> cast<D2 extends Object>() {
+  Expression<D2> cast<D2 extends Object>() {
     return _CastInSqlExpression<D, D2>(this);
   }
 
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
-  Expression<bool?> isIn(Iterable<D> values) {
+  Expression<bool> isIn(Iterable<D> values) {
     return _InExpression(this, values.toList(), false);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
-  Expression<bool?> isNotIn(Iterable<D> values) {
+  Expression<bool> isNotIn(Iterable<D> values) {
     return _InExpression(this, values.toList(), true);
   }
 
@@ -88,7 +88,7 @@ abstract class Expression<D> implements FunctionParameter {
   /// provided [select] statement.
   ///
   /// The [select] statement may only have one column.
-  Expression<bool?> isInQuery(BaseSelectStatement select) {
+  Expression<bool> isInQuery(BaseSelectStatement select) {
     _checkSubquery(select);
     return _InSelectExpression(select, this, false);
   }
@@ -97,7 +97,7 @@ abstract class Expression<D> implements FunctionParameter {
   /// provided [select] statement.
   ///
   /// The [select] statement may only have one column.
-  Expression<bool?> isNotInQuery(BaseSelectStatement select) {
+  Expression<bool> isNotInQuery(BaseSelectStatement select) {
     _checkSubquery(select);
     return _InSelectExpression(select, this, true);
   }
@@ -129,9 +129,9 @@ abstract class Expression<D> implements FunctionParameter {
   ///   orElse: Constant('(unknown)'),
   /// );
   /// ```
-  Expression<T?> caseMatch<T>({
-    required Map<Expression<D>, Expression<T?>> when,
-    Expression<T?>? orElse,
+  Expression<T> caseMatch<T extends Object>({
+    required Map<Expression<D>, Expression<T>> when,
+    Expression<T>? orElse,
   }) {
     if (when.isEmpty) {
       throw ArgumentError.value(when, 'when', 'Must not be empty');
@@ -166,6 +166,9 @@ abstract class Expression<D> implements FunctionParameter {
         "Expressions with unknown precedence shouldn't have inner expressions");
     inner.writeAroundPrecedence(ctx, precedence);
   }
+
+  /// The supported [DriftSqlType] backing this expression.
+  DriftSqlType<D> get driftSqlType => DriftSqlType.forType();
 }
 
 /// Used to order the precedence of sql expressions so that we can avoid
@@ -244,7 +247,7 @@ class Precedence implements Comparable<Precedence> {
 
 /// An expression that looks like "$a operator $b", where $a and $b itself
 /// are expressions and the operator is any string.
-abstract class _InfixOperator<D> extends Expression<D> {
+abstract class _InfixOperator<D extends Object> extends Expression<D> {
   /// The left-hand side of this expression
   Expression get left;
 
@@ -275,7 +278,7 @@ abstract class _InfixOperator<D> extends Expression<D> {
   }
 }
 
-class _BaseInfixOperator<D> extends _InfixOperator<D> {
+class _BaseInfixOperator<D extends Object> extends _InfixOperator<D> {
   @override
   final Expression left;
 
@@ -349,7 +352,7 @@ class _Comparison extends _InfixOperator<bool> {
   _Comparison.equal(this.left, this.right) : op = _ComparisonOperator.equal;
 }
 
-class _UnaryMinus<DT> extends Expression<DT> {
+class _UnaryMinus<DT extends Object> extends Expression<DT> {
   final Expression<DT> inner;
 
   _UnaryMinus(this.inner);
@@ -372,7 +375,8 @@ class _UnaryMinus<DT> extends Expression<DT> {
   }
 }
 
-class _DartCastExpression<D1, D2> extends Expression<D2> {
+class _DartCastExpression<D1 extends Object, D2 extends Object>
+    extends Expression<D2> {
   final Expression<D1> inner;
 
   _DartCastExpression(this.inner);
@@ -397,7 +401,8 @@ class _DartCastExpression<D1, D2> extends Expression<D2> {
   }
 }
 
-class _CastInSqlExpression<D1, D2 extends Object> extends Expression<D2?> {
+class _CastInSqlExpression<D1 extends Object, D2 extends Object>
+    extends Expression<D2> {
   final Expression<D1> inner;
 
   @override
@@ -420,7 +425,7 @@ class _CastInSqlExpression<D1, D2 extends Object> extends Expression<D2?> {
 /// This class is mainly used by drift internally. If you find yourself using
 /// this class, consider [creating an issue](https://github.com/simolus3/drift/issues/new)
 /// to request native support in drift.
-class FunctionCallExpression<R> extends Expression<R> {
+class FunctionCallExpression<R extends Object> extends Expression<R> {
   /// The name of the function to call
   final String functionName;
 
@@ -466,12 +471,13 @@ void _checkSubquery(BaseSelectStatement statement) {
 ///
 /// The statement, which can be created via [DatabaseConnectionUser.select] in
 /// a database class, must return exactly one row with exactly one column.
-Expression<R> subqueryExpression<R>(BaseSelectStatement statement) {
+Expression<R> subqueryExpression<R extends Object>(
+    BaseSelectStatement statement) {
   _checkSubquery(statement);
   return _SubqueryExpression<R>(statement);
 }
 
-class _SubqueryExpression<R> extends Expression<R> {
+class _SubqueryExpression<R extends Object> extends Expression<R> {
   final BaseSelectStatement statement;
 
   _SubqueryExpression(this.statement);

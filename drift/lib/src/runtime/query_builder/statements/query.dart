@@ -325,7 +325,7 @@ mixin SingleTableQueryMixin<T extends HasResultSet, D> on Query<T, D> {
   ///    which explains how to express most SQL expressions in Dart.
   /// If you want to remove duplicate rows from a query, use the `distinct`
   /// parameter on [DatabaseConnectionUser.select].
-  void where(Expression<bool?> Function(T tbl) filter) {
+  void where(Expression<bool> Function(T tbl) filter) {
     final predicate = filter(table.asDslTable);
 
     if (whereExpr == null) {
@@ -374,7 +374,7 @@ extension QueryTableExtensions<T extends Table, D>
       return MapEntry(primaryKeyColumns[columnName]!, value);
     });
 
-    Expression<bool?>? predicate;
+    Expression<bool>? predicate;
     for (final entry in primaryKeyValues.entries) {
       final comparison =
           _Comparison(entry.key, _ComparisonOperator.equal, entry.value);

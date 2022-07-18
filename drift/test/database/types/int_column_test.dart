@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
-import '../../../generated/todos.dart';
+import '../../generated/todos.dart';
 
 void main() {
   test('int column writes AUTOINCREMENT constraint', () {
@@ -9,7 +9,7 @@ void main() {
       'foo',
       'tbl',
       false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
     );
 
@@ -22,7 +22,7 @@ void main() {
 
   test('int column writes PRIMARY KEY constraint', () {
     final column = GeneratedColumn<int>('foo', 'tbl', false,
-        type: const IntType(), $customConstraints: 'NOT NULL PRIMARY KEY');
+        type: DriftSqlType.int, $customConstraints: 'NOT NULL PRIMARY KEY');
 
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);

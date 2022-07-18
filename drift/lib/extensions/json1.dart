@@ -11,7 +11,7 @@ import 'package:meta/meta.dart';
 import '../drift.dart';
 
 /// Defines extensions on string expressions to support the json1 api from Dart.
-extension JsonExtensions on Expression<String?> {
+extension JsonExtensions on Expression<String> {
   /// Assuming that this string is a json array, returns the length of this json
   /// array.
   ///
@@ -47,7 +47,7 @@ extension JsonExtensions on Expression<String?> {
   /// in [JoinedSelectStatement.addColumns] or compared via [Expression.equals].
   /// The [T] parameter denotes the mapped Dart type for this expression,
   /// such as [String].
-  Expression<T> jsonExtract<T>(String path) {
+  Expression<T> jsonExtract<T extends Object>(String path) {
     return FunctionCallExpression('json_extract', [
       this,
       Variable.withString(path),

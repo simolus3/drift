@@ -84,25 +84,45 @@ extension OperationOnTypes on HasType {
   /// Basically the same as [dartTypeCode], minus custom types and nullability.
   String get variableTypeName => dartTypeNames[type]!;
 
-  /// The class inside the moor library that represents the same sql type as
-  /// this column.
-  String get sqlTypeName => sqlTypes[type]!;
-
   /// The moor Dart type that matches the type of this column.
   ///
   /// This is the same as [dartTypeCode] but without custom types.
-  String variableTypeCode(
-      [GenerationOptions options = const GenerationOptions()]) {
+  String variableTypeCode({bool? nullable}) {
     if (isArray) {
-      return 'List<${variableTypeCodeWithoutArray(options)}>';
+      return 'List<${innerColumnType(nullable: nullable ?? this.nullable)}>';
     } else {
-      return variableTypeCodeWithoutArray(options);
+      return innerColumnType(nullable: nullable ?? this.nullable);
     }
   }
 
-  String variableTypeCodeWithoutArray(
-      [GenerationOptions options = const GenerationOptions()]) {
-    return nullable ? '$variableTypeName?' : variableTypeName;
+  String innerColumnType({bool nullable = false}) {
+    String code;
+
+    switch (type) {
+      case ColumnType.integer:
+        code = 'int';
+        break;
+      case ColumnType.bigInt:
+        code = 'BigInt';
+        break;
+      case ColumnType.text:
+        code = 'String';
+        break;
+      case ColumnType.boolean:
+        code = 'bool';
+        break;
+      case ColumnType.datetime:
+        code = 'DateTime';
+        break;
+      case ColumnType.blob:
+        code = 'Uint8List';
+        break;
+      case ColumnType.real:
+        code = 'double';
+        break;
+    }
+
+    return nullable ? '$code?' : code;
   }
 
   /// The dart type that matches the values of this column. For instance, if a
@@ -116,7 +136,7 @@ extension OperationOnTypes on HasType {
       return isArray ? 'List<$inner>' : inner;
     }
 
-    return variableTypeCode(options);
+    return variableTypeCode();
   }
 
   DriftSqlType sqlType() {
@@ -160,14 +180,4 @@ const Map<ColumnType, String> createVariable = {
   ColumnType.datetime: 'Variable.withDateTime',
   ColumnType.blob: 'Variable.withBlob',
   ColumnType.real: 'Variable.withReal',
-};
-
-const Map<ColumnType, String> sqlTypes = {
-  ColumnType.boolean: 'BoolType',
-  ColumnType.text: 'StringType',
-  ColumnType.integer: 'IntType',
-  ColumnType.bigInt: 'BigIntType',
-  ColumnType.datetime: 'DateTimeType',
-  ColumnType.blob: 'BlobType',
-  ColumnType.real: 'RealType',
 };

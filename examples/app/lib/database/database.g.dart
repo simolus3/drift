@@ -340,8 +340,8 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
   static Insertable<TodoEntry> custom({
     Expression<int>? id,
     Expression<String>? description,
-    Expression<int?>? category,
-    Expression<DateTime?>? dueDate,
+    Expression<int>? category,
+    Expression<DateTime>? dueDate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,

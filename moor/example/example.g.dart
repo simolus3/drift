@@ -100,7 +100,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   });
   static Insertable<Category> custom({
     Expression<int>? id,
-    Expression<String?>? description,
+    Expression<String>? description,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -318,7 +318,7 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     Expression<int>? id,
     Expression<String>? title,
     Expression<String>? instructions,
-    Expression<int?>? category,
+    Expression<int>? category,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,

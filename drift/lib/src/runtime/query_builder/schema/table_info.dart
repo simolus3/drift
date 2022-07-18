@@ -172,12 +172,12 @@ extension RowIdExtension on TableInfo {
   /// the [rowId] will not be part of a drift-generated data class. In this
   /// case, the [rowId] getter can be used to refer to a table's row id in a
   /// query.
-  Expression<int?> get rowId {
+  Expression<int> get rowId {
     if (withoutRowId || this is VirtualTableInfo) {
       throw ArgumentError('Cannot use rowId on a table without a rowid!');
     }
 
-    return GeneratedColumn<int?>('_rowid_', aliasedName, false,
+    return GeneratedColumn<int>('_rowid_', aliasedName, false,
         type: DriftSqlType.int);
   }
 }

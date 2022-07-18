@@ -31,7 +31,7 @@ class Join<T extends HasResultSet, D> extends Component {
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
-  final Expression<bool?>? on;
+  final Expression<bool>? on;
 
   /// Whether [table] should appear in the result set (defaults to true).
   /// Default value can be changed by `includeJoinedTableColumns` in
@@ -79,7 +79,7 @@ class Join<T extends HasResultSet, D> extends Component {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
+Join innerJoin(Table other, Expression<bool> on, {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
 
@@ -91,7 +91,7 @@ Join innerJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
+Join leftOuterJoin(Table other, Expression<bool> on, {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 

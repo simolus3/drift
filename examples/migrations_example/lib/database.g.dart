@@ -106,7 +106,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   static Insertable<User> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<int?>? nextUser,
+    Expression<int>? nextUser,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -332,7 +332,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   static Insertable<Group> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<bool?>? deleted,
+    Expression<bool>? deleted,
     Expression<int>? owner,
   }) {
     return RawValuesInsertable({

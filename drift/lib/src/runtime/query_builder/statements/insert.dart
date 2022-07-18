@@ -360,7 +360,7 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   ///
   /// For an example, see [InsertStatement.insert].
   DoUpdate(Insertable<D> Function(T old) update,
-      {this.target, Expression<bool?> Function(T old)? where})
+      {this.target, Expression<bool> Function(T old)? where})
       : _creator = ((old, _) => update(old)),
         _where = where == null ? null : ((old, _) => Where(where(old))),
         _usesExcludedTable = false;
@@ -379,7 +379,7 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   ///
   /// For an example, see [InsertStatement.insert].
   DoUpdate.withExcluded(Insertable<D> Function(T old, T excluded) update,
-      {this.target, Expression<bool?> Function(T old, T excluded)? where})
+      {this.target, Expression<bool> Function(T old, T excluded)? where})
       : _creator = update,
         _usesExcludedTable = true,
         _where = where == null

@@ -28,7 +28,7 @@ void main() {
 
   test('generates parentheses for OR in AND', () {
     final c =
-        GeneratedColumn<String>('c', 't', false, type: const StringType());
+        GeneratedColumn<String>('c', 't', false, type: DriftSqlType.string);
     final expr =
         (c.equals('A') | c.equals('B')) & (c.equals('C') | c.equals(''));
     expect(

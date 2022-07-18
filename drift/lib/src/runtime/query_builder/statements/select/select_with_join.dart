@@ -136,7 +136,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// ])
   /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
   /// ```
-  void where(Expression<bool?> predicate) {
+  void where(Expression<bool> predicate) {
     if (whereExpr == null) {
       whereExpr = Where(predicate);
     } else {
@@ -192,7 +192,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// Groups the result by values in [expressions].
   ///
   /// An optional [having] attribute can be set to exclude certain groups.
-  void groupBy(Iterable<Expression> expressions, {Expression<bool?>? having}) {
+  void groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
     _groupBy = GroupBy._(expressions.toList(), having);
   }
 
@@ -252,8 +252,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         final expr = aliasedColumn.key;
         final value = row[aliasedColumn.value];
 
-        final type = expr.findType(ctx.typeSystem);
-        readColumns[expr] = ctx.options.types.read(type, value);
+        readColumns[expr] = ctx.options.types.read(expr.driftSqlType, value);
       }
 
       return TypedResult(readTables, QueryRow(row, database), readColumns);

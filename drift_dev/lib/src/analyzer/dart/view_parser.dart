@@ -140,10 +140,10 @@ class ViewParser {
       if (sqlType == null) {
         final String errorMessage;
         if (typeName == 'dynamic') {
-          errorMessage = 'You must specify Expression<?> type argument';
+          errorMessage = 'You must specify Expression<> type argument';
         } else {
           errorMessage =
-              'Invalid Expression<?> type argument `$typeName` found. '
+              'Invalid Expression<> type argument `$typeName` found. '
               'Must be one of: '
               'bool, String, int, DateTime, Uint8List, double';
         }

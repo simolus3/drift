@@ -18,43 +18,42 @@ void main() {
 
   group('can write variables with wrong type parameter', () {
     test('true', () {
-      expect(const Variable<dynamic>(true), generates('?', [1]));
+      expect(const Variable<Object>(true), generates('?', [1]));
     });
     test('false', () {
-      expect(const Variable<dynamic>(false), generates('?', [0]));
+      expect(const Variable<Object>(false), generates('?', [0]));
     });
 
     test('string', () {
-      expect(const Variable<dynamic>('hi'), generates('?', ['hi']));
+      expect(const Variable<Object>('hi'), generates('?', ['hi']));
     });
 
     test('int', () {
-      expect(const Variable<dynamic>(123), generates('?', [123]));
+      expect(const Variable<Object>(123), generates('?', [123]));
     });
 
     test('big int', () {
-      expect(Variable<dynamic>(BigInt.from(123)),
-          generates('?', [BigInt.from(123)]));
+      expect(Variable(BigInt.from(123)), generates('?', [BigInt.from(123)]));
     });
 
     test('date time', () {
       const stamp = 12345678;
       final dateTime = DateTime.fromMillisecondsSinceEpoch(stamp * 1000);
-      expect(Variable<dynamic>(dateTime), generates('?', [stamp]));
+      expect(Variable(dateTime), generates('?', [stamp]));
     });
 
     test('blob', () {
       final data = Uint8List.fromList([1, 2, 3]);
-      expect(Variable<dynamic>(data), generates('?', [data]));
+      expect(Variable(data), generates('?', [data]));
     });
 
     test('double', () {
-      expect(const Variable<dynamic>(12.3), generates('?', [12.3]));
+      expect(const Variable(12.3), generates('?', [12.3]));
     });
   });
 
   test('writes null directly for null values', () {
-    const variable = Variable<String?>(null);
+    const variable = Variable<String>(null);
     final ctx = GenerationContext.fromDb(TodoDb());
 
     variable.writeInto(ctx);
@@ -64,7 +63,7 @@ void main() {
   });
 
   test('writes constants when variables are not supported', () {
-    const variable = Variable<String?>("hello world'");
+    const variable = Variable("hello world'");
     final ctx = GenerationContext.fromDb(TodoDb(), supportsVariables: false);
     variable.writeInto(ctx);
 

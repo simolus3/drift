@@ -1,5 +1,4 @@
 import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/writer/utils/override_toString.dart';
 import 'package:drift_dev/writer.dart';
@@ -70,9 +69,6 @@ class DataClassWriter {
       }).join(', '))
       ..write('});');
 
-    // Also write parsing factory
-    _writeMappingConstructor();
-
     if (isInsertable) {
       _writeToColumnsOverride();
       if (scope.options.dataClassToCompanions) {
@@ -97,33 +93,6 @@ class DataClassWriter {
     _buffer.write('}');
   }
 
-  void _writeMappingConstructor() {
-    final dataClassName = table.dartTypeName;
-    // The GeneratedDatabase db parameter is not actually used, but we need to
-    // keep it on tables for backwards compatibility.
-    final includeUnusedDbColumn =
-        scope.generationOptions.writeForMoorPackage && table is DriftTable;
-
-    _buffer
-      ..write('factory $dataClassName.fromData')
-      ..write('(Map<String, dynamic> data, ')
-      ..write(includeUnusedDbColumn ? ' GeneratedDatabase db,' : '')
-      ..write('{String? prefix}) { \n')
-      ..write("final effectivePrefix = prefix ?? '';");
-
-    final writer = RowMappingWriter(
-      const [],
-      {for (final column in columns) column: column.dartGetterName},
-      table,
-      scope.generationOptions,
-      scope.options,
-    );
-
-    _buffer.write('return $dataClassName');
-    writer.writeArguments(_buffer);
-    _buffer.write(';}\n');
-  }
-
   void _writeFromJson() {
     final dataClassName = table.dartTypeName;
 
@@ -141,8 +110,7 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        final type = column.innerColumnType(
-            options: scope.generationOptions, checkNullable: true);
+        final type = column.innerColumnType();
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
@@ -186,8 +154,7 @@ class DataClassWriter {
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
         value = '$converterField.toJson($value)';
-        dartType =
-            '${column.innerColumnType(options: scope.generationOptions)}';
+        dartType = '${column.innerColumnType(nullable: true)}';
       }
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");
@@ -264,7 +231,7 @@ class DataClassWriter {
       }
       if (needsScope) _buffer.write('{');
 
-      final typeName = column.variableTypeCode(scope.generationOptions);
+      final typeName = column.variableTypeCode(nullable: false);
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<$typeName>';
 
@@ -357,17 +324,29 @@ class RowMappingWriter {
   final Map<DriftColumn, String> named;
   final DriftEntityWithResultSet table;
   final GenerationOptions options;
-  final DriftOptions moorOptions;
 
-  RowMappingWriter(
-      this.positional, this.named, this.table, this.options, this.moorOptions);
+  /// Code to obtain an instance of a `DatabaseConnectionUser` in the generated
+  /// code.
+  ///
+  /// This is used to lookup the connection options necessary for mapping values
+  /// from SQL to Dart.
+  final String databaseGetter;
+
+  RowMappingWriter({
+    required this.positional,
+    required this.table,
+    required this.options,
+    required this.databaseGetter,
+    this.named = const {},
+  });
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(DriftColumn column) {
       final columnName = column.name.name;
       final rawData = "data['\${effectivePrefix}$columnName']";
-      final sqlType = 'const ${sqlTypes[column.type]}()';
-      var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';
+
+      final sqlType = column.sqlType();
+      var loadType = '$databaseGetter.options.types.read($sqlType, $rawData)';
 
       if (!column.nullable) {
         loadType += '!';
