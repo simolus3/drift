@@ -120,8 +120,8 @@ void main() {
           contains(r'var $arrayStartIndex = 3;'),
           contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
               'AND c = ?2'),
-          contains(r'variables: [Variable<String?>(a), Variable<String?>(c), '
-              r'for (var $ in b) Variable<String?>($)], readsFrom: {tbl'),
+          contains(r'variables: [Variable<String>(a), Variable<String>(c), '
+              r'for (var $ in b) Variable<String>($)], readsFrom: {tbl'),
         ),
       );
     });
@@ -174,13 +174,13 @@ void main() {
             r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
           ),
           contains(
-            r'[Variable<String?>(a)]',
+            r'[Variable<String>(a)]',
           ),
           contains(
             r'SELECT b, c FROM tbl WHERE a = ?1 OR a = ?2 AND b = ?3',
           ),
           contains(
-            r"[Variable<String?>(a), Variable<String>(row.read('\$n_0')), Variable<String?>(b)]",
+            r"[Variable<String>(a), Variable<String>(row.read('\$n_0')), Variable<String>(b)]",
           ),
         ],
       );
