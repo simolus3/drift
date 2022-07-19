@@ -7,14 +7,14 @@ class Users extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -38,7 +38,7 @@ class Users extends Table with TableInfo {
 }
 
 class DatabaseAtV2 extends GeneratedDatabase {
-  DatabaseAtV2(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV2(QueryExecutor e) : super(e);
   DatabaseAtV2.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override

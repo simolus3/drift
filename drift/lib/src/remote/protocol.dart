@@ -11,7 +11,7 @@ class DriftProtocol {
   static const _tag_Response_error = 2;
   static const _tag_Response_cancelled = 3;
 
-  static const _tag_NoArgsRequest_terminateAll = 1;
+  static const _tag_NoArgsRequest_terminateAll = 0;
 
   static const _tag_ExecuteQuery = 3;
   static const _tag_ExecuteBatchedStatement = 4;

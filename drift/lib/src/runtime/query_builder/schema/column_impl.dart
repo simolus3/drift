@@ -48,10 +48,10 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// [defaultValue] and [clientDefault] are non-null.
   ///
   /// See also: [BuildColumn.clientDefault].
-  final T Function()? clientDefault;
+  final T? Function()? clientDefault;
 
   /// Additional checks performed on values before inserts or updates.
-  final VerificationResult Function(T, VerificationMeta)? additionalChecks;
+  final VerificationResult Function(T?, VerificationMeta)? additionalChecks;
 
   /// The sql type to use for this column.
   final DriftSqlType<T> type;
@@ -91,7 +91,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   ///
   /// This is mainly used by the generator.
   GeneratedColumnWithTypeConverter<D, T> withConverter<D>(
-      TypeConverter<D, T> converter) {
+      TypeConverter<D, T?> converter) {
     return GeneratedColumnWithTypeConverter._(
       converter,
       $name,
@@ -186,12 +186,12 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// implementation only checks for nullability, but subclasses might enforce
   /// additional checks. For instance, a text column might verify that a text
   /// has a certain length.
-  VerificationResult isAcceptableValue(T value, VerificationMeta meta) {
+  VerificationResult isAcceptableValue(T? value, VerificationMeta meta) {
     final nullOk = $nullable;
     if (!nullOk && value == null) {
       return _invalidNull;
     } else {
-      return additionalChecks?.call(value, meta) ??
+      return additionalChecks?.call(value!, meta) ??
           const VerificationResult.success();
     }
   }
@@ -204,7 +204,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   VerificationResult isAcceptableOrUnknown(
       Expression value, VerificationMeta meta) {
     if (value is Variable) {
-      return isAcceptableValue(value.value as T, meta);
+      return isAcceptableValue(value.value as T?, meta);
     } else {
       return const VerificationResult.success();
     }
@@ -256,19 +256,19 @@ class GeneratedColumn<T extends Object> extends Column<T> {
 class GeneratedColumnWithTypeConverter<D, S extends Object>
     extends GeneratedColumn<S> {
   /// The type converted used on this column.
-  final TypeConverter<D?, S?> converter;
+  final TypeConverter<D, S?> converter;
 
   GeneratedColumnWithTypeConverter._(
     this.converter,
     String name,
     String tableName,
     bool nullable,
-    S Function()? clientDefault,
+    S? Function()? clientDefault,
     DriftSqlType<S> type,
     String? defaultConstraints,
     String? customConstraints,
     Expression<S>? defaultValue,
-    VerificationResult Function(S, VerificationMeta)? additionalChecks,
+    VerificationResult Function(S?, VerificationMeta)? additionalChecks,
     bool requiredDuringInsert,
     GeneratedAs? generatedAs,
     Expression<bool> Function()? check,
@@ -296,7 +296,7 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
     if ($nullable) {
       // For nullable columns, the type converter needs to accept null values.
       // ignore: unnecessary_cast, https://github.com/dart-lang/sdk/issues/34150
-      mappedValue = (converter as TypeConverter<D?, S>).toSql(dartValue);
+      mappedValue = (converter as TypeConverter<D?, S?>).toSql(dartValue);
     } else {
       if (dartValue == null) {
         throw ArgumentError(

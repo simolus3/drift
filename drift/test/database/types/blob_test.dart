@@ -28,6 +28,6 @@ void main() {
     final dataString = data.join();
     final dataInt = data.map((e) => e.codeUnits[0]).toList();
     final dataUint8 = Uint8List.fromList(dataInt);
-    expect(types.read(DriftSqlType.string, dataString), dataUint8);
+    expect(types.read(DriftSqlType.blob, dataString), dataUint8);
   });
 }

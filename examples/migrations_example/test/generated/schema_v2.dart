@@ -6,15 +6,6 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
   UsersData({required this.id, required this.name});
-  factory UsersData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return UsersData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -123,14 +114,14 @@ class Users extends Table with TableInfo<Users, UsersData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -141,8 +132,13 @@ class Users extends Table with TableInfo<Users, UsersData> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return UsersData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UsersData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
   }
 
   @override
@@ -155,7 +151,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
 }
 
 class DatabaseAtV2 extends GeneratedDatabase {
-  DatabaseAtV2(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV2(QueryExecutor e) : super(e);
   DatabaseAtV2.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override

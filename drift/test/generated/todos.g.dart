@@ -1613,10 +1613,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
       return AllTodosWithCategoryResult(
         row: row,
         id: row.read<int>('id'),
-        title: row.read<String?>('title'),
+        title: row.readNullable<String>('title'),
         content: row.read<String>('content'),
-        targetDate: row.read<DateTime?>('target_date'),
-        category: row.read<int?>('category'),
+        targetDate: row.readNullable<DateTime>('target_date'),
+        category: row.readNullable<int>('category'),
         catId: row.read<int>('catId'),
         catDesc: row.read<String>('catDesc'),
       );

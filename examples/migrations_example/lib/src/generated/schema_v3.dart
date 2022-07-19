@@ -7,14 +7,14 @@ class Users extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -42,25 +42,25 @@ class Groups extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Groups(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
       'deleted', aliasedName, true,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
-  late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
@@ -88,7 +88,7 @@ class Groups extends Table with TableInfo {
 }
 
 class DatabaseAtV3 extends GeneratedDatabase {
-  DatabaseAtV3(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV3(QueryExecutor e) : super(e);
   DatabaseAtV3.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);

@@ -157,9 +157,9 @@ enum DriftSqlType<T extends Object> {
         return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
       case DriftSqlType.dateTime:
         if (context.options.types._storeDateTimesAsText) {
-          return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
-        } else {
           return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
+        } else {
+          return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
         }
       case DriftSqlType.blob:
         return dialect == SqlDialect.sqlite ? 'BLOB' : 'bytea';

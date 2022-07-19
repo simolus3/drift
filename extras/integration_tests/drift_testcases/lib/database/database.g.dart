@@ -16,7 +16,7 @@ Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
     };
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
@@ -37,21 +37,6 @@ class User extends DataClass implements Insertable<User> {
       required this.birthDate,
       this.profilePicture,
       this.preferences});
-  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return User(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      birthDate: const DateTimeType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}birth_date'])!,
-      profilePicture: const BlobType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converter0.fromSql(const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}preferences'])),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -59,11 +44,11 @@ class User extends DataClass implements Insertable<User> {
     map['name'] = Variable<String>(name);
     map['birth_date'] = Variable<DateTime>(birthDate);
     if (!nullToAbsent || profilePicture != null) {
-      map['profile_picture'] = Variable<Uint8List?>(profilePicture);
+      map['profile_picture'] = Variable<Uint8List>(profilePicture);
     }
     if (!nullToAbsent || preferences != null) {
       final converter = $UsersTable.$converter0;
-      map['preferences'] = Variable<String?>(converter.toSql(preferences));
+      map['preferences'] = Variable<String>(converter.toSql(preferences));
     }
     return map;
   }
@@ -175,7 +160,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? name,
     Expression<DateTime>? birthDate,
     Expression<Uint8List>? profilePicture,
-    Expression<Preferences>? preferences,
+    Expression<String>? preferences,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -214,12 +199,11 @@ class UsersCompanion extends UpdateCompanion<User> {
       map['birth_date'] = Variable<DateTime>(birthDate.value);
     }
     if (profilePicture.present) {
-      map['profile_picture'] = Variable<Uint8List?>(profilePicture.value);
+      map['profile_picture'] = Variable<Uint8List>(profilePicture.value);
     }
     if (preferences.present) {
       final converter = $UsersTable.$converter0;
-      map['preferences'] =
-          Variable<String?>(converter.toSql(preferences.value));
+      map['preferences'] = Variable<String>(converter.toSql(preferences.value));
     }
     return map;
   }
@@ -244,33 +228,33 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _birthDateMeta = const VerificationMeta('birthDate');
   @override
-  late final GeneratedColumn<DateTime?> birthDate = GeneratedColumn<DateTime?>(
+  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
       'birth_date', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
-  late final GeneratedColumn<Uint8List?> profilePicture =
-      GeneratedColumn<Uint8List?>('profile_picture', aliasedName, true,
-          type: const BlobType(), requiredDuringInsert: false);
+  late final GeneratedColumn<Uint8List> profilePicture =
+      GeneratedColumn<Uint8List>('profile_picture', aliasedName, true,
+          type: DriftSqlType.blob, requiredDuringInsert: false);
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
   @override
-  late final GeneratedColumnWithTypeConverter<Preferences?, String?>
-      preferences = GeneratedColumn<String?>('preferences', aliasedName, true,
-              type: const StringType(), requiredDuringInsert: false)
+  late final GeneratedColumnWithTypeConverter<Preferences?, String>
+      preferences = GeneratedColumn<String>('preferences', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
           .withConverter<Preferences?>($UsersTable.$converter0);
   @override
   List<GeneratedColumn> get $columns =>
@@ -313,8 +297,20 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return User(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthDate: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
+      profilePicture: attachedDatabase.options.types
+          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
+      preferences: $UsersTable.$converter0.fromSql(attachedDatabase
+          .options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
+    );
   }
 
   @override
@@ -334,17 +330,6 @@ class Friendship extends DataClass implements Insertable<Friendship> {
       {required this.firstUser,
       required this.secondUser,
       required this.reallyGoodFriends});
-  factory Friendship.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Friendship(
-      firstUser: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}first_user'])!,
-      secondUser: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}second_user'])!,
-      reallyGoodFriends: const BoolType().mapFromDatabaseResponse(
-          data['${effectivePrefix}really_good_friends'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -486,20 +471,20 @@ class $FriendshipsTable extends Friendships
   $FriendshipsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _firstUserMeta = const VerificationMeta('firstUser');
   @override
-  late final GeneratedColumn<int?> firstUser = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> firstUser = GeneratedColumn<int>(
       'first_user', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   final VerificationMeta _secondUserMeta = const VerificationMeta('secondUser');
   @override
-  late final GeneratedColumn<int?> secondUser = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> secondUser = GeneratedColumn<int>(
       'second_user', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   final VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
   @override
-  late final GeneratedColumn<bool?> reallyGoodFriends = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> reallyGoodFriends = GeneratedColumn<bool>(
       'really_good_friends', aliasedName, false,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (really_good_friends IN (0, 1))',
       defaultValue: const Constant(false));
@@ -542,8 +527,15 @@ class $FriendshipsTable extends Friendships
   Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
   @override
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Friendship.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Friendship(
+      firstUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
+      secondUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
+      reallyGoodFriends: attachedDatabase.options.types.read(
+          DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
+    );
   }
 
   @override
@@ -553,7 +545,7 @@ class $FriendshipsTable extends Friendships
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$Database(QueryExecutor e) : super(e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
   late final $UsersTable users = $UsersTable(this);
   late final $FriendshipsTable friendships = $FriendshipsTable(this);
@@ -612,8 +604,8 @@ abstract class _$Database extends GeneratedDatabase {
         ],
         readsFrom: {
           users,
-        }).map((QueryRow row) =>
-        $UsersTable.$converter0.fromSql(row.read<String?>('preferences')));
+        }).map((QueryRow row) => $UsersTable.$converter0
+        .fromSql(row.readNullable<String>('preferences')));
   }
 
   Selectable<User> usersById(List<int> var1) {

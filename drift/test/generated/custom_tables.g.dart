@@ -1673,7 +1673,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       return JsonResult(
         row: row,
         key: row.read<String>('key'),
-        value: row.read<String?>('value'),
+        value: row.readNullable<String>('value'),
       );
     });
   }
@@ -1686,7 +1686,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       return JsonResult(
         row: row,
         key: row.read<String>('key'),
-        value: row.read<String?>('value'),
+        value: row.readNullable<String>('value'),
       );
     });
   }
@@ -1713,8 +1713,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map((QueryRow row) {
       return MultipleResult(
         row: row,
-        a: row.read<String?>('a'),
-        b: row.read<int?>('b'),
+        a: row.readNullable<String>('a'),
+        b: row.readNullable<int>('b'),
         c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
       );
     });
@@ -1750,11 +1750,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         row: row,
         rowid: row.read<int>('rowid'),
         configKey: row.read<String>('config_key'),
-        configValue: row.read<String?>('config_value'),
+        configValue: row.readNullable<String>('config_value'),
         syncState: NullAwareTypeConverter.wrapFromSql(
-            ConfigTable.$converter0, row.read<int?>('sync_state')),
+            ConfigTable.$converter0, row.readNullable<int>('sync_state')),
         syncStateImplicit: ConfigTable.$converter1
-            .fromSql(row.read<int?>('sync_state_implicit')),
+            .fromSql(row.readNullable<int>('sync_state_implicit')),
       );
     });
   }
@@ -1777,7 +1777,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           config,
-        }).map((QueryRow row) => row.read<int?>('_c0'));
+        }).map((QueryRow row) => row.readNullable<int>('_c0'));
   }
 
   Future<List<Config>> addConfig({required Insertable<Config> value}) {

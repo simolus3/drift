@@ -8,10 +8,13 @@ export 'matchers.dart';
 export 'mocks.dart';
 
 GenerationContext stubContext({DriftDatabaseOptions? options}) {
-  return GenerationContext(options ?? DriftDatabaseOptions(), _NullDatabase());
+  return GenerationContext(
+      options ?? DriftDatabaseOptions(), _NullDatabase.instance);
 }
 
 class _NullDatabase extends GeneratedDatabase {
+  static final instance = _NullDatabase();
+
   _NullDatabase() : super(_NullExecutor());
 
   @override
@@ -22,4 +25,7 @@ class _NullDatabase extends GeneratedDatabase {
   int get schemaVersion => throw UnsupportedError('stub!');
 }
 
-class _NullExecutor extends Fake implements QueryExecutor {}
+class _NullExecutor extends Fake implements QueryExecutor {
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
+}

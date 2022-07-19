@@ -6,15 +6,6 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
   UsersData({required this.id, required this.name});
-  factory UsersData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return UsersData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -123,14 +114,14 @@ class Users extends Table with TableInfo<Users, UsersData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
   @override
@@ -143,8 +134,13 @@ class Users extends Table with TableInfo<Users, UsersData> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return UsersData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UsersData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
   }
 
   @override
@@ -166,26 +162,13 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
       required this.title,
       this.deleted,
       required this.owner});
-  factory GroupsData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return GroupsData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      deleted: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}deleted']),
-      owner: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}owner'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || deleted != null) {
-      map['deleted'] = Variable<bool?>(deleted);
+      map['deleted'] = Variable<bool>(deleted);
     }
     map['owner'] = Variable<int>(owner);
     return map;
@@ -308,7 +291,7 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
       map['title'] = Variable<String>(title.value);
     }
     if (deleted.present) {
-      map['deleted'] = Variable<bool?>(deleted.value);
+      map['deleted'] = Variable<bool>(deleted.value);
     }
     if (owner.present) {
       map['owner'] = Variable<int>(owner.value);
@@ -333,25 +316,25 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Groups(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
       'deleted', aliasedName, true,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
-  late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
@@ -364,8 +347,17 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return GroupsData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupsData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      deleted: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
+      owner: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
+    );
   }
 
   @override
@@ -380,7 +372,7 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
 }
 
 class DatabaseAtV4 extends GeneratedDatabase {
-  DatabaseAtV4(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV4(QueryExecutor e) : super(e);
   DatabaseAtV4.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);

@@ -160,15 +160,12 @@ class QueryWriter {
   /// suitable type.
   String readingCode(ResultColumn column, GenerationOptions generationOptions,
       DriftOptions moorOptions) {
-    var rawDartType = dartTypeNames[column.type];
-    if (column.nullable) {
-      rawDartType = '$rawDartType?';
-    }
-
     final specialName = _transformer.newNameFor(column.sqlParserColumn!);
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
-    var code = 'row.read<$rawDartType>($dartLiteral)';
+    final method = column.nullable ? 'readNullable' : 'read';
+    final rawDartType = dartTypeNames[column.type];
+    var code = 'row.$method<$rawDartType>($dartLiteral)';
 
     final converter = column.typeConverter;
     if (converter != null) {

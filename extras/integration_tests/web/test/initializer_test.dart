@@ -235,8 +235,7 @@ Future<void> _testWith(DriftWebStorage storage) async {
 }
 
 class _FakeDatabase extends GeneratedDatabase {
-  _FakeDatabase(QueryExecutor executor)
-      : super(const SqlTypeSystem.withDefaults(), executor);
+  _FakeDatabase(QueryExecutor executor) : super(executor);
 
   @override
   Iterable<TableInfo<Table, DataClass>> get allTables => const [];

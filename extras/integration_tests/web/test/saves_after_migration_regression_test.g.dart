@@ -3,20 +3,13 @@
 part of 'saves_after_migration_regression_test.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
 class Foo extends DataClass implements Insertable<Foo> {
   final int id;
   Foo({required this.id});
-  factory Foo.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Foo(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -110,9 +103,9 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   $FoosTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
@@ -136,8 +129,11 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Foo map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Foo.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Foo(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+    );
   }
 
   @override
@@ -149,13 +145,6 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
 class Bar extends DataClass implements Insertable<Bar> {
   final int id;
   Bar({required this.id});
-  factory Bar.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Bar(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -249,9 +238,9 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   $BarsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
@@ -275,8 +264,11 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Bar map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Bar.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Bar(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+    );
   }
 
   @override
@@ -286,7 +278,7 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
 }
 
 abstract class _$_FakeDb extends GeneratedDatabase {
-  _$_FakeDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$_FakeDb(QueryExecutor e) : super(e);
   late final $FoosTable foos = $FoosTable(this);
   late final $BarsTable bars = $BarsTable(this);
   @override

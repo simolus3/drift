@@ -185,7 +185,7 @@ class TypedResult {
   /// To access the underlying columns directly, use [rawData].
   D? read<D extends Object>(Expression<D> expr) {
     if (_parsedExpressions.containsKey(expr)) {
-      return _parsedExpressions[expr] as D;
+      return _parsedExpressions[expr] as D?;
     }
 
     throw ArgumentError(

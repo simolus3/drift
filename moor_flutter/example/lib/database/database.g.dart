@@ -199,11 +199,11 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
       'content', aliasedName, false,
       typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
-  late final GeneratedColumn<DateTime?> targetDate = GeneratedColumn<DateTime?>(
+  late final GeneratedColumn<DateTime> targetDate = GeneratedColumn<DateTime>(
       'target_date', aliasedName, true,
       typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
-  late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
       typeName: 'INTEGER',
       requiredDuringInsert: false,
@@ -380,7 +380,7 @@ class $CategoriesTable extends Categories
   final String? _alias;
   $CategoriesTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       typeName: 'INTEGER',
       requiredDuringInsert: false,

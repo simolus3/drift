@@ -3,7 +3,7 @@
 part of 'database.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
@@ -12,17 +12,6 @@ class Category extends DataClass implements Insertable<Category> {
   final String name;
   final Color color;
   Category({required this.id, required this.name, required this.color});
-  factory Category.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Category(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      color: $CategoriesTable.$converter0.fromSql(const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}color'])!),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -106,7 +95,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<Color>? color,
+    Expression<int>? color,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -159,21 +148,21 @@ class $CategoriesTable extends Categories
   $CategoriesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
-  late final GeneratedColumnWithTypeConverter<Color, int?> color =
-      GeneratedColumn<int?>('color', aliasedName, false,
-              type: const IntType(), requiredDuringInsert: true)
+  late final GeneratedColumnWithTypeConverter<Color, int> color =
+      GeneratedColumn<int>('color', aliasedName, false,
+              type: DriftSqlType.int, requiredDuringInsert: true)
           .withConverter<Color>($CategoriesTable.$converter0);
   @override
   List<GeneratedColumn> get $columns => [id, name, color];
@@ -203,8 +192,15 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Category.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Category(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      color: $CategoriesTable.$converter0.fromSql(attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}color'])!),
+    );
   }
 
   @override
@@ -225,29 +221,16 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       required this.description,
       this.category,
       this.dueDate});
-  factory TodoEntry.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return TodoEntry(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      description: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}description'])!,
-      category: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}category']),
-      dueDate: const DateTimeType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}due_date']),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['description'] = Variable<String>(description);
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int?>(category);
+      map['category'] = Variable<int>(category);
     }
     if (!nullToAbsent || dueDate != null) {
-      map['due_date'] = Variable<DateTime?>(dueDate);
+      map['due_date'] = Variable<DateTime>(dueDate);
     }
     return map;
   }
@@ -374,10 +357,10 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
       map['description'] = Variable<String>(description.value);
     }
     if (category.present) {
-      map['category'] = Variable<int?>(category.value);
+      map['category'] = Variable<int>(category.value);
     }
     if (dueDate.present) {
-      map['due_date'] = Variable<DateTime?>(dueDate.value);
+      map['due_date'] = Variable<DateTime>(dueDate.value);
     }
     return map;
   }
@@ -402,29 +385,29 @@ class $TodoEntriesTable extends TodoEntries
   $TodoEntriesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
-  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
-  late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'REFERENCES categories (id)');
   final VerificationMeta _dueDateMeta = const VerificationMeta('dueDate');
   @override
-  late final GeneratedColumn<DateTime?> dueDate = GeneratedColumn<DateTime?>(
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
       'due_date', aliasedName, true,
-      type: const IntType(), requiredDuringInsert: false);
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, description, category, dueDate];
   @override
@@ -462,8 +445,17 @@ class $TodoEntriesTable extends TodoEntries
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return TodoEntry.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoEntry(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      description: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      category: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      dueDate: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}due_date']),
+    );
   }
 
   @override
@@ -475,13 +467,6 @@ class $TodoEntriesTable extends TodoEntries
 class TextEntrie extends DataClass implements Insertable<TextEntrie> {
   final String description;
   TextEntrie({required this.description});
-  factory TextEntrie.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return TextEntrie(
-      description: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}description'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -579,9 +564,9 @@ class TextEntries extends Table
   TextEntries(this.attachedDatabase, [this._alias]);
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
-  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
   @override
@@ -610,8 +595,11 @@ class TextEntries extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   TextEntrie map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return TextEntrie.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TextEntrie(
+      description: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+    );
   }
 
   @override
@@ -627,7 +615,7 @@ class TextEntries extends Table
 }
 
 abstract class _$AppDatabase extends GeneratedDatabase {
-  _$AppDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$AppDatabase(QueryExecutor e) : super(e);
   _$AppDatabase.connect(DatabaseConnection c) : super.connect(c);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $TodoEntriesTable todoEntries = $TodoEntriesTable(this);
@@ -644,10 +632,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
           categories,
         }).map((QueryRow row) {
       return CategoriesWithCountResult(
-        id: row.read<int?>('id'),
-        name: row.read<String?>('name'),
+        id: row.readNullable<int>('id'),
+        name: row.readNullable<String>('name'),
         color: NullAwareTypeConverter.wrapFromSql(
-            $CategoriesTable.$converter0, row.read<int?>('color')),
+            $CategoriesTable.$converter0, row.readNullable<int>('color')),
         amount: row.read<int>('amount'),
       );
     });
@@ -655,7 +643,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
   Selectable<SearchResult> _search(String query) {
     return customSelect(
-        'SELECT"todos"."id" AS "nested_0.id", "todos"."description" AS "nested_0.description", "todos"."category" AS "nested_0.category", "todos"."due_date" AS "nested_0.due_date","cat"."id" AS "nested_1.id", "cat"."name" AS "nested_1.name", "cat"."color" AS "nested_1.color" FROM text_entries INNER JOIN todo_entries AS todos ON todos.id = text_entries."rowid" LEFT OUTER JOIN categories AS cat ON cat.id = todos.category WHERE text_entries MATCH @1 ORDER BY rank',
+        'SELECT"todos"."id" AS "nested_0.id", "todos"."description" AS "nested_0.description", "todos"."category" AS "nested_0.category", "todos"."due_date" AS "nested_0.due_date","cat"."id" AS "nested_1.id", "cat"."name" AS "nested_1.name", "cat"."color" AS "nested_1.color" FROM text_entries INNER JOIN todo_entries AS todos ON todos.id = text_entries."rowid" LEFT OUTER JOIN categories AS cat ON cat.id = todos.category WHERE text_entries MATCH ?1 ORDER BY rank',
         variables: [
           Variable<String>(query)
         ],

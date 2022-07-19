@@ -3,7 +3,7 @@
 part of 'database.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
@@ -12,24 +12,13 @@ class User extends DataClass implements Insertable<User> {
   final String name;
   final int? nextUser;
   User({required this.id, required this.name, this.nextUser});
-  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return User(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      nextUser: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || nextUser != null) {
-      map['next_user'] = Variable<int?>(nextUser);
+      map['next_user'] = Variable<int>(nextUser);
     }
     return map;
   }
@@ -134,7 +123,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       map['name'] = Variable<String>(name.value);
     }
     if (nextUser.present) {
-      map['next_user'] = Variable<int?>(nextUser.value);
+      map['next_user'] = Variable<int>(nextUser.value);
     }
     return map;
   }
@@ -157,23 +146,23 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
   final VerificationMeta _nextUserMeta = const VerificationMeta('nextUser');
   @override
-  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'REFERENCES users (id)');
   @override
@@ -205,8 +194,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return User(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      nextUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+    );
   }
 
   @override
@@ -225,26 +221,13 @@ class Group extends DataClass implements Insertable<Group> {
       required this.title,
       this.deleted,
       required this.owner});
-  factory Group.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Group(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      deleted: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}deleted']),
-      owner: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}owner'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || deleted != null) {
-      map['deleted'] = Variable<bool?>(deleted);
+      map['deleted'] = Variable<bool>(deleted);
     }
     map['owner'] = Variable<int>(owner);
     return map;
@@ -366,7 +349,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
       map['title'] = Variable<String>(title.value);
     }
     if (deleted.present) {
-      map['deleted'] = Variable<bool?>(deleted.value);
+      map['deleted'] = Variable<bool>(deleted.value);
     }
     if (owner.present) {
       map['owner'] = Variable<int>(owner.value);
@@ -392,28 +375,28 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final String? _alias;
   Groups(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
-  late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
       'deleted', aliasedName, true,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
-  late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
@@ -453,8 +436,17 @@ class Groups extends Table with TableInfo<Groups, Group> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Group.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Group(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      deleted: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
+      owner: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
+    );
   }
 
   @override
@@ -478,19 +470,6 @@ class GroupCountData extends DataClass {
       required this.name,
       this.nextUser,
       required this.groupCount});
-  factory GroupCountData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return GroupCountData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      nextUser: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
-      groupCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}group_count'])!,
-    );
-  }
   factory GroupCountData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -562,21 +541,30 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   GroupCount get asDslTable => this;
   @override
   GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return GroupCountData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupCountData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      nextUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+      groupCount: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}group_count'])!,
+    );
   }
 
-  late final GeneratedColumn<int?> id =
-      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<int> id =
+      GeneratedColumn<int>('id', aliasedName, false, type: DriftSqlType.int);
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType());
-  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      type: DriftSqlType.string);
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
-      type: const IntType());
-  late final GeneratedColumn<int?> groupCount = GeneratedColumn<int?>(
+      type: DriftSqlType.int);
+  late final GeneratedColumn<int> groupCount = GeneratedColumn<int>(
       'group_count', aliasedName, false,
-      type: const IntType());
+      type: DriftSqlType.int);
   @override
   GroupCount createAlias(String alias) {
     return GroupCount(attachedDatabase, alias);
@@ -589,7 +577,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$Database(QueryExecutor e) : super(e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
   late final $UsersTable users = $UsersTable(this);
   late final Groups groups = Groups(this);

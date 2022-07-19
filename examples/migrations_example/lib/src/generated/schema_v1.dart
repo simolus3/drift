@@ -7,9 +7,9 @@ class Users extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
@@ -35,7 +35,7 @@ class Users extends Table with TableInfo {
 }
 
 class DatabaseAtV1 extends GeneratedDatabase {
-  DatabaseAtV1(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV1(QueryExecutor e) : super(e);
   DatabaseAtV1.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override
