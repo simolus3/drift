@@ -12,7 +12,7 @@ class Category extends DataClass implements Insertable<Category> {
   final String description;
   final CategoryPriority priority;
   final String descriptionInUpperCase;
-  Category(
+  const Category(
       {required this.id,
       required this.description,
       required this.priority,
@@ -269,7 +269,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String content;
   final DateTime? targetDate;
   final int? category;
-  TodoEntry(
+  const TodoEntry(
       {required this.id,
       this.title,
       required this.content,
@@ -576,7 +576,7 @@ class User extends DataClass implements Insertable<User> {
   final bool isAwesome;
   final Uint8List profilePicture;
   final DateTime creationTime;
-  User(
+  const User(
       {required this.id,
       required this.name,
       required this.isAwesome,
@@ -873,7 +873,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   final int todo;
   final int user;
-  SharedTodo({required this.todo, required this.user});
+  const SharedTodo({required this.todo, required this.user});
   factory SharedTodo.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return SharedTodo(
@@ -1242,7 +1242,7 @@ class $TableWithoutPKTable extends TableWithoutPK
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
   final MyCustomObject? txt;
-  PureDefault({this.txt});
+  const PureDefault({this.txt});
   factory PureDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return PureDefault(
@@ -1397,7 +1397,7 @@ class $PureDefaultsTable extends PureDefaults
 class CategoryTodoCountViewData extends DataClass {
   final String description;
   final int itemCount;
-  CategoryTodoCountViewData(
+  const CategoryTodoCountViewData(
       {required this.description, required this.itemCount});
   factory CategoryTodoCountViewData.fromData(Map<String, dynamic> data,
       {String? prefix}) {
@@ -1507,7 +1507,7 @@ class $CategoryTodoCountViewView
 class TodoWithCategoryViewData extends DataClass {
   final String? title;
   final String description;
-  TodoWithCategoryViewData({this.title, required this.description});
+  const TodoWithCategoryViewData({this.title, required this.description});
   factory TodoWithCategoryViewData.fromData(Map<String, dynamic> data,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
