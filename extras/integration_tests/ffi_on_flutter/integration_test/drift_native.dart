@@ -22,8 +22,7 @@ class FfiExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(
-        NativeDatabase(File(join(dbPath, 'app_ffi.db'))));
+    return DatabaseConnection(NativeDatabase(File(join(dbPath, 'app_ffi.db'))));
   }
 
   @override
@@ -98,5 +97,5 @@ Future<void> main() async {
 }
 
 DatabaseConnection _openInBackground() {
-  return DatabaseConnection.fromExecutor(NativeDatabase.memory());
+  return DatabaseConnection(NativeDatabase.memory());
 }

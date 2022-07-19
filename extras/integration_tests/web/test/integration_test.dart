@@ -18,7 +18,7 @@ class WebExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(WebDatabase(name));
+    return DatabaseConnection(WebDatabase(name));
   }
 
   @override
@@ -34,7 +34,7 @@ class WebExecutorIndexedDb extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(
+    return DatabaseConnection(
       WebDatabase.withStorage(DriftWebStorage.indexedDb('foo')),
     );
   }
@@ -55,7 +55,7 @@ void main() {
   });
 
   test('can run multiple statements in one call', () async {
-    final db = Database(DatabaseConnection.fromExecutor(
+    final db = Database(DatabaseConnection(
         WebDatabase.withStorage(DriftWebStorage.volatile())));
     addTearDown(db.close);
 

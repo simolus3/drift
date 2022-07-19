@@ -72,8 +72,12 @@ class QueryRow {
   QueryRow(this.data, this._db);
 
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
+  ///
   /// The dart type [T] must be supported by the type system of the database
   /// used (mostly contains booleans, strings, numbers and dates).
+  ///
+  /// This method always reads non-nullable values. To read nullable columns,
+  /// use [readNullable].
   T read<T extends Object>(String key) {
     final result = readNullable<T>(key);
     if (result == null) {
@@ -85,6 +89,10 @@ class QueryRow {
     }
   }
 
+  /// Reads a nullable value from this row.
+  ///
+  /// Just like for the non-nullable [read], the type [T] must be supported by
+  /// drift (e.g. booleans, strings, numbers, dates, `Uint8List`s).
   T? readNullable<T extends Object>(String key) {
     final type = DriftSqlType.forType<T>();
     return _db.options.types.read(type, data[key]);

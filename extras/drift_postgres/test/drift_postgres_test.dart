@@ -10,7 +10,7 @@ class PgExecutor extends TestExecutor {
   DatabaseConnection createConnection() {
     final pgConnection = PostgreSQLConnection('localhost', 5432, 'postgres',
         username: 'postgres', password: 'postgres');
-    return DatabaseConnection.fromExecutor(PgDatabase(pgConnection));
+    return DatabaseConnection(PgDatabase(pgConnection));
   }
 
   @override

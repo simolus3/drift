@@ -12,8 +12,6 @@ import 'package:meta/meta.dart';
 
 // New files should not be part of this mega library, which we're trying to
 // split up.
-import '../api/options.dart';
-import '../types/mapping.dart';
 import 'expressions/case_when.dart';
 
 export 'on_table.dart';

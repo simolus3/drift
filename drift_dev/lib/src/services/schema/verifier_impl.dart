@@ -69,7 +69,7 @@ class VerifierImplementation implements SchemaVerifier {
 
     return InitializedSchema(dbForUse, () {
       final db = sqlite3.open(uri, uri: true);
-      return DatabaseConnection.fromExecutor(NativeDatabase.opened(db));
+      return DatabaseConnection(NativeDatabase.opened(db));
     });
   }
 

@@ -31,7 +31,7 @@ DatabaseConnection connect({bool isInWebWorker = false}) {
       );
 
       final databaseImpl = WasmDatabase(sqlite3: sqlite3, path: 'app.db');
-      return DatabaseConnection.fromExecutor(databaseImpl);
+      return DatabaseConnection(databaseImpl);
     }));
   }
 }

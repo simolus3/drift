@@ -37,7 +37,7 @@ DatabaseConnection _backgroundConnection() {
   // using a Flutter plugin like `path_provider` to determine the path, also see
   // the "Initialization on the main thread" section below!
   final database = NativeDatabase.memory();
-  return DatabaseConnection.fromExecutor(database);
+  return DatabaseConnection(database);
 }
 
 void main() async {
@@ -101,7 +101,7 @@ void _startBackground(_IsolateStartRequest request) {
   // background isolate. If we used DriftIsolate.spawn, a third isolate would be
   // started which is not what we want!
   final driftIsolate = DriftIsolate.inCurrent(
-    () => DatabaseConnection.fromExecutor(executor),
+    () => DatabaseConnection(executor),
   );
   // inform the starting isolate about this, so that it can call .connect()
   request.sendDriftIsolate.send(driftIsolate);
