@@ -14,7 +14,12 @@ void main() {
       db.select(db.myView).watch(),
       emitsInOrder([
         isEmpty,
-        [const MyViewData(configKey: 'another', syncState: SyncType.synchronized)]
+        [
+          const MyViewData(
+            configKey: 'another',
+            syncState: SyncType.synchronized,
+          ),
+        ]
       ]),
     );
 

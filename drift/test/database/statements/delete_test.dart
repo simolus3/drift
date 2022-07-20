@@ -33,14 +33,18 @@ void main() {
           .go();
 
       verify(executor.runDelete(
-          'DELETE FROM users WHERE NOT is_awesome OR id < ?;', [100]));
+          'DELETE FROM users WHERE NOT is_awesome OR id < ?;', const [100]));
     });
 
     test('to delete an entity via a dataclasss', () async {
-      await db.delete(db.sharedTodos).delete(const SharedTodo(todo: 3, user: 2));
+      await db
+          .delete(db.sharedTodos)
+          .delete(const SharedTodo(todo: 3, user: 2));
 
       verify(executor.runDelete(
-          'DELETE FROM shared_todos WHERE todo = ? AND user = ?;', [3, 2]));
+        'DELETE FROM shared_todos WHERE todo = ? AND user = ?;',
+        const [3, 2],
+      ));
     });
   });
 
@@ -75,19 +79,19 @@ void main() {
     test('delete()', () async {
       await db.users.delete().go();
 
-      verify(executor.runDelete('DELETE FROM users;', []));
+      verify(executor.runDelete('DELETE FROM users;', const []));
     });
 
     test('deleteOne()', () async {
       await db.users.deleteOne(const UsersCompanion(id: Value(3)));
 
-      verify(executor.runDelete('DELETE FROM users WHERE id = ?;', [3]));
+      verify(executor.runDelete('DELETE FROM users WHERE id = ?;', const [3]));
     });
 
     test('deleteWhere', () async {
       await db.users.deleteWhere((tbl) => tbl.id.isSmallerThanValue(3));
 
-      verify(executor.runDelete('DELETE FROM users WHERE id < ?;', [3]));
+      verify(executor.runDelete('DELETE FROM users WHERE id < ?;', const [3]));
     });
   });
 }
