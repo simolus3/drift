@@ -52,7 +52,7 @@ void main() {
 
   group('generates replace statements', () {
     test('regular', () async {
-      await db.update(db.todosTable).replace(TodoEntry(
+      await db.update(db.todosTable).replace(const TodoEntry(
             id: 3,
             title: 'Title',
             content: 'Updated content',

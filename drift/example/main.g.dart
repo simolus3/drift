@@ -10,7 +10,7 @@ part of 'main.dart';
 class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
-  TodoCategory({required this.id, required this.name});
+  const TodoCategory({required this.id, required this.name});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -185,7 +185,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
   final String? content;
   final int categoryId;
   final String? generatedText;
-  TodoItem(
+  const TodoItem(
       {required this.id,
       required this.title,
       this.content,
@@ -466,7 +466,8 @@ class $TodoItemsTable extends TodoItems
 class TodoCategoryItemCountData extends DataClass {
   final String name;
   final int itemCount;
-  TodoCategoryItemCountData({required this.name, required this.itemCount});
+  const TodoCategoryItemCountData(
+      {required this.name, required this.itemCount});
   factory TodoCategoryItemCountData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -558,10 +559,8 @@ class $TodoCategoryItemCountView
   }
 
   @override
-  Query? get query => (attachedDatabase.selectOnly(todoCategories,
-              includeJoinedTableColumns: false)
-            ..addColumns($columns))
-          .join([
+  Query? get query =>
+      (attachedDatabase.selectOnly(todoCategories)..addColumns($columns)).join([
         innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
   @override
@@ -571,7 +570,8 @@ class $TodoCategoryItemCountView
 class TodoItemWithCategoryNameViewData extends DataClass {
   final int id;
   final String title;
-  TodoItemWithCategoryNameViewData({required this.id, required this.title});
+  const TodoItemWithCategoryNameViewData(
+      {required this.id, required this.title});
   factory TodoItemWithCategoryNameViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -668,9 +668,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 
   @override
   Query? get query =>
-      (attachedDatabase.selectOnly(todoItems, includeJoinedTableColumns: false)
-            ..addColumns($columns))
-          .join([
+      (attachedDatabase.selectOnly(todoItems)..addColumns($columns)).join([
         innerJoin(
             todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
       ]);

@@ -55,7 +55,7 @@ void main() {
 
   test('generates insert or replace statements', () async {
     await db.into(db.todosTable).insert(
-        TodoEntry(
+        const TodoEntry(
           id: 113,
           content: 'Done',
         ),
@@ -452,7 +452,7 @@ void main() {
           CategoriesCompanion.insert(description: 'description'));
       expect(
         row,
-        Category(
+        const Category(
           id: 1,
           description: 'description',
           descriptionInUpperCase: 'DESCRIPTION',
@@ -503,7 +503,7 @@ void main() {
           CategoriesCompanion.insert(description: 'description'));
       expect(
         row,
-        Category(
+        const Category(
           id: 1,
           description: 'description',
           descriptionInUpperCase: 'DESCRIPTION',

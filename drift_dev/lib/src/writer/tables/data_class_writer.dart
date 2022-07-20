@@ -53,6 +53,10 @@ class DataClassWriter {
     }
 
     // write constructor with named optional fields
+
+    if (!scope.options.generateMutableClasses) {
+      _buffer.write('const ');
+    }
     _buffer
       ..write(table.dartTypeName)
       ..write('({')

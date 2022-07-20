@@ -12,7 +12,7 @@ class Category extends DataClass implements Insertable<Category> {
   final String description;
   final CategoryPriority priority;
   final String descriptionInUpperCase;
-  Category(
+  const Category(
       {required this.id,
       required this.description,
       required this.priority,
@@ -267,7 +267,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String content;
   final DateTime? targetDate;
   final int? category;
-  TodoEntry(
+  const TodoEntry(
       {required this.id,
       this.title,
       required this.content,
@@ -570,7 +570,7 @@ class User extends DataClass implements Insertable<User> {
   final bool isAwesome;
   final Uint8List profilePicture;
   final DateTime creationTime;
-  User(
+  const User(
       {required this.id,
       required this.name,
       required this.isAwesome,
@@ -863,7 +863,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   final int todo;
   final int user;
-  SharedTodo({required this.todo, required this.user});
+  const SharedTodo({required this.todo, required this.user});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1229,7 +1229,7 @@ class $TableWithoutPKTable extends TableWithoutPK
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
   final MyCustomObject? txt;
-  PureDefault({this.txt});
+  const PureDefault({this.txt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1381,7 +1381,7 @@ class $PureDefaultsTable extends PureDefaults
 class CategoryTodoCountViewData extends DataClass {
   final String description;
   final int itemCount;
-  CategoryTodoCountViewData(
+  const CategoryTodoCountViewData(
       {required this.description, required this.itemCount});
   factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
@@ -1477,8 +1477,7 @@ class $CategoryTodoCountViewView
 
   @override
   Query? get query =>
-      (attachedDatabase.selectOnly(categories, includeJoinedTableColumns: false)
-            ..addColumns($columns))
+      (attachedDatabase.selectOnly(categories)..addColumns($columns))
           .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
         ..groupBy([categories.id]);
   @override
@@ -1488,7 +1487,7 @@ class $CategoryTodoCountViewView
 class TodoWithCategoryViewData extends DataClass {
   final String? title;
   final String description;
-  TodoWithCategoryViewData({this.title, required this.description});
+  const TodoWithCategoryViewData({this.title, required this.description});
   factory TodoWithCategoryViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1580,9 +1579,7 @@ class $TodoWithCategoryViewView
   }
 
   @override
-  Query? get query => (attachedDatabase.selectOnly(todos,
-          includeJoinedTableColumns: false)
-        ..addColumns($columns))
+  Query? get query => (attachedDatabase.selectOnly(todos)..addColumns($columns))
       .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
   @override
   Set<String> get readTables => const {'todos', 'categories'};

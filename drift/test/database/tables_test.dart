@@ -43,7 +43,7 @@ void main() {
     final user = db.sharedTodos.mapFromCompanion(companion, db);
     expect(
       user,
-      SharedTodo(todo: 3, user: 4),
+      const SharedTodo(todo: 3, user: 4),
     );
   });
 
@@ -58,7 +58,7 @@ void main() {
     final todo = db.todosTable.mapFromRowOrNull(QueryRow(rowData, db));
     expect(
       todo,
-      TodoEntry(
+      const TodoEntry(
         id: 1,
         title: 'some title',
         content: 'do this',

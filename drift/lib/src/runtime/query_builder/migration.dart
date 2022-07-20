@@ -102,8 +102,8 @@ class Migrator {
     }
   }
 
-  GenerationContext _createContext() {
-    return GenerationContext.fromDb(_db);
+  GenerationContext _createContext({bool supportsVariables = false}) {
+    return GenerationContext.fromDb(_db, supportsVariables: supportsVariables);
   }
 
   /// Creates the given table if it doesn't exist
@@ -197,7 +197,7 @@ class Migrator {
       await createTable(temporaryTable);
 
       // Step 5: Transfer old content into the new table
-      final context = _createContext();
+      final context = _createContext(supportsVariables: true);
       final expressionsForSelect = <Expression>[];
 
       context.buffer.write('INSERT INTO $temporaryName (');

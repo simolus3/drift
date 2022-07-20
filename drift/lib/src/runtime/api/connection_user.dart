@@ -242,13 +242,6 @@ abstract class DatabaseConnectionUser {
   /// The [distinct] parameter (defaults to false) can be used to remove
   /// duplicate rows from the result set.
   ///
-  /// The [includeJoinedTableColumns] parameter (defaults to true) can be used
-  /// to determinate join statement's `useColumns` parameter default value. Set
-  /// it to false if you don't want to include joined table columns by default.
-  /// If you leave it on true and don't set `useColumns` parameter to false in
-  /// join declarations, all columns of joined table will be included in query
-  /// by default.
-  ///
   /// For simple queries, use [select].
   ///
   /// See also:
@@ -256,10 +249,9 @@ abstract class DatabaseConnectionUser {
   ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
-      {bool distinct = false,
-      bool includeJoinedTableColumns = true}) {
+      {bool distinct = false}) {
     return JoinedSelectStatement<T, R>(
-        resolvedEngine, table, [], distinct, false, includeJoinedTableColumns);
+        resolvedEngine, table, [], distinct, false, false);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
@@ -625,11 +617,8 @@ class TableOrViewOperations<Tbl extends HasResultSet, Row> {
   /// Composes a `SELECT` statement only selecting a subset of columns.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
-  JoinedSelectStatement<Tbl, Row> selectOnly(
-      {bool distinct = false, bool includeJoinedTableColumns = true}) {
-    return _user.selectOnly(_sourceSet,
-        distinct: distinct,
-        includeJoinedTableColumns: includeJoinedTableColumns);
+  JoinedSelectStatement<Tbl, Row> selectOnly({bool distinct = false}) {
+    return _user.selectOnly(_sourceSet, distinct: distinct);
   }
 }
 

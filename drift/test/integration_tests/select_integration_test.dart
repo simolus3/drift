@@ -40,7 +40,7 @@ void main() {
     final result = await db.todoWithCategoryView.select().getSingle();
     expect(
         result,
-        TodoWithCategoryViewData(
+        const TodoWithCategoryViewData(
             description: 'category description', title: 'title'));
   });
 }

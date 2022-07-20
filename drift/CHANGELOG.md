@@ -9,6 +9,14 @@
   - To describe the type a column has, use the `DriftSqlType` enum
   - To map a value from Dart to SQL and vice-versa, use an instance of `SqlTypes`,
     reachable via `database.options.types`.
+- __Breaking__: `Expression`s (including `Column`s) always have a non-nullable type
+  parameter now. They are implicitly nullable, so `TypedResult.read` now returns a
+  nullable value.
+- __Breaking__: `QueryRow.read` can only read non-nullable values now. To read nullable
+  values, use `readNullable`.
+- __Breaking__: Remove the `includeJoinedTableColumns` parameter on `selectOnly()`.
+  The method now behaves as if that parameter was turned off. To use columns from a
+  joined table, add them with `addColumns`.
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
 - Support nested transactions.

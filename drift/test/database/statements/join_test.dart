@@ -72,7 +72,7 @@ void main() {
 
     expect(
       row.readTable(categories),
-      Category(
+      const Category(
         id: 3,
         description: 'description',
         priority: CategoryPriority.high,
@@ -107,7 +107,7 @@ void main() {
     expect(() => row.readTable(db.categories), throwsArgumentError);
     expect(
         row.readTable(db.todosTable),
-        TodoEntry(
+        const TodoEntry(
           id: 5,
           title: 'title',
           content: 'content',
@@ -224,7 +224,7 @@ void main() {
     expect(
       result.readTable(categories),
       equals(
-        Category(
+        const Category(
           id: 3,
           description: 'Description',
           descriptionInUpperCase: 'DESCRIPTION',
@@ -274,7 +274,7 @@ void main() {
     expect(
       result.readTable(categories),
       equals(
-        Category(
+        const Category(
           id: 3,
           description: 'Description',
           descriptionInUpperCase: 'DESCRIPTION',
@@ -330,7 +330,7 @@ void main() {
     expect(result.readTableOrNull(todos), isNull);
     expect(
       result.readTable(categories),
-      Category(
+      const Category(
         id: 3,
         description: 'desc',
         descriptionInUpperCase: 'DESC',
@@ -406,8 +406,7 @@ void main() {
     final categories = db.categories;
     final todos = db.todosTable;
 
-    final query =
-        db.selectOnly(categories, includeJoinedTableColumns: false).join([
+    final query = db.selectOnly(categories).join([
       innerJoin(
         todos,
         todos.category.equalsExp(categories.id),
