@@ -69,7 +69,7 @@ void main() {
 
     test('can be used in a query stream', () async {
       final stream = db.readView().watch();
-      final entry = Config(
+      const entry = Config(
         configKey: 'another_key',
         configValue: 'value',
         syncState: SyncType.synchronized,
@@ -141,7 +141,7 @@ void main() {
       expect(result, hasLength(1));
       expect(
         result.single,
-        Config(
+        const Config(
           configKey: 'key2',
           configValue: 'val',
           syncState: SyncType.locallyCreated,

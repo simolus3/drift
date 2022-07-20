@@ -171,7 +171,10 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
 
     await expectLater(stream, emits(null));
     await database.into(database.todosTable).insert(initialCompanion);
-    await expectLater(stream, emits(TodoEntry(id: 1, content: 'my content')));
+    await expectLater(
+      stream,
+      emits(const TodoEntry(id: 1, content: 'my content')),
+    );
   });
 
   test('can start transactions', () async {

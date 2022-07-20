@@ -189,7 +189,7 @@ void main() {
 
   test('updates stream queries', () async {
     await db.batch((b) {
-      b.insert(db.todosTable, TodoEntry(id: 3, content: 'content'));
+      b.insert(db.todosTable, const TodoEntry(id: 3, content: 'content'));
 
       b.update(db.users, const UsersCompanion(name: Value('new user name')));
       b.replace(

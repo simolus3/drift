@@ -104,7 +104,7 @@ void main() {
 
     expect(
       entry,
-      Category(
+      const Category(
         id: 1,
         description: 'Description',
         priority: CategoryPriority.low,

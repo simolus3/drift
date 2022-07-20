@@ -14,7 +14,7 @@ final _dataOfTodoEntry = {
   'category': 3
 };
 
-final _todoEntry = TodoEntry(
+const _todoEntry = TodoEntry(
   id: 10,
   title: 'A todo title',
   content: 'Content',
@@ -123,7 +123,7 @@ void main() {
           'category': null,
         }
       ];
-      final resolved = TodoEntry(
+      const resolved = TodoEntry(
         id: 10,
         title: null,
         content: 'Content',
@@ -193,7 +193,7 @@ void main() {
 
     expect(
       category,
-      Category(
+      const Category(
         id: 1,
         description: 'description',
         descriptionInUpperCase: 'DESCRIPTION',

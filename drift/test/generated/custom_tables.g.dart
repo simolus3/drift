@@ -12,7 +12,7 @@ class Config extends DataClass implements Insertable<Config> {
   final String? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
-  Config(
+  const Config(
       {required this.configKey,
       this.configValue,
       this.syncState,
@@ -296,7 +296,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 class WithDefault extends DataClass implements Insertable<WithDefault> {
   final String? a;
   final int? b;
-  WithDefault({this.a, this.b});
+  const WithDefault({this.a, this.b});
   factory WithDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return WithDefault(
@@ -572,7 +572,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   final String? a;
   final int b;
   final double? c;
-  WithConstraint({this.a, required this.b, this.c});
+  const WithConstraint({this.a, required this.b, this.c});
   factory WithConstraint.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return WithConstraint(
@@ -792,7 +792,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   final String? sometext;
   final bool? isInserting;
   final DateTime? somedate;
-  MytableData(
+  const MytableData(
       {required this.someid, this.sometext, this.isInserting, this.somedate});
   factory MytableData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -1059,7 +1059,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   final String sender;
   final String title;
   final String body;
-  EMail({required this.sender, required this.title, required this.body});
+  const EMail({required this.sender, required this.title, required this.body});
   factory EMail.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return EMail(
@@ -1278,7 +1278,7 @@ class Email extends Table
 class WeirdData extends DataClass implements Insertable<WeirdData> {
   final int sqlClass;
   final String textColumn;
-  WeirdData({required this.sqlClass, required this.textColumn});
+  const WeirdData({required this.sqlClass, required this.textColumn});
   factory WeirdData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return WeirdData(
@@ -1465,7 +1465,7 @@ class MyViewData extends DataClass {
   final String? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
-  MyViewData(
+  const MyViewData(
       {required this.configKey,
       this.configValue,
       this.syncState,
