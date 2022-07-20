@@ -5,6 +5,10 @@
   It is an error to use a non-nullable type converter on a column that is nullable in
   SQL and vice-versa.
 - __Breaking__: Mapping methods on type converters are now called `toSql` and `fromSql`.
+- __Breaking__: Removed `SqlTypeSystem` and subtypes of `SqlType`:
+  - To describe the type a column has, use the `DriftSqlType` enum
+  - To map a value from Dart to SQL and vice-versa, use an instance of `SqlTypes`,
+    reachable via `database.options.types`.
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
 - Support nested transactions.

@@ -13,7 +13,7 @@ abstract class DatabaseConnectionUser {
   @protected
   final DatabaseConnection connection;
 
-  /// The [DriftDatabaseOptions] to use here.
+  /// The [DriftDatabaseOptions] to use for this database instance.
   ///
   /// Mainly, these options describe how values are mapped from Dart to SQL
   /// values. In the future, they could be expanded to dialect-specific options.
