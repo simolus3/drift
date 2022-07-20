@@ -187,6 +187,28 @@ void main() {
     verify(executor.transactions.runCustom(any, any));
     verifyNever(executor.runCustom(any, any));
   });
+
+  test('removes variables in `CREATE TABLE` statements', () async {
+    final executor = MockExecutor();
+    final db = _DefaultDb(executor);
+
+    late GeneratedColumn<int> column;
+    column = GeneratedColumn<int>(
+      'foo',
+      'foo',
+      true,
+      type: DriftSqlType.int,
+      check: () => column.isSmallerThan(const Variable(3)),
+    );
+    final table = CustomTable('foo', db, [column]);
+
+    await db.createMigrator().createTable(table);
+    await db.close();
+
+    // This should not attempt to generate a parameter (`?`)
+    // https://github.com/simolus3/drift/discussions/1936
+    verify(executor.runCustom(argThat(contains('CHECK(foo < 3)')), []));
+  });
 }
 
 class _DefaultDb extends GeneratedDatabase {
