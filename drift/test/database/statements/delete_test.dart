@@ -37,7 +37,7 @@ void main() {
     });
 
     test('to delete an entity via a dataclasss', () async {
-      await db.delete(db.sharedTodos).delete(SharedTodo(todo: 3, user: 2));
+      await db.delete(db.sharedTodos).delete(const SharedTodo(todo: 3, user: 2));
 
       verify(executor.runDelete(
           'DELETE FROM shared_todos WHERE todo = ? AND user = ?;', [3, 2]));
