@@ -197,7 +197,7 @@ void main() {
       'foo',
       'foo',
       true,
-      type: DriftSqlType.int,
+      type: const IntType(),
       check: () => column.isSmallerThan(const Variable(3)),
     );
     final table = CustomTable('foo', db, [column]);
