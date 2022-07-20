@@ -16,3 +16,5 @@ flutter_export_environment.sh
 .DS_Store
 
 docs/**/*.g.dart
+
+*/build/
