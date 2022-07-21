@@ -9,7 +9,7 @@ part of 'saves_after_migration_regression_test.dart';
 // ignore_for_file: type=lint
 class Foo extends DataClass implements Insertable<Foo> {
   final int id;
-  Foo({required this.id});
+  const Foo({required this.id});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -144,7 +144,7 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
 
 class Bar extends DataClass implements Insertable<Bar> {
   final int id;
-  Bar({required this.id});
+  const Bar({required this.id});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};

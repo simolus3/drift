@@ -10,7 +10,7 @@ part of 'database.dart';
 class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;
   final String value;
-  KeyValue({required this.key, required this.value});
+  const KeyValue({required this.key, required this.value});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};

@@ -10,7 +10,7 @@ part of 'database.dart';
 class Entrie extends DataClass implements Insertable<Entrie> {
   final int id;
   final String value;
-  Entrie({required this.id, required this.value});
+  const Entrie({required this.id, required this.value});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};

@@ -11,7 +11,7 @@ class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String name;
   final Color color;
-  Category({required this.id, required this.name, required this.color});
+  const Category({required this.id, required this.name, required this.color});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -216,7 +216,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String description;
   final int? category;
   final DateTime? dueDate;
-  TodoEntry(
+  const TodoEntry(
       {required this.id,
       required this.description,
       this.category,
@@ -466,7 +466,7 @@ class $TodoEntriesTable extends TodoEntries
 
 class TextEntrie extends DataClass implements Insertable<TextEntrie> {
   final String description;
-  TextEntrie({required this.description});
+  const TextEntrie({required this.description});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
