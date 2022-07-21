@@ -166,15 +166,15 @@ class ViewParser {
     return results.whereType();
   }
 
-  ColumnType? _dartTypeToColumnType(String name) {
+  DriftSqlType? _dartTypeToColumnType(String name) {
     return const {
-      'bool': ColumnType.boolean,
-      'String': ColumnType.text,
-      'int': ColumnType.integer,
-      'BigInt': ColumnType.bigInt,
-      'DateTime': ColumnType.datetime,
-      'Uint8List': ColumnType.blob,
-      'double': ColumnType.real,
+      'bool': DriftSqlType.bool,
+      'String': DriftSqlType.string,
+      'int': DriftSqlType.int,
+      'BigInt': DriftSqlType.bigInt,
+      'DateTime': DriftSqlType.dateTime,
+      'Uint8List': DriftSqlType.blob,
+      'double': DriftSqlType.double,
     }[name];
   }
 

@@ -26,7 +26,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     expect(resultSet.matchingTable, isNull);
     expect(resultSet.columns.map((c) => c.name), ['?', ':foo']);
     expect(resultSet.columns.map((c) => c.type),
-        [ColumnType.text, ColumnType.boolean]);
+        [DriftSqlType.string, DriftSqlType.bool]);
   });
 
   test('reads REQUIRED syntax', () async {

@@ -118,7 +118,7 @@ class SchemaWriter {
     return {
       'name': column.name.name,
       'getter_name': column.dartGetterName,
-      'moor_type': column.type.toString(),
+      'moor_type': column.type.toSerializedString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
       if (constraints.isNotEmpty && column.customConstraints == null)
@@ -316,8 +316,8 @@ class SchemaReader {
 
   DriftColumn _readColumn(Map<String, dynamic> data) {
     final name = data['name'] as String;
-    final moorType = ColumnType.values
-        .firstWhere((type) => type.toString() == data['moor_type']);
+    final columnType =
+        _SerializeSqlType.deserialize(data['moor_type'] as String);
     final nullable = data['nullable'] as bool;
     final customConstraints = data['customConstraints'] as String?;
     final defaultConstraints = data['defaultConstraints'] as String?;
@@ -334,7 +334,7 @@ class SchemaReader {
     return DriftColumn(
       name: ColumnName.explicitly(name),
       dartGetterName: getterName ?? ReCase(name).camelCase,
-      type: moorType,
+      type: columnType,
       nullable: nullable,
       defaultArgument: data['default_dart'] as String?,
       customConstraints: customConstraints,
@@ -355,5 +355,51 @@ class SchemaReader {
     }
 
     return null;
+  }
+}
+
+// There used to be another enum to represent columns that has since been
+// replaced with DriftSqlType. We still need to reflect the old description in
+// the serialized format.
+extension _SerializeSqlType on DriftSqlType {
+  static DriftSqlType deserialize(String description) {
+    switch (description) {
+      case 'ColumnType.boolean':
+        return DriftSqlType.bool;
+      case 'ColumnType.text':
+        return DriftSqlType.string;
+      case 'ColumnType.bigInt':
+        return DriftSqlType.bigInt;
+      case 'ColumnType.integer':
+        return DriftSqlType.int;
+      case 'ColumnType.datetime':
+        return DriftSqlType.dateTime;
+      case 'ColumnType.blob':
+        return DriftSqlType.blob;
+      case 'ColumnType.real':
+        return DriftSqlType.double;
+      default:
+        throw ArgumentError.value(
+            description, 'description', 'Not a known column type');
+    }
+  }
+
+  String toSerializedString() {
+    switch (this) {
+      case DriftSqlType.bool:
+        return 'ColumnType.boolean';
+      case DriftSqlType.string:
+        return 'ColumnType.text';
+      case DriftSqlType.bigInt:
+        return 'ColumnType.bigInt';
+      case DriftSqlType.int:
+        return 'ColumnType.integer';
+      case DriftSqlType.dateTime:
+        return 'ColumnType.datetime';
+      case DriftSqlType.blob:
+        return 'ColumnType.blob';
+      case DriftSqlType.double:
+        return 'ColumnType.real';
+    }
   }
 }

@@ -439,16 +439,16 @@ class ColumnParser {
     );
   }
 
-  ColumnType _startMethodToColumnType(String name) {
+  DriftSqlType _startMethodToColumnType(String name) {
     return const {
-      startBool: ColumnType.boolean,
-      startString: ColumnType.text,
-      startInt: ColumnType.integer,
-      startInt64: ColumnType.bigInt,
-      startEnum: ColumnType.integer,
-      startDateTime: ColumnType.datetime,
-      startBlob: ColumnType.blob,
-      startReal: ColumnType.real,
+      startBool: DriftSqlType.bool,
+      startString: DriftSqlType.string,
+      startInt: DriftSqlType.int,
+      startInt64: DriftSqlType.bigInt,
+      startEnum: DriftSqlType.int,
+      startDateTime: DriftSqlType.dateTime,
+      startBlob: DriftSqlType.blob,
+      startReal: DriftSqlType.double,
     }[name]!;
   }
 

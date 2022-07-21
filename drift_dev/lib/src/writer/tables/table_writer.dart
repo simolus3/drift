@@ -39,7 +39,7 @@ abstract class TableOrViewWriter {
       }
     }
 
-    additionalParams['type'] = column.sqlType().toString();
+    additionalParams['type'] = column.type.toString();
 
     if (tableOrView is DriftTable) {
       additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)

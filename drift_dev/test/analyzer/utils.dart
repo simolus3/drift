@@ -52,7 +52,7 @@ class TestState {
 }
 
 // Matchers
-Matcher returnsColumns(Map<String, ColumnType> columns) {
+Matcher returnsColumns(Map<String, DriftSqlType> columns) {
   return _HasInferredColumnTypes(columns);
 }
 

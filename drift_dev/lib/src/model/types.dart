@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/model/model.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
@@ -19,7 +18,7 @@ abstract class HasType {
   bool get isArray;
 
   /// The associated sql type.
-  ColumnType get type;
+  DriftSqlType get type;
 
   /// The applied type converter, or null.
   UsedTypeConverter? get typeConverter;
@@ -99,25 +98,25 @@ extension OperationOnTypes on HasType {
     String code;
 
     switch (type) {
-      case ColumnType.integer:
+      case DriftSqlType.int:
         code = 'int';
         break;
-      case ColumnType.bigInt:
+      case DriftSqlType.bigInt:
         code = 'BigInt';
         break;
-      case ColumnType.text:
+      case DriftSqlType.string:
         code = 'String';
         break;
-      case ColumnType.boolean:
+      case DriftSqlType.bool:
         code = 'bool';
         break;
-      case ColumnType.datetime:
+      case DriftSqlType.dateTime:
         code = 'DateTime';
         break;
-      case ColumnType.blob:
+      case DriftSqlType.blob:
         code = 'Uint8List';
         break;
-      case ColumnType.real:
+      case DriftSqlType.double:
         code = 'double';
         break;
     }
@@ -138,46 +137,26 @@ extension OperationOnTypes on HasType {
 
     return variableTypeCode();
   }
-
-  DriftSqlType sqlType() {
-    // todo: Just replace ColumnType with DriftSqlType now?
-    switch (type) {
-      case ColumnType.integer:
-        return DriftSqlType.int;
-      case ColumnType.bigInt:
-        return DriftSqlType.bigInt;
-      case ColumnType.boolean:
-        return DriftSqlType.bool;
-      case ColumnType.datetime:
-        return DriftSqlType.dateTime;
-      case ColumnType.text:
-        return DriftSqlType.string;
-      case ColumnType.blob:
-        return DriftSqlType.blob;
-      case ColumnType.real:
-        return DriftSqlType.double;
-    }
-  }
 }
 
-const Map<ColumnType, String> dartTypeNames = {
-  ColumnType.boolean: 'bool',
-  ColumnType.text: 'String',
-  ColumnType.integer: 'int',
-  ColumnType.bigInt: 'BigInt',
-  ColumnType.datetime: 'DateTime',
-  ColumnType.blob: 'Uint8List',
-  ColumnType.real: 'double',
+const Map<DriftSqlType, String> dartTypeNames = {
+  DriftSqlType.bool: 'bool',
+  DriftSqlType.string: 'String',
+  DriftSqlType.int: 'int',
+  DriftSqlType.bigInt: 'BigInt',
+  DriftSqlType.dateTime: 'DateTime',
+  DriftSqlType.blob: 'Uint8List',
+  DriftSqlType.double: 'double',
 };
 
 /// Maps from a column type to code that can be used to create a variable of the
 /// respective type.
-const Map<ColumnType, String> createVariable = {
-  ColumnType.boolean: 'Variable.withBool',
-  ColumnType.text: 'Variable.withString',
-  ColumnType.integer: 'Variable.withInt',
-  ColumnType.bigInt: 'Variable.withBigInt',
-  ColumnType.datetime: 'Variable.withDateTime',
-  ColumnType.blob: 'Variable.withBlob',
-  ColumnType.real: 'Variable.withReal',
+const Map<DriftSqlType, String> createVariable = {
+  DriftSqlType.bool: 'Variable.withBool',
+  DriftSqlType.string: 'Variable.withString',
+  DriftSqlType.int: 'Variable.withInt',
+  DriftSqlType.bigInt: 'Variable.withBigInt',
+  DriftSqlType.dateTime: 'Variable.withDateTime',
+  DriftSqlType.blob: 'Variable.withBlob',
+  DriftSqlType.double: 'Variable.withReal',
 };

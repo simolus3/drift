@@ -110,7 +110,7 @@ ExistingRowClass? validateExistingClass(
 UsedTypeConverter? readTypeConverter(
   LibraryElement library,
   Expression dartExpression,
-  ColumnType columnType,
+  DriftSqlType columnType,
   bool columnIsNullable,
   void Function(String) reportError,
   HelperLibrary helper, {
@@ -206,7 +206,7 @@ void _checkParameterType(
 }
 
 void _checkType(
-  ColumnType columnType,
+  DriftSqlType columnType,
   bool columnIsNullable,
   UsedTypeConverter? typeConverter,
   DartType typeToCheck,
@@ -228,7 +228,7 @@ void _checkType(
   // We don't get a Uint8List from the type provider unfortunately, but as it
   // cannot be extended we can just check for that manually.
   final isAllowedUint8List = typeConverter == null &&
-      columnType == ColumnType.blob &&
+      columnType == DriftSqlType.blob &&
       typeToCheck is InterfaceType &&
       typeToCheck.element.name == 'Uint8List' &&
       typeToCheck.element.library.name == 'dart.typed_data';
@@ -241,23 +241,23 @@ void _checkType(
 }
 
 extension on TypeProvider {
-  DartType typeFor(ColumnType type) {
+  DartType typeFor(DriftSqlType type) {
     switch (type) {
-      case ColumnType.integer:
+      case DriftSqlType.int:
         return intType;
-      case ColumnType.bigInt:
+      case DriftSqlType.bigInt:
         return intElement.library.getType('BigInt')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
-      case ColumnType.text:
+      case DriftSqlType.string:
         return stringType;
-      case ColumnType.boolean:
+      case DriftSqlType.bool:
         return boolType;
-      case ColumnType.datetime:
+      case DriftSqlType.dateTime:
         return intElement.library.getType('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
-      case ColumnType.blob:
+      case DriftSqlType.blob:
         return listType(intType);
-      case ColumnType.real:
+      case DriftSqlType.double:
         return doubleType;
     }
   }

@@ -68,7 +68,7 @@ WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
     expect(resultSet.singleColumn, isTrue);
     expect(resultSet.needsOwnClass, isFalse);
     expect(resultSet.columns.map(resultSet.dartNameFor), ['x']);
-    expect(resultSet.columns.map((c) => c.type), [ColumnType.integer]);
+    expect(resultSet.columns.map((c) => c.type), [DriftSqlType.int]);
   });
 
   test('finds the underlying table when aliased through CFE', () {

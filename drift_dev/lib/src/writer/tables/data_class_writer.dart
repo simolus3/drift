@@ -349,7 +349,7 @@ class RowMappingWriter {
       final columnName = column.name.name;
       final rawData = "data['\${effectivePrefix}$columnName']";
 
-      final sqlType = column.sqlType();
+      final sqlType = column.type.toString();
       var loadType = '$databaseGetter.options.types.read($sqlType, $rawData)';
 
       if (!column.nullable) {

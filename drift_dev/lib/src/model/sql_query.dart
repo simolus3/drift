@@ -99,7 +99,7 @@ abstract class SqlQuery {
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
-  /// [ExpressionDartPlaceholderType] and [ColumnType.boolean]. We will
+  /// [ExpressionDartPlaceholderType] and [DriftSqlType.bool]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
   late List<FoundDartPlaceholder> placeholders;
 
@@ -453,7 +453,7 @@ class MatchingMoorTable {
 class ResultColumn implements HasType {
   final String name;
   @override
-  final ColumnType type;
+  final DriftSqlType type;
   @override
   final bool nullable;
 
@@ -611,7 +611,7 @@ class FoundVariable extends FoundElement implements HasType {
 
   /// The (inferred) type for this variable.
   @override
-  final ColumnType type;
+  final DriftSqlType type;
 
   /// The type converter to apply before writing this value.
   @override
@@ -721,7 +721,7 @@ class SimpleDartPlaceholderType extends DartPlaceholderType {
 
 class ExpressionDartPlaceholderType extends DartPlaceholderType {
   /// The sql type of this expression.
-  final ColumnType? columnType;
+  final DriftSqlType? columnType;
   final Expression? defaultValue;
 
   ExpressionDartPlaceholderType(this.columnType, this.defaultValue);

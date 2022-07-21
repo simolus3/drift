@@ -3,13 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
-import 'declarations/declaration.dart';
-import 'table.dart';
-import 'types.dart';
-import 'used_type_converter.dart';
-
-/// The column types in sql.
-enum ColumnType { integer, bigInt, text, boolean, datetime, blob, real }
+import 'model.dart';
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -59,7 +53,7 @@ class DriftColumn implements HasDeclaration, HasType {
 
   /// The sql type of this column
   @override
-  final ColumnType type;
+  final DriftSqlType type;
 
   /// The name of this column, as chosen by the user
   final ColumnName name;
@@ -111,20 +105,6 @@ class DriftColumn implements HasDeclaration, HasType {
 
   /// Parent table
   DriftTable? table;
-
-  /// The column type from the dsl library. For instance, if a table has
-  /// declared an `IntColumn`, the matching dsl column name would also be an
-  /// `IntColumn`.
-  @Deprecated('Use Column<innerColumnType()> instead')
-  String get dslColumnTypeName => const {
-        ColumnType.boolean: 'BoolColumn',
-        ColumnType.text: 'TextColumn',
-        ColumnType.integer: 'IntColumn',
-        ColumnType.bigInt: 'BigIntColumn',
-        ColumnType.datetime: 'DateTimeColumn',
-        ColumnType.blob: 'BlobColumn',
-        ColumnType.real: 'RealColumn',
-      }[type]!;
 
   @override
   bool get isArray => false;

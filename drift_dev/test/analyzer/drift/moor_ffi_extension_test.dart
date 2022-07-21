@@ -111,7 +111,7 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
     expect(
       queryInA.resultSet.columns.single,
       const TypeMatcher<ResultColumn>()
-          .having((e) => e.type, 'type', ColumnType.real),
+          .having((e) => e.type, 'type', DriftSqlType.double),
     );
 
     final fileB = await state.analyze('package:foo/b.moor');

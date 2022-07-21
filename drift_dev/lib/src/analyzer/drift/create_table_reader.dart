@@ -245,7 +245,7 @@ class CreateTableReader {
   }
 
   Future<UsedTypeConverter?> _readTypeConverter(
-      ColumnType sqlType, bool nullable, MappedBy mapper) async {
+      DriftSqlType sqlType, bool nullable, MappedBy mapper) async {
     final code = mapper.mapper.dartCode;
 
     Expression expression;

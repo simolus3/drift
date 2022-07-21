@@ -29,7 +29,7 @@ void main() {
 
     state.close();
 
-    expect(column.type, ColumnType.integer);
+    expect(column.type, DriftSqlType.int);
     expect(
       column.typeConverter,
       isA<UsedTypeConverter>()

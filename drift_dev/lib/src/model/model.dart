@@ -1,5 +1,6 @@
 import 'package:recase/recase.dart';
 
+export 'package:drift/drift.dart' show DriftSqlType;
 export 'base_entity.dart';
 export 'column.dart';
 export 'database.dart';

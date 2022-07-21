@@ -1,14 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import 'base_entity.dart';
-import 'column.dart';
-import 'declarations/declaration.dart';
+import 'model.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
@@ -194,7 +191,7 @@ class DriftTable extends DriftEntityWithResultSet {
     final isWithoutRowId = overrideWithoutRowId ?? false;
     final fullPk = fullPrimaryKey;
     final isAliasForRowId = !isWithoutRowId &&
-        column.type == ColumnType.integer &&
+        column.type == DriftSqlType.int &&
         fullPk.length == 1 &&
         fullPk.single == column;
 
