@@ -1251,7 +1251,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
       txt: $PureDefaultsTable.$converter0n
-          .fromJson(serializer.fromJson<String>(json['txt'])),
+          .fromJson(serializer.fromJson<String?>(json['txt'])),
     );
   }
   factory PureDefault.fromJsonString(String encodedJson,

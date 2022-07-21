@@ -31,7 +31,7 @@ class User extends DataClass implements Insertable<User> {
   final DateTime birthDate;
   final Uint8List? profilePicture;
   final Preferences? preferences;
-  User(
+  const User(
       {required this.id,
       required this.name,
       required this.birthDate,
@@ -326,7 +326,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   final int firstUser;
   final int secondUser;
   final bool reallyGoodFriends;
-  Friendship(
+  const Friendship(
       {required this.firstUser,
       required this.secondUser,
       required this.reallyGoodFriends});

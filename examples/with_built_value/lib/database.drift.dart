@@ -10,7 +10,7 @@ part of 'database.dart';
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
-  User({required this.id, required this.name});
+  const User({required this.id, required this.name});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};

@@ -11,7 +11,7 @@ class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
   final int? nextUser;
-  User({required this.id, required this.name, this.nextUser});
+  const User({required this.id, required this.name, this.nextUser});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -216,7 +216,7 @@ class Group extends DataClass implements Insertable<Group> {
   final String title;
   final bool? deleted;
   final int owner;
-  Group(
+  const Group(
       {required this.id,
       required this.title,
       this.deleted,
@@ -465,7 +465,7 @@ class GroupCountData extends DataClass {
   final String name;
   final int? nextUser;
   final int groupCount;
-  GroupCountData(
+  const GroupCountData(
       {required this.id,
       required this.name,
       this.nextUser,
