@@ -114,7 +114,7 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        final type = column.innerColumnType();
+        final type = column.innerColumnType(nullable: column.nullable);
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
