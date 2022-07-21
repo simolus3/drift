@@ -98,6 +98,11 @@ class DriftOptions {
   @JsonKey(name: 'scoped_dart_components', defaultValue: false)
   final bool scopedDartComponents;
 
+  /// Whether `DateTime` columns should be stored as text (via
+  /// [DateTime.toIso8601String]) instead of integers (unix timestamp).
+  @JsonKey(defaultValue: false)
+  final bool storeDateTimeValuesAsText;
+
   @internal
   const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
@@ -118,6 +123,7 @@ class DriftOptions {
     this.scopedDartComponents = false,
     this.modules = const [],
     this.sqliteAnalysisOptions,
+    this.storeDateTimeValuesAsText = false,
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
   });
 
@@ -140,6 +146,7 @@ class DriftOptions {
     required this.scopedDartComponents,
     required this.modules,
     required this.sqliteAnalysisOptions,
+    required this.storeDateTimeValuesAsText,
     this.dialect,
   }) {
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {

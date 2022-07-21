@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('types map null values to null', () {
-    final options = DriftDatabaseOptions();
+    const options = DriftDatabaseOptions();
     expect(options.types.mapToSqlVariable(null), isNull);
 
     for (final type in DriftSqlType.values) {

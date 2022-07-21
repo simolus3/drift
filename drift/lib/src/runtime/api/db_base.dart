@@ -16,7 +16,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   GeneratedDatabase get attachedDatabase => this;
 
   @override
-  DriftDatabaseOptions get options => DriftDatabaseOptions();
+  DriftDatabaseOptions get options => const DriftDatabaseOptions();
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.

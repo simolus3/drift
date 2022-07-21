@@ -15,7 +15,7 @@ class SqlTypes {
 
   /// Creates an [SqlTypes] mapper from the provided options.
   @internal
-  SqlTypes(this._storeDateTimesAsText);
+  const SqlTypes(this._storeDateTimesAsText);
 
   /// Maps a Dart object to a (possibly simpler) object that can be used as a
   /// parameter in raw sql queries.

@@ -28,7 +28,7 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL, '
     'sometext TEXT, '
     'is_inserting INTEGER, '
-    'somedate INTEGER, '
+    'somedate TEXT, '
     'PRIMARY KEY (someid DESC)'
     ');';
 

@@ -9,7 +9,7 @@ export 'mocks.dart';
 
 GenerationContext stubContext({DriftDatabaseOptions? options}) {
   return GenerationContext(
-      options ?? DriftDatabaseOptions(), _NullDatabase.instance);
+      options ?? const DriftDatabaseOptions(), _NullDatabase.instance);
 }
 
 class _NullDatabase extends GeneratedDatabase {

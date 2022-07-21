@@ -1854,6 +1854,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           ),
         ],
       );
+  @override
+  DriftDatabaseOptions get options =>
+      const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
 OrderBy _$moor$default$0(ConfigTable _) => const OrderBy.nothing();

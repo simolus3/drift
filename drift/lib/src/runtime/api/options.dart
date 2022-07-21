@@ -14,7 +14,8 @@ class DriftDatabaseOptions {
   /// When [storeDateTimeAsText] is enabled (it defaults to `false` for
   /// backwards-compatibility), drift's datetime columns will be stored as text.
   /// By default, they will be stored as ints.
-  DriftDatabaseOptions({
+  const DriftDatabaseOptions({
     bool storeDateTimeAsText = false,
-  }) : types = SqlTypes(storeDateTimeAsText);
+  }) : types =
+            storeDateTimeAsText ? const SqlTypes(true) : const SqlTypes(false);
 }

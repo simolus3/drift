@@ -156,6 +156,14 @@ class DatabaseWriter {
         ..writeln('int get schemaVersion => $version;');
     }
 
+    if (scope.options.storeDateTimeValuesAsText) {
+      // Override database options to reflect that DateTimes are stored as text.
+      schemaScope
+        ..writeln('@override')
+        ..writeln('DriftDatabaseOptions get options => '
+            'const DriftDatabaseOptions(storeDateTimeAsText: true);');
+    }
+
     // close the class
     schemaScope.write('}\n');
   }

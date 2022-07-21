@@ -31,7 +31,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'generate_values_in_copy_with',
             'named_parameters',
             'named_parameters_always_required',
-            'scoped_dart_components'
+            'scoped_dart_components',
+            'store_date_time_values_as_text'
           ],
         );
         final val = DriftOptions(
@@ -80,6 +81,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'sqlite',
               (v) =>
                   v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
+          storeDateTimeValuesAsText: $checkedConvert(
+              'store_date_time_values_as_text', (v) => v as bool? ?? false),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
         );
@@ -107,6 +110,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'scopedDartComponents': 'scoped_dart_components',
         'modules': 'sqlite_modules',
         'sqliteAnalysisOptions': 'sqlite',
+        'storeDateTimeValuesAsText': 'store_date_time_values_as_text',
         'dialect': 'sql'
       },
     );
