@@ -49,8 +49,27 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// type. The [compare] value will be written
   /// as a variable using prepared statements, so there is no risk of
   /// an SQL-injection.
+  ///
+  /// This method only supports comparing the value of the column to non-
+  /// nullable values and translates to a direct `=` comparison in SQL.
+  /// To compare this column to `null`, use [equalsNullable].
   Expression<bool> equals(D compare) =>
       _Comparison.equal(this, Variable<D>(compare));
+
+  /// Compares the value of this column to [compare] or `null`.
+  ///
+  /// When [compare] is null, this generates an `IS NULL` expression in SQL.
+  /// For non-null values, an [equals] expression is generated.
+  /// This means that, for this method, two null values are considered equal.
+  /// This deviates from the usual notion in SQL that doesn't allow comparing
+  /// `NULL` values with equals.
+  Expression<bool> equalsNullable(D? compare) {
+    if (compare == null) {
+      return this.isNull();
+    } else {
+      return equals(compare);
+    }
+  }
 
   /// Casts this expression to an expression of [D].
   ///

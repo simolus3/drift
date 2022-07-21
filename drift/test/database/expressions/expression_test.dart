@@ -111,4 +111,14 @@ void main() {
           .runSelect(argThat(contains('ON categories._rowid_ = ?')), [3]));
     });
   });
+
+  test('equals', () {
+    const a = CustomExpression<int>('a', precedence: Precedence.primary);
+    const b = CustomExpression<int>('b', precedence: Precedence.primary);
+
+    expect(a.equals(3), generates('a = ?', [3]));
+    expect(a.equalsNullable(3), generates('a = ?', [3]));
+    expect(a.equalsNullable(null), generates('a IS NULL'));
+    expect(a.equalsExp(b), generates('a = b'));
+  });
 }
