@@ -16,14 +16,24 @@ void expectNotEquals(dynamic a, dynamic expected) {
 /// Matcher for [Component]-subclasses. Expect that a component generates the
 /// matching [sql] and, optionally, the matching [variables].
 Matcher generates(dynamic sql, [dynamic variables = isEmpty]) {
-  return _GeneratesSqlMatcher(wrapMatcher(sql), wrapMatcher(variables));
+  return _GeneratesSqlMatcher(
+      wrapMatcher(sql), wrapMatcher(variables), const DriftDatabaseOptions());
+}
+
+Matcher generatesWithOptions(dynamic sql,
+    {dynamic variables = isEmpty,
+    DriftDatabaseOptions options = const DriftDatabaseOptions()}) {
+  return _GeneratesSqlMatcher(
+      wrapMatcher(sql), wrapMatcher(variables), options);
 }
 
 class _GeneratesSqlMatcher extends Matcher {
   final Matcher _matchSql;
   final Matcher? _matchVariables;
 
-  _GeneratesSqlMatcher(this._matchSql, this._matchVariables);
+  final DriftDatabaseOptions options;
+
+  _GeneratesSqlMatcher(this._matchSql, this._matchVariables, this.options);
 
   @override
   Description describe(Description description) {
@@ -68,7 +78,7 @@ class _GeneratesSqlMatcher extends Matcher {
       return false;
     }
 
-    final ctx = stubContext();
+    final ctx = stubContext(options: options);
     item.writeInto(ctx);
 
     var matches = true;

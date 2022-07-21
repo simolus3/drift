@@ -11,6 +11,10 @@ import '../query_builder/query_builder.dart';
 /// literals.
 @sealed
 class SqlTypes {
+  // Stolen from DateTime._parseFormat
+  static final RegExp _timeZoneInDateTime =
+      RegExp(r' ?([-+])(\d\d)(?::?(\d\d))?$');
+
   final bool _storeDateTimesAsText;
 
   /// Creates an [SqlTypes] mapper from the provided options.
@@ -25,7 +29,32 @@ class SqlTypes {
     // These need special handling, all other types are a direct mapping
     if (dartValue is DateTime) {
       if (_storeDateTimesAsText) {
-        return dartValue.toIso8601String();
+        // sqlite3 assumes UTC by default, so we store the explicit UTC offset
+        // along with the value. For UTC datetimes, there's nothing to change
+        if (dartValue.isUtc) {
+          return dartValue.toIso8601String();
+        } else {
+          final offset = dartValue.timeZoneOffset;
+          // Quick sanity check: We can only store the UTC offset as `hh:mm`,
+          // so if the offset has seconds for some reason we should refuse to
+          // store that.
+          if (offset.inSeconds - 60 * offset.inMinutes != 0) {
+            throw ArgumentError.value(dartValue, 'dartValue',
+                'Cannot be mapped to SQL: Invalid UTC offset $offset');
+          }
+
+          final hours = offset.inHours.abs();
+          final minutes = offset.inMinutes.abs() - 60 * hours;
+
+          // For local date times, add the offset as ` +hh:mm` in the end. This
+          // format is understood by `DateTime.parse` and date time functions in
+          // sqlite.
+          final prefix = offset.isNegative ? ' -' : ' +';
+          final formattedOffset = '${hours.toString().padLeft(2, '0')}:'
+              '${minutes.toString().padLeft(2, '0')}';
+
+          return '${dartValue.toIso8601String()}$prefix$formattedOffset';
+        }
       } else {
         return dartValue.millisecondsSinceEpoch ~/ 1000;
       }
@@ -59,7 +88,8 @@ class SqlTypes {
       return dart.toString();
     } else if (dart is DateTime) {
       if (_storeDateTimesAsText) {
-        return "'${dart.toIso8601String()}'";
+        final encoded = mapToSqlVariable(dart).toString();
+        return "'$encoded'";
       } else {
         return (dart.millisecondsSinceEpoch ~/ 1000).toString();
       }
@@ -93,7 +123,19 @@ class SqlTypes {
         return int.parse(sqlValue.toString()) as T;
       case DriftSqlType.dateTime:
         if (_storeDateTimesAsText) {
-          return DateTime.parse(read(DriftSqlType.string, sqlValue)!) as T;
+          final rawValue = read(DriftSqlType.string, sqlValue)!;
+          final value = DateTime.parse(rawValue);
+
+          // The stored format is the same as toIso8601String for utc values,
+          // but for local date times we append the time zone offset.
+          // DateTime.parse picks that up, but then returns an UTC value. For
+          // round-trip equality, we recover that information and reutrn to
+          // a local date time.
+          if (_timeZoneInDateTime.hasMatch(rawValue)) {
+            return value.toLocal() as T;
+          } else {
+            return value as T;
+          }
         } else {
           final unixSeconds = read(DriftSqlType.int, sqlValue)!;
           return DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000) as T;
