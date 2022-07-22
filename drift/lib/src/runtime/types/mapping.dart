@@ -15,11 +15,17 @@ class SqlTypes {
   static final RegExp _timeZoneInDateTime =
       RegExp(r' ?([-+])(\d\d)(?::?(\d\d))?$');
 
-  final bool _storeDateTimesAsText;
+  /// Whether these type mappings have been configured to store date time values
+  /// as text.
+  ///
+  /// When false (the default), date times values are stored as unix timestamps
+  /// with second accuracy. When true, date time values are stored as an
+  /// ISO-8601 string.
+  final bool storeDateTimesAsText;
 
   /// Creates an [SqlTypes] mapper from the provided options.
   @internal
-  const SqlTypes(this._storeDateTimesAsText);
+  const SqlTypes(this.storeDateTimesAsText);
 
   /// Maps a Dart object to a (possibly simpler) object that can be used as a
   /// parameter in raw sql queries.
@@ -28,7 +34,7 @@ class SqlTypes {
 
     // These need special handling, all other types are a direct mapping
     if (dartValue is DateTime) {
-      if (_storeDateTimesAsText) {
+      if (storeDateTimesAsText) {
         // sqlite3 assumes UTC by default, so we store the explicit UTC offset
         // along with the value. For UTC datetimes, there's nothing to change
         if (dartValue.isUtc) {
@@ -87,7 +93,7 @@ class SqlTypes {
     } else if (dart is num || dart is BigInt) {
       return dart.toString();
     } else if (dart is DateTime) {
-      if (_storeDateTimesAsText) {
+      if (storeDateTimesAsText) {
         final encoded = mapToSqlVariable(dart).toString();
         return "'$encoded'";
       } else {
@@ -122,7 +128,7 @@ class SqlTypes {
         if (sqlValue is BigInt) return sqlValue.toInt() as T;
         return int.parse(sqlValue.toString()) as T;
       case DriftSqlType.dateTime:
-        if (_storeDateTimesAsText) {
+        if (storeDateTimesAsText) {
           final rawValue = read(DriftSqlType.string, sqlValue)!;
           final value = DateTime.parse(rawValue);
 
@@ -198,7 +204,7 @@ enum DriftSqlType<T extends Object> {
       case DriftSqlType.int:
         return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
       case DriftSqlType.dateTime:
-        if (context.options.types._storeDateTimesAsText) {
+        if (context.options.types.storeDateTimesAsText) {
           return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
         } else {
           return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';

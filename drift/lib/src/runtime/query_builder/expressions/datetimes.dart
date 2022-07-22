@@ -1,71 +1,175 @@
 part of '../query_builder.dart';
 
-/// A sql expression that evaluates to the current date represented as a unix
-/// timestamp. The hour, minute and second fields will be set to 0.
-const Expression<DateTime> currentDate =
-    _CustomDateTimeExpression("strftime('%s', CURRENT_DATE)");
+/// A sql expression that evaluates to the current date.
+///
+/// Depending on whether date times are stored as unix timestamps (the default)
+/// or as text on the database, this returns a unix timestamp or a string.
+/// In either case, the hour, minute and second fields will be set to null.
+/// Note that in the case where a formatted string is returned, the format will
+/// write the value in UTC.
+///
+/// {@macro drift_datetime_timezone}
+const Expression<DateTime> currentDate = Expression<DateTime>.withContext(
+  _generateCurrentDate,
+);
 
 /// A sql expression that evaluates to the current date and time, similar to
 /// [DateTime.now]. Timestamps are stored with a second accuracy.
 const Expression<DateTime> currentDateAndTime =
-    _CustomDateTimeExpression("strftime('%s', CURRENT_TIMESTAMP)");
+    Expression<DateTime>.withContext(
+  _generateCurrentDateAndTime,
+);
 
-class _CustomDateTimeExpression extends CustomExpression<DateTime> {
-  @override
-  Precedence get precedence => Precedence.primary;
+// These need to be functions so that currentDate and currentDateAndTime can
+// stay constants.
+Expression<DateTime> _generateCurrentDate(GenerationContext context) {
+  return _driftDateTimeFromLiteral(context, 'CURRENT_DATE');
+}
 
-  const _CustomDateTimeExpression(String content) : super(content);
+Expression<DateTime> _generateCurrentDateAndTime(GenerationContext context) {
+  return _driftDateTimeFromLiteral(context, 'CURRENT_TIMESTAMP');
+}
+
+/// Turns `CURRENT_DATE` or `CURRENT_TIMESTAMP` into a format understood by
+/// drift.
+///
+/// Depending on whether date time values are stored as unix timestamp, this
+/// wraps the literal in a `strftime('%s')` call or not.
+Expression<DateTime> _driftDateTimeFromLiteral(
+    GenerationContext context, String literal) {
+  final direct =
+      CustomExpression<DateTime>(literal, precedence: Precedence.primary);
+
+  if (context.options.types.storeDateTimesAsText) {
+    return direct;
+  } else {
+    return FunctionCallExpression<String>('strftime', [
+      const Constant('%s'),
+      direct,
+    ]).cast();
+  }
 }
 
 /// Provides expressions to extract information from date time values, or to
 /// calculate the difference between datetimes.
 extension DateTimeExpressions on Expression<DateTime> {
-  /// Extracts the (UTC) year from `this` datetime expression.
+  /// Extracts the year from `this` datetime expression.
+  ///
+  /// {@template drift_datetime_timezone}
+  /// Even if the date time stored was in a local timezone, this format returns
+  /// the formatted value in UTC.
+  /// For example, if your local timezone has the UTC offset `+02:00` and you're
+  /// inserting a (local) [DateTime] value at `12:34`, running the [hour] getter
+  /// on this value would return `10`, since the datetime is at `10:34` in UTC.
+  ///
+  /// To make this function return a value formatted as a local timestamp, you
+  /// can use [modify] with a [DateTimeModifier.localTime] before invoking it,
+  /// e.g.
+  ///
+  /// ```dart
+  ///  Variable(DateTime.now()).modify(DateTimeModifier.localTime()).hour
+  /// ```
+  /// {@template}
   Expression<int> get year => _StrftimeSingleFieldExpression('%Y', this);
 
-  /// Extracts the (UTC) month from `this` datetime expression.
+  /// Extracts the month from `this` datetime expression.
+  ///
+  /// {@macro drift_datetime_timezone}
   Expression<int> get month => _StrftimeSingleFieldExpression('%m', this);
 
-  /// Extracts the (UTC) day from `this` datetime expression.
+  /// Extracts the day from `this` datetime expression.
+  ///
+  /// {@macro drift_datetime_timezone}
   Expression<int> get day => _StrftimeSingleFieldExpression('%d', this);
 
-  /// Extracts the (UTC) hour from `this` datetime expression.
+  /// Extracts the hour from `this` datetime expression.
+  ///
+  /// {@macro drift_datetime_timezone}
   Expression<int> get hour => _StrftimeSingleFieldExpression('%H', this);
 
-  /// Extracts the (UTC) minute from `this` datetime expression.
+  /// Extracts the minute from `this` datetime expression.
+  ///
+  /// {@macro drift_datetime_timezone}
   Expression<int> get minute => _StrftimeSingleFieldExpression('%M', this);
 
-  /// Extracts the (UTC) second from `this` datetime expression.
+  /// Extracts the second from `this` datetime expression.
+  ///
+  /// {@macro drift_datetime_timezone}
   Expression<int> get second => _StrftimeSingleFieldExpression('%S', this);
 
   /// Formats this datetime in the format `year-month-day`.
-  Expression<String> get date => FunctionCallExpression(
-      'DATE', [this, const DateTimeModifier._unixEpoch()]);
+  ///
+  /// {@macro drift_datetime_timezone}
+  Expression<String> get date {
+    return Expression.withContext((context) {
+      return FunctionCallExpression('DATE', [
+        this,
+        if (!context.options.types.storeDateTimesAsText)
+          const DateTimeModifier._unixEpoch()
+      ]);
+    });
+  }
 
   /// Formats this datetime in the format `hour:minute:second`.
-  Expression<String> get time => FunctionCallExpression(
-      'TIME', [this, const DateTimeModifier._unixEpoch()]);
+  ///
+  /// {@macro drift_datetime_timezone}
+  Expression<String> get time {
+    return Expression.withContext((context) {
+      return FunctionCallExpression('TIME', [
+        this,
+        if (!context.options.types.storeDateTimesAsText)
+          const DateTimeModifier._unixEpoch()
+      ]);
+    });
+  }
 
   /// Formats this datetime in the format `year-month-day hour:minute:second`.
-  Expression<String> get datetime => FunctionCallExpression(
-      'DATETIME', [this, const DateTimeModifier._unixEpoch()]);
+  ///
+  /// {@macro drift_datetime_timezone}
+  Expression<String> get datetime {
+    return Expression.withContext((context) {
+      return FunctionCallExpression('DATETIME', [
+        this,
+        if (!context.options.types.storeDateTimesAsText)
+          const DateTimeModifier._unixEpoch()
+      ]);
+    });
+  }
 
   /// Formats this datetime as a unix timestamp - the number of seconds since
-  /// 1970-01-01 00:00:00 UTC. The unixepoch() always returns an integer, even
-  /// if the input time-value has millisecond precision.
-  Expression<int> get unixepoch => FunctionCallExpression(
-      'UNIXEPOCH', [this, const DateTimeModifier._unixEpoch()]);
+  /// 1970-01-01 00:00:00 UTC.
+  ///
+  /// This function always returns an integer for seconds, even if the input
+  /// value has millisecond precision.
+  Expression<int> get unixepoch {
+    return Expression.withContext((context) {
+      if (context.options.types.storeDateTimesAsText) {
+        return FunctionCallExpression('UNIXEPOCH', [this]);
+      } else {
+        return dartCast(); // Value is a unix timestamp already
+      }
+    });
+  }
 
   /// Formats this datetime in the Julian day format - a fractional number of
   /// days since noon in Greenwich on November 24, 4714 B.C.
-  Expression<double> get julianday => FunctionCallExpression(
-      'JULIANDAY', [this, const DateTimeModifier._unixEpoch()]);
+  Expression<double> get julianday {
+    return Expression.withContext((context) {
+      return FunctionCallExpression('JULIANDAY', [
+        this,
+        if (!context.options.types.storeDateTimesAsText)
+          const DateTimeModifier._unixEpoch()
+      ]);
+    });
+  }
 
   /// Formats this datetime according to the format string specified as the
   /// first argument. The format string supports the most common substitutions
   /// found in the strftime() function from the standard C library plus two new
   /// substitutions, %f and %J. The following is a complete list of valid
   /// strftime() substitutions:
+  ///
+  /// ```
   /// * %d		day of month: 00
   /// * %f		fractional seconds: SS.SSS
   /// * %H		hour: 00-24
@@ -79,33 +183,53 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// * %W		week of year: 00-53
   /// * %Y		year: 0000-9999
   /// * %%		%
-  Expression<String> strftime(String format) => FunctionCallExpression(
-      'STRFTIME',
-      [Constant<String>(format), this, const DateTimeModifier._unixEpoch()]);
+  /// ```
+  Expression<String> strftime(String format) {
+    return Expression.withContext((context) {
+      return FunctionCallExpression('STRFTIME', [
+        Constant<String>(format),
+        this,
+        if (!context.options.types.storeDateTimesAsText)
+          const DateTimeModifier._unixEpoch()
+      ]);
+    });
+  }
 
   /// Apply a modifier that alters the date and/or time.
   ///
   /// See the factories on [DateTimeModifier] for a list of modifiers that can
   /// be used with this method.
-  Expression<DateTime> modify(DateTimeModifier modifier) =>
-      FunctionCallExpression(
-          'unixepoch', [this, const DateTimeModifier._unixEpoch(), modifier]);
+  Expression<DateTime> modify(DateTimeModifier modifier) {
+    return Expression.withContext((context) {
+      if (context.options.types.storeDateTimesAsText) {
+        return FunctionCallExpression('datetime', [this, modifier]);
+      } else {
+        return FunctionCallExpression(
+            'unixepoch', [this, const DateTimeModifier._unixEpoch(), modifier]);
+      }
+    });
+  }
 
   /// Applies modifiers that alters the date and/or time.
   ///
   /// The [modifiers] are applied in sequence from left to right.
   /// For a list of modifiers and how they behave, see the docs on
   /// [DateTimeModifier] factories.
-  Expression<DateTime> modifyAll(Iterable<DateTimeModifier> modifiers) =>
-      FunctionCallExpression('unixepoch',
-          [this, const DateTimeModifier._unixEpoch(), ...modifiers]);
+  Expression<DateTime> modifyAll(Iterable<DateTimeModifier> modifiers) {
+    return Expression.withContext((context) {
+      if (context.options.types.storeDateTimesAsText) {
+        return FunctionCallExpression('datetime', [this, ...modifiers]);
+      } else {
+        return FunctionCallExpression('unixepoch',
+            [this, const DateTimeModifier._unixEpoch(), ...modifiers]);
+      }
+    });
+  }
 
   /// Returns an expression containing the amount of seconds from the unix
-  /// epoch (January 1st, 1970) to `this` datetime expression. The datetime is
-  /// assumed to be in utc.
-  // for drift, date times are just unix timestamps, so we don't need to rewrite
-  // anything when converting
-  Expression<int> get secondsSinceEpoch => dartCast();
+  /// epoch (January 1st, 1970) to `this` datetime expression.
+  @Deprecated('Use the `unixepoch` getter instead')
+  Expression<int> get secondsSinceEpoch => unixepoch;
 
   /// Adds a [duration] to this date.
   ///
@@ -114,8 +238,16 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// cases (due to daylight saving time switches).
   /// To change the value in terms of calendar units, see [modify].
   Expression<DateTime> operator +(Duration duration) {
-    return _BaseInfixOperator(this, '+', Variable<int>(duration.inSeconds),
-        precedence: Precedence.plusMinus);
+    return Expression.withContext((context) {
+      if (context.options.types.storeDateTimesAsText) {
+        return modify(DateTimeModifier.seconds(duration.inMilliseconds / 1000));
+      } else {
+        // Date times are integers (unix timestamps), so we can do arithmetic
+        // on them directly.
+        return _BaseInfixOperator(this, '+', Variable<int>(duration.inSeconds),
+            precedence: Precedence.plusMinus);
+      }
+    });
   }
 
   /// Subtracts [duration] from this date.
@@ -125,8 +257,17 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// yesterday in all cases (due to daylight saving time switches). To change
   /// the value in terms of calendar units, see [modify].
   Expression<DateTime> operator -(Duration duration) {
-    return _BaseInfixOperator(this, '-', Variable<int>(duration.inSeconds),
-        precedence: Precedence.plusMinus);
+    return Expression.withContext((context) {
+      if (context.options.types.storeDateTimesAsText) {
+        return modify(
+            DateTimeModifier.seconds(-duration.inMilliseconds / 1000));
+      } else {
+        // Date times are integers (unix timestamps), so we can do arithmetic
+        // on them directly.
+        return _BaseInfixOperator(this, '-', Variable<int>(duration.inSeconds),
+            precedence: Precedence.plusMinus);
+      }
+    });
   }
 }
 
@@ -142,7 +283,11 @@ class _StrftimeSingleFieldExpression extends Expression<int> {
   void writeInto(GenerationContext context) {
     context.buffer.write("CAST(strftime('$format', ");
     date.writeInto(context);
-    context.buffer.write(", 'unixepoch') AS INTEGER)");
+
+    if (!context.options.types.storeDateTimesAsText) {
+      context.buffer.write(", 'unixepoch'");
+    }
+    context.buffer.write(') AS INTEGER)');
   }
 
   @override

@@ -196,7 +196,8 @@ void main() {
     verify(
       executor.runInsert(
         'INSERT INTO users (name, is_awesome, profile_picture, creation_time) '
-        "VALUES (?, 1, _custom_, strftime('%s', CURRENT_TIMESTAMP))",
+        'VALUES (?, 1, _custom_, '
+        "CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER))",
         ['User name'],
       ),
     );

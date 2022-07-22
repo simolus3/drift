@@ -19,13 +19,6 @@ void main() {
     expect(nonNullQuery.sql, equals('name INTEGER NOT NULL'));
   });
 
-  test('can compare', () {
-    final ctx = stubContext();
-    nonNull.isSmallerThan(currentDateAndTime).writeInto(ctx);
-
-    expect(ctx.sql, "name < strftime('%s', CURRENT_TIMESTAMP)");
-  });
-
   group('mapping datetime values', () {
     group('from dart to sql', () {
       final local = DateTime(2022, 07, 21, 22, 53, 12, 888, 999);

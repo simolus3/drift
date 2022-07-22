@@ -44,7 +44,7 @@ void main() {
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
-          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
+          "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
           'CHECK(creation_time > -631152000)'
           ');',
           []));
@@ -101,7 +101,7 @@ void main() {
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
-          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
+          "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
           'CHECK(creation_time > -631152000)'
           ');',
           []));

@@ -76,7 +76,8 @@ void main() {
 
       verify(executor.runUpdate(
           'UPDATE users SET name = ?, profile_picture = ?, is_awesome = 1, '
-          'creation_time = strftime(\'%s\', CURRENT_TIMESTAMP) WHERE id = ?;',
+          'creation_time = CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'
+          ' WHERE id = ?;',
           ['Hummingbird', Uint8List(0), 3]));
     });
   });

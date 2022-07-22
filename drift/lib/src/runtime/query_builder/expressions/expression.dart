@@ -33,6 +33,21 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
+  /// Create an expression that depends on the surrounding context.
+  ///
+  /// Whenever this expression is written into a [GenerationContext] to form
+  /// SQL, the [create] function is invoked with that context to obtain the
+  /// actual expression to write. This expression is then written into the
+  /// context.
+  ///
+  /// Using this wrapper can be useful when the structure of the expression to
+  /// generate depends on database options. For instance, drift uses this
+  /// factory internally to generate different expressions for date times
+  /// depending on whether they are stored as text or as unix timestamps.
+  const factory Expression.withContext(
+    Expression<D> Function(GenerationContext context) create,
+  ) = _LazyExpression<D>;
+
   /// The precedence of this expression. This can be used to automatically put
   /// parentheses around expressions as needed.
   Precedence get precedence => Precedence.unknown;
@@ -369,6 +384,28 @@ class _Comparison extends _InfixOperator<bool> {
 
   /// Like [Comparison(left, op, right)], but uses [_ComparisonOperator.equal].
   _Comparison.equal(this.left, this.right) : op = _ComparisonOperator.equal;
+
+  @override
+  void writeInto(GenerationContext context) {
+    // Most values can be compared directly, but date time values need to be
+    // brought into a comparable format if they're stored as text (since we
+    // don't want to compare datetimes lexicographically).
+    final left = this.left;
+    final right = this.right;
+
+    if (left is Expression<DateTime> &&
+        right is Expression<DateTime> &&
+        context.options.types.storeDateTimesAsText) {
+      // Compare julianday values instead of texts
+      writeInner(context, left.julianday);
+      context.writeWhitespace();
+      context.buffer.write(operator);
+      context.writeWhitespace();
+      writeInner(context, right.julianday);
+    } else {
+      super.writeInto(context);
+    }
+  }
 }
 
 class _UnaryMinus<DT extends Object> extends Expression<DT> {
@@ -405,6 +442,13 @@ class _DartCastExpression<D1 extends Object, D2 extends Object>
 
   @override
   bool get isLiteral => inner.isLiteral;
+
+  @override
+  void writeAroundPrecedence(GenerationContext context, Precedence precedence) {
+    // This helps avoid parentheses if the inner expression has a precedence
+    // that is computed dynamically.
+    return inner.writeAroundPrecedence(context, precedence);
+  }
 
   @override
   void writeInto(GenerationContext context) {
@@ -514,5 +558,30 @@ class _SubqueryExpression<R extends Object> extends Expression<R> {
   @override
   bool operator ==(Object? other) {
     return other is _SubqueryExpression && other.statement == statement;
+  }
+}
+
+class _LazyExpression<D extends Object> extends Expression<D> {
+  final Expression<D> Function(GenerationContext) _create;
+
+  const _LazyExpression(this._create);
+
+  @override
+  int get hashCode => Object.hash(_LazyExpression, _create);
+
+  @override
+  void writeAroundPrecedence(GenerationContext context, Precedence precedence) {
+    // Overriding this method avoids having to know the precedence beforehand.
+    return _create(context).writeAroundPrecedence(context, precedence);
+  }
+
+  @override
+  void writeInto(GenerationContext context) {
+    return _create(context).writeInto(context);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is _LazyExpression && other._create == _create;
   }
 }

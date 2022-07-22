@@ -95,6 +95,18 @@ class _BetweenExpression extends Expression<bool> {
 
   @override
   void writeInto(GenerationContext context) {
+    var target = this.target;
+    var lower = this.lower;
+    var higher = this.higher;
+
+    // We don't want to compare datetime values lexicographically, so we convert
+    // them to a comparable unit
+    if (context.options.types.storeDateTimesAsText) {
+      if (target is Expression<DateTime>) target = target.julianday;
+      if (lower is Expression<DateTime>) lower = lower.julianday;
+      if (higher is Expression<DateTime>) higher = higher.julianday;
+    }
+
     writeInner(context, target);
 
     if (not) context.buffer.write(' NOT');
