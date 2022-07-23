@@ -112,6 +112,16 @@ void main() {
               ));
         }
       });
+
+      test('from unix epoch', () {
+        expect(
+          DateTimeExpressions.fromUnixEpoch(column.dartCast()),
+          generatesWithOptions(
+            useText ? "datetime(val, 'unixepoch')" : 'val',
+            options: options,
+          ),
+        );
+      });
     });
   }
 }

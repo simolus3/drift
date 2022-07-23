@@ -159,22 +159,28 @@ extension BigIntAggregates on Expression<BigInt> {
 extension DateTimeAggregate on Expression<DateTime> {
   /// Return the average of all non-null values in this group.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> avg({Expression<bool>? filter}) =>
-      secondsSinceEpoch.avg(filter: filter).roundToInt().dartCast();
+  Expression<DateTime> avg({Expression<bool>? filter}) {
+    final avgTimestamp = unixepoch.avg(filter: filter).roundToInt();
+    return DateTimeExpressions.fromUnixEpoch(avgTimestamp);
+  }
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> max({Expression<bool>? filter}) =>
-      _AggregateExpression('MAX', [this], filter: filter);
+  Expression<DateTime> max({Expression<bool>? filter}) {
+    final maxTimestamp = unixepoch.max(filter: filter);
+    return DateTimeExpressions.fromUnixEpoch(maxTimestamp);
+  }
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> min({Expression<bool>? filter}) =>
-      _AggregateExpression('MIN', [this], filter: filter);
+  Expression<DateTime> min({Expression<bool>? filter}) {
+    final minTimestamp = unixepoch.min(filter: filter);
+    return DateTimeExpressions.fromUnixEpoch(minTimestamp);
+  }
 }
 
 class _AggregateExpression<D extends Object> extends Expression<D> {

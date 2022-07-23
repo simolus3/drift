@@ -201,6 +201,9 @@ class TodoDb extends _$TodoDb {
   MigrationStrategy migration = MigrationStrategy();
 
   @override
+  DriftDatabaseOptions options = const DriftDatabaseOptions();
+
+  @override
   int get schemaVersion => 1;
 }
 

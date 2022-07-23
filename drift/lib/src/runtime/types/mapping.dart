@@ -130,18 +130,38 @@ class SqlTypes {
       case DriftSqlType.dateTime:
         if (storeDateTimesAsText) {
           final rawValue = read(DriftSqlType.string, sqlValue)!;
-          final value = DateTime.parse(rawValue);
+          DateTime result;
 
-          // The stored format is the same as toIso8601String for utc values,
-          // but for local date times we append the time zone offset.
-          // DateTime.parse picks that up, but then returns an UTC value. For
-          // round-trip equality, we recover that information and reutrn to
-          // a local date time.
+          // We store date times like this:
+          //
+          //  - if it's in UTC, we call [DateTime.toIso8601String], so there's a
+          //    trailing `Z`. We can just use [DateTime.parse] and get an utc
+          //    datetime back.
+          //  - for local date times, we append the time zone offset, e.g.
+          //    `+02:00`. [DateTime.parse] respects this UTC offset and returns
+          //    the correct date, but it returns it in UTC. Since we only use
+          //    this format for local times, we need to transform it back to
+          //    local.
+          //
+          // Additionally, complex date time expressions are wrapped in a
+          // `datetime` sqlite call, which doesn't append a `Z` or a time zone
+          // offset. As sqlite3 always uses UTC for these computations
+          // internally, we'll return a UTC datetime as well.
           if (_timeZoneInDateTime.hasMatch(rawValue)) {
-            return value.toLocal() as T;
+            // Case 2: Explicit time zone offset given, we do this for local
+            // dates.
+            result = DateTime.parse(rawValue).toLocal();
+          } else if (rawValue.endsWith('Z')) {
+            // Case 1: Date time in UTC, [DateTime.parse] will do the right
+            // thing.
+            result = DateTime.parse(rawValue);
           } else {
-            return value as T;
+            // Result from complex date tmie transformation. Interpret as UTC,
+            // which is what sqlite3 does by default.
+            result = DateTime.parse('${rawValue}Z');
           }
+
+          return result as T;
         } else {
           final unixSeconds = read(DriftSqlType.int, sqlValue)!;
           return DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000) as T;

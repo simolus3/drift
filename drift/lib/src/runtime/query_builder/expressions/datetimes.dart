@@ -53,6 +53,26 @@ Expression<DateTime> _driftDateTimeFromLiteral(
 /// Provides expressions to extract information from date time values, or to
 /// calculate the difference between datetimes.
 extension DateTimeExpressions on Expression<DateTime> {
+  /// Converts a numeric expression [unixEpoch] into a date time by interpreting
+  /// it as the amount of seconds since 1970-01-01 00:00:00 UTC.
+  ///
+  /// Note that the returned value is in UTC if date times are stored as text.
+  /// If they're stored as unix timestamps, this function is a no-op and the
+  /// returned value is interpreted as a local date time (like all datetime
+  /// values in that mode).
+  static Expression<DateTime> fromUnixEpoch(Expression<int> unixEpoch) {
+    return Expression.withContext((context) {
+      if (context.options.types.storeDateTimesAsText) {
+        return FunctionCallExpression(
+            'datetime', [unixEpoch, const Constant('unixepoch')]);
+      } else {
+        // We use unix timestamps to represent date times, so we just need to
+        // reinterpret.
+        return unixEpoch.dartCast();
+      }
+    });
+  }
+
   /// Extracts the year from `this` datetime expression.
   ///
   /// {@template drift_datetime_timezone}
