@@ -24,7 +24,7 @@ builders:
   drift_dev:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["driftBuilder"]
-    build_extensions: {".dart": [".moor.g.part"]}
+    build_extensions: {".dart": [".drift.g.part"]}
     auto_apply: dependents
     build_to: cache
     required_inputs: [".dart_in_drift"]

@@ -350,7 +350,7 @@ class _DataClassInformation {
 
 extension on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement;
+    final parent = enclosingElement2;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&
