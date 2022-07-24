@@ -252,8 +252,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
           context.reportError(
             AnalysisError(
               type: AnalysisErrorType.notSupportedInDesiredVersion,
-              message: 'The `${e.name}` function is not available in '
-                  '${options.version}.',
+              message: 'The `${e.name}` function requires sqlite 3.38 or later',
               relevantNode: e,
             ),
           );

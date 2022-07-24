@@ -23,7 +23,6 @@ class CreateTableReader {
   final List<ImportStatement> imports;
   final HelperLibrary helper;
 
-  static const _schemaReader = SchemaFromCreateTable(driftExtensions: true);
   static final RegExp _enumRegex =
       RegExp(r'^enum\((\w+)\)$', caseSensitive: false);
 
@@ -33,7 +32,13 @@ class CreateTableReader {
   Future<DriftTable?> extractTable(TypeMapper mapper) async {
     Table table;
     try {
-      table = _schemaReader.read(stmt);
+      final reader = SchemaFromCreateTable(
+        driftExtensions: true,
+        driftUseTextForDateTime:
+            step.task.session.options.storeDateTimeValuesAsText,
+      );
+
+      table = reader.read(stmt);
     } catch (e, s) {
       print(s);
       step.reportError(ErrorInDriftFile(
@@ -53,7 +58,7 @@ class CreateTableReader {
       String? overriddenDartName;
       final dartName = ReCase(sqlName).camelCase;
       final constraintWriter = StringBuffer();
-      final moorType = mapper.resolvedToMoor(column.type);
+      final driftType = mapper.resolvedToMoor(column.type);
       UsedTypeConverter? converter;
       String? defaultValue;
       String? overriddenJsonKey;
@@ -103,7 +108,7 @@ class CreateTableReader {
           }
         }
         if (constraint is Default) {
-          final dartType = dartTypeNames[moorType];
+          final dartType = dartTypeNames[driftType];
           final expressionName = 'const CustomExpression<$dartType>';
           final sqlDefault = constraint.expression.span!.text;
           defaultValue = '$expressionName(${asDartLiteral(sqlDefault)})';
@@ -123,7 +128,7 @@ class CreateTableReader {
           }
 
           converter = await _readTypeConverter(
-              moorType, column.type.nullable ?? true, constraint);
+              driftType, column.type.nullable ?? true, constraint);
           // don't write MAPPED BY constraints when creating the table, they're
           // a convenience feature by the compiler
           continue;
@@ -155,7 +160,7 @@ class CreateTableReader {
       }
 
       final parsed = DriftColumn(
-        type: moorType,
+        type: driftType,
         nullable: column.type.nullable != false,
         dartGetterName: overriddenDartName ?? dartName,
         name: ColumnName.implicitly(sqlName),

@@ -520,7 +520,6 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return _textType.withNullable(true);
       case 'date':
       case 'time':
-      case 'datetime':
       case 'julianday':
       case 'strftime':
       case 'char':
@@ -531,6 +530,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'sqlite_version':
       case 'typeof':
         return _textType;
+      case 'datetime':
+        return _textType.copyWith(hint: const IsDateTime(), nullable: true);
       case 'changes':
       case 'last_insert_rowid':
       case 'random':

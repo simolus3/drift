@@ -22,10 +22,7 @@ abstract class BaseAnalyzer {
   SqlEngine? _engine;
 
   BaseAnalyzer(this.tables, this.views, this.step)
-      : mapper = TypeMapper(
-          applyTypeConvertersToVariables:
-              step.task.session.options.applyConvertersOnVariables,
-        );
+      : mapper = TypeMapper(options: step.task.session.options);
 
   @protected
   SqlEngine get engine {

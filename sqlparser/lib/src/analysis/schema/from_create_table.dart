@@ -6,7 +6,14 @@ class SchemaFromCreateTable {
   /// and `DATETIME` columns.
   final bool driftExtensions;
 
-  const SchemaFromCreateTable({this.driftExtensions = false});
+  /// Whether the `DATE` column type (only respected if [driftExtensions] are
+  /// enabled) should be reported as a text column instead of an int column.
+  final bool driftUseTextForDateTime;
+
+  const SchemaFromCreateTable({
+    this.driftExtensions = false,
+    this.driftUseTextForDateTime = false,
+  });
 
   /// Reads a [Table] schema from the [stmt] inducing a table (either a
   /// [CreateTableStatement] or a [CreateVirtualTableStatement]).
@@ -154,7 +161,10 @@ class SchemaFromCreateTable {
         return const ResolvedType.bool();
       }
       if (upper.contains('DATE')) {
-        return const ResolvedType(type: BasicType.int, hint: IsDateTime());
+        return ResolvedType(
+          type: driftUseTextForDateTime ? BasicType.text : BasicType.int,
+          hint: const IsDateTime(),
+        );
       }
 
       if (upper.contains('ENUM')) {

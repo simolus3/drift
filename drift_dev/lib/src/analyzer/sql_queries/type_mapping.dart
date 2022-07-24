@@ -4,6 +4,7 @@ import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 
+import '../options.dart';
 import 'required_variables.dart';
 
 /// Converts tables and types between the moor_generator and the sqlparser
@@ -11,12 +12,13 @@ import 'required_variables.dart';
 class TypeMapper {
   final Map<Table, DriftTable> _engineTablesToSpecified = {};
   final Map<View, MoorView> _engineViewsToSpecified = {};
-  final bool applyTypeConvertersToVariables;
 
-  TypeMapper({this.applyTypeConvertersToVariables = false});
+  final DriftOptions options;
 
-  /// Convert a [DriftTable] from moor into something that can be understood
-  /// by the sqlparser library.
+  TypeMapper({required this.options});
+
+  /// Convert a [DriftTable] from this package into something that can be
+  /// understood by the sqlparser library.
   Table extractStructure(DriftTable table) {
     if (table.parserTable != null) {
       final parserTbl = table.parserTable!;
@@ -64,7 +66,11 @@ class TypeMapper {
             type: BasicType.int, hint: overrideHint ?? const IsBoolean());
       case DriftSqlType.dateTime:
         return ResolvedType(
-            type: BasicType.int, hint: overrideHint ?? const IsDateTime());
+          type: options.storeDateTimeValuesAsText
+              ? BasicType.text
+              : BasicType.int,
+          hint: overrideHint ?? const IsDateTime(),
+        );
       case DriftSqlType.blob:
         return ResolvedType(type: BasicType.blob, hint: overrideHint);
       case DriftSqlType.double:
@@ -84,7 +90,8 @@ class TypeMapper {
       case BasicType.int:
         if (type.hint is IsBoolean) {
           return DriftSqlType.bool;
-        } else if (type.hint is IsDateTime) {
+        } else if (!options.storeDateTimeValuesAsText &&
+            type.hint is IsDateTime) {
           return DriftSqlType.dateTime;
         } else if (type.hint is IsBigInt) {
           return DriftSqlType.bigInt;
@@ -93,6 +100,10 @@ class TypeMapper {
       case BasicType.real:
         return DriftSqlType.double;
       case BasicType.text:
+        if (options.storeDateTimeValuesAsText && type.hint is IsDateTime) {
+          return DriftSqlType.dateTime;
+        }
+
         return DriftSqlType.string;
       case BasicType.blob:
         return DriftSqlType.blob;
@@ -196,7 +207,7 @@ class TypeMapper {
 
         // Recognizing type converters on variables is opt-in since it would
         // break existing code.
-        if (applyTypeConvertersToVariables &&
+        if (options.applyConvertersOnVariables &&
             internalType.type?.hint is TypeConverterHint) {
           converter = (internalType.type!.hint as TypeConverterHint).converter;
         }

@@ -1,5 +1,6 @@
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
+import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_handler.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -10,7 +11,7 @@ import '../utils.dart';
 void main() {
   final engine = SqlEngine(EngineOptions(
       useDriftExtensions: true, enabledExtensions: const [Json1Extension()]));
-  final mapper = TypeMapper();
+  final mapper = TypeMapper(options: const DriftOptions.defaults());
 
   final fakeQuery = DeclaredDartQuery('query', 'sql');
 

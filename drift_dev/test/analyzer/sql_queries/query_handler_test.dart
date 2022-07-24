@@ -1,5 +1,6 @@
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/drift/create_table_reader.dart';
+import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
@@ -25,7 +26,7 @@ CREATE TABLE bar (
 ''';
 
 Future<void> main() async {
-  final mapper = TypeMapper();
+  final mapper = TypeMapper(options: const DriftOptions.defaults());
   final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
   final state = TestState.withContent({'a|lib/foo.drift': 'foo'});
   tearDownAll(state.close);
@@ -209,4 +210,49 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
         everyElement(isA<NestedResultTable>().having(
             (e) => e.table.displayName, 'table.displayName', 'my_view')));
   });
+
+  for (final dateTimeAsText in [false, true]) {
+    test('analyzing date times (stored as text: $dateTimeAsText)', () async {
+      final state = TestState.withContent(
+        {
+          'foo|lib/foo.drift': r'''
+CREATE TABLE foo (
+  bar DATETIME NOT NULL
+);
+
+q1: SELECT bar FROM foo;
+q2: SELECT unixepoch('now');
+q3: SELECT datetime('now');
+      ''',
+        },
+        options: DriftOptions.defaults(
+          storeDateTimeValuesAsText: dateTimeAsText,
+          sqliteAnalysisOptions: const SqliteAnalysisOptions(
+            version: SqliteVersion.v3_38,
+          ),
+        ),
+      );
+      addTearDown(state.close);
+
+      final file = await state.analyze('package:foo/foo.drift');
+      expect(file.errors.errors, isEmpty);
+
+      final result = file.currentResult as ParsedDriftFile;
+      expect(result.resolvedQueries, hasLength(3));
+
+      final q1 = result.resolvedQueries![0];
+      expect(q1.resultSet!.columns.single.type, DriftSqlType.dateTime);
+
+      final q2 = result.resolvedQueries![1];
+      final q3 = result.resolvedQueries![2];
+
+      if (dateTimeAsText) {
+        expect(q2.resultSet!.columns.single.type, DriftSqlType.int);
+        expect(q3.resultSet!.columns.single.type, DriftSqlType.dateTime);
+      } else {
+        expect(q2.resultSet!.columns.single.type, DriftSqlType.dateTime);
+        expect(q3.resultSet!.columns.single.type, DriftSqlType.string);
+      }
+    });
+  }
 }
