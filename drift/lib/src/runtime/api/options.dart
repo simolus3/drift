@@ -13,7 +13,11 @@ class DriftDatabaseOptions {
   ///
   /// When [storeDateTimeAsText] is enabled (it defaults to `false` for
   /// backwards-compatibility), drift's datetime columns will be stored as text.
-  /// By default, they will be stored as ints.
+  /// By default, they will be stored as unix timestamps (integers).
+  ///
+  /// For details on how datetimes can be stored, see [the documentation].
+  ///
+  /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   const DriftDatabaseOptions({
     bool storeDateTimeAsText = false,
   }) : types =

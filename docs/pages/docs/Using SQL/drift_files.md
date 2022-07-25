@@ -97,12 +97,16 @@ it. Of course, `id IN ? OR title = ?` will work as expected.
 
 ## Supported column types
 
-We use [this algorithm](https://www.sqlite.org/datatype3.html#determination_of_column_affinity)
+Just like sqlite itself, we use [this algorithm](https://www.sqlite.org/datatype3.html#determination_of_column_affinity)
 to determine the column type based on the declared type name.
 
 Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
-`bool` or `DateTime` as their Dart counterpart. Both will be
-written as an `INTEGER` column when the table gets created.
+`bool` or `DateTime` as their Dart counterpart.
+Booleans are stored as `INTEGER` (either `0` or `1`). Datetimes are stored as
+unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) depending on a configurable
+build option.
+For details on all supported types, and information on how to switch between the
+datetime modes, see [this section]({{ '../Getting started/advanced_dart_tables.md#supported-column-types' | pageUrl }}).
 
 ## Imports
 You can put import statements at the top of a `drift` file:

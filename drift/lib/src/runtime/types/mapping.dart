@@ -7,8 +7,8 @@ import 'package:meta/meta.dart';
 
 import '../query_builder/query_builder.dart';
 
-/// Static helper methods mapping Dart values from and to SQL variables or
-/// literals.
+/// Database-specific helper methods mapping Dart values from and to SQL
+/// variables or literals.
 @sealed
 class SqlTypes {
   // Stolen from DateTime._parseFormat
@@ -21,6 +21,10 @@ class SqlTypes {
   /// When false (the default), date times values are stored as unix timestamps
   /// with second accuracy. When true, date time values are stored as an
   /// ISO-8601 string.
+  ///
+  /// For more details on the mapping, see [the documentation].
+  ///
+  /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   final bool storeDateTimesAsText;
 
   /// Creates an [SqlTypes] mapper from the provided options.

@@ -77,6 +77,8 @@ At the moment, drift supports these options:
 * `scoped_dart_components`: Generates a function parameter for [Dart placeholders]({{ '../Using SQL/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
+* `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
+  For more information on these modes, see [datetime options]({{ '../Getting started/advanced_dart_tables#datetime-options' | pageUrl }}).
 
 ## Assumed SQL environment
 

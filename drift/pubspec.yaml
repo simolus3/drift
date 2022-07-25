@@ -24,6 +24,8 @@ dev_dependencies:
   drift_dev: any
   drift_testcases:
     path: ../extras/integration_tests/drift_testcases
+  drift_docs:
+    path: ../docs/
   http: ^0.13.4
   uuid: ^3.0.0
   path: ^1.8.0
