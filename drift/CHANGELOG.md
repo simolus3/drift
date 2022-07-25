@@ -17,10 +17,13 @@
 - __Breaking__: Remove the `includeJoinedTableColumns` parameter on `selectOnly()`.
   The method now behaves as if that parameter was turned off. To use columns from a
   joined table, add them with `addColumns`.
+- Add support for storing date times as (ISO-8601) strings. For details on how
+  to use this, see [the documentation](https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types).
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
   across database implementations.
+- Add `writeReturning` to update statements; `deleteReturning` and `goAndReturn`
+  to delete statatements.
 - Support nested transactions.
-- Fix nullability of `min`, `max` and `avg` in the Dart query builder.
 
 ## 1.7.1
 

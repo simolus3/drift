@@ -198,4 +198,35 @@ void main() {
           ['new name', 3]));
     });
   });
+
+  test('RETURNING', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) {
+      return Future.value([
+        {
+          'id': 3,
+          'desc': 'test',
+          'priority': 0,
+          'description_in_upper_case': 'TEST',
+        },
+      ]);
+    });
+
+    final rows = await db.categories
+        .update()
+        .writeReturning(const CategoriesCompanion(description: Value('test')));
+
+    verify(executor
+        .runSelect('UPDATE categories SET "desc" = ? RETURNING *;', ['test']));
+    verify(streamQueries.handleTableUpdates(
+        {TableUpdate.onTable(db.categories, kind: UpdateKind.update)}));
+
+    expect(rows, const [
+      Category(
+        id: 3,
+        description: 'test',
+        priority: CategoryPriority.low,
+        descriptionInUpperCase: 'TEST',
+      ),
+    ]);
+  });
 }

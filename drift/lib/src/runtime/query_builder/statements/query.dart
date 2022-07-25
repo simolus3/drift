@@ -26,6 +26,10 @@ abstract class Query<T extends HasResultSet, D> extends Component {
   @protected
   Limit? limitExpr;
 
+  /// Whether a `RETURNING *` clause should be added to this statement.
+  @protected
+  bool writeReturningClause = false;
+
   GroupBy? _groupBy;
 
   /// Subclasses must override this and write the part of the statement that
@@ -53,6 +57,12 @@ abstract class Query<T extends HasResultSet, D> extends Component {
     writeWithSpace(_groupBy);
     writeWithSpace(orderByExpr);
     writeWithSpace(limitExpr);
+
+    if (writeReturningClause) {
+      if (needsWhitespace) context.writeWhitespace();
+
+      context.buffer.write('RETURNING *');
+    }
   }
 
   /// Constructs the query that can then be sent to the database executor.

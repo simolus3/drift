@@ -46,6 +46,34 @@ void main() {
         const [3, 2],
       ));
     });
+
+    group('RETURNING', () {
+      test('for one row', () async {
+        when(executor.runSelect(any, any)).thenAnswer((_) {
+          return Future.value([
+            {'id': 10, 'content': 'Content'}
+          ]);
+        });
+
+        final returnedValue = await db
+            .delete(db.todosTable)
+            .deleteReturning(const TodosTableCompanion(id: Value(10)));
+
+        verify(executor
+            .runSelect('DELETE FROM todos WHERE id = ? RETURNING *;', [10]));
+        verify(streamQueries.handleTableUpdates(
+            {TableUpdate.onTable(db.todosTable, kind: UpdateKind.delete)}));
+        expect(returnedValue, const TodoEntry(id: 10, content: 'Content'));
+      });
+
+      test('for multiple rows', () async {
+        final rows = await db.delete(db.users).goAndReturn();
+
+        expect(rows, isEmpty);
+        verify(executor.runSelect('DELETE FROM users RETURNING *;', []));
+        verifyNever(streamQueries.handleTableUpdates(any));
+      });
+    });
   });
 
   group('executes DELETE statements', () {

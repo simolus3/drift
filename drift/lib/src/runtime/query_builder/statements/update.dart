@@ -76,6 +76,28 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     return await _performQuery();
   }
 
+  /// Applies the updates from [entity] to all rows matching the applied `where`
+  /// clause and returns affected rows _after the update_.
+  ///
+  /// For more details on writing entries, see [write].
+  /// Note that this requires sqlite 3.35 or later.
+  Future<List<D>> writeReturning(Insertable<D> entity) async {
+    writeReturningClause = true;
+    await write(entity, dontExecute: true);
+
+    final ctx = constructQuery();
+    final rows = await ctx.executor!.doWhenOpened((e) {
+      return e.runSelect(ctx.sql, ctx.boundVariables);
+    });
+
+    if (rows.isNotEmpty) {
+      database.notifyUpdates(
+          {TableUpdate.onTable(_sourceTable, kind: UpdateKind.update)});
+    }
+
+    return [for (final rawRow in rows) table.map(rawRow)];
+  }
+
   /// Replaces the old version of [entity] that is stored in the database with
   /// the fields of the [entity] provided here. This implicitly applies a
   /// [where] clause to rows with the same primary key as [entity], so that only
