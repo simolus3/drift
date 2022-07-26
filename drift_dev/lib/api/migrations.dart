@@ -104,6 +104,9 @@ class _GenerateFromScratch extends GeneratedDatabase {
       : super(executor);
 
   @override
+  DriftDatabaseOptions get options => reference.options;
+
+  @override
   Iterable<TableInfo<Table, dynamic>> get allTables => reference.allTables;
 
   @override

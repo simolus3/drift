@@ -29,4 +29,8 @@ class CustomTablesDb extends _$CustomTablesDb {
 
   @override
   MigrationStrategy migration = MigrationStrategy();
+
+  @override
+  DriftDatabaseOptions options =
+      const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
