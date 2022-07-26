@@ -131,11 +131,10 @@ void _testWith(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
           completion(result(DateTime.utc(2022, 01, 01))));
 
       // The original expression is a Tuesday
-      expect(
-          eval(expr.modify(DateTimeModifier.weekday(DateTimeWeekday.tuesday))),
+      expect(eval(expr.modify(DateTimeModifier.weekday(DateTime.tuesday))),
           completion(result(DateTime.utc(2022, 07, 05))));
       expect(
-        eval(expr.modify(DateTimeModifier.weekday(DateTimeWeekday.saturday))),
+        eval(expr.modify(DateTimeModifier.weekday(DateTime.saturday))),
         completion(result(DateTime.utc(2022, 07, 09))),
       );
 

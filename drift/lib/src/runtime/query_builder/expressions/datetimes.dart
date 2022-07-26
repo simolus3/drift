@@ -393,9 +393,11 @@ class DateTimeModifier extends Constant<String> {
   /// The "weekday" modifier shifts the date forward to the next date where the
   /// weekday is the [weekday] provided here.
   ///
+  /// The [weekday] parameter must be a valid weekday from [DateTime.monday] to
+  /// [DateTime.sunday].
+  ///
   /// If the source date is on the desired weekday, no transformation happens.
-  DateTimeModifier.weekday(DateTimeWeekday weekday)
-      : this._('weekday ${weekday.index}');
+  DateTimeModifier.weekday(int weekday) : this._('weekday ${weekday % 7}');
 
   const DateTimeModifier._unixEpoch() : this._('unixepoch');
 
@@ -408,28 +410,4 @@ class DateTimeModifier extends Constant<String> {
   ///
   /// See also: [DateTime.toLocal].
   const DateTimeModifier.utc() : this._('utc');
-}
-
-/// Weekday offset to be used with [DateTimeModifier.weekday]
-enum DateTimeWeekday {
-  /// Sunday (+0 on [DateTimeModifier.weekday])
-  sunday,
-
-  /// Monday (+1 on [DateTimeModifier.weekday])
-  monday,
-
-  /// Tueday (+2 on [DateTimeModifier.weekday])
-  tuesday,
-
-  /// Wednesday (+3 on [DateTimeModifier.weekday])
-  wednesday,
-
-  /// Thursday (+4 on [DateTimeModifier.weekday])
-  thursday,
-
-  /// Friday (+5 on [DateTimeModifier.weekday])
-  friday,
-
-  /// Saturday (+6 on [DateTimeModifier.weekday])
-  saturday
 }
