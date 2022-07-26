@@ -115,6 +115,36 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
       },
     );
 
+Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
+    <String, dynamic>{
+      'write_from_json_string_constructor':
+          instance.generateFromJsonStringConstructor,
+      'override_hash_and_equals_in_result_sets':
+          instance.overrideHashAndEqualsInResultSets,
+      'compact_query_methods': instance.compactQueryMethods,
+      'skip_verification_code': instance.skipVerificationCode,
+      'use_data_class_name_for_companions':
+          instance.useDataClassNameForCompanions,
+      'use_column_name_as_json_key_when_defined_in_moor_file':
+          instance.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
+      'generate_connect_constructor': instance.generateConnectConstructor,
+      'sqlite_modules':
+          instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
+      'sqlite': instance.sqliteAnalysisOptions,
+      'sql': instance.dialect,
+      'eagerly_load_dart_ast': instance.eagerlyLoadDartAst,
+      'data_class_to_companions': instance.dataClassToCompanions,
+      'mutable_classes': instance.generateMutableClasses,
+      'raw_result_set_data': instance.rawResultSetData,
+      'apply_converters_on_variables': instance.applyConvertersOnVariables,
+      'generate_values_in_copy_with': instance.generateValuesInCopyWith,
+      'named_parameters': instance.generateNamedParameters,
+      'named_parameters_always_required':
+          instance.namedParametersAlwaysRequired,
+      'scoped_dart_components': instance.scopedDartComponents,
+      'store_date_time_values_as_text': instance.storeDateTimeValuesAsText,
+    };
+
 const _$SqlModuleEnumMap = {
   SqlModule.json1: 'json1',
   SqlModule.fts5: 'fts5',

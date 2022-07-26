@@ -98,4 +98,12 @@ void main() {
             .having((e) => e.groupCount, 'groupCount', 0)));
     await migratedDb.close();
   });
+
+  test('upgrade from v5 to v6', () async {
+    final connection = await verifier.startAt(5);
+    final db = Database(connection);
+    addTearDown(db.close);
+
+    await verifier.migrateAndValidate(db, 6);
+  });
 }

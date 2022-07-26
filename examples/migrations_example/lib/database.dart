@@ -9,7 +9,7 @@ part 'database.g.dart';
 @DriftDatabase(include: {'tables.drift'})
 class Database extends _$Database {
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   Database(DatabaseConnection connection) : super.connect(connection);
 
@@ -47,6 +47,8 @@ class Database extends _$Database {
 
             // And create the view on users
             await m.createView(groupCount);
+          } else if (target == 6) {
+            await m.addColumn(users, users.birthday);
           }
         }
       },

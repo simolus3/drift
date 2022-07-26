@@ -5,13 +5,18 @@ import 'package:drift/drift.dart';
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
+  final DateTime? birthday;
   final int? nextUser;
-  const UsersData({required this.id, required this.name, this.nextUser});
+  const UsersData(
+      {required this.id, required this.name, this.birthday, this.nextUser});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || birthday != null) {
+      map['birthday'] = Variable<DateTime>(birthday);
+    }
     if (!nullToAbsent || nextUser != null) {
       map['next_user'] = Variable<int>(nextUser);
     }
@@ -22,6 +27,9 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return UsersCompanion(
       id: Value(id),
       name: Value(name),
+      birthday: birthday == null && nullToAbsent
+          ? const Value.absent()
+          : Value(birthday),
       nextUser: nextUser == null && nullToAbsent
           ? const Value.absent()
           : Value(nextUser),
@@ -34,6 +42,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return UsersData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      birthday: serializer.fromJson<DateTime?>(json['birthday']),
       nextUser: serializer.fromJson<int?>(json['nextUser']),
     );
   }
@@ -43,13 +52,17 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'birthday': serializer.toJson<DateTime?>(birthday),
       'nextUser': serializer.toJson<int?>(nextUser),
     };
   }
 
-  UsersData copyWith({int? id, String? name, int? nextUser}) => UsersData(
+  UsersData copyWith(
+          {int? id, String? name, DateTime? birthday, int? nextUser}) =>
+      UsersData(
         id: id ?? this.id,
         name: name ?? this.name,
+        birthday: birthday ?? this.birthday,
         nextUser: nextUser ?? this.nextUser,
       );
   @override
@@ -57,53 +70,64 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return (StringBuffer('UsersData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
           ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, nextUser);
+  int get hashCode => Object.hash(id, name, birthday, nextUser);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is UsersData &&
           other.id == this.id &&
           other.name == this.name &&
+          other.birthday == this.birthday &&
           other.nextUser == this.nextUser);
 }
 
 class UsersCompanion extends UpdateCompanion<UsersData> {
   final Value<int> id;
   final Value<String> name;
+  final Value<DateTime?> birthday;
   final Value<int?> nextUser;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.birthday = const Value.absent(),
     this.nextUser = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.birthday = const Value.absent(),
     this.nextUser = const Value.absent(),
   });
   static Insertable<UsersData> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<DateTime>? birthday,
     Expression<int>? nextUser,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (birthday != null) 'birthday': birthday,
       if (nextUser != null) 'next_user': nextUser,
     });
   }
 
   UsersCompanion copyWith(
-      {Value<int>? id, Value<String>? name, Value<int?>? nextUser}) {
+      {Value<int>? id,
+      Value<String>? name,
+      Value<DateTime?>? birthday,
+      Value<int?>? nextUser}) {
     return UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      birthday: birthday ?? this.birthday,
       nextUser: nextUser ?? this.nextUser,
     );
   }
@@ -117,6 +141,9 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (birthday.present) {
+      map['birthday'] = Variable<DateTime>(birthday.value);
+    }
     if (nextUser.present) {
       map['next_user'] = Variable<int>(nextUser.value);
     }
@@ -128,6 +155,7 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
     return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
           ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
@@ -149,13 +177,16 @@ class Users extends Table with TableInfo<Users, UsersData> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
+  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+      'birthday', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'REFERENCES users (id)');
   @override
-  List<GeneratedColumn> get $columns => [id, name, nextUser];
+  List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -170,6 +201,8 @@ class Users extends Table with TableInfo<Users, UsersData> {
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthday: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
       nextUser: attachedDatabase.options.types
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
     );
@@ -406,11 +439,13 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
 class GroupCountData extends DataClass {
   final int id;
   final String name;
+  final DateTime? birthday;
   final int? nextUser;
   final int groupCount;
   const GroupCountData(
       {required this.id,
       required this.name,
+      this.birthday,
       this.nextUser,
       required this.groupCount});
   factory GroupCountData.fromJson(Map<String, dynamic> json,
@@ -419,6 +454,7 @@ class GroupCountData extends DataClass {
     return GroupCountData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      birthday: serializer.fromJson<DateTime?>(json['birthday']),
       nextUser: serializer.fromJson<int?>(json['nextUser']),
       groupCount: serializer.fromJson<int>(json['groupCount']),
     );
@@ -429,16 +465,22 @@ class GroupCountData extends DataClass {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'birthday': serializer.toJson<DateTime?>(birthday),
       'nextUser': serializer.toJson<int?>(nextUser),
       'groupCount': serializer.toJson<int>(groupCount),
     };
   }
 
   GroupCountData copyWith(
-          {int? id, String? name, int? nextUser, int? groupCount}) =>
+          {int? id,
+          String? name,
+          DateTime? birthday,
+          int? nextUser,
+          int? groupCount}) =>
       GroupCountData(
         id: id ?? this.id,
         name: name ?? this.name,
+        birthday: birthday ?? this.birthday,
         nextUser: nextUser ?? this.nextUser,
         groupCount: groupCount ?? this.groupCount,
       );
@@ -447,6 +489,7 @@ class GroupCountData extends DataClass {
     return (StringBuffer('GroupCountData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
           ..write('nextUser: $nextUser, ')
           ..write('groupCount: $groupCount')
           ..write(')'))
@@ -454,13 +497,14 @@ class GroupCountData extends DataClass {
   }
 
   @override
-  int get hashCode => Object.hash(id, name, nextUser, groupCount);
+  int get hashCode => Object.hash(id, name, birthday, nextUser, groupCount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GroupCountData &&
           other.id == this.id &&
           other.name == this.name &&
+          other.birthday == this.birthday &&
           other.nextUser == this.nextUser &&
           other.groupCount == this.groupCount);
 }
@@ -469,10 +513,11 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
     implements HasResultSet {
   final String? _alias;
   @override
-  final DatabaseAtV5 attachedDatabase;
+  final DatabaseAtV6 attachedDatabase;
   GroupCount(this.attachedDatabase, [this._alias]);
   @override
-  List<GeneratedColumn> get $columns => [id, name, nextUser, groupCount];
+  List<GeneratedColumn> get $columns =>
+      [id, name, birthday, nextUser, groupCount];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -489,6 +534,8 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthday: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
       nextUser: attachedDatabase.options.types
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
       groupCount: attachedDatabase.options.types
@@ -501,6 +548,9 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string);
+  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+      'birthday', aliasedName, true,
+      type: DriftSqlType.dateTime);
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
       type: DriftSqlType.int);
@@ -518,9 +568,9 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   Set<String> get readTables => const {};
 }
 
-class DatabaseAtV5 extends GeneratedDatabase {
-  DatabaseAtV5(QueryExecutor e) : super(e);
-  DatabaseAtV5.connect(DatabaseConnection c) : super.connect(c);
+class DatabaseAtV6 extends GeneratedDatabase {
+  DatabaseAtV6(QueryExecutor e) : super(e);
+  DatabaseAtV6.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
@@ -530,5 +580,8 @@ class DatabaseAtV5 extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [users, groups, groupCount];
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
+  @override
+  DriftDatabaseOptions get options =>
+      const DriftDatabaseOptions(storeDateTimeAsText: true);
 }

@@ -12,7 +12,7 @@ part 'options.g.dart';
   anyMap: true,
   disallowUnrecognizedKeys: true,
   fieldRename: FieldRename.snake,
-  createToJson: false,
+  createToJson: true,
 )
 class DriftOptions {
   static const _defaultSqliteVersion = SqliteVersion.v3(34);
@@ -191,6 +191,8 @@ class DriftOptions {
   SqliteVersion get sqliteVersion {
     return sqliteOptions?.version ?? _defaultSqliteVersion;
   }
+
+  Map<String, Object?> toJson() => _$DriftOptionsToJson(this);
 }
 
 @JsonSerializable()

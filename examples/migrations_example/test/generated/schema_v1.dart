@@ -4,7 +4,7 @@ import 'package:drift/drift.dart';
 
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
-  UsersData({required this.id});
+  const UsersData({required this.id});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};

@@ -5,19 +5,19 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../../writer/utils/column_constraints.dart';
 
-const _infoVersion = '0.1.0-dev-preview';
+const _infoVersion = '1.0.0';
 
 /// Utilities to transform moor schema entities to json.
 class SchemaWriter {
-  static const _exportOptions = DriftOptions.defaults();
-
   /// The parsed and resolved database for which the schema should be written.
   final Database db;
+
+  final DriftOptions options;
 
   final Map<DriftSchemaEntity, int> _entityIds = {};
   int _maxId = 0;
 
-  SchemaWriter(this.db);
+  SchemaWriter(this.db, {this.options = const DriftOptions.defaults()});
 
   int _idOf(DriftSchemaEntity entity) {
     return _entityIds.putIfAbsent(entity, () => _maxId++);
@@ -27,13 +27,22 @@ class SchemaWriter {
     return {
       '_meta': {
         'description': 'This file contains a serialized version of schema '
-            'entities for moor.',
+            'entities for drift.',
         'version': _infoVersion,
       },
+      'options': _serializeOptions(),
       'entities': [
         for (final entity in db.entities) _entityToJson(entity),
       ],
     };
+  }
+
+  Map _serializeOptions() {
+    const relevantKeys = {'store_date_time_values_as_text'};
+    final asJson = options.toJson()
+      ..removeWhere((key, _) => !relevantKeys.contains(key));
+
+    return asJson;
   }
 
   Map _entityToJson(DriftSchemaEntity entity) {
@@ -51,7 +60,7 @@ class SchemaWriter {
           for (final ref in entity.bodyReferences) _idOf(ref),
         ],
         'name': entity.displayName,
-        'sql': entity.createSql(_exportOptions),
+        'sql': entity.createSql(options),
       };
     } else if (entity is MoorIndex) {
       type = 'index';
@@ -160,6 +169,7 @@ class SchemaReader {
   final Set<int> _currentlyProcessing = {};
 
   final SqlEngine _engine = SqlEngine();
+  Map<String, Object?> options = const {};
 
   SchemaReader._();
 
@@ -170,6 +180,13 @@ class SchemaReader {
   Iterable<DriftSchemaEntity> get entities => _entitiesById.values;
 
   void _read(Map<String, dynamic> json) {
+    // Read drift options if they are part of the schema file.
+    final optionsInJson = json['options'] as Map<String, Object?>?;
+    options = optionsInJson ??
+        {
+          'store_date_time_values_as_text': false,
+        };
+
     final entities = json['entities'] as List<dynamic>;
 
     for (final raw in entities) {

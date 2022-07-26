@@ -9,6 +9,8 @@ import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../analyzer/options.dart';
+
 class GenerateUtilsCommand extends Command {
   final MoorCli cli;
 
@@ -78,9 +80,8 @@ class GenerateUtilsCommand extends Command {
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
 
-  Future<Map<int, List<DriftSchemaEntity>>> _parseSchema(
-      Directory directory) async {
-    final results = <int, List<DriftSchemaEntity>>{};
+  Future<Map<int, _ExportedSchema>> _parseSchema(Directory directory) async {
+    final results = <int, _ExportedSchema>{};
 
     await for (final entity in directory.list()) {
       final basename = p.basename(entity.path);
@@ -92,7 +93,8 @@ class GenerateUtilsCommand extends Command {
       final rawData = json.decode(await entity.readAsString());
 
       final schema = SchemaReader.readJson(rawData as Map<String, dynamic>);
-      results[version] = schema.entities.toList();
+      results[version] =
+          _ExportedSchema(schema.entities.toList(), schema.options);
     }
 
     return results;
@@ -101,13 +103,20 @@ class GenerateUtilsCommand extends Command {
   Future<void> _writeSchemaFile(
     Directory output,
     int version,
-    List<DriftSchemaEntity> entities,
+    _ExportedSchema schema,
     bool dataClasses,
     bool companions,
     bool isForMoor,
   ) {
+    // let serialized options take precedence, otherwise use current options
+    // from project.
+    final options = DriftOptions.fromJson({
+      ...cli.project.moorOptions.toJson(),
+      ...schema.options,
+    });
+
     final writer = Writer(
-      cli.project.moorOptions,
+      options,
       generationOptions: GenerationOptions(
         forSchema: version,
         writeCompanions: companions,
@@ -131,7 +140,7 @@ class GenerateUtilsCommand extends Command {
       declaredQueries: const [],
       declaredIncludes: const [],
       declaredTables: const [],
-    )..entities = entities;
+    )..entities = schema.schema;
     DatabaseWriter(db, writer.child()).write();
 
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
@@ -185,4 +194,11 @@ class GenerateUtilsCommand extends Command {
   static final _filenames = RegExp(r'(?:moor|drift)_schema_v(\d+)\.json');
   static final _dartfmt = DartFormatter();
   static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.';
+}
+
+class _ExportedSchema {
+  final List<DriftSchemaEntity> schema;
+  final Map<String, Object?> options;
+
+  _ExportedSchema(this.schema, this.options);
 }

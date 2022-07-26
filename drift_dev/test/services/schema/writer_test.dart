@@ -74,11 +74,19 @@ class Database {}
 
     final schemaJson = SchemaWriter(db).createSchemaJson();
     expect(schemaJson, json.decode(expected));
+
+    final schemaWithOptions = SchemaWriter(
+      db,
+      options: const DriftOptions.defaults(storeDateTimeValuesAsText: true),
+    ).createSchemaJson();
+    expect(
+        schemaWithOptions['options'], {'store_date_time_values_as_text': true});
   });
 
   test('can generate code from schema json', () {
-    final reader =
-        SchemaReader.readJson(json.decode(expected) as Map<String, dynamic>);
+    final serializedSchema = json.decode(expected) as Map<String, dynamic>;
+
+    final reader = SchemaReader.readJson(serializedSchema);
     final fakeDb = Database()..entities = [...reader.entities];
 
     // Write the database. Not crashing is good enough for us here, we have
@@ -92,8 +100,11 @@ class Database {}
 const expected = r'''
 {
     "_meta": {
-        "description": "This file contains a serialized version of schema entities for moor.",
-        "version": "0.1.0-dev-preview"
+        "description": "This file contains a serialized version of schema entities for drift.",
+        "version": "1.0.0"
+    },
+    "options": {
+      "store_date_time_values_as_text": false
     },
     "entities": [
         {
