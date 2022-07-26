@@ -50,6 +50,7 @@ void main() {
         expectedResults.forEach((key, value) {
           test('should extract field', () {
             expect(key(column), generatesWithOptions(value, options: options));
+            expectEquals(key(column), key(column));
           });
         });
       });

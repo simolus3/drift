@@ -40,7 +40,7 @@ class OrderingTerm extends Component {
   /// Creates an ordering term  to get a number of random rows
   /// using sqlite random function.
   factory OrderingTerm.random() {
-    return OrderingTerm(expression: FunctionCallExpression('random', []));
+    return OrderingTerm(expression: const FunctionCallExpression('random', []));
   }
 
   @override

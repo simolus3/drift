@@ -33,21 +33,6 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
-  /// Create an expression that depends on the surrounding context.
-  ///
-  /// Whenever this expression is written into a [GenerationContext] to form
-  /// SQL, the [create] function is invoked with that context to obtain the
-  /// actual expression to write. This expression is then written into the
-  /// context.
-  ///
-  /// Using this wrapper can be useful when the structure of the expression to
-  /// generate depends on database options. For instance, drift uses this
-  /// factory internally to generate different expressions for date times
-  /// depending on whether they are stored as text or as unix timestamps.
-  const factory Expression.withContext(
-    Expression<D> Function(GenerationContext context) create,
-  ) = _LazyExpression<D>;
-
   /// The precedence of this expression. This can be used to automatically put
   /// parentheses around expressions as needed.
   Precedence get precedence => Precedence.unknown;
@@ -435,7 +420,7 @@ class _DartCastExpression<D1 extends Object, D2 extends Object>
     extends Expression<D2> {
   final Expression<D1> inner;
 
-  _DartCastExpression(this.inner);
+  const _DartCastExpression(this.inner);
 
   @override
   Precedence get precedence => inner.precedence;
@@ -469,9 +454,9 @@ class _CastInSqlExpression<D1 extends Object, D2 extends Object>
   final Expression<D1> inner;
 
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
-  _CastInSqlExpression(this.inner);
+  const _CastInSqlExpression(this.inner);
 
   @override
   void writeInto(GenerationContext context) {
@@ -496,11 +481,11 @@ class FunctionCallExpression<R extends Object> extends Expression<R> {
   final List<Expression> arguments;
 
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
   /// Constructs a function call expression in sql from the [functionName] and
   /// the target [arguments].
-  FunctionCallExpression(this.functionName, this.arguments);
+  const FunctionCallExpression(this.functionName, this.arguments);
 
   @override
   void writeInto(GenerationContext context) {
@@ -558,30 +543,5 @@ class _SubqueryExpression<R extends Object> extends Expression<R> {
   @override
   bool operator ==(Object? other) {
     return other is _SubqueryExpression && other.statement == statement;
-  }
-}
-
-class _LazyExpression<D extends Object> extends Expression<D> {
-  final Expression<D> Function(GenerationContext) _create;
-
-  const _LazyExpression(this._create);
-
-  @override
-  int get hashCode => Object.hash(_LazyExpression, _create);
-
-  @override
-  void writeAroundPrecedence(GenerationContext context, Precedence precedence) {
-    // Overriding this method avoids having to know the precedence beforehand.
-    return _create(context).writeAroundPrecedence(context, precedence);
-  }
-
-  @override
-  void writeInto(GenerationContext context) {
-    return _create(context).writeInto(context);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is _LazyExpression && other._create == _create;
   }
 }
