@@ -24,6 +24,7 @@
 - Add `writeReturning` to update statements; `deleteReturning` and `goAndReturn`
   to delete statatements.
 - Support nested transactions.
+- Support custom collations in the query builder API.
 
 ## 1.7.1
 

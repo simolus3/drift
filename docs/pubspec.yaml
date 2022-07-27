@@ -14,7 +14,7 @@ dependencies:
     version: ^0.2.2
   code_snippets:
     hosted: https://simonbinder.eu
-    version: ^0.0.7
+    version: ^0.0.8
 
 dev_dependencies:
   build: ^2.1.0

@@ -162,25 +162,31 @@ class _LikeOperator extends Expression<bool> {
   }
 }
 
-/// Builtin collating functions from sqlite.
+/// Collating functions used to compare texts in SQL.
 ///
 /// See also:
 /// - https://www.sqlite.org/datatype3.html#collation
-enum Collate {
+class Collate {
+  /// The name of this collation in SQL.
+  final String name;
+
+  /// Create a collation from the [name] to use in sql.
+  const Collate(this.name);
+
   /// Instruct sqlite to compare string data using memcmp(), regardless of text
   /// encoding.
-  binary,
+  static const binary = Collate('binary');
 
   /// The same as [Collate.binary], except the 26 upper case characters of ASCII
   /// are folded to their lower case equivalents before the comparison is
   /// performed. Note that only ASCII characters are case folded. SQLite does
   /// not attempt to do full UTF case folding due to the size of the tables
   /// required.
-  noCase,
+  static const noCase = Collate('noCase');
 
   /// The same as [Collate.binary], except that trailing space characters are
   /// ignored.
-  rTrim,
+  static const rTrim = Collate('rtrim');
 }
 
 /// A `text COLLATE collate` expression in sqlite.
@@ -203,7 +209,7 @@ class _CollateOperator extends Expression<String> {
     writeInner(context, inner);
     context.buffer
       ..write(' COLLATE ')
-      ..write(_operatorNames[collate]);
+      ..write(collate.name);
   }
 
   @override
@@ -215,10 +221,4 @@ class _CollateOperator extends Expression<String> {
         other.inner == inner &&
         other.collate == collate;
   }
-
-  static const Map<Collate, String> _operatorNames = {
-    Collate.binary: 'BINARY',
-    Collate.noCase: 'NOCASE',
-    Collate.rTrim: 'RTRIM',
-  };
 }
