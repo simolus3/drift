@@ -166,6 +166,7 @@ class _LikeOperator extends Expression<bool> {
 ///
 /// See also:
 /// - https://www.sqlite.org/datatype3.html#collation
+@sealed
 class Collate {
   /// The name of this collation in SQL.
   final String name;
@@ -175,18 +176,18 @@ class Collate {
 
   /// Instruct sqlite to compare string data using memcmp(), regardless of text
   /// encoding.
-  static const binary = Collate('binary');
+  static const binary = Collate('BINARY');
 
   /// The same as [Collate.binary], except the 26 upper case characters of ASCII
   /// are folded to their lower case equivalents before the comparison is
   /// performed. Note that only ASCII characters are case folded. SQLite does
   /// not attempt to do full UTF case folding due to the size of the tables
   /// required.
-  static const noCase = Collate('noCase');
+  static const noCase = Collate('NOCASE');
 
   /// The same as [Collate.binary], except that trailing space characters are
   /// ignored.
-  static const rTrim = Collate('rtrim');
+  static const rTrim = Collate('RTRIM');
 }
 
 /// A `text COLLATE collate` expression in sqlite.
@@ -213,12 +214,12 @@ class _CollateOperator extends Expression<String> {
   }
 
   @override
-  int get hashCode => Object.hash(inner, collate);
+  int get hashCode => Object.hash(inner, collate.name);
 
   @override
   bool operator ==(Object other) {
     return other is _CollateOperator &&
         other.inner == inner &&
-        other.collate == collate;
+        other.collate.name == collate.name;
   }
 }
