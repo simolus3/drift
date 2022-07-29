@@ -7,13 +7,7 @@ part 'options.g.dart';
 
 /// Controllable options to define the behavior of the analyzer and the
 /// generator.
-@JsonSerializable(
-  checked: true,
-  anyMap: true,
-  disallowUnrecognizedKeys: true,
-  fieldRename: FieldRename.snake,
-  createToJson: true,
-)
+@JsonSerializable()
 class DriftOptions {
   static const _defaultSqliteVersion = SqliteVersion.v3(34);
 
@@ -203,6 +197,8 @@ class DialectOptions {
   const DialectOptions(this.dialect, this.options);
 
   factory DialectOptions.fromJson(Map json) => _$DialectOptionsFromJson(json);
+
+  Map<String, Object?> toJson() => _$DialectOptionsToJson(this);
 }
 
 @JsonSerializable()
@@ -210,7 +206,7 @@ class SqliteAnalysisOptions {
   @JsonKey(name: 'modules')
   final List<SqlModule> modules;
 
-  @JsonKey(fromJson: _parseSqliteVersion)
+  @_SqliteVersionConverter()
   final SqliteVersion? version;
 
   const SqliteAnalysisOptions({this.modules = const [], this.version});
@@ -218,40 +214,50 @@ class SqliteAnalysisOptions {
   factory SqliteAnalysisOptions.fromJson(Map json) {
     return _$SqliteAnalysisOptionsFromJson(json);
   }
+
+  Map<String, Object?> toJson() => _$SqliteAnalysisOptionsToJson(this);
 }
 
-final _versionRegex = RegExp(r'(\d+)\.(\d+)');
+class _SqliteVersionConverter extends JsonConverter<SqliteVersion, String> {
+  static final _versionRegex = RegExp(r'(\d+)\.(\d+)');
 
-SqliteVersion? _parseSqliteVersion(String? name) {
-  if (name == null) return null;
+  const _SqliteVersionConverter();
 
-  final match = _versionRegex.firstMatch(name);
-  if (match == null) {
-    throw ArgumentError.value(name, 'name',
-        'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)');
+  @override
+  SqliteVersion fromJson(String json) {
+    final match = _versionRegex.firstMatch(json);
+    if (match == null) {
+      throw ArgumentError.value(json, 'json',
+          'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)');
+    }
+
+    final major = int.parse(match.group(1)!);
+    final minor = int.parse(match.group(2)!);
+
+    final version = SqliteVersion(major, minor, 0);
+    if (version < SqliteVersion.minimum) {
+      throw ArgumentError.value(
+        json,
+        'json',
+        'Version is not supported for analysis (minimum is '
+            '${SqliteVersion.minimum}).',
+      );
+    } else if (version > SqliteVersion.current) {
+      throw ArgumentError.value(
+        json,
+        'json',
+        'Version is not supported for analysis (current maximum is '
+            '${SqliteVersion.current}).',
+      );
+    }
+
+    return version;
   }
 
-  final major = int.parse(match.group(1)!);
-  final minor = int.parse(match.group(2)!);
-
-  final version = SqliteVersion(major, minor, 0);
-  if (version < SqliteVersion.minimum) {
-    throw ArgumentError.value(
-      name,
-      'name',
-      'Version is not supported for analysis (minimum is '
-          '${SqliteVersion.minimum}).',
-    );
-  } else if (version > SqliteVersion.current) {
-    throw ArgumentError.value(
-      name,
-      'name',
-      'Version is not supported for analysis (current maximum is '
-          '${SqliteVersion.current}).',
-    );
+  @override
+  String toJson(SqliteVersion object) {
+    return '${object.major}.${object.minor}';
   }
-
-  return version;
 }
 
 /// Set of sqlite modules that require special knowledge from the generator.

@@ -130,8 +130,8 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'generate_connect_constructor': instance.generateConnectConstructor,
       'sqlite_modules':
           instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
-      'sqlite': instance.sqliteAnalysisOptions,
-      'sql': instance.dialect,
+      'sqlite': instance.sqliteAnalysisOptions?.toJson(),
+      'sql': instance.dialect?.toJson(),
       'eagerly_load_dart_ast': instance.eagerlyLoadDartAst,
       'data_class_to_companions': instance.dataClassToCompanions,
       'mutable_classes': instance.generateMutableClasses,
@@ -172,6 +172,12 @@ DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
       },
     );
 
+Map<String, dynamic> _$DialectOptionsToJson(DialectOptions instance) =>
+    <String, dynamic>{
+      'dialect': _$SqlDialectEnumMap[instance.dialect]!,
+      'options': instance.options?.toJson(),
+    };
+
 const _$SqlDialectEnumMap = {
   SqlDialect.sqlite: 'sqlite',
   SqlDialect.mysql: 'mysql',
@@ -196,8 +202,30 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
                       .toList() ??
                   const []),
           version: $checkedConvert(
-              'version', (v) => _parseSqliteVersion(v as String?)),
+              'version',
+              (v) => _$JsonConverterFromJson<String, SqliteVersion>(
+                  v, const _SqliteVersionConverter().fromJson)),
         );
         return val;
       },
     );
+
+Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
+        SqliteAnalysisOptions instance) =>
+    <String, dynamic>{
+      'modules': instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
+      'version': _$JsonConverterToJson<String, SqliteVersion>(
+          instance.version, const _SqliteVersionConverter().toJson),
+    };
+
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) =>
+    json == null ? null : fromJson(json as Json);
+
+Json? _$JsonConverterToJson<Json, Value>(
+  Value? value,
+  Json? Function(Value value) toJson,
+) =>
+    value == null ? null : toJson(value);
