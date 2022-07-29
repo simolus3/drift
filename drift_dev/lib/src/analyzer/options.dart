@@ -227,8 +227,11 @@ class _SqliteVersionConverter extends JsonConverter<SqliteVersion, String> {
   SqliteVersion fromJson(String json) {
     final match = _versionRegex.firstMatch(json);
     if (match == null) {
-      throw ArgumentError.value(json, 'json',
-          'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)');
+      throw ArgumentError.value(
+        json,
+        'json',
+        'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)',
+      );
     }
 
     final major = int.parse(match.group(1)!);
