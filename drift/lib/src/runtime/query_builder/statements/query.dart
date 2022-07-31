@@ -356,6 +356,13 @@ extension QueryTableExtensions<T extends Table, D>
 
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
+  ///
+  /// Note that, as far as primary key equality is concerned, `NULL` values are
+  /// considered distinct from all values (including other `NULL`s).
+  /// This matches sqlite3's behavior of not counting duplicate `NULL`s as a
+  /// uniqueness constraint violation for primary keys, but makes it impossible
+  /// to find other rows with [whereSamePrimaryKey] if nullable primary keys are
+  /// used.
   void whereSamePrimaryKey(Insertable<D> d) {
     final source = _sourceTable;
     assert(
@@ -383,6 +390,16 @@ extension QueryTableExtensions<T extends Table, D>
         .map((columnName, value) {
       return MapEntry(primaryKeyColumns[columnName]!, value);
     });
+
+    assert(
+      primaryKeyValues.values
+          .every((value) => value is! Variable || value.value != null),
+      'Tried to find a row with a matching primary key that has a null value, '
+      'which is not supported. In sqlite3, `NULL` values in a primary key are '
+      'considered distinct from all other values (including other `NULL`s), so '
+      "drift can't find a matching row for this query. \n"
+      'For details, see https://github.com/simolus3/drift/issues/1956#issuecomment-1200502026',
+    );
 
     Expression<bool>? predicate;
     for (final entry in primaryKeyValues.entries) {
