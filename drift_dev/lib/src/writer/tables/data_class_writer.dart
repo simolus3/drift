@@ -228,7 +228,9 @@ class DataClassWriter {
       // We include all columns that are not null. If nullToAbsent is false, we
       // also include null columns. Since we' generating NNBD code, we can
       // include non-nullable columns without an additional null check.
-      final needsNullCheck = column.nullable;
+      final needsNullCheck = column.typeConverter != null
+          ? column.typeConverter!.dartTypeIsNullable
+          : column.nullable;
       final needsScope = needsNullCheck || column.typeConverter != null;
       if (needsNullCheck) {
         _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null)');
