@@ -2,7 +2,6 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/model/model.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
-import 'package:drift_dev/writer.dart';
 
 /// Something that has a type.
 ///
@@ -60,14 +59,14 @@ class DriftDartType {
     return type.getDisplayString(withNullability: withNullability);
   }
 
-  String codeString([GenerationOptions options = const GenerationOptions()]) {
+  String codeString() {
     if (overiddenSource != null) {
       if (nullabilitySuffix == NullabilitySuffix.star) {
         return getDisplayString(withNullability: false);
       }
       return getDisplayString(withNullability: true);
     } else {
-      return type.codeString(options);
+      return type.codeString();
     }
   }
 }
@@ -127,10 +126,10 @@ extension OperationOnTypes on HasType {
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be
   /// [int].
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
+  String dartTypeCode() {
     final converter = typeConverter;
     if (converter != null) {
-      var inner = converter.dartType.codeString(options);
+      var inner = converter.dartType.codeString();
       if (converter.canBeSkippedForNulls && nullable) inner += '?';
       return isArray ? 'List<$inner>' : inner;
     }

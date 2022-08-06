@@ -30,7 +30,7 @@ class ResultSetWriter {
     // write fields
     for (final column in resultSet.columns) {
       final name = resultSet.dartNameFor(column);
-      final runtimeType = column.dartTypeCode(scope.generationOptions);
+      final runtimeType = column.dartTypeCode();
 
       into.write('$modifier $runtimeType $name\n;');
 
@@ -40,7 +40,7 @@ class ResultSetWriter {
 
     for (final nested in resultSet.nestedResults) {
       if (nested is NestedResultTable) {
-        var typeName = nested.table.dartTypeCode(scope.generationOptions);
+        var typeName = nested.table.dartTypeCode();
         final fieldName = nested.dartFieldName;
 
         if (nested.isNullable) {

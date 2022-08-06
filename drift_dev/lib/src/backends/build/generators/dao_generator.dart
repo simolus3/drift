@@ -21,7 +21,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
 
       final daoName = element!.displayName;
 
-      final dbTypeName = dao.dbClass.codeString(writer.generationOptions);
+      final dbTypeName = dao.dbClass.codeString();
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
           'DatabaseAccessor<$dbTypeName> {\n');
 
