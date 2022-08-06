@@ -166,7 +166,7 @@ class FindSchemaDifferences {
 
     if (refType != actType) {
       return FoundDifference(
-          'Different types: ${ref.typeName} and ${act.typeName}');
+          'Different types: Expected ${ref.typeName}, got ${act.typeName}');
     }
 
     try {
@@ -174,19 +174,20 @@ class FindSchemaDifferences {
     } catch (e) {
       final firstSpan = ref.constraints.spanOrNull?.text ?? '';
       final secondSpan = act.constraints.spanOrNull?.text ?? '';
-      return FoundDifference('Not equal: `$firstSpan` and `$secondSpan`');
+      return FoundDifference(
+          'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)');
     }
 
     return const Success();
   }
 
-  CompareResult _compareByAst(AstNode a, AstNode b) {
+  CompareResult _compareByAst(AstNode reference, AstNode actual) {
     try {
-      enforceEqual(a, b);
+      enforceEqual(reference, actual);
       return const Success();
     } catch (e) {
-      return FoundDifference(
-          'Not equal: `${a.span?.text}` and `${b.span?.text}`');
+      return FoundDifference('Not equal: Expected `${reference.span?.text}`, '
+          'got `${actual.span?.text}`');
     }
   }
 

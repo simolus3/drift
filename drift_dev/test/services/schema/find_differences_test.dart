@@ -70,7 +70,7 @@ void main() {
         expect(result, hasChanges);
         expect(
           result.describe(),
-          contains('Different types: TEXT and INTEGER'),
+          contains('Different types: Expected TEXT, got INTEGER'),
         );
       });
 
@@ -83,7 +83,8 @@ void main() {
         expect(result, hasChanges);
         expect(
           result.describe(),
-          contains('Not equal: `PRIMARY KEY NOT NULL` and ``'),
+          contains(
+              'Not equal: `PRIMARY KEY NOT NULL` (expected) and `` (actual)'),
         );
       });
     });
