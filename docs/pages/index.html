@@ -7,47 +7,76 @@ data:
   show_favorites: true
 ---
 
-{% block "blocks/cover.html" title="Drift: Persistence library for Dart" image_anchor="top" height="med" color="indigo" %}
+{% block "blocks/cover.html" title="Drift: Persistence library for Dart" image_anchor="top" height="med" %}
 <div class="mx-auto">
+	<p class="h4">
+		Drift is <em>the</em> relational persistence library for your Dart and Flutter apps.
+		Write type-safe queries in Dart or SQL, enjoy auto-updating streams, easily managed transactions
+		and so much more to make persistence fun.
+	</p>
 	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{ 'docs/index' | pageUrl }}">
 		Learn more <i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
 	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://pub.dev/packages/drift">
-		Get from pub <i class="fas fa-code ml-2 "></i>
+		Get started <i class="fas fa-code ml-2 "></i>
 	</a>
-
-	<p class="lead mt-5">
-		With a fluent query api, a powerful sql analyzer, auto-updating streams and much more,
-		drift makes persistence fun. Scroll down to learn about its key features, or visit the 
-		<a href="{{ 'docs/Getting started/index' | pageUrl }}">getting started guide</a> for a step-by-step guide on using drift.
-	</p>
 </div>
-{% endblock %}
-
-{% block "blocks/lead.html" color="dark" %}
-Drift is an easy to use, reactive persistence library for Flutter apps. Define tables in Dart or
-SQL and enjoy a fluent query API, auto-updating streams and more!
 {% endblock %}
 
 {% block "blocks/section.html" color="primary" %}
 
 {% block "blocks/feature.html" icon="fas fa-lightbulb" title="Declarative tables, fluent queries" %}
 {% block "blocks/markdown.html" %}
-With drift, you can write your database tables in pure Dart without having to miss out on
-advanced sqlite features. Drift will take care of creating the tables and generate code
+With drift, you can declare your database tables and queries in pure Dart without having to miss out on
+advanced SQL features. Drift will take care of creating the tables and generate code
 that allows you run fluent queries on your data.
 
 [Get started now]({{ "docs/Getting started/index.md" | pageUrl }})
 {% endblock %}
 {% endblock %}
 
-{% block "blocks/feature.html" icon="fas fa-database" title="Prefer SQL? Drift got you covered!" %}
+{% block "blocks/feature.html" icon="fas fa-database" title="Definitely relational" %}
 {% block "blocks/markdown.html" %}
-Drift contains a powerful sql parser and analyzer, allowing it to create typesafe APIs for all your sql queries. All sql queries are
+Drift is not the kind of ORM that tries to hide SQL away and then breaks down at the first
+aggregation or non-obvious join.
+
+Instead, drift embraces relational databases with an Dart API that's easy to learn
+while still being close to SQL. Advanced expressions or subqueries are supported out of
+the box.
+{% endblock %}
+{% endblock %}
+
+{% block "blocks/feature.html" icon="fas fa-lightbulb" title="Safe schemas" %}
+{% block "blocks/markdown.html" %}
+A well-chosen SQL schema enables type-safe queries and avoids hard-to-spot mistakes.
+Thanks to drift's extensive support for schema migrations, changing schemas is a safe
+and easy process.
+Further, drift provides a complete test toolkit to help you test migrations
+between all your revisions.
+
+[All about schema migrations]({{ "docs/Advanced Features/migrations.md" | pageUrl }})
+{% endblock %}
+{% endblock %}
+
+{% block "blocks/feature.html" icon="fas fa-database" title="Prefer SQL? Drift's got you covered!" %}
+{% block "blocks/markdown.html" %}
+Drift ships a powerful sql parser and analyzer, allowing it to create typesafe methods for all your sql queries. All sql queries are
 validated and analyzed during build-time, so drift can provide hints about potential errors quickly and generate efficient mapping
 code.
+Of course, you can mix SQL and Dart to your liking.
 
-[Learn more]({{ 'docs/Using SQL/index.md' | pageUrl }})
+[Using SQL with Drift]({{ 'docs/Using SQL/index.md' | pageUrl }})
+{% endblock %}
+{% endblock %}
+
+{% block "blocks/feature.html" icon="fas fa-lightbulb" title="Supported on your favorite platform" %}
+{% block "blocks/markdown.html" %}
+Drift's core APIs are written to support a range of database libraries as backends, it doesn't even require Flutter.
+Drift has primary first-class support for Android, iOS, macOS, Linux Windows and the web.
+
+Other database libraries can easily be integrated into drift as well.
+
+[All platforms]({{ "docs/platforms.md" | pageUrl }})
 {% endblock %}
 {% endblock %}
 
@@ -59,26 +88,4 @@ When using drift, working with databases in Dart is fun!
 {% endblock %}
 {% endblock %}
 
-{% endblock %}
-
-{% block "blocks/section.html" color="light" type="section" %}
-{% block "blocks/markdown.html" %}
-## Key features
-
-Here are some of the many ways drift helps you write awesome database code:
-
- * __Auto-updating streams__: With drift, any query - no matter how complex - can be turned into a stream that emits new data as the underlying data changes.
- * __Polyglot__: Drift lets you write queries in a fluent Dart api or directly in SQL - you can even embed Dart expressions in SQL.
- * __Boilerplate-free__: Stop writing mapping code yourself - drift can take of that. Drift generates Dart code around your data so you can focus
-	on building great apps.
- * __Flexible__: Want to write queries in SQL? Drift verifies them at compile time and generates Dart apis for them. Prefer to write them in Dart?
-	Drift will generate efficient SQL for Dart queries too.
- * __Easy to learn__: Instead of having to learn yet another ORM, drift lets you write queries in SQL and generates typesafe wrappers. Queries and tables
-	can also be written in Dart that looks similar to SQL without loosing type-safety.
- * __Fast _and_ powerful__: With the new `ffi` backend, drift can outperform key-value stores without putting any compromises on the integrity
-	and flexibility that relational databases provide. Drift is the only major persistence library with builtin support for multiple isolates.
- * __Well tested and production ready__: Each component of drift is verified by a wide range of unit and integration tests. Drift powers many Flutter apps
-	in production.
- * __Cross-Platform__: Drift works on iOS, Android, Linux, macOS, Windows and on the web. It doesn't even require Flutter. See [supported platforms]({{ "docs/platforms.md" | pageUrl }}).
-{% endblock %}
 {% endblock %}
