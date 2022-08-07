@@ -7,7 +7,7 @@ import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 
 class FoundDartClass {
-  final ClassElement classElement;
+  final InterfaceElement classElement;
 
   /// The instantiation of the [classElement], if the found type was a generic
   /// typedef.
@@ -143,8 +143,8 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
   final isAllowedUint8List = column.typeConverter == null &&
       column.type == ColumnType.blob &&
       type is InterfaceType &&
-      type.element.name == 'Uint8List' &&
-      type.element.library.name == 'dart.typed_data';
+      type.element2.name == 'Uint8List' &&
+      type.element2.library.name == 'dart.typed_data';
 
   if (!typesystem.isAssignableTo(expectedDartType.type, type) &&
       !isAllowedUint8List) {
@@ -159,14 +159,14 @@ extension on TypeProvider {
       case ColumnType.integer:
         return intType;
       case ColumnType.bigInt:
-        return intElement.library.getType('BigInt')!.instantiate(
+        return intElement.library.getClass('BigInt')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case ColumnType.text:
         return stringType;
       case ColumnType.boolean:
         return boolType;
       case ColumnType.datetime:
-        return intElement.library.getType('DateTime')!.instantiate(
+        return intElement.library.getClass('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case ColumnType.blob:
         return listType(intType);

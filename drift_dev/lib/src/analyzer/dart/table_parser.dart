@@ -85,7 +85,8 @@ class TableParser {
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.element!.name;
+      final type = computed!.type as InterfaceType;
+      final annotationClass = type.element2.name;
 
       if (annotationClass == 'DataClassName') {
         dataClassName = computed;
@@ -124,8 +125,8 @@ class TableParser {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element, type.typeArguments);
-        name = type.element.name;
+        existingClass = FoundDartClass(type.element2, type.typeArguments);
+        name = type.element2.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -309,7 +310,7 @@ class TableParser {
 
   Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
-        .map((t) => t.element)
+        .map((t) => t.element2)
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
@@ -350,7 +351,7 @@ class _DataClassInformation {
 
 extension on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement;
+    final parent = enclosingElement3;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&

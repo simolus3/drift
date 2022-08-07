@@ -3,7 +3,8 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 
 bool isFromMoor(DartType type) {
-  final firstComponent = type.element?.library?.location?.components.first;
+  if (type is! InterfaceType) return false;
+  final firstComponent = type.element2.library.location?.components.first;
 
   if (firstComponent == null) return false;
 
@@ -11,7 +12,8 @@ bool isFromMoor(DartType type) {
 }
 
 bool isColumn(DartType type) {
-  final name = type.element?.name ?? '';
+  if (type is! InterfaceType) return false;
+  final name = type.element2.name;
 
   return isFromMoor(type) &&
       name.contains('Column') &&
@@ -19,7 +21,8 @@ bool isColumn(DartType type) {
 }
 
 bool isExpression(DartType type) {
-  final name = type.element?.name ?? '';
+  if (type is! InterfaceType) return false;
+  final name = type.element2.name;
 
   return isFromMoor(type) && name.startsWith('Expression');
 }

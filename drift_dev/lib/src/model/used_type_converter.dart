@@ -48,12 +48,12 @@ class UsedTypeConverter {
       mappedType.nullabilitySuffix == NullabilitySuffix.question;
 
   factory UsedTypeConverter.forEnumColumn(DartType enumType, bool nullable) {
-    if (enumType.element is! ClassElement) {
+    if (enumType is! InterfaceType) {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
     }
 
-    final creatingClass = enumType.element as ClassElement;
-    if (!creatingClass.isEnum) {
+    final creatingClass = enumType.element2;
+    if (creatingClass is! EnumElement) {
       throw InvalidTypeForEnumConverterException('Not an enum', enumType);
     }
 

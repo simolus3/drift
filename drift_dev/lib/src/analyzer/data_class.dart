@@ -29,7 +29,7 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
       final superType = extendingType.allSupertypes
-          .any((type) => isFromMoor(type) && type.element.name == 'DataClass');
+          .any((type) => isFromMoor(type) && type.element2.name == 'DataClass');
       if (!superType) {
         base.step.reportError(
           ErrorInDartCode(
@@ -52,9 +52,11 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
         return null;
       }
 
-      final className = extendingType.element.name;
+      final className = extendingType.element2.name;
       if (extendingType.typeArguments.length == 1) {
-        final genericType = extendingType.typeArguments[0].element?.name;
+        final typeArgument = extendingType.typeArguments[0];
+        if (typeArgument is! InterfaceType) return null;
+        final genericType = typeArgument.element2.name;
         if (genericType == 'Object' || genericType == 'dynamic') {
           return '$className<$dartTypeName>';
         } else {
