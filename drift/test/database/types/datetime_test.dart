@@ -84,9 +84,15 @@ void main() {
           generatesWithOptions("'2022-07-21T22:53:12.888999Z'",
               options: options),
         );
+      }, onPlatform: const {
+        'browser': Skip('Assumes DateTimes using int64 timestamps'),
+      });
 
+      test('as text throws if UTC offset is not in minutes', () {
         // Writing date times with an UTC offset that isn't a whole minute
         // is not supported and should throw.
+        const options = DriftDatabaseOptions(storeDateTimeAsText: true);
+
         expect(() {
           final context = stubContext(options: options);
           Variable(_MockDateTime(local, const Duration(seconds: 30)))

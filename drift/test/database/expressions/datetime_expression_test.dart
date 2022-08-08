@@ -72,10 +72,18 @@ void main() {
         if (useText) {
           expect(
             expr,
-            generatesWithOptions(
-              "datetime(datetime(CURRENT_TIMESTAMP, '259200.0 seconds'), "
-              "'-5.0 seconds')",
-              options: options,
+            anyOf(
+              generatesWithOptions(
+                "datetime(datetime(CURRENT_TIMESTAMP, '259200.0 seconds'), "
+                "'-5.0 seconds')",
+                options: options,
+              ),
+              // emits a whole number on the web which is fine too
+              generatesWithOptions(
+                "datetime(datetime(CURRENT_TIMESTAMP, '259200 seconds'), "
+                "'-5 seconds')",
+                options: options,
+              ),
             ),
           );
         } else {
