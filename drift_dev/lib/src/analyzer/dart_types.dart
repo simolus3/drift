@@ -11,7 +11,7 @@ import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'helper.dart';
 
 class FoundDartClass {
-  final ClassElement classElement;
+  final InterfaceElement classElement;
 
   /// The instantiation of the [classElement], if the found type was a generic
   /// typedef.
@@ -230,8 +230,8 @@ void _checkType(
   final isAllowedUint8List = typeConverter == null &&
       columnType == DriftSqlType.blob &&
       typeToCheck is InterfaceType &&
-      typeToCheck.element.name == 'Uint8List' &&
-      typeToCheck.element.library.name == 'dart.typed_data';
+      typeToCheck.element2.name == 'Uint8List' &&
+      typeToCheck.element2.library.name == 'dart.typed_data';
 
   if (!typeSystem.isAssignableTo(expectedDartType.type, typeToCheck) &&
       !isAllowedUint8List) {
@@ -246,14 +246,14 @@ extension on TypeProvider {
       case DriftSqlType.int:
         return intType;
       case DriftSqlType.bigInt:
-        return intElement.library.getType('BigInt')!.instantiate(
+        return intElement.library.getClass('BigInt')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case DriftSqlType.string:
         return stringType;
       case DriftSqlType.bool:
         return boolType;
       case DriftSqlType.dateTime:
-        return intElement.library.getType('DateTime')!.instantiate(
+        return intElement.library.getClass('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case DriftSqlType.blob:
         return listType(intType);

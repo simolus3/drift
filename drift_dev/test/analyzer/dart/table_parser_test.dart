@@ -146,7 +146,7 @@ void main() {
   });
 
   Future<DriftTable?> parse(String name) async {
-    return parser.parseTable(dartStep.library.getType(name)!);
+    return parser.parseTable(dartStep.library.getClass(name)!);
   }
 
   group('table names', () {

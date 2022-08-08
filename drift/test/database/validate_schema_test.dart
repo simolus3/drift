@@ -17,8 +17,8 @@ void main() {
 
     await expectLater(
       db.validateDatabaseSchema(),
-      throwsA(isA<SchemaMismatch>().having(
-          (e) => e.toString(), 'toString()', contains('TEXT and INTEGER'))),
+      throwsA(isA<SchemaMismatch>().having((e) => e.toString(), 'toString()',
+          contains('Expected TEXT, got INTEGER'))),
     );
   });
 }

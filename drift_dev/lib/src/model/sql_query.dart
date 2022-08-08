@@ -142,11 +142,11 @@ abstract class SqlQuery {
     }
 
     if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable!.table.dartTypeCode(options);
+      return resultSet.matchingTable!.table.dartTypeCode();
     }
 
     if (resultSet.singleColumn) {
-      return resultSet.columns.single.dartTypeCode(options);
+      return resultSet.columns.single.dartTypeCode();
     }
 
     return resultClassName;
@@ -593,7 +593,7 @@ abstract class FoundElement {
   bool get hidden => false;
 
   /// Dart code for a type representing tis element.
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
+  String dartTypeCode();
 }
 
 /// A semantic interpretation of a [Variable] in a sql statement.
@@ -676,8 +676,8 @@ class FoundVariable extends FoundElement implements HasType {
   }
 
   @override
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
-    return OperationOnTypes(this).dartTypeCode(options);
+  String dartTypeCode() {
+    return OperationOnTypes(this).dartTypeCode();
   }
 }
 

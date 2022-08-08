@@ -158,11 +158,19 @@ abstract class Table extends HasResultSet {
   ColumnBuilder<bool> boolean() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds date and
-  /// time. Note that [DateTime] values are stored on a second-accuracy.
+  /// time.
+  ///
+  /// Drift supports two modes for storing date times: As unix timestamp with
+  /// second accuracy (the default) and as ISO 8601 string with microsecond
+  /// accuracy. For more information between the modes, and information on how
+  /// to change them, see [the documentation].
+  ///
+  /// Note that [DateTime] values are stored on a second-accuracy.
   /// Example (inside the body of a table class):
   /// ```
   /// DateTimeColumn get accountCreatedAt => dateTime()();
   /// ```
+  /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   @protected
   ColumnBuilder<DateTime> dateTime() => _isGenerated();
 

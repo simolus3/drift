@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
+import 'package:collection/collection.dart';
 import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
@@ -81,15 +82,18 @@ class _GeneratesConstDataClasses extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
-      if (expectedWithConstConstructor.contains(definedClass.name.name)) {
-        final constructor = definedClass.getConstructor(null);
+      if (expectedWithConstConstructor.contains(definedClass.name2.lexeme)) {
+        final constructor = definedClass.members
+            .whereType<ConstructorDeclaration>()
+            .firstWhereOrNull((e) => e.name2 == null);
         if (constructor?.constKeyword == null) {
-          matchState['desc'] = 'Constructor ${definedClass.name.name} is not '
+          matchState['desc'] =
+              'Constructor ${definedClass.name2.lexeme} is not '
               'const.';
           return false;
         }
 
-        remaining.remove(definedClass.name.name);
+        remaining.remove(definedClass.name2.lexeme);
       }
     }
 

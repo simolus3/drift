@@ -4,7 +4,6 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:drift_dev/src/model/table.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
-import 'package:drift_dev/src/writer/writer.dart';
 
 import 'types.dart';
 
@@ -92,12 +91,12 @@ class UsedTypeConverter {
     bool nullable,
     TypeProvider typeProvider,
   ) {
-    if (enumType.element is! ClassElement) {
+    if (enumType is! InterfaceType) {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
     }
 
-    final creatingClass = enumType.element as ClassElement;
-    if (!creatingClass.isEnum) {
+    final creatingClass = enumType.element2;
+    if (creatingClass is! EnumElement) {
       throw InvalidTypeForEnumConverterException('Not an enum', enumType);
     }
 
@@ -132,23 +131,22 @@ class UsedTypeConverter {
     return dartTypeIsNullable || (canBeSkippedForNulls && nullableInSql);
   }
 
-  String dartTypeCode(GenerationOptions options, bool nullableInSql) {
-    var type = dartType.codeString(options);
+  String dartTypeCode(bool nullableInSql) {
+    var type = dartType.codeString();
     if (canBeSkippedForNulls && nullableInSql) type += '?';
 
     return type;
   }
 
   /// A suitable typename to store an instance of the type converter used here.
-  String converterNameInCode(GenerationOptions options,
-      {bool makeNullable = false}) {
+  String converterNameInCode({bool makeNullable = false}) {
     var sqlDartType = sqlType.getDisplayString(withNullability: true);
     if (makeNullable) sqlDartType += '?';
 
     final className =
         alsoAppliesToJsonConversion ? 'JsonTypeConverter' : 'TypeConverter';
 
-    return '$className<${dartTypeCode(options, makeNullable)}, $sqlDartType>';
+    return '$className<${dartTypeCode(makeNullable)}, $sqlDartType>';
   }
 }
 

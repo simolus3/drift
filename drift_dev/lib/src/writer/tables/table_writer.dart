@@ -100,7 +100,7 @@ abstract class TableOrViewWriter {
     if (converter != null) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
-      final mappedType = converter.dartTypeCode(options, column.nullable);
+      final mappedType = converter.dartTypeCode(column.nullable);
 
       final converterCode =
           converter.tableAndField(forNullableColumn: column.nullable);
@@ -134,7 +134,7 @@ abstract class TableOrViewWriter {
       return;
     }
 
-    final dataClassName = tableOrView.dartTypeCode(scope.generationOptions);
+    final dataClassName = tableOrView.dartTypeCode();
 
     buffer
       ..write('@override\n$dataClassName map(Map<String, dynamic> data, '
@@ -321,7 +321,7 @@ class TableWriter extends TableOrViewWriter {
 
   void _writeConvertersAsStaticFields() {
     for (final converter in table.converters) {
-      final typeName = converter.converterNameInCode(scope.generationOptions);
+      final typeName = converter.converterNameInCode();
       final code = converter.expression;
 
       buffer.write('static $typeName ${converter.fieldName} = $code;');
@@ -334,8 +334,8 @@ class TableWriter extends TableOrViewWriter {
       if (converter != null &&
           converter.canBeSkippedForNulls &&
           column.nullable) {
-        final nullableTypeName = converter
-            .converterNameInCode(scope.generationOptions, makeNullable: true);
+        final nullableTypeName =
+            converter.converterNameInCode(makeNullable: true);
 
         final wrap = converter.alsoAppliesToJsonConversion
             ? 'JsonTypeConverter.asNullable'

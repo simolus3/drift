@@ -188,7 +188,14 @@ abstract class ValueSerializer {
   ///
   /// To override the default serializer drift uses, you can change the
   /// [DriftRuntimeOptions.defaultSerializer] field.
-  const factory ValueSerializer.defaults() = _DefaultValueSerializer;
+  ///
+  /// The [serializeDateTimeValuesAsString] option (which defaults to `false`)
+  /// describes whether [DateTime] values should be serialized to a unix
+  /// timestamp ([DateTime.millisecondsSinceEpoch]) or a string
+  /// ([DateTime.toIso8601String]).
+  /// In either case, date time values can be _deserialized_ from both formats.
+  const factory ValueSerializer.defaults(
+      {bool serializeDateTimeValuesAsString}) = _DefaultValueSerializer;
 
   /// Converts the [value] to something that can be passed to
   /// [JsonCodec.encode].
@@ -200,7 +207,9 @@ abstract class ValueSerializer {
 }
 
 class _DefaultValueSerializer extends ValueSerializer {
-  const _DefaultValueSerializer();
+  final bool serializeDateTimeValuesAsString;
+
+  const _DefaultValueSerializer({this.serializeDateTimeValuesAsString = false});
 
   @override
   T fromJson<T>(dynamic json) {
@@ -211,7 +220,11 @@ class _DefaultValueSerializer extends ValueSerializer {
     final _typeList = <T>[];
 
     if (_typeList is List<DateTime?>) {
-      return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
+      if (json is int) {
+        return DateTime.fromMillisecondsSinceEpoch(json) as T;
+      } else {
+        return DateTime.parse(json.toString()) as T;
+      }
     }
 
     if (_typeList is List<double?> && json is int) {
@@ -231,7 +244,9 @@ class _DefaultValueSerializer extends ValueSerializer {
   @override
   dynamic toJson<T>(T value) {
     if (value is DateTime) {
-      return value.millisecondsSinceEpoch;
+      return serializeDateTimeValuesAsString
+          ? value.toIso8601String()
+          : value.millisecondsSinceEpoch;
     }
 
     return value;

@@ -293,7 +293,7 @@ class QueryWriter {
     final namedElements = <FoundElement>[];
 
     String typeFor(FoundElement element) {
-      var type = element.dartTypeCode(scope.generationOptions);
+      var type = element.dartTypeCode();
 
       if (element is FoundDartPlaceholder &&
           element.writeAsScopedFunction(options)) {
