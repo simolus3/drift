@@ -70,27 +70,33 @@ void _testWith(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
           const Duration(days: 1).inSeconds);
     });
 
-    test('extracting values', () {
-      final expr = Variable.withDateTime(DateTime.utc(2020, 09, 03, 23, 55));
+    test(
+      'extracting values',
+      () {
+        final expr = Variable.withDateTime(DateTime.utc(2020, 09, 03, 23, 55));
 
-      expect(eval(expr.year), completion(2020));
-      expect(eval(expr.month), completion(9));
-      expect(eval(expr.day), completion(3));
-      expect(eval(expr.hour), completion(23));
-      expect(eval(expr.minute), completion(55));
-      expect(eval(expr.second), completion(0));
+        expect(eval(expr.year), completion(2020));
+        expect(eval(expr.month), completion(9));
+        expect(eval(expr.day), completion(3));
+        expect(eval(expr.hour), completion(23));
+        expect(eval(expr.minute), completion(55));
+        expect(eval(expr.second), completion(0));
 
-      expect(eval(expr.date), completion('2020-09-03'));
-      expect(eval(expr.modify(const DateTimeModifier.days(3)).date),
-          completion('2020-09-06'));
-      expect(eval(expr.time), completion('23:55:00'));
-      expect(eval(expr.datetime), completion('2020-09-03 23:55:00'));
-      expect(
-          eval(expr.julianday), completion(closeTo(2459096.496527778, 0.0001)));
-      expect(eval(expr.unixepoch), completion(1599177300));
-      expect(eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
-          completion('2020-09-03 23:55:00'));
-    });
+        expect(eval(expr.date), completion('2020-09-03'));
+        expect(eval(expr.modify(const DateTimeModifier.days(3)).date),
+            completion('2020-09-06'));
+        expect(eval(expr.time), completion('23:55:00'));
+        expect(eval(expr.datetime), completion('2020-09-03 23:55:00'));
+        expect(eval(expr.julianday),
+            completion(closeTo(2459096.496527778, 0.0001)));
+        expect(eval(expr.unixepoch), completion(1599177300));
+        expect(eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
+            completion('2020-09-03 23:55:00'));
+      },
+      skip: sqlite3Version.versionNumber < 3039000
+          ? 'Requires sqlite 3.39'
+          : null,
+    );
 
     DateTime result(DateTime date) {
       if (dateTimeAsText) {
