@@ -119,7 +119,7 @@ class DatabaseWriter {
     schemaScope
       ..write(
           '@override\nIterable<TableInfo<Table, dynamic>> get allTables => ')
-      ..write('allSchemaEntities.whereType<<Table, dynamic>>();\n')
+      ..write('allSchemaEntities.whereType<TableInfo<Table, Object?>>();\n')
       ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
       ..write('=> [');
 
