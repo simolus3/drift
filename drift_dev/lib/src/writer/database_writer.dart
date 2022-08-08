@@ -117,8 +117,9 @@ class DatabaseWriter {
     // Write List of tables
     final schemaScope = dbScope.leaf();
     schemaScope
-      ..write('@override\nIterable<TableInfo> get allTables => ')
-      ..write('allSchemaEntities.whereType<TableInfo>();\n')
+      ..write(
+          '@override\nIterable<TableInfo<Table, dynamic>> get allTables => ')
+      ..write('allSchemaEntities.whereType<TableInfo<Table, Object?>>();\n')
       ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
       ..write('=> [');
 

@@ -282,7 +282,8 @@ abstract class _$_FakeDb extends GeneratedDatabase {
   late final $FoosTable foos = $FoosTable(this);
   late final $BarsTable bars = $BarsTable(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [foos, bars];
 }

@@ -638,7 +638,8 @@ abstract class _$Database extends GeneratedDatabase {
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [users, groups, groupCount];
