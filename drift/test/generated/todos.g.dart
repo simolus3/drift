@@ -1233,7 +1233,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || txt != null) {
+    {
       final converter = $PureDefaultsTable.$converter0n;
       map['insert'] = Variable<String>(converter.toSql(txt));
     }

@@ -24,7 +24,7 @@ class Config extends DataClass implements Insertable<Config> {
     if (!nullToAbsent || configValue != null) {
       map['config_value'] = Variable<String>(configValue);
     }
-    if (!nullToAbsent || syncState != null) {
+    {
       final converter = ConfigTable.$converter0n;
       map['sync_state'] = Variable<int>(converter.toSql(syncState));
     }
