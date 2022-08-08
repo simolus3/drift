@@ -48,7 +48,7 @@ class DataClassWriter {
         _buffer.write('${column.documentationComment}\n');
       }
       final modifier = scope.options.fieldModifier;
-      _buffer.write('$modifier ${column.dartTypeCode(scope.generationOptions)} '
+      _buffer.write('$modifier ${column.dartTypeCode()} '
           '${column.dartGetterName}; \n');
     }
 
@@ -120,7 +120,7 @@ class DataClassWriter {
             typeConverter.tableAndField(forNullableColumn: column.nullable);
         deserialized = '$converterField.fromJson($fromConverter)';
       } else {
-        final type = column.dartTypeCode(scope.generationOptions);
+        final type = column.dartTypeCode();
 
         deserialized = "serializer.fromJson<$type>(json['$jsonKey'])";
       }
@@ -151,7 +151,7 @@ class DataClassWriter {
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
       var value = needsThis ? 'this.$getter' : getter;
-      var dartType = column.dartTypeCode(scope.generationOptions);
+      var dartType = column.dartTypeCode();
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
@@ -177,7 +177,7 @@ class DataClassWriter {
       final last = i == columns.length - 1;
       final isNullable = column.nullableInDart;
 
-      final typeName = column.dartTypeCode(scope.generationOptions);
+      final typeName = column.dartTypeCode();
       if (wrapNullableInValue && isNullable) {
         _buffer
           ..write('Value<$typeName> ${column.dartGetterName} ')

@@ -44,7 +44,7 @@ void main() {
       expect(parser.returnExpressionOfMethod(node)!.toSource(), source);
     }
 
-    final testClass = library.getType('Test');
+    final testClass = library.getClass('Test');
 
     await _verifyReturnExpressionMatches(
         testClass!.getGetter('getter')!, "'foo'");

@@ -48,6 +48,12 @@ void _testWith(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
           expect(await eval(Variable(local)), local);
         },
       );
+
+      test('preserves milliseconds', () async {
+        final local = DateTime(2020, 09, 03, 23, 55, 0, 123);
+
+        expect(await eval(Variable(local)), local);
+      });
     }
 
     test('plus and minus', () async {

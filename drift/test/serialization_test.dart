@@ -2,29 +2,37 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 import 'generated/todos.dart';
 
-final DateTime someDate = DateTime(2019, 06, 08);
+final DateTime _someDate = DateTime(2019, 06, 08);
 
-final TodoEntry someTodoEntry = TodoEntry(
+final TodoEntry _someTodoEntry = TodoEntry(
   id: 3,
   title: null,
   content: 'content',
-  targetDate: someDate,
+  targetDate: _someDate,
   category: 3,
 );
 
-final Map<String, dynamic> regularSerialized = {
+final Map<String, dynamic> _regularSerialized = {
   'id': 3,
   'title': null,
   'content': 'content',
-  'target_date': someDate.millisecondsSinceEpoch,
+  'target_date': _someDate.millisecondsSinceEpoch,
   'category': 3,
 };
 
-final Map<String, dynamic> customSerialized = {
+final Map<String, dynamic> _asTextSerialized = {
+  'id': 3,
+  'title': null,
+  'content': 'content',
+  'target_date': _someDate.toIso8601String(),
+  'category': 3,
+};
+
+final Map<String, dynamic> _customSerialized = {
   'id': 3,
   'title': 'set to null',
   'content': 'content',
-  'target_date': someDate.toIso8601String(),
+  'target_date': _someDate.toIso8601String(),
   'category': 3,
 };
 
@@ -61,7 +69,16 @@ void main() {
 
   group('serialization', () {
     test('with defaults', () {
-      expect(someTodoEntry.toJson(), equals(regularSerialized));
+      expect(_someTodoEntry.toJson(), equals(_regularSerialized));
+    });
+
+    test('with default serializer, date as text', () {
+      expect(
+        _someTodoEntry.toJson(
+            serializer: const ValueSerializer.defaults(
+                serializeDateTimeValuesAsString: true)),
+        equals(_asTextSerialized),
+      );
     });
 
     test('applies json type converter', () {
@@ -71,20 +88,31 @@ void main() {
     });
 
     test('with custom serializer', () {
-      expect(someTodoEntry.toJson(serializer: CustomSerializer()),
-          equals(customSerialized));
+      expect(_someTodoEntry.toJson(serializer: CustomSerializer()),
+          equals(_customSerialized));
     });
   });
 
   group('deserialization', () {
     test('with defaults', () {
-      expect(TodoEntry.fromJson(regularSerialized), equals(someTodoEntry));
+      expect(TodoEntry.fromJson(_regularSerialized), equals(_someTodoEntry));
+      expect(TodoEntry.fromJson(_asTextSerialized), equals(_someTodoEntry));
+    });
+
+    test('with date-as-text serializer', () {
+      const serializer =
+          ValueSerializer.defaults(serializeDateTimeValuesAsString: true);
+
+      expect(TodoEntry.fromJson(_regularSerialized, serializer: serializer),
+          equals(_someTodoEntry));
+      expect(TodoEntry.fromJson(_asTextSerialized, serializer: serializer),
+          equals(_someTodoEntry));
     });
 
     test('with custom serializer', () {
       expect(
-          TodoEntry.fromJson(customSerialized, serializer: CustomSerializer()),
-          equals(someTodoEntry));
+          TodoEntry.fromJson(_customSerialized, serializer: CustomSerializer()),
+          equals(_someTodoEntry));
     });
   });
 }

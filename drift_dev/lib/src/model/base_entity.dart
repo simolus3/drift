@@ -40,7 +40,7 @@ abstract class DriftEntityWithResultSet extends DriftSchemaEntity {
   /// The type name of the Dart row class for this result set.
   ///
   /// This may contain generics.
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
+  String dartTypeCode();
 
   /// The name of the Dart class storing additional properties like type
   /// converters.
@@ -65,7 +65,7 @@ abstract class DriftEntityWithResultSet extends DriftSchemaEntity {
 /// Information used by the generator to generate code for a custom data class
 /// written by users.
 class ExistingRowClass {
-  final ClassElement targetClass;
+  final InterfaceElement targetClass;
 
   /// The Dart types that should be used to instantiate the [targetClass].
   final List<DartType> typeInstantiation;
