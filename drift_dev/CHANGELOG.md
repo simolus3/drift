@@ -1,3 +1,7 @@
+## 1.7.1
+
+- Support the latest versions of the `analyzer` and `analyzer_plugin` packages.
+
 ## 1.7.0
 
 - Support for new drift 1.7 features like `int64` columns.
