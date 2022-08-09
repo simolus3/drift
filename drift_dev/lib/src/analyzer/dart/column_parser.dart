@@ -345,7 +345,7 @@ class ColumnParser {
     if (foundExplicitName != null) {
       name = ColumnName.explicitly(foundExplicitName);
     } else {
-      name = ColumnName.implicitly(ReCase(getter.name.name).snakeCase);
+      name = ColumnName.implicitly(ReCase(getter.name2.lexeme).snakeCase);
     }
 
     final columnType = _startMethodToColumnType(foundStartMethod);
@@ -424,7 +424,7 @@ class ColumnParser {
         getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
     return MoorColumn(
       type: columnType,
-      dartGetterName: getter.name.name,
+      dartGetterName: getter.name2.lexeme,
       name: name,
       overriddenJsonName: _readJsonKey(element),
       customConstraints: foundCustomConstraint,
@@ -456,9 +456,11 @@ class ColumnParser {
     final annotations = getter.metadata;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
-      return value != null &&
-          isFromMoor(value.type!) &&
-          value.type!.element!.name == 'JsonKey';
+      final valueType = value?.type;
+
+      return valueType is InterfaceType &&
+          isFromMoor(valueType) &&
+          valueType.element2.name == 'JsonKey';
     });
 
     if (object == null) return null;

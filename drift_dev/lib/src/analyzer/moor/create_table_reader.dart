@@ -263,7 +263,7 @@ class CreateTableReader {
     }
 
     final asTypeConverter = type.allSupertypes.firstWhere(
-        (type) => isFromMoor(type) && type.element.name == 'TypeConverter');
+        (type) => isFromMoor(type) && type.element2.name == 'TypeConverter');
 
     // TypeConverter<D, S>, where D is the type in Dart
     final typeInDart = asTypeConverter.typeArguments.first;
@@ -273,7 +273,7 @@ class CreateTableReader {
       mappedType: DriftDartType.of(typeInDart),
       sqlType: sqlType,
       alsoAppliesToJsonConversion:
-          helper.isJsonAwareTypeConverter(type, type.element.library),
+          helper.isJsonAwareTypeConverter(type, type.element2.library),
     );
   }
 

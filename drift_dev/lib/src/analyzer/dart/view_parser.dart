@@ -41,7 +41,7 @@ class ViewParser {
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.element!.name;
+      final annotationClass = computed!.type!.nameIfInterfaceType;
 
       if (annotationClass == 'DriftView') {
         driftView = computed;
@@ -80,8 +80,8 @@ class ViewParser {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element, type.typeArguments);
-        name = type.element.name;
+        existingClass = FoundDartClass(type.element2, type.typeArguments);
+        name = type.element2.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -100,7 +100,7 @@ class ViewParser {
   Future<String> _parseViewName(ClassElement element) async {
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.element!.name;
+      final annotationClass = computed!.type!.nameIfInterfaceType;
 
       if (annotationClass == 'DriftView') {
         final name = computed.getField('name')?.toStringValue();
@@ -116,7 +116,7 @@ class ViewParser {
 
   Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
-        .map((t) => t.element)
+        .map((t) => t.element2)
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
@@ -134,7 +134,7 @@ class ViewParser {
 
     final results = await Future.wait(fields.map((field) async {
       final dartType = (field.type as InterfaceType).typeArguments[0];
-      final typeName = dartType.element!.name!;
+      final typeName = dartType.nameIfInterfaceType!;
       final sqlType = _dartTypeToColumnType(typeName);
 
       if (sqlType == null) {
@@ -181,7 +181,7 @@ class ViewParser {
   Future<List<TableReferenceInDartView>> _parseStaticReferences(
       ClassElement element, List<MoorTable> tables) async {
     return await Stream.fromIterable(element.allSupertypes
-            .map((t) => t.element)
+            .map((t) => t.element2)
             .followedBy([element]).expand((e) => e.fields))
         .asyncMap((field) => _getStaticReference(field, tables))
         .where((ref) => ref != null)
@@ -198,7 +198,7 @@ class ViewParser {
           final type = tables.firstWhereOrNull(
               (tbl) => tbl.fromClass!.name == node.returnType.toString());
           if (type != null) {
-            final name = node.name.toString();
+            final name = node.name2.lexeme;
             return TableReferenceInDartView(type, name);
           }
         }

@@ -65,7 +65,7 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
 /// Information used by the generator to generate code for a custom data class
 /// written by users.
 class ExistingRowClass {
-  final ClassElement targetClass;
+  final InterfaceElement targetClass;
 
   /// The Dart types that should be used to instantiate the [targetClass].
   final List<DartType> typeInstantiation;

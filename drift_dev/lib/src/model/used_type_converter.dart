@@ -3,7 +3,7 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/model/table.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
-import 'package:drift_dev/src/writer/writer.dart';
+import 'package:drift_dev/writer.dart';
 
 import 'column.dart';
 import 'types.dart';
@@ -48,12 +48,12 @@ class UsedTypeConverter {
       mappedType.nullabilitySuffix == NullabilitySuffix.question;
 
   factory UsedTypeConverter.forEnumColumn(DartType enumType, bool nullable) {
-    if (enumType.element is! ClassElement) {
+    if (enumType is! InterfaceType) {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
     }
 
-    final creatingClass = enumType.element as ClassElement;
-    if (!creatingClass.isEnum) {
+    final creatingClass = enumType.element2;
+    if (creatingClass is! EnumElement) {
       throw InvalidTypeForEnumConverterException('Not an enum', enumType);
     }
 
