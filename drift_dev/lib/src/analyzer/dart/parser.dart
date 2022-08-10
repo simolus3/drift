@@ -63,7 +63,7 @@ class DriftDartParser {
     if (body is! ExpressionFunctionBody) {
       if (reportErrorOnFailure) {
         step.reportError(ErrorInDartCode(
-          affectedElement: method.declaredElement,
+          affectedElement: method.declaredElement2,
           severity: Severity.criticalError,
           message: 'This method must have an expression body '
               '(use => instead of {return ...})',
