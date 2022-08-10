@@ -1,3 +1,4 @@
+import 'package:drift/native.dart';
 import 'package:migrations_example/database.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
@@ -57,11 +58,24 @@ void main() {
   });
 
   test('upgrade from v4 to v5', () async {
-    final connection = await verifier.startAt(4);
-    final db = Database(connection);
-
+    final schema = await verifier.schemaAt(4);
+    final db = Database(schema.newConnection());
     await verifier.migrateAndValidate(db, 5);
     await db.close();
+
+    // Test that the foreign key reference introduced in v5 works as expected.
+    final migratedDb = v5.DatabaseAtV5.connect(schema.newConnection());
+    // The `foreign_keys` pragma is a per-connection option and the generated
+    // versioned classes don't enable it by default. So, enable it manually.
+    await migratedDb.customStatement('pragma foreign_keys = on;');
+    await migratedDb.into(migratedDb.users).insert(v5.UsersCompanion.insert());
+    await migratedDb
+        .into(migratedDb.users)
+        .insert(v5.UsersCompanion.insert(nextUser: Value(1)));
+
+    // Deleting the first user should now fail due to the constraint
+    await expectLater(migratedDb.users.deleteWhere((tbl) => tbl.id.equals(1)),
+        throwsA(isA<SqliteException>()));
   });
 
   test('view works after upgrade from v4 to v5', () async {
