@@ -64,8 +64,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   Future<int> write(Insertable<D> entity, {bool dontExecute = false}) async {
     _sourceTable.validateIntegrity(entity).throwIfInvalid(entity);
 
-    _updatedFields = entity.toColumns(true)
-      ..remove((_, value) => value == null);
+    _updatedFields = entity.toColumns(true);
 
     if (_updatedFields.isEmpty) {
       // nothing to update, we're done
