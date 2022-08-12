@@ -75,7 +75,8 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   /// The [database] instance is used so that the raw values from the companion
   /// can properly be interpreted as the high-level Dart values exposed by the
   /// data class.
-  D mapFromCompanion(Insertable<D> companion, DatabaseConnectionUser database) {
+  Future<D> mapFromCompanion(
+      Insertable<D> companion, DatabaseConnectionUser database) async {
     final asColumnMap = companion.toColumns(false);
 
     if (asColumnMap.values.any((e) => e is! Variable)) {
@@ -122,20 +123,20 @@ mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
 /// Most of these are accessed internally by drift or by generated code.
 extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   /// Like [map], but from a [row] instead of the low-level map.
-  D mapFromRow(QueryRow row, {String? tablePrefix}) {
+  Future<D> mapFromRow(QueryRow row, {String? tablePrefix}) async {
     return map(row.data, tablePrefix: tablePrefix);
   }
 
   /// Like [mapFromRow], but returns null if a non-nullable column of this table
   /// is null in [row].
-  D? mapFromRowOrNull(QueryRow row, {String? tablePrefix}) {
+  Future<D?> mapFromRowOrNull(QueryRow row, {String? tablePrefix}) {
     final resolvedPrefix = tablePrefix == null ? '' : '$tablePrefix.';
 
     final notInRow = $columns
         .where((c) => !c.$nullable)
         .any((e) => row.data['$resolvedPrefix${e.$name}'] == null);
 
-    if (notInRow) return null;
+    if (notInRow) return Future.value(null);
 
     return mapFromRow(row, tablePrefix: tablePrefix);
   }
@@ -153,7 +154,7 @@ extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   ///
   /// Drift would generate code to call this method with `'c1': 'foo'` and
   /// `'c2': 'bar'` in [alias].
-  D mapFromRowWithAlias(QueryRow row, Map<String, String> alias) {
+  Future<D> mapFromRowWithAlias(QueryRow row, Map<String, String> alias) async {
     return map({
       for (final entry in row.data.entries) alias[entry.key]!: entry.value,
     });

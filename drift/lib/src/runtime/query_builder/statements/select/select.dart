@@ -60,7 +60,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
       key: StreamKey(query.sql, query.boundVariables),
     );
 
-    return database.createStream(fetcher).map(_mapResponse);
+    return database.createStream(fetcher).asyncMap(_mapResponse);
   }
 
   Future<List<Map<String, Object?>>> _getRaw(GenerationContext ctx) {
@@ -69,8 +69,8 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     });
   }
 
-  List<D> _mapResponse(List<Map<String, Object?>> rows) {
-    return rows.map(table.map).toList();
+  Future<List<D>> _mapResponse(List<Map<String, Object?>> rows) {
+    return rows.mapAsyncAndAwait(table.map);
   }
 
   /// Creates a select statement that operates on more than one table by

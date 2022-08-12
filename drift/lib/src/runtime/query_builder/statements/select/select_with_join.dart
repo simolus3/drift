@@ -207,7 +207,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
     return database
         .createStream(fetcher)
-        .map((rows) => _mapResponse(ctx, rows));
+        .asyncMap((rows) => _mapResponse(ctx, rows));
   }
 
   @override
@@ -234,9 +234,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     });
   }
 
-  List<TypedResult> _mapResponse(
+  Future<List<TypedResult>> _mapResponse(
       GenerationContext ctx, List<Map<String, Object?>> rows) {
-    return rows.map((row) {
+    return Future.wait(rows.map((row) async {
       final readTables = <ResultSetImplementation, dynamic>{};
       final readColumns = <Expression, dynamic>{};
 
@@ -244,7 +244,8 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         final prefix = '${table.aliasedName}.';
         // if all columns of this table are null, skip the table
         if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
-          readTables[table] = table.map(row, tablePrefix: table.aliasedName);
+          readTables[table] =
+              await table.map(row, tablePrefix: table.aliasedName);
         }
       }
 
@@ -256,7 +257,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       }
 
       return TypedResult(readTables, QueryRow(row, database), readColumns);
-    }).toList();
+    }));
   }
 
   @alwaysThrows

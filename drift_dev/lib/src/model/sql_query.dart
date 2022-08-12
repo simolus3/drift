@@ -118,6 +118,17 @@ abstract class SqlQuery {
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
   }
 
+  bool get needsAsyncMapping {
+    final result = resultSet;
+    if (result != null) {
+      // Mapping to tables is asynchronous
+      if (result.matchingTable != null) return true;
+      if (result.nestedResults.any((e) => e is NestedResultTable)) return true;
+    }
+
+    return false;
+  }
+
   String get resultClassName {
     final resultSet = this.resultSet;
     if (resultSet == null) {
@@ -193,6 +204,9 @@ class SqlSelectQuery extends SqlQuery {
   /// Whether this query contains nested queries or not
   bool get hasNestedQuery =>
       resultSet.nestedResults.any((e) => e is NestedResultQuery);
+
+  @override
+  bool get needsAsyncMapping => hasNestedQuery || super.needsAsyncMapping;
 
   SqlSelectQuery(
     String name,

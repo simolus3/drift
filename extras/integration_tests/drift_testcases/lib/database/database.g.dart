@@ -296,7 +296,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Future<User> map(Map<String, dynamic> data, {String? tablePrefix}) async {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
       id: attachedDatabase.options.types
@@ -526,7 +526,8 @@ class $FriendshipsTable extends Friendships
   @override
   Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
   @override
-  Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Future<Friendship> map(Map<String, dynamic> data,
+      {String? tablePrefix}) async {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Friendship(
       firstUser: attachedDatabase.options.types
@@ -558,7 +559,7 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {
           users,
           friendships,
-        }).map(users.mapFromRow);
+        }).asyncMap(users.mapFromRow);
   }
 
   Selectable<int> amountOfGoodFriends(int user) {
@@ -581,10 +582,10 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {
           friendships,
           users,
-        }).map((QueryRow row) {
+        }).asyncMap((QueryRow row) async {
       return FriendshipsOfResult(
         reallyGoodFriends: row.read<bool>('really_good_friends'),
-        user: users.mapFromRow(row, tablePrefix: 'nested_0'),
+        user: await users.mapFromRow(row, tablePrefix: 'nested_0'),
       );
     });
   }
@@ -618,7 +619,7 @@ abstract class _$Database extends GeneratedDatabase {
         ],
         readsFrom: {
           users,
-        }).map(users.mapFromRow);
+        }).asyncMap(users.mapFromRow);
   }
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
@@ -631,7 +632,7 @@ abstract class _$Database extends GeneratedDatabase {
         ],
         updates: {
           friendships
-        }).then((rows) => rows.map(friendships.mapFromRow).toList());
+        }).then((rows) => Future.wait(rows.map(friendships.mapFromRow)));
   }
 
   @override

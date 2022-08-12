@@ -136,9 +136,13 @@ abstract class TableOrViewWriter {
 
     final dataClassName = tableOrView.dartTypeCode();
 
+    final isAsync = tableOrView.existingRowClass?.isAsyncFactory == true;
+    final returnType = isAsync ? 'Future<$dataClassName>' : dataClassName;
+    final asyncModifier = isAsync ? 'async' : '';
+
     buffer
-      ..write('@override\n$dataClassName map(Map<String, dynamic> data, '
-          '{String? tablePrefix}) {\n')
+      ..write('@override $returnType map(Map<String, dynamic> data, '
+          '{String? tablePrefix}) $asyncModifier {\n')
       ..write('final effectivePrefix = '
           "tablePrefix != null ? '\$tablePrefix.' : '';");
 
@@ -174,6 +178,7 @@ abstract class TableOrViewWriter {
       final ctor = info.constructor;
       buffer
         ..write('return ')
+        ..write(isAsync ? 'await ' : '')
         ..write(classElement.name);
       if (ctor.name.isNotEmpty) {
         buffer

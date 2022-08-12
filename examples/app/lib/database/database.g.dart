@@ -651,10 +651,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
           textEntries,
           todoEntries,
           categories,
-        }).map((QueryRow row) {
+        }).asyncMap((QueryRow row) async {
       return SearchResult(
-        todos: todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
-        cat: categories.mapFromRowOrNull(row, tablePrefix: 'nested_1'),
+        todos: await todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
+        cat: await categories.mapFromRowOrNull(row, tablePrefix: 'nested_1'),
       );
     });
   }

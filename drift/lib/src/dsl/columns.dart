@@ -324,6 +324,9 @@ extension BuildGeneralColumn<T extends Object> on _BaseColumnBuilder<T> {
   /// ```
   /// The generated row class will then use a `MyFancyClass` instead of a
   /// `String`, which would usually be used for [Table.text] columns.
+  ///
+  /// The type [T] of the type converter may only be nullable if this column
+  /// was declared [nullable] too. Otherwise, `drift_dev` will emit an error.
   ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T?> converter) =>
       _isGenerated();
 

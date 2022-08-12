@@ -69,15 +69,31 @@ class ExistingRowClass {
 
   /// The Dart types that should be used to instantiate the [targetClass].
   final List<DartType> typeInstantiation;
-  final ConstructorElement constructor;
+
+  /// The method to use when instantiating the row class.
+  ///
+  /// This may either be a constructor or a static method on the row class.
+  final ExecutableElement constructor;
+
   final Map<DriftColumn, ParameterElement> mapping;
 
   /// Generate toCompanion for data class
   final bool generateInsertable;
 
   ExistingRowClass(
-      this.targetClass, this.constructor, this.mapping, this.generateInsertable,
-      {this.typeInstantiation = const []});
+    this.targetClass,
+    this.constructor,
+    this.mapping,
+    this.generateInsertable, {
+    this.typeInstantiation = const [],
+  });
+
+  /// Whether the [constructor] returns a future and thus needs to be awaited
+  /// to create an instance of the custom row class.
+  bool get isAsyncFactory {
+    final typeSystem = targetClass.library.typeSystem;
+    return typeSystem.flatten(constructor.returnType) != constructor.returnType;
+  }
 
   String dartType([GenerationOptions options = const GenerationOptions()]) {
     if (typeInstantiation.isEmpty) {

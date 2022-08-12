@@ -17,6 +17,8 @@
 - __Breaking__: Remove the `includeJoinedTableColumns` parameter on `selectOnly()`.
   The method now behaves as if that parameter was turned off. To use columns from a
   joined table, add them with `addColumns`.
+- __Breaking__: Remove the `fromData` factory on generated data classes. Use the
+  `map` method on tables instead.
 - Add support for storing date times as (ISO-8601) strings. For details on how
   to use this, see [the documentation](https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types).
 - Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
@@ -25,6 +27,9 @@
   to delete statatements.
 - Support nested transactions.
 - Support custom collations in the query builder API.
+- [Custom row classes](https://drift.simonbinder.eu/docs/advanced-features/custom_row_classes/)
+  can now be constructed with static methods too.
+  These static factories can also be asynchronous.
 
 ## 1.7.1
 

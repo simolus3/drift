@@ -9,10 +9,17 @@ import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
-const _testInput = r'''
+void main() {
+  test(
+    'generates const constructor for data classes can companion classes',
+    () async {
+      await testBuilder(
+        DriftPartBuilder(const BuilderOptions({}), isForNewDriftPackage: true),
+        const {
+          'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
-part 'main.moor.dart';
+part 'main.drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -23,20 +30,63 @@ class Users extends Table {
   tables: [Users],
 )
 class Database extends _$Database {}
-''';
-
-void main() {
-  test(
-    'generates const constructor for data classes can companion classes',
-    () async {
-      await testBuilder(
-        DriftPartBuilder(const BuilderOptions({})),
-        const {'a|lib/main.dart': _testInput},
+'''
+        },
         reader: await PackageAssetReader.currentIsolate(),
         outputs: const {
-          'a|lib/main.moor.dart': _GeneratesConstDataClasses(
+          'a|lib/main.drift.dart': _GeneratesConstDataClasses(
             {'User', 'UsersCompanion'},
           ),
+        },
+      );
+    },
+    tags: 'analyzer',
+  );
+
+  test(
+    'generates async mapping code for existing row class with async factory',
+    () async {
+      await testBuilder(
+        DriftPartBuilder(const BuilderOptions({}), isForNewDriftPackage: true),
+        const {
+          'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+@UseRowClass(MyCustomClass, constructor: 'load')
+class Tbl extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+class MyCustomClass {
+  static Future<MyCustomClass> load(String foo, int bar) async {
+    throw 'stub';
+  }
+}
+
+@DriftDatabase(
+  tables: [Tbl],
+)
+class Database extends _$Database {}
+'''
+        },
+        reader: await PackageAssetReader.currentIsolate(),
+        outputs: {
+          'a|lib/main.drift.dart': decodedMatches(contains(r'''
+  @override
+  Future<MyCustomClass> map(Map<String, dynamic> data,
+      {String? tablePrefix}) async {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return await MyCustomClass.load(
+      attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}foo'])!,
+      attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}bar'])!,
+    );
+  }
+''')),
         },
       );
     },

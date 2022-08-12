@@ -1596,7 +1596,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config,
-        }).map((QueryRow row) => config.mapFromRowWithAlias(row, const {
+        }).asyncMap((QueryRow row) => config.mapFromRowWithAlias(row, const {
           'ck': 'config_key',
           'cf': 'config_value',
           'cs1': 'sync_state',
@@ -1621,7 +1621,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedclause.watchedTables,
-        }).map(config.mapFromRow);
+        }).asyncMap(config.mapFromRow);
   }
 
   Selectable<Config> readDynamic(
@@ -1638,7 +1638,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedpredicate.watchedTables,
-        }).map(config.mapFromRow);
+        }).asyncMap(config.mapFromRow);
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
@@ -1710,12 +1710,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           withDefaults,
           withConstraints,
           ...generatedpredicate.watchedTables,
-        }).map((QueryRow row) {
+        }).asyncMap((QueryRow row) async {
       return MultipleResult(
         row: row,
         a: row.readNullable<String>('a'),
         b: row.readNullable<int>('b'),
-        c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+        c: await withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
       );
     });
   }
@@ -1728,7 +1728,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           email,
-        }).map(email.mapFromRow);
+        }).asyncMap(email.mapFromRow);
   }
 
   Selectable<ReadRowIdResult> readRowId(
@@ -1762,7 +1762,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MyViewData> readView() {
     return customSelect('SELECT * FROM my_view', variables: [], readsFrom: {
       config,
-    }).map(myView.mapFromRow);
+    }).asyncMap(myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
@@ -1786,9 +1786,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         $writeInsertable(this.config, value, startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedvalue.amountOfVariables;
     return customWriteReturning(
-        'INSERT INTO config ${generatedvalue.sql} RETURNING *',
-        variables: [...generatedvalue.introducedVariables],
-        updates: {config}).then((rows) => rows.map(config.mapFromRow).toList());
+            'INSERT INTO config ${generatedvalue.sql} RETURNING *',
+            variables: [...generatedvalue.introducedVariables],
+            updates: {config})
+        .then((rows) => Future.wait(rows.map(config.mapFromRow)));
   }
 
   Selectable<NestedResult> nested(String? var1) {
@@ -1803,7 +1804,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap((QueryRow row) async {
       return NestedResult(
         row: row,
-        defaults: withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
+        defaults: await withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
         nestedQuery0: await customSelect(
             'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
             variables: [
@@ -1812,7 +1813,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
             readsFrom: {
               withConstraints,
               withDefaults,
-            }).map(withConstraints.mapFromRow).get(),
+            }).asyncMap(withConstraints.mapFromRow).get(),
       );
     });
   }

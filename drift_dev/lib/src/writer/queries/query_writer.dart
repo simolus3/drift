@@ -115,7 +115,7 @@ class QueryWriter {
       }
     } else {
       _buffer.write('(QueryRow row) ');
-      if (query is SqlSelectQuery && query.hasNestedQuery) {
+      if (query.needsAsyncMapping) {
         _buffer.write('async ');
       }
       _buffer.write('{ return ${query.resultClassName}(');
@@ -140,7 +140,7 @@ class QueryWriter {
           final mappingMethod =
               nested.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
 
-          _buffer.write('$fieldName: $tableGetter.$mappingMethod(row, '
+          _buffer.write('$fieldName: await $tableGetter.$mappingMethod(row, '
               'tablePrefix: ${asDartLiteral(prefix)}),');
         } else if (nested is NestedResultQuery) {
           final fieldName = nested.filedName();
@@ -173,8 +173,8 @@ class QueryWriter {
         // The type converter maps non-nullable types, but the column may be
         // nullable in SQL => just map null to null and only invoke the type
         // converter for non-null values.
-        code = 'NullAwareTypeConverter.wrapFromSql(${_converter(converter)}, '
-            '$code)';
+        code = 'NullAwareTypeConverter.wrapFromSql'
+            '(${_converter(converter)}, $code)';
       } else {
         // Just apply the type converter directly.
         code = '${_converter(converter)}.fromSql($code)';
@@ -206,7 +206,7 @@ class QueryWriter {
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    if (select.hasNestedQuery) {
+    if (select.needsAsyncMapping) {
       _buffer.write(').asyncMap(');
     } else {
       _buffer.write(').map(');
@@ -259,9 +259,18 @@ class QueryWriter {
     _writeExpandedDeclarations(update);
     _buffer.write('return customWriteReturning(${_queryCode(update)},');
     _writeCommonUpdateParameters(update);
-    _buffer.write(').then((rows) => rows.map(');
-    _writeMappingLambda(update);
-    _buffer.write(').toList());\n}');
+
+    _buffer.write(').then((rows) => ');
+    if (update.needsAsyncMapping) {
+      _buffer.write('Future.wait(rows.map(');
+      _writeMappingLambda(update);
+      _buffer.write('))');
+    } else {
+      _buffer.write('rows.map(');
+      _writeMappingLambda(update);
+      _buffer.write(')');
+    }
+    _buffer.write(');\n}');
   }
 
   void _writeUpdatingQuery(UpdatingQuery update) {

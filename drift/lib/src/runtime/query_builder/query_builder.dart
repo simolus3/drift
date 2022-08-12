@@ -10,6 +10,8 @@ import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
+import '../../utils/async.dart';
+
 // New files should not be part of this mega library, which we're trying to
 // split up.
 import 'expressions/case_when.dart';

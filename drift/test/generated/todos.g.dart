@@ -1642,7 +1642,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         ],
         readsFrom: {
           todosTable,
-        }).map(todosTable.mapFromRow);
+        }).asyncMap(todosTable.mapFromRow);
   }
 
   Selectable<TodoEntry> search({required int id}) {
@@ -1653,7 +1653,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         ],
         readsFrom: {
           todosTable,
-        }).map(todosTable.mapFromRow);
+        }).asyncMap(todosTable.mapFromRow);
   }
 
   Selectable<MyCustomObject> findCustom() {
@@ -1750,6 +1750,6 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
           todosTable,
           sharedTodos,
           users,
-        }).map(todosTable.mapFromRow);
+        }).asyncMap(todosTable.mapFromRow);
   }
 }

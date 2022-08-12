@@ -95,7 +95,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
           {TableUpdate.onTable(_sourceTable, kind: UpdateKind.update)});
     }
 
-    return [for (final rawRow in rows) table.map(rawRow)];
+    return rows.mapAsyncAndAwait(table.map);
   }
 
   /// Replaces the old version of [entity] that is stored in the database with

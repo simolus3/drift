@@ -182,7 +182,7 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   Selectable<Entrie> allEntries() {
     return customSelect('SELECT * FROM entries', variables: [], readsFrom: {
       entries,
-    }).map(entries.mapFromRow);
+    }).asyncMap(entries.mapFromRow);
   }
 
   Future<int> addEntry(String var1) {

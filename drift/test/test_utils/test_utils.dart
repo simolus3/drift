@@ -53,5 +53,7 @@ class CustomTable extends Table with TableInfo<CustomTable, Null> {
   }
 
   @override
-  Null map(Map<String, dynamic> data, {String? tablePrefix}) => null;
+  Future<Null> map(Map<String, dynamic> data, {String? tablePrefix}) async {
+    return null;
+  }
 }

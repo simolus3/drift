@@ -28,10 +28,13 @@ ExistingRowClass? validateExistingClass(
     Step step) {
   final errors = step.errors;
   final desiredClass = dartClass.classElement;
-  ConstructorElement? ctor;
+  final library = desiredClass.library;
+
+  ExecutableElement? ctor;
+  final InterfaceType instantiation;
 
   if (dartClass.instantiation != null) {
-    final instantiation = desiredClass.instantiate(
+    instantiation = desiredClass.instantiate(
       typeArguments: dartClass.instantiation!,
       nullabilitySuffix: NullabilitySuffix.none,
     );
@@ -41,6 +44,36 @@ ExistingRowClass? validateExistingClass(
     ctor = instantiation.lookUpConstructor(constructor, desiredClass.library);
   } else {
     ctor = desiredClass.getNamedConstructor(constructor);
+    instantiation = library.typeSystem.instantiateInterfaceToBounds(
+        element: desiredClass, nullabilitySuffix: NullabilitySuffix.none);
+  }
+
+  if (ctor == null) {
+    final fallback = desiredClass.getMethod(constructor);
+
+    if (fallback != null) {
+      if (!fallback.isStatic) {
+        errors.report(ErrorInDartCode(
+          affectedElement: fallback,
+          message: 'To use this method as a factory for the custom row class, '
+              'it needs to be static.',
+        ));
+      }
+
+      // The static factory must return a subtype of `FutureOr<ThatRowClass>`
+      final expectedReturnType =
+          library.typeProvider.futureOrType(instantiation);
+      if (!library.typeSystem
+          .isAssignableTo(fallback.returnType, expectedReturnType)) {
+        errors.report(ErrorInDartCode(
+          affectedElement: fallback,
+          message: 'To be used as a factory for the custom row class, this '
+              'method needs to return an instance of it.',
+        ));
+      }
+
+      ctor = fallback;
+    }
   }
 
   if (ctor == null) {

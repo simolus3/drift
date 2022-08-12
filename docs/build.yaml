@@ -100,4 +100,4 @@ targets:
 global_options:
   ":api_index":
     options:
-      packages: ['drift', 'drift_dev']
+      packages: ['drift', 'drift_dev', 'sqlite3']
