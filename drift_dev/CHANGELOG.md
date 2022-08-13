@@ -1,4 +1,4 @@
-## 2.0.0-dev
+## 2.0.0
 
 - Removes the following build options, which are always turned on now:
  - `null_aware_type_converters`

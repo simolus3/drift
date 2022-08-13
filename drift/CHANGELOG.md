@@ -1,4 +1,6 @@
-## 2.0.0-dev
+## 2.0.0
+
+💡: More information on how to migrate is available in the [documentation](https://drift.simonbinder.eu/docs/upgrading/).
 
 - __Breaking__: Type converters now return the types that they were defined to return
   (instead of the nullable variant of those types like before).
