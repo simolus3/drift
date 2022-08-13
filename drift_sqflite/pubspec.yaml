@@ -18,7 +18,7 @@ dependencies:
 dev_dependencies:
   integration_test:
     sdk: flutter
-  flutter_lints: ^1.0.4
+  flutter_lints: ^2.0.0
   flutter_test:
     sdk: flutter
   drift_testcases:

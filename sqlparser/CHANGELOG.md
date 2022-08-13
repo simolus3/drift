@@ -1,3 +1,7 @@
+## 0.23.0
+
+- Apply type hints for date times on textual datetime functions as well.
+
 ## 0.22.0
 
 - Refactor how tables and columns are resolved internally.
