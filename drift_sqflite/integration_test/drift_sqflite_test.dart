@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:drift_testcases/tests.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
-import 'package:test/test.dart';
 
 class SqfliteExecutor extends TestExecutor {
   @override
