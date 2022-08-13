@@ -68,13 +68,13 @@ At the moment, drift supports these options:
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
   by default. You can make them mutable by setting `mutable_classes: true`.
 * `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
-* `apply_converters_on_variables`: Applies type converters to variables in compiled statements.
-* `generate_values_in_copy_with`: Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set
+* `apply_converters_on_variables` (defaults to `true`): Applies type converters to variables in compiled statements.
+* `generate_values_in_copy_with` (defaults to `true`): Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set
   columns back to null (by using `Value(null)`). Passing `null` was ignored before, making it impossible to set columns
   to `null`.
 * `named_parameters`: Generates named parameters for named variables in SQL queries.
 * `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
-* `scoped_dart_components`: Generates a function parameter for [Dart placeholders]({{ '../Using SQL/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
+* `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders]({{ '../Using SQL/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
 * `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
@@ -104,7 +104,8 @@ targets:
               version: "3.34"
 ```
 
-With that option, the generator will emit warnings when using newer sqlite version.
+With that option, the generator will emit warnings when using features introduced
+in more recent sqlite versions.
 For instance, using more than one [upsert clause](https://sqlite.org/lang_upsert.html) is not supported
 in 3.34, so an error would be reported.
 Currently, the generator can't provide compatibility checks for versions below 3.34, which is the
@@ -144,16 +145,17 @@ We currently support the following extensions:
 
 ## Recommended options
 
-In general, we recommend using the default options. However, some options will be enabled by default in a future drift release.
+In general, we recommend using the default options.
+{%- comment %}
+However, some options will be enabled by default in a future drift release.
 At the moment, they're opt-in to not break existing users. These options are:
 
-- `apply_converters_on_variables`
-- `generate_values_in_copy_with`
-- `scoped_dart_components`
+(Currently all recommended options are also the default)
 
 We recommend enabling these options.
 
-You can disable some default drift features and reduce the amount of generated code with the following options:
+{% endcomment %}
+However, you can disable some default drift features and reduce the amount of generated code with the following options:
 
 - `skip_verification_code: true`: You can remove a significant portion of generated code with this option. The 
   downside is that error messages when inserting invalid data will be less specific. 

@@ -15,7 +15,6 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           allowedKeys: const [
             'write_from_json_string_constructor',
             'override_hash_and_equals_in_result_sets',
-            'compact_query_methods',
             'skip_verification_code',
             'use_data_class_name_for_companions',
             'use_column_name_as_json_key_when_defined_in_moor_file',
@@ -23,7 +22,6 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'sqlite_modules',
             'sqlite',
             'sql',
-            'eagerly_load_dart_ast',
             'data_class_to_companions',
             'mutable_classes',
             'raw_result_set_data',
@@ -41,8 +39,6 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           overrideHashAndEqualsInResultSets: $checkedConvert(
               'override_hash_and_equals_in_result_sets',
               (v) => v as bool? ?? false),
-          compactQueryMethods: $checkedConvert(
-              'compact_query_methods', (v) => v as bool? ?? true),
           skipVerificationCode: $checkedConvert(
               'skip_verification_code', (v) => v as bool? ?? false),
           useDataClassNameForCompanions: $checkedConvert(
@@ -52,8 +48,6 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               (v) => v as bool? ?? true),
           generateConnectConstructor: $checkedConvert(
               'generate_connect_constructor', (v) => v as bool? ?? false),
-          eagerlyLoadDartAst: $checkedConvert(
-              'eagerly_load_dart_ast', (v) => v as bool? ?? false),
           dataClassToCompanions: $checkedConvert(
               'data_class_to_companions', (v) => v as bool? ?? true),
           generateMutableClasses:
@@ -61,15 +55,15 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           rawResultSetData: $checkedConvert(
               'raw_result_set_data', (v) => v as bool? ?? false),
           applyConvertersOnVariables: $checkedConvert(
-              'apply_converters_on_variables', (v) => v as bool? ?? false),
+              'apply_converters_on_variables', (v) => v as bool? ?? true),
           generateValuesInCopyWith: $checkedConvert(
-              'generate_values_in_copy_with', (v) => v as bool? ?? false),
+              'generate_values_in_copy_with', (v) => v as bool? ?? true),
           generateNamedParameters:
               $checkedConvert('named_parameters', (v) => v as bool? ?? false),
           namedParametersAlwaysRequired: $checkedConvert(
               'named_parameters_always_required', (v) => v as bool? ?? false),
           scopedDartComponents: $checkedConvert(
-              'scoped_dart_components', (v) => v as bool? ?? false),
+              'scoped_dart_components', (v) => v as bool? ?? true),
           modules: $checkedConvert(
               'sqlite_modules',
               (v) =>
@@ -93,13 +87,11 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'write_from_json_string_constructor',
         'overrideHashAndEqualsInResultSets':
             'override_hash_and_equals_in_result_sets',
-        'compactQueryMethods': 'compact_query_methods',
         'skipVerificationCode': 'skip_verification_code',
         'useDataClassNameForCompanions': 'use_data_class_name_for_companions',
         'useColumnNameAsJsonKeyWhenDefinedInMoorFile':
             'use_column_name_as_json_key_when_defined_in_moor_file',
         'generateConnectConstructor': 'generate_connect_constructor',
-        'eagerlyLoadDartAst': 'eagerly_load_dart_ast',
         'dataClassToCompanions': 'data_class_to_companions',
         'generateMutableClasses': 'mutable_classes',
         'rawResultSetData': 'raw_result_set_data',
@@ -121,7 +113,6 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
           instance.generateFromJsonStringConstructor,
       'override_hash_and_equals_in_result_sets':
           instance.overrideHashAndEqualsInResultSets,
-      'compact_query_methods': instance.compactQueryMethods,
       'skip_verification_code': instance.skipVerificationCode,
       'use_data_class_name_for_companions':
           instance.useDataClassNameForCompanions,
@@ -132,7 +123,6 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
           instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
       'sqlite': instance.sqliteAnalysisOptions?.toJson(),
       'sql': instance.dialect?.toJson(),
-      'eagerly_load_dart_ast': instance.eagerlyLoadDartAst,
       'data_class_to_companions': instance.dataClassToCompanions,
       'mutable_classes': instance.generateMutableClasses,
       'raw_result_set_data': instance.rawResultSetData,

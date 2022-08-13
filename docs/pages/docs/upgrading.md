@@ -1,11 +1,73 @@
 ---
 data:
-  title: "Moor and Drift"
+  title: "Upgrading"
   description: >-
-    Information about the name change from `moor` to `drift`
+    How to upgrade between major drift versions
 template: layouts/docs/single
-path: /name
+aliases: ["/name"]
 ---
+
+## Migrating from drift 1.x to drift 2.x
+
+The first major upgrade from drift 1 to drift 2 involves a number of breaking
+changes and the removal of legacy features. These changes make drift easier to
+maintain and easier to use.
+
+This overview describes important breaking changes and how to apply them to your
+project. For a full list of updates, see the [changelog](https://pub.dev/packages/drift/changelog).
+
+1. __Null-safety only__: Drift will always emit null-safe code now. To use drift
+   2.x, please migrate your application (or at least the parts defining the
+   database) to Dart 2.12 or later.
+2. Instances of `Expression` __always have a non-nullable type parameter__ now.
+   That is, use `Expression<int>` instead of `Expression<int?>`.
+   The old distinction was an attempt to embed SQL's behavior around `NULL`
+   values into Dart's typesystem. This didn't work, and so expressions no longer
+   have associated nullability in their types.
+3. __Reading nullable expressions__: `QueryRow.read` (used to read columns from
+   a complex select in Dart) only supports non-nullable values now. To read
+   nullable values, use `readNullable`.
+4. __Updated type converters__: The `mapToSql` and `mapToDart` methods have been
+   renamed to simply `toSql` and `toDart`, respectively.
+   Also, a type converter only needs to support the exact types that it was
+   declared with. In particular, a `TypeConverter<MyObject, String>` no longer
+   needs to deal with `null` values in either direction.
+
+   Type converters that are declared as nullable (e.g. `TypeConverter<Foo?, int?>`)
+   can no longer be applied to non-nullable columns. These changes bring proper
+   null-safety support to type converters and make their behavior around null
+   values more intuitive.
+5. __Changed builder options__: To reduce the complexity of `drift_dev`, and to
+   make some long-recommended builder options the default, some options have been
+   removed or had their defaults changed.
+  - The following options are no longer available:
+    - `new_sql_code_generation`: Always enabled now. If this changes the behavior
+      of your queries, please open an issue!
+    - `null_aware_type_converters`: This is always enabled now with the new
+      semantics for type converters.
+    - `compact_query_method`: Has been enabled by default before, can no longer
+      be disabled now.
+    - `eagerly_load_dart_ast`: This option used to not do anything for a while
+      and has been removed entirely now.
+  - In addition, the defaults for these options has changed (but the existing
+    behavior can be restored if desired):
+     - `apply_converters_on_variables` is enabled by default now.
+     - `generate_values_in_copy_with` is enabled by default now.
+     - `scoped_dart_components` is enabled by default now.
+6. The generated `fromData` factory on data classes is no longer generated. Use
+   the `map` methods on the table instance instead (e.g. `database.users.map`
+   instead of `User.fromData`).
+
+The breaking changes in drift 2.0 are motivated by making drift easier to
+maintain and to unblock upcoming new features. This release also provides some
+new features, like nested transactions or support for `RETURNING` for updates
+and deletes in the Dart API.
+We hope the upgrade is worthwhile. If you run into any issues, please do not
+hesistate to [start a new discussion](https://github.com/simolus3/drift/discussions)
+or to [open an issue](https://github.com/simolus3/drift/issues).
+Thanks for using drift!
+
+## Migrating from `moor` to `drift` {#name}
 
 Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatory term.
 I have not been aware of this when starting this project, but we believe that the current name does not reflect the inclusivity of the Dart and Flutter communities.
@@ -14,13 +76,13 @@ Thank you for your understanding!
 
 Until version `5.0.0`, the current `moor`, `moor_flutter` and `moor_generator` packages will continue to work - __no urgent action is necessary__.
 All features and fixes to the new `drift` packages will be mirrored in `moor` as well.
-At the next breaking release, the `moor` set of packages will be discontinued in favor of `drift` and `drift_dev`.
+With the release of drift 2.0.0, the `moor` set of packages have been discontinued in favor of `drift` and `drift_dev`.
 
 This page describes how to migrate from the old `moor` package to the new `drift` package.
 This process can be automated, and we hope that the migration is a matter of minutes for you.
 In case of issues with the tool, this page also describes how to manually migrate to the new `drift` packages.
 
-## Automatic migration
+### Automatic migration
 
 To make the name change as easy as possible for you, drift comes with an automatic migration tool for your
 project.
@@ -55,7 +117,7 @@ Congratulations, your project is now using drift!
 
 If you run into any issues with the automatic migration tool, please [open an issue](https://github.com/simolus3/drift/issues/new/).
 
-## Manual migration
+### Manual migration
 
 To migrate from `moor` to `drift`, you may have to update:
 
@@ -66,7 +128,7 @@ To migrate from `moor` to `drift`, you may have to update:
 
 The following sections will describe each of the steps.
 
-### New dependencies
+#### New dependencies
 
 {% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
 
@@ -83,7 +145,7 @@ If you've been using `moor_flutter`, also add a dependency on `drift_sqflite: ^1
 
 Run `pub get` to get the new packages.
 
-### Changing Dart imports
+#### Changing Dart imports
 
 This table compares the old imports from `moor` and the new imports for `drift`:
 
@@ -100,7 +162,7 @@ This table compares the old imports from `moor` and the new imports for `drift`:
 | `package:moor/sqlite_keywords.dart`      | `package:drift/sqlite_keywords.dart`       |
 | `package:moor_flutter/moor_flutter.dart` | `package:drift_sqflite/drift_sqflite.dart` |
 
-### Changing Dart code
+#### Changing Dart code
 
 This table compares old moor-specific API names and new names as provided by `drift`:
 
@@ -118,14 +180,14 @@ This table compares old moor-specific API names and new names as provided by `dr
 | `MoorServer`           | `DriftServer`                      |
 | `FlutterQueryExecutor` | `SqfliteQueryExecutor`             |
 
-### (Optional: Rename moor files)
+#### (Optional: Rename moor files)
 
 For consistency, you can rename your `.moor` files to `.drift`.
 The drift generator will continue to accept `.moor` files though.
 
 If you opt for a rename, also update your imports and `include:` parameters in database and DAO classes.
 
-### Build configuration
+#### Build configuration
 
 When configuring moor builders for [options]({{ 'Advanced Features/builder_options.md' | pageUrl }}), you have to update your `build.yaml` files to reflect the new builder keys:
 

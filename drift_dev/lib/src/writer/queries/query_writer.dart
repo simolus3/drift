@@ -4,7 +4,6 @@ import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.da
 import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
-import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import 'sql_writer.dart';
@@ -65,20 +64,9 @@ class QueryWriter {
 
   void _writeSelect(SqlSelectQuery select) {
     _writeSelectStatementCreator(select);
-
-    if (!select.declaredInMoorFile && !options.compactQueryMethods) {
-      _writeOneTimeReader(select);
-      _writeStreamReader(select);
-    }
   }
 
-  String _nameOfCreationMethod(SqlSelectQuery select) {
-    if (!select.declaredInMoorFile && !options.compactQueryMethods) {
-      return '${select.name}Query';
-    } else {
-      return select.name;
-    }
-  }
+  String _nameOfCreationMethod(SqlSelectQuery select) => select.name;
 
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a query.
@@ -213,41 +201,6 @@ class QueryWriter {
     }
     _writeMappingLambda(select);
     _buffer.write(')');
-  }
-
-  void _writeOneTimeReader(SqlSelectQuery select) {
-    final returnType =
-        'Future<List<${select.resultTypeCode(scope.generationOptions)}>>';
-    _buffer.write('$returnType ${select.name}(');
-    _writeParameters(select);
-    _buffer
-      ..write(') {\n')
-      ..write('return ${_nameOfCreationMethod(select)}(');
-    _writeUseParameters(select);
-    _buffer.write(').get();\n}\n');
-  }
-
-  void _writeStreamReader(SqlSelectQuery select) {
-    final upperQueryName = ReCase(select.name).pascalCase;
-
-    String methodName;
-    // turning the query name into pascal case will remove underscores, add the
-    // "private" modifier back in
-    if (select.name.startsWith('_')) {
-      methodName = '_watch$upperQueryName';
-    } else {
-      methodName = 'watch$upperQueryName';
-    }
-
-    final returnType =
-        'Stream<List<${select.resultTypeCode(scope.generationOptions)}>>';
-    _buffer.write('$returnType $methodName(');
-    _writeParameters(select);
-    _buffer
-      ..write(') {\n')
-      ..write('return ${_nameOfCreationMethod(select)}(');
-    _writeUseParameters(select);
-    _buffer.write(').watch();\n}\n');
   }
 
   void _writeUpdatingQueryWithReturning(UpdatingQuery update) {
@@ -426,14 +379,6 @@ class QueryWriter {
 
       _buffer.write('}');
     }
-  }
-
-  /// Writes code that uses the parameters as declared by [_writeParameters],
-  /// assuming that for each parameter, a variable with the same name exists
-  /// in the current scope.
-  void _writeUseParameters(SqlQuery query) {
-    final parameters = query.elements.map((e) => e.dartParameterName);
-    _buffer.write(parameters.join(', '));
   }
 
   void _writeExpandedDeclarations(SqlQuery query) {

@@ -25,13 +25,6 @@ class DriftOptions {
   @JsonKey(name: 'override_hash_and_equals_in_result_sets', defaultValue: false)
   final bool overrideHashAndEqualsInResultSets;
 
-  /// Also enable the compact query methods from moor files on queries defined
-  /// in a `UseMoor` annotation. Compact queries return a `Selectable` instead
-  /// of generating two methods (with one returning a stream and another
-  /// returning a future)
-  @JsonKey(name: 'compact_query_methods', defaultValue: true)
-  final bool compactQueryMethods;
-
   /// Remove verification logic in the generated code.
   @JsonKey(name: 'skip_verification_code', defaultValue: false)
   final bool skipVerificationCode;
@@ -63,9 +56,6 @@ class DriftOptions {
   @JsonKey(name: 'sql')
   final DialectOptions? dialect;
 
-  @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
-  final bool eagerlyLoadDartAst;
-
   @JsonKey(name: 'data_class_to_companions', defaultValue: true)
   final bool dataClassToCompanions;
 
@@ -77,10 +67,10 @@ class DriftOptions {
   @JsonKey(name: 'raw_result_set_data', defaultValue: false)
   final bool rawResultSetData;
 
-  @JsonKey(name: 'apply_converters_on_variables', defaultValue: false)
+  @JsonKey(name: 'apply_converters_on_variables', defaultValue: true)
   final bool applyConvertersOnVariables;
 
-  @JsonKey(name: 'generate_values_in_copy_with', defaultValue: false)
+  @JsonKey(name: 'generate_values_in_copy_with', defaultValue: true)
   final bool generateValuesInCopyWith;
 
   @JsonKey(name: 'named_parameters', defaultValue: false)
@@ -89,7 +79,7 @@ class DriftOptions {
   @JsonKey(name: 'named_parameters_always_required', defaultValue: false)
   final bool namedParametersAlwaysRequired;
 
-  @JsonKey(name: 'scoped_dart_components', defaultValue: false)
+  @JsonKey(name: 'scoped_dart_components', defaultValue: true)
   final bool scopedDartComponents;
 
   /// Whether `DateTime` columns should be stored as text (via
@@ -101,20 +91,18 @@ class DriftOptions {
   const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
-    this.compactQueryMethods = false,
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
     this.generateConnectConstructor = false,
-    this.eagerlyLoadDartAst = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
     this.rawResultSetData = false,
-    this.applyConvertersOnVariables = false,
-    this.generateValuesInCopyWith = false,
+    this.applyConvertersOnVariables = true,
+    this.generateValuesInCopyWith = true,
     this.generateNamedParameters = false,
     this.namedParametersAlwaysRequired = false,
-    this.scopedDartComponents = false,
+    this.scopedDartComponents = true,
     this.modules = const [],
     this.sqliteAnalysisOptions,
     this.storeDateTimeValuesAsText = false,
@@ -124,12 +112,10 @@ class DriftOptions {
   DriftOptions({
     required this.generateFromJsonStringConstructor,
     required this.overrideHashAndEqualsInResultSets,
-    required this.compactQueryMethods,
     required this.skipVerificationCode,
     required this.useDataClassNameForCompanions,
     required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
     required this.generateConnectConstructor,
-    required this.eagerlyLoadDartAst,
     required this.dataClassToCompanions,
     required this.generateMutableClasses,
     required this.rawResultSetData,
@@ -177,7 +163,10 @@ class DriftOptions {
   bool hasModule(SqlModule module) => effectiveModules.contains(module);
 
   /// Checks whether a deprecated option is enabled.
-  bool get enabledDeprecatedOption => eagerlyLoadDartAst;
+  ///
+  /// At this time, all deprecated options have been removed, meaning that this
+  /// getter always returns `false`.
+  bool get enabledDeprecatedOption => false;
 
   SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;
 
