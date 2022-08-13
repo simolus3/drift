@@ -416,58 +416,6 @@ void main() {
     ));
   });
 
-  group('with from()', () {
-    test('insert', () async {
-      await db
-          .from(db.categories)
-          .insert()
-          .insert(CategoriesCompanion.insert(description: 'description'));
-
-      verify(executor.runInsert(
-          'INSERT INTO categories ("desc") VALUES (?)', ['description']));
-    });
-
-    test('insertOne', () async {
-      await db.from(db.categories).insertOne(
-          CategoriesCompanion.insert(description: 'description'),
-          mode: InsertMode.insertOrReplace);
-
-      verify(executor.runInsert(
-          'INSERT OR REPLACE INTO categories ("desc") VALUES (?)',
-          ['description']));
-    });
-
-    test('insertOnConflictUpdate', () async {
-      when(executor.runSelect(any, any)).thenAnswer(
-        (_) => Future.value([
-          {
-            'id': 1,
-            'desc': 'description',
-            'description_in_upper_case': 'DESCRIPTION',
-            'priority': 1,
-          },
-        ]),
-      );
-
-      final row = await db.from(db.categories).insertReturning(
-          CategoriesCompanion.insert(description: 'description'));
-      expect(
-        row,
-        const Category(
-          id: 1,
-          description: 'description',
-          descriptionInUpperCase: 'DESCRIPTION',
-          priority: CategoryPriority.medium,
-        ),
-      );
-
-      verify(executor.runSelect(
-        'INSERT INTO categories ("desc") VALUES (?) RETURNING *',
-        ['description'],
-      ));
-    });
-  });
-
   group('on table instances', () {
     test('insert', () async {
       await db.categories

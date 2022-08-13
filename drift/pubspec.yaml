@@ -27,6 +27,7 @@ dev_dependencies:
   drift_docs:
     path: ../docs/
   http: ^0.13.4
+  lints: ^2.0.0
   uuid: ^3.0.0
   path: ^1.8.0
   build_runner: ^2.0.0

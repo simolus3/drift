@@ -53,11 +53,11 @@ void main() {
     final rows = await db.customSelect('').get();
     final row = rows.single;
 
-    expect(row.readBool('bool'), isTrue);
-    expect(row.readInt('int'), 3);
-    expect(row.readDouble('double'), 3.14);
-    expect(row.readDateTime('dateTime'), time);
-    expect(row.readBlob('blob'), Uint8List.fromList([1, 2, 3]));
+    expect(row.read<bool>('bool'), isTrue);
+    expect(row.read<int>('int'), 3);
+    expect(row.read<double>('double'), 3.14);
+    expect(row.read<DateTime>('dateTime'), time);
+    expect(row.read<Uint8List>('blob'), Uint8List.fromList([1, 2, 3]));
   });
 
   test('custom update informs stream queries', () async {

@@ -11,7 +11,7 @@ void main() {
     });
 
     test('supports escaping snigle quotes', () {
-      testStringMapping('what\'s that?', "'what\'\'s that?'");
+      testStringMapping('what\'s that?', "'what''s that?'");
     });
 
     test('other chars are not escaped', () {

@@ -24,7 +24,7 @@ const Map<_JoinType, String> _joinKeywords = {
 /// [Join] instance.
 class Join<T extends HasResultSet, D> extends Component {
   /// The [_JoinType] of this join.
-  final _JoinType type;
+  final _JoinType _type;
 
   /// The [TableInfo] that will be added to the query
   final Table table;
@@ -43,7 +43,7 @@ class Join<T extends HasResultSet, D> extends Component {
 
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
-  Join._(this.type, this.table, this.on, {this.includeInResult}) {
+  Join._(this._type, this.table, this.on, {this.includeInResult}) {
     if (table is! ResultSetImplementation<T, D>) {
       throw ArgumentError(
           'Invalid table parameter. You must provide the table reference from '
@@ -54,14 +54,14 @@ class Join<T extends HasResultSet, D> extends Component {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write(_joinKeywords[type]);
+    context.buffer.write(_joinKeywords[_type]);
     context.buffer.write(' JOIN ');
 
     final resultSet = table as ResultSetImplementation<T, D>;
     context.buffer.write(resultSet.tableWithAlias);
     context.watchedTables.add(resultSet);
 
-    if (type != _JoinType.cross) {
+    if (_type != _JoinType.cross) {
       context.buffer.write(' ON ');
       on!.writeInto(context);
     }

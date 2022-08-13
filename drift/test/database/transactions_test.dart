@@ -37,7 +37,7 @@ void main() {
             'SELECT _mocked_',
             readsFrom: {db.users},
           )
-          .map((r) => r.readInt('_mocked_'))
+          .map((r) => r.read<int>('_mocked_'))
           .watchSingleOrNull();
       didSetUpStream.complete();
 

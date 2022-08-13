@@ -206,7 +206,7 @@ abstract class TableOrViewWriter {
         databaseGetter: 'attachedDatabase',
       );
 
-      buffer.write('return ${tableOrView.dartTypeName}');
+      buffer.write('return ${tableOrView.dartTypeCode()}');
       writer.writeArguments(buffer);
       buffer.writeln(';');
     }

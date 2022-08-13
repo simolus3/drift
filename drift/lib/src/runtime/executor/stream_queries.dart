@@ -90,7 +90,7 @@ class StreamQueryStore {
     if (key != null) {
       final cached = _activeKeyStreams[key];
       if (cached != null) {
-        return cached.stream;
+        return cached._stream;
       }
     }
 
@@ -103,7 +103,7 @@ class StreamQueryStore {
     // weak reference with an Expando could help.
     markAsOpened(stream);
 
-    return stream.stream;
+    return stream._stream;
   }
 
   Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
@@ -189,7 +189,7 @@ class QueryStream {
 
   // We're using a Stream.multi to implement a broadcast-ish stream with per-
   // subscription pauses.
-  late final Stream<_Row> stream = Stream.multi(
+  late final Stream<_Row> _stream = Stream.multi(
     (listener) {
       final queryListener = _QueryStreamListener(listener);
 

@@ -690,7 +690,7 @@ class _ExpandedVariableWriter {
       final constructor = constructVar(r'$');
       _buffer.write('for (var \$ in $name) $constructor');
     } else {
-      _buffer.write('${constructVar(name)}');
+      _buffer.write(constructVar(name));
     }
   }
 

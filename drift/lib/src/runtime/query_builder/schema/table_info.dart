@@ -36,15 +36,10 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => const [];
 
-  /// The table name in the sql table. This can be an alias for the actual table
-  /// name. See [actualTableName] for a table name that is not aliased.
-  @Deprecated('Use aliasedName instead')
-  String get $tableName => aliasedName;
-
   @override
   String get aliasedName => entityName;
 
-  /// The name of the table in the database. Unless [$tableName], this can not
+  /// The name of the table in the database. Unlike [aliasedName], this can not
   /// be aliased.
   String get actualTableName;
 
@@ -100,7 +95,8 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   bool operator ==(Object other) {
     // tables are singleton instances except for aliases
     if (other is TableInfo) {
-      return other.runtimeType == runtimeType && other.$tableName == $tableName;
+      return other.runtimeType == runtimeType &&
+          other.aliasedName == aliasedName;
     }
     return false;
   }

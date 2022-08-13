@@ -29,7 +29,7 @@ abstract class SchemaVerifier {
   ///  - call [schemaAt] with the starting version you want to test
   ///  - use the [InitializedSchema.rawDatabase] of the returned
   ///   [InitializedSchema] to insert data.
-  ///  - connect your database class to the [InitializedSchema.connection]
+  ///  - connect your database class to a [InitializedSchema.newConnection]
   ///  - call [migrateAndValidate] with the database and your target schema
   ///    version to run a migration and verify that it yields the desired schema
   ///    when done.
@@ -154,8 +154,8 @@ class SchemaMismatch implements Exception {
 
 /// Contains an initialized schema with all tables, views, triggers and indices.
 ///
-/// You can use the [connection] for your database class and the [rawDatabase]
-/// to insert data before the migration.
+/// You can use the [newConnection] for your database class and the
+/// [rawDatabase] to insert data before the migration.
 class InitializedSchema {
   /// The raw database from the `sqlite3` package.
   ///
@@ -163,7 +163,7 @@ class InitializedSchema {
   /// requested schema. It can be used to insert data before a migration to
   /// verify that it's still intact after the migration.
   ///
-  /// This database backs the [connection], so it's not necessary to close it
+  /// This database backs the [newConnection], so it's not necessary to close it
   /// if you're attaching a database later.
   final Database rawDatabase;
 

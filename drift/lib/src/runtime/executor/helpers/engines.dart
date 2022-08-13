@@ -171,6 +171,7 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   final String _commitCommand;
   final String _rollbackCommand;
 
+  // ignore: no_leading_underscores_for_local_identifiers
   _StatementBasedTransactionExecutor(super._db, this._delegate)
       : _startCommand = _delegate.start,
         _commitCommand = _delegate.commit,

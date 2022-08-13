@@ -12,7 +12,7 @@ void main() {
     expect(error.type, AnalysisErrorType.synctactic);
     final problematicSelect = (analyzed.root as CompoundSelectStatement).base;
     final wrongLimit = (problematicSelect as SelectStatement).limit;
-    expect(error.relevantNode, wrongLimit);
+    expect(error.source, wrongLimit);
   });
 
   test('reports error if ORDER BY is used before last part', () {
@@ -30,6 +30,6 @@ void main() {
     final problematicSelect =
         (analyzed.root as CompoundSelectStatement).additional[0].select;
     final wrongOrderBy = (problematicSelect as SelectStatement).orderBy;
-    expect(error.relevantNode, wrongOrderBy);
+    expect(error.source, wrongOrderBy);
   });
 }

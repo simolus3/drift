@@ -129,8 +129,10 @@ class DriftOptions {
     required this.storeDateTimeValuesAsText,
     this.dialect,
   }) {
+    // ignore: deprecated_member_use_from_same_package
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {
       throw ArgumentError.value(
+        // ignore: deprecated_member_use_from_same_package
         modules,
         'modules',
         'May not be set when sqlite options are present. \n'
@@ -156,6 +158,7 @@ class DriftOptions {
 
   /// All enabled sqlite modules from these options.
   List<SqlModule> get effectiveModules {
+    // ignore: deprecated_member_use_from_same_package
     return sqliteOptions?.modules ?? modules;
   }
 

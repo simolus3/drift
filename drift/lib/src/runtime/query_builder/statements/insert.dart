@@ -156,7 +156,7 @@ class InsertStatement<T extends Table, D> {
       ..write(_insertKeywords[
           ctx.dialect == SqlDialect.postgres ? InsertMode.insert : mode])
       ..write(' INTO ')
-      ..write(table.$tableName)
+      ..write(table.aliasedName)
       ..write(' ');
 
     if (map.isEmpty) {
@@ -251,7 +251,7 @@ class InsertStatement<T extends Table, D> {
   void _validateIntegrity(Insertable<D>? d) {
     if (d == null) {
       throw InvalidDataException(
-          'Cannot write null row into ${table.$tableName}');
+          'Cannot write null row into ${table.entityName}');
     }
 
     table.validateIntegrity(d, isInserting: true).throwIfInvalid(d);

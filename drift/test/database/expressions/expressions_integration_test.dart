@@ -59,8 +59,8 @@ void _testWith(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
     test('plus and minus', () async {
       const nowExpr = currentDateAndTime;
       final tomorrow = nowExpr + const Duration(days: 1);
-      final nowStamp = nowExpr.secondsSinceEpoch;
-      final tomorrowStamp = tomorrow.secondsSinceEpoch;
+      final nowStamp = nowExpr.unixepoch;
+      final tomorrowStamp = tomorrow.unixepoch;
 
       final row = await (db.selectOnly(db.users)
             ..addColumns([nowStamp, tomorrowStamp]))

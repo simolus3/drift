@@ -24,12 +24,12 @@ class DataClassWriter {
 
   void write() {
     final parentClass = table.customParentClass ?? 'DataClass';
-    _buffer.write('class ${table.dartTypeName} extends $parentClass ');
+    _buffer.write('class ${table.dartTypeCode()} extends $parentClass ');
 
     if (isInsertable) {
       // The data class is only an insertable if we can actually insert rows
       // into the target entity.
-      _buffer.writeln('implements Insertable<${table.dartTypeName}> {');
+      _buffer.writeln('implements Insertable<${table.dartTypeCode()}> {');
     } else {
       _buffer.writeln('{');
     }
@@ -58,7 +58,7 @@ class DataClassWriter {
       _buffer.write('const ');
     }
     _buffer
-      ..write(table.dartTypeName)
+      ..write(table.dartTypeCode())
       ..write('({')
       ..write(columns.map((column) {
         final nullableDartType = column.typeConverter != null
@@ -91,14 +91,14 @@ class DataClassWriter {
     _writeHashCode();
 
     overrideEquals(
-        columns.map((c) => c.dartGetterName), table.dartTypeName, _buffer);
+        columns.map((c) => c.dartGetterName), table.dartTypeCode(), _buffer);
 
     // finish class declaration
     _buffer.write('}');
   }
 
   void _writeFromJson() {
-    final dataClassName = table.dartTypeName;
+    final dataClassName = table.dartTypeCode();
 
     _buffer
       ..write('factory $dataClassName.fromJson('
@@ -158,7 +158,7 @@ class DataClassWriter {
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
         value = '$converterField.toJson($value)';
-        dartType = '${column.innerColumnType(nullable: true)}';
+        dartType = column.innerColumnType(nullable: true);
       }
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");
@@ -168,7 +168,7 @@ class DataClassWriter {
   }
 
   void _writeCopyWith() {
-    final dataClassName = table.dartTypeName;
+    final dataClassName = table.dartTypeCode();
     final wrapNullableInValue = scope.options.generateValuesInCopyWith;
 
     _buffer.write('$dataClassName copyWith({');
@@ -308,7 +308,7 @@ class DataClassWriter {
 
   void _writeToString() {
     overrideToString(
-      table.dartTypeName,
+      table.dartTypeCode(),
       [for (final column in columns) column.dartGetterName],
       _buffer,
     );

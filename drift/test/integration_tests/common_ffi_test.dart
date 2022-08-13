@@ -23,7 +23,7 @@ class DriftNativeExcecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(NativeDatabase(file));
+    return DatabaseConnection(NativeDatabase(file));
   }
 
   @override

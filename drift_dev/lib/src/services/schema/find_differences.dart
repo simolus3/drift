@@ -45,7 +45,7 @@ class FindSchemaDifferences {
     );
   }
 
-  CompareResult _compareNamed<T>({
+  CompareResult _compareNamed<T extends Object>({
     required List<T> reference,
     required List<T> actual,
     required String Function(T) name,

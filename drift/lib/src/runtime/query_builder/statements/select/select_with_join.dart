@@ -91,7 +91,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       String chosenAlias;
       if (column is GeneratedColumn) {
         if (ctx.generatingForView == column.tableName) {
-          chosenAlias = '${column.$name}';
+          chosenAlias = column.$name;
         } else {
           chosenAlias = '${column.tableName}.${column.$name}';
         }

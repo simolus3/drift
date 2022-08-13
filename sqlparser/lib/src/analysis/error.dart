@@ -12,9 +12,6 @@ class AnalysisError {
       {required this.type, this.message, SyntacticEntity? relevantNode})
       : source = relevantNode;
 
-  @Deprecated('Use source instead')
-  AstNode? get relevantNode => source as AstNode?;
-
   factory AnalysisError.fromParser(ParsingError error) {
     return AnalysisError._internal(
       AnalysisErrorType.synctactic,
@@ -34,7 +31,7 @@ class AnalysisError {
     if (msgSpan != null) {
       return msgSpan.message(message ?? type.toString(), color: true);
     } else {
-      return 'Error: $type: $message at $relevantNode';
+      return 'Error: $type: $message at $source';
     }
   }
 }

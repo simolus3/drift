@@ -191,6 +191,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
     if (!nullOk && value == null) {
       return _invalidNull;
     } else {
+      // ignore: null_check_on_nullable_type_parameter
       return additionalChecks?.call(value!, meta) ??
           const VerificationResult.success();
     }

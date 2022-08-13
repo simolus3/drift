@@ -19,7 +19,7 @@ class DriftWasmExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(
+    return DatabaseConnection(
         WasmDatabase(sqlite3: sqlite3(), path: '/drift_test.db'));
   }
 

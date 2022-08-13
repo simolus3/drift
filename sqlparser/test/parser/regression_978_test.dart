@@ -6,7 +6,7 @@ import 'utils.dart';
 void main() {
   test('parses CREATE TABLE statement', () {
     testStatement(
-      'CREATE TABLE \"sample_table\" ('
+      'CREATE TABLE "sample_table" ('
       'id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sample VARCHAR NULL)',
       CreateTableStatement(
         tableName: 'sample_table',

@@ -275,7 +275,7 @@ class ViewParser {
           }
           final column =
               columns.firstWhere((col) => col.dartGetterName == parts[0]);
-          return MapEntry('${column.dartGetterName}', column);
+          return MapEntry(column.dartGetterName, column);
         }).toList();
 
         target = target.parent as MethodInvocation;

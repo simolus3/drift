@@ -73,7 +73,7 @@ void main() {
 
   test('can run protocol without using complex types', () async {
     final executor = MockExecutor();
-    final server = DriftServer(DatabaseConnection.fromExecutor(executor));
+    final server = DriftServer(DatabaseConnection(executor));
     addTearDown(server.shutdown);
 
     final channelController = StreamChannelController();
@@ -117,7 +117,7 @@ void main() {
 
     when(outerTransaction.beginTransaction()).thenAnswer(newTransaction);
 
-    final server = DriftServer(DatabaseConnection.fromExecutor(executor));
+    final server = DriftServer(DatabaseConnection(executor));
     server.serve(controller.foreign);
     addTearDown(server.shutdown);
 

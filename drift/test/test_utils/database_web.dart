@@ -22,7 +22,7 @@ Future<WasmSqlite3> get sqlite3 {
 }
 
 DatabaseConnection testInMemoryDatabase() {
-  return DatabaseConnection.fromExecutor(LazyDatabase(() async {
+  return DatabaseConnection(LazyDatabase(() async {
     final sqlite = await sqlite3;
     return WasmDatabase.inMemory(sqlite);
   }));

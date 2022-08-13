@@ -264,6 +264,7 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
 }
 
 /// Column builders available for both virtual and non-virtual columns.
+// ignore: library_private_types_in_public_api
 extension BuildGeneralColumn<T extends Object> on _BaseColumnBuilder<T> {
   /// By default, the field name will be used as the column name, e.g.
   /// `IntColumn get id = integer()` will have "id" as its associated name.

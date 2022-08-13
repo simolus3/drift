@@ -30,7 +30,7 @@ class _NullExecutor extends Fake implements QueryExecutor {
   SqlDialect get dialect => SqlDialect.sqlite;
 }
 
-class CustomTable extends Table with TableInfo<CustomTable, Null> {
+class CustomTable extends Table with TableInfo<CustomTable, void> {
   @override
   final String actualTableName;
   @override
@@ -53,7 +53,7 @@ class CustomTable extends Table with TableInfo<CustomTable, Null> {
   }
 
   @override
-  Future<Null> map(Map<String, dynamic> data, {String? tablePrefix}) async {
-    return null;
+  Future<void> map(Map<String, dynamic> data, {String? tablePrefix}) async {
+    return;
   }
 }
