@@ -305,7 +305,7 @@ targets:
       moor_generator:
         options:
           # comment
-          compact_query_methods: true
+          scoped_dart_components: true
       "moor_generator:foo":
         options:
           bar: baz
@@ -329,7 +329,7 @@ targets:
       drift_dev:
         options:
           # comment
-          compact_query_methods: true
+          scoped_dart_components: true
       drift_dev|foo:
         options:
           bar: baz

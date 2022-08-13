@@ -296,7 +296,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Future<User> map(Map<String, dynamic> data, {String? tablePrefix}) async {
+  User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
       id: attachedDatabase.options.types
@@ -526,8 +526,7 @@ class $FriendshipsTable extends Friendships
   @override
   Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
   @override
-  Future<Friendship> map(Map<String, dynamic> data,
-      {String? tablePrefix}) async {
+  Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Friendship(
       firstUser: attachedDatabase.options.types

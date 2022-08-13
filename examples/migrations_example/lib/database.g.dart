@@ -62,12 +62,16 @@ class User extends DataClass implements Insertable<User> {
     };
   }
 
-  User copyWith({int? id, String? name, DateTime? birthday, int? nextUser}) =>
+  User copyWith(
+          {int? id,
+          String? name,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent()}) =>
       User(
         id: id ?? this.id,
         name: name ?? this.name,
-        birthday: birthday ?? this.birthday,
-        nextUser: nextUser ?? this.nextUser,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
       );
   @override
   String toString() {
@@ -303,10 +307,15 @@ class Group extends DataClass implements Insertable<Group> {
     };
   }
 
-  Group copyWith({int? id, String? title, bool? deleted, int? owner}) => Group(
+  Group copyWith(
+          {int? id,
+          String? title,
+          Value<bool?> deleted = const Value.absent(),
+          int? owner}) =>
+      Group(
         id: id ?? this.id,
         title: title ?? this.title,
-        deleted: deleted ?? this.deleted,
+        deleted: deleted.present ? deleted.value : this.deleted,
         owner: owner ?? this.owner,
       );
   @override
@@ -536,14 +545,14 @@ class GroupCountData extends DataClass {
   GroupCountData copyWith(
           {int? id,
           String? name,
-          DateTime? birthday,
-          int? nextUser,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent(),
           int? groupCount}) =>
       GroupCountData(
         id: id ?? this.id,
         name: name ?? this.name,
-        birthday: birthday ?? this.birthday,
-        nextUser: nextUser ?? this.nextUser,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
         groupCount: groupCount ?? this.groupCount,
       );
   @override
