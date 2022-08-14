@@ -70,18 +70,11 @@ jobs:
       - run: dart pub upgrade
       - name: Get dependencies for plugin
         run: |
-          echo $pub_override > pubspec_overrides.yaml
+          echo "dependency_overrides:" >> pubspec_overrides.yaml
+          echo "  drift: {path: ../../}" >> pubspec_overrides.yaml
+          echo "  drift_dev: {path: ../../../drift_dev}" >> pubspec_overrides.yaml
+          echo "  sqlparser: {path: ../../../sqlparser}" >> pubspec_overrides.yaml
           dart pub get
-        env:
-          pub_override: |
-            dependency_overrides:
-              drift:
-                path: ../../
-              drift_dev:
-                path: ../../../drift_dev
-              sqlparser:
-                path: ../../../sqlparser
-
         working-directory: drift/tools/analyzer_plugin
       # analysis
       - run: dart format -o none --set-exit-if-changed .
