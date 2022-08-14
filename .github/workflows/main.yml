@@ -68,6 +68,8 @@ jobs:
       - name: Check sqlite3 version
         run: sqlite3 --version
       - run: dart pub upgrade
+      - run: dart pub get
+        working-directory: drift/tools/analyzer_plugin
       # analysis
       - run: dart format -o none --set-exit-if-changed .
         name: dartfmt
