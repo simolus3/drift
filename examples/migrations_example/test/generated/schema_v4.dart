@@ -206,11 +206,15 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
     };
   }
 
-  GroupsData copyWith({int? id, String? title, bool? deleted, int? owner}) =>
+  GroupsData copyWith(
+          {int? id,
+          String? title,
+          Value<bool?> deleted = const Value.absent(),
+          int? owner}) =>
       GroupsData(
         id: id ?? this.id,
         title: title ?? this.title,
-        deleted: deleted ?? this.deleted,
+        deleted: deleted.present ? deleted.value : this.deleted,
         owner: owner ?? this.owner,
       );
   @override
@@ -377,7 +381,8 @@ class DatabaseAtV4 extends GeneratedDatabase {
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, groups];
   @override

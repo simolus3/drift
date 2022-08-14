@@ -97,10 +97,55 @@ class Groups extends Table with TableInfo {
   bool get dontWriteConstraints => true;
 }
 
+class Notes extends Table with TableInfo, VirtualTableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Notes(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
+      'search_terms', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  @override
+  List<GeneratedColumn> get $columns => [title, content, searchTerms];
+  @override
+  String get aliasedName => _alias ?? 'notes';
+  @override
+  String get actualTableName => 'notes';
+  @override
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  Notes createAlias(String alias) {
+    return Notes(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs =>
+      'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
+}
+
 class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
   final String? _alias;
   @override
-  final DatabaseAtV6 attachedDatabase;
+  final DatabaseAtV7 attachedDatabase;
   GroupCount(this.attachedDatabase, [this._alias]);
   @override
   List<GeneratedColumn> get $columns =>
@@ -143,20 +188,21 @@ class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
   Set<String> get readTables => const {};
 }
 
-class DatabaseAtV6 extends GeneratedDatabase {
-  DatabaseAtV6(QueryExecutor e) : super(e);
-  DatabaseAtV6.connect(DatabaseConnection c) : super.connect(c);
+class DatabaseAtV7 extends GeneratedDatabase {
+  DatabaseAtV7(QueryExecutor e) : super(e);
+  DatabaseAtV7.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
+  late final Notes notes = Notes(this);
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, groups, groupCount];
+      [users, groups, groupCount, notes];
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
   @override
   DriftDatabaseOptions get options =>
       const DriftDatabaseOptions(storeDateTimeAsText: true);

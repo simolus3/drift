@@ -58,12 +58,15 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   }
 
   UsersData copyWith(
-          {int? id, String? name, DateTime? birthday, int? nextUser}) =>
+          {int? id,
+          String? name,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent()}) =>
       UsersData(
         id: id ?? this.id,
         name: name ?? this.name,
-        birthday: birthday ?? this.birthday,
-        nextUser: nextUser ?? this.nextUser,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
       );
   @override
   String toString() {
@@ -271,11 +274,15 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
     };
   }
 
-  GroupsData copyWith({int? id, String? title, bool? deleted, int? owner}) =>
+  GroupsData copyWith(
+          {int? id,
+          String? title,
+          Value<bool?> deleted = const Value.absent(),
+          int? owner}) =>
       GroupsData(
         id: id ?? this.id,
         title: title ?? this.title,
-        deleted: deleted ?? this.deleted,
+        deleted: deleted.present ? deleted.value : this.deleted,
         owner: owner ?? this.owner,
       );
   @override
@@ -474,14 +481,14 @@ class GroupCountData extends DataClass {
   GroupCountData copyWith(
           {int? id,
           String? name,
-          DateTime? birthday,
-          int? nextUser,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent(),
           int? groupCount}) =>
       GroupCountData(
         id: id ?? this.id,
         name: name ?? this.name,
-        birthday: birthday ?? this.birthday,
-        nextUser: nextUser ?? this.nextUser,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
         groupCount: groupCount ?? this.groupCount,
       );
   @override
@@ -575,7 +582,8 @@ class DatabaseAtV6 extends GeneratedDatabase {
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [users, groups, groupCount];

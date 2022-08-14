@@ -270,6 +270,11 @@ class SchemaReader {
     final sqlName = content['name'] as String;
     final isVirtual = content['is_virtual'] as bool;
     final withoutRowId = content['without_rowid'] as bool?;
+    final pascalCase = ReCase(sqlName).pascalCase;
+    final columns = [
+      for (final rawColumn in content['columns'] as List)
+        _readColumn(rawColumn as Map<String, dynamic>)
+    ];
 
     if (isVirtual) {
       final create = content['create_virtual_stmt'] as String;
@@ -278,18 +283,14 @@ class SchemaReader {
 
       return DriftTable(
         sqlName: sqlName,
-        dartTypeName: sqlName,
-        overriddenName: sqlName,
+        dartTypeName: '${pascalCase}Data',
+        overriddenName: pascalCase,
         declaration: CustomVirtualTableDeclaration(parsed),
         overrideWithoutRowId: withoutRowId,
         overrideDontWriteConstraints: true,
+        columns: columns,
       );
     }
-
-    final columns = [
-      for (final rawColumn in content['columns'] as List)
-        _readColumn(rawColumn as Map<String, dynamic>)
-    ];
 
     List<String>? tableConstraints;
     if (content.containsKey('constraints')) {
@@ -303,8 +304,6 @@ class SchemaReader {
           columns.singleWhere((c) => c.name.name == columnName)
       };
     }
-
-    final pascalCase = ReCase(sqlName).pascalCase;
 
     return DriftTable(
       sqlName: sqlName,

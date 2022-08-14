@@ -10,6 +10,14 @@ CREATE TABLE "groups" (
     PRIMARY KEY (id)
 );
 
+-- This table was added in schema version 7
+CREATE VIRTUAL TABLE notes USING fts5(
+    title,
+    content,
+    search_terms,
+    tokenize = "unicode61 tokenchars '.'"
+);
+
 -- This view was added in schema version 5
 CREATE VIEW group_count AS SELECT
     users.*,

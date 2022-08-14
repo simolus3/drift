@@ -42,7 +42,8 @@ class DatabaseAtV2 extends GeneratedDatabase {
   DatabaseAtV2.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users];
   @override
