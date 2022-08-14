@@ -42,8 +42,6 @@ class GenerateUtilsCommand extends Command {
 
   @override
   Future<void> run() async {
-    final isForMoor = argResults!.arguments.contains('moor_generator');
-
     final rest = argResults!.rest;
     if (rest.length != 2) {
       usageException('Expected input and output directories');
@@ -71,11 +69,10 @@ class GenerateUtilsCommand extends Command {
         entities,
         argResults?['data-classes'] as bool,
         argResults?['companions'] as bool,
-        isForMoor,
       );
     }
 
-    await _writeLibraryFile(outputDir, schema.keys, isForMoor);
+    await _writeLibraryFile(outputDir, schema.keys);
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
@@ -106,7 +103,6 @@ class GenerateUtilsCommand extends Command {
     _ExportedSchema schema,
     bool dataClasses,
     bool companions,
-    bool isForMoor,
   ) {
     // let serialized options take precedence, otherwise use current options
     // from project.
@@ -121,20 +117,14 @@ class GenerateUtilsCommand extends Command {
         forSchema: version,
         writeCompanions: companions,
         writeDataClasses: dataClasses,
-        writeForMoorPackage: isForMoor,
       ),
     );
     final file = File(p.join(output.path, _filenameForVersion(version)));
 
-    final leaf = writer.leaf()
+    writer.leaf()
       ..writeln(_prefix)
-      ..writeln('//@dart=2.12');
-
-    if (isForMoor) {
-      leaf.writeln("import 'package:moor/moor.dart';");
-    } else {
-      leaf.writeln("import 'package:drift/drift.dart';");
-    }
+      ..writeln('//@dart=2.12')
+      ..writeln("import 'package:drift/drift.dart';");
 
     final db = Database(
       declaredQueries: const [],
@@ -146,21 +136,12 @@ class GenerateUtilsCommand extends Command {
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
   }
 
-  Future<void> _writeLibraryFile(
-      Directory output, Iterable<int> versions, bool useMoorImports) {
+  Future<void> _writeLibraryFile(Directory output, Iterable<int> versions) {
     final buffer = StringBuffer()
       ..writeln(_prefix)
-      ..writeln('//@dart=2.12');
-
-    if (useMoorImports) {
-      buffer
-        ..writeln("import 'package:moor/moor.dart';")
-        ..writeln("import 'package:moor_generator/api/migrations.dart';");
-    } else {
-      buffer
-        ..writeln("import 'package:drift/drift.dart';")
-        ..writeln("import 'package:drift_dev/api/migrations.dart';");
-    }
+      ..writeln('//@dart=2.12')
+      ..writeln("import 'package:drift/drift.dart';")
+      ..writeln("import 'package:drift_dev/api/migrations.dart';");
 
     for (final version in versions) {
       buffer.writeln("import '${_filenameForVersion(version)}' as v$version;");

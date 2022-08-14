@@ -51,8 +51,6 @@ dev_dependencies:
   build_runner: ^2.0.0
   build_test: ^2.0.0
   json_serializable: ^6.2.0
-  # Used to test the migration from moor to drift
-  moor: any
 
 executables:
   drift_dev:

@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 const _testInput = r'''
 import 'package:drift/drift.dart';
 
-part 'main.moor.dart';
+part 'main.drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -34,7 +34,7 @@ void main() {
       const {'a|lib/main.dart': _testInput},
       reader: await PackageAssetReader.currentIsolate(),
       outputs: const {
-        'a|lib/main.moor.dart': _GeneratesWithoutFinalFields(
+        'a|lib/main.drift.dart': _GeneratesWithoutFinalFields(
           {'User', 'UsersCompanion', 'SomeQueryResult'},
         ),
       },

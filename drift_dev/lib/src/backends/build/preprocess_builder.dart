@@ -26,14 +26,12 @@ import 'package:sqlparser/sqlparser.dart';
 class PreprocessBuilder extends Builder {
   static const _outputs = ['.temp.dart', '.dart_in_drift'];
 
-  final bool isForNewDriftPackage;
-
-  PreprocessBuilder({this.isForNewDriftPackage = false});
+  PreprocessBuilder();
 
   @override
   late final Map<String, List<String>> buildExtensions = {
     '.moor': _outputs,
-    if (isForNewDriftPackage) '.drift': _outputs
+    '.drift': _outputs
   };
 
   @override

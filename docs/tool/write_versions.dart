@@ -12,8 +12,6 @@ class _VersionsBuilder extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     const packages = [
-      'moor',
-      'moor_generator',
       'sqlparser',
       'path',
       'build_runner',

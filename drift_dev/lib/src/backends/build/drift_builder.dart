@@ -18,15 +18,9 @@ final _flags = Resource(() => _BuilderFlags());
 
 mixin DriftBuilder on Builder {
   DriftOptions get options;
-  bool get isForNewDriftPackage;
 
   Writer createWriter() {
-    return Writer(
-      options,
-      generationOptions: GenerationOptions(
-        writeForMoorPackage: !isForNewDriftPackage,
-      ),
-    );
+    return Writer(options);
   }
 
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
@@ -72,18 +66,13 @@ class DriftSharedPartBuilder extends SharedPartBuilder with DriftBuilder {
   @override
   final DriftOptions options;
 
-  @override
-  final bool isForNewDriftPackage;
-
-  DriftSharedPartBuilder._(List<Generator> generators, String name,
-      this.options, this.isForNewDriftPackage)
+  DriftSharedPartBuilder._(
+      List<Generator> generators, String name, this.options)
       : super(generators, name);
 
-  factory DriftSharedPartBuilder(BuilderOptions options,
-      {bool isForNewDriftPackage = false}) {
+  factory DriftSharedPartBuilder(BuilderOptions options) {
     return _createBuilder(options, (generators, parsedOptions) {
-      return DriftSharedPartBuilder._(
-          generators, 'moor', parsedOptions, isForNewDriftPackage);
+      return DriftSharedPartBuilder._(generators, 'drift', parsedOptions);
     });
   }
 
@@ -93,7 +82,7 @@ class DriftSharedPartBuilder extends SharedPartBuilder with DriftBuilder {
     if (!flags.didWarnAboutDeprecatedOptions &&
         options.enabledDeprecatedOption) {
       print('You have the eagerly_load_dart_ast option enabled. The option is '
-          'no longer necessary and will be removed in a future moor version. '
+          'no longer necessary and will be removed in a future drift version. '
           'Consider removing the option from your build.yaml.');
       flags.didWarnAboutDeprecatedOptions = true;
     }
@@ -106,21 +95,12 @@ class DriftPartBuilder extends PartBuilder with DriftBuilder {
   @override
   final DriftOptions options;
 
-  @override
-  final bool isForNewDriftPackage;
-
-  DriftPartBuilder._(List<Generator> generators, String extension, this.options,
-      this.isForNewDriftPackage)
+  DriftPartBuilder._(List<Generator> generators, String extension, this.options)
       : super(generators, extension);
 
-  factory DriftPartBuilder(BuilderOptions options,
-      {bool isForNewDriftPackage = false}) {
+  factory DriftPartBuilder(BuilderOptions options) {
     return _createBuilder(options, (generators, parsedOptions) {
-      return DriftPartBuilder._(
-          generators,
-          isForNewDriftPackage ? '.drift.dart' : '.moor.dart',
-          parsedOptions,
-          isForNewDriftPackage);
+      return DriftPartBuilder._(generators, '.drift.dart', parsedOptions);
     });
   }
 }

@@ -14,7 +14,7 @@ void main() {
     'generates const constructor for data classes can companion classes',
     () async {
       await testBuilder(
-        DriftPartBuilder(const BuilderOptions({}), isForNewDriftPackage: true),
+        DriftPartBuilder(const BuilderOptions({})),
         const {
           'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
@@ -47,7 +47,7 @@ class Database extends _$Database {}
     'generates async mapping code for existing row class with async factory',
     () async {
       await testBuilder(
-        DriftPartBuilder(const BuilderOptions({}), isForNewDriftPackage: true),
+        DriftPartBuilder(const BuilderOptions({})),
         const {
           'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';

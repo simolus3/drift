@@ -18,10 +18,6 @@ class DataClassWriter {
 
   String get serializerType => 'ValueSerializer?';
 
-  String get _runtimeOptions => scope.generationOptions.writeForMoorPackage
-      ? 'moorRuntimeOptions'
-      : 'driftRuntimeOptions';
-
   void write() {
     final parentClass = table.customParentClass ?? 'DataClass';
     _buffer.write('class ${table.dartTypeCode()} extends $parentClass ');
@@ -104,7 +100,7 @@ class DataClassWriter {
       ..write('factory $dataClassName.fromJson('
           'Map<String, dynamic> json, {$serializerType serializer}'
           ') {\n')
-      ..write('serializer ??= $_runtimeOptions.defaultSerializer;\n')
+      ..write('serializer ??= driftRuntimeOptions.defaultSerializer;\n')
       ..write('return $dataClassName(');
 
     for (final column in columns) {
@@ -143,7 +139,7 @@ class DataClassWriter {
   void _writeToJson() {
     _buffer.write('@override Map<String, dynamic> toJson('
         '{$serializerType serializer}) {\n'
-        'serializer ??= $_runtimeOptions.defaultSerializer;\n'
+        'serializer ??= driftRuntimeOptions.defaultSerializer;\n'
         'return <String, dynamic>{\n');
 
     for (final column in columns) {
