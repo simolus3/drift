@@ -34,7 +34,7 @@ dev_dependencies:
   build_web_compilers: ^3.2.0
   built_site:
     hosted: https://simonbinder.eu
-    version: ^0.2.9
+    version: ^0.2.10
   linkcheck: ^2.0.19
   json_serializable: ^6.1.6
   shelf: ^1.2.0

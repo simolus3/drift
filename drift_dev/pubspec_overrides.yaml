@@ -1,0 +1,7 @@
+dependency_overrides:
+  drift:
+    path: ../drift
+  moor:
+    path: ../moor
+  sqlparser:
+    path: ../sqlparser
