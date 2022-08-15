@@ -150,6 +150,14 @@ void main() {
         throwsA(isA<InvalidDataException>()),
       );
     });
+
+    test('can provide null value for column with additional checks', () async {
+      await db.todosTable.insertOne(
+          TodosTableCompanion.insert(content: 'content', title: Value(null)));
+
+      verify(executor.runInsert(
+          'INSERT INTO todos (title, content) VALUES (NULL, ?)', ['content']));
+    });
   });
 
   test('reports auto-increment id', () {
