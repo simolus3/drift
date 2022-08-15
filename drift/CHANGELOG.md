@@ -1,3 +1,8 @@
+## 2.0.1
+
+- Fix an error when inserting a null value into a nullable column defined with
+  additional checks in Dart.
+
 ## 2.0.0
 
 💡: More information on how to migrate is available in the [documentation](https://drift.simonbinder.eu/docs/upgrading/).
