@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -46,6 +46,7 @@ void main() {
           'double': 3.14,
           'dateTime': unix,
           'blob': Uint8List.fromList([1, 2, 3]),
+          'null': null,
         }
       ]);
     });
@@ -58,6 +59,28 @@ void main() {
     expect(row.read<double>('double'), 3.14);
     expect(row.read<DateTime>('dateTime'), time);
     expect(row.read<Uint8List>('blob'), Uint8List.fromList([1, 2, 3]));
+
+    expect(row.readNullable<bool>('bool'), isTrue);
+    expect(row.readNullable<bool>('null'), isNull);
+    expect(row.readNullable<int>('int'), 3);
+    expect(row.readNullable<int>('null'), isNull);
+    expect(row.readNullable<double>('double'), 3.14);
+    expect(row.readNullable<double>('null'), isNull);
+    expect(row.readNullable<DateTime>('dateTime'), time);
+    expect(row.readNullable<DateTime>('null'), isNull);
+    expect(row.readNullable<Uint8List>('blob'), Uint8List.fromList([1, 2, 3]));
+    expect(row.readNullable<Uint8List>('null'), isNull);
+
+    expect(row.read<bool?>('bool'), isTrue);
+    expect(row.read<bool?>('null'), isNull);
+    expect(row.read<int?>('int'), 3);
+    expect(row.read<int?>('null'), isNull);
+    expect(row.read<double?>('double'), 3.14);
+    expect(row.read<double?>('null'), isNull);
+    expect(row.read<DateTime?>('dateTime'), time);
+    expect(row.read<DateTime?>('null'), isNull);
+    expect(row.read<Uint8List?>('blob'), Uint8List.fromList([1, 2, 3]));
+    expect(row.read<Uint8List?>('null'), isNull);
   });
 
   test('custom update informs stream queries', () async {

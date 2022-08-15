@@ -240,16 +240,54 @@ enum DriftSqlType<T extends Object> {
     }
   }
 
+  void _addToMap(Map<Type, DriftSqlType> map) {
+    _addToTypeMap<T>(map, this);
+    // Unfortunately, `T?` by itself is not an expression so we have to jump
+    // through hoops to add the nullable variant to the type map.
+    _addToTypeMap<T?>(map, this);
+  }
+
+  static Map<Type, DriftSqlType> _dartToDrift = () {
+    final map = <Type, DriftSqlType>{};
+
+    for (final value in values) {
+      value._addToMap(map);
+    }
+
+    return map;
+  }();
+
+  static void _addToTypeMap<T>(
+      Map<Type, DriftSqlType> map, DriftSqlType<Object> type) {
+    map[T] = type;
+  }
+
   /// Attempts to find a suitable SQL type for the [Dart] type passed to this
   /// method.
   ///
   /// The [Dart] type must be the type of the instance _after_ applying type
   /// converters.
   static DriftSqlType<Dart> forType<Dart extends Object>() {
-    for (final type in values) {
-      if (type is DriftSqlType<Dart>) return type;
+    final type = _dartToDrift[Dart];
+
+    if (type == null) {
+      throw ArgumentError('Could not find a matching SQL type for $Dart');
     }
 
-    throw ArgumentError('Could not find a matching SQL type for $Dart');
+    return type as DriftSqlType<Dart>;
+  }
+
+  /// A variant of [forType] that also works for nullable [Dart] types.
+  ///
+  /// Using [forType] should pretty much always be preferred over this method,
+  /// this one just exists for backwards compatibility.
+  static DriftSqlType forNullableType<Dart>() {
+    final type = _dartToDrift[Dart];
+
+    if (type == null) {
+      throw ArgumentError('Could not find a matching SQL type for $Dart');
+    }
+
+    return type;
   }
 }
