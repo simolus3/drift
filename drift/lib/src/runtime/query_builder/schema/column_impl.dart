@@ -190,10 +190,11 @@ class GeneratedColumn<T extends Object> extends Column<T> {
     final nullOk = $nullable;
     if (!nullOk && value == null) {
       return _invalidNull;
+    } else if (nullOk && value == null) {
+      return const VerificationResult.success();
     } else {
-      // ignore: null_check_on_nullable_type_parameter
-      return additionalChecks?.call(value!, meta) ??
-          const VerificationResult.success();
+      // ignore: null_check_on_nullable_type_parameter 
+      return additionalChecks?.call(value!, meta) ?? const VerificationResult.success();
     }
   }
 
