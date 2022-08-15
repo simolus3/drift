@@ -40,6 +40,7 @@ dev_dependencies:
   shelf: ^1.2.0
   shelf_static: ^1.1.0
   source_span: ^1.9.1
+  test: ^1.18.0
   sqlparser:
 
 

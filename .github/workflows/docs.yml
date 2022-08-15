@@ -24,9 +24,13 @@ jobs:
       - name: Analyze Dart sources
         working-directory: docs
         run: |
+          dart format -o none --set-exit-if-changed .
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
 
+      - name: Run tests
+        working-directory: docs
+        run: dart test
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v1.2

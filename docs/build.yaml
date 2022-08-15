@@ -39,6 +39,7 @@ targets:
         enabled: true
     sources:
      - lib/**
+     - test/generated/**
 
   prepare:
     dependencies: [":source_gen"]
