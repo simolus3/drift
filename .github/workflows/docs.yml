@@ -28,9 +28,6 @@ jobs:
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
 
-      - name: Run tests
-        working-directory: docs
-        run: dart test
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v1.2
