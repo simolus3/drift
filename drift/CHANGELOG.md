@@ -1,6 +1,6 @@
 ## 2.0.2
 
-- Revert the breaking change around `QueryRow.read` only return non-nullable
+- Revert the breaking change around `QueryRow.read` only returning non-nullable
   values now - it was causing issues with type inference in some cases.
 
 ## 2.0.1

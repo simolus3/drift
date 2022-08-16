@@ -1,6 +1,6 @@
 ## 2.0.1
 
-- Recognize options for applied `not_shared` builder when exporting schemas.
+- Recognize options for an applied `not_shared` builder when exporting schemas.
 
 ## 2.0.0
 
