@@ -670,10 +670,6 @@ class _ExpandedVariableWriter {
           buffer
               .write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
         }
-
-        if (!element.nullable) {
-          buffer.write('!');
-        }
       } else if (capture != null) {
         buffer.write('row.read(${asDartLiteral(capture.helperColumn)})');
       } else {
