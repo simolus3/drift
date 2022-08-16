@@ -1,3 +1,7 @@
+## 2.0.1
+
+- Recognize options for applied `not_shared` builder when exporting schemas.
+
 ## 2.0.0
 
 - Removes the following build options, which are always turned on now:

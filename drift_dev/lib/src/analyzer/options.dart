@@ -93,7 +93,7 @@ class DriftOptions {
     this.overrideHashAndEqualsInResultSets = false,
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
-    this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
+    this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
     this.generateConnectConstructor = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,

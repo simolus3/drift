@@ -1,4 +1,5 @@
 import 'package:build_config/build_config.dart';
+import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 
 Future<DriftOptions> fromRootDir(String path) async {
@@ -7,14 +8,13 @@ Future<DriftOptions> fromRootDir(String path) async {
 }
 
 DriftOptions readOptionsFromConfig(BuildConfig config) {
-  final options = config.buildTargets.values
-      .map((t) {
-        return t.builders['moor_generator:moor_generator']?.options ??
-            t.builders['drift_dev:drift_dev']?.options;
-      })
-      .whereType<Map>()
-      .map((json) => DriftOptions.fromJson(json));
-
-  final iterator = options.iterator;
-  return iterator.moveNext() ? iterator.current : const DriftOptions.defaults();
+  return config.buildTargets.values
+          .map((t) {
+            return t.builders['drift_dev:drift_dev']?.options ??
+                t.builders['drift_dev:not_shared']?.options;
+          })
+          .whereType<Map>()
+          .map((json) => DriftOptions.fromJson(json))
+          .firstOrNull ??
+      DriftOptions.defaults();
 }
