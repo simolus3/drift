@@ -22,7 +22,7 @@ class _String2Bin extends Converter<String, Uint8List> {
   @override
   Uint8List convert(String input) {
     final codeUnits = input.codeUnits;
-    final list = Uint8List(codeUnits.length);
+    final list = Uint16List(codeUnits.length);
 
     for (var i = 0; i < codeUnits.length; i++) {
       list[i] = codeUnits[i];
@@ -39,7 +39,7 @@ class _Bin2String extends Converter<Uint8List, String> {
   static const int _chunkSize = 0xffff;
 
   @override
-  String convert(Uint8List input) {
+  String convert(Uint16List input) {
     final buffer = StringBuffer();
 
     for (var pos = 0; pos < input.length; pos += _chunkSize) {
