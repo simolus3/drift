@@ -32,7 +32,7 @@ void main() {
             targetVersion <= currentSchema;
             targetVersion++) {
           test('to v$targetVersion', () async {
-            final connection = await verifier.startAt(1);
+            final connection = await verifier.startAt(oldVersion);
             final db = Database(connection);
             addTearDown(db.close);
 
