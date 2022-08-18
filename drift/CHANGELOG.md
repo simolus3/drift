@@ -1,4 +1,4 @@
-## 2.0.2
+## 2.0.2+1
 
 - Revert the breaking change around `QueryRow.read` only returning non-nullable
   values now - it was causing issues with type inference in some cases.

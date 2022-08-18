@@ -2,6 +2,7 @@ import 'dart:core';
 import 'dart:core' as core;
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
 import 'package:meta/meta.dart';
 
@@ -182,8 +183,19 @@ class SqlTypes {
   }
 }
 
+/// In [DriftSqlType.forNullableType], we need to do an `is` check over
+/// `DriftSqlType<T>` with a potentially nullable `T`. Since `DriftSqlType` is
+/// defined with a non-nullable `T`, this is illegal.
+/// The non-nullable upper bound in [DriftSqlType] is generally useful, for
+/// instance because it works well with [SqlTypes.read] which can then have a
+/// sound nullable return type.
+///
+/// As a hack, we define this base class that doesn't have this restriction and
+/// use this one for type checks.
+abstract class _InternalDriftSqlType<T> {}
+
 /// An enumation of type mappings that are builtin to drift and `drift_dev`.
-enum DriftSqlType<T extends Object> {
+enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
   /// A boolean type, represented as `0` or `1` (int) in SQL.
   bool<core.bool>(),
 
@@ -282,12 +294,16 @@ enum DriftSqlType<T extends Object> {
   /// Using [forType] should pretty much always be preferred over this method,
   /// this one just exists for backwards compatibility.
   static DriftSqlType forNullableType<Dart>() {
-    final type = _dartToDrift[Dart];
+    // Lookup the type in the map first for faster lookups. Go back to a full
+    // typecheck where that doesn't work (which can be the case for complex
+    // type like `forNullableType<FutureOr<int?>>`).
+    final type = _dartToDrift[Dart] ??
+        values.whereType<_InternalDriftSqlType<Dart>>().singleOrNull;
 
     if (type == null) {
       throw ArgumentError('Could not find a matching SQL type for $Dart');
     }
 
-    return type;
+    return type as DriftSqlType;
   }
 }
