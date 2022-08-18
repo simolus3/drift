@@ -3,19 +3,6 @@
 part of 'database.dart';
 
 // **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
-
-Preferences _$PreferencesFromJson(Map<String, dynamic> json) => Preferences(
-      json['receiveEmails'] as bool,
-    );
-
-Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
-    <String, dynamic>{
-      'receiveEmails': instance.receiveEmails,
-    };
-
-// **************************************************************************
 // DriftDatabaseGenerator
 // **************************************************************************
 
@@ -665,3 +652,16 @@ class FriendshipsOfResult {
         .toString();
   }
 }
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+Preferences _$PreferencesFromJson(Map<String, dynamic> json) => Preferences(
+      json['receiveEmails'] as bool,
+    );
+
+Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
+    <String, dynamic>{
+      'receiveEmails': instance.receiveEmails,
+    };

@@ -1605,7 +1605,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readMultiple(List<String> var1,
-      {OrderBy Function(ConfigTable config) clause = _$moor$default$0}) {
+      {ReadMultipleClause clause = ReadMultipleClauseDefault}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
@@ -1625,8 +1625,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readDynamic(
-      {Expression<bool> Function(ConfigTable config) predicate =
-          _$moor$default$1}) {
+      {ReadDynamicPredicate predicate = ReadDynamicPredicateDefault}) {
     var $arrayStartIndex = 1;
     final generatedpredicate =
         $write(predicate(this.config), startIndex: $arrayStartIndex);
@@ -1642,7 +1641,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
-      {Expression<bool> Function(ConfigTable config) pred = _$moor$default$2}) {
+      {TypeConverterVarPred pred = TypeConverterVarPredDefault}) {
     var $arrayStartIndex = 2;
     final generatedpred =
         $write(pred(this.config), startIndex: $arrayStartIndex);
@@ -1691,9 +1690,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<MultipleResult> multiple(
-      {required Expression<bool> Function(WithDefaults d, WithConstraints c)
-          predicate}) {
+  Selectable<MultipleResult> multiple({required MultiplePredicate predicate}) {
     var $arrayStartIndex = 1;
     final generatedpredicate = $write(
         predicate(
@@ -1731,8 +1728,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap(email.mapFromRow);
   }
 
-  Selectable<ReadRowIdResult> readRowId(
-      {required Expression<int> Function(ConfigTable config) expr}) {
+  Selectable<ReadRowIdResult> readRowId({required ReadRowIdExpr expr}) {
     var $arrayStartIndex = 1;
     final generatedexpr =
         $write(expr(this.config), startIndex: $arrayStartIndex);
@@ -1861,11 +1857,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-OrderBy _$moor$default$0(ConfigTable _) => const OrderBy.nothing();
-Expression<bool> _$moor$default$1(ConfigTable _) =>
+OrderBy ReadMultipleClauseDefault(ConfigTable _) => const OrderBy.nothing();
+typedef ReadMultipleClause = OrderBy Function(ConfigTable config);
+Expression<bool> ReadDynamicPredicateDefault(ConfigTable _) =>
     const CustomExpression('(TRUE)');
-Expression<bool> _$moor$default$2(ConfigTable _) =>
+typedef ReadDynamicPredicate = Expression<bool> Function(ConfigTable config);
+Expression<bool> TypeConverterVarPredDefault(ConfigTable _) =>
     const CustomExpression('(TRUE)');
+typedef TypeConverterVarPred = Expression<bool> Function(ConfigTable config);
 
 class JsonResult extends CustomResultSet {
   final String key;
@@ -1923,6 +1922,9 @@ class MultipleResult extends CustomResultSet {
   }
 }
 
+typedef MultiplePredicate = Expression<bool> Function(
+    WithDefaults d, WithConstraints c);
+
 class ReadRowIdResult extends CustomResultSet {
   final int rowid;
   final String configKey;
@@ -1961,6 +1963,8 @@ class ReadRowIdResult extends CustomResultSet {
         .toString();
   }
 }
+
+typedef ReadRowIdExpr = Expression<int> Function(ConfigTable config);
 
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;

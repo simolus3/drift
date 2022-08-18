@@ -4,6 +4,7 @@ import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.da
 import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import 'sql_writer.dart';
@@ -254,20 +255,25 @@ class QueryWriter {
   void _writeParameters(SqlQuery query) {
     final namedElements = <FoundElement>[];
 
+    String scopedTypeName(FoundDartPlaceholder element) {
+      return '${ReCase(query.name).pascalCase}${ReCase(element.name).pascalCase}';
+    }
+
     String typeFor(FoundElement element) {
-      var type = element.dartTypeCode();
+      return element.dartTypeCode();
+    }
 
-      if (element is FoundDartPlaceholder &&
-          element.writeAsScopedFunction(options)) {
-        // Generate a function providing result sets that are in scope as args
+    String writeScopedTypeFor(FoundDartPlaceholder element) {
+      final root = scope.root;
+      final type = typeFor(element);
+      final scopedType = scopedTypeName(element);
 
-        final args = element.availableResultSets
-            .map((e) => '${e.argumentType} ${e.name}')
-            .join(', ');
-        type = '$type Function($args)';
-      }
+      final args = element.availableResultSets
+          .map((e) => '${e.argumentType} ${e.name}')
+          .join(', ');
+      root.leaf().write('typedef $scopedType = $type Function($args);');
 
-      return type;
+      return scopedType;
     }
 
     var needsComma = false;
@@ -285,7 +291,11 @@ class QueryWriter {
       } else {
         if (needsComma) _buffer.write(', ');
 
-        final type = typeFor(element);
+        var type = typeFor(element);
+        if (element is FoundDartPlaceholder &&
+            element.writeAsScopedFunction(options)) {
+          type = writeScopedTypeFor(element);
+        }
         _buffer.write('$type ${element.dartParameterName}');
         needsComma = true;
       }
@@ -323,9 +333,9 @@ class QueryWriter {
           // used as a tear-off.
           if (optional.writeAsScopedFunction(options) && defaultCode != null) {
             final root = scope.root;
-            final counter = root.counter++;
             // ignore: prefer_interpolation_to_compose_strings
-            final functionName = r'_$moor$default$' + counter.toString();
+            final typeName = scopedTypeName(optional);
+            final functionName = '${typeName}Default';
 
             final buffer = root.leaf()
               ..write(optional.dartTypeCode(scope.generationOptions))
@@ -353,7 +363,11 @@ class QueryWriter {
           }
         }
 
-        final type = typeFor(optional);
+        var type = typeFor(optional);
+        if (optional is FoundDartPlaceholder &&
+            optional.writeAsScopedFunction(options)) {
+          type = writeScopedTypeFor(optional);
+        }
 
         // No default value, this element is required if it's not nullable
         var isMarkedAsRequired = false;
