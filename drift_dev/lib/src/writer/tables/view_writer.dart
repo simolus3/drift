@@ -41,7 +41,7 @@ class ViewWriter extends TableOrViewWriter {
     buffer.writeln(' implements HasResultSet {');
 
     buffer
-      ..writeln('final ${scope.nullableType('String')} _alias;')
+      ..writeln('final String? _alias;')
       ..writeln(
           '@override final ${databaseWriter.dbClassName} attachedDatabase;')
       ..writeln('${view.entityInfoName}(this.attachedDatabase, '
@@ -77,7 +77,7 @@ class ViewWriter extends TableOrViewWriter {
       ..write('@override\n String get entityName=>'
           ' ${asDartLiteral(view.name)};\n');
 
-    if (view.declaration is MoorViewDeclaration) {
+    if (view.declaration is DriftViewDeclaration) {
       buffer.write('@override\n String get createViewStmt =>'
           ' ${asDartLiteral(view.createSql(scope.options))};\n');
     } else {
@@ -96,7 +96,7 @@ class ViewWriter extends TableOrViewWriter {
         // Dart, but it wasn't defined by the user. Instead, the column is
         // implicitly generated from a entry in the `select()` query clause.
         // We can drop all information from it since only the name is relevant.
-        final shortColumn = MoorColumn(
+        final shortColumn = DriftColumn(
             type: column.type,
             dartGetterName: column.dartGetterName,
             name: column.name);
@@ -132,8 +132,8 @@ class ViewWriter extends TableOrViewWriter {
     buffer.write('@override\nQuery? get query => ');
     final query = view.viewQuery;
     if (query != null) {
-      buffer.write('(attachedDatabase.selectOnly(${query.from}, '
-          'includeJoinedTableColumns: false)..addColumns(\$columns))'
+      buffer.write('(attachedDatabase.selectOnly(${query.from})'
+          '..addColumns(\$columns))'
           '${query.query};');
     } else {
       buffer.write('null;\n');

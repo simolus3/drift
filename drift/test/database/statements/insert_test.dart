@@ -55,7 +55,7 @@ void main() {
 
   test('generates insert or replace statements', () async {
     await db.into(db.todosTable).insert(
-        TodoEntry(
+        const TodoEntry(
           id: 113,
           content: 'Done',
         ),
@@ -150,6 +150,14 @@ void main() {
         throwsA(isA<InvalidDataException>()),
       );
     });
+
+    test('can provide null value for column with additional checks', () async {
+      await db.todosTable.insertOne(
+          TodosTableCompanion.insert(content: 'content', title: Value(null)));
+
+      verify(executor.runInsert(
+          'INSERT INTO todos (title, content) VALUES (NULL, ?)', ['content']));
+    });
   });
 
   test('reports auto-increment id', () {
@@ -196,7 +204,8 @@ void main() {
     verify(
       executor.runInsert(
         'INSERT INTO users (name, is_awesome, profile_picture, creation_time) '
-        "VALUES (?, 1, _custom_, strftime('%s', CURRENT_TIMESTAMP))",
+        'VALUES (?, 1, _custom_, '
+        "CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER))",
         ['User name'],
       ),
     );
@@ -415,58 +424,6 @@ void main() {
     ));
   });
 
-  group('with from()', () {
-    test('insert', () async {
-      await db
-          .from(db.categories)
-          .insert()
-          .insert(CategoriesCompanion.insert(description: 'description'));
-
-      verify(executor.runInsert(
-          'INSERT INTO categories ("desc") VALUES (?)', ['description']));
-    });
-
-    test('insertOne', () async {
-      await db.from(db.categories).insertOne(
-          CategoriesCompanion.insert(description: 'description'),
-          mode: InsertMode.insertOrReplace);
-
-      verify(executor.runInsert(
-          'INSERT OR REPLACE INTO categories ("desc") VALUES (?)',
-          ['description']));
-    });
-
-    test('insertOnConflictUpdate', () async {
-      when(executor.runSelect(any, any)).thenAnswer(
-        (_) => Future.value([
-          {
-            'id': 1,
-            'desc': 'description',
-            'description_in_upper_case': 'DESCRIPTION',
-            'priority': 1,
-          },
-        ]),
-      );
-
-      final row = await db.from(db.categories).insertReturning(
-          CategoriesCompanion.insert(description: 'description'));
-      expect(
-        row,
-        Category(
-          id: 1,
-          description: 'description',
-          descriptionInUpperCase: 'DESCRIPTION',
-          priority: CategoryPriority.medium,
-        ),
-      );
-
-      verify(executor.runSelect(
-        'INSERT INTO categories ("desc") VALUES (?) RETURNING *',
-        ['description'],
-      ));
-    });
-  });
-
   group('on table instances', () {
     test('insert', () async {
       await db.categories
@@ -503,7 +460,7 @@ void main() {
           CategoriesCompanion.insert(description: 'description'));
       expect(
         row,
-        Category(
+        const Category(
           id: 1,
           description: 'description',
           descriptionInUpperCase: 'DESCRIPTION',

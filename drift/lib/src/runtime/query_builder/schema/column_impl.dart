@@ -5,7 +5,7 @@ const VerificationResult _invalidNull = VerificationResult.failure(
     "Null fields thus can't be inserted.");
 
 /// Implementation for a [Column] declared on a table.
-class GeneratedColumn<T> extends Column<T> {
+class GeneratedColumn<T extends Object> extends Column<T> {
   /// The sql name of this column.
   final String $name; // todo: Remove, replace with `name`
 
@@ -40,7 +40,7 @@ class GeneratedColumn<T> extends Column<T> {
   /// time.
   /// This field is defined as a lazy function because the check constraint
   /// typically depends on the column itself.
-  final Expression<bool?> Function()? check;
+  final Expression<bool> Function()? check;
 
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
@@ -48,17 +48,13 @@ class GeneratedColumn<T> extends Column<T> {
   /// [defaultValue] and [clientDefault] are non-null.
   ///
   /// See also: [BuildColumn.clientDefault].
-  final T Function()? clientDefault;
+  final T? Function()? clientDefault;
 
   /// Additional checks performed on values before inserts or updates.
-  final VerificationResult Function(T, VerificationMeta)? additionalChecks;
+  final VerificationResult Function(T?, VerificationMeta)? additionalChecks;
 
-  /// The sql type, such as `StringType` for texts.
-  final SqlType type;
-
-  /// The sql type name, such as `TEXT` for texts.
-  @Deprecated('Use type.sqlName instead')
-  String get typeName => type.sqlName(SqlDialect.sqlite);
+  /// The sql type to use for this column.
+  final DriftSqlType<T> type;
 
   /// If this column is generated (that is, it is a SQL expression of other)
   /// columns, contains information about how to generate this column.
@@ -95,7 +91,7 @@ class GeneratedColumn<T> extends Column<T> {
   ///
   /// This is mainly used by the generator.
   GeneratedColumnWithTypeConverter<D, T> withConverter<D>(
-      TypeConverter<D, T> converter) {
+      TypeConverter<D, T?> converter) {
     return GeneratedColumnWithTypeConverter._(
       converter,
       $name,
@@ -122,7 +118,7 @@ class GeneratedColumn<T> extends Column<T> {
     if (isSerial) {
       into.buffer.write('$escapedName bigserial PRIMARY KEY NOT NULL');
     } else {
-      into.buffer.write('$escapedName ${type.sqlName(into.dialect)}');
+      into.buffer.write('$escapedName ${type.sqlTypeName(into)}');
     }
 
     if ($customConstraints == null) {
@@ -190,7 +186,7 @@ class GeneratedColumn<T> extends Column<T> {
   /// implementation only checks for nullability, but subclasses might enforce
   /// additional checks. For instance, a text column might verify that a text
   /// has a certain length.
-  VerificationResult isAcceptableValue(T value, VerificationMeta meta) {
+  VerificationResult isAcceptableValue(T? value, VerificationMeta meta) {
     final nullOk = $nullable;
     if (!nullOk && value == null) {
       return _invalidNull;
@@ -208,7 +204,7 @@ class GeneratedColumn<T> extends Column<T> {
   VerificationResult isAcceptableOrUnknown(
       Expression value, VerificationMeta meta) {
     if (value is Variable) {
-      return isAcceptableValue(value.value as T, meta);
+      return isAcceptableValue(value.value as T?, meta);
     } else {
       return const VerificationResult.success();
     }
@@ -257,24 +253,25 @@ class GeneratedColumn<T> extends Column<T> {
 ///
 /// This provides the [equalsValue] method, which can be used to compare this
 /// column against a value mapped through a type converter.
-class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
+class GeneratedColumnWithTypeConverter<D, S extends Object>
+    extends GeneratedColumn<S> {
   /// The type converted used on this column.
-  final TypeConverter<D, S> converter;
+  final TypeConverter<D, S?> converter;
 
   GeneratedColumnWithTypeConverter._(
     this.converter,
     String name,
     String tableName,
     bool nullable,
-    S Function()? clientDefault,
-    SqlType type,
+    S? Function()? clientDefault,
+    DriftSqlType<S> type,
     String? defaultConstraints,
     String? customConstraints,
     Expression<S>? defaultValue,
-    VerificationResult Function(S, VerificationMeta)? additionalChecks,
+    VerificationResult Function(S?, VerificationMeta)? additionalChecks,
     bool requiredDuringInsert,
     GeneratedAs? generatedAs,
-    Expression<bool?> Function()? check,
+    Expression<bool> Function()? check,
   ) : super(
           name,
           tableName,
@@ -294,7 +291,27 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
   ///
   /// The value will be mapped using the [converter] applied to this column.
   Expression<bool> equalsValue(D? dartValue) {
-    return equals(converter.mapToSql(dartValue) as S);
+    S? mappedValue;
+
+    if ($nullable) {
+      // For nullable columns, the type converter needs to accept null values.
+      // ignore: unnecessary_cast, https://github.com/dart-lang/sdk/issues/34150
+      mappedValue = (converter as TypeConverter<D?, S?>).toSql(dartValue);
+    } else {
+      if (dartValue == null) {
+        throw ArgumentError(
+            "This non-nullable column can't be equal to `null`.", 'dartValue');
+      }
+
+      mappedValue = converter.toSql(dartValue);
+    }
+
+    if (!$nullable && dartValue == null) {
+      throw ArgumentError(
+          "This non-nullable column can't be equal to `null`.", 'dartValue');
+    }
+
+    return mappedValue == null ? this.isNull() : equals(mappedValue);
   }
 }
 

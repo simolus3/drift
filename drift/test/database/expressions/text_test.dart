@@ -25,11 +25,11 @@ void main() {
   });
 
   test('generates collate expressions', () {
-    final ctx = GenerationContext.fromDb(db);
-    expression.collate(Collate.noCase).writeInto(ctx);
-
-    expect(ctx.sql, 'col COLLATE NOCASE');
-    expect(ctx.boundVariables, isEmpty);
+    expect(expression.collate(Collate.binary), generates('col COLLATE BINARY'));
+    expect(expression.collate(Collate.noCase), generates('col COLLATE NOCASE'));
+    expect(expression.collate(Collate.rTrim), generates('col COLLATE RTRIM'));
+    expect(expression.collate(const Collate('custom')),
+        generates('col COLLATE custom'));
   });
 
   test('can use contains', () {

@@ -12,7 +12,7 @@ import '../drift.dart';
 /// instead of `NaN`.
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlPow(Expression<num?> base, Expression<num?> exponent) {
+Expression<num> sqlPow(Expression<num> base, Expression<num> exponent) {
   return FunctionCallExpression('pow', [base, exponent]);
 }
 
@@ -22,7 +22,7 @@ Expression<num?> sqlPow(Expression<num?> base, Expression<num?> exponent) {
 /// of `NaN` for negative values.
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlSqrt(Expression<num?> value) {
+Expression<num> sqlSqrt(Expression<num> value) {
   return FunctionCallExpression('sqrt', [value]);
 }
 
@@ -31,7 +31,7 @@ Expression<num?> sqlSqrt(Expression<num?> value) {
 /// This function is equivalent to [sin].
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlSin(Expression<num?> value) {
+Expression<num> sqlSin(Expression<num> value) {
   return FunctionCallExpression('sin', [value]);
 }
 
@@ -40,7 +40,7 @@ Expression<num?> sqlSin(Expression<num?> value) {
 /// This function is equivalent to [sin].
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlCos(Expression<num?> value) {
+Expression<num> sqlCos(Expression<num> value) {
   return FunctionCallExpression('cos', [value]);
 }
 
@@ -49,7 +49,7 @@ Expression<num?> sqlCos(Expression<num?> value) {
 /// This function is equivalent to [tan].
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlTan(Expression<num?> value) {
+Expression<num> sqlTan(Expression<num> value) {
   return FunctionCallExpression('tan', [value]);
 }
 
@@ -59,7 +59,7 @@ Expression<num?> sqlTan(Expression<num?> value) {
 /// instead of `NaN`.
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlAsin(Expression<num?> value) {
+Expression<num> sqlAsin(Expression<num> value) {
   return FunctionCallExpression('asin', [value]);
 }
 
@@ -69,7 +69,7 @@ Expression<num?> sqlAsin(Expression<num?> value) {
 /// instead of `NaN`.
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlAcos(Expression<num?> value) {
+Expression<num> sqlAcos(Expression<num> value) {
   return FunctionCallExpression('acos', [value]);
 }
 
@@ -79,13 +79,13 @@ Expression<num?> sqlAcos(Expression<num?> value) {
 /// instead of `NaN`.
 ///
 /// This function is only available when using a `NativeDatabase`.
-Expression<num?> sqlAtan(Expression<num?> value) {
+Expression<num> sqlAtan(Expression<num> value) {
   return FunctionCallExpression('atan', [value]);
 }
 
 /// Adds functionality to string expressions that only work when using
 /// a `NativeDatabase`.
-extension DriftNativeStringExtensions on Expression<String?> {
+extension DriftNativeStringExtensions on Expression<String> {
   /// Version of `contains` that allows controlling case sensitivity better.
   ///
   /// The default `contains` method uses sqlite's `LIKE`, which is case-
@@ -100,7 +100,7 @@ extension DriftNativeStringExtensions on Expression<String?> {
   /// Note that, while Dart has better support for an international alphabet,
   /// it can still yield unexpected results like the
   /// [Turkish İ Problem](https://haacked.com/archive/2012/07/05/turkish-i-problem-and-why-you-should-care.aspx/)
-  Expression<bool?> containsCase(String substring,
+  Expression<bool> containsCase(String substring,
       {bool caseSensitive = false}) {
     return FunctionCallExpression('moor_contains', [
       this,

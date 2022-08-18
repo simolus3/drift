@@ -5,7 +5,7 @@ data:
 template: layouts/docs/single
 ---
 
-{% assign snippets = 'package:moor_documentation/snippets/many_to_many_relationships.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/many_to_many_relationships.dart.excerpt.json' | readString | json_decode %}
 
 ## Defining the model
 
@@ -15,7 +15,10 @@ queries in drift. First, we need to store some items that can be bought:
 {% include "blocks/snippet" snippets=snippets name="buyable_items" %}
 
 We're going to define two tables for shopping carts: One for the cart
-itself, and another one to store the entries in the cart:
+itself, and another one to store the entries in the cart.
+The latter uses [references]({{ '../Getting started/advanced_dart_tables.md#references' | pageUrl }})
+to express the foreign key constraints of referencing existing shopping
+carts or product items.
 
 {% include "blocks/snippet" snippets=snippets name="cart_tables" %}
 

@@ -26,6 +26,10 @@ abstract class Query<T extends HasResultSet, D> extends Component {
   @protected
   Limit? limitExpr;
 
+  /// Whether a `RETURNING *` clause should be added to this statement.
+  @protected
+  bool writeReturningClause = false;
+
   GroupBy? _groupBy;
 
   /// Subclasses must override this and write the part of the statement that
@@ -53,6 +57,12 @@ abstract class Query<T extends HasResultSet, D> extends Component {
     writeWithSpace(_groupBy);
     writeWithSpace(orderByExpr);
     writeWithSpace(limitExpr);
+
+    if (writeReturningClause) {
+      if (needsWhitespace) context.writeWhitespace();
+
+      context.buffer.write('RETURNING *');
+    }
   }
 
   /// Constructs the query that can then be sent to the database executor.
@@ -325,7 +335,7 @@ mixin SingleTableQueryMixin<T extends HasResultSet, D> on Query<T, D> {
   ///    which explains how to express most SQL expressions in Dart.
   /// If you want to remove duplicate rows from a query, use the `distinct`
   /// parameter on [DatabaseConnectionUser.select].
-  void where(Expression<bool?> Function(T tbl) filter) {
+  void where(Expression<bool> Function(T tbl) filter) {
     final predicate = filter(table.asDslTable);
 
     if (whereExpr == null) {
@@ -346,6 +356,13 @@ extension QueryTableExtensions<T extends Table, D>
 
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
+  ///
+  /// Note that, as far as primary key equality is concerned, `NULL` values are
+  /// considered distinct from all values (including other `NULL`s).
+  /// This matches sqlite3's behavior of not counting duplicate `NULL`s as a
+  /// uniqueness constraint violation for primary keys, but makes it impossible
+  /// to find other rows with [whereSamePrimaryKey] if nullable primary keys are
+  /// used.
   void whereSamePrimaryKey(Insertable<D> d) {
     final source = _sourceTable;
     assert(
@@ -374,7 +391,17 @@ extension QueryTableExtensions<T extends Table, D>
       return MapEntry(primaryKeyColumns[columnName]!, value);
     });
 
-    Expression<bool?>? predicate;
+    assert(
+      primaryKeyValues.values
+          .every((value) => value is! Variable || value.value != null),
+      'Tried to find a row with a matching primary key that has a null value, '
+      'which is not supported. In sqlite3, `NULL` values in a primary key are '
+      'considered distinct from all other values (including other `NULL`s), so '
+      "drift can't find a matching row for this query. \n"
+      'For details, see https://github.com/simolus3/drift/issues/1956#issuecomment-1200502026',
+    );
+
+    Expression<bool>? predicate;
     for (final entry in primaryKeyValues.entries) {
       final comparison =
           _Comparison(entry.key, _ComparisonOperator.equal, entry.value);

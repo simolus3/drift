@@ -72,7 +72,7 @@ void main() {
 
     expect(
       row.readTable(categories),
-      Category(
+      const Category(
         id: 3,
         description: 'description',
         priority: CategoryPriority.high,
@@ -107,7 +107,7 @@ void main() {
     expect(() => row.readTable(db.categories), throwsArgumentError);
     expect(
         row.readTable(db.todosTable),
-        TodoEntry(
+        const TodoEntry(
           id: 5,
           title: 'title',
           content: 'content',
@@ -224,7 +224,7 @@ void main() {
     expect(
       result.readTable(categories),
       equals(
-        Category(
+        const Category(
           id: 3,
           description: 'Description',
           descriptionInUpperCase: 'DESCRIPTION',
@@ -274,7 +274,7 @@ void main() {
     expect(
       result.readTable(categories),
       equals(
-        Category(
+        const Category(
           id: 3,
           description: 'Description',
           descriptionInUpperCase: 'DESCRIPTION',
@@ -330,7 +330,7 @@ void main() {
     expect(result.readTableOrNull(todos), isNull);
     expect(
       result.readTable(categories),
-      Category(
+      const Category(
         id: 3,
         description: 'desc',
         descriptionInUpperCase: 'DESC',
@@ -406,8 +406,7 @@ void main() {
     final categories = db.categories;
     final todos = db.todosTable;
 
-    final query =
-        db.selectOnly(categories, includeJoinedTableColumns: false).join([
+    final query = db.selectOnly(categories).join([
       innerJoin(
         todos,
         todos.category.equalsExp(categories.id),
@@ -442,14 +441,19 @@ void main() {
       () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));
 
-    DriftWrappedException wrappedException;
-    try {
-      await db.select(db.todosTable).join([crossJoin(db.todosTable)]).get();
-      fail('expected this to throw');
-    } on DriftWrappedException catch (e) {
-      wrappedException = e;
-    }
+    expect(
+      db.select(db.todosTable).join([crossJoin(db.todosTable)]).get(),
+      throwsA(isA<DriftWrappedException>()
+          .having((e) => e.toString(), 'toString', contains('possible cause'))),
+    );
 
-    expect(wrappedException.toString(), contains('possible cause'));
+    // Joining with aliases should not throw
+    final t1 = db.alias(db.todosTable, 't1');
+    final t2 = db.alias(db.todosTable, 't2');
+
+    expect(
+      db.select(t1).join([crossJoin(t2)]).get(),
+      throwsA(isNot(isA<DriftWrappedException>())),
+    );
   });
 }

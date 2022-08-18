@@ -10,7 +10,7 @@ void main() {
 
   final db = WebDatabase.withStorage(DriftWebStorage.indexedDb('worker',
       migrateFromLocalStorage: false, inWebWorker: true));
-  final server = DriftServer(DatabaseConnection.fromExecutor(db));
+  final server = DriftServer(DatabaseConnection(db));
 
   self.onConnect.listen((event) {
     final msg = event as MessageEvent;

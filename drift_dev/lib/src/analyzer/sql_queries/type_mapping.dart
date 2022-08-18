@@ -4,20 +4,22 @@ import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 
+import '../options.dart';
 import 'required_variables.dart';
 
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
 class TypeMapper {
-  final Map<Table, MoorTable> _engineTablesToSpecified = {};
+  final Map<Table, DriftTable> _engineTablesToSpecified = {};
   final Map<View, MoorView> _engineViewsToSpecified = {};
-  final bool applyTypeConvertersToVariables;
 
-  TypeMapper({this.applyTypeConvertersToVariables = false});
+  final DriftOptions options;
 
-  /// Convert a [MoorTable] from moor into something that can be understood
-  /// by the sqlparser library.
-  Table extractStructure(MoorTable table) {
+  TypeMapper({required this.options});
+
+  /// Convert a [DriftTable] from this package into something that can be
+  /// understood by the sqlparser library.
+  Table extractStructure(DriftTable table) {
     if (table.parserTable != null) {
       final parserTbl = table.parserTable!;
       _engineTablesToSpecified[parserTbl] = table;
@@ -34,7 +36,7 @@ class TypeMapper {
 
       final column = TableColumn(specified.name.name, type,
           isGenerated: specified.isGenerated);
-      column.setMeta<MoorColumn>(specified);
+      column.setMeta<DriftColumn>(specified);
 
       columns.add(column);
     }
@@ -44,57 +46,67 @@ class TypeMapper {
       resolvedColumns: columns,
       isVirtual: table.isVirtualTable,
     );
-    engineTable.setMeta<MoorTable>(table);
+    engineTable.setMeta<DriftTable>(table);
     _engineTablesToSpecified[engineTable] = table;
     return engineTable;
   }
 
-  ResolvedType resolveForColumnType(ColumnType type, {TypeHint? overrideHint}) {
+  ResolvedType resolveForColumnType(DriftSqlType type,
+      {TypeHint? overrideHint}) {
     switch (type) {
-      case ColumnType.integer:
+      case DriftSqlType.int:
         return ResolvedType(type: BasicType.int, hint: overrideHint);
-      case ColumnType.bigInt:
+      case DriftSqlType.bigInt:
         return ResolvedType(
             type: BasicType.int, hint: overrideHint ?? const IsBigInt());
-      case ColumnType.text:
+      case DriftSqlType.string:
         return ResolvedType(type: BasicType.text, hint: overrideHint);
-      case ColumnType.boolean:
+      case DriftSqlType.bool:
         return ResolvedType(
             type: BasicType.int, hint: overrideHint ?? const IsBoolean());
-      case ColumnType.datetime:
+      case DriftSqlType.dateTime:
         return ResolvedType(
-            type: BasicType.int, hint: overrideHint ?? const IsDateTime());
-      case ColumnType.blob:
+          type: options.storeDateTimeValuesAsText
+              ? BasicType.text
+              : BasicType.int,
+          hint: overrideHint ?? const IsDateTime(),
+        );
+      case DriftSqlType.blob:
         return ResolvedType(type: BasicType.blob, hint: overrideHint);
-      case ColumnType.real:
+      case DriftSqlType.double:
         return ResolvedType(type: BasicType.real, hint: overrideHint);
     }
   }
 
-  ColumnType resolvedToMoor(ResolvedType? type) {
+  DriftSqlType resolvedToMoor(ResolvedType? type) {
     if (type == null) {
-      return ColumnType.text;
+      return DriftSqlType.string;
     }
 
     switch (type.type) {
       case null:
       case BasicType.nullType:
-        return ColumnType.text;
+        return DriftSqlType.string;
       case BasicType.int:
         if (type.hint is IsBoolean) {
-          return ColumnType.boolean;
-        } else if (type.hint is IsDateTime) {
-          return ColumnType.datetime;
+          return DriftSqlType.bool;
+        } else if (!options.storeDateTimeValuesAsText &&
+            type.hint is IsDateTime) {
+          return DriftSqlType.dateTime;
         } else if (type.hint is IsBigInt) {
-          return ColumnType.bigInt;
+          return DriftSqlType.bigInt;
         }
-        return ColumnType.integer;
+        return DriftSqlType.int;
       case BasicType.real:
-        return ColumnType.real;
+        return DriftSqlType.double;
       case BasicType.text:
-        return ColumnType.text;
+        if (options.storeDateTimeValuesAsText && type.hint is IsDateTime) {
+          return DriftSqlType.dateTime;
+        }
+
+        return DriftSqlType.string;
       case BasicType.blob:
-        return ColumnType.blob;
+        return DriftSqlType.blob;
     }
   }
 
@@ -195,7 +207,7 @@ class TypeMapper {
 
         // Recognizing type converters on variables is opt-in since it would
         // break existing code.
-        if (applyTypeConvertersToVariables &&
+        if (options.applyConvertersOnVariables &&
             internalType.type?.hint is TypeConverterHint) {
           converter = (internalType.type!.hint as TypeConverterHint).converter;
         }
@@ -279,7 +291,7 @@ class TypeMapper {
     final type = placeholder.when(
       isExpression: (e) {
         final foundType = context.typeOf(e);
-        ColumnType? columnType;
+        DriftSqlType? columnType;
         if (foundType.type != null) {
           columnType = resolvedToMoor(foundType.type);
         }
@@ -304,8 +316,7 @@ class TypeMapper {
       },
     );
 
-    final availableResults =
-        placeholder.scope.allOf<ResultSetAvailableInStatement>();
+    final availableResults = placeholder.statementScope.allAvailableResultSets;
     final availableMoorResults = <AvailableMoorResultSet>[];
     for (final available in availableResults) {
       final aliasedResultSet = available.resultSet.resultSet;
@@ -318,7 +329,7 @@ class TypeMapper {
         continue;
       }
 
-      MoorEntityWithResultSet moorEntity;
+      DriftEntityWithResultSet moorEntity;
 
       if (resultSet is Table) {
         moorEntity = tableToMoor(resultSet)!;
@@ -338,7 +349,7 @@ class TypeMapper {
       ..astNode = placeholder;
   }
 
-  MoorTable? tableToMoor(Table table) {
+  DriftTable? tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
   }
 
@@ -346,7 +357,7 @@ class TypeMapper {
     return _engineViewsToSpecified[view];
   }
 
-  MoorEntityWithResultSet? viewOrTableToMoor(dynamic entity) {
+  DriftEntityWithResultSet? viewOrTableToMoor(dynamic entity) {
     if (entity is Table) {
       return tableToMoor(entity);
     } else if (entity is View) {

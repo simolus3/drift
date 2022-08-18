@@ -5,35 +5,33 @@ import 'package:build/build.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-/// A support builder that runs before the main moor_generator to parse and
-/// resolve inline Dart resources in a moor file.
+/// A support builder that runs before the main generator to parse and resolve
+/// inline Dart resources in a moor file.
 ///
-/// We use this builder to extract and analyze inline Dart expressions from moor
-/// files, which are mainly used for type converters. For instance, let's say
-/// we had a moor file like this:
+/// We use this builder to extract and analyze inline Dart expressions from
+/// drift files, which are mainly used for type converters. For instance, let's
+/// say we had a drift file like this:
 /// ```
-/// -- called input.moor
+/// -- called input.drift
 /// import 'package:my_package/converter.dart';
 ///
 /// CREATE TABLE users (
 ///   preferences TEXT MAPPED BY `const PreferencesConverter()`
 /// );
 /// ```
-/// For that file, the [PreprocessBuilder] would generate a `.dart_in_moor` file
-/// which contains information about the static type of all expressions in the
-/// moor file. The main generator can then read the `.dart_in_moor` file to
-/// resolve those expressions.
+/// For that file, the [PreprocessBuilder] would generate a `.dart_in_drift`
+/// file which contains information about the static type of all expressions in
+/// the drift file. The main generator can then read the `.dart_in_drift` file
+/// to resolve those expressions.
 class PreprocessBuilder extends Builder {
-  static const _outputs = ['.temp.dart', '.dart_in_moor'];
+  static const _outputs = ['.temp.dart', '.dart_in_drift'];
 
-  final bool isForNewDriftPackage;
-
-  PreprocessBuilder({this.isForNewDriftPackage = false});
+  PreprocessBuilder();
 
   @override
   late final Map<String, List<String>> buildExtensions = {
     '.moor': _outputs,
-    if (isForNewDriftPackage) '.drift': _outputs
+    '.drift': _outputs
   };
 
   @override
@@ -112,7 +110,7 @@ class PreprocessBuilder extends Builder {
     await buildStep.writeAsString(tempDartAsset, dartBuffer.toString());
 
     // And the file mapping Dart expressions onto the variable names here
-    final outputAsset = input.changeExtension('.dart_in_moor');
+    final outputAsset = input.changeExtension('.dart_in_drift');
     await buildStep.writeAsString(outputAsset, json.encode(codeToField));
   }
 

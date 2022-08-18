@@ -3,23 +3,14 @@
 part of 'main.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
 class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
-  TodoCategory({required this.id, required this.name});
-  factory TodoCategory.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return TodoCategory(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-    );
-  }
+  const TodoCategory({required this.id, required this.name});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -136,16 +127,16 @@ class $TodoCategoriesTable extends TodoCategories
   $TodoCategoriesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -173,8 +164,13 @@ class $TodoCategoriesTable extends TodoCategories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return TodoCategory.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoCategory(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
   }
 
   @override
@@ -189,34 +185,19 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
   final String? content;
   final int categoryId;
   final String? generatedText;
-  TodoItem(
+  const TodoItem(
       {required this.id,
       required this.title,
       this.content,
       required this.categoryId,
       this.generatedText});
-  factory TodoItem.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return TodoItem(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      content: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      categoryId: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}category_id'])!,
-      generatedText: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}generated_text']),
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || content != null) {
-      map['content'] = Variable<String?>(content);
+      map['content'] = Variable<String>(content);
     }
     map['category_id'] = Variable<int>(categoryId);
     return map;
@@ -322,7 +303,7 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
   static Insertable<TodoItem> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<String?>? content,
+    Expression<String>? content,
     Expression<int>? categoryId,
   }) {
     return RawValuesInsertable({
@@ -356,7 +337,7 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
       map['title'] = Variable<String>(title.value);
     }
     if (content.present) {
-      map['content'] = Variable<String?>(content.value);
+      map['content'] = Variable<String>(content.value);
     }
     if (categoryId.present) {
       map['category_id'] = Variable<int>(categoryId.value);
@@ -384,34 +365,34 @@ class $TodoItemsTable extends TodoItems
   $TodoItemsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
-  late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, true,
-      type: const StringType(), requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   final VerificationMeta _categoryIdMeta = const VerificationMeta('categoryId');
   @override
-  late final GeneratedColumn<int?> categoryId = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
       'category_id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints: 'REFERENCES todo_categories (id)');
   final VerificationMeta _generatedTextMeta =
       const VerificationMeta('generatedText');
   @override
-  late final GeneratedColumn<String?> generatedText = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> generatedText = GeneratedColumn<String>(
       'generated_text', aliasedName, true,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: false,
       generatedAs: GeneratedAs(
           title + const Constant(' (') + content + const Constant(')'), false));
@@ -461,8 +442,19 @@ class $TodoItemsTable extends TodoItems
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return TodoItem.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoItem(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      content: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}content']),
+      categoryId: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
+      generatedText: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
+    );
   }
 
   @override
@@ -474,17 +466,8 @@ class $TodoItemsTable extends TodoItems
 class TodoCategoryItemCountData extends DataClass {
   final String name;
   final int itemCount;
-  TodoCategoryItemCountData({required this.name, required this.itemCount});
-  factory TodoCategoryItemCountData.fromData(Map<String, dynamic> data,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return TodoCategoryItemCountData(
-      name: const StringType().mapFromDatabaseResponse(
-          data['${effectivePrefix}todo_categories.name'])!,
-      itemCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}item_count'])!,
-    );
-  }
+  const TodoCategoryItemCountData(
+      {required this.name, required this.itemCount});
   factory TodoCategoryItemCountData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -554,16 +537,21 @@ class $TodoCategoryItemCountView
   @override
   TodoCategoryItemCountData map(Map<String, dynamic> data,
       {String? tablePrefix}) {
-    return TodoCategoryItemCountData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoCategoryItemCountData(
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      itemCount: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}item_count'])!,
+    );
   }
 
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType());
-  late final GeneratedColumn<int?> itemCount = GeneratedColumn<int?>(
+      type: DriftSqlType.string);
+  late final GeneratedColumn<int> itemCount = GeneratedColumn<int>(
       'item_count', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       generatedAs: GeneratedAs(todoItems.id.count(), false));
   @override
   $TodoCategoryItemCountView createAlias(String alias) {
@@ -571,10 +559,8 @@ class $TodoCategoryItemCountView
   }
 
   @override
-  Query? get query => (attachedDatabase.selectOnly(todoCategories,
-              includeJoinedTableColumns: false)
-            ..addColumns($columns))
-          .join([
+  Query? get query =>
+      (attachedDatabase.selectOnly(todoCategories)..addColumns($columns)).join([
         innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
   @override
@@ -584,17 +570,8 @@ class $TodoCategoryItemCountView
 class TodoItemWithCategoryNameViewData extends DataClass {
   final int id;
   final String title;
-  TodoItemWithCategoryNameViewData({required this.id, required this.title});
-  factory TodoItemWithCategoryNameViewData.fromData(Map<String, dynamic> data,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return TodoItemWithCategoryNameViewData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}todo_items.id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-    );
-  }
+  const TodoItemWithCategoryNameViewData(
+      {required this.id, required this.title});
   factory TodoItemWithCategoryNameViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -664,15 +641,20 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   @override
   TodoItemWithCategoryNameViewData map(Map<String, dynamic> data,
       {String? tablePrefix}) {
-    return TodoItemWithCategoryNameViewData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoItemWithCategoryNameViewData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+    );
   }
 
-  late final GeneratedColumn<int?> id =
-      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<int> id =
+      GeneratedColumn<int>('id', aliasedName, false, type: DriftSqlType.int);
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       generatedAs: GeneratedAs(
           todoItems.title +
               const Constant('(') +
@@ -686,9 +668,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 
   @override
   Query? get query =>
-      (attachedDatabase.selectOnly(todoItems, includeJoinedTableColumns: false)
-            ..addColumns($columns))
-          .join([
+      (attachedDatabase.selectOnly(todoItems)..addColumns($columns)).join([
         innerJoin(
             todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
       ]);
@@ -697,7 +677,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$Database(QueryExecutor e) : super(e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
   late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable(this);
   late final $TodoItemsTable todoItems = $TodoItemsTable(this);
@@ -706,7 +686,8 @@ abstract class _$Database extends GeneratedDatabase {
   late final $TodoItemWithCategoryNameViewView customViewName =
       $TodoItemWithCategoryNameViewView(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [todoCategories, todoItems, todoCategoryItemCount, customViewName];

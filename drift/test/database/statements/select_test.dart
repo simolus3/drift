@@ -14,7 +14,7 @@ final _dataOfTodoEntry = {
   'category': 3
 };
 
-final _todoEntry = TodoEntry(
+const _todoEntry = TodoEntry(
   id: 10,
   title: 'A todo title',
   content: 'Content',
@@ -123,7 +123,7 @@ void main() {
           'category': null,
         }
       ];
-      final resolved = TodoEntry(
+      const resolved = TodoEntry(
         id: 10,
         title: null,
         content: 'Content',
@@ -158,10 +158,10 @@ void main() {
         [],
         [_dataOfTodoEntry, _dataOfTodoEntry],
       ];
-      var _currentRow = 0;
+      var currentRow = 0;
 
       when(executor.runSelect('SELECT * FROM todos;', any)).thenAnswer((_) {
-        return Future.value(resultRows[_currentRow++]);
+        return Future.value(resultRows[currentRow++]);
       });
 
       expectLater(
@@ -193,7 +193,7 @@ void main() {
 
     expect(
       category,
-      Category(
+      const Category(
         id: 1,
         description: 'description',
         descriptionInUpperCase: 'DESCRIPTION',
@@ -210,18 +210,5 @@ void main() {
 
     await pumpEventQueue();
     db.markTablesUpdated([db.categories]);
-  });
-
-  test('can create select statements with from()', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
-    final result = await db.from(db.todosTable).select().get();
-    expect(result, isEmpty);
-
-    final anotherResult = await db.from(db.todosTable).selectOnly().get();
-    expect(anotherResult, isEmpty);
-
-    verify(executor.runSelect('SELECT * FROM todos;', []));
-    verify(executor.runSelect('SELECT  FROM todos;', []));
   });
 }

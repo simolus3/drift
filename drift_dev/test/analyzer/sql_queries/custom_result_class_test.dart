@@ -7,12 +7,12 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  Future<BaseMoorAccessor> _analyzeQueries(String moorFile) async {
+  Future<BaseDriftAccessor> _analyzeQueries(String moorFile) async {
     final state = TestState.withContent({'foo|lib/a.moor': moorFile});
 
     final result = await state.analyze('package:foo/a.moor');
     state.close();
-    final queries = (result.currentResult as ParsedMoorFile).resolvedQueries;
+    final queries = (result.currentResult as ParsedDriftFile).resolvedQueries;
 
     return Database()..queries = queries;
   }

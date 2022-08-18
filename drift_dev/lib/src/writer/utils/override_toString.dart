@@ -34,5 +34,5 @@ void overrideToString(
 
   into
     ..write("..write(')')).toString();")
-    ..write('\}\n');
+    ..writeln('}');
 }

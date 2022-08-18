@@ -196,6 +196,7 @@ void main() {
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
         (i.positionalArguments.single as Function(QueryDelegate))(delegate);
       });
+      when(transactionDelegate.managesLockInternally).thenReturn(true);
 
       when(delegate.transactionDelegate).thenReturn(transactionDelegate);
 
@@ -203,6 +204,49 @@ void main() {
       final transaction = db.beginTransaction();
       await transaction.ensureOpen(_FakeExecutorUser());
       await transaction.send();
+
+      verify(transactionDelegate.startTransaction(any));
+    });
+
+    test('supported transactions - begin fails', () async {
+      final transactionDelegate = _MockTransactionDelegate();
+      final exception = Exception('expected');
+
+      when(transactionDelegate.startTransaction(any)).thenAnswer((i) async {
+        throw exception;
+      });
+      when(transactionDelegate.managesLockInternally).thenReturn(true);
+
+      when(delegate.transactionDelegate).thenReturn(transactionDelegate);
+
+      await db.ensureOpen(_FakeExecutorUser());
+      final transaction = db.beginTransaction();
+
+      await expectLater(
+          transaction.ensureOpen(_FakeExecutorUser()), throwsA(exception));
+      // This is a no-op now that shouldn't throw
+      await transaction.send();
+
+      verify(transactionDelegate.startTransaction(any));
+    });
+
+    test('supported transactions - commit fails', () async {
+      final transactionDelegate = _MockTransactionDelegate();
+      final exception = Exception('expected');
+
+      when(transactionDelegate.startTransaction(any)).thenAnswer((i) async {
+        await (i.positionalArguments.single as Function(
+            QueryDelegate))(delegate);
+        throw exception;
+      });
+      when(transactionDelegate.managesLockInternally).thenReturn(true);
+
+      when(delegate.transactionDelegate).thenReturn(transactionDelegate);
+
+      await db.ensureOpen(_FakeExecutorUser());
+      final transaction = db.beginTransaction();
+      await transaction.ensureOpen(_FakeExecutorUser());
+      await expectLater(transaction.send(), throwsA(exception));
 
       verify(transactionDelegate.startTransaction(any));
     });

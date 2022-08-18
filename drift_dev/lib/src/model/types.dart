@@ -2,7 +2,6 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/model/model.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
-import 'package:drift_dev/writer.dart';
 
 /// Something that has a type.
 ///
@@ -18,7 +17,7 @@ abstract class HasType {
   bool get isArray;
 
   /// The associated sql type.
-  ColumnType get type;
+  DriftSqlType get type;
 
   /// The applied type converter, or null.
   UsedTypeConverter? get typeConverter;
@@ -51,14 +50,14 @@ class DriftDartType {
     return type.getDisplayString(withNullability: withNullability);
   }
 
-  String codeString([GenerationOptions options = const GenerationOptions()]) {
+  String codeString() {
     if (overiddenSource != null) {
       if (nullabilitySuffix == NullabilitySuffix.star) {
         return getDisplayString(withNullability: false);
       }
-      return getDisplayString(withNullability: options.nnbd);
+      return getDisplayString(withNullability: true);
     } else {
-      return type.codeString(options);
+      return type.codeString();
     }
   }
 }
@@ -66,83 +65,94 @@ class DriftDartType {
 extension OperationOnTypes on HasType {
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
-    return typeConverter?.hasNullableDartType ?? nullable && !isArray;
+    if (isArray) return false; // Is a List<Something> in Dart, not nullable
+
+    final converter = typeConverter;
+    if (converter != null) {
+      return converter.mapsToNullableDart(nullable);
+    }
+
+    return nullable;
   }
 
   /// the Dart type of this column that can be handled by moors type mapping.
   /// Basically the same as [dartTypeCode], minus custom types and nullability.
   String get variableTypeName => dartTypeNames[type]!;
 
-  /// The class inside the moor library that represents the same sql type as
-  /// this column.
-  String get sqlTypeName => sqlTypes[type]!;
-
   /// The moor Dart type that matches the type of this column.
   ///
   /// This is the same as [dartTypeCode] but without custom types.
-  String variableTypeCode(
-      [GenerationOptions options = const GenerationOptions()]) {
+  String variableTypeCode({bool? nullable}) {
     if (isArray) {
-      return 'List<${variableTypeCodeWithoutArray(options)}>';
+      return 'List<${innerColumnType(nullable: nullable ?? this.nullable)}>';
     } else {
-      return variableTypeCodeWithoutArray(options);
+      return innerColumnType(nullable: nullable ?? this.nullable);
     }
   }
 
-  String variableTypeCodeWithoutArray(
-      [GenerationOptions options = const GenerationOptions()]) {
-    final innerHasSuffix = nullable && options.nnbd;
-    return innerHasSuffix ? '$variableTypeName?' : variableTypeName;
+  String innerColumnType({bool nullable = false}) {
+    String code;
+
+    switch (type) {
+      case DriftSqlType.int:
+        code = 'int';
+        break;
+      case DriftSqlType.bigInt:
+        code = 'BigInt';
+        break;
+      case DriftSqlType.string:
+        code = 'String';
+        break;
+      case DriftSqlType.bool:
+        code = 'bool';
+        break;
+      case DriftSqlType.dateTime:
+        code = 'DateTime';
+        break;
+      case DriftSqlType.blob:
+        code = 'Uint8List';
+        break;
+      case DriftSqlType.double:
+        code = 'double';
+        break;
+    }
+
+    return nullable ? '$code?' : code;
   }
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be
   /// [int].
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
+  String dartTypeCode() {
     final converter = typeConverter;
     if (converter != null) {
-      final needsSuffix = options.nnbd &&
-          !options.nullAwareTypeConverters &&
-          nullable &&
-          !converter.hasNullableDartType;
-      final baseType = converter.mappedType.codeString(options);
-
-      final inner = needsSuffix ? '$baseType?' : baseType;
+      var inner = converter.dartType.codeString();
+      if (converter.canBeSkippedForNulls && nullable) inner += '?';
       return isArray ? 'List<$inner>' : inner;
     }
 
-    return variableTypeCode(options);
+    return variableTypeCode();
   }
 }
 
-const Map<ColumnType, String> dartTypeNames = {
-  ColumnType.boolean: 'bool',
-  ColumnType.text: 'String',
-  ColumnType.integer: 'int',
-  ColumnType.bigInt: 'BigInt',
-  ColumnType.datetime: 'DateTime',
-  ColumnType.blob: 'Uint8List',
-  ColumnType.real: 'double',
+const Map<DriftSqlType, String> dartTypeNames = {
+  DriftSqlType.bool: 'bool',
+  DriftSqlType.string: 'String',
+  DriftSqlType.int: 'int',
+  DriftSqlType.bigInt: 'BigInt',
+  DriftSqlType.dateTime: 'DateTime',
+  DriftSqlType.blob: 'Uint8List',
+  DriftSqlType.double: 'double',
 };
 
 /// Maps from a column type to code that can be used to create a variable of the
 /// respective type.
-const Map<ColumnType, String> createVariable = {
-  ColumnType.boolean: 'Variable.withBool',
-  ColumnType.text: 'Variable.withString',
-  ColumnType.integer: 'Variable.withInt',
-  ColumnType.bigInt: 'Variable.withBigInt',
-  ColumnType.datetime: 'Variable.withDateTime',
-  ColumnType.blob: 'Variable.withBlob',
-  ColumnType.real: 'Variable.withReal',
-};
-
-const Map<ColumnType, String> sqlTypes = {
-  ColumnType.boolean: 'BoolType',
-  ColumnType.text: 'StringType',
-  ColumnType.integer: 'IntType',
-  ColumnType.bigInt: 'BigIntType',
-  ColumnType.datetime: 'DateTimeType',
-  ColumnType.blob: 'BlobType',
-  ColumnType.real: 'RealType',
+const Map<DriftSqlType, String> createVariable = {
+  DriftSqlType.bool: 'Variable.withBool',
+  DriftSqlType.string: 'Variable.withString',
+  DriftSqlType.int: 'Variable.withInt',
+  DriftSqlType.bigInt: 'Variable.withBigInt',
+  DriftSqlType.dateTime: 'Variable.withDateTime',
+  DriftSqlType.blob: 'Variable.withBlob',
+  DriftSqlType.double: 'Variable.withReal',
 };

@@ -1,4 +1,6 @@
 @internal
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 
@@ -23,7 +25,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// A delegate that will call [openDatabase] to open the database.
   Sqlite3Delegate(this._setup) : _closeUnderlyingWhenClosed = true;
 
-  /// A delegate using an underlying sqlite3 database object that has alreaddy
+  /// A delegate using an underlying sqlite3 database object that has already
   /// been opened.
   Sqlite3Delegate.opened(this._db, this._setup, this._closeUnderlyingWhenClosed)
       : _hasCreatedDatabase = true {
@@ -46,6 +48,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   Future<bool> get isOpen => Future.value(_isOpen);
+
+  /// Flush pending writes to the file system on platforms where that is
+  /// necessary.
+  ///
+  /// At the moment, we only support this for the WASM backend.
+  FutureOr<void> flush() => null;
 
   @override
   Future<void> open(QueryExecutorUser db) async {
@@ -73,22 +81,27 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   Future<void> runBatched(BatchedStatements statements) async {
-    final prepared = [
-      for (final stmt in statements.statements)
-        _db.prepare(stmt, checkNoTail: true),
-    ];
+    final prepared = <CommonPreparedStatement>[];
 
-    for (final application in statements.arguments) {
-      final stmt = prepared[application.statementIndex];
+    try {
+      for (final stmt in statements.statements) {
+        prepared.add(_db.prepare(stmt, checkNoTail: true));
+      }
 
-      stmt.execute(application.arguments);
+      for (final application in statements.arguments) {
+        final stmt = prepared[application.statementIndex];
+
+        stmt.execute(application.arguments);
+      }
+    } finally {
+      for (final stmt in prepared) {
+        stmt.dispose();
+      }
     }
 
-    for (final stmt in prepared) {
-      stmt.dispose();
+    if (!isInTransaction) {
+      await flush();
     }
-
-    return Future.value();
   }
 
   Future _runWithArgs(String statement, List<Object?> args) async {
@@ -96,8 +109,15 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       _db.execute(statement);
     } else {
       final stmt = _db.prepare(statement, checkNoTail: true);
-      stmt.execute(args);
-      stmt.dispose();
+      try {
+        stmt.execute(args);
+      } finally {
+        stmt.dispose();
+      }
+    }
+
+    if (!isInTransaction) {
+      await flush();
     }
   }
 
@@ -121,10 +141,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _db.prepare(statement, checkNoTail: true);
-    final result = stmt.select(args);
-    stmt.dispose();
-
-    return Future.value(QueryResult.fromRows(result.toList()));
+    try {
+      final result = stmt.select(args);
+      return QueryResult.fromRows(result.toList());
+    } finally {
+      stmt.dispose();
+    }
   }
 
   @override
@@ -132,6 +154,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     if (_closeUnderlyingWhenClosed) {
       beforeClose(_db);
       _db.dispose();
+
+      await flush();
     }
   }
 }

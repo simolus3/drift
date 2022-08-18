@@ -28,4 +28,19 @@ void main() {
         .get();
     expect(rows.isSorted((a, b) => a.id.compareTo(b.id)), isFalse);
   });
+
+  test('can select view', () async {
+    final category = await db.categories.insertReturning(
+        CategoriesCompanion.insert(description: 'category description'));
+    await db.todosTable.insertOne(TodosTableCompanion.insert(
+        content: 'some content',
+        title: const Value('title'),
+        category: Value(category.id)));
+
+    final result = await db.todoWithCategoryView.select().getSingle();
+    expect(
+        result,
+        const TodoWithCategoryViewData(
+            description: 'category description', title: 'title'));
+  });
 }

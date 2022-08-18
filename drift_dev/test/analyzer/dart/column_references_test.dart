@@ -130,7 +130,7 @@ class Database {}
 
     expect(
         foo.references,
-        contains(isA<MoorTable>()
+        contains(isA<DriftTable>()
             .having((tbl) => tbl.sqlName, 'sqlName', 'other_table')));
 
     final column = foo.columns.single;

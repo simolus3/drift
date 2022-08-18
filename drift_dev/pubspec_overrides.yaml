@@ -1,0 +1,5 @@
+dependency_overrides:
+  drift:
+    path: ../drift
+  sqlparser:
+    path: ../sqlparser

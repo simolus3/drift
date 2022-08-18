@@ -1,16 +1,14 @@
 import 'package:build/build.dart';
-import 'package:drift_dev/src/backends/build/moor_builder.dart';
+import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:drift_dev/src/backends/build/preprocess_builder.dart';
 
-Builder moorBuilder(BuilderOptions options) =>
-    MoorSharedPartBuilder(options, isForNewDriftPackage: true);
+Builder driftBuilder(BuilderOptions options) => DriftSharedPartBuilder(options);
 
-Builder moorBuilderNotShared(BuilderOptions options) =>
-    MoorPartBuilder(options, isForNewDriftPackage: true);
+Builder driftBuilderNotShared(BuilderOptions options) =>
+    DriftPartBuilder(options);
 
-Builder preparingBuilder(BuilderOptions options) =>
-    PreprocessBuilder(isForNewDriftPackage: true);
+Builder preparingBuilder(BuilderOptions options) => PreprocessBuilder();
 
-PostProcessBuilder moorCleanup(BuilderOptions options) {
+PostProcessBuilder driftCleanup(BuilderOptions options) {
   return const FileDeletingBuilder(['.temp.dart']);
 }

@@ -1,4 +1,4 @@
-import 'package:drift_dev/moor_generator.dart' show MoorColumn;
+import 'package:drift_dev/moor_generator.dart' show DriftColumn;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../query_handler.dart';
@@ -28,6 +28,68 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   final Linter linter;
 
   _LintingVisitor(this.linter);
+
+  bool _isTextDateTime(ResolveResult result) {
+    final type = result.type;
+    return type != null &&
+        type.type == BasicType.text &&
+        type.hint is IsDateTime;
+  }
+
+  @override
+  void visitBetweenExpression(BetweenExpression e, void arg) {
+    if (_isTextDateTime(linter.context.typeOf(e.check))) {
+      linter.lints.add(AnalysisError(
+        type: AnalysisErrorType.hint,
+        message: 'This compares two date time values lexicographically. '
+            'To compare date time values, compare their `unixepoch()` '
+            'value instead.',
+        relevantNode: e,
+      ));
+    }
+
+    super.visitBetweenExpression(e, arg);
+  }
+
+  @override
+  void visitBinaryExpression(BinaryExpression e, void arg) {
+    final isForDateTimes = _isTextDateTime(linter.context.typeOf(e.left)) &&
+        _isTextDateTime(linter.context.typeOf(e.right));
+
+    if (isForDateTimes) {
+      switch (e.operator.type) {
+        case TokenType.equal:
+        case TokenType.doubleEqual:
+        case TokenType.exclamationEqual:
+        case TokenType.lessMore:
+          linter.lints.add(AnalysisError(
+            type: AnalysisErrorType.hint,
+            message:
+                'Semantically equivalent date time values may be formatted '
+                "differently and can't be compared directly. Consider "
+                'comparing the `unixepoch()` values of the time value instead.',
+            relevantNode: e.operator,
+          ));
+          break;
+        case TokenType.less:
+        case TokenType.lessEqual:
+        case TokenType.more:
+        case TokenType.moreEqual:
+          linter.lints.add(AnalysisError(
+            type: AnalysisErrorType.hint,
+            message: 'This compares two date time values lexicographically. '
+                'To compare date time values, compare their `unixepoch()` '
+                'value instead.',
+            relevantNode: e.operator,
+          ));
+          break;
+        default:
+          break;
+      }
+    }
+
+    super.visitBinaryExpression(e, arg);
+  }
 
   @override
   void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
@@ -173,7 +235,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
     // second, check that no required columns are left out
     final resolved = e.table.resolved;
-    List<MoorColumn> required;
+    List<DriftColumn> required;
     if (resolved is Table) {
       final specifiedTable =
           linter.mapper.tableToMoor(e.table.resolved as Table)!;

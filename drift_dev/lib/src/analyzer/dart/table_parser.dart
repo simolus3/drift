@@ -1,12 +1,12 @@
 part of 'parser.dart';
 
-/// Parses a [MoorTable] from a Dart class.
+/// Parses a [DriftTable] from a Dart class.
 class TableParser {
-  final MoorDartParser base;
+  final DriftDartParser base;
 
   TableParser(this.base);
 
-  Future<MoorTable?> parseTable(ClassElement element) async {
+  Future<DriftTable?> parseTable(ClassElement element) async {
     final sqlName = await _parseTableName(element);
     if (sqlName == null) return null;
 
@@ -16,7 +16,7 @@ class TableParser {
 
     final dataClassInfo = _readDataClassInformation(columns, element);
 
-    final table = MoorTable(
+    final table = DriftTable(
       fromClass: element,
       columns: columns,
       sqlName: sqlName,
@@ -79,13 +79,13 @@ class TableParser {
   }
 
   _DataClassInformation _readDataClassInformation(
-      List<MoorColumn> columns, ClassElement element) {
+      List<DriftColumn> columns, ClassElement element) {
     DartObject? dataClassName;
     DartObject? useRowClass;
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.element!.name;
+      final annotationClass = computed!.type!.nameIfInterfaceType;
 
       if (annotationClass == 'DataClassName') {
         dataClassName = computed;
@@ -124,8 +124,8 @@ class TableParser {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element, type.typeArguments);
-        name = type.element.name;
+        existingClass = FoundDartClass(type.element2, type.typeArguments);
+        name = type.element2.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -170,8 +170,8 @@ class TableParser {
     return tableName;
   }
 
-  Future<Set<MoorColumn>?> _readPrimaryKey(
-      ClassElement element, List<MoorColumn> columns) async {
+  Future<Set<DriftColumn>?> _readPrimaryKey(
+      ClassElement element, List<DriftColumn> columns) async {
     final primaryKeyGetter =
         element.lookUpGetter('primaryKey', element.library);
 
@@ -191,7 +191,7 @@ class TableParser {
       return null;
     }
     final expression = body.expression;
-    final parsedPrimaryKey = <MoorColumn>{};
+    final parsedPrimaryKey = <DriftColumn>{};
 
     if (expression is SetOrMapLiteral) {
       for (final entry in expression.elements) {
@@ -222,8 +222,8 @@ class TableParser {
     return parsedPrimaryKey;
   }
 
-  Future<List<Set<MoorColumn>>?> _readUniqueKeys(
-      ClassElement element, List<MoorColumn> columns) async {
+  Future<List<Set<DriftColumn>>?> _readUniqueKeys(
+      ClassElement element, List<DriftColumn> columns) async {
     final uniqueKeyGetter = element.lookUpGetter('uniqueKeys', element.library);
 
     if (uniqueKeyGetter == null || uniqueKeyGetter.isFromDefaultTable) {
@@ -243,12 +243,12 @@ class TableParser {
       return null;
     }
     final expression = body.expression;
-    final parsedUniqueKeys = <Set<MoorColumn>>[];
+    final parsedUniqueKeys = <Set<DriftColumn>>[];
 
     if (expression is ListLiteral) {
       for (final keySet in expression.elements) {
         if (keySet is SetOrMapLiteral) {
-          final uniqueKey = <MoorColumn>{};
+          final uniqueKey = <DriftColumn>{};
           for (final entry in keySet.elements) {
             if (entry is Identifier) {
               final column = columns.singleWhereOrNull(
@@ -307,9 +307,9 @@ class TableParser {
     return null;
   }
 
-  Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
+  Future<Iterable<DriftColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
-        .map((t) => t.element)
+        .map((t) => t.element2)
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
@@ -350,10 +350,10 @@ class _DataClassInformation {
 
 extension on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement;
+    final parent = enclosingElement3;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&
-        isFromMoor(parent.thisType);
+        isFromDrift(parent.thisType);
   }
 }

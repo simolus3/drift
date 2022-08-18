@@ -8,7 +8,7 @@ void main() {
   late AppDatabase database;
 
   setUp(() {
-    final inMemory = DatabaseConnection.fromExecutor(NativeDatabase.memory());
+    final inMemory = DatabaseConnection(NativeDatabase.memory());
     database = AppDatabase.forTesting(inMemory);
   });
 

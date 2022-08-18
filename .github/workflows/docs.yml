@@ -9,9 +9,12 @@ jobs:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.3
 
-      - name: Get dependencies
+      - name: Get dependencies (docs)
         run: dart pub get
         working-directory: docs
+      - name: Get dependencies (drift)
+        run: dart pub get
+        working-directory: drift
       - name: Run build
         env:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
@@ -21,6 +24,7 @@ jobs:
       - name: Analyze Dart sources
         working-directory: docs
         run: |
+          dart format -o none --set-exit-if-changed .
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
 

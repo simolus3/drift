@@ -33,7 +33,7 @@ Location? locationOfDeclaration(Declaration declaration) {
   final file = declaration.declaration.file;
   if (declaration is DartDeclaration) {
     return _locationForSpan(spanForElement(declaration.element), file);
-  } else if (declaration is MoorDeclaration) {
+  } else if (declaration is DriftFileDeclaration) {
     return locationOfNode(file, declaration.node);
   }
 

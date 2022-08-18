@@ -50,7 +50,7 @@ class DumpSchemaCommand extends Command {
     }
 
     final db = result.declaredDatabases.single;
-    final writer = SchemaWriter(db);
+    final writer = SchemaWriter(db, options: cli.project.moorOptions);
 
     var target = rest[1];
     // This command is most commonly used to write into

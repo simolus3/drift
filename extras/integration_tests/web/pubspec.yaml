@@ -1,18 +1,18 @@
 name: web
 description: Run integration tests for Moor on the web
 environment:
-  sdk: '>=2.4.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  drift:
-  tests:
-    path: ../tests
+  drift: ^2.0.0-dev
+  drift_testcases:
+    path: ../drift_testcases
 
 dev_dependencies:
-  test: ^1.5.0
+  test: ^1.18.0
   build_runner:
   build_web_compilers:
-  drift_dev: ^1.0.0
+  drift_dev: ^2.0.0-dev
 
 dependency_overrides:
   drift:

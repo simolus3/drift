@@ -28,9 +28,9 @@ import 'package:drift/drift.dart';
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();
 
-  int mapToSql(DateTime time) => time?.millisecondsSinceEpoch;
+  int toSql(DateTime time) => time?.millisecondsSinceEpoch;
 
-  DateTime mapToDart(int fromSql) {
+  DateTime fromSql(int fromSql) {
     if (fromSql == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(fromSql);
   }
@@ -42,7 +42,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]!);
+        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_drift')]!);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {
@@ -76,9 +76,9 @@ import 'package:drift/drift.dart';
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();
 
-  int mapToSql(DateTime time) => time?.millisecondsSinceEpoch;
+  int toSql(DateTime time) => time?.millisecondsSinceEpoch;
 
-  DateTime mapToDart(int fromSql) {
+  DateTime fromSql(int fromSql) {
     if (fromSql == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(fromSql);
   }
@@ -90,7 +90,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]!);
+        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_drift')]!);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {

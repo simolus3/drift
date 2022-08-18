@@ -23,13 +23,13 @@ String dataClassNameForClassName(String tableName) {
 }
 
 String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
-    ClassElement element, MoorDartParser base) {
+    ClassElement element, DriftDartParser base) {
   final extending = dataClassName.getField('extending');
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
-      final superType = extendingType.allSupertypes
-          .any((type) => isFromMoor(type) && type.element.name == 'DataClass');
+      final superType = extendingType.allSupertypes.any(
+          (type) => isFromDrift(type) && type.element2.name == 'DataClass');
       if (!superType) {
         base.step.reportError(
           ErrorInDartCode(
@@ -52,10 +52,10 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
         return null;
       }
 
-      final className = extendingType.element.name;
+      final className = extendingType.nameIfInterfaceType;
       if (extendingType.typeArguments.length == 1) {
-        final genericType = extendingType.typeArguments[0].element?.name;
-        if (genericType == 'Object' || genericType == 'dynamic') {
+        final genericType = extendingType.typeArguments[0];
+        if (genericType.isDartCoreObject || genericType.isDynamic) {
           return '$className<$dartTypeName>';
         } else {
           base.step.reportError(

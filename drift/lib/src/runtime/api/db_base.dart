@@ -15,6 +15,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   @override
   GeneratedDatabase get attachedDatabase => this;
 
+  @override
+  DriftDatabaseOptions get options => const DriftDatabaseOptions();
+
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
   @override
@@ -53,9 +56,8 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   final Type _$dontSendThisOverIsolates = Null;
 
   /// Used by generated code
-  GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
-      {StreamQueryStore? streamStore})
-      : super(types, executor, streamQueries: streamStore) {
+  GeneratedDatabase(QueryExecutor executor, {StreamQueryStore? streamStore})
+      : super(executor, streamQueries: streamStore) {
     assert(_handleInstantiated());
   }
 

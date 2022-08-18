@@ -3,23 +3,14 @@
 part of 'database.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
 class Entrie extends DataClass implements Insertable<Entrie> {
   final int id;
   final String value;
-  Entrie({required this.id, required this.value});
-  factory Entrie.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Entrie(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      value: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
-    );
-  }
+  const Entrie({required this.id, required this.value});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -129,15 +120,15 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   final String? _alias;
   Entries(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'PRIMARY KEY');
   final VerificationMeta _valueMeta = const VerificationMeta('value');
-  late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
       'text', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   @override
@@ -166,11 +157,14 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   Entrie map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Entrie.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Entrie(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      value: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}text'])!,
+    );
   }
 
   @override
@@ -183,12 +177,12 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
 }
 
 abstract class _$MyDatabase extends GeneratedDatabase {
-  _$MyDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$MyDatabase(QueryExecutor e) : super(e);
   late final Entries entries = Entries(this);
   Selectable<Entrie> allEntries() {
     return customSelect('SELECT * FROM entries', variables: [], readsFrom: {
       entries,
-    }).map(entries.mapFromRow);
+    }).asyncMap(entries.mapFromRow);
   }
 
   Future<int> addEntry(String var1) {
@@ -209,7 +203,8 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   }
 
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [entries];
 }

@@ -1,5 +1,6 @@
 @Tags(['analyzer'])
 import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -48,7 +49,7 @@ class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
     expect(file.errors.errors, isEmpty);
 
     final dao = (file.currentResult as ParsedDartFile).declaredDaos.single;
-    expect(dao.dbClass.element!.name, 'MyDatabase');
+    expect(dao.dbClass.nameIfInterfaceType, 'MyDatabase');
 
     state.close();
   });

@@ -91,13 +91,19 @@ class StringComparisonExpression extends Expression {
       [left, right, if (escape != null) escape!];
 }
 
-/// `(NOT)? $left IS $right`
+/// `(NOT)? $left IS $right` or
+/// `$left IS (NOT)? DISTINCT FROM $right`
 class IsExpression extends Expression {
   final bool negated;
+  bool distinctFromSyntax;
+
+  Token? $is, distinct, from;
+
   Expression left;
   Expression right;
 
-  IsExpression(this.negated, this.left, this.right);
+  IsExpression(this.negated, this.left, this.right,
+      {this.distinctFromSyntax = false});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

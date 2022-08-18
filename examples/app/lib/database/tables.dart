@@ -35,12 +35,12 @@ mixin AutoIncrementingPrimaryKey on Table {
   IntColumn get id => integer().autoIncrement()();
 }
 
-class ColorConverter extends NullAwareTypeConverter<Color, int> {
+class ColorConverter extends TypeConverter<Color, int> {
   const ColorConverter();
 
   @override
-  Color requireMapToDart(int fromDb) => Color(fromDb);
+  Color fromSql(int fromDb) => Color(fromDb);
 
   @override
-  int requireMapToSql(Color value) => value.value;
+  int toSql(Color value) => value.value;
 }

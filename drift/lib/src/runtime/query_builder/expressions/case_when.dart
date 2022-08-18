@@ -6,7 +6,7 @@ import '../query_builder.dart';
 ///
 /// This class supports when expressions with or without a base expression.
 @internal
-class CaseWhenExpression<T> extends Expression<T?> {
+class CaseWhenExpression<T extends Object> extends Expression<T> {
   /// The optional base expression. If it's set, the keys in [whenThen] will be
   /// compared to this expression.
   final Expression? base;
@@ -16,7 +16,7 @@ class CaseWhenExpression<T> extends Expression<T?> {
   final List<MapEntry<Expression, Expression>> whenThen;
 
   /// The expression to use if no entry in [whenThen] matched.
-  final Expression<T?>? orElse;
+  final Expression<T>? orElse;
 
   /// Creates a `CASE WHEN` expression from the independent components.
   CaseWhenExpression(this.base, this.whenThen, this.orElse);

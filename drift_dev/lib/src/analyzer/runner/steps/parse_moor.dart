@@ -2,11 +2,13 @@ part of '../steps.dart';
 
 class ParseMoorStep extends Step {
   final String content;
-  final TypeMapper mapper = TypeMapper();
+  final TypeMapper mapper;
 
-  ParseMoorStep(Task task, FoundFile file, this.content) : super(task, file);
+  ParseMoorStep(Task task, FoundFile file, this.content)
+      : mapper = TypeMapper(options: task.session.options),
+        super(task, file);
 
-  Future<ParsedMoorFile> parseFile() async {
+  Future<ParsedDriftFile> parseFile() async {
     final parser = MoorParser(this, await task.helper);
     return parser.parseAndAnalyze();
   }

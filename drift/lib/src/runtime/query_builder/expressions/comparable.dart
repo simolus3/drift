@@ -1,51 +1,51 @@
 part of '../query_builder.dart';
 
 /// Defines extension functions to express comparisons in sql
-extension ComparableExpr<DT extends Comparable<dynamic>?> on Expression<DT> {
+extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
-  Expression<bool?> isBiggerThan(Expression<DT> other) {
+  Expression<bool> isBiggerThan(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.more, other);
   }
 
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other value.
-  Expression<bool?> isBiggerThanValue(DT other) {
+  Expression<bool> isBiggerThanValue(DT other) {
     return isBiggerThan(Variable(other));
   }
 
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other expression.
-  Expression<bool?> isBiggerOrEqual(Expression<DT> other) {
+  Expression<bool> isBiggerOrEqual(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.moreOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other value.
-  Expression<bool?> isBiggerOrEqualValue(DT other) {
+  Expression<bool> isBiggerOrEqualValue(DT other) {
     return isBiggerOrEqual(Variable(other));
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other expression.
-  Expression<bool?> isSmallerThan(Expression<DT> other) {
+  Expression<bool> isSmallerThan(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.less, other);
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other value.
-  Expression<bool?> isSmallerThanValue(DT other) =>
+  Expression<bool> isSmallerThanValue(DT other) =>
       isSmallerThan(Variable(other));
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
-  Expression<bool?> isSmallerOrEqual(Expression<DT> other) {
+  Expression<bool> isSmallerOrEqual(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.lessOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other value.
-  Expression<bool?> isSmallerOrEqualValue(DT other) {
+  Expression<bool> isSmallerOrEqualValue(DT other) {
     return isSmallerOrEqual(Variable(other));
   }
 
@@ -54,7 +54,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>?> on Expression<DT> {
   ///
   /// If [not] is set, the expression will be negated. To compare this
   /// expression against two values, see
-  Expression<bool?> isBetween(Expression<DT> lower, Expression<DT> higher,
+  Expression<bool> isBetween(Expression<DT> lower, Expression<DT> higher,
       {bool not = false}) {
     return _BetweenExpression(
         target: this, lower: lower, higher: higher, not: not);
@@ -64,7 +64,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>?> on Expression<DT> {
   /// [lower] and [higher] (both inclusive).
   ///
   /// If [not] is set, the expression will be negated.
-  Expression<bool?> isBetweenValues(DT lower, DT higher, {bool not = false}) {
+  Expression<bool> isBetweenValues(DT lower, DT higher, {bool not = false}) {
     return _BetweenExpression(
       target: this,
       lower: Variable<DT>(lower),
@@ -74,7 +74,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>?> on Expression<DT> {
   }
 }
 
-class _BetweenExpression extends Expression<bool?> {
+class _BetweenExpression extends Expression<bool> {
   final Expression target;
 
   // https://www.sqlite.org/lang_expr.html#between
@@ -95,6 +95,18 @@ class _BetweenExpression extends Expression<bool?> {
 
   @override
   void writeInto(GenerationContext context) {
+    var target = this.target;
+    var lower = this.lower;
+    var higher = this.higher;
+
+    // We don't want to compare datetime values lexicographically, so we convert
+    // them to a comparable unit
+    if (context.options.types.storeDateTimesAsText) {
+      if (target is Expression<DateTime>) target = target.julianday;
+      if (lower is Expression<DateTime>) lower = lower.julianday;
+      if (higher is Expression<DateTime>) higher = higher.julianday;
+    }
+
     writeInner(context, target);
 
     if (not) context.buffer.write(' NOT');

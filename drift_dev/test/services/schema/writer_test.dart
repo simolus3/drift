@@ -57,14 +57,14 @@ class Settings {}
 class SettingsConverter extends TypeConverter<Settings, String> {
   const SettingsConverter();
 
-  String mapToSql(Settings s) => '';
-  Settings mapToDart(String db) => Settings();
+  String toSql(Settings s) => '';
+  Settings fromSql(String db) => Settings();
 }
 
 @DriftDatabase(include: {'a.moor'}, tables: [Users])
 class Database {}
       ''',
-    }, options: const MoorOptions.defaults(modules: [SqlModule.fts5]));
+    }, options: const DriftOptions.defaults(modules: [SqlModule.fts5]));
 
     final file = await state.analyze('package:foo/main.dart');
     expect(state.session.errorsInFileAndImports(file), isEmpty);
@@ -74,16 +74,24 @@ class Database {}
 
     final schemaJson = SchemaWriter(db).createSchemaJson();
     expect(schemaJson, json.decode(expected));
+
+    final schemaWithOptions = SchemaWriter(
+      db,
+      options: const DriftOptions.defaults(storeDateTimeValuesAsText: true),
+    ).createSchemaJson();
+    expect(
+        schemaWithOptions['options'], {'store_date_time_values_as_text': true});
   });
 
   test('can generate code from schema json', () {
-    final reader =
-        SchemaReader.readJson(json.decode(expected) as Map<String, dynamic>);
+    final serializedSchema = json.decode(expected) as Map<String, dynamic>;
+
+    final reader = SchemaReader.readJson(serializedSchema);
     final fakeDb = Database()..entities = [...reader.entities];
 
     // Write the database. Not crashing is good enough for us here, we have
     // separate tests for verification
-    final writer = Writer(const MoorOptions.defaults(),
+    final writer = Writer(const DriftOptions.defaults(),
         generationOptions: const GenerationOptions(forSchema: 1));
     DatabaseWriter(fakeDb, writer.child()).write();
   });
@@ -92,8 +100,11 @@ class Database {}
 const expected = r'''
 {
     "_meta": {
-        "description": "This file contains a serialized version of schema entities for moor.",
-        "version": "0.1.0-dev-preview"
+        "description": "This file contains a serialized version of schema entities for drift.",
+        "version": "1.0.0"
+    },
+    "options": {
+      "store_date_time_values_as_text": false
     },
     "entities": [
         {
@@ -266,7 +277,7 @@ const expected = r'''
                     2
                 ],
                 "name": "delete_empty_groups",
-                "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN\n  DELETE FROM \"groups\"\n    WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);\nEND;"
+                "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN DELETE FROM \"groups\" WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);END"
             }
         },
         {

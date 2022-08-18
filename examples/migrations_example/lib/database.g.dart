@@ -3,33 +3,27 @@
 part of 'database.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
 // ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
+  final DateTime? birthday;
   final int? nextUser;
-  User({required this.id, required this.name, this.nextUser});
-  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return User(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      nextUser: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
-    );
-  }
+  const User(
+      {required this.id, required this.name, this.birthday, this.nextUser});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || birthday != null) {
+      map['birthday'] = Variable<DateTime>(birthday);
+    }
     if (!nullToAbsent || nextUser != null) {
-      map['next_user'] = Variable<int?>(nextUser);
+      map['next_user'] = Variable<int>(nextUser);
     }
     return map;
   }
@@ -38,6 +32,9 @@ class User extends DataClass implements Insertable<User> {
     return UsersCompanion(
       id: Value(id),
       name: Value(name),
+      birthday: birthday == null && nullToAbsent
+          ? const Value.absent()
+          : Value(birthday),
       nextUser: nextUser == null && nullToAbsent
           ? const Value.absent()
           : Value(nextUser),
@@ -50,6 +47,7 @@ class User extends DataClass implements Insertable<User> {
     return User(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      birthday: serializer.fromJson<DateTime?>(json['birthday']),
       nextUser: serializer.fromJson<int?>(json['nextUser']),
     );
   }
@@ -59,67 +57,85 @@ class User extends DataClass implements Insertable<User> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'birthday': serializer.toJson<DateTime?>(birthday),
       'nextUser': serializer.toJson<int?>(nextUser),
     };
   }
 
-  User copyWith({int? id, String? name, int? nextUser}) => User(
+  User copyWith(
+          {int? id,
+          String? name,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent()}) =>
+      User(
         id: id ?? this.id,
         name: name ?? this.name,
-        nextUser: nextUser ?? this.nextUser,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
       );
   @override
   String toString() {
     return (StringBuffer('User(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
           ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, nextUser);
+  int get hashCode => Object.hash(id, name, birthday, nextUser);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User &&
           other.id == this.id &&
           other.name == this.name &&
+          other.birthday == this.birthday &&
           other.nextUser == this.nextUser);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
   final Value<int> id;
   final Value<String> name;
+  final Value<DateTime?> birthday;
   final Value<int?> nextUser;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.birthday = const Value.absent(),
     this.nextUser = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.birthday = const Value.absent(),
     this.nextUser = const Value.absent(),
   });
   static Insertable<User> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<int?>? nextUser,
+    Expression<DateTime>? birthday,
+    Expression<int>? nextUser,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (birthday != null) 'birthday': birthday,
       if (nextUser != null) 'next_user': nextUser,
     });
   }
 
   UsersCompanion copyWith(
-      {Value<int>? id, Value<String>? name, Value<int?>? nextUser}) {
+      {Value<int>? id,
+      Value<String>? name,
+      Value<DateTime?>? birthday,
+      Value<int?>? nextUser}) {
     return UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      birthday: birthday ?? this.birthday,
       nextUser: nextUser ?? this.nextUser,
     );
   }
@@ -133,8 +149,11 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (birthday.present) {
+      map['birthday'] = Variable<DateTime>(birthday.value);
+    }
     if (nextUser.present) {
-      map['next_user'] = Variable<int?>(nextUser.value);
+      map['next_user'] = Variable<int>(nextUser.value);
     }
     return map;
   }
@@ -144,6 +163,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
           ..write('nextUser: $nextUser')
           ..write(')'))
         .toString();
@@ -157,27 +177,32 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
+  final VerificationMeta _birthdayMeta = const VerificationMeta('birthday');
+  @override
+  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+      'birthday', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   final VerificationMeta _nextUserMeta = const VerificationMeta('nextUser');
   @override
-  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'REFERENCES users (id)');
   @override
-  List<GeneratedColumn> get $columns => [id, name, nextUser];
+  List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -194,6 +219,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     }
+    if (data.containsKey('birthday')) {
+      context.handle(_birthdayMeta,
+          birthday.isAcceptableOrUnknown(data['birthday']!, _birthdayMeta));
+    }
     if (data.containsKey('next_user')) {
       context.handle(_nextUserMeta,
           nextUser.isAcceptableOrUnknown(data['next_user']!, _nextUserMeta));
@@ -205,8 +234,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return User(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthday: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
+      nextUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+    );
   }
 
   @override
@@ -220,31 +258,18 @@ class Group extends DataClass implements Insertable<Group> {
   final String title;
   final bool? deleted;
   final int owner;
-  Group(
+  const Group(
       {required this.id,
       required this.title,
       this.deleted,
       required this.owner});
-  factory Group.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return Group(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      deleted: const BoolType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}deleted']),
-      owner: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}owner'])!,
-    );
-  }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || deleted != null) {
-      map['deleted'] = Variable<bool?>(deleted);
+      map['deleted'] = Variable<bool>(deleted);
     }
     map['owner'] = Variable<int>(owner);
     return map;
@@ -282,10 +307,15 @@ class Group extends DataClass implements Insertable<Group> {
     };
   }
 
-  Group copyWith({int? id, String? title, bool? deleted, int? owner}) => Group(
+  Group copyWith(
+          {int? id,
+          String? title,
+          Value<bool?> deleted = const Value.absent(),
+          int? owner}) =>
+      Group(
         id: id ?? this.id,
         title: title ?? this.title,
-        deleted: deleted ?? this.deleted,
+        deleted: deleted.present ? deleted.value : this.deleted,
         owner: owner ?? this.owner,
       );
   @override
@@ -332,7 +362,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   static Insertable<Group> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<bool?>? deleted,
+    Expression<bool>? deleted,
     Expression<int>? owner,
   }) {
     return RawValuesInsertable({
@@ -366,7 +396,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
       map['title'] = Variable<String>(title.value);
     }
     if (deleted.present) {
-      map['deleted'] = Variable<bool?>(deleted.value);
+      map['deleted'] = Variable<bool>(deleted.value);
     }
     if (owner.present) {
       map['owner'] = Variable<int>(owner.value);
@@ -392,28 +422,28 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final String? _alias;
   Groups(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: const StringType(),
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
-  late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
       'deleted', aliasedName, true,
-      type: const BoolType(),
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
-  late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
@@ -453,8 +483,17 @@ class Groups extends Table with TableInfo<Groups, Group> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Group.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Group(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      deleted: attachedDatabase.options.types
+          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
+      owner: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
+    );
   }
 
   @override
@@ -468,35 +507,244 @@ class Groups extends Table with TableInfo<Groups, Group> {
   bool get dontWriteConstraints => true;
 }
 
+class Note extends DataClass implements Insertable<Note> {
+  final String title;
+  final String content;
+  final String searchTerms;
+  const Note(
+      {required this.title, required this.content, required this.searchTerms});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['title'] = Variable<String>(title);
+    map['content'] = Variable<String>(content);
+    map['search_terms'] = Variable<String>(searchTerms);
+    return map;
+  }
+
+  NotesCompanion toCompanion(bool nullToAbsent) {
+    return NotesCompanion(
+      title: Value(title),
+      content: Value(content),
+      searchTerms: Value(searchTerms),
+    );
+  }
+
+  factory Note.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Note(
+      title: serializer.fromJson<String>(json['title']),
+      content: serializer.fromJson<String>(json['content']),
+      searchTerms: serializer.fromJson<String>(json['search_terms']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'title': serializer.toJson<String>(title),
+      'content': serializer.toJson<String>(content),
+      'search_terms': serializer.toJson<String>(searchTerms),
+    };
+  }
+
+  Note copyWith({String? title, String? content, String? searchTerms}) => Note(
+        title: title ?? this.title,
+        content: content ?? this.content,
+        searchTerms: searchTerms ?? this.searchTerms,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Note(')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('searchTerms: $searchTerms')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(title, content, searchTerms);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Note &&
+          other.title == this.title &&
+          other.content == this.content &&
+          other.searchTerms == this.searchTerms);
+}
+
+class NotesCompanion extends UpdateCompanion<Note> {
+  final Value<String> title;
+  final Value<String> content;
+  final Value<String> searchTerms;
+  const NotesCompanion({
+    this.title = const Value.absent(),
+    this.content = const Value.absent(),
+    this.searchTerms = const Value.absent(),
+  });
+  NotesCompanion.insert({
+    required String title,
+    required String content,
+    required String searchTerms,
+  })  : title = Value(title),
+        content = Value(content),
+        searchTerms = Value(searchTerms);
+  static Insertable<Note> custom({
+    Expression<String>? title,
+    Expression<String>? content,
+    Expression<String>? searchTerms,
+  }) {
+    return RawValuesInsertable({
+      if (title != null) 'title': title,
+      if (content != null) 'content': content,
+      if (searchTerms != null) 'search_terms': searchTerms,
+    });
+  }
+
+  NotesCompanion copyWith(
+      {Value<String>? title,
+      Value<String>? content,
+      Value<String>? searchTerms}) {
+    return NotesCompanion(
+      title: title ?? this.title,
+      content: content ?? this.content,
+      searchTerms: searchTerms ?? this.searchTerms,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (searchTerms.present) {
+      map['search_terms'] = Variable<String>(searchTerms.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotesCompanion(')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('searchTerms: $searchTerms')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class Notes extends Table
+    with TableInfo<Notes, Note>, VirtualTableInfo<Notes, Note> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Notes(this.attachedDatabase, [this._alias]);
+  final VerificationMeta _titleMeta = const VerificationMeta('title');
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  final VerificationMeta _contentMeta = const VerificationMeta('content');
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  final VerificationMeta _searchTermsMeta =
+      const VerificationMeta('searchTerms');
+  late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
+      'search_terms', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  @override
+  List<GeneratedColumn> get $columns => [title, content, searchTerms];
+  @override
+  String get aliasedName => _alias ?? 'notes';
+  @override
+  String get actualTableName => 'notes';
+  @override
+  VerificationContext validateIntegrity(Insertable<Note> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('search_terms')) {
+      context.handle(
+          _searchTermsMeta,
+          searchTerms.isAcceptableOrUnknown(
+              data['search_terms']!, _searchTermsMeta));
+    } else if (isInserting) {
+      context.missing(_searchTermsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  Note map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Note(
+      title: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      content: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      searchTerms: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}search_terms'])!,
+    );
+  }
+
+  @override
+  Notes createAlias(String alias) {
+    return Notes(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs =>
+      'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
+}
+
 class GroupCountData extends DataClass {
   final int id;
   final String name;
+  final DateTime? birthday;
   final int? nextUser;
   final int groupCount;
-  GroupCountData(
+  const GroupCountData(
       {required this.id,
       required this.name,
+      this.birthday,
       this.nextUser,
       required this.groupCount});
-  factory GroupCountData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return GroupCountData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      nextUser: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}next_user']),
-      groupCount: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}group_count'])!,
-    );
-  }
   factory GroupCountData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GroupCountData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      birthday: serializer.fromJson<DateTime?>(json['birthday']),
       nextUser: serializer.fromJson<int?>(json['nextUser']),
       groupCount: serializer.fromJson<int>(json['groupCount']),
     );
@@ -507,17 +755,23 @@ class GroupCountData extends DataClass {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'birthday': serializer.toJson<DateTime?>(birthday),
       'nextUser': serializer.toJson<int?>(nextUser),
       'groupCount': serializer.toJson<int>(groupCount),
     };
   }
 
   GroupCountData copyWith(
-          {int? id, String? name, int? nextUser, int? groupCount}) =>
+          {int? id,
+          String? name,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent(),
+          int? groupCount}) =>
       GroupCountData(
         id: id ?? this.id,
         name: name ?? this.name,
-        nextUser: nextUser ?? this.nextUser,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
         groupCount: groupCount ?? this.groupCount,
       );
   @override
@@ -525,6 +779,7 @@ class GroupCountData extends DataClass {
     return (StringBuffer('GroupCountData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
           ..write('nextUser: $nextUser, ')
           ..write('groupCount: $groupCount')
           ..write(')'))
@@ -532,13 +787,14 @@ class GroupCountData extends DataClass {
   }
 
   @override
-  int get hashCode => Object.hash(id, name, nextUser, groupCount);
+  int get hashCode => Object.hash(id, name, birthday, nextUser, groupCount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GroupCountData &&
           other.id == this.id &&
           other.name == this.name &&
+          other.birthday == this.birthday &&
           other.nextUser == this.nextUser &&
           other.groupCount == this.groupCount);
 }
@@ -550,33 +806,48 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   final _$Database attachedDatabase;
   GroupCount(this.attachedDatabase, [this._alias]);
   @override
-  List<GeneratedColumn> get $columns => [id, name, nextUser, groupCount];
+  List<GeneratedColumn> get $columns =>
+      [id, name, birthday, nextUser, groupCount];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
   String get entityName => 'group_count';
   @override
   String get createViewStmt =>
-      'CREATE VIEW group_count AS SELECT\n    users.*,\n    (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count\n  FROM users;';
+      'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users';
   @override
   GroupCount get asDslTable => this;
   @override
   GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return GroupCountData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupCountData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthday: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
+      nextUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+      groupCount: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}group_count'])!,
+    );
   }
 
-  late final GeneratedColumn<int?> id =
-      GeneratedColumn<int?>('id', aliasedName, false, type: const IntType());
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<int> id =
+      GeneratedColumn<int>('id', aliasedName, false, type: DriftSqlType.int);
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType());
-  late final GeneratedColumn<int?> nextUser = GeneratedColumn<int?>(
+      type: DriftSqlType.string);
+  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+      'birthday', aliasedName, true,
+      type: DriftSqlType.dateTime);
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
-      type: const IntType());
-  late final GeneratedColumn<int?> groupCount = GeneratedColumn<int?>(
+      type: DriftSqlType.int);
+  late final GeneratedColumn<int> groupCount = GeneratedColumn<int>(
       'group_count', aliasedName, false,
-      type: const IntType());
+      type: DriftSqlType.int);
   @override
   GroupCount createAlias(String alias) {
     return GroupCount(attachedDatabase, alias);
@@ -589,14 +860,19 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$Database(QueryExecutor e) : super(e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
   late final $UsersTable users = $UsersTable(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
+  late final Notes notes = Notes(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, groups, groupCount];
+      [users, groups, groupCount, notes];
+  @override
+  DriftDatabaseOptions get options =>
+      const DriftDatabaseOptions(storeDateTimeAsText: true);
 }

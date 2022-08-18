@@ -102,8 +102,8 @@ class Migrator {
     }
   }
 
-  GenerationContext _createContext() {
-    return GenerationContext.fromDb(_db);
+  GenerationContext _createContext({bool supportsVariables = false}) {
+    return GenerationContext.fromDb(_db, supportsVariables: supportsVariables);
   }
 
   /// Creates the given table if it doesn't exist
@@ -145,7 +145,7 @@ class Migrator {
   Future<void> alterTable(TableMigration migration) async {
     final foreignKeysEnabled =
         (await _db.customSelect('PRAGMA foreign_keys').getSingle())
-            .readBool('foreign_keys');
+            .read<bool>('foreign_keys');
 
     if (foreignKeysEnabled) {
       await _db.customStatement('PRAGMA foreign_keys = OFF;');
@@ -168,9 +168,9 @@ class Migrator {
       final createAffected = <String>[];
 
       for (final row in schemaQuery) {
-        final type = row.readString('type');
-        final sql = row.read<String?>('sql');
-        final name = row.readString('name');
+        final type = row.read<String>('type');
+        final sql = row.readNullable<String>('sql');
+        final name = row.read<String>('name');
 
         if (sql == null) {
           // These indexes are created by sqlite to enforce different kinds of
@@ -197,7 +197,7 @@ class Migrator {
       await createTable(temporaryTable);
 
       // Step 5: Transfer old content into the new table
-      final context = _createContext();
+      final context = _createContext(supportsVariables: true);
       final expressionsForSelect = <Expression>[];
 
       context.buffer.write('INSERT INTO $temporaryName (');
@@ -253,7 +253,7 @@ class Migrator {
 
   void _writeCreateTable(TableInfo table, GenerationContext context) {
     context.buffer.write('CREATE TABLE IF NOT EXISTS '
-        '${escapeIfNeeded(table.$tableName, context.dialect)} (');
+        '${escapeIfNeeded(table.aliasedName, context.dialect)} (');
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
@@ -327,7 +327,7 @@ class Migrator {
   void _writeCreateVirtual(VirtualTableInfo table, GenerationContext context) {
     context.buffer
       ..write('CREATE VIRTUAL TABLE IF NOT EXISTS ')
-      ..write(escapeIfNeeded(table.$tableName))
+      ..write(escapeIfNeeded(table.aliasedName))
       ..write(' USING ')
       ..write(table.moduleAndArgs)
       ..write(';');
@@ -393,7 +393,7 @@ class Migrator {
     final context = _createContext();
 
     context.buffer
-        .write('ALTER TABLE ${escapeIfNeeded(table.$tableName)} ADD COLUMN ');
+        .write('ALTER TABLE ${escapeIfNeeded(table.aliasedName)} ADD COLUMN ');
     column.writeColumnDefinition(context);
     context.buffer.write(';');
 
@@ -421,7 +421,7 @@ class Migrator {
       TableInfo table, String oldName, GeneratedColumn column) async {
     final context = _createContext();
     context.buffer
-      ..write('ALTER TABLE ${escapeIfNeeded(table.$tableName)} ')
+      ..write('ALTER TABLE ${escapeIfNeeded(table.aliasedName)} ')
       ..write('RENAME COLUMN ${escapeIfNeeded(oldName)} ')
       ..write('TO ${column.escapedName};');
 

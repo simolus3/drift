@@ -36,15 +36,10 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => const [];
 
-  /// The table name in the sql table. This can be an alias for the actual table
-  /// name. See [actualTableName] for a table name that is not aliased.
-  @Deprecated('Use aliasedName instead')
-  String get $tableName => aliasedName;
-
   @override
   String get aliasedName => entityName;
 
-  /// The name of the table in the database. Unless [$tableName], this can not
+  /// The name of the table in the database. Unlike [aliasedName], this can not
   /// be aliased.
   String get actualTableName;
 
@@ -72,7 +67,11 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   /// Converts a [companion] to the real model class, [D].
   ///
   /// Values that are [Value.absent] in the companion will be set to `null`.
-  D mapFromCompanion(Insertable<D> companion) {
+  /// The [database] instance is used so that the raw values from the companion
+  /// can properly be interpreted as the high-level Dart values exposed by the
+  /// data class.
+  Future<D> mapFromCompanion(
+      Insertable<D> companion, DatabaseConnectionUser database) async {
     final asColumnMap = companion.toColumns(false);
 
     if (asColumnMap.values.any((e) => e is! Variable)) {
@@ -81,7 +80,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
           'evaluated by a database engine.');
     }
 
-    final context = GenerationContext(SqlTypeSystem.defaultInstance, null);
+    final context = GenerationContext.fromDb(database);
     final rawValues = asColumnMap
         .cast<String, Variable>()
         .map((key, value) => MapEntry(key, value.mapToSimpleValue(context)));
@@ -96,7 +95,8 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   bool operator ==(Object other) {
     // tables are singleton instances except for aliases
     if (other is TableInfo) {
-      return other.runtimeType == runtimeType && other.$tableName == $tableName;
+      return other.runtimeType == runtimeType &&
+          other.aliasedName == aliasedName;
     }
     return false;
   }
@@ -119,20 +119,20 @@ mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
 /// Most of these are accessed internally by drift or by generated code.
 extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   /// Like [map], but from a [row] instead of the low-level map.
-  D mapFromRow(QueryRow row, {String? tablePrefix}) {
+  Future<D> mapFromRow(QueryRow row, {String? tablePrefix}) async {
     return map(row.data, tablePrefix: tablePrefix);
   }
 
   /// Like [mapFromRow], but returns null if a non-nullable column of this table
   /// is null in [row].
-  D? mapFromRowOrNull(QueryRow row, {String? tablePrefix}) {
+  Future<D?> mapFromRowOrNull(QueryRow row, {String? tablePrefix}) {
     final resolvedPrefix = tablePrefix == null ? '' : '$tablePrefix.';
 
     final notInRow = $columns
         .where((c) => !c.$nullable)
         .any((e) => row.data['$resolvedPrefix${e.$name}'] == null);
 
-    if (notInRow) return null;
+    if (notInRow) return Future.value(null);
 
     return mapFromRow(row, tablePrefix: tablePrefix);
   }
@@ -150,7 +150,7 @@ extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   ///
   /// Drift would generate code to call this method with `'c1': 'foo'` and
   /// `'c2': 'bar'` in [alias].
-  D mapFromRowWithAlias(QueryRow row, Map<String, String> alias) {
+  Future<D> mapFromRowWithAlias(QueryRow row, Map<String, String> alias) async {
     return map({
       for (final entry in row.data.entries) alias[entry.key]!: entry.value,
     });
@@ -169,12 +169,12 @@ extension RowIdExtension on TableInfo {
   /// the [rowId] will not be part of a drift-generated data class. In this
   /// case, the [rowId] getter can be used to refer to a table's row id in a
   /// query.
-  Expression<int?> get rowId {
+  Expression<int> get rowId {
     if (withoutRowId || this is VirtualTableInfo) {
       throw ArgumentError('Cannot use rowId on a table without a rowid!');
     }
 
-    return GeneratedColumn<int?>('_rowid_', aliasedName, false,
-        type: const IntType());
+    return GeneratedColumn<int>('_rowid_', aliasedName, false,
+        type: DriftSqlType.int);
   }
 }

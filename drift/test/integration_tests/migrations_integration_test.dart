@@ -47,7 +47,7 @@ void main() {
 
     final createStmt = await db
         .customSelect("SELECT sql FROM sqlite_master WHERE name = 'todos'")
-        .map((row) => row.readString('sql'))
+        .map((row) => row.read<String>('sql'))
         .getSingle();
 
     expect(createStmt, contains('category INT'));
@@ -58,7 +58,7 @@ void main() {
     // We enabled foreign keys, so they should still be enabled now.
     final foreignKeysResult =
         await db.customSelect('PRAGMA foreign_keys').getSingle();
-    expect(foreignKeysResult.readBool('foreign_keys'), isTrue);
+    expect(foreignKeysResult.read<bool>('foreign_keys'), isTrue);
   });
 
   test('rename columns', () async {
@@ -94,7 +94,7 @@ void main() {
 
     final createStmt = await db
         .customSelect("SELECT sql FROM sqlite_master WHERE name = 'todos'")
-        .map((row) => row.readString('sql'))
+        .map((row) => row.read<String>('sql'))
         .getSingle();
 
     expect(
@@ -133,7 +133,7 @@ void main() {
 
     final createStmt = await db
         .customSelect("SELECT sql FROM sqlite_master WHERE name = 'todos'")
-        .map((row) => row.readString('sql'))
+        .map((row) => row.read<String>('sql'))
         .getSingle();
 
     expect(
@@ -238,7 +238,7 @@ void main() {
         .customSelect("SELECT sql FROM sqlite_master WHERE name = 'no_ids'")
         .getSingle();
 
-    expect(entry.readString('sql'), contains('WITHOUT ROWID'));
+    expect(entry.read<String>('sql'), contains('WITHOUT ROWID'));
   });
 
   group('exceptions in migrations', () {
@@ -368,7 +368,7 @@ void main() {
 
 class _TestDatabase extends GeneratedDatabase {
   _TestDatabase(QueryExecutor executor, this.schemaVersion, this.migration)
-      : super(const SqlTypeSystem.withDefaults(), executor);
+      : super(executor);
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables => const Iterable.empty();

@@ -1,20 +1,14 @@
-import 'dart:math' show max;
-
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
-import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import 'sql_writer.dart';
 
 const highestAssignedIndexVar = '\$arrayStartIndex';
-
-int _compareNodes(AstNode a, AstNode b) =>
-    a.firstPosition.compareTo(b.firstPosition);
 
 /// Writes the handling code for a query. The code emitted will be a method that
 /// should be included in a generated database or dao class.
@@ -24,7 +18,7 @@ class QueryWriter {
   late final ExplicitAliasTransformer _transformer;
   final StringBuffer _buffer;
 
-  MoorOptions get options => scope.writer.options;
+  DriftOptions get options => scope.writer.options;
 
   QueryWriter(this.scope) : _buffer = scope.leaf();
 
@@ -37,14 +31,17 @@ class QueryWriter {
       ResultSetWriter(query, resultSetScope).write();
     }
 
-    // The new sql code generation generates query code from the parsed AST,
-    // which eliminates unnecessary whitespace and comments. These can sometimes
-    // have a semantic meaning though, for instance when they're used in
-    // columns. So, we transform the query to add an explicit alias to every
-    // column!
+    // We generate the Dart string literal for the SQL query by walking the
+    // parsed AST. This eliminates unecessary whitespace and comments in the
+    // generated code.
+    // In some cases, the whitespace has an impact on the semantic of the
+    // query. For instance, `SELECT 1 + 2` has a different column name than
+    // `SELECT 1+2`. To work around this, we transform the query to add an
+    // explicit alias to every column (since whitespace doesn't matter if the
+    // query is written as `SELECT 1+2 AS c0`).
     // We do this transformation so late because it shouldn't have an impact on
     // analysis, Dart getter names stay the same.
-    if (resultSet != null && options.newSqlCodeGeneration) {
+    if (resultSet != null) {
       _transformer = ExplicitAliasTransformer();
       _transformer.rewrite(query.root!);
 
@@ -66,28 +63,10 @@ class QueryWriter {
   }
 
   void _writeSelect(SqlSelectQuery select) {
-    if (select.hasNestedQuery && !scope.options.newSqlCodeGeneration) {
-      throw UnsupportedError(
-        'Using nested result queries (with `LIST`) requires the '
-        '`new_sql_code_generation` build option.',
-      );
-    }
-
     _writeSelectStatementCreator(select);
-
-    if (!select.declaredInMoorFile && !options.compactQueryMethods) {
-      _writeOneTimeReader(select);
-      _writeStreamReader(select);
-    }
   }
 
-  String _nameOfCreationMethod(SqlSelectQuery select) {
-    if (!select.declaredInMoorFile && !options.compactQueryMethods) {
-      return '${select.name}Query';
-    } else {
-      return select.name;
-    }
-  }
+  String _nameOfCreationMethod(SqlSelectQuery select) => select.name;
 
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a query.
@@ -124,7 +103,7 @@ class QueryWriter {
       }
     } else {
       _buffer.write('(QueryRow row) ');
-      if (query is SqlSelectQuery && query.hasNestedQuery) {
+      if (query.needsAsyncMapping) {
         _buffer.write('async ');
       }
       _buffer.write('{ return ${query.resultClassName}(');
@@ -149,7 +128,7 @@ class QueryWriter {
           final mappingMethod =
               nested.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
 
-          _buffer.write('$fieldName: $tableGetter.$mappingMethod(row, '
+          _buffer.write('$fieldName: await $tableGetter.$mappingMethod(row, '
               'tablePrefix: ${asDartLiteral(prefix)}),');
         } else if (nested is NestedResultQuery) {
           final fieldName = nested.filedName();
@@ -168,29 +147,26 @@ class QueryWriter {
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
   String readingCode(ResultColumn column, GenerationOptions generationOptions,
-      MoorOptions moorOptions) {
-    var rawDartType = dartTypeNames[column.type];
-    if (column.nullable && generationOptions.nnbd) {
-      rawDartType = '$rawDartType?';
-    }
-
-    String? specialName;
-    if (options.newSqlCodeGeneration) {
-      specialName = _transformer.newNameFor(column.sqlParserColumn!);
-    }
+      DriftOptions moorOptions) {
+    final specialName = _transformer.newNameFor(column.sqlParserColumn!);
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
-    var code = 'row.read<$rawDartType>($dartLiteral)';
+    final method = column.nullable ? 'readNullable' : 'read';
+    final rawDartType = dartTypeNames[column.type];
+    var code = 'row.$method<$rawDartType>($dartLiteral)';
 
-    if (column.typeConverter != null) {
-      final nullableDartType = moorOptions.nullAwareTypeConverters
-          ? column.typeConverter!.hasNullableDartType
-          : column.nullable;
-      final needsAssert = !nullableDartType && generationOptions.nnbd;
-
-      final converter = column.typeConverter;
-      code = '${_converter(converter!)}.mapToDart($code)';
-      if (needsAssert) code += '!';
+    final converter = column.typeConverter;
+    if (converter != null) {
+      if (converter.canBeSkippedForNulls && column.nullable) {
+        // The type converter maps non-nullable types, but the column may be
+        // nullable in SQL => just map null to null and only invoke the type
+        // converter for non-null values.
+        code = 'NullAwareTypeConverter.wrapFromSql'
+            '(${_converter(converter)}, $code)';
+      } else {
+        // Just apply the type converter directly.
+        code = '${_converter(converter)}.fromSql($code)';
+      }
     }
     return code;
   }
@@ -218,48 +194,13 @@ class QueryWriter {
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    if (select.hasNestedQuery) {
+    if (select.needsAsyncMapping) {
       _buffer.write(').asyncMap(');
     } else {
       _buffer.write(').map(');
     }
     _writeMappingLambda(select);
     _buffer.write(')');
-  }
-
-  void _writeOneTimeReader(SqlSelectQuery select) {
-    final returnType =
-        'Future<List<${select.resultTypeCode(scope.generationOptions)}>>';
-    _buffer.write('$returnType ${select.name}(');
-    _writeParameters(select);
-    _buffer
-      ..write(') {\n')
-      ..write('return ${_nameOfCreationMethod(select)}(');
-    _writeUseParameters(select);
-    _buffer.write(').get();\n}\n');
-  }
-
-  void _writeStreamReader(SqlSelectQuery select) {
-    final upperQueryName = ReCase(select.name).pascalCase;
-
-    String methodName;
-    // turning the query name into pascal case will remove underscores, add the
-    // "private" modifier back in
-    if (select.name.startsWith('_')) {
-      methodName = '_watch$upperQueryName';
-    } else {
-      methodName = 'watch$upperQueryName';
-    }
-
-    final returnType =
-        'Stream<List<${select.resultTypeCode(scope.generationOptions)}>>';
-    _buffer.write('$returnType $methodName(');
-    _writeParameters(select);
-    _buffer
-      ..write(') {\n')
-      ..write('return ${_nameOfCreationMethod(select)}(');
-    _writeUseParameters(select);
-    _buffer.write(').watch();\n}\n');
   }
 
   void _writeUpdatingQueryWithReturning(UpdatingQuery update) {
@@ -271,9 +212,18 @@ class QueryWriter {
     _writeExpandedDeclarations(update);
     _buffer.write('return customWriteReturning(${_queryCode(update)},');
     _writeCommonUpdateParameters(update);
-    _buffer.write(').then((rows) => rows.map(');
-    _writeMappingLambda(update);
-    _buffer.write(').toList());\n}');
+
+    _buffer.write(').then((rows) => ');
+    if (update.needsAsyncMapping) {
+      _buffer.write('Future.wait(rows.map(');
+      _writeMappingLambda(update);
+      _buffer.write('))');
+    } else {
+      _buffer.write('rows.map(');
+      _writeMappingLambda(update);
+      _buffer.write(')');
+    }
+    _buffer.write(');\n}');
   }
 
   void _writeUpdatingQuery(UpdatingQuery update) {
@@ -305,7 +255,7 @@ class QueryWriter {
     final namedElements = <FoundElement>[];
 
     String typeFor(FoundElement element) {
-      var type = element.dartTypeCode(scope.generationOptions);
+      var type = element.dartTypeCode();
 
       if (element is FoundDartPlaceholder &&
           element.writeAsScopedFunction(options)) {
@@ -416,9 +366,7 @@ class QueryWriter {
             (!isNullable || isMarkedAsRequired) && defaultCode == null ||
                 options.namedParametersAlwaysRequired;
         if (isRequired) {
-          _buffer
-            ..write(scope.required)
-            ..write(' ');
+          _buffer.write('required ');
         }
 
         _buffer.write('$type ${optional.dartParameterName}');
@@ -431,14 +379,6 @@ class QueryWriter {
 
       _buffer.write('}');
     }
-  }
-
-  /// Writes code that uses the parameters as declared by [_writeParameters],
-  /// assuming that for each parameter, a variable with the same name exists
-  /// in the current scope.
-  void _writeUseParameters(SqlQuery query) {
-    final parameters = query.elements.map((e) => e.dartParameterName);
-    _buffer.write(parameters.join(', '));
   }
 
   void _writeExpandedDeclarations(SqlQuery query) {
@@ -454,100 +394,7 @@ class QueryWriter {
   /// been expanded. For instance, 'SELECT * FROM t WHERE x IN ?' will be turned
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode(SqlQuery query) {
-    if (scope.options.newSqlCodeGeneration) {
-      return SqlWriter(scope.options, query: query).write();
-    } else {
-      return _legacyQueryCode(query);
-    }
-  }
-
-  String _legacyQueryCode(SqlQuery query) {
-    final root = query.root!;
-    final sql = query.fromContext!.sql;
-
-    // sort variables and placeholders by the order in which they appear
-    final toReplace = root.allDescendants
-        .where((node) =>
-            node is Variable ||
-            node is DartPlaceholder ||
-            node is NestedStarResultColumn)
-        .toList()
-      ..sort(_compareNodes);
-
-    final buffer = StringBuffer("'");
-
-    // Index nested results by their syntactic origin for faster lookups later
-    var doubleStarColumnToResolvedTable =
-        const <NestedStarResultColumn, NestedResultTable>{};
-    if (query is SqlSelectQuery) {
-      doubleStarColumnToResolvedTable = {
-        for (final nestedResult in query.resultSet.nestedResults)
-          if (nestedResult is NestedResultTable) nestedResult.from: nestedResult
-      };
-    }
-
-    var lastIndex = root.firstPosition;
-
-    void replaceNode(AstNode node, String content) {
-      // write everything that comes before this var into the buffer
-      final currentIndex = node.firstPosition;
-      final queryPart = sql.substring(lastIndex, currentIndex);
-      buffer.write(escapeForDart(queryPart));
-      lastIndex = node.lastPosition;
-
-      // write the replaced content
-      buffer.write(content);
-    }
-
-    for (final rewriteTarget in toReplace) {
-      if (rewriteTarget is Variable) {
-        final moorVar = query.variables.singleWhere(
-            (f) => f.variable.resolvedIndex == rewriteTarget.resolvedIndex);
-
-        if (moorVar.isArray) {
-          replaceNode(rewriteTarget, '(\$${expandedName(moorVar)})');
-        }
-      } else if (rewriteTarget is DartPlaceholder) {
-        final moorPlaceholder =
-            query.placeholders.singleWhere((p) => p.astNode == rewriteTarget);
-
-        replaceNode(rewriteTarget,
-            '\${${placeholderContextName(moorPlaceholder)}.sql}');
-      } else if (rewriteTarget is NestedStarResultColumn) {
-        final result = doubleStarColumnToResolvedTable[rewriteTarget];
-        if (result == null) continue;
-
-        // weird cast here :O
-        final prefix =
-            (query as SqlSelectQuery).resultSet.nestedPrefixFor(result);
-        final table = rewriteTarget.tableName;
-
-        // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
-        final expanded = StringBuffer();
-        var isFirst = true;
-
-        for (final column in result.table.columns) {
-          if (isFirst) {
-            isFirst = false;
-          } else {
-            expanded.write(', ');
-          }
-
-          final columnName = column.name.name;
-          expanded.write('"$table"."$columnName" AS "$prefix.$columnName"');
-        }
-
-        replaceNode(rewriteTarget, expanded.toString());
-      }
-    }
-
-    // write the final part after the last variable, plus the ending '
-    final lastPosition = root.lastPosition;
-    buffer
-      ..write(escapeForDart(sql.substring(lastIndex, lastPosition)))
-      ..write("'");
-
-    return buffer.toString();
+    return SqlWriter(scope.options, query: query).write();
   }
 
   void _writeReadsFrom(SqlSelectQuery select) {
@@ -593,7 +440,7 @@ String _converter(UsedTypeConverter converter) {
 
 class _ExpandedDeclarationWriter {
   final SqlQuery query;
-  final MoorOptions options;
+  final DriftOptions options;
   final StringBuffer _buffer;
 
   bool indexCounterWasDeclared = false;
@@ -603,10 +450,30 @@ class _ExpandedDeclarationWriter {
   _ExpandedDeclarationWriter(this.query, this.options, this._buffer);
 
   void writeExpandedDeclarations() {
-    if (options.newSqlCodeGeneration) {
-      _writeExpandedDeclarationsForNewQueryCode();
-    } else {
-      _writeLegacyExpandedDeclarations();
+    // When the SQL query is written to a Dart string, we give each variable an
+    // eplixit index (e.g `?2`), regardless of how it was declared in the
+    // source.
+    // Array variables are converted into multiple variables at runtime, but
+    // let's give variables before that an index, all other variables can be
+    // turned into explicit indices though. We ensure that array variables have
+    // higher indices than other variables.
+    var index = 0;
+    for (final variable in query.variables) {
+      if (!variable.isArray) {
+        // Re-assign continous indices to non-array variables
+        highestIndexBeforeArray = variable.index = ++index;
+      }
+    }
+
+    needsIndexCounter = true;
+    for (final element in query.elementsWithNestedQueries()) {
+      if (element is FoundVariable) {
+        if (element.isArray) {
+          _writeArrayVariable(element);
+        }
+      } else if (element is FoundDartPlaceholder) {
+        _writeDartPlaceholder(element);
+      }
     }
   }
 
@@ -651,57 +518,6 @@ class _ExpandedDeclarationWriter {
     }
   }
 
-  void _writeLegacyExpandedDeclarations() {
-    for (final variable in query.variables) {
-      // Variables use an explicit index, we need to know the start index at
-      // runtime (can be dynamic when placeholders or other arrays appear before
-      // this one)
-      if (variable.isArray) {
-        needsIndexCounter = true;
-        break;
-      }
-
-      highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
-    }
-
-    // query.elements are guaranteed to be sorted in the order in which they're
-    // going to have an effect when expanded. See TypeMapper.extractElements for
-    // the gory details.
-    for (final element in query.elements) {
-      if (element is FoundVariable) {
-        if (element.isArray) {
-          _writeArrayVariable(element);
-        }
-      } else if (element is FoundDartPlaceholder) {
-        _writeDartPlaceholder(element);
-      }
-    }
-  }
-
-  void _writeExpandedDeclarationsForNewQueryCode() {
-    // In the new code generation, each variable is given an explicit index,
-    // regardless of how it was declared. in the source. We then start writing
-    // expanded declarations with higher indices, but otherwise in order.
-    var index = 0;
-    for (final variable in query.variables) {
-      if (!variable.isArray) {
-        // Re-assign continous indices to non-array variables
-        highestIndexBeforeArray = variable.index = ++index;
-      }
-    }
-
-    needsIndexCounter = true;
-    for (final element in query.elementsWithNestedQueries()) {
-      if (element is FoundVariable) {
-        if (element.isArray) {
-          _writeArrayVariable(element);
-        }
-      } else if (element is FoundDartPlaceholder) {
-        _writeDartPlaceholder(element);
-      }
-    }
-  }
-
   void _writeDartPlaceholder(FoundDartPlaceholder element) {
     String useExpression() {
       if (element.writeAsScopedFunction(options)) {
@@ -737,11 +553,9 @@ class _ExpandedDeclarationWriter {
         ..write(r'$writeInsertable(this.')
         ..write(table?.dbGetterName)
         ..write(', ')
-        ..write(useExpression());
+        ..write(useExpression())
+        ..write(', startIndex: $highestAssignedIndexVar');
 
-      if (options.newSqlCodeGeneration) {
-        _buffer.write(', startIndex: $highestAssignedIndexVar');
-      }
       _buffer.write(');\n');
     } else {
       _buffer
@@ -750,11 +564,9 @@ class _ExpandedDeclarationWriter {
       if (query.hasMultipleTables) {
         _buffer.write(', hasMultipleTables: true');
       }
-      if (options.newSqlCodeGeneration) {
-        _buffer.write(', startIndex: $highestAssignedIndexVar');
-      }
-
-      _buffer.write(');\n');
+      _buffer
+        ..write(', startIndex: $highestAssignedIndexVar')
+        ..write(');\n');
     }
 
     // similar to the case for expanded array variables, we need to
@@ -793,13 +605,7 @@ class _ExpandedVariableWriter {
 
   void writeVariables() {
     _buffer.write('variables: [');
-
-    if (scope.options.newSqlCodeGeneration) {
-      _writeNewVariables();
-    } else {
-      _writeLegacyVariables();
-    }
-
+    _writeNewVariables();
     _buffer.write(']');
   }
 
@@ -834,18 +640,6 @@ class _ExpandedVariableWriter {
     }
   }
 
-  void _writeLegacyVariables() {
-    var first = true;
-    for (final element in query.elements) {
-      if (!first) {
-        _buffer.write(', ');
-      }
-      first = false;
-
-      _writeElement(element);
-    }
-  }
-
   void _writeElement(FoundElement element) {
     if (element is FoundVariable) {
       _writeVariable(element);
@@ -857,25 +651,24 @@ class _ExpandedVariableWriter {
   void _writeVariable(FoundVariable element) {
     // Variables without type converters are written as:
     // `Variable<int>(x)`. When there's a type converter, we instead use
-    // `Variable<int>(typeConverter.mapToSql(x))`.
+    // `Variable<int>(typeConverter.toSql(x))`.
     // Finally, if we're dealing with a list, we use a collection for to
     // write all the variables sequentially.
     String constructVar(String dartExpr) {
       // No longer an array here, we apply a for loop if necessary
-      final type =
-          element.variableTypeCodeWithoutArray(scope.generationOptions);
+      final type = element.innerColumnType(nullable: false);
       final buffer = StringBuffer('Variable<$type>(');
       final capture = element.forCaptured;
 
-      if (element.typeConverter != null) {
-        // Apply the converter
-        buffer
-            .write('${_converter(element.typeConverter!)}.mapToSql($dartExpr)');
-
-        final needsNullAssertion =
-            !element.nullable && scope.generationOptions.nnbd;
-        if (needsNullAssertion) {
-          buffer.write('!');
+      final converter = element.typeConverter;
+      if (converter != null) {
+        // Apply the converter.
+        if (element.nullable && converter.canBeSkippedForNulls) {
+          buffer.write('NullAwareTypeConverter.wrapToSql('
+              '${_converter(element.typeConverter!)}, $dartExpr)');
+        } else {
+          buffer
+              .write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
         }
       } else if (capture != null) {
         buffer.write('row.read(${asDartLiteral(capture.helperColumn)})');
@@ -893,7 +686,7 @@ class _ExpandedVariableWriter {
       final constructor = constructVar(r'$');
       _buffer.write('for (var \$ in $name) $constructor');
     } else {
-      _buffer.write('${constructVar(name)}');
+      _buffer.write(constructVar(name));
     }
   }
 

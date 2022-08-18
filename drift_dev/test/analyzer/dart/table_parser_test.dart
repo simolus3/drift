@@ -7,7 +7,6 @@ import 'package:drift_dev/src/analyzer/dart/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
-import 'package:drift_dev/writer.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
@@ -16,7 +15,7 @@ import '../utils.dart';
 void main() {
   late TestBackend backend;
   late ParseDartStep dartStep;
-  late MoorDartParser parser;
+  late DriftDartParser parser;
 
   setUpAll(() {
     backend = TestBackend({
@@ -143,11 +142,11 @@ void main() {
 
     dartStep = ParseDartStep(
         moorTask, file, await task.resolveDart(uri), await moorTask.helper);
-    parser = MoorDartParser(dartStep);
+    parser = DriftDartParser(dartStep);
   });
 
-  Future<MoorTable?> parse(String name) async {
-    return parser.parseTable(dartStep.library.getType(name)!);
+  Future<DriftTable?> parse(String name) async {
+    return parser.parseTable(dartStep.library.getClass(name)!);
   }
 
   group('table names', () {
@@ -282,18 +281,17 @@ void main() {
     final c = table.columns.singleWhere((c) => c.name.name == 'c');
 
     void expectType(
-        MoorColumn column, bool hasOverriddenSource, String toString) {
+        DriftColumn column, bool hasOverriddenSource, String toString) {
       expect(
         column.typeConverter,
         isA<UsedTypeConverter>()
             .having(
-              (e) => e.mappedType.overiddenSource,
+              (e) => e.dartType.overiddenSource,
               'mappedType.overriddenSource',
               hasOverriddenSource ? isNotNull : isNull,
             )
             .having(
-              (e) =>
-                  e.mappedType.codeString(const GenerationOptions(nnbd: true)),
+              (e) => e.dartType.codeString(),
               'mappedType.codeString',
               toString,
             ),

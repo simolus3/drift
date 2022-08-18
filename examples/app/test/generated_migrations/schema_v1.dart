@@ -7,17 +7,17 @@ class Categories extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Categories(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
-  late final GeneratedColumn<int?> color = GeneratedColumn<int?>(
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
       'color', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name, color];
   @override
@@ -45,17 +45,17 @@ class TodoEntries extends Table with TableInfo {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   TodoEntries(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
-  late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
-      type: const IntType(), requiredDuringInsert: false);
+      type: DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, description, category];
   @override
@@ -109,7 +109,7 @@ class text_entriesTable extends Table with TableInfo, VirtualTableInfo {
 }
 
 class DatabaseAtV1 extends GeneratedDatabase {
-  DatabaseAtV1(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV1(QueryExecutor e) : super(e);
   DatabaseAtV1.connect(DatabaseConnection c) : super.connect(c);
   late final Categories categories = Categories(this);
   late final TodoEntries todoEntries = TodoEntries(this);

@@ -62,7 +62,7 @@ class AnalyzeDartStep extends AnalyzingStep {
         }
       }
 
-      List<MoorSchemaEntity>? availableEntities;
+      List<DriftSchemaEntity>? availableEntities;
 
       try {
         availableEntities = sortEntitiesTopologically(unsortedEntities);
@@ -98,10 +98,11 @@ class AnalyzeDartStep extends AnalyzingStep {
 
       final availableQueries = transitiveImports
           .map((f) => f.currentResult)
-          .whereType<ParsedMoorFile>()
+          .whereType<ParsedDriftFile>()
           .expand((f) => f.resolvedQueries ?? const <Never>[]);
 
-      final availableTables = availableEntities.whereType<MoorTable>().toList();
+      final availableTables =
+          availableEntities.whereType<DriftTable>().toList();
       final availableViews = availableEntities.whereType<MoorView>().toList();
       final parser = SqlAnalyzer(
           this, availableTables, availableViews, accessor.declaredQueries);
@@ -118,9 +119,9 @@ class AnalyzeDartStep extends AnalyzingStep {
 
   /// Resolves a `.reference` action declared on a Dart-defined column.
   void _resolveDartColumnReferences(
-      Map<ClassElement, MoorSchemaEntity> dartTables) {
+      Map<ClassElement, DriftSchemaEntity> dartTables) {
     dartTables.forEach((dartClass, moorEntity) {
-      if (moorEntity is! MoorTable) return;
+      if (moorEntity is! DriftTable) return;
 
       for (final column in moorEntity.columns) {
         for (var i = 0; i < column.features.length; i++) {
@@ -129,7 +130,7 @@ class AnalyzeDartStep extends AnalyzingStep {
           if (feature is UnresolvedDartForeignKeyReference) {
             final table = dartTables[feature.otherTable];
 
-            if (table is! MoorTable) {
+            if (table is! DriftTable) {
               reportError(ErrorInDartCode(
                 message: 'This class has not been added as a table',
                 affectedElement: feature.surroundingElementForErrors,

@@ -1,14 +1,14 @@
-/// Encryption support for moor, built with the [sqflite_sqlcipher](https://github.com/davidmartos96/sqflite_sqlcipher)
+/// Encryption support for drift, built with the [sqflite_sqlcipher](https://github.com/davidmartos96/sqflite_sqlcipher)
 /// library.
-library encrypted_moor;
+library encrypted_drift;
 
-// this file should be kept in sync with moor_flutter/lib/moor_flutter.dart
+// this file should be kept in sync with drift_sqflite/lib/drift_sqflite.dart
 
 import 'dart:async';
 import 'dart:io';
 
-import 'package:moor/backends.dart';
-import 'package:moor/moor.dart';
+import 'package:drift/backends.dart';
+import 'package:drift/drift.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart' as s;
 
@@ -17,8 +17,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart' as s;
 /// doesn't exist.
 typedef DatabaseCreator = FutureOr<void> Function(File file);
 
-class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
-  @override
+class _SqfliteDelegate extends DatabaseDelegate {
   late s.Database db;
   bool _isOpen = false;
 
@@ -37,16 +36,11 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
     this.password,
   });
 
-  DbVersionDelegate? _delegate;
+  @override
+  late final DbVersionDelegate versionDelegate = _SqfliteVersionDelegate(db);
 
   @override
-  DbVersionDelegate get versionDelegate {
-    return _delegate ??= _SqfliteVersionDelegate(db);
-  }
-
-  @override
-  TransactionDelegate get transactionDelegate =>
-      _SqfliteTransactionDelegate(this);
+  TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
   @override
   bool get isOpen => _isOpen;
@@ -65,6 +59,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       await creator!(file);
     }
 
+    // default value when no migration happened
     db = await s.openDatabase(
       resolvedPath,
       password: password,
@@ -77,52 +72,6 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   Future<void> close() {
     return db.close();
   }
-}
-
-class _SqfliteVersionDelegate extends DynamicVersionDelegate {
-  final s.Database _db;
-
-  _SqfliteVersionDelegate(this._db);
-
-  @override
-  Future<int> get schemaVersion async {
-    final result = await _db.rawQuery('PRAGMA user_version;');
-    return result.single.values.first as int;
-  }
-
-  @override
-  Future<void> setSchemaVersion(int version) async {
-    await _db.rawUpdate('PRAGMA user_version = $version;');
-  }
-}
-
-class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
-  final _SqfliteDelegate delegate;
-
-  _SqfliteTransactionDelegate(this.delegate);
-
-  @override
-  void startTransaction(Future<void> Function(QueryDelegate) run) {
-    delegate.db.transaction((transaction) async {
-      final executor = _SqfliteTransactionExecutor(transaction);
-      await run(executor);
-    }).catchError((_) {
-      // Ignore the error! We send a fake exception to indicate a rollback.
-      // sqflite will rollback, but the exception will bubble up. Here we stop
-      // the exception.
-    });
-  }
-}
-
-class _SqfliteTransactionExecutor extends QueryDelegate with _SqfliteExecutor {
-  @override
-  final s.DatabaseExecutor db;
-
-  _SqfliteTransactionExecutor(this.db);
-}
-
-mixin _SqfliteExecutor on QueryDelegate {
-  s.DatabaseExecutor get db;
 
   @override
   Future<void> runBatched(BatchedStatements statements) async {
@@ -157,7 +106,24 @@ mixin _SqfliteExecutor on QueryDelegate {
   }
 }
 
-/// A query executor that uses sqflite_sqlcipher internally.
+class _SqfliteVersionDelegate extends DynamicVersionDelegate {
+  final s.Database _db;
+
+  _SqfliteVersionDelegate(this._db);
+
+  @override
+  Future<int> get schemaVersion async {
+    final result = await _db.rawQuery('PRAGMA user_version;');
+    return result.single.values.first as int;
+  }
+
+  @override
+  Future<void> setSchemaVersion(int version) async {
+    await _db.rawUpdate('PRAGMA user_version = $version;');
+  }
+}
+
+/// A query executor that uses an encrypted version of sqflite internally.
 class EncryptedExecutor extends DelegatedDatabase {
   /// A query executor that will store the database in the file declared by
   /// [path]. If [logStatements] is true, statements sent to the database will
@@ -168,7 +134,7 @@ class EncryptedExecutor extends DelegatedDatabase {
   /// migrations might behave differently when populating the database this way.
   /// For instance, a database created by an [creator] will not receive the
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
-  /// moor.
+  /// drift.
   EncryptedExecutor(
       {required String path,
       required String password,
@@ -176,10 +142,13 @@ class EncryptedExecutor extends DelegatedDatabase {
       bool singleInstance = true,
       DatabaseCreator? creator})
       : super(
-            _SqfliteDelegate(false, path,
-                singleInstance: singleInstance,
-                creator: creator,
-                password: password),
+            _SqfliteDelegate(
+              false,
+              path,
+              singleInstance: singleInstance,
+              creator: creator,
+              password: password,
+            ),
             logStatements: logStatements);
 
   /// A query executor that will store the database in the file declared by
@@ -192,7 +161,7 @@ class EncryptedExecutor extends DelegatedDatabase {
   /// migrations might behave differently when populating the database this way.
   /// For instance, a database created by an [creator] will not receive the
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
-  /// moor.
+  /// drift.
   EncryptedExecutor.inDatabaseFolder(
       {required String path,
       required String password,
@@ -200,23 +169,27 @@ class EncryptedExecutor extends DelegatedDatabase {
       bool singleInstance = true,
       DatabaseCreator? creator})
       : super(
-            _SqfliteDelegate(true, path,
-                singleInstance: singleInstance,
-                creator: creator,
-                password: password),
+            _SqfliteDelegate(
+              true,
+              path,
+              singleInstance: singleInstance,
+              creator: creator,
+              password: password,
+            ),
             logStatements: logStatements);
 
-  /// The underlying sqflite [s.Database] object used by moor to send queries.
+  /// The underlying sqflite [s.Database] object used by drift to send queries.
   ///
-  /// Using the sqflite database can cause unexpected behavior in moor. For
+  /// Using the sqflite database can cause unexpected behavior in drift. For
   /// instance, stream queries won't update for updates sent to the [s.Database]
-  /// directly.
+  /// directly. Further, drift assumes full control over the database for its
+  /// internal connection management.
   /// For this reason, projects shouldn't use this getter unless they absolutely
-  /// need to. The database is exposed to make migrating from sqflite to moor
+  /// need to. The database is exposed to make migrating from sqflite to drift
   /// easier.
   ///
-  /// Note that this returns null until the moor database has been opened.
-  /// A moor database is opened lazily when the first query runs.
+  /// Note that this returns null until the drifft database has been opened.
+  /// A drift database is opened lazily when the first query runs.
   s.Database? get sqfliteDb {
     final sqfliteDelegate = delegate as _SqfliteDelegate;
     return sqfliteDelegate.isOpen ? sqfliteDelegate.db : null;
@@ -225,7 +198,7 @@ class EncryptedExecutor extends DelegatedDatabase {
   @override
   // We're not really required to be sequential since sqflite has an internal
   // lock to bring statements into a sequential order.
-  // Setting isSequential here helps with moor cancellations in stream queries
+  // Setting isSequential here helps with cancellations in stream queries
   // though.
   bool get isSequential => true;
 }

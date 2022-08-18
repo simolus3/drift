@@ -10,11 +10,11 @@ class _$Foo extends Foo {
   @override
   final User moorField;
 
-  factory _$Foo([void Function(FooBuilder) updates]) =>
-      (new FooBuilder()..update(updates)).build();
+  factory _$Foo([void Function(FooBuilder)? updates]) =>
+      (new FooBuilder()..update(updates))._build();
 
-  _$Foo._({this.moorField}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(moorField, 'Foo', 'moorField');
+  _$Foo._({required this.moorField}) : super._() {
+    BuiltValueNullFieldError.checkNotNull(moorField, r'Foo', 'moorField');
   }
 
   @override
@@ -37,17 +37,17 @@ class _$Foo extends Foo {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper('Foo')..add('moorField', moorField))
+    return (newBuiltValueToStringHelper(r'Foo')..add('moorField', moorField))
         .toString();
   }
 }
 
 class FooBuilder implements Builder<Foo, FooBuilder> {
-  _$Foo _$v;
+  _$Foo? _$v;
 
-  User _moorField;
-  User get moorField => _$this._moorField;
-  set moorField(User moorField) => _$this._moorField = moorField;
+  User? _moorField;
+  User? get moorField => _$this._moorField;
+  set moorField(User? moorField) => _$this._moorField = moorField;
 
   FooBuilder();
 
@@ -67,19 +67,21 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
   }
 
   @override
-  void update(void Function(FooBuilder) updates) {
+  void update(void Function(FooBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  _$Foo build() {
+  Foo build() => _build();
+
+  _$Foo _build() {
     final _$result = _$v ??
         new _$Foo._(
             moorField: BuiltValueNullFieldError.checkNotNull(
-                moorField, 'Foo', 'moorField'));
+                moorField, r'Foo', 'moorField'));
     replace(_$result);
     return _$result;
   }
 }
 
-// ignore_for_file: always_put_control_body_on_new_line,always_specify_types,annotate_overrides,avoid_annotating_with_dynamic,avoid_as,avoid_catches_without_on_clauses,avoid_returning_this,deprecated_member_use_from_same_package,lines_longer_than_80_chars,omit_local_variable_types,prefer_expression_function_bodies,sort_constructors_first,test_types_in_equals,unnecessary_const,unnecessary_new
+// ignore_for_file: always_put_control_body_on_new_line,always_specify_types,annotate_overrides,avoid_annotating_with_dynamic,avoid_as,avoid_catches_without_on_clauses,avoid_returning_this,deprecated_member_use_from_same_package,lines_longer_than_80_chars,no_leading_underscores_for_local_identifiers,omit_local_variable_types,prefer_expression_function_bodies,sort_constructors_first,test_types_in_equals,unnecessary_const,unnecessary_new,unnecessary_lambdas

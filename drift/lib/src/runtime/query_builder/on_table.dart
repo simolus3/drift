@@ -14,11 +14,8 @@ extension TableOrViewStatements<Tbl extends HasResultSet, Row>
   /// Composes a `SELECT` statement only selecting a subset of columns.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
-  JoinedSelectStatement<Tbl, Row> selectOnly(
-      {bool distinct = false, bool includeJoinedTableColumns = true}) {
-    return attachedDatabase.selectOnly(this,
-        distinct: distinct,
-        includeJoinedTableColumns: includeJoinedTableColumns);
+  JoinedSelectStatement<Tbl, Row> selectOnly({bool distinct = false}) {
+    return attachedDatabase.selectOnly(this, distinct: distinct);
   }
 }
 
@@ -100,7 +97,7 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   /// Deletes all rows matching the [filter] from the table.
   ///
   /// See also [SingleTableQueryMixin.where].
-  Future<int> deleteWhere(Expression<bool?> Function(Tbl tbl) filter) {
+  Future<int> deleteWhere(Expression<bool> Function(Tbl tbl) filter) {
     return (delete()..where(filter)).go();
   }
 }

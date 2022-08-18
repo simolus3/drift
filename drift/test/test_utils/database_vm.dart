@@ -7,5 +7,5 @@ Version get sqlite3Version {
 }
 
 DatabaseConnection testInMemoryDatabase() {
-  return DatabaseConnection.fromExecutor(NativeDatabase.memory());
+  return DatabaseConnection(NativeDatabase.memory());
 }

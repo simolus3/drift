@@ -7,6 +7,8 @@ import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' hide ExpandParameters;
 import 'package:sqlparser/src/utils/meta.dart';
 
+import '../../utils/case_insensitive_map.dart';
+
 export 'types/data.dart';
 export 'types/types.dart' show TypeInferenceResults;
 

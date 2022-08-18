@@ -25,11 +25,11 @@ void main() {
 
     final a = db
         .customSelect("select 'a' as a")
-        .map(($) => $.readString('a'))
+        .map(($) => $.read<String>('a'))
         .watchSingle();
     final b = db
         .customSelect("select 'b' as b")
-        .map(($) => $.readString('b'))
+        .map(($) => $.read<String>('b'))
         .watchSingle();
     final c = a.switchMap((_) => b);
     expect(await a.first, 'a');

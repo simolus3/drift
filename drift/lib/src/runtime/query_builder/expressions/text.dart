@@ -1,11 +1,11 @@
 part of '../query_builder.dart';
 
 /// Defines methods that operate on a column storing [String] values.
-extension StringExpressionOperators on Expression<String?> {
+extension StringExpressionOperators on Expression<String> {
   /// Whether this column matches the given pattern. For details on what patters
   /// are valid and how they are interpreted, check out
   /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool?> like(String regex) {
+  Expression<bool> like(String regex) {
     return _LikeOperator(this, Variable.withString(regex));
   }
 
@@ -17,7 +17,7 @@ extension StringExpressionOperators on Expression<String?> {
   /// Note that this function is only available when using a `NativeDatabase`.
   /// If you need to support the web or `moor_flutter`, consider using [like]
   /// instead.
-  Expression<bool?> regexp(
+  Expression<bool> regexp(
     String regex, {
     bool multiLine = false,
     bool caseSensitive = true,
@@ -63,7 +63,7 @@ extension StringExpressionOperators on Expression<String?> {
   /// Note that this is case-insensitive for the English alphabet only.
   ///
   /// This is equivalent to calling [like] with `%<substring>%`.
-  Expression<bool?> contains(String substring) {
+  Expression<bool> contains(String substring) {
     return like('%$substring%');
   }
 
@@ -74,7 +74,7 @@ extension StringExpressionOperators on Expression<String?> {
   }
 
   /// Performs a string concatenation in sql by appending [other] to `this`.
-  Expression<String> operator +(Expression<String?> other) {
+  Expression<String> operator +(Expression<String> other) {
     return _BaseInfixOperator(this, '||', other,
         precedence: Precedence.stringConcatenation);
   }
@@ -84,7 +84,7 @@ extension StringExpressionOperators on Expression<String?> {
   ///
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-upper.php
-  Expression<String?> upper() {
+  Expression<String> upper() {
     return FunctionCallExpression('UPPER', [this]);
   }
 
@@ -93,7 +93,7 @@ extension StringExpressionOperators on Expression<String?> {
   ///
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-lower.php
-  Expression<String?> lower() {
+  Expression<String> lower() {
     return FunctionCallExpression('LOWER', [this]);
   }
 
@@ -103,34 +103,34 @@ extension StringExpressionOperators on Expression<String?> {
   ///
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-length.php
-  Expression<int?> get length {
+  Expression<int> get length {
     return FunctionCallExpression('LENGTH', [this]);
   }
 
   /// Removes spaces from both ends of this string.
-  Expression<String?> trim() {
+  Expression<String> trim() {
     return FunctionCallExpression('TRIM', [this]);
   }
 
   /// Removes spaces from the beginning of this string.
-  Expression<String?> trimLeft() {
+  Expression<String> trimLeft() {
     return FunctionCallExpression('LTRIM', [this]);
   }
 
   /// Removes spaces from the end of this string.
-  Expression<String?> trimRight() {
+  Expression<String> trimRight() {
     return FunctionCallExpression('RTRIM', [this]);
   }
 }
 
 /// A `text LIKE pattern` expression that will be true if the first expression
 /// matches the pattern given by the second expression.
-class _LikeOperator extends Expression<bool?> {
+class _LikeOperator extends Expression<bool> {
   /// The target expression that will be tested
-  final Expression<String?> target;
+  final Expression<String> target;
 
   /// The regex-like expression to test the [target] against.
-  final Expression<String?> regex;
+  final Expression<String> regex;
 
   /// The operator to use when matching. Defaults to `LIKE`.
   final String operator;
@@ -162,25 +162,32 @@ class _LikeOperator extends Expression<bool?> {
   }
 }
 
-/// Builtin collating functions from sqlite.
+/// Collating functions used to compare texts in SQL.
 ///
 /// See also:
 /// - https://www.sqlite.org/datatype3.html#collation
-enum Collate {
+@sealed
+class Collate {
+  /// The name of this collation in SQL.
+  final String name;
+
+  /// Create a collation from the [name] to use in sql.
+  const Collate(this.name);
+
   /// Instruct sqlite to compare string data using memcmp(), regardless of text
   /// encoding.
-  binary,
+  static const binary = Collate('BINARY');
 
   /// The same as [Collate.binary], except the 26 upper case characters of ASCII
   /// are folded to their lower case equivalents before the comparison is
   /// performed. Note that only ASCII characters are case folded. SQLite does
   /// not attempt to do full UTF case folding due to the size of the tables
   /// required.
-  noCase,
+  static const noCase = Collate('NOCASE');
 
   /// The same as [Collate.binary], except that trailing space characters are
   /// ignored.
-  rTrim,
+  static const rTrim = Collate('RTRIM');
 }
 
 /// A `text COLLATE collate` expression in sqlite.
@@ -203,22 +210,16 @@ class _CollateOperator extends Expression<String> {
     writeInner(context, inner);
     context.buffer
       ..write(' COLLATE ')
-      ..write(_operatorNames[collate]);
+      ..write(collate.name);
   }
 
   @override
-  int get hashCode => Object.hash(inner, collate);
+  int get hashCode => Object.hash(inner, collate.name);
 
   @override
   bool operator ==(Object other) {
     return other is _CollateOperator &&
         other.inner == inner &&
-        other.collate == collate;
+        other.collate.name == collate.name;
   }
-
-  static const Map<Collate, String> _operatorNames = {
-    Collate.binary: 'BINARY',
-    Collate.noCase: 'NOCASE',
-    Collate.rTrim: 'RTRIM',
-  };
 }

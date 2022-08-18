@@ -83,7 +83,7 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
   }
 
   Iterable<Location?> _locationOfColumn(Column column) sync* {
-    final declaration = column.meta<MoorColumn>()?.declaration;
+    final declaration = column.meta<DriftColumn>()?.declaration;
     if (declaration != null) {
       // the column was declared in a table and we happen to know where the
       // declaration is - point to that declaration.
@@ -110,7 +110,7 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
     final resolved = e.resolved;
 
     if (resolved is Table) {
-      final declaration = resolved.meta<MoorTable>()?.declaration;
+      final declaration = resolved.meta<DriftTable>()?.declaration;
       if (declaration != null) {
         _reportForSpan(
             e.span, ElementKind.CLASS, locationOfDeclaration(declaration)!);

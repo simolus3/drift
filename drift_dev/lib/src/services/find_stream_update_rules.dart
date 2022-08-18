@@ -14,7 +14,7 @@ class FindStreamUpdateRules {
     for (final entity in db.entities) {
       if (entity is MoorTrigger) {
         _writeRulesForTrigger(entity, rules);
-      } else if (entity is MoorTable) {
+      } else if (entity is DriftTable) {
         _writeRulesForTable(entity, rules);
       }
     }
@@ -22,11 +22,11 @@ class FindStreamUpdateRules {
     return StreamQueryUpdateRules(rules);
   }
 
-  void _writeRulesForTable(MoorTable table, List<UpdateRule> rules) {
+  void _writeRulesForTable(DriftTable table, List<UpdateRule> rules) {
     final declaration = table.declaration;
 
     // We only know about foreign key clauses from tables in moor files
-    if (declaration is! MoorTableDeclaration) return;
+    if (declaration is! DriftTableDeclaration) return;
 
     if (declaration.node is! CreateTableStatement) return;
 
@@ -74,7 +74,7 @@ class FindStreamUpdateRules {
   void _writeRulesForTrigger(MoorTrigger trigger, List<UpdateRule> rules) {
     final declaration = trigger.declaration;
 
-    if (declaration is! MoorTriggerDeclaration) return;
+    if (declaration is! DriftTriggerDeclaration) return;
 
     final target = declaration.node.target;
     UpdateKind targetKind;

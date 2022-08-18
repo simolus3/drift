@@ -1,9 +1,9 @@
 import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import '../../model/column.dart';
+import '../../model/model.dart';
 
-String defaultConstraints(MoorColumn column) {
+String defaultConstraints(DriftColumn column) {
   final defaultConstraints = <String>[];
 
   var wrotePkConstraint = false;
@@ -54,7 +54,7 @@ String defaultConstraints(MoorColumn column) {
     }
   }
 
-  if (column.type == ColumnType.boolean) {
+  if (column.type == DriftSqlType.bool) {
     final name = escapeIfNeeded(column.name.name);
     defaultConstraints.add('CHECK ($name IN (0, 1))');
   }

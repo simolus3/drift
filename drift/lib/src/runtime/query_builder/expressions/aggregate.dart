@@ -11,13 +11,13 @@ part of '../query_builder.dart';
 ///
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
-Expression<int> countAll({Expression<bool?>? filter}) {
+Expression<int> countAll({Expression<bool>? filter}) {
   return _AggregateExpression('COUNT', const [_StarFunctionParameter()],
       filter: filter);
 }
 
 /// Provides aggregate functions that are available for each expression.
-extension BaseAggregate<DT> on Expression<DT> {
+extension BaseAggregate<DT extends Object> on Expression<DT> {
   /// Returns how often this expression is non-null in the current group.
   ///
   /// For `COUNT(*)`, which would count all rows, see [countAll].
@@ -25,7 +25,7 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// If [distinct] is set (defaults to false), duplicate values will not be
   /// counted twice.
   /// {@macro drift_aggregate_filter}
-  Expression<int> count({bool distinct = false, Expression<bool?>? filter}) {
+  Expression<int> count({bool distinct = false, Expression<bool>? filter}) {
     return _AggregateExpression('COUNT', [this],
         filter: filter, distinct: distinct);
   }
@@ -44,10 +44,10 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// See also:
   ///  - the sqlite documentation: https://www.sqlite.org/lang_aggfunc.html#groupconcat
   ///  - the conceptually similar [Iterable.join]
-  Expression<String?> groupConcat({
+  Expression<String> groupConcat({
     String separator = ',',
     bool distinct = false,
-    Expression<bool?>? filter,
+    Expression<bool>? filter,
   }) {
     const sqliteDefaultSeparator = ',';
 
@@ -70,25 +70,25 @@ extension BaseAggregate<DT> on Expression<DT> {
 }
 
 /// Provides aggregate functions that are available for numeric expressions.
-extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
+extension ArithmeticAggregates<DT extends num> on Expression<DT> {
   /// Return the average of all non-null values in this group.
   ///
   /// {@macro drift_aggregate_filter}
-  Expression<double?> avg({Expression<bool?>? filter}) =>
+  Expression<double> avg({Expression<bool>? filter}) =>
       _AggregateExpression('AVG', [this], filter: filter);
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DT?> max({Expression<bool?>? filter}) =>
+  Expression<DT> max({Expression<bool>? filter}) =>
       _AggregateExpression('MAX', [this], filter: filter);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DT?> min({Expression<bool?>? filter}) =>
+  Expression<DT> min({Expression<bool>? filter}) =>
       _AggregateExpression('MIN', [this], filter: filter);
 
   /// Calculate the sum of all non-null values in the group.
@@ -100,7 +100,7 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   /// See also [total], which behaves similarly but returns a floating point
   /// value and doesn't throw an overflow exception.
   /// {@macro drift_aggregate_filter}
-  Expression<DT?> sum({Expression<bool?>? filter}) =>
+  Expression<DT> sum({Expression<bool>? filter}) =>
       _AggregateExpression('SUM', [this], filter: filter);
 
   /// Calculate the sum of all non-null values in the group.
@@ -108,31 +108,31 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   /// If all values in the group are null, [total] returns `0.0`. This function
   /// uses floating-point values internally.
   /// {@macro drift_aggregate_filter}
-  Expression<double?> total({Expression<bool?>? filter}) =>
+  Expression<double> total({Expression<bool>? filter}) =>
       _AggregateExpression('TOTAL', [this], filter: filter);
 }
 
 /// Provides aggregate functions that are available for BigInt expressions.
-extension BigIntAggregates<DT extends BigInt> on Expression<DT?> {
+extension BigIntAggregates on Expression<BigInt> {
   /// Return the average of all non-null values in this group.
   ///
   /// {@macro drift_aggregate_filter}
-  Expression<double?> avg({Expression<bool?>? filter}) =>
+  Expression<double> avg({Expression<bool>? filter}) =>
       dartCast<int>().avg(filter: filter);
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DT?> max({Expression<bool?>? filter}) =>
-      dartCast<int>().max(filter: filter).dartCast<DT?>();
+  Expression<BigInt> max({Expression<bool>? filter}) =>
+      dartCast<int>().max(filter: filter).dartCast<BigInt>();
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DT?> min({Expression<bool?>? filter}) =>
-      dartCast<int>().min(filter: filter).dartCast<DT?>();
+  Expression<BigInt> min({Expression<bool>? filter}) =>
+      dartCast<int>().min(filter: filter).dartCast<BigInt>();
 
   /// Calculate the sum of all non-null values in the group.
   ///
@@ -143,41 +143,47 @@ extension BigIntAggregates<DT extends BigInt> on Expression<DT?> {
   /// See also [total], which behaves similarly but returns a floating point
   /// value and doesn't throw an overflow exception.
   /// {@macro drift_aggregate_filter}
-  Expression<DT?> sum({Expression<bool?>? filter}) =>
-      dartCast<int>().sum(filter: filter).dartCast<DT?>();
+  Expression<BigInt> sum({Expression<bool>? filter}) =>
+      dartCast<int>().sum(filter: filter).dartCast<BigInt>();
 
   /// Calculate the sum of all non-null values in the group.
   ///
   /// If all values in the group are null, [total] returns `0.0`. This function
   /// uses floating-point values internally.
   /// {@macro drift_aggregate_filter}
-  Expression<double?> total({Expression<bool?>? filter}) =>
+  Expression<double> total({Expression<bool>? filter}) =>
       dartCast<int>().total(filter: filter);
 }
 
 /// Provides aggregate functions that are available on date time expressions.
-extension DateTimeAggregate on Expression<DateTime?> {
+extension DateTimeAggregate on Expression<DateTime> {
   /// Return the average of all non-null values in this group.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> avg({Expression<bool?>? filter}) =>
-      secondsSinceEpoch.avg(filter: filter).roundToInt().dartCast();
+  Expression<DateTime> avg({Expression<bool>? filter}) {
+    final avgTimestamp = unixepoch.avg(filter: filter).roundToInt();
+    return DateTimeExpressions.fromUnixEpoch(avgTimestamp);
+  }
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> max({Expression<bool?>? filter}) =>
-      _AggregateExpression('MAX', [this], filter: filter);
+  Expression<DateTime> max({Expression<bool>? filter}) {
+    final maxTimestamp = unixepoch.max(filter: filter);
+    return DateTimeExpressions.fromUnixEpoch(maxTimestamp);
+  }
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
-  Expression<DateTime> min({Expression<bool?>? filter}) =>
-      _AggregateExpression('MIN', [this], filter: filter);
+  Expression<DateTime> min({Expression<bool>? filter}) {
+    final minTimestamp = unixepoch.min(filter: filter);
+    return DateTimeExpressions.fromUnixEpoch(minTimestamp);
+  }
 }
 
-class _AggregateExpression<D> extends Expression<D> {
+class _AggregateExpression<D extends Object> extends Expression<D> {
   final String functionName;
   final bool distinct;
   final List<FunctionParameter> parameter;
@@ -185,7 +191,7 @@ class _AggregateExpression<D> extends Expression<D> {
   final Where? filter;
 
   _AggregateExpression(this.functionName, this.parameter,
-      {Expression<bool?>? filter, this.distinct = false})
+      {Expression<bool>? filter, this.distinct = false})
       : filter = filter != null ? Where(filter) : null;
 
   @override

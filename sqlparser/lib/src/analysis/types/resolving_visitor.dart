@@ -46,7 +46,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
           currentColumnIndex++;
         } else if (child is StarResultColumn) {
-          currentColumnIndex += child.scope.availableColumns.length;
+          currentColumnIndex += child.scope.expansionOfStarColumn?.length ?? 1;
         } else if (child is NestedQueryColumn) {
           visit(child.select, arg);
         }
@@ -416,6 +416,19 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitStarFunctionParameter(
+      StarFunctionParameter e, TypeExpectation arg) {
+    final available = e.scope.expansionOfStarColumn;
+    if (available != null) {
+      // Make sure we resolve these columns, the type of some function
+      // invocation could depend on it.
+      for (final column in available) {
+        _handleColumn(column, e);
+      }
+    }
+  }
+
+  @override
   void visitStringComparison(
       StringComparisonExpression e, TypeExpectation arg) {
     session._checkAndResolve(e, const ResolvedType(type: BasicType.text), arg);
@@ -487,7 +500,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         // ignore: dead_code
         throw AssertionError(); // required so that this switch compiles
       case 'sum':
-        session._addRelation(CopyAndCast(e, params.first, CastMode.numeric));
+        session._addRelation(
+            CopyAndCast(e, params.first, CastMode.numeric, dropTypeHint: true));
         session._addRelation(DefaultType(e, defaultType: _realType));
         nullableIfChildIs();
         return null;
@@ -506,10 +520,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return _textType.withNullable(true);
       case 'date':
       case 'time':
-      case 'datetime':
       case 'julianday':
       case 'strftime':
-      case 'unixepoch':
       case 'char':
       case 'hex':
       case 'quote':
@@ -518,6 +530,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'sqlite_version':
       case 'typeof':
         return _textType;
+      case 'datetime':
+        return _textType.copyWith(hint: const IsDateTime(), nullable: true);
       case 'changes':
       case 'last_insert_rowid':
       case 'random':
@@ -574,6 +588,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           .._addRelation(CopyEncapsulating(e, params))
           .._addRelation(HaveSameType(params));
         return null;
+      case 'unixepoch':
+        return const ResolvedType(
+            type: BasicType.int, nullable: true, hint: IsDateTime());
     }
 
     final extensionHandler = _functionHandlerFor(e);

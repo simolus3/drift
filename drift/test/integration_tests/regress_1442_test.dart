@@ -13,8 +13,8 @@ class _TestDb extends GeneratedDatabase {
   final int schemaVersion = 1;
 }
 
-Future<int> _selectOne(_TestDb _db) =>
-    _db.customSelect('select 1 a').map((row) => row.read<int>('a')).getSingle();
+Future<int> _selectOne(_TestDb db) =>
+    db.customSelect('select 1 a').map((row) => row.read<int>('a')).getSingle();
 
 void main() {
   for (final useTransaction in [false, true]) {

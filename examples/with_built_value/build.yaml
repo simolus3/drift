@@ -1,21 +1,21 @@
 targets:
   $default:
     builders:
-      # disables the SharedPartBuilder in favor of a PartBuilder from moor_generator
+      # disables the SharedPartBuilder in favor of a PartBuilder from drift_dev
       drift_dev:
         enabled: false
-      drift_dev|not_shared:
+      drift_dev:not_shared:
         enabled: true
 
-      # Run built_value_generator when moor is done!
-      built_value_generator|built_value:
+      # Run built_value_generator when drift is done!
+      built_value_generator:built_value:
         enabled: false
-  
+
   run_built_value:
     dependencies: ['with_built_value']
     builders:
-      # Disable all auto-applied builders from moor
+      # Disable all auto-applied builders from drift
       drift_dev:
         enabled: false
-      drift_dev|preparing_builder:
+      drift_dev:preparing_builder:
         enabled: false

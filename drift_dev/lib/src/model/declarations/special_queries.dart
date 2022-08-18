@@ -2,14 +2,14 @@ part of 'declaration.dart';
 
 abstract class SpecialQueryDeclaration extends Declaration {}
 
-class MoorSpecialQueryDeclaration
-    implements MoorDeclaration, SpecialQueryDeclaration {
+class DriftSpecialQueryDeclaration
+    implements DriftFileDeclaration, SpecialQueryDeclaration {
   @override
   final SourceRange declaration;
 
   @override
   final DeclaredStatement node;
 
-  MoorSpecialQueryDeclaration.fromNodeAndFile(this.node, FoundFile file)
+  DriftSpecialQueryDeclaration.fromNodeAndFile(this.node, FoundFile file)
       : declaration = SourceRange.fromNodeAndFile(node, file);
 }

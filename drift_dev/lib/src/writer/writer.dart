@@ -11,7 +11,7 @@ import 'package:drift_dev/src/analyzer/options.dart';
 /// passing a [Scope] we will always be able to write code in a parent scope.
 class Writer {
   late final Scope _root;
-  final MoorOptions options;
+  final DriftOptions options;
   final GenerationOptions generationOptions;
 
   Writer(this.options, {this.generationOptions = const GenerationOptions()}) {
@@ -62,7 +62,7 @@ class Scope extends _Node {
         writer = writer ?? parent!.writer,
         super(parent);
 
-  MoorOptions get options => writer.options;
+  DriftOptions get options => writer.options;
 
   GenerationOptions get generationOptions => writer.generationOptions;
 
@@ -108,37 +108,21 @@ class GenerationOptions {
   /// source.
   final int? forSchema;
 
-  /// Whether to generate Dart code that supports non-nullable types.
-  final bool nnbd;
-
   /// Whether data classes should be generated.
   final bool writeDataClasses;
 
   /// Whether companions should be generated.
   final bool writeCompanions;
 
-  /// Whether we're generating code for the old moor package instead of the
-  /// new `drift` package.
-  final bool writeForMoorPackage;
-
-  final bool nullAwareTypeConverters;
-
   const GenerationOptions({
     this.forSchema,
-    this.nnbd = false,
     this.writeDataClasses = true,
     this.writeCompanions = true,
-    this.writeForMoorPackage = false,
-    this.nullAwareTypeConverters = false,
   });
 
   /// Whether, instead of generating the full database code, we're only
   /// generating a subset needed for schema verification.
   bool get isGeneratingForSchema => forSchema != null;
-
-  String nullableType(String withoutSuffix) {
-    return nnbd ? '$withoutSuffix?' : withoutSuffix;
-  }
 }
 
 class _LeafNode extends _Node {
@@ -171,11 +155,11 @@ class DartScope {
   }
 }
 
-extension WriterUtilsForOptions on MoorOptions {
+extension WriterUtilsForOptions on DriftOptions {
   String get fieldModifier => generateMutableClasses ? '' : 'final';
 }
 
-extension WriterUtilsForColumns on MoorColumn {
+extension WriterUtilsForColumns on DriftColumn {
   /// Adds an `this.` prefix is the [dartGetterName] is in [locals].
   String thisIfNeeded(Set<String> locals) {
     if (locals.contains(dartGetterName)) {
@@ -183,15 +167,5 @@ extension WriterUtilsForColumns on MoorColumn {
     }
 
     return dartGetterName;
-  }
-}
-
-extension ScopeUtils on Scope {
-  String get required {
-    return generationOptions.nnbd ? 'required' : '@required';
-  }
-
-  String nullableType(String withoutSuffix) {
-    return generationOptions.nullableType(withoutSuffix);
   }
 }

@@ -35,7 +35,7 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
   final DeclaredStatement astNode;
-  ParsedMoorFile? file;
+  ParsedDriftFile? file;
 
   DeclaredMoorQuery(String name, this.astNode) : super(name);
 
@@ -99,7 +99,7 @@ abstract class SqlQuery {
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
-  /// [ExpressionDartPlaceholderType] and [ColumnType.boolean]. We will
+  /// [ExpressionDartPlaceholderType] and [DriftSqlType.bool]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
   late List<FoundDartPlaceholder> placeholders;
 
@@ -116,6 +116,17 @@ abstract class SqlQuery {
       : hasMultipleTables = hasMultipleTables ?? false {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
+  }
+
+  bool get needsAsyncMapping {
+    final result = resultSet;
+    if (result != null) {
+      // Mapping to tables is asynchronous
+      if (result.matchingTable != null) return true;
+      if (result.nestedResults.any((e) => e is NestedResultTable)) return true;
+    }
+
+    return false;
   }
 
   String get resultClassName {
@@ -142,11 +153,11 @@ abstract class SqlQuery {
     }
 
     if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable!.table.dartTypeCode(options);
+      return resultSet.matchingTable!.table.dartTypeCode();
     }
 
     if (resultSet.singleColumn) {
-      return resultSet.columns.single.dartTypeCode(options);
+      return resultSet.columns.single.dartTypeCode();
     }
 
     return resultClassName;
@@ -176,7 +187,7 @@ abstract class SqlQuery {
 }
 
 class SqlSelectQuery extends SqlQuery {
-  final List<MoorSchemaEntity> readsFrom;
+  final List<DriftSchemaEntity> readsFrom;
   @override
   final InferredResultSet resultSet;
   @override
@@ -194,6 +205,9 @@ class SqlSelectQuery extends SqlQuery {
   bool get hasNestedQuery =>
       resultSet.nestedResults.any((e) => e is NestedResultQuery);
 
+  @override
+  bool get needsAsyncMapping => hasNestedQuery || super.needsAsyncMapping;
+
   SqlSelectQuery(
     String name,
     this.fromContext,
@@ -205,10 +219,10 @@ class SqlSelectQuery extends SqlQuery {
     this.nestedContainer,
   ) : super(name, elements, hasMultipleTables: readsFrom.length > 1);
 
-  Set<MoorTable> get readsFromTables {
+  Set<DriftTable> get readsFromTables {
     return {
       for (final entity in readsFrom)
-        if (entity is MoorTable)
+        if (entity is DriftTable)
           entity
         else if (entity is MoorView)
           ...entity.transitiveTableReferences,
@@ -435,8 +449,8 @@ class InferredResultSet {
 ///
 /// We still need to handle column aliases.
 class MatchingMoorTable {
-  final MoorEntityWithResultSet table;
-  final Map<String, MoorColumn> aliasToColumn;
+  final DriftEntityWithResultSet table;
+  final Map<String, DriftColumn> aliasToColumn;
 
   MatchingMoorTable(this.table, this.aliasToColumn);
 
@@ -453,7 +467,7 @@ class MatchingMoorTable {
 class ResultColumn implements HasType {
   final String name;
   @override
-  final ColumnType type;
+  final DriftSqlType type;
   @override
   final bool nullable;
 
@@ -524,7 +538,7 @@ class NestedResultTable extends NestedResult {
   final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
-  final MoorEntityWithResultSet table;
+  final DriftEntityWithResultSet table;
 
   NestedResultTable(this.from, this.name, this.table, {this.isNullable = true});
 
@@ -593,7 +607,7 @@ abstract class FoundElement {
   bool get hidden => false;
 
   /// Dart code for a type representing tis element.
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
+  String dartTypeCode();
 }
 
 /// A semantic interpretation of a [Variable] in a sql statement.
@@ -611,7 +625,7 @@ class FoundVariable extends FoundElement implements HasType {
 
   /// The (inferred) type for this variable.
   @override
-  final ColumnType type;
+  final DriftSqlType type;
 
   /// The type converter to apply before writing this value.
   @override
@@ -676,8 +690,8 @@ class FoundVariable extends FoundElement implements HasType {
   }
 
   @override
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
-    return OperationOnTypes(this).dartTypeCode(options);
+  String dartTypeCode() {
+    return OperationOnTypes(this).dartTypeCode();
   }
 }
 
@@ -721,7 +735,7 @@ class SimpleDartPlaceholderType extends DartPlaceholderType {
 
 class ExpressionDartPlaceholderType extends DartPlaceholderType {
   /// The sql type of this expression.
-  final ColumnType? columnType;
+  final DriftSqlType? columnType;
   final Expression? defaultValue;
 
   ExpressionDartPlaceholderType(this.columnType, this.defaultValue);
@@ -742,12 +756,12 @@ class ExpressionDartPlaceholderType extends DartPlaceholderType {
     if (columnType == null) return 'Expression';
 
     final dartType = dartTypeNames[columnType]!;
-    return 'Expression<${options.nullableType(dartType)}>';
+    return 'Expression<$dartType>';
   }
 }
 
 class InsertableDartPlaceholderType extends DartPlaceholderType {
-  final MoorTable? table;
+  final DriftTable? table;
 
   InsertableDartPlaceholderType(this.table);
 
@@ -838,7 +852,7 @@ class FoundDartPlaceholder extends FoundElement {
 
   /// Whether we should write this parameter as a function having available
   /// result sets as parameters.
-  bool writeAsScopedFunction(MoorOptions options) {
+  bool writeAsScopedFunction(DriftOptions options) {
     return options.scopedDartComponents &&
         availableResultSets.isNotEmpty &&
         // Don't generate scoped functions for insertables, where the Dart type
@@ -856,7 +870,7 @@ class AvailableMoorResultSet {
   final String name;
 
   /// The table or view that is available.
-  final MoorEntityWithResultSet entity;
+  final DriftEntityWithResultSet entity;
 
   final ResultSetAvailableInStatement? source;
 

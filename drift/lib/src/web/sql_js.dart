@@ -10,6 +10,7 @@ import 'package:js/js_util.dart';
 external Object /*Promise<_SqlJs>*/ _initSqlJs();
 
 @JS('undefined')
+// ignore: prefer_void_to_null
 external Null get _undefined;
 
 @JS('eval')

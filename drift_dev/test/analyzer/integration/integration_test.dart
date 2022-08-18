@@ -89,7 +89,7 @@ class ProgrammingLanguages extends Table {
 
     final importQuery = database.queries!
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
-    expect(importQuery.resultSet.matchingTable!.table.dartTypeName,
+    expect(importQuery.resultSet.matchingTable!.table.dartTypeCode(),
         'ProgrammingLanguage');
     expect(importQuery.declaredInMoorFile, isFalse);
     expect(importQuery.hasMultipleTables, isFalse);
@@ -114,7 +114,7 @@ class ProgrammingLanguages extends Table {
 
     final librariesQuery = database.queries!
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;
-    expect(librariesQuery.variables.single.type, ColumnType.text);
+    expect(librariesQuery.variables.single.type, DriftSqlType.string);
     expect(librariesQuery.declaredInMoorFile, isTrue);
   });
 }

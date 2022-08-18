@@ -22,6 +22,10 @@ class _ExistsExpression<T> extends Expression<bool> {
 
   @override
   void writeInto(GenerationContext context) {
+    final outerHasMultipleTables = context.hasMultipleTables;
+    // Inside this subquery, we want to reference columns with their table
+    // to avoid ambiguities when an outer table is referenced.
+    context.hasMultipleTables = true;
     if (_not) {
       context.buffer.write('NOT ');
     }
@@ -30,6 +34,7 @@ class _ExistsExpression<T> extends Expression<bool> {
     context.buffer.write('(');
     _select.writeInto(context);
     context.buffer.write(')');
+    context.hasMultipleTables = outerHasMultipleTables;
   }
 
   @override

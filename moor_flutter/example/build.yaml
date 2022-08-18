@@ -1,6 +1,0 @@
-targets:
-  $default:
-    builders:
-      moor_generator:
-        options:
-          compact_query_methods: true

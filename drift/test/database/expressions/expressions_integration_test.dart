@@ -5,74 +5,204 @@ import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
+  group('with default options', () {
+    _testWith(() => TodoDb.connect(testInMemoryDatabase()));
+  });
+
+  group('storing date times as text', () {
+    _testWith(
+      () => TodoDb.connect(testInMemoryDatabase())
+        ..options = const DriftDatabaseOptions(storeDateTimeAsText: true),
+      dateTimeAsText: true,
+    );
+  });
+}
+
+void _testWith(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
   late TodoDb db;
 
   setUp(() async {
-    db = TodoDb.connect(testInMemoryDatabase());
+    db = openDb();
 
     // we selectOnly from users for the lack of a better option. Insert one
     // row so that getSingle works
     await db.into(db.users).insert(
         UsersCompanion.insert(name: 'User name', profilePicture: Uint8List(0)));
   });
-
   tearDown(() => db.close());
 
-  Future<T> eval<T>(Expression<T> expr, {TableInfo? onTable}) {
+  Future<T?> eval<T extends Object>(Expression<T> expr, {TableInfo? onTable}) {
     final query = db.selectOnly(onTable ?? db.users)..addColumns([expr]);
     return query.getSingle().then((row) => row.read(expr));
   }
 
-  test('plus and minus on DateTimes', () async {
-    const nowExpr = currentDateAndTime;
-    final tomorrow = nowExpr + const Duration(days: 1);
-    final nowStamp = nowExpr.secondsSinceEpoch;
-    final tomorrowStamp = tomorrow.secondsSinceEpoch;
+  group('DateTime', () {
+    if (dateTimeAsText) {
+      test(
+        'UTC-ness is kept when storing date times',
+        () async {
+          final utc = DateTime.utc(2020, 09, 03, 23, 55);
+          final local = DateTime(2020, 09, 03, 23, 55);
 
-    final row = await (db.selectOnly(db.users)
-          ..addColumns([nowStamp, tomorrowStamp]))
-        .getSingle();
+          expect(await eval(Variable(utc)), utc);
+          expect(await eval(Variable(local)), local);
+        },
+      );
 
-    expect(row.read(tomorrowStamp) - row.read(nowStamp),
-        const Duration(days: 1).inSeconds);
-  });
+      test('preserves milliseconds', () async {
+        final local = DateTime(2020, 09, 03, 23, 55, 0, 123);
 
-  test('datetime.date format', () {
-    final expr = Variable.withDateTime(DateTime(2020, 09, 04, 8, 55));
-    final asDate = expr.date;
+        expect(await eval(Variable(local)), local);
+      });
+    }
 
-    expect(eval(asDate), completion('2020-09-04'));
+    test('plus and minus', () async {
+      const nowExpr = currentDateAndTime;
+      final tomorrow = nowExpr + const Duration(days: 1);
+      final nowStamp = nowExpr.unixepoch;
+      final tomorrowStamp = tomorrow.unixepoch;
+
+      final row = await (db.selectOnly(db.users)
+            ..addColumns([nowStamp, tomorrowStamp]))
+          .getSingle();
+
+      expect(row.read(tomorrowStamp)! - row.read(nowStamp)!,
+          const Duration(days: 1).inSeconds);
+    });
+
+    test(
+      'extracting values',
+      () {
+        final expr = Variable.withDateTime(DateTime.utc(2020, 09, 03, 23, 55));
+
+        expect(eval(expr.year), completion(2020));
+        expect(eval(expr.month), completion(9));
+        expect(eval(expr.day), completion(3));
+        expect(eval(expr.hour), completion(23));
+        expect(eval(expr.minute), completion(55));
+        expect(eval(expr.second), completion(0));
+
+        expect(eval(expr.date), completion('2020-09-03'));
+        expect(eval(expr.modify(const DateTimeModifier.days(3)).date),
+            completion('2020-09-06'));
+        expect(eval(expr.time), completion('23:55:00'));
+        expect(eval(expr.datetime), completion('2020-09-03 23:55:00'));
+        expect(eval(expr.julianday),
+            completion(closeTo(2459096.496527778, 0.0001)));
+        expect(eval(expr.unixepoch), completion(1599177300));
+        expect(eval(expr.strftime('%Y-%m-%d %H:%M:%S')),
+            completion('2020-09-03 23:55:00'));
+      },
+      skip: sqlite3Version.versionNumber < 3039000
+          ? 'Requires sqlite 3.39'
+          : null,
+    );
+
+    DateTime result(DateTime date) {
+      if (dateTimeAsText) {
+        // sqlite3 operators on UTC internally, so this is what we want
+        return date.toUtc();
+      } else {
+        // The unix epoch representation always returns local date times, so we
+        // need to convert.
+        return date.toLocal();
+      }
+    }
+
+    test('from unix epoch', () {
+      final dateTime = DateTime(2022, 07, 23, 22, 44);
+
+      expect(
+        eval(DateTimeExpressions.fromUnixEpoch(
+            Variable(dateTime.millisecondsSinceEpoch ~/ 1000))),
+        completion(result(dateTime)),
+      );
+    });
+
+    test('modifiers', () {
+      final expr = Variable.withDateTime(DateTime.utc(2022, 07, 05));
+
+      expect(eval(expr.modify(const DateTimeModifier.days(2))),
+          completion(result(DateTime.utc(2022, 07, 07))));
+      expect(eval(expr.modify(const DateTimeModifier.months(-2))),
+          completion(result(DateTime.utc(2022, 05, 05))));
+      expect(eval(expr.modify(const DateTimeModifier.years(1))),
+          completion(result(DateTime.utc(2023, 07, 05))));
+
+      expect(eval(expr.modify(const DateTimeModifier.hours(12))),
+          completion(result(DateTime.utc(2022, 07, 05, 12))));
+      expect(eval(expr.modify(const DateTimeModifier.minutes(30))),
+          completion(result(DateTime.utc(2022, 07, 05, 0, 30))));
+      expect(eval(expr.modify(const DateTimeModifier.seconds(30))),
+          completion(result(DateTime.utc(2022, 07, 05, 0, 0, 30))));
+
+      expect(eval(expr.modify(const DateTimeModifier.startOfDay())),
+          completion(result(DateTime.utc(2022, 07, 05))));
+      expect(eval(expr.modify(const DateTimeModifier.startOfMonth())),
+          completion(result(DateTime.utc(2022, 07, 01))));
+      expect(eval(expr.modify(const DateTimeModifier.startOfYear())),
+          completion(result(DateTime.utc(2022, 01, 01))));
+
+      // The original expression is a Tuesday
+      expect(eval(expr.modify(DateTimeModifier.weekday(DateTime.tuesday))),
+          completion(result(DateTime.utc(2022, 07, 05))));
+      expect(
+        eval(expr.modify(DateTimeModifier.weekday(DateTime.saturday))),
+        completion(result(DateTime.utc(2022, 07, 09))),
+      );
+    });
+
+    if (!dateTimeAsText) {
+      test('modifiers utc/local', () {
+        final expr = Variable.withDateTime(DateTime.utc(2022, 07, 05));
+
+        // drift interprets date time values as timestamps, so going to UTC
+        // means subtracting the UTC offset in SQL. Interpreting that timestamp
+        // in dart will effectively add it back, so we have the same value bit
+        // without the UTC flag in Dart.
+        expect(eval(expr.modify(const DateTimeModifier.utc())),
+            completion(DateTime(2022, 07, 05)));
+
+        // And vice-versa (note that original expr is in UTC, this one isn't)
+        expect(
+            eval(Variable.withDateTime(DateTime(2022, 07, 05))
+                .modify(const DateTimeModifier.localTime())),
+            completion(DateTime.utc(2022, 07, 05).toLocal()));
+      }, onPlatform: const {
+        'browser': Skip('TODO: UTC offsets are unknown in WebAssembly module')
+      });
+    }
+
+    test('aggregates', () async {
+      final firstTime = DateTime(2021, 5, 7);
+      final secondTime = DateTime(2021, 5, 14);
+
+      await db.delete(db.users).go();
+      await db.into(db.users).insert(
+            UsersCompanion.insert(
+                name: 'User name',
+                profilePicture: Uint8List(0),
+                creationTime: Value(firstTime)),
+          );
+      await db.into(db.users).insert(
+            UsersCompanion.insert(
+                name: 'User name 2',
+                profilePicture: Uint8List(0),
+                creationTime: Value(secondTime)),
+          );
+
+      expect(eval(db.users.creationTime.min()), completion(result(firstTime)));
+      expect(eval(db.users.creationTime.max()), completion(result(secondTime)));
+      expect(eval(db.users.creationTime.avg()),
+          completion(result(DateTime(2021, 5, 10, 12))));
+    });
   });
 
   test('rowid', () {
     expect(eval(db.users.rowId), completion(1));
   });
 
-  test('aggregate expressions for datetimes', () async {
-    final firstTime = DateTime(2021, 5, 7);
-    final secondTime = DateTime(2021, 5, 14);
-
-    await db.delete(db.users).go();
-    await db.into(db.users).insert(
-          UsersCompanion.insert(
-              name: 'User name',
-              profilePicture: Uint8List(0),
-              creationTime: Value(firstTime)),
-        );
-    await db.into(db.users).insert(
-          UsersCompanion.insert(
-              name: 'User name 2',
-              profilePicture: Uint8List(0),
-              creationTime: Value(secondTime)),
-        );
-
-    expect(eval(db.users.creationTime.min()), completion(firstTime));
-    expect(eval(db.users.creationTime.max()), completion(secondTime));
-    expect(eval(db.users.creationTime.avg()),
-        completion(DateTime(2021, 5, 10, 12)));
-  });
-
-  group('aggregatte', () {
+  group('aggregate', () {
     setUp(() => db.delete(db.users).go());
 
     group('groupConcat', () {

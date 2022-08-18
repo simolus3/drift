@@ -64,8 +64,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   Future<int> write(Insertable<D> entity, {bool dontExecute = false}) async {
     _sourceTable.validateIntegrity(entity).throwIfInvalid(entity);
 
-    _updatedFields = entity.toColumns(true)
-      ..remove((_, value) => value == null);
+    _updatedFields = entity.toColumns(true);
 
     if (_updatedFields.isEmpty) {
       // nothing to update, we're done
@@ -74,6 +73,28 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
 
     if (dontExecute) return -1;
     return await _performQuery();
+  }
+
+  /// Applies the updates from [entity] to all rows matching the applied `where`
+  /// clause and returns affected rows _after the update_.
+  ///
+  /// For more details on writing entries, see [write].
+  /// Note that this requires sqlite 3.35 or later.
+  Future<List<D>> writeReturning(Insertable<D> entity) async {
+    writeReturningClause = true;
+    await write(entity, dontExecute: true);
+
+    final ctx = constructQuery();
+    final rows = await ctx.executor!.doWhenOpened((e) {
+      return e.runSelect(ctx.sql, ctx.boundVariables);
+    });
+
+    if (rows.isNotEmpty) {
+      database.notifyUpdates(
+          {TableUpdate.onTable(_sourceTable, kind: UpdateKind.update)});
+    }
+
+    return rows.mapAsyncAndAwait(table.map);
   }
 
   /// Replaces the old version of [entity] that is stored in the database with

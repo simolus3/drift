@@ -98,8 +98,14 @@ class MockExecutor extends Mock implements QueryExecutor {
 class MockTransactionExecutor extends MockExecutor
     implements TransactionExecutor {
   MockTransactionExecutor() {
+    when(supportsNestedTransactions).thenReturn(true);
     when(send()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));
+  }
+
+  @override
+  bool get supportsNestedTransactions {
+    return _nsm(Invocation.getter(#supportsNestedTransactions), true);
   }
 
   @override
@@ -143,8 +149,8 @@ class MockStreamQueries extends Mock implements StreamQueryStore {
 
 DatabaseConnection createConnection(QueryExecutor executor,
     [StreamQueryStore? streams]) {
-  return DatabaseConnection(
-      SqlTypeSystem.defaultInstance, executor, streams ?? StreamQueryStore());
+  return DatabaseConnection(executor,
+      streamQueries: streams ?? StreamQueryStore());
 }
 
 extension on Mock {

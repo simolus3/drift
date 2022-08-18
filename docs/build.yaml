@@ -4,24 +4,57 @@ builders:
     build_to: cache
     builder_factories: ["writeVersions"]
     build_extensions: {"$package$": ["lib/versions.json"]}
+  api_index:
+    import: 'package:code_snippets/indexer.dart'
+    build_to: cache
+    builder_factories: ['DartIndexBuilder.new']
+    auto_apply: all_packages
+    runs_before: [code_snippets]
+    build_extensions: {"lib/lib": ['api.json']}
   code_snippets:
     import: 'tool/snippets.dart'
     build_to: cache
     builder_factories: ["SnippetsBuilder.new"]
     build_extensions: {"": [".excerpt.json"]}
     auto_apply: none
+    defaults:
+      options:
+        release: false
+      release_options:
+        release: true
 
 targets:
+  # We run drift and other builders first, syntax higlighting is more
+  # accurate if the generated classes exist.
+  source_gen:
+    auto_apply_builders: false
+    builders:
+      drift_dev:preparing_builder:
+        enabled: true
+      drift_dev:drift_dev:
+        enabled: true
+        options:
+          generate_connect_constructor: true
+      json_serializable:
+        enabled: true
+    sources:
+     - lib/**
+     - test/generated/**
+
   prepare:
+    dependencies: [":source_gen"]
     builders:
       ":versions":
         enabled: true
       ":code_snippets":
         enabled: true
         generate_for:
-          - "lib/snippets/**/*.dart"
-          - "lib/snippets/*/*.drift"
-          - "lib/snippets/*.dart"
+          include:
+            - "lib/snippets/**/*.dart"
+            - "lib/snippets/*/*.drift"
+            - "lib/snippets/*.dart"
+          exclude:
+            - "**/*.g.dart"
     auto_apply_builders: false
     sources:
       - "$package$"
@@ -44,7 +77,14 @@ targets:
           dart2js_args:
             - "-O4"
             - "--csp"
-      moor_generator:
+      # These builders should run in the source_gen target
+      drift_dev:preparing_builder:
+        enabled: false
+      drift_dev:drift_dev:
+        enabled: false
+      source_gen:combining_builder:
+        enabled: false
+      json_serializable:
         enabled: false
     sources:
       - "lib/**"
@@ -55,3 +95,10 @@ targets:
       - "pubspec.yaml"
       - "theme.yaml"
       - "website.yaml"
+
+# Snippets referencing public API members from this package will get dartdoc links
+# embedded in them.
+global_options:
+  ":api_index":
+    options:
+      packages: ['drift', 'drift_dev', 'sqlite3']

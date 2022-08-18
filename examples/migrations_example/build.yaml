@@ -4,3 +4,8 @@ targets:
       drift_dev:
         options:
           generate_connect_constructor: true
+          store_date_time_values_as_text: true
+          sql:
+            dialect: sqlite
+            options:
+              modules: [fts5]

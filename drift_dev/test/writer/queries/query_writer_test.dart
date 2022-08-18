@@ -19,11 +19,10 @@ void main() {
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedMoorFile;
+    final fileState = file.currentResult as ParsedDriftFile;
 
-    final writer = Writer(
-        const MoorOptions.defaults(generateNamedParameters: true),
-        generationOptions: const GenerationOptions(nnbd: true));
+    final writer =
+        Writer(const DriftOptions.defaults(generateNamedParameters: true));
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(writer.writeGenerated(), contains('required List<int?> idList'));
@@ -42,11 +41,9 @@ void main() {
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedMoorFile;
+    final fileState = file.currentResult as ParsedDriftFile;
 
-    final writer = Writer(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
-        generationOptions: const GenerationOptions(nnbd: true));
+    final writer = Writer(const DriftOptions.defaults());
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -71,11 +68,9 @@ void main() {
     addTearDown(state.close);
 
     final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedMoorFile;
+    final fileState = file.currentResult as ParsedDriftFile;
 
-    final writer = Writer(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
-        generationOptions: const GenerationOptions(nnbd: true));
+    final writer = Writer(const DriftOptions.defaults());
     QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
@@ -106,43 +101,27 @@ void main() {
 
     tearDown(() => state.close());
 
-    Future<void> _runTest(MoorOptions options, Matcher expectation) async {
+    Future<void> _runTest(DriftOptions options, Matcher expectation) async {
       final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedMoorFile;
+      final fileState = file.currentResult as ParsedDriftFile;
 
       expect(file.errors.errors, isEmpty);
 
-      final writer = Writer(
-        options,
-        generationOptions: const GenerationOptions(nnbd: true),
-      );
+      final writer = Writer(options);
       QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
       expect(writer.writeGenerated(), expectation);
     }
 
-    test('with the old query generator', () {
-      return _runTest(
-        const MoorOptions.defaults(),
-        allOf(
-          contains(r'var $arrayStartIndex = 2;'),
-          contains(r'SELECT * FROM tbl WHERE a = :a AND b IN ($expandedb) '
-              'AND c = :c'),
-          contains(r'variables: [Variable<String?>(a), for (var $ in b) '
-              r'Variable<String?>($), Variable<String?>(c)]'),
-        ),
-      );
-    });
-
     test('with the new query generator', () {
       return _runTest(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        const DriftOptions.defaults(),
         allOf(
           contains(r'var $arrayStartIndex = 3;'),
           contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
               'AND c = ?2'),
-          contains(r'variables: [Variable<String?>(a), Variable<String?>(c), '
-              r'for (var $ in b) Variable<String?>($)], readsFrom: {tbl'),
+          contains(r'variables: [Variable<String>(a), Variable<String>(c), '
+              r'for (var $ in b) Variable<String>($)], readsFrom: {tbl'),
         ),
       );
     });
@@ -172,16 +151,13 @@ void main() {
     tearDown(() => state.close());
 
     Future<void> _runTest(
-        MoorOptions options, List<Matcher> expectation) async {
+        DriftOptions options, List<Matcher> expectation) async {
       final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedMoorFile;
+      final fileState = file.currentResult as ParsedDriftFile;
 
       expect(file.errors.errors, isEmpty);
 
-      final writer = Writer(
-        options,
-        generationOptions: const GenerationOptions(nnbd: true),
-      );
+      final writer = Writer(options);
       QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
       final result = writer.writeGenerated();
@@ -190,39 +166,21 @@ void main() {
       }
     }
 
-    test('should error with old generator', () async {
-      final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedMoorFile;
-
-      expect(file.errors.errors, isEmpty);
-
-      final writer = Writer(
-        const MoorOptions.defaults(newSqlCodeGeneration: false),
-        generationOptions: const GenerationOptions(nnbd: true),
-      );
-
-      expect(
-        () => QueryWriter(writer.child())
-            .write(fileState.resolvedQueries!.single),
-        throwsA(isA<UnsupportedError>()),
-      );
-    });
-
     test('should generate correct queries with variables', () {
       return _runTest(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        const DriftOptions.defaults(),
         [
           contains(
             r'SELECT parent.a, parent.a AS "\$n_0" FROM tbl AS parent WHERE parent.a = ?1',
           ),
           contains(
-            r'[Variable<String?>(a)]',
+            r'[Variable<String>(a)]',
           ),
           contains(
             r'SELECT b, c FROM tbl WHERE a = ?1 OR a = ?2 AND b = ?3',
           ),
           contains(
-            r"[Variable<String?>(a), Variable<String>(row.read('\$n_0')), Variable<String?>(b)]",
+            r"[Variable<String>(a), Variable<String>(row.read('\$n_0')), Variable<String>(b)]",
           ),
         ],
       );
@@ -230,7 +188,7 @@ void main() {
 
     test('should generate correct data class', () {
       return _runTest(
-        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        const DriftOptions.defaults(),
         [
           contains('QueryNestedQuery0({this.b,this.c,})'),
           contains('QueryResult({this.a,required this.nestedQuery0,})'),

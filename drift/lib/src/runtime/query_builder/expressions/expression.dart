@@ -17,7 +17,7 @@ abstract class FunctionParameter implements Component {}
 /// [JoinedSelectStatement], e.g. through [DatabaseConnectionUser.selectOnly]:
 ///
 /// ```dart
-///  Expression<int?> countUsers = users.id.count();
+///  Expression<int> countUsers = users.id.count();
 ///
 ///  // Add the expression to a select statement to evaluate it.
 ///  final query = selectOnly(users)..addColumns([countUsers]);
@@ -29,7 +29,7 @@ abstract class FunctionParameter implements Component {}
 ///
 /// It's important that all subclasses properly implement [hashCode] and
 /// [==].
-abstract class Expression<D> implements FunctionParameter {
+abstract class Expression<D extends Object> implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
@@ -49,8 +49,27 @@ abstract class Expression<D> implements FunctionParameter {
   /// type. The [compare] value will be written
   /// as a variable using prepared statements, so there is no risk of
   /// an SQL-injection.
+  ///
+  /// This method only supports comparing the value of the column to non-
+  /// nullable values and translates to a direct `=` comparison in SQL.
+  /// To compare this column to `null`, use [equalsNullable].
   Expression<bool> equals(D compare) =>
       _Comparison.equal(this, Variable<D>(compare));
+
+  /// Compares the value of this column to [compare] or `null`.
+  ///
+  /// When [compare] is null, this generates an `IS NULL` expression in SQL.
+  /// For non-null values, an [equals] expression is generated.
+  /// This means that, for this method, two null values are considered equal.
+  /// This deviates from the usual notion in SQL that doesn't allow comparing
+  /// `NULL` values with equals.
+  Expression<bool> equalsNullable(D? compare) {
+    if (compare == null) {
+      return this.isNull();
+    } else {
+      return equals(compare);
+    }
+  }
 
   /// Casts this expression to an expression of [D].
   ///
@@ -59,7 +78,7 @@ abstract class Expression<D> implements FunctionParameter {
   /// in sql, use [cast].
   ///
   /// This method is used internally by drift.
-  Expression<D2> dartCast<D2>() {
+  Expression<D2> dartCast<D2 extends Object>() {
     return _DartCastExpression<D, D2>(this);
   }
 
@@ -68,17 +87,19 @@ abstract class Expression<D> implements FunctionParameter {
   /// Note that this does not do a meaningful conversion for drift-only types
   /// like `bool` or `DateTime`. Both would simply generate a `CAST AS INT`
   /// expression.
-  Expression<D2> cast<D2>() => _CastInSqlExpression<D, D2>(this);
+  Expression<D2> cast<D2 extends Object>() {
+    return _CastInSqlExpression<D, D2>(this);
+  }
 
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
-  Expression<bool?> isIn(Iterable<D> values) {
+  Expression<bool> isIn(Iterable<D> values) {
     return _InExpression(this, values.toList(), false);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
-  Expression<bool?> isNotIn(Iterable<D> values) {
+  Expression<bool> isNotIn(Iterable<D> values) {
     return _InExpression(this, values.toList(), true);
   }
 
@@ -86,7 +107,7 @@ abstract class Expression<D> implements FunctionParameter {
   /// provided [select] statement.
   ///
   /// The [select] statement may only have one column.
-  Expression<bool?> isInQuery(BaseSelectStatement select) {
+  Expression<bool> isInQuery(BaseSelectStatement select) {
     _checkSubquery(select);
     return _InSelectExpression(select, this, false);
   }
@@ -95,7 +116,7 @@ abstract class Expression<D> implements FunctionParameter {
   /// provided [select] statement.
   ///
   /// The [select] statement may only have one column.
-  Expression<bool?> isNotInQuery(BaseSelectStatement select) {
+  Expression<bool> isNotInQuery(BaseSelectStatement select) {
     _checkSubquery(select);
     return _InSelectExpression(select, this, true);
   }
@@ -127,9 +148,9 @@ abstract class Expression<D> implements FunctionParameter {
   ///   orElse: Constant('(unknown)'),
   /// );
   /// ```
-  Expression<T?> caseMatch<T>({
-    required Map<Expression<D>, Expression<T?>> when,
-    Expression<T?>? orElse,
+  Expression<T> caseMatch<T extends Object>({
+    required Map<Expression<D>, Expression<T>> when,
+    Expression<T>? orElse,
   }) {
     if (when.isEmpty) {
       throw ArgumentError.value(when, 'when', 'Must not be empty');
@@ -165,10 +186,8 @@ abstract class Expression<D> implements FunctionParameter {
     inner.writeAroundPrecedence(ctx, precedence);
   }
 
-  /// Finds the runtime implementation of [D] in the provided [types].
-  SqlType<D> findType(SqlTypeSystem types) {
-    return types.forDartType<D>();
-  }
+  /// The supported [DriftSqlType] backing this expression.
+  DriftSqlType<D> get driftSqlType => DriftSqlType.forType();
 }
 
 /// Used to order the precedence of sql expressions so that we can avoid
@@ -247,7 +266,7 @@ class Precedence implements Comparable<Precedence> {
 
 /// An expression that looks like "$a operator $b", where $a and $b itself
 /// are expressions and the operator is any string.
-abstract class _InfixOperator<D> extends Expression<D> {
+abstract class _InfixOperator<D extends Object> extends Expression<D> {
   /// The left-hand side of this expression
   Expression get left;
 
@@ -278,7 +297,7 @@ abstract class _InfixOperator<D> extends Expression<D> {
   }
 }
 
-class _BaseInfixOperator<D> extends _InfixOperator<D> {
+class _BaseInfixOperator<D extends Object> extends _InfixOperator<D> {
   @override
   final Expression left;
 
@@ -350,9 +369,31 @@ class _Comparison extends _InfixOperator<bool> {
 
   /// Like [Comparison(left, op, right)], but uses [_ComparisonOperator.equal].
   _Comparison.equal(this.left, this.right) : op = _ComparisonOperator.equal;
+
+  @override
+  void writeInto(GenerationContext context) {
+    // Most values can be compared directly, but date time values need to be
+    // brought into a comparable format if they're stored as text (since we
+    // don't want to compare datetimes lexicographically).
+    final left = this.left;
+    final right = this.right;
+
+    if (left is Expression<DateTime> &&
+        right is Expression<DateTime> &&
+        context.options.types.storeDateTimesAsText) {
+      // Compare julianday values instead of texts
+      writeInner(context, left.julianday);
+      context.writeWhitespace();
+      context.buffer.write(operator);
+      context.writeWhitespace();
+      writeInner(context, right.julianday);
+    } else {
+      super.writeInto(context);
+    }
+  }
 }
 
-class _UnaryMinus<DT> extends Expression<DT> {
+class _UnaryMinus<DT extends Object> extends Expression<DT> {
   final Expression<DT> inner;
 
   _UnaryMinus(this.inner);
@@ -375,16 +416,24 @@ class _UnaryMinus<DT> extends Expression<DT> {
   }
 }
 
-class _DartCastExpression<D1, D2> extends Expression<D2> {
+class _DartCastExpression<D1 extends Object, D2 extends Object>
+    extends Expression<D2> {
   final Expression<D1> inner;
 
-  _DartCastExpression(this.inner);
+  const _DartCastExpression(this.inner);
 
   @override
   Precedence get precedence => inner.precedence;
 
   @override
   bool get isLiteral => inner.isLiteral;
+
+  @override
+  void writeAroundPrecedence(GenerationContext context, Precedence precedence) {
+    // This helps avoid parentheses if the inner expression has a precedence
+    // that is computed dynamically.
+    return inner.writeAroundPrecedence(context, precedence);
+  }
 
   @override
   void writeInto(GenerationContext context) {
@@ -400,21 +449,22 @@ class _DartCastExpression<D1, D2> extends Expression<D2> {
   }
 }
 
-class _CastInSqlExpression<D1, D2> extends Expression<D2> {
+class _CastInSqlExpression<D1 extends Object, D2 extends Object>
+    extends Expression<D2> {
   final Expression<D1> inner;
 
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
-  _CastInSqlExpression(this.inner);
+  const _CastInSqlExpression(this.inner);
 
   @override
   void writeInto(GenerationContext context) {
-    final type = context.typeSystem.forDartType<D2>();
+    final type = DriftSqlType.forType<D2>();
 
     context.buffer.write('CAST(');
     inner.writeInto(context);
-    context.buffer.write(' AS ${type.sqlName(context.dialect)})');
+    context.buffer.write(' AS ${type.sqlTypeName(context)})');
   }
 }
 
@@ -423,7 +473,7 @@ class _CastInSqlExpression<D1, D2> extends Expression<D2> {
 /// This class is mainly used by drift internally. If you find yourself using
 /// this class, consider [creating an issue](https://github.com/simolus3/drift/issues/new)
 /// to request native support in drift.
-class FunctionCallExpression<R> extends Expression<R> {
+class FunctionCallExpression<R extends Object> extends Expression<R> {
   /// The name of the function to call
   final String functionName;
 
@@ -431,11 +481,11 @@ class FunctionCallExpression<R> extends Expression<R> {
   final List<Expression> arguments;
 
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
   /// Constructs a function call expression in sql from the [functionName] and
   /// the target [arguments].
-  FunctionCallExpression(this.functionName, this.arguments);
+  const FunctionCallExpression(this.functionName, this.arguments);
 
   @override
   void writeInto(GenerationContext context) {
@@ -469,12 +519,13 @@ void _checkSubquery(BaseSelectStatement statement) {
 ///
 /// The statement, which can be created via [DatabaseConnectionUser.select] in
 /// a database class, must return exactly one row with exactly one column.
-Expression<R> subqueryExpression<R>(BaseSelectStatement statement) {
+Expression<R> subqueryExpression<R extends Object>(
+    BaseSelectStatement statement) {
   _checkSubquery(statement);
   return _SubqueryExpression<R>(statement);
 }
 
-class _SubqueryExpression<R> extends Expression<R> {
+class _SubqueryExpression<R extends Object> extends Expression<R> {
   final BaseSelectStatement statement;
 
   _SubqueryExpression(this.statement);

@@ -29,7 +29,7 @@ abstract class SchemaVerifier {
   ///  - call [schemaAt] with the starting version you want to test
   ///  - use the [InitializedSchema.rawDatabase] of the returned
   ///   [InitializedSchema] to insert data.
-  ///  - connect your database class to the [InitializedSchema.connection]
+  ///  - connect your database class to a [InitializedSchema.newConnection]
   ///  - call [migrateAndValidate] with the database and your target schema
   ///    version to run a migration and verify that it yields the desired schema
   ///    when done.
@@ -101,7 +101,10 @@ class _GenerateFromScratch extends GeneratedDatabase {
   final GeneratedDatabase reference;
 
   _GenerateFromScratch(this.reference, QueryExecutor executor)
-      : super(SqlTypeSystem.defaultInstance, executor);
+      : super(executor);
+
+  @override
+  DriftDatabaseOptions get options => reference.options;
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables => reference.allTables;
@@ -114,7 +117,7 @@ class _GenerateFromScratch extends GeneratedDatabase {
   int get schemaVersion => 1;
 }
 
-/// The implementation of this class is generated through the `moor_generator`
+/// The implementation of this class is generated through the `drift_dev`
 /// CLI tool.
 abstract class SchemaInstantiationHelper {
   GeneratedDatabase databaseForVersion(QueryExecutor db, int version);
@@ -151,8 +154,8 @@ class SchemaMismatch implements Exception {
 
 /// Contains an initialized schema with all tables, views, triggers and indices.
 ///
-/// You can use the [connection] for your database class and the [rawDatabase]
-/// to insert data before the migration.
+/// You can use the [newConnection] for your database class and the
+/// [rawDatabase] to insert data before the migration.
 class InitializedSchema {
   /// The raw database from the `sqlite3` package.
   ///
@@ -160,7 +163,7 @@ class InitializedSchema {
   /// requested schema. It can be used to insert data before a migration to
   /// verify that it's still intact after the migration.
   ///
-  /// This database backs the [connection], so it's not necessary to close it
+  /// This database backs the [newConnection], so it's not necessary to close it
   /// if you're attaching a database later.
   final Database rawDatabase;
 
@@ -180,14 +183,14 @@ class InitializedSchema {
   ///
   /// All connections returned by this method point to the [rawDatabase].
   /// However, each call to [newConnection] returns an independent connection
-  /// that is considered closed from moor's point of view. This means that the
+  /// that is considered closed from drift's point of view. This means that the
   /// [rawDatabase] can be used by multiple generated database classes that
   /// can independently be opened and closed, albeit not simultaneously.
   ///
   /// ## Example
   ///
   /// When generating the schema helpers with the `--data-classes` and the
-  /// `--companions` command-line flags, this method can be used to create moor
+  /// `--companions` command-line flags, this method can be used to create drift
   /// databases inserting data at specific versions:
   ///
   /// ```dart

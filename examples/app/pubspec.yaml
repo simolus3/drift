@@ -42,7 +42,6 @@ flutter:
 # We override dependencies to ensure that we always use the packages from
 # this repository. In your app, just depend on the latest drift version.
 dependency_overrides:
-  js: ^0.6.4 # temporarily added because sqlite3 depends on this, and flutter hasn't caught up yet.
   drift:
     path: ../../drift
   drift_dev:

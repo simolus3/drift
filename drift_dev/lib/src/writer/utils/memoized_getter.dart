@@ -14,25 +14,17 @@ import 'package:recase/recase.dart';
 ///
 /// This means that [code] should be an expression without any trailing
 /// semicolon.
-void writeMemoizedGetter(
-    {required StringBuffer buffer,
-    required String getterName,
-    required String returnType,
-    required String code,
-    required GenerationOptions options,
-    bool hasOverride = false}) {
-  if (options.nnbd) {
-    if (hasOverride) {
-      buffer.write('@override\n');
-    }
-    buffer.writeln('late final $returnType $getterName = $code;');
-  } else {
-    buffer.write('$returnType _$getterName;\n');
-    if (hasOverride) {
-      buffer.write('@override\n');
-    }
-    buffer.write('$returnType get $getterName => _$getterName ??= $code;');
+void writeMemoizedGetter({
+  required StringBuffer buffer,
+  required String getterName,
+  required String returnType,
+  required String code,
+  bool hasOverride = false,
+}) {
+  if (hasOverride) {
+    buffer.write('@override\n');
   }
+  buffer.writeln('late final $returnType $getterName = $code;');
 }
 
 /// Writes the following dart code into the [buffer]:
@@ -62,20 +54,10 @@ void writeMemoizedGetterWithBody(
     bool hasOverride = false}) {
   final constructingMethod = '_construct${ReCase(getterName).pascalCase}';
 
-  // We only need another field without nnbd
-  if (!options.nnbd) buffer.write('$returnType _$getterName;\n');
-
   if (hasOverride) {
     buffer.write('@override\n');
   }
-  if (options.nnbd) {
-    buffer
-        .writeln('late final $returnType $getterName = $constructingMethod();');
-  } else {
-    buffer
-      ..write('$returnType get $getterName =>')
-      ..writeln(' _$getterName ??= $constructingMethod();');
-  }
+  buffer.writeln('late final $returnType $getterName = $constructingMethod();');
 
   buffer
     ..write('$returnType $constructingMethod() {\n')

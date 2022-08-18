@@ -93,9 +93,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
     return null;
   }
 
-  /// The [ReferenceScope], which contains available tables, column references
-  /// and functions for this node.
-  ReferenceScope get scope {
+  ReferenceScope? get optionalScope {
     AstNode? node = this;
 
     while (node != null) {
@@ -104,8 +102,19 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
       node = node.parent;
     }
 
+    return null;
+  }
+
+  /// The [ReferenceScope], which contains available tables, column references
+  /// and functions for this node.
+  ReferenceScope get scope {
+    final resolved = optionalScope;
+    if (resolved != null) return resolved;
+
     throw StateError('No reference scope found in this or any parent node');
   }
+
+  StatementScope get statementScope => StatementScope.cast(scope);
 
   /// Applies a [ReferenceScope] to this node. Variables declared in [scope]
   /// will be visible to this node and to [allDescendants].

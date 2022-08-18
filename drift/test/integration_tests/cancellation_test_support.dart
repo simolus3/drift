@@ -5,7 +5,7 @@ DatabaseConnection createConnection() {
   var counter = 0;
   final loggedValues = <int>[];
 
-  return DatabaseConnection.fromExecutor(
+  return DatabaseConnection(
     NativeDatabase.memory(
       setup: (rawDb) {
         rawDb.createFunction(

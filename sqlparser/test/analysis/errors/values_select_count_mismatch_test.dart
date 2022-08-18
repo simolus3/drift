@@ -13,8 +13,8 @@ void main() {
                 AnalysisErrorType.valuesSelectCountMismatch)
             .having((e) => e.message, 'message',
                 allOf(contains('1'), contains('2')))
-            .having((e) => e.relevantNode!.span!.text, 'relevantNode.span.text',
-                '(3)'),
+            .having(
+                (e) => e.source!.span!.text, 'relevantNode.span.text', '(3)'),
       ),
     );
   });

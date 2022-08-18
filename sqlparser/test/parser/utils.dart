@@ -46,6 +46,20 @@ void testStatement(String sql, AstNode expected, {bool driftMode = false}) {
   enforceEqual(parsed, expected);
 }
 
+void expectParseError(
+  String sql, {
+  dynamic message = anything,
+  dynamic span = anything,
+}) {
+  final result = SqlEngine().parse(sql);
+
+  expect(result.errors, [
+    isA<ParsingError>()
+        .having((e) => e.message, 'message', wrapMatcher(message))
+        .having((e) => e.token.span.text, 'span', wrapMatcher(span))
+  ]);
+}
+
 FileSpan fakeSpan(String content) {
   return SourceFile.fromString(content).span(0);
 }

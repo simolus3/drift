@@ -74,8 +74,6 @@ class ServerImplementation implements DriftServer {
 
     if (payload is NoArgsRequest) {
       switch (payload) {
-        case NoArgsRequest.getTypeSystem:
-          return connection.typeSystem;
         case NoArgsRequest.terminateAll:
           if (allowRemoteShutdown) {
             _backlogUpdated.close();

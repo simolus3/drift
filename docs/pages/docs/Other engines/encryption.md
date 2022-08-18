@@ -18,7 +18,7 @@ by [@davidmartos96](https://github.com/davidmartos96). To use it, you need to
 remove the dependency on `moor_flutter` from your `pubspec.yaml` and replace it
 with this:
 
-{% assign versions = 'package:moor_documentation/versions.json' | readString | json_decode %}
+{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
 
 ```yaml
 dependencies:

@@ -3,14 +3,14 @@ publish_to: none
 version: 1.0.0
 
 environment:
-  sdk: '>=2.6.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  drift: ^1.0.0
+  drift: ^2.0.0-dev
   built_value: ^8.0.0
 
 dev_dependencies:
-  drift_dev: ^1.0.0
+  drift_dev: ^2.0.0-dev
   built_value_generator: ^8.1.1
   build_runner: ^2.0.0
 

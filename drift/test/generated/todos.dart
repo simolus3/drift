@@ -124,13 +124,13 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
 
   @override
-  MyCustomObject? mapToDart(String? fromDb) {
-    return fromDb == null ? null : MyCustomObject(fromDb);
+  MyCustomObject fromSql(String fromDb) {
+    return MyCustomObject(fromDb);
   }
 
   @override
-  String? mapToSql(MyCustomObject? value) {
-    return value?.data;
+  String toSql(MyCustomObject value) {
+    return value.data;
   }
 }
 
@@ -199,6 +199,9 @@ class TodoDb extends _$TodoDb {
 
   @override
   MigrationStrategy migration = MigrationStrategy();
+
+  @override
+  DriftDatabaseOptions options = const DriftDatabaseOptions();
 
   @override
   int get schemaVersion => 1;

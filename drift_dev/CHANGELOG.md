@@ -1,3 +1,27 @@
+## 2.0.1
+
+- Recognize options for an applied `not_shared` builder when exporting schemas.
+
+## 2.0.0
+
+- Removes the following build options, which are always turned on now:
+ - `null_aware_type_converters`
+ - `new_sql_code_generation`
+- Starting from this version, drift only supports generating non-nullable Dart code.
+  You'll have to at least opt your database code into null-safety to use this and
+  upcoming drift releases.
+
+These changes help reduce complexity in the generator.
+
+## 1.7.1
+
+- Support the latest versions of the `analyzer` and `analyzer_plugin` packages.
+
+## 1.7.0
+
+- Support for new drift 1.7 features like `int64` columns.
+- Analysis support for upcoming sqlite 3.39 features in `.drift` files.
+
 ## 1.6.0
 
 - Write Dart references into schema files.

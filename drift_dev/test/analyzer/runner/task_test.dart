@@ -17,7 +17,7 @@ import 'b.moor';
 
       expect(
         result.errors.errors,
-        contains(const TypeMatcher<ErrorInMoorFile>().having(
+        contains(const TypeMatcher<ErrorInDriftFile>().having(
           (e) => e.message,
           'message',
           allOf(contains('b.moor'), contains('file does not exist')),

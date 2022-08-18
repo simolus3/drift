@@ -6,6 +6,7 @@ data:
 template: layouts/docs/single
 ---
 
+
 For each table declared in Dart or in a drift file, `drift_dev` generates a row class (sometimes also referred to as _data class_)
 to hold a full row and a companion class for updates and inserts.
 This works well for most cases: Drift knows  what columns your table has, and it can generate a simple class for all of that.
@@ -19,22 +20,8 @@ Starting from moor version 4.3 (and in drift), it is possible to use your own cl
 
 To use a custom row class, simply annotate your table definition with `@UseRowClass`.
 
-```dart
-@UseRowClass(User)
-class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
-  DateTimeColumn get birthday => dateTime()();
-}
-
-class User {
-  final int id;
-  final String name;
-  final DateTime birthDate;
-
-  User({required this.id, required this.name, required this.birthDate});
-}
-```
+{% assign snippets = "package:drift_docs/snippets/custom_row_classes/default.dart.excerpt.json" | readString | json_decode %}
+{% include "blocks/snippet" snippets = snippets name = "start" %}
 
 A row class must adhere to the following requirements:
 
@@ -58,18 +45,25 @@ By default, drift will use the default, unnamed constructor to map a row to the 
 If you want to use another constructor, set the `constructor` parameter on the
 `@UseRowClass` annotation:
 
+{% assign snippets = "package:drift_docs/snippets/custom_row_classes/named.dart.excerpt.json" | readString | json_decode %}
+{% include "blocks/snippet" snippets = snippets name = "named" %}
+
+### Static and aynchronous factories
+
+Starting with drift 2.0, the custom constructor set with the `constructor`
+parameter on the `@UseRowClass` annotation may also refer to a static method
+defined on the class to load.
+That method must either return the row class or a `Future` of that type.
+Unlike a named constructor or a factory, this can be useful in case the mapping
+from SQL to Dart needs to be asynchronous:
+
 ```dart
-@UseRowClass(User, constructor: 'fromDb')
-class Users extends Table {
-  // ...
-}
-
 class User {
-  final int id;
-  final String name;
-  final DateTime birthDate;
+  // ...
 
-  User.fromDb({required this.id, required this.name, required this.birthDate});
+  static Future<User> load(int id, String name, DateTime birthday) async {
+    // ...
+  }
 }
 ```
 

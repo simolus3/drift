@@ -77,7 +77,7 @@ void main() {
   });
 
   test('generated data classes can be converted to companions', () {
-    final entry = Category(
+    const entry = Category(
       id: 3,
       description: 'description',
       priority: CategoryPriority.low,
@@ -97,7 +97,7 @@ void main() {
   });
 
   test('data classes can be converted to companions with null to absent', () {
-    final entry = PureDefault(txt: null);
+    const entry = PureDefault(txt: null);
 
     expect(entry.toCompanion(false),
         const PureDefaultsCompanion(txt: Value(null)));

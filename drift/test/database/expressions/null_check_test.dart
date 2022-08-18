@@ -9,6 +9,7 @@ void main() {
       CustomExpression<int>('name', precedence: Precedence.primary);
 
   test('IS NULL expressions are generated', () {
+    // ignore: deprecated_member_use_from_same_package
     final oldFunction = drift.isNull(innerExpression);
     final extension = innerExpression.isNull();
 
@@ -19,6 +20,7 @@ void main() {
   });
 
   test('IS NOT NULL expressions are generated', () {
+    // ignore: deprecated_member_use_from_same_package
     final oldFunction = drift.isNotNull(innerExpression);
     final extension = innerExpression.isNotNull();
 
@@ -29,8 +31,7 @@ void main() {
   });
 
   test('generates COALESCE expressions', () {
-    final expr =
-        drift.coalesce([const Constant<int?>(null), const Constant(3)]);
+    final expr = drift.coalesce([const Constant<int>(null), const Constant(3)]);
 
     expect(expr, generates('COALESCE(NULL, 3)'));
   });

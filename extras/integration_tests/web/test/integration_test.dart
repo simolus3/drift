@@ -1,9 +1,11 @@
 @TestOn('browser')
 import 'dart:html';
 
+import 'package:drift/drift.dart';
 import 'package:drift/web.dart';
+import 'package:drift_testcases/database/database.dart';
+import 'package:drift_testcases/suite/suite.dart';
 import 'package:test/test.dart';
-import 'package:tests/tests.dart';
 
 class WebExecutor extends TestExecutor {
   final String name = 'db';
@@ -12,8 +14,11 @@ class WebExecutor extends TestExecutor {
   bool get supportsReturning => true;
 
   @override
+  bool get supportsNestedTransactions => true;
+
+  @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(WebDatabase(name));
+    return DatabaseConnection(WebDatabase(name));
   }
 
   @override
@@ -29,7 +34,7 @@ class WebExecutorIndexedDb extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(
+    return DatabaseConnection(
       WebDatabase.withStorage(DriftWebStorage.indexedDb('foo')),
     );
   }
@@ -50,7 +55,7 @@ void main() {
   });
 
   test('can run multiple statements in one call', () async {
-    final db = Database(DatabaseConnection.fromExecutor(
+    final db = Database(DatabaseConnection(
         WebDatabase.withStorage(DriftWebStorage.volatile())));
     addTearDown(db.close);
 

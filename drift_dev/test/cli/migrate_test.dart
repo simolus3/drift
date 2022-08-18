@@ -34,15 +34,16 @@ Future<void> _setup(Iterable<d.Descriptor> lib,
 
   final driftDevUrl =
       config.packages.singleWhere((e) => e.name == 'drift_dev').root;
-  final moorFlutterUrl = driftDevUrl.resolve('../moor_flutter/');
+  final moorUrl = driftDevUrl.resolve('../extras/assets/old_moor_package/');
+  final moorFlutterUrl =
+      driftDevUrl.resolve('../extras/assets/old_moor_flutter_package/');
 
   final appUri = '${File(p.join(d.sandbox, 'app')).absolute.uri}/';
   final newConfig = PackageConfig([
     ...config.packages,
     Package('app', Uri.parse(appUri),
         packageUriRoot: Uri.parse('${appUri}lib/')),
-    // Need to fake moor_flutter because drift_dev can't depend on Flutter
-    // packages
+    Package('moor', moorUrl, packageUriRoot: Uri.parse('${moorUrl}lib/')),
     Package('moor_flutter', moorFlutterUrl,
         packageUriRoot: Uri.parse('${moorFlutterUrl}lib/')),
   ]);
@@ -305,7 +306,7 @@ targets:
       moor_generator:
         options:
           # comment
-          compact_query_methods: true
+          scoped_dart_components: true
       "moor_generator:foo":
         options:
           bar: baz
@@ -329,7 +330,7 @@ targets:
       drift_dev:
         options:
           # comment
-          compact_query_methods: true
+          scoped_dart_components: true
       drift_dev|foo:
         options:
           bar: baz

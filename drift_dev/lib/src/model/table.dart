@@ -1,18 +1,15 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import 'base_entity.dart';
-import 'column.dart';
-import 'declarations/declaration.dart';
+import 'model.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
-class MoorTable extends MoorEntityWithResultSet {
+class DriftTable extends DriftEntityWithResultSet {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement? fromClass;
@@ -45,7 +42,7 @@ class MoorTable extends MoorEntityWithResultSet {
 
   /// The columns declared in this table.
   @override
-  final List<MoorColumn> columns;
+  final List<DriftColumn> columns;
 
   /// The (unescaped) name of this table when stored in the database
   final String sqlName;
@@ -79,7 +76,7 @@ class MoorTable extends MoorEntityWithResultSet {
     return existingRowClass?.dartType(options) ?? dartTypeName;
   }
 
-  String getNameForCompanionClass(MoorOptions options) {
+  String getNameForCompanionClass(DriftOptions options) {
     final baseName =
         options.useDataClassNameForCompanions ? dartTypeName : _baseName;
     return '${baseName}Companion';
@@ -90,17 +87,17 @@ class MoorTable extends MoorEntityWithResultSet {
   /// not been defined that way.
   ///
   /// For the full primary key, see [fullPrimaryKey].
-  final Set<MoorColumn>? primaryKey;
+  final Set<DriftColumn>? primaryKey;
 
   /// The set of unique keys if they have been explicitly defined by
   /// overriding `uniqueKeys` in the table class.
-  final List<Set<MoorColumn>>? uniqueKeys;
+  final List<Set<DriftColumn>>? uniqueKeys;
 
   /// The primary key for this table.
   ///
   /// Unlikely [primaryKey], this method is not limited to the `primaryKey`
   /// override in Dart table declarations.
-  Set<MoorColumn> get fullPrimaryKey {
+  Set<DriftColumn> get fullPrimaryKey {
     if (primaryKey != null) return primaryKey!;
 
     return columns.where((c) => c.features.any((f) => f is PrimaryKey)).toSet();
@@ -123,7 +120,7 @@ class MoorTable extends MoorEntityWithResultSet {
   final List<String>? overrideTableConstraints;
 
   @override
-  final Set<MoorTable> references = {};
+  final Set<DriftTable> references = {};
 
   /// Returns whether this table was created from a `CREATE VIRTUAL TABLE`
   /// statement in a moor file
@@ -144,7 +141,7 @@ class MoorTable extends MoorEntityWithResultSet {
     return (declaration as TableDeclarationWithSql).createSql;
   }
 
-  MoorTable({
+  DriftTable({
     this.fromClass,
     this.columns = const [],
     required this.sqlName,
@@ -178,7 +175,7 @@ class MoorTable extends MoorEntityWithResultSet {
 
   /// Determines whether [column] would be required for inserts performed via
   /// companions.
-  bool isColumnRequiredForInsert(MoorColumn column) {
+  bool isColumnRequiredForInsert(DriftColumn column) {
     assert(columns.contains(column));
 
     if (column.defaultArgument != null ||
@@ -194,7 +191,7 @@ class MoorTable extends MoorEntityWithResultSet {
     final isWithoutRowId = overrideWithoutRowId ?? false;
     final fullPk = fullPrimaryKey;
     final isAliasForRowId = !isWithoutRowId &&
-        column.type == ColumnType.integer &&
+        column.type == DriftSqlType.int &&
         fullPk.length == 1 &&
         fullPk.single == column;
 
@@ -217,7 +214,7 @@ class MoorTable extends MoorEntityWithResultSet {
 }
 
 class WrittenMoorTable {
-  final MoorTable table;
+  final DriftTable table;
   final UpdateKind kind;
 
   WrittenMoorTable(this.table, this.kind);

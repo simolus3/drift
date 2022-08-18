@@ -1,6 +1,15 @@
-## 0.21.1-dev
+## 0.23.0
 
+- Apply type hints for date times on textual datetime functions as well.
+
+## 0.22.0
+
+- Refactor how tables and columns are resolved internally.
 - Lint for `DISTINCT` misuse in aggregate function calls.
+- Support the `RIGHT` and `FULL` join operators added in sqlite 3.39.0.
+- Support `IS DISTINCT FROM` and `IS NOT DISTINCT FROM` syntax added in sqlite
+  3.39.0.
+- Fix type inference for `SUM()` calls around int "subtypes" (like booleans).
 
 ## 0.21.0
 

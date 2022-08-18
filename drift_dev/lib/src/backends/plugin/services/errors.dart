@@ -9,7 +9,7 @@ const _genericError = 'moor.errorGeneric';
 /// Sends information about errors, lints and warnings encountered in a `.moor`
 /// file to the analyzer.
 class ErrorService {
-  final MoorPlugin plugin;
+  final DriftPlugin plugin;
 
   ErrorService(this.plugin);
 
@@ -39,8 +39,8 @@ class ErrorService {
     plugin.channel.sendNotification(params.toNotification());
   }
 
-  Location _findLocationForError(MoorError error, String path) {
-    if (error is ErrorInMoorFile) {
+  Location _findLocationForError(DriftError error, String path) {
+    if (error is ErrorInDriftFile) {
       final span = error.span;
       final start = span.start;
       final end = span.end;

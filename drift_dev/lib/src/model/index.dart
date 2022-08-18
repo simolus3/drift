@@ -7,11 +7,11 @@ import 'model.dart';
 /// An sql index.
 ///
 /// Indices can only be declared in moor files at the moment.
-class MoorIndex extends MoorSchemaEntity {
+class MoorIndex extends DriftSchemaEntity {
   /// The table on which this index is created.
   ///
   /// This field can be null in case the table wasn't resolved.
-  MoorTable? table;
+  DriftTable? table;
   final String name;
 
   /// The sql statement creating this index.
@@ -25,7 +25,7 @@ class MoorIndex extends MoorSchemaEntity {
   factory MoorIndex.fromMoor(CreateIndexStatement stmt, FoundFile file) {
     return MoorIndex(
       stmt.indexName,
-      MoorIndexDeclaration.fromNodeAndFile(stmt, file),
+      DriftIndexDeclaration.fromNodeAndFile(stmt, file),
       stmt.span!.text,
     );
   }
@@ -40,12 +40,12 @@ class MoorIndex extends MoorSchemaEntity {
   ///
   /// Unlike [createStmt], this can be formatted to exclude comments and
   /// unnecessary whitespace depending on the [options].
-  String createSql(MoorOptions options) {
+  String createSql(DriftOptions options) {
     return declaration.formatSqlIfAvailable(options) ?? createStmt;
   }
 
   @override
-  Iterable<MoorSchemaEntity> get references {
+  Iterable<DriftSchemaEntity> get references {
     if (table == null) {
       return const Iterable.empty();
     }

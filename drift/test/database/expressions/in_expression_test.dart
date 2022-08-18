@@ -31,7 +31,7 @@ void main() {
       expect(isInExpression,
           generates('name IN (SELECT users.name AS "users.name" FROM users)'));
 
-      final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
+      final ctx = stubContext();
       isInExpression.writeInto(ctx);
       expect(ctx.watchedTables, contains(db.users));
     });

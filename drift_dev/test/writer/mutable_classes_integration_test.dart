@@ -4,14 +4,14 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:drift_dev/src/backends/build/moor_builder.dart';
+import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 const _testInput = r'''
 import 'package:drift/drift.dart';
 
-part 'main.moor.dart';
+part 'main.drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -28,32 +28,24 @@ class Database extends _$Database {}
 ''';
 
 void main() {
-  group('generates mutable classes if needed', () {
-    Future<void> _testWith(bool nnbd) async {
-      await testBuilder(
-        MoorPartBuilder(const BuilderOptions({'mutable_classes': true})),
-        {'a|lib/main.dart': nnbd ? _testInput : '//@dart=2.6\n$_testInput'},
-        reader: await PackageAssetReader.currentIsolate(),
-        outputs: {
-          'a|lib/main.moor.dart': _GeneratesWithoutFinalFields(
-            {'User', 'UsersCompanion', 'SomeQueryResult'},
-            isNullSafe: nnbd,
-          ),
-        },
-      );
-    }
-
-    test('null-safety', () => _testWith(true));
-    test('legacy', () => _testWith(false));
+  test('generates mutable classes if needed', () async {
+    await testBuilder(
+      DriftPartBuilder(const BuilderOptions({'mutable_classes': true})),
+      const {'a|lib/main.dart': _testInput},
+      reader: await PackageAssetReader.currentIsolate(),
+      outputs: const {
+        'a|lib/main.drift.dart': _GeneratesWithoutFinalFields(
+          {'User', 'UsersCompanion', 'SomeQueryResult'},
+        ),
+      },
+    );
   }, tags: 'analyzer');
 }
 
 class _GeneratesWithoutFinalFields extends Matcher {
   final Set<String> expectedWithoutFinals;
-  final bool isNullSafe;
 
-  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals,
-      {this.isNullSafe = false});
+  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals);
 
   @override
   Description describe(Description description) {
@@ -77,7 +69,7 @@ class _GeneratesWithoutFinalFields extends Matcher {
     final parsed = parseFile(
       path: '/foo.dart',
       featureSet: FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(2, isNullSafe ? 12 : 6, 0),
+        sdkLanguageVersion: Version(2, 12, 0),
         flags: const [],
       ),
       resourceProvider: resourceProvider,
@@ -88,25 +80,26 @@ class _GeneratesWithoutFinalFields extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
-      if (expectedWithoutFinals.contains(definedClass.name.name)) {
+      final definedClassName = definedClass.name2.lexeme;
+      if (expectedWithoutFinals.contains(definedClassName)) {
         for (final member in definedClass.members) {
           if (member is FieldDeclaration) {
             if (member.fields.isFinal) {
               matchState['desc'] =
-                  'Field ${member.fields.variables.first.name.name} in '
-                  '${definedClass.name.name} is final.';
+                  'Field ${member.fields.variables.first.name2.lexeme} in '
+                  '$definedClassName is final.';
               return false;
             }
           } else if (member is ConstructorDeclaration) {
             if (member.constKeyword != null) {
-              matchState['desc'] = 'Constructor ${member.name?.name ?? ''} in '
-                  '${definedClass.name.name} is constant.';
+              matchState['desc'] = 'Constructor ${member.name2?.lexeme ?? ''} '
+                  'in $definedClassName is constant.';
               return false;
             }
           }
         }
 
-        remaining.remove(definedClass.name.name);
+        remaining.remove(definedClassName);
       }
     }
 
@@ -122,6 +115,7 @@ class _GeneratesWithoutFinalFields extends Matcher {
   @override
   Description describeMismatch(dynamic item, Description mismatchDescription,
       Map matchState, bool verbose) {
-    return mismatchDescription.add(matchState['desc'] as String);
+    return mismatchDescription
+        .add((matchState['desc'] as String?) ?? 'Had syntax errors');
   }
 }

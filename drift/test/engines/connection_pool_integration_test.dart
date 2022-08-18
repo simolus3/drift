@@ -15,7 +15,7 @@ final _file = File(join(Directory.systemTemp.path, fileName));
 QueryExecutor _createExecutor() => NativeDatabase(_file);
 
 DatabaseConnection _forBackgroundIsolate() {
-  return DatabaseConnection.fromExecutor(_createExecutor());
+  return DatabaseConnection(_createExecutor());
 }
 
 void main() {

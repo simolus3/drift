@@ -22,23 +22,16 @@ class Preferences {
 
 // #docregion converter
 // stores preferences as strings
-class PreferenceConverter extends TypeConverter<Preferences, String>
-    with JsonTypeConverter<Preferences, String> {
+class PreferenceConverter extends TypeConverter<Preferences, String> {
   const PreferenceConverter();
+
   @override
-  Preferences? mapToDart(String? fromDb) {
-    if (fromDb == null) {
-      return null;
-    }
+  Preferences fromSql(String fromDb) {
     return Preferences.fromJson(json.decode(fromDb) as Map<String, dynamic>);
   }
 
   @override
-  String? mapToSql(Preferences? value) {
-    if (value == null) {
-      return null;
-    }
-
+  String toSql(Preferences value) {
     return json.encode(value.toJson());
   }
 }

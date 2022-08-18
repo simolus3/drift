@@ -30,7 +30,7 @@ void main() {
     final task = session.startTask(backendTask);
 
     final library = await backendTask.resolveDart(input);
-    final parser = MoorDartParser(ParseDartStep(
+    final parser = DriftDartParser(ParseDartStep(
         task, session.registerFile(input), library, await task.helper));
 
     Future<MethodDeclaration> _loadDeclaration(Element element) async {
@@ -44,7 +44,7 @@ void main() {
       expect(parser.returnExpressionOfMethod(node)!.toSource(), source);
     }
 
-    final testClass = library.getType('Test');
+    final testClass = library.getClass('Test');
 
     await _verifyReturnExpressionMatches(
         testClass!.getGetter('getter')!, "'foo'");

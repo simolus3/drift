@@ -32,24 +32,24 @@ class DartViewDeclaration implements ViewDeclaration, DartDeclaration {
 }
 
 class TableReferenceInDartView {
-  final MoorTable table;
+  final DriftTable table;
   final String name;
 
   TableReferenceInDartView(this.table, this.name);
 }
 
-class MoorViewDeclaration
-    implements ViewDeclaration, MoorDeclaration, ViewDeclarationWithSql {
+class DriftViewDeclaration
+    implements ViewDeclaration, DriftFileDeclaration, ViewDeclarationWithSql {
   @override
   final SourceRange declaration;
 
   @override
   final CreateViewStatement node;
 
-  MoorViewDeclaration._(this.declaration, this.node);
+  DriftViewDeclaration._(this.declaration, this.node);
 
-  factory MoorViewDeclaration(CreateViewStatement node, FoundFile file) {
-    return MoorViewDeclaration._(
+  factory DriftViewDeclaration(CreateViewStatement node, FoundFile file) {
+    return DriftViewDeclaration._(
       SourceRange.fromNodeAndFile(node, file),
       node,
     );

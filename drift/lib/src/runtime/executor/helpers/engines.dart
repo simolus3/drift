@@ -123,131 +123,128 @@ without awaiting every statement in it.''');
   }
 }
 
-class _TransactionExecutor extends _BaseExecutor
+abstract class _TransactionExecutor extends _BaseExecutor
     implements TransactionExecutor {
   final DelegatedDatabase _db;
 
-  @override
-  late QueryDelegate impl;
+  _TransactionExecutor(this._db);
+
+  void _checkCanOpen() {
+    _ensureOpenCalled = true;
+
+    if (_closed) {
+      throw StateError(
+          "A tranaction was used after being closed. Please check that you're "
+          'awaiting all database operations inside a `transaction` block.');
+    }
+  }
 
   @override
-  bool get isSequential => _db.isSequential;
+  TransactionExecutor beginTransaction() {
+    throw UnsupportedError("Nested transactions aren't supported.");
+  }
+
+  @override
+  SqlDialect get dialect => _db.dialect;
 
   @override
   bool get logStatements => _db.logStatements;
 
   @override
-  SqlDialect get dialect => _db.dialect;
-
-  final Completer<void> _sendCalled = Completer();
-  Completer<bool>? _openingCompleter;
-
-  String? _sendOnCommit;
-  String? _sendOnRollback;
-
-  Future get completed => _sendCalled.future;
-  bool _sendFakeErrorOnRollback = false;
-
-  _TransactionExecutor(this._db);
+  bool get isSequential => _db.isSequential;
 
   @override
-  TransactionExecutor beginTransaction() {
-    throw Exception("Nested transactions aren't supported");
+  bool get supportsNestedTransactions => false;
+}
+
+/// A transaction implementation that sends `BEGIN` and `COMMIT` statements
+/// over the direct database implementation and blocks the main database for the
+/// duration of the transaction.
+class _StatementBasedTransactionExecutor extends _TransactionExecutor {
+  final NoTransactionDelegate _delegate;
+  Completer<bool>? _opened;
+  final Completer<void> _done = Completer();
+
+  final _StatementBasedTransactionExecutor? _parent;
+
+  final String _startCommand;
+  final String _commitCommand;
+  final String _rollbackCommand;
+
+  // ignore: no_leading_underscores_for_local_identifiers
+  _StatementBasedTransactionExecutor(super._db, this._delegate)
+      : _startCommand = _delegate.start,
+        _commitCommand = _delegate.commit,
+        _rollbackCommand = _delegate.rollback,
+        _parent = null;
+
+  _StatementBasedTransactionExecutor.nested(
+      _StatementBasedTransactionExecutor this._parent, int depth)
+      : _delegate = _parent._delegate,
+        _startCommand = 'SAVEPOINT s$depth',
+        _commitCommand = 'RELEASE s$depth',
+        _rollbackCommand = 'ROLLBACK TO s$depth',
+        super(_parent._db);
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) {
+    _checkCanOpen();
+    var opened = _opened;
+
+    if (opened == null) {
+      opened = _opened = Completer();
+      // Block the main database or the parent transaction while this
+      // transaction is active.
+      unawaited((_parent ?? _db)._synchronized(() async {
+        try {
+          await runCustom(_startCommand);
+          _db.delegate.isInTransaction = true;
+          _opened!.complete(true);
+        } catch (e, s) {
+          _opened!.completeError(e, s);
+        }
+
+        // release the database lock after the transaction completes
+        await _done.future;
+      }));
+    }
+
+    return opened.future;
   }
 
   @override
-  Future<bool> ensureOpen(_) async {
-    assert(
-      !_closed,
-      'Transaction was used after it completed. Are you missing an await '
-      'somewhere?',
-    );
+  QueryDelegate get impl => _db.delegate;
 
-    _ensureOpenCalled = true;
-    if (_openingCompleter != null) {
-      return await _openingCompleter!.future;
+  @override
+  bool get supportsNestedTransactions => true;
+
+  @override
+  TransactionExecutor beginTransaction() {
+    var ownDepth = 0;
+    var ancestor = _parent;
+    while (ancestor != null) {
+      ownDepth++;
+      ancestor = ancestor._parent;
     }
 
-    _openingCompleter = Completer();
-
-    final transactionManager = _db.delegate.transactionDelegate;
-    final transactionStarted = Completer();
-
-    if (transactionManager is NoTransactionDelegate) {
-      assert(
-          _db.isSequential,
-          'When using the default NoTransactionDelegate, the database must be '
-          'sequential.');
-      // run all the commands on the main database, which we block while the
-      // transaction is running.
-      unawaited(_db._synchronized(() async {
-        impl = _db.delegate;
-        await runCustom(transactionManager.start, const []);
-        _db.delegate.isInTransaction = true;
-
-        _sendOnCommit = transactionManager.commit;
-        _sendOnRollback = transactionManager.rollback;
-
-        transactionStarted.complete();
-
-        // release the database lock after the transaction completes
-        await _sendCalled.future;
-      }));
-    } else if (transactionManager is SupportedTransactionDelegate) {
-      transactionManager.startTransaction((transaction) async {
-        impl = transaction;
-        // specs say that the db implementation will perform a rollback when
-        // this future completes with an error.
-        _sendFakeErrorOnRollback = true;
-        transactionStarted.complete();
-
-        // this callback must be running as long as the transaction, so we do
-        // that until send() was called.
-        await _sendCalled.future;
-      });
-    } else if (transactionManager is WrappedTransactionDelegate) {
-      unawaited(_db._synchronized(() async {
-        try {
-          await transactionManager.runInTransaction((transaction) async {
-            impl = transaction;
-            _sendFakeErrorOnRollback = true;
-            transactionStarted.complete();
-            await _sendCalled.future;
-          });
-        } catch (_) {}
-      }));
-    } else {
-      throw Exception('Invalid delegate: Has unknown transaction delegate');
-    }
-
-    await transactionStarted.future;
-    _openingCompleter!.complete(true);
-    return true;
+    return _StatementBasedTransactionExecutor.nested(this, ownDepth);
   }
 
   @override
   Future<void> send() async {
     // don't do anything if the transaction completes before it was opened
-    if (_openingCompleter == null) return;
+    if (!_ensureOpenCalled) return;
 
-    if (_sendOnCommit != null) {
-      await runCustom(_sendOnCommit!, const []);
-      _db.delegate.isInTransaction = false;
-    }
-
-    _sendCalled.complete();
-    _closed = true;
+    await runCustom(_commitCommand, const []);
+    _afterCommitOrRollback();
   }
 
   @override
   Future<void> rollback() async {
-    // don't do anything if the transaction completes before it was opened
-    if (_openingCompleter == null) return;
+    if (!_ensureOpenCalled) return;
 
     try {
-      if (_sendOnRollback != null) {
-        await runCustom(_sendOnRollback!, const []);
-      }
+      await runCustom(_rollbackCommand, const []);
     } finally {
       // Note: When send() is called and throws an exception, we don't mark this
       // transaction is closed (as the commit should either be retried or the
@@ -255,18 +252,123 @@ class _TransactionExecutor extends _BaseExecutor
       // When aborting fails too, something is seriously wrong already. Let's
       // at least make sure that we don't block the rest of the db by pretending
       // the transaction is still open.
-      if (_sendOnRollback != null) {
-        _db.delegate.isInTransaction = false;
-      }
-
-      if (_sendFakeErrorOnRollback) {
-        _sendCalled.completeError(
-            Exception('artificial exception to rollback the transaction'));
-      } else {
-        _sendCalled.complete();
-      }
-      _closed = true;
+      _afterCommitOrRollback();
     }
+  }
+
+  void _afterCommitOrRollback() {
+    if (_parent == null) {
+      _db.delegate.isInTransaction = false;
+    }
+
+    _done.complete();
+    _closed = true;
+  }
+}
+
+class _WrappingTransactionExecutor extends _TransactionExecutor {
+  static final _artificialRollback =
+      Exception('artificial exception to rollback the transaction');
+
+  @override
+  late QueryDelegate impl;
+  final SupportedTransactionDelegate _delegate;
+
+  // We're doing some async hacks for database implementations which manage
+  // transactions for us (e.g. sqflite where we do `transaction((t) => ...)`)
+  // and can only use the transaction in that callback.
+  // Since drift's executor API works somewhat differently, our callback starts
+  // a completer which we await in that callback. Outside of that callback, we
+  // use the transaction and finally complete the completer with a bogus value
+  // or with an exception if we want to commit or rollback the transaction.
+  //
+  // This works fine, but there's a rare problem since `ensureOpen` is called by
+  // the first operation _inside_ drift's `transaction` block, NOT by the
+  // transaction block itself. In particular, if that first operation is a
+  // select, the zone calling `ensureOpen` is a cancellable error zone. This
+  // means that, in the case of a rollback (sent from an outer zone), an error
+  // event would cross error zone boundaries. This is blocked by Dart's async
+  // implementation, which replaces it with an uncaught error handler.
+  // We _do_ want to handle those errors though, so we make sure that this
+  // wrapping hack in `ensureOpen` runs in the zone that created this
+  // transaction runner and not in the zone that does the first operation.
+  final Zone _createdIn = Zone.current;
+
+  final Completer<void> _completerForCallback = Completer();
+  Completer<void>? _opened, _finished;
+
+  _WrappingTransactionExecutor(super.db, this._delegate);
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) {
+    _checkCanOpen();
+    var opened = _opened;
+    _ensureOpenCalled = true;
+
+    if (opened == null) {
+      _opened = opened = Completer();
+      _createdIn.run(() {
+        Future<void> launchTransaction() async {
+          final result = _delegate.startTransaction((transaction) async {
+            opened!.complete();
+            impl = transaction;
+            await _completerForCallback.future;
+          });
+
+          if (result is Future) {
+            _finished = Completer()
+              ..complete(
+                // ignore: void_checks
+                result
+                    // Ignore the exception caused by [rollback] which may be
+                    // rethrown by startTransaction
+                    .onError<Exception>((error, stackTrace) => null,
+                        test: (e) => e == _artificialRollback)
+                    // Consider this transaction closed after the call completes
+                    // This may happen without send/rollback being called in
+                    // case there's an exception when opening the transaction.
+                    .whenComplete(() => _closed = true),
+              );
+          }
+        }
+
+        if (_delegate.managesLockInternally) {
+          return launchTransaction();
+        } else {
+          return _db._synchronized(launchTransaction);
+        }
+      });
+    }
+
+    // The opened completer is never completed if `startTransaction` throws
+    // before our callback is invoked (probably becaue `BEGIN` threw an
+    // exception). In that case, _finished will complete with that error though.
+    return Future.any([opened.future, if (_finished != null) _finished!.future])
+        .then((value) => true);
+  }
+
+  @override
+  Future<void> send() async {
+    // don't do anything if the transaction completes before it was opened
+    if (_opened == null || _closed) return;
+
+    _completerForCallback.complete();
+    _closed = true;
+    await _finished?.future;
+  }
+
+  @override
+  Future<void> rollback() async {
+    // Note: This may be called after send() if send() throws (that is, the
+    // transaction can't be completed). But if completing fails, we assume that
+    // the transaction will implicitly be rolled back the underlying connection
+    // (it's not like we could explicitly roll it back, we only have one
+    // callback to implement).
+    if (_opened == null || _closed) return;
+
+    _completerForCallback.completeError(_artificialRollback);
+    _closed = true;
+    await _finished?.future;
   }
 }
 
@@ -357,7 +459,15 @@ class DelegatedDatabase extends _BaseExecutor {
 
   @override
   TransactionExecutor beginTransaction() {
-    return _TransactionExecutor(this);
+    final transactionDelegate = delegate.transactionDelegate;
+
+    if (transactionDelegate is NoTransactionDelegate) {
+      return _StatementBasedTransactionExecutor(this, transactionDelegate);
+    } else if (transactionDelegate is SupportedTransactionDelegate) {
+      return _WrappingTransactionExecutor(this, transactionDelegate);
+    } else {
+      throw StateError('Unknown transaction delegate: $transactionDelegate');
+    }
   }
 
   @override

@@ -28,7 +28,7 @@ Future<void> main() async {
           '', ['github.com', 'pub.dev', 'api.dart.dev', 'fonts.gstatic.com']),
       false,
       false,
-      const Stream<Null /*Never*/ >.empty(),
+      const Stream<void /*Never*/ >.empty(),
       stdout,
     );
   } finally {

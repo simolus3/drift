@@ -103,9 +103,7 @@ class DriftIsolate {
   /// Creates a new [DriftIsolate] on a background thread.
   ///
   /// The [opener] function will be used to open the [DatabaseConnection] used
-  /// by the isolate. Most implementations are likely to use
-  /// [DatabaseConnection.fromExecutor] instead of providing stream queries and
-  /// the type system manually.
+  /// by the isolate.
   ///
   /// Because [opener] will be called on another isolate with its own memory,
   /// it must either be a top-level member or a static class method.

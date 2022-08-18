@@ -5,14 +5,14 @@ _Note: Moor has been renamed to drift_
 [![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://github.com/simolus3/drift/actions/workflows/main.yml/badge.svg)
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
 
-## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=moor)
+## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22)
 
 <p align="center">
 <table>
     <tbody>
         <tr>
             <td align="center">
-                <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=moor" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/flutter/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_FlutterChat&utm_term=moor" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
+                <a href="https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
             </td>
         </tr>
     </tbody>
@@ -25,15 +25,15 @@ _Note: Moor has been renamed to drift_
 | [![Main version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift) | [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev) |
 
 Drift is a reactive persistence library for Flutter and Dart, built on top of
-sqlite. 
+sqlite.
 Drift is
 
-- __Flexible__: Drift let's you write queries in both SQL and Dart, 
-providing fluent apis for both languages. You can filter and order results 
-or use joins to run queries on multiple tables. You can even use complex 
+- __Flexible__: Drift lets you write queries in both SQL and Dart,
+providing fluent apis for both languages. You can filter and order results
+or use joins to run queries on multiple tables. You can even use complex
 sql features like `WITH` and `WINDOW` clauses.
-- __🔥 Feature rich__: Drift has builtin support for transactions, schema 
-migrations, complex filters and expressions, batched updates and joins. We 
+- __🔥 Feature rich__: Drift has builtin support for transactions, schema
+migrations, complex filters and expressions, batched updates and joins. We
 even have a builtin IDE for SQL!
 - __📦 Modular__: Thanks to builtin support for daos and `import`s in sql files, drift helps you keep your database code simple.
 - __🛡️ Safe__: Drift generates typesafe code based on your tables and queries. If you make a mistake in your queries, drift will find it at compile time and
@@ -57,8 +57,8 @@ project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/drift/
 Important packages in this repo:
 
 - `drift`: The main runtime for drift, which provides most apis
-- `drift_dev`: The compiler for drift tables, databases and daos. It 
+- `drift_dev`: The compiler for drift tables, databases and daos. It
    also contains a fully-featured sql ide for the Dart analyzer.
 - `sqlparser`: A sql parser and static analyzer, written in pure Dart. This package can be used without drift to perform analysis on sql statements.
-It's on pub at 
+It's on pub at
 [![sqlparser](https://img.shields.io/pub/v/sqlparser.svg)](https://pub.dev/packages/sqlparser)

@@ -1,17 +1,9 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/writer.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
-import 'declarations/declaration.dart';
-import 'table.dart';
-import 'types.dart';
-import 'used_type_converter.dart';
-
-/// The column types in sql.
-enum ColumnType { integer, bigInt, text, boolean, datetime, blob, real }
+import 'model.dart';
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -45,7 +37,7 @@ class ColumnName {
 }
 
 /// A column, as specified by a getter in a table.
-class MoorColumn implements HasDeclaration, HasType {
+class DriftColumn implements HasDeclaration, HasType {
   /// The getter name of this column in the table class. It will also be used
   /// as getter name in the TableInfo class (as it needs to override the field)
   /// and in the generated data class that will be generated for each table.
@@ -61,14 +53,14 @@ class MoorColumn implements HasDeclaration, HasType {
 
   /// The sql type of this column
   @override
-  final ColumnType type;
+  final DriftSqlType type;
 
   /// The name of this column, as chosen by the user
   final ColumnName name;
 
   /// An (optional) name to use as a json key instead of the [dartGetterName].
   final String? overriddenJsonName;
-  String getJsonKey([MoorOptions options = const MoorOptions.defaults()]) {
+  String getJsonKey([DriftOptions options = const DriftOptions.defaults()]) {
     if (overriddenJsonName != null) return overriddenJsonName!;
 
     final useColumnName = options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
@@ -112,78 +104,12 @@ class MoorColumn implements HasDeclaration, HasType {
   bool get isGenerated => generatedAs != null;
 
   /// Parent table
-  MoorTable? table;
-
-  /// The column type from the dsl library. For instance, if a table has
-  /// declared an `IntColumn`, the matching dsl column name would also be an
-  /// `IntColumn`.
-  @Deprecated('Use Column<innerColumnType()> instead')
-  String get dslColumnTypeName => const {
-        ColumnType.boolean: 'BoolColumn',
-        ColumnType.text: 'TextColumn',
-        ColumnType.integer: 'IntColumn',
-        ColumnType.bigInt: 'BigIntColumn',
-        ColumnType.datetime: 'DateTimeColumn',
-        ColumnType.blob: 'BlobColumn',
-        ColumnType.real: 'RealColumn',
-      }[type]!;
-
-  String innerColumnType(
-      [GenerationOptions options = const GenerationOptions()]) {
-    String code;
-
-    switch (type) {
-      case ColumnType.integer:
-        code = 'int';
-        break;
-      case ColumnType.bigInt:
-        code = 'BigInt';
-        break;
-      case ColumnType.text:
-        code = 'String';
-        break;
-      case ColumnType.boolean:
-        code = 'bool';
-        break;
-      case ColumnType.datetime:
-        code = 'DateTime';
-        break;
-      case ColumnType.blob:
-        code = 'Uint8List';
-        break;
-      case ColumnType.real:
-        code = 'double';
-        break;
-    }
-
-    // We currently use nullable columns everywhere because it's not clear how
-    // to express nullability in joins otherwise.
-    return options.nnbd ? '$code?' : code;
-  }
-
-  SqlType sqlType() {
-    switch (type) {
-      case ColumnType.integer:
-        return const IntType();
-      case ColumnType.bigInt:
-        return const BigIntType();
-      case ColumnType.boolean:
-        return const BoolType();
-      case ColumnType.datetime:
-        return const IntType();
-      case ColumnType.text:
-        return const StringType();
-      case ColumnType.blob:
-        return const BlobType();
-      case ColumnType.real:
-        return const RealType();
-    }
-  }
+  DriftTable? table;
 
   @override
   bool get isArray => false;
 
-  MoorColumn({
+  DriftColumn({
     required this.type,
     required this.dartGetterName,
     required this.name,
@@ -270,8 +196,8 @@ class UnresolvedDartForeignKeyReference extends ColumnFeature {
 }
 
 class ResolvedDartForeignKeyReference extends ColumnFeature {
-  final MoorTable otherTable;
-  final MoorColumn otherColumn;
+  final DriftTable otherTable;
+  final DriftColumn otherColumn;
   final ReferenceAction? onUpdate;
   final ReferenceAction? onDelete;
 

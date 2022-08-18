@@ -289,7 +289,7 @@ Instead, grab a sqlite3.wasm file from the [releases](https://github.com/simolus
 
 With this setup, sqlite3 can be used on the web without an external library:
 
-{% assign snippets = 'package:moor_documentation/snippets/engines/web_wasm.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/engines/web_wasm.dart.excerpt.json' | readString | json_decode %}
 {% include "blocks/snippet" snippets = snippets %}
 
 This snippet also works in a service worker.

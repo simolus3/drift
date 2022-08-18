@@ -52,7 +52,7 @@ void main() {
 
   group('generates replace statements', () {
     test('regular', () async {
-      await db.update(db.todosTable).replace(TodoEntry(
+      await db.update(db.todosTable).replace(const TodoEntry(
             id: 3,
             title: 'Title',
             content: 'Updated content',
@@ -76,7 +76,8 @@ void main() {
 
       verify(executor.runUpdate(
           'UPDATE users SET name = ?, profile_picture = ?, is_awesome = 1, '
-          'creation_time = strftime(\'%s\', CURRENT_TIMESTAMP) WHERE id = ?;',
+          'creation_time = CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'
+          ' WHERE id = ?;',
           ['Hummingbird', Uint8List(0), 3]));
     });
   });
@@ -161,26 +162,6 @@ void main() {
     });
   });
 
-  group('update with from()', () {
-    test('update()', () async {
-      await db
-          .from(db.users)
-          .update()
-          .write(const UsersCompanion(id: Value(3)));
-
-      verify(executor.runUpdate('UPDATE users SET id = ?;', [3]));
-    });
-
-    test('replace', () async {
-      await db.from(db.categories).replace(const CategoriesCompanion(
-          id: Value(3), description: Value('new name')));
-
-      verify(executor.runUpdate(
-          'UPDATE categories SET "desc" = ?, priority = 0 WHERE id = ?;',
-          ['new name', 3]));
-    });
-  });
-
   group('update on table instances', () {
     test('update()', () async {
       await db.users.update().write(const UsersCompanion(id: Value(3)));
@@ -196,5 +177,36 @@ void main() {
           'UPDATE categories SET "desc" = ?, priority = 0 WHERE id = ?;',
           ['new name', 3]));
     });
+  });
+
+  test('RETURNING', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) {
+      return Future.value([
+        {
+          'id': 3,
+          'desc': 'test',
+          'priority': 0,
+          'description_in_upper_case': 'TEST',
+        },
+      ]);
+    });
+
+    final rows = await db.categories
+        .update()
+        .writeReturning(const CategoriesCompanion(description: Value('test')));
+
+    verify(executor
+        .runSelect('UPDATE categories SET "desc" = ? RETURNING *;', ['test']));
+    verify(streamQueries.handleTableUpdates(
+        {TableUpdate.onTable(db.categories, kind: UpdateKind.update)}));
+
+    expect(rows, const [
+      Category(
+        id: 3,
+        description: 'test',
+        priority: CategoryPriority.low,
+        descriptionInUpperCase: 'TEST',
+      ),
+    ]);
   });
 }

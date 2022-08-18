@@ -12,7 +12,7 @@ void main() {
         InferredResultSet(null, []), null, null);
 
     final result =
-        SqlWriter(const MoorOptions.defaults(), query: query).write();
+        SqlWriter(const DriftOptions.defaults(), query: query).write();
 
     expect(result, expectedDart);
   }

@@ -4,7 +4,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 import 'model.dart';
 
-class MoorTrigger implements MoorSchemaEntity {
+class MoorTrigger implements DriftSchemaEntity {
   @override
   final String displayName;
 
@@ -14,16 +14,16 @@ class MoorTrigger implements MoorSchemaEntity {
   /// The table on which this trigger operates.
   ///
   /// This field can be null in case the table wasn't resolved.
-  MoorTable? on;
+  DriftTable? on;
   List<WrittenMoorTable> bodyUpdates = [];
-  List<MoorTable> bodyReferences = [];
+  List<DriftTable> bodyReferences = [];
 
   MoorTrigger(this.displayName, this.declaration, this.on);
 
   factory MoorTrigger.fromMoor(CreateTriggerStatement stmt, FoundFile file) {
     return MoorTrigger(
       stmt.triggerName,
-      MoorTriggerDeclaration.fromNodeAndFile(stmt, file),
+      DriftTriggerDeclaration.fromNodeAndFile(stmt, file),
       null, // must be resolved later
     );
   }
@@ -35,11 +35,11 @@ class MoorTrigger implements MoorSchemaEntity {
   }
 
   @override
-  Iterable<MoorSchemaEntity> get references =>
+  Iterable<DriftSchemaEntity> get references =>
       {if (on != null) on!, ...bodyReferences};
 
   /// The `CREATE TRIGGER` statement that can be used to create this trigger.
-  String createSql(MoorOptions options) {
+  String createSql(DriftOptions options) {
     return declaration.formatSqlIfAvailable(options) ?? declaration.createSql;
   }
 

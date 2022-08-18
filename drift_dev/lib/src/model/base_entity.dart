@@ -7,7 +7,7 @@ import 'package:drift_dev/writer.dart';
 /// Some schema entity found.
 ///
 /// Most commonly a table, but it can also be a trigger.
-abstract class MoorSchemaEntity implements HasDeclaration {
+abstract class DriftSchemaEntity implements HasDeclaration {
   /// All entities that have to be created before this entity can be created.
   ///
   /// For tables, this can be contents of a `REFERENCES` clause. For triggers,
@@ -18,7 +18,7 @@ abstract class MoorSchemaEntity implements HasDeclaration {
   ///
   /// The generator will verify that the graph of entities and [references]
   /// is acyclic and sort them topologically.
-  Iterable<MoorSchemaEntity> get references;
+  Iterable<DriftSchemaEntity> get references;
 
   /// A human readable name of this entity, like the table name.
   String get displayName;
@@ -29,9 +29,9 @@ abstract class MoorSchemaEntity implements HasDeclaration {
   String? get dbGetterName;
 }
 
-abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
+abstract class DriftEntityWithResultSet extends DriftSchemaEntity {
   /// The columns declared in this table or view.
-  List<MoorColumn> get columns;
+  List<DriftColumn> get columns;
 
   /// The name of the Dart row class for this result set.
   @Deprecated('Use dartTypeCode instead')
@@ -40,7 +40,7 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
   /// The type name of the Dart row class for this result set.
   ///
   /// This may contain generics.
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
+  String dartTypeCode();
 
   /// The name of the Dart class storing additional properties like type
   /// converters.
@@ -65,19 +65,35 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
 /// Information used by the generator to generate code for a custom data class
 /// written by users.
 class ExistingRowClass {
-  final ClassElement targetClass;
+  final InterfaceElement targetClass;
 
   /// The Dart types that should be used to instantiate the [targetClass].
   final List<DartType> typeInstantiation;
-  final ConstructorElement constructor;
-  final Map<MoorColumn, ParameterElement> mapping;
+
+  /// The method to use when instantiating the row class.
+  ///
+  /// This may either be a constructor or a static method on the row class.
+  final ExecutableElement constructor;
+
+  final Map<DriftColumn, ParameterElement> mapping;
 
   /// Generate toCompanion for data class
   final bool generateInsertable;
 
   ExistingRowClass(
-      this.targetClass, this.constructor, this.mapping, this.generateInsertable,
-      {this.typeInstantiation = const []});
+    this.targetClass,
+    this.constructor,
+    this.mapping,
+    this.generateInsertable, {
+    this.typeInstantiation = const [],
+  });
+
+  /// Whether the [constructor] returns a future and thus needs to be awaited
+  /// to create an instance of the custom row class.
+  bool get isAsyncFactory {
+    final typeSystem = targetClass.library.typeSystem;
+    return typeSystem.flatten(constructor.returnType) != constructor.returnType;
+  }
 
   String dartType([GenerationOptions options = const GenerationOptions()]) {
     if (typeInstantiation.isEmpty) {
@@ -88,7 +104,7 @@ class ExistingRowClass {
             typeArguments: typeInstantiation,
             nullabilitySuffix: NullabilitySuffix.none,
           )
-          .getDisplayString(withNullability: options.nnbd);
+          .getDisplayString(withNullability: true);
     }
   }
 }

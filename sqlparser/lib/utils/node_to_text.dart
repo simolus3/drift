@@ -759,7 +759,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.left, arg);
     _keyword(TokenType.$is);
 
-    if (e.negated) {
+    // Avoid writing `DISTINCT FROM`, but be aware that it effectively negates
+    // the generated `IS` again.
+    final negated = e.negated ^ e.distinctFromSyntax;
+
+    if (negated) {
       _keyword(TokenType.not);
     }
     visit(e.right, arg);
@@ -778,35 +782,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitJoin(Join e, void arg) {
-    if (e.operator == JoinOperator.comma) {
-      symbol(',');
-    } else {
-      if (e.natural) {
-        _keyword(TokenType.natural);
-      }
-
-      switch (e.operator) {
-        case JoinOperator.none:
-          break;
-        case JoinOperator.comma:
-          throw AssertionError("Can't happen");
-        case JoinOperator.left:
-          _keyword(TokenType.left);
-          break;
-        case JoinOperator.leftOuter:
-          _keyword(TokenType.left);
-          _keyword(TokenType.outer);
-          break;
-        case JoinOperator.inner:
-          _keyword(TokenType.inner);
-          break;
-        case JoinOperator.cross:
-          _keyword(TokenType.cross);
-          break;
-      }
-      _keyword(TokenType.join);
-    }
-
+    visit(e.operator, null);
     visit(e.query, null);
 
     final constraint = e.constraint;
@@ -816,6 +792,44 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else if (constraint is UsingConstraint) {
       _keyword(TokenType.using);
       symbol('(${constraint.columnNames.join(', ')})');
+    }
+  }
+
+  @override
+  void visitJoinOperator(JoinOperator e, void arg) {
+    if (e.operator == JoinOperatorKind.comma) {
+      symbol(',');
+    } else {
+      if (e.natural) {
+        _keyword(TokenType.natural);
+      }
+
+      switch (e.operator) {
+        case JoinOperatorKind.none:
+          break;
+        case JoinOperatorKind.comma:
+          throw AssertionError("Can't happen");
+        case JoinOperatorKind.left:
+          _keyword(TokenType.left);
+          break;
+        case JoinOperatorKind.right:
+          _keyword(TokenType.right);
+          break;
+        case JoinOperatorKind.full:
+          _keyword(TokenType.full);
+          break;
+        case JoinOperatorKind.inner:
+          _keyword(TokenType.inner);
+          break;
+        case JoinOperatorKind.cross:
+          _keyword(TokenType.cross);
+          break;
+      }
+
+      if (e.outer) {
+        _keyword(TokenType.outer);
+      }
+      _keyword(TokenType.join);
     }
   }
 

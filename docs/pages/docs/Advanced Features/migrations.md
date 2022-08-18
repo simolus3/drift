@@ -15,7 +15,7 @@ When making changes to your database schema, you need to write migrations enabli
 an old version of your app to convert to the database expected by the latest version.
 Drift provides a set of APIs to make writing migrations easy.
 
-{% assign snippets = 'package:moor_documentation/snippets/migrations/migrations.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/migrations/migrations.dart.excerpt.json' | readString | json_decode %}
 
 ## Basics
 
@@ -432,7 +432,7 @@ void main() {
 Instead (or in addition to) [writing tests](#verifying-migrations) to ensure your migrations work as they should,
 you can use a new API from `drift_dev` 1.5.0 to verify the current schema without any additional setup.
 
-{% assign runtime_snippet = 'package:moor_documentation/snippets/migrations/runtime_verification.dart.excerpt.json' | readString | json_decode %}
+{% assign runtime_snippet = 'package:drift_docs/snippets/migrations/runtime_verification.dart.excerpt.json' | readString | json_decode %}
 
 {% include "blocks/snippet" snippets = runtime_snippet name = '' %}
 

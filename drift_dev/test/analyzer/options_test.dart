@@ -4,8 +4,8 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  MoorOptions parse(String yaml) {
-    return checkedYamlDecode(yaml, (m) => MoorOptions.fromJson(m!));
+  DriftOptions parse(String yaml) {
+    return checkedYamlDecode(yaml, (m) => DriftOptions.fromJson(m!));
   }
 
   test('does not allow modules and sqlite options', () {
@@ -31,7 +31,7 @@ sqlite:
 sqlite:
   version: "3.35"
     '''),
-      isA<MoorOptions>().having((e) => e.sqliteVersion, 'sqliteVersion',
+      isA<DriftOptions>().having((e) => e.sqliteVersion, 'sqliteVersion',
           const SqliteVersion(3, 35, 0)),
     );
   });

@@ -37,7 +37,7 @@ void main() {
             'SELECT _mocked_',
             readsFrom: {db.users},
           )
-          .map((r) => r.readInt('_mocked_'))
+          .map((r) => r.read<int>('_mocked_'))
           .watchSingleOrNull();
       didSetUpStream.complete();
 
@@ -88,17 +88,82 @@ void main() {
     expect(stream, emitsDone);
   });
 
-  test('nested transactions use the outer transaction', () async {
-    await db.transaction(() async {
+  group('nested transactions', () {
+    test('are no-ops if not supported', () async {
+      final transactions = executor.transactions;
+      when(transactions.supportsNestedTransactions).thenReturn(false);
+
       await db.transaction(() async {
-        // todo how can we test that these are really equal?
+        await db.transaction(() async {
+          // todo how can we test that these are really equal?
+        });
+
+        // the outer callback has not completed yet, so shouldn't send
+        verifyNever(executor.transactions.send());
       });
 
-      // the outer callback has not completed yet, so shouldn't send
-      verifyNever(executor.transactions.send());
+      verify(transactions.send());
+      verify(executor.beginTransaction());
+      verifyNever(transactions.beginTransaction());
     });
 
-    verify(executor.transactions.send());
+    test('can throw if not supported', () async {
+      final transactions = executor.transactions;
+      when(transactions.supportsNestedTransactions).thenReturn(false);
+
+      await db.transaction(() async {
+        await expectLater(
+          db.transaction(() async {
+            fail('Should not be called');
+          }, requireNew: true),
+          throwsUnsupportedError,
+        );
+      });
+
+      verify(transactions.send());
+      verifyNever(transactions.beginTransaction());
+    });
+
+    test('are committed separately', () async {
+      final outerTransactions = executor.transactions;
+      final innerTransactions = outerTransactions.transactions;
+
+      await db.transaction(() async {
+        verify(executor.beginTransaction());
+
+        await db.transaction(() async {
+          await db.select(db.todosTable).get();
+        });
+
+        verify(outerTransactions.beginTransaction());
+        verify(innerTransactions.ensureOpen(any));
+        verify(innerTransactions.send());
+      });
+
+      verify(outerTransactions.send());
+    });
+
+    test('are rolled back after exceptions', () async {
+      final outerTransactions = executor.transactions;
+      final innerTransactions = outerTransactions.transactions;
+
+      await db.transaction(() async {
+        verify(executor.beginTransaction());
+        final cause = Exception('revert inner');
+
+        await expectLater(db.transaction(() async {
+          // Some bogus query so that the transaction is actually opened.
+          await db.select(db.todosTable).get();
+          throw cause;
+        }), throwsA(cause));
+
+        verify(outerTransactions.beginTransaction());
+        verify(innerTransactions.ensureOpen(any));
+        verify(innerTransactions.rollback());
+      });
+
+      verify(outerTransactions.send());
+    });
   });
 
   test('code in callback uses transaction', () async {

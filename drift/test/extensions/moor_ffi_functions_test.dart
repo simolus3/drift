@@ -36,11 +36,11 @@ void main() {
     // insert exactly one row so that we can evaluate expressions from Dart
     await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
 
-    Future<bool> evaluate(Expression<bool?> expr) async {
+    Future<bool?> evaluate(Expression<bool> expr) async {
       final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
           .getSingle();
 
-      return result.read<bool?>(expr)!;
+      return result.read<bool>(expr);
     }
 
     expect(
@@ -66,11 +66,11 @@ void main() {
 
     tearDown(() => db.close());
 
-    Future<bool> evaluate(Expression<bool?> expr) async {
+    Future<bool?> evaluate(Expression<bool> expr) async {
       final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
           .getSingle();
 
-      return result.read<bool?>(expr)!;
+      return result.read<bool>(expr)!;
     }
 
     test('multiLine', () {

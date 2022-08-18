@@ -2,7 +2,7 @@ import 'package:drift_dev/src/model/model.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('removes leaading numbers', () {
+  test('removes leading numbers', () {
     expect(dartNameForSqlColumn('foo'), 'foo');
     expect(dartNameForSqlColumn('123a'), 'a');
   });

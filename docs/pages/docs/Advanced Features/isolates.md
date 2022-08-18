@@ -13,6 +13,8 @@ With Drift's isolate setup, you only need to change how you _open_ your database
 Drift will apply its magic and send all database operations to an internal server running on
 a background isolate. Zero code changes are needed for queries!
 
+{% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
+
 ## Preparations
 
 To use the isolate api, first enable the appropriate [build option]({{ "builder_options.md" | pageUrl }}) by
@@ -29,67 +31,23 @@ targets:
 
 Next, re-run the build. You can now add another constructor to the generated database class:
 
-```dart
-@DriftDatabase(...)
-class TodoDb extends _$TodoDb {
-  // Your existing constructor, whatever it may be...
-  TodoDb() : super(NativeDatabase.memory());
-
-  // this is the new constructor
-  TodoDb.connect(DatabaseConnection connection) : super.connect(connection);
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'database' %}
 
 ## Using drift in a background isolate {#using-moor-in-a-background-isolate}
 
 With the database class ready, let's open it on a background isolate
-```dart
-import 'package:drift/isolate.dart';
 
-// This needs to be a top-level method because it's run on a background isolate
-DatabaseConnection _backgroundConnection() {
-    // Construct the database to use. This example uses a non-persistent in-memory database each
-    // time. You can use your existing NativeDatabase with a file as well, or a `LazyDatabase` if you
-    // need to construct it asynchronously.
-    // When using a Flutter plugin like `path_provider` to determine the path, also see the
-    // "Initialization on the main thread" section below!
-    final database = NativeDatabase.memory();
-    return DatabaseConnection.fromExecutor(database);
-}
+{% include "blocks/snippet" snippets = snippets name = 'isolate' %}
 
-void main() async {
-    // create a drift executor in a new background isolate. If you want to start the isolate yourself, you
-    // can also call DriftIsolate.inCurrent() from the background isolate
-    DriftIsolate isolate = await DriftIsolate.spawn(_backgroundConnection);
-
-    // we can now create a database connection that will use the isolate internally. This is NOT what's
-    // returned from _backgroundConnection, drift uses an internal proxy class for isolate communication.
-    DatabaseConnection connection = await isolate.connect();
-
-    final db = TodoDb.connect(connection);
-
-    // you can now use your database exactly like you regularly would, it transparently uses a 
-    // background isolate internally
-}
-```
-
-If you need to construct the database outside of an `async` context, you can use the 
+If you need to construct the database outside of an `async` context, you can use the
 `DatabaseConnection.delayed` constructor. In the example above, you
 could synchronously obtain a `TodoDb` by using:
 
-```dart
-Future<DatabaseConnection> _connectAsync() async {
-  DriftIsolate isolate = await DriftIsolate.spawn(_backgroundConnection);
-  return isolate.connect();
-}
+{% include "blocks/snippet" snippets = snippets name = 'delayed' %}
 
-void main() {
-  final db = TodoDb.connect(DatabaseConnection.delayed(_connectAsync()));
-}
-```
-
-This can be helpful when using drift in DI frameworks, since you have the database available
-immediately. Internally, drift will connect when the first query is sent to the database.
+This can be helpful when using drift in dependency injection frameworks, since you have a way
+to create the database instance synchronously.
+Internally, drift will connect when the first query is sent to the database.
 
 ### Initialization on the main thread
 
@@ -99,60 +57,12 @@ construct the database's path, we'll have to use some tricks to avoid using plat
 Here, we're going to start the isolate running the database manually. This allows us to pass additional
 data that we calculated on the main thread.
 
-```dart
-Future<DriftIsolate> _createDriftIsolate() async {
-  // this method is called from the main isolate. Since we can't use
-  // getApplicationDocumentsDirectory on a background isolate, we calculate
-  // the database path in the foreground isolate and then inform the
-  // background isolate about the path.
-  final dir = await getApplicationDocumentsDirectory();
-  final path = p.join(dir.path, 'db.sqlite');
-  final receivePort = ReceivePort();
-
-  await Isolate.spawn(
-    _startBackground,
-    _IsolateStartRequest(receivePort.sendPort, path),
-  );
-
-  // _startBackground will send the DriftIsolate to this ReceivePort
-  return await receivePort.first as DriftIsolate;
-}
-
-void _startBackground(_IsolateStartRequest request) {
-  // this is the entry point from the background isolate! Let's create
-  // the database from the path we received
-  final executor = NativeDatabase(File(request.targetPath));
-  // we're using DriftIsolate.inCurrent here as this method already runs on a
-  // background isolate. If we used DriftIsolate.spawn, a third isolate would be
-  // started which is not what we want!
-  final driftIsolate = DriftIsolate.inCurrent(
-    () => DatabaseConnection.fromExecutor(executor),
-  );
-  // inform the starting isolate about this, so that it can call .connect()
-  request.sendDriftIsolate.send(driftIsolate);
-}
-
-// used to bundle the SendPort and the target path, since isolate entry point
-// functions can only take one parameter.
-class _IsolateStartRequest {
-  final SendPort sendDriftIsolate;
-  final String targetPath;
-
-  _IsolateStartRequest(this.sendDriftIsolate, this.targetPath);
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'initialization' %}
 
 Once again, you can use a `DatabaseConnection.delayed()` to obtain a database
 connection for your database class:
 
-```dart
-DatabaseConnection _createDriftIsolateAndConnect() {
-  return DatabaseConnection.delayed(() async {
-    final isolate = await _createDriftIsolate();
-    return await isolate.connect();
-  }());
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'init_connect' %}
 
 {% block "blocks/alert" title="Initializations and background isolates" color="warning" %}
 As the name implies, Dart isolates don't share memory. This means that global variables

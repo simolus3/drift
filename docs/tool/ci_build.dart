@@ -41,12 +41,14 @@ Future<void> _waitForProcess(Process p, String name) async {
 }
 
 Future<void> _runBuildAndCopyFiles(Directory output, bool isRelease) async {
+  final siteEnv = isRelease ? 'prod' : 'preview';
+
   final buildArgs = [
     'run',
     'build_runner',
     'build',
     '--release',
-    if (isRelease) '--config=deploy',
+    '--define=built_site=environment=$siteEnv',
   ];
   final build = await Process.start('dart', buildArgs);
   await _waitForProcess(build, 'build');
@@ -72,6 +74,9 @@ Future<void> _runBuildAndCopyFiles(Directory output, bool isRelease) async {
 }
 
 Future<void> _createApiDocumentation(Directory output) async {
+  print('Globally activating dartdoc');
+  await Process.run('dart', ['pub', 'global', 'activate', 'dartdoc']);
+
   final gitRevResult =
       await Process.run('git', ['rev-parse', 'HEAD'], stdoutEncoding: utf8);
   final rev = (gitRevResult.stdout as String).replaceAll('\n', '');
@@ -84,15 +89,17 @@ Future<void> _createApiDocumentation(Directory output) async {
   final dartDoc = await Process.start(
     'dart',
     [
+      'pub',
+      'global',
       'run',
       'dartdoc',
       '--rel-canonical-prefix=https://pub.dev/documentation/drift/latest',
       '--link-to-source-revision=$rev',
       '--link-to-source-root=..',
       '--link-to-source-uri-template=$source',
-      '--input=../drift',
-      '--output=../drift/doc/api',
     ],
+    // This should run in the `drift` directory to properly recognize packages.
+    workingDirectory: '../drift',
   );
   await _waitForProcess(dartDoc, 'dartdoc');
 

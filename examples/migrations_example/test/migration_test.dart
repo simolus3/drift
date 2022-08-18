@@ -1,3 +1,4 @@
+import 'package:drift/native.dart';
 import 'package:migrations_example/database.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
@@ -19,7 +20,30 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('upgrade from v1 to v2', () async {
+  // Test all possible schema migrations with a simple test that just ensures
+  // the schema is correct after the migration.
+  // More complex tests ensuring data integrity are written below.
+  group('general migration', () {
+    const currentSchema = 7;
+
+    for (var oldVersion = 1; oldVersion < currentSchema; oldVersion++) {
+      group('from v$oldVersion', () {
+        for (var targetVersion = oldVersion + 1;
+            targetVersion <= currentSchema;
+            targetVersion++) {
+          test('to v$targetVersion', () async {
+            final connection = await verifier.startAt(oldVersion);
+            final db = Database(connection);
+            addTearDown(db.close);
+
+            await verifier.migrateAndValidate(db, targetVersion);
+          });
+        }
+      });
+    }
+  });
+
+  test('preserves existing data in migration from v1 to v2', () async {
     final schema = await verifier.schemaAt(1);
 
     // Add some data to the users table, which only has an id column at v1
@@ -40,28 +64,25 @@ void main() {
     await migratedDb.close();
   });
 
-  test('upgrade from v2 to v3', () async {
-    final connection = await verifier.startAt(2);
-    final db = Database(connection);
-
-    await verifier.migrateAndValidate(db, 3);
-    await db.close();
-  });
-
-  test('upgrade from v3 to v4', () async {
-    final connection = await verifier.startAt(3);
-    final db = Database(connection);
-
-    await verifier.migrateAndValidate(db, 4);
-    await db.close();
-  });
-
-  test('upgrade from v4 to v5', () async {
-    final connection = await verifier.startAt(4);
-    final db = Database(connection);
-
+  test('foreign key constraints work after upgrade from v4 to v5', () async {
+    final schema = await verifier.schemaAt(4);
+    final db = Database(schema.newConnection());
     await verifier.migrateAndValidate(db, 5);
     await db.close();
+
+    // Test that the foreign key reference introduced in v5 works as expected.
+    final migratedDb = v5.DatabaseAtV5.connect(schema.newConnection());
+    // The `foreign_keys` pragma is a per-connection option and the generated
+    // versioned classes don't enable it by default. So, enable it manually.
+    await migratedDb.customStatement('pragma foreign_keys = on;');
+    await migratedDb.into(migratedDb.users).insert(v5.UsersCompanion.insert());
+    await migratedDb
+        .into(migratedDb.users)
+        .insert(v5.UsersCompanion.insert(nextUser: Value(1)));
+
+    // Deleting the first user should now fail due to the constraint
+    await expectLater(migratedDb.users.deleteWhere((tbl) => tbl.id.equals(1)),
+        throwsA(isA<SqliteException>()));
   });
 
   test('view works after upgrade from v4 to v5', () async {

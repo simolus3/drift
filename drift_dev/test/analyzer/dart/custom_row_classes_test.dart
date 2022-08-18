@@ -60,9 +60,9 @@ class MyConverter extends TypeConverter<int, String> {
   const MyConverter();
 
   @override
-  int? mapToDart(String? fromDb) => throw 'stub';
+  int? fromSql(String? fromDb) => throw 'stub';
   @override
-  String? mapToSql(int? value) => throw 'stub';
+  String? toSql(int? value) => throw 'stub';
 }
 
 class RowClass {
@@ -149,9 +149,49 @@ class Cls extends HasBar {
   Cls(this.foo, int bar): super(bar);
 }
 ''',
+      'a|lib/async_factory.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(MyCustomClass, constructor: 'load')
+class Tbl extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+class MyCustomClass {
+  static Future<MyCustomClass> load(String foo, int bar) async {
+    throw 'stub';
+  }
+}
+''',
+      'a|lib/invalid_static_factory.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(MyCustomClass, constructor: 'invalidReturn')
+class Tbl extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+@UseRowClass(MyCustomClass, constructor: 'notStatic')
+class Tbl2 extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+class MyCustomClass {
+  static String invalidReturn(String foo, int bar) async {
+    throw 'stub';
+  }
+
+  MyRowClass notStatic() {
+    throw 'stub';
+  }
+}
+''',
       'a|lib/custom_parent_class_no_error.dart': '''
 import 'package:drift/drift.dart';
-  
+
 abstract class BaseModel extends DataClass {
   abstract final String id;
 }
@@ -164,7 +204,7 @@ class Companies extends Table {
 ''',
       'a|lib/custom_parent_class_typed_no_error.dart': '''
 import 'package:drift/drift.dart';
-  
+
 abstract class BaseModel<T> extends DataClass {
   abstract final String id;
 }
@@ -177,7 +217,7 @@ class Companies extends Table {
 ''',
       'a|lib/custom_parent_class_no_super.dart': '''
 import 'package:drift/drift.dart';
-  
+
 abstract class BaseModel {
   abstract final String id;
 }
@@ -190,7 +230,7 @@ class Companies extends Table {
 ''',
       'a|lib/custom_parent_class_wrong_super.dart': '''
 import 'package:drift/drift.dart';
-  
+
 class Test {
 }
 
@@ -206,7 +246,7 @@ class Companies extends Table {
 ''',
       'a|lib/custom_parent_class_typed_wrong_type_arg.dart': '''
 import 'package:drift/drift.dart';
-  
+
 abstract class BaseModel<T> extends DataClass {
   abstract final String id;
 }
@@ -219,7 +259,7 @@ class Companies extends Table {
 ''',
       'a|lib/custom_parent_class_two_type_argument.dart': '''
 import 'package:drift/drift.dart';
-  
+
 abstract class BaseModel<T, D> extends DataClass {
   abstract final String id;
 }
@@ -234,7 +274,7 @@ class Companies extends Table {
 import 'package:drift/drift.dart';
 
 typedef NotClass = void Function();
-  
+
 @DataClassName('Company', extending: NotClass)
 class Companies extends Table {
   TextColumn get id => text()();
@@ -306,6 +346,35 @@ class Companies extends Table {
             contains('but some are missing: bar'))),
       );
     });
+
+    test('for invalid static factories', () async {
+      final file = await state.analyze('package:a/invalid_static_factory.dart');
+
+      expect(
+          file.errors.errors,
+          allOf(
+            contains(
+              isA<ErrorInDartCode>()
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    contains('it needs to be static'),
+                  )
+                  .having((e) => e.affectedElement?.name,
+                      'affectedElement.name', 'notStatic'),
+            ),
+            contains(
+              isA<ErrorInDartCode>()
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    contains('needs to return an instance of it'),
+                  )
+                  .having((e) => e.affectedElement?.name,
+                      'affectedElement.name', 'invalidReturn'),
+            ),
+          ));
+    });
   });
 
   test('supports generic row classes', () async {
@@ -359,6 +428,17 @@ class Companies extends Table {
   test('considers inheritance when checking expected getters', () async {
     final file = await state.analyze('package:a/insertable_valid.dart');
     expect(file.errors.errors, isEmpty);
+  });
+
+  test('supports async factories for existing row classes', () async {
+    final file = await state.analyze('package:a/async_factory.dart');
+    expect(file.errors.errors, isEmpty);
+
+    final table = file.currentResult!.declaredTables.single;
+    expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isAsyncFactory, 'isAsyncFactory', isTrue));
   });
 
   group('custom data class parent', () {

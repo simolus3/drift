@@ -5,12 +5,12 @@ import 'package:drift_dev/src/writer/utils/override_toString.dart';
 import 'package:drift_dev/writer.dart';
 
 class UpdateCompanionWriter {
-  final MoorTable table;
+  final DriftTable table;
   final Scope scope;
 
   late StringBuffer _buffer;
 
-  late final List<MoorColumn> columns = [
+  late final List<DriftColumn> columns = [
     for (final column in table.columns)
       if (!column.isGenerated) column,
   ];
@@ -43,7 +43,7 @@ class UpdateCompanionWriter {
   void _writeFields() {
     for (final column in columns) {
       final modifier = scope.options.fieldModifier;
-      final type = column.dartTypeCode(scope.generationOptions);
+      final type = column.dartTypeCode();
       _buffer.write('$modifier Value<$type> ${column.dartGetterName};\n');
     }
   }
@@ -65,7 +65,7 @@ class UpdateCompanionWriter {
   /// absent during insert are marked `@required` here. Also, we don't need to
   /// use value wrappers here - `Value.absent` simply isn't an option.
   void _writeInsertConstructor() {
-    final requiredColumns = <MoorColumn>{};
+    final requiredColumns = <DriftColumn>{};
 
     // can't be constant because we use initializers (this.a = Value(a)).
     // for a parameter a which is only potentially constant.
@@ -83,9 +83,9 @@ class UpdateCompanionWriter {
 
       if (table.isColumnRequiredForInsert(column)) {
         requiredColumns.add(column);
-        final typeName = column.dartTypeCode(scope.generationOptions);
+        final typeName = column.dartTypeCode();
 
-        _buffer.write('${scope.required} $typeName $param,');
+        _buffer.write('required $typeName $param,');
       } else {
         _buffer.write('this.$param = const Value.absent(),');
       }
@@ -122,10 +122,8 @@ class UpdateCompanionWriter {
       ..write('({');
 
     for (final column in columns) {
-      // todo (breaking change): This should not consider type converters.
-      final typeName = column.dartTypeCode(scope.generationOptions);
-      final type = scope.nullableType('Expression<$typeName>');
-      _buffer.write('$type ${column.dartGetterName}, \n');
+      final typeName = column.innerColumnType();
+      _buffer.write('Expression<$typeName>? ${column.dartGetterName}, \n');
     }
 
     _buffer
@@ -153,9 +151,8 @@ class UpdateCompanionWriter {
       }
       first = false;
 
-      final typeName = column.dartTypeCode(scope.generationOptions);
-      final valueType = scope.nullableType('Value<$typeName>');
-      _buffer.write('$valueType ${column.dartGetterName}');
+      final typeName = column.dartTypeCode();
+      _buffer.write('Value<$typeName>? ${column.dartGetterName}');
     }
 
     _buffer
@@ -181,23 +178,20 @@ class UpdateCompanionWriter {
       final getterName = column.thisIfNeeded(locals);
 
       _buffer.write('if ($getterName.present) {');
-      final typeName = column.variableTypeCode(scope.generationOptions);
+      final typeName = column.variableTypeCode(nullable: false);
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<$typeName>';
 
       final converter = column.typeConverter;
       if (converter != null) {
         // apply type converter before writing the variable
-        final fieldName = '${table.entityInfoName}.${converter.fieldName}';
+        final fieldName =
+            converter.tableAndField(forNullableColumn: column.nullable);
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.mapToSql($getterName.value)');
-
-        if (!column.nullable && scope.generationOptions.nnbd) {
-          _buffer.write('!');
-        }
-        _buffer.write(');');
+          ..write('(converter.toSql($getterName.value)')
+          ..write(');');
       } else {
         // no type converter. Write variable directly
         _buffer

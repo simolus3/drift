@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 
 import '../parser/utils.dart';
 import 'data.dart';
+import 'errors/utils.dart';
 
 void main() {
   test('correctly resolves return columns', () {
@@ -92,6 +93,15 @@ void main() {
         Reference(entityName: 'd', columnName: 'id'),
       ),
     );
+  });
+
+  test('does not allow references to result column outside of ORDER BY', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context = engine
+        .analyze('SELECT d.content, 3 * d.id AS t, t AS u FROM demo AS d');
+
+    context.expectError('t', type: AnalysisErrorType.referencedUnknownColumn);
   });
 
   test('resolves columns from nested results', () {
@@ -314,5 +324,40 @@ SELECT row_number() OVER wnd FROM demo
     test('for reference to table in DELETE', () {
       testWith('DELETE FROM users RETURNING id;');
     });
+  });
+
+  test('resolves column in foreign key declaration', () {
+    final engine = SqlEngine()..registerTableFromSql('''
+CREATE TABLE points (
+  id INTEGER NOT NULL PRIMARY KEY,
+  lat REAL NOT NULL,
+  long REAL NOT NULL
+);
+''');
+
+    final parseResult = engine.parse('''
+CREATE TABLE routes (
+  id INTEGER NOT NULL PRIMARY KEY,
+  "from" INTEGER NOT NULL REFERENCES points (id),
+  "to" INTEGER NOT NULL REFERENCES points (id)
+);
+''');
+    final table = const SchemaFromCreateTable()
+        .read(parseResult.rootNode as CreateTableStatement);
+    engine.registerTable(table);
+
+    final result = engine.analyzeParsed(parseResult);
+
+    result.expectNoError();
+
+    final createTable = result.root as CreateTableStatement;
+    final fromReference =
+        createTable.columns[1].constraints[1] as ForeignKeyColumnConstraint;
+    final fromReferenced =
+        fromReference.clause.columnNames.single.resolvedColumn;
+
+    expect(fromReferenced, isNotNull);
+    expect(
+        fromReferenced!.containingSet, result.rootScope.knownTables['points']);
   });
 }

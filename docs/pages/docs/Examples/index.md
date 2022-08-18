@@ -13,4 +13,4 @@ Flutter platforms - including Web and Desktop! You can check it out [here](https
 An updated version of this example is also present in drift's [repository](https://github.com/simolus3/drift/tree/develop/examples/app).
 [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an animated version of the todo app available [here](https://github.com/abdelrahmanelmarakby/todo_with_moor_and_animation).
 
-The [HackerNews reader app](https://github.com/filiph/hn_app) from the [Boring Flutter Show](https://www.youtube.com/playlist?list=PLjxrf2q8roU3ahJVrSgAnPjzkpGmL9Czl) also uses moor to keep a list of favorite articles.
+The [HackerNews reader app](https://github.com/filiph/hn_app) from the [Boring Flutter Show](https://www.youtube.com/playlist?list=PLjxrf2q8roU3ahJVrSgAnPjzkpGmL9Czl) also uses drift to keep a list of favorite articles.

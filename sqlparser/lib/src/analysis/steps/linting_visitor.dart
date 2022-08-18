@@ -186,6 +186,26 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitIsExpression(IsExpression e, void arg) {
+    if (e.distinctFromSyntax && options.version < SqliteVersion.v3_39) {
+      // `IS NOT DISTINCT FROM` is the same thing as `IS`
+      final alternative = e.negated ? 'IS' : 'IS NOT';
+      final source = (e.distinct != null && e.from != null)
+          ? [e.distinct!, e.from!].toSingleEntity
+          : e;
+
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
+        message:
+            '`DISTINCT FROM` requires sqlite 3.39, try using `$alternative`',
+        relevantNode: source,
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInsertStatement(InsertStatement e, void arg) {
     for (final target in e.targetColumns) {
       final resolved = target.resolvedColumn;
@@ -232,8 +252,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
           context.reportError(
             AnalysisError(
               type: AnalysisErrorType.notSupportedInDesiredVersion,
-              message: 'The `${e.name}` function is not available in '
-                  '${options.version}.',
+              message: 'The `${e.name}` function requires sqlite 3.38 or later',
               relevantNode: e,
             ),
           );
@@ -254,6 +273,21 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(e, arg);
+  }
+
+  @override
+  void visitJoinOperator(JoinOperator e, void arg) {
+    if ((e.operator == JoinOperatorKind.right ||
+            e.operator == JoinOperatorKind.full) &&
+        options.version < SqliteVersion.v3_39) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message: '`RIGHT` and `FULL` joins require sqlite 3.39.',
+          relevantNode: e,
+        ),
+      );
+    }
   }
 
   @override

@@ -117,8 +117,8 @@ void main() {
 
   test('shutting down will close the underlying executor', () async {
     final mockExecutor = MockExecutor();
-    final isolate = DriftIsolate.inCurrent(
-        () => DatabaseConnection.fromExecutor(mockExecutor));
+    final isolate =
+        DriftIsolate.inCurrent(() => DatabaseConnection(mockExecutor));
     await isolate.shutdownAll();
 
     verify(mockExecutor.close());
@@ -171,7 +171,10 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
 
     await expectLater(stream, emits(null));
     await database.into(database.todosTable).insert(initialCompanion);
-    await expectLater(stream, emits(TodoEntry(id: 1, content: 'my content')));
+    await expectLater(
+      stream,
+      emits(const TodoEntry(id: 1, content: 'my content')),
+    );
   });
 
   test('can start transactions', () async {
@@ -293,7 +296,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
 }
 
 DatabaseConnection _backgroundConnection() {
-  return DatabaseConnection.fromExecutor(NativeDatabase.memory());
+  return DatabaseConnection(NativeDatabase.memory());
 }
 
 Future<void> _writeTodoEntryInBackground(_BackgroundEntryMessage msg) async {
@@ -315,7 +318,7 @@ class _BackgroundEntryMessage {
 
 void _createBackground(SendPort send) {
   final drift = DriftIsolate.inCurrent(
-      () => DatabaseConnection.fromExecutor(NativeDatabase.memory()),
+      () => DatabaseConnection(NativeDatabase.memory()),
       killIsolateWhenDone: true);
   send.send(drift);
 }

@@ -24,14 +24,14 @@ const Map<_JoinType, String> _joinKeywords = {
 /// [Join] instance.
 class Join<T extends HasResultSet, D> extends Component {
   /// The [_JoinType] of this join.
-  final _JoinType type;
+  final _JoinType _type;
 
   /// The [TableInfo] that will be added to the query
   final Table table;
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
-  final Expression<bool?>? on;
+  final Expression<bool>? on;
 
   /// Whether [table] should appear in the result set (defaults to true).
   /// Default value can be changed by `includeJoinedTableColumns` in
@@ -43,7 +43,7 @@ class Join<T extends HasResultSet, D> extends Component {
 
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
-  Join._(this.type, this.table, this.on, {this.includeInResult}) {
+  Join._(this._type, this.table, this.on, {this.includeInResult}) {
     if (table is! ResultSetImplementation<T, D>) {
       throw ArgumentError(
           'Invalid table parameter. You must provide the table reference from '
@@ -54,14 +54,14 @@ class Join<T extends HasResultSet, D> extends Component {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write(_joinKeywords[type]);
+    context.buffer.write(_joinKeywords[_type]);
     context.buffer.write(' JOIN ');
 
     final resultSet = table as ResultSetImplementation<T, D>;
     context.buffer.write(resultSet.tableWithAlias);
     context.watchedTables.add(resultSet);
 
-    if (type != _JoinType.cross) {
+    if (_type != _JoinType.cross) {
       context.buffer.write(' ON ');
       on!.writeInto(context);
     }
@@ -79,7 +79,7 @@ class Join<T extends HasResultSet, D> extends Component {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
+Join innerJoin(Table other, Expression<bool> on, {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
 
@@ -91,7 +91,7 @@ Join innerJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
+Join leftOuterJoin(Table other, Expression<bool> on, {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 

@@ -116,30 +116,66 @@ class JoinClause extends Queryable {
   Iterable<AstNode> get childNodes => [primary, ...joins];
 }
 
-enum JoinOperator {
+enum JoinOperatorKind {
   none, // just JOIN, no other keywords
   comma,
   left,
-  leftOuter,
+  right,
+  full,
   inner,
-  cross,
+  cross;
+
+  bool get supportsOuterKeyword {
+    switch (this) {
+      case JoinOperatorKind.left:
+      case JoinOperatorKind.right:
+      case JoinOperatorKind.full:
+        return true;
+      default:
+        return false;
+    }
+  }
+}
+
+class JoinOperator extends AstNode {
+  final bool natural;
+  final bool outer;
+  final JoinOperatorKind operator;
+
+  JoinOperator(
+    this.operator, {
+    this.natural = false,
+    this.outer = false,
+  });
+
+  JoinOperator.comma()
+      : natural = false,
+        outer = false,
+        operator = JoinOperatorKind.comma;
+
+  @override
+  Iterable<AstNode> get childNodes => const Iterable.empty();
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitJoinOperator(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }
 
 class Join extends AstNode {
-  final bool natural;
-  final JoinOperator operator;
+  JoinOperator operator;
   TableOrSubquery query;
   final JoinConstraint? constraint;
 
-  Join(
-      {this.natural = false,
-      required this.operator,
-      required this.query,
-      this.constraint});
+  Join({required this.operator, required this.query, this.constraint});
 
   @override
   Iterable<AstNode> get childNodes {
     return [
+      operator,
       query,
       if (constraint is OnConstraint) (constraint as OnConstraint).expression
     ];
@@ -152,6 +188,7 @@ class Join extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
+    operator = transformer.transformChild(operator, this, arg);
     query = transformer.transformChild(query, this, arg);
     if (constraint is OnConstraint) {
       final onConstraint = constraint as OnConstraint;

@@ -28,7 +28,7 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL, '
     'sometext TEXT, '
     'is_inserting INTEGER, '
-    'somedate INTEGER, '
+    'somedate TEXT, '
     'PRIMARY KEY (someid DESC)'
     ');';
 
@@ -124,7 +124,7 @@ void main() {
 
     verify(
         mock.runSelect('SELECT * FROM config WHERE config_key = ?1', ['key']));
-    expect(parsed, Config(configKey: 'key', configValue: 'value'));
+    expect(parsed, const Config(configKey: 'key', configValue: 'value'));
   });
 
   test('applies default parameter expressions when not set', () async {
@@ -167,7 +167,7 @@ void main() {
         row: QueryRow(row, db),
         a: 'text for a',
         b: 42,
-        c: WithConstraint(a: 'text', b: 1337, c: 18.7),
+        c: const WithConstraint(a: 'text', b: 1337, c: 18.7),
       ),
     );
   });
@@ -216,7 +216,7 @@ void main() {
     final entry = await db.readConfig('key').getSingle();
     expect(
       entry,
-      Config(
+      const Config(
         configKey: 'key',
         configValue: 'value',
         syncState: SyncType.locallyUpdated,
@@ -242,6 +242,6 @@ void main() {
         .getSingleOrNull();
 
     verify(mock.runSelect('SELECT * FROM config WHERE sync_state = ?;',
-        [ConfigTable.$converter0.mapToSql(SyncType.synchronized)]));
+        [ConfigTable.$converter0.toSql(SyncType.synchronized)]));
   });
 }

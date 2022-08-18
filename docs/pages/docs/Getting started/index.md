@@ -19,8 +19,8 @@ First, lets add drift to your project's `pubspec.yaml`.
 At the moment, the current version of `drift` is [![Drift version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift)
 and the latest version of `drift_dev` is [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev).
 
-{% assign versions = 'package:moor_documentation/versions.json' | readString | json_decode %}
-{% assign snippets = 'package:moor_documentation/snippets/tables/filename.dart.excerpt.json' | readString | json_decode %}
+{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/tables/filename.dart.excerpt.json' | readString | json_decode %}
 
 ```yaml
 dependencies:

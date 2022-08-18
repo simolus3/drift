@@ -1,51 +1,50 @@
-name: moor_documentation
-description: Documentation of the moor packages
+name: drift_docs
+description: Documentation website for the drift project.
 publish_to: none
 
 environment:
   sdk: '>=2.15.0 <3.0.0'
 
 dependencies:
+  drift:
+  path: ^1.8.2
+  json_annotation: ^4.6.0
   docsy:
     hosted: https://simonbinder.eu
     version: ^0.2.2
-
-dev_dependencies:
-  build: ^2.1.0
-  build_runner: ^2.0.5
-  build_web_compilers: ^3.2.0
-  built_site:
-    hosted: https://simonbinder.eu
-    version: ^0.2.5
-  linkcheck: ^2.0.19
-  json_annotation: ^4.4.0
-  json_serializable: ^6.1.6
-  shelf: ^1.2.0
-  shelf_static: ^1.1.0
-  # `dart doc` is missing some options, so we run `dart run dartdoc` instead.
-  dartdoc: ^5.1.2
   code_snippets:
     hosted: https://simonbinder.eu
-    version: ^0.0.4
-
+    version: ^0.0.8
+  # used in snippets
+  http: ^0.13.5
+  sqlite3: ^1.7.2
   # Fake path_provider for snippets
   path_provider:
     path: assets/path_provider
   # Used in examples
   rxdart: ^0.27.3
+  yaml: ^3.1.1
+  drift_dev: any
 
-  moor:
-  moor_generator:
+dev_dependencies:
+  lints: ^2.0.0
+  build: ^2.1.0
+  build_runner: ^2.0.5
+  build_runner_core: ^7.2.3
+  build_web_compilers: ^3.2.0
+  built_site:
+    hosted: https://simonbinder.eu
+    version: ^0.2.10
+  linkcheck: ^2.0.19
+  json_serializable: ^6.1.6
+  shelf: ^1.2.0
+  shelf_static: ^1.1.0
+  source_span: ^1.9.1
+  test: ^1.18.0
   sqlparser:
-  drift:
-  drift_dev:
+
 
 dependency_overrides:
-  analyzer: ^4.0.0
-  moor:
-    path: ../moor
-  moor_generator:
-    path: ../moor_generator
   drift:
     path: ../drift
   drift_dev:

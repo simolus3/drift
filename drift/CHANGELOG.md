@@ -1,10 +1,62 @@
-## 1.7.0-dev
+## 2.0.2+1
+
+- Revert the breaking change around `QueryRow.read` only returning non-nullable
+  values now - it was causing issues with type inference in some cases.
+
+## 2.0.1
+
+- Fix an error when inserting a null value into a nullable column defined with
+  additional checks in Dart.
+
+## 2.0.0
+
+💡: More information on how to migrate is available in the [documentation](https://drift.simonbinder.eu/docs/upgrading/).
+
+- __Breaking__: Type converters now return the types that they were defined to return
+  (instead of the nullable variant of those types like before).
+  It is an error to use a non-nullable type converter on a column that is nullable in
+  SQL and vice-versa.
+- __Breaking__: Mapping methods on type converters are now called `toSql` and `fromSql`.
+- __Breaking__: Removed `SqlTypeSystem` and subtypes of `SqlType`:
+  - To describe the type a column has, use the `DriftSqlType` enum
+  - To map a value from Dart to SQL and vice-versa, use an instance of `SqlTypes`,
+    reachable via `database.options.types`.
+- __Breaking__: `Expression`s (including `Column`s) always have a non-nullable type
+  parameter now. They are implicitly nullable, so `TypedResult.read` now returns a
+  nullable value.
+- __Breaking__: `QueryRow.read` can only read non-nullable values now. To read nullable
+  values, use `readNullable`.
+- __Breaking__: Remove the `includeJoinedTableColumns` parameter on `selectOnly()`.
+  The method now behaves as if that parameter was turned off. To use columns from a
+  joined table, add them with `addColumns`.
+- __Breaking__: Remove the `fromData` factory on generated data classes. Use the
+  `map` method on tables instead.
+- Add support for storing date times as (ISO-8601) strings. For details on how
+  to use this, see [the documentation](https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types).
+- Consistently handle transaction errors like a failing `BEGIN` or `COMMIT`
+  across database implementations.
+- Add `writeReturning` to update statements; `deleteReturning` and `goAndReturn`
+  to delete statatements.
+- Support nested transactions.
+- Support custom collations in the query builder API.
+- [Custom row classes](https://drift.simonbinder.eu/docs/advanced-features/custom_row_classes/)
+  can now be constructed with static methods too.
+  These static factories can also be asynchronous.
+
+## 1.7.1
+
+- Fix the `NativeDatabase` not disposing statements if running them threw an
+  exception [#1917](https://github.com/simolus3/drift/issues/1917).
+
+## 1.7.0
 
 - Add the `int64()` column builder to store large integers. These integers are
-  still stores as 64-bit ints in the database, but represented as a `BigInt` in
+  still stored as 64-bit ints in the database, but represented as a `BigInt` in
   Dart. This enables better web support for integers larger than 2^52.
   More details are in [the documentation](https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#bigint-support).
 - Add `filter` and `distinct` support to `groupConcat`.
+- Fix a deadlock with the `sqflite`-based implementation if the first operation
+  in a `transaction` is a future backed by a query stream.
 
 ## 1.6.0
 

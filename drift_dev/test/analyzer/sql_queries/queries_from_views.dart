@@ -38,10 +38,10 @@ CREATE VIEW total_duration_by_artist_view AS
 totalDurationByArtist:
 SELECT * FROM total_duration_by_artist_view;
     '''
-    }, options: const MoorOptions.defaults());
+    }, options: const DriftOptions.defaults());
 
     final file = await state.analyze('package:foo/a.moor');
-    final result = file.currentResult as ParsedMoorFile;
+    final result = file.currentResult as ParsedDriftFile;
     final queries = result.resolvedQueries;
 
     expect(state.session.errorsInFileAndImports(file), isEmpty);
@@ -52,9 +52,9 @@ SELECT * FROM total_duration_by_artist_view;
     expect(
       totalDurationByArtist,
       returnsColumns({
-        'id': ColumnType.integer,
-        'name': ColumnType.text,
-        'duration': ColumnType.integer,
+        'id': DriftSqlType.int,
+        'name': DriftSqlType.string,
+        'duration': DriftSqlType.int,
       }),
     );
   });

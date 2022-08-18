@@ -125,8 +125,11 @@ class _FindNonNullableJoins extends RecursiveVisitor<bool, void> {
 
     visit(e.primary, true);
     for (final additional in e.joins) {
-      if (additional.operator != JoinOperator.left &&
-          additional.operator != JoinOperator.leftOuter) {
+      final operator = additional.operator;
+
+      if (operator.operator != JoinOperatorKind.left &&
+          operator.operator != JoinOperatorKind.right &&
+          operator.operator != JoinOperatorKind.full) {
         visit(additional, true);
       }
     }

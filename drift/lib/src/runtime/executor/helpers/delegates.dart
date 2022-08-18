@@ -148,18 +148,40 @@ abstract class SupportedTransactionDelegate extends TransactionDelegate {
   /// Constant constructor on superclass
   const SupportedTransactionDelegate();
 
+  /// Whether [startTransaction] will ensure further requests to the parent
+  /// database are delayed until the callback completes.
+  ///
+  /// When this returns `false`, drift will manage a lock internally to ensure
+  /// statements are only sent to the transaction while its active.
+  ///
+  /// For implementations that support being in a transaction and outside of a
+  /// transaction concurrently, this should return `true`.
+  bool get managesLockInternally => true;
+
   /// Start a transaction, which we assume implements [QueryDelegate], and call
   /// [run] with the transaction.
   ///
   /// If [run] completes with an error, rollback. Otherwise, commit.
-  void startTransaction(Future Function(QueryDelegate) run);
+  ///
+  /// The returned future should complete once the transaction has been commited
+  /// or was rolled back.
+  FutureOr<void> startTransaction(Future Function(QueryDelegate) run);
 }
 
 /// A [TransactionDelegate] for database APIs that have it's own transaction
 /// function
-abstract class WrappedTransactionDelegate extends TransactionDelegate {
+@Deprecated('Use SupportedTransactionDelegate instead')
+abstract class WrappedTransactionDelegate extends SupportedTransactionDelegate {
   /// Constant constructor on superclass
   const WrappedTransactionDelegate();
+
+  @override
+  bool get managesLockInternally => false;
+
+  @override
+  FutureOr<void> startTransaction(Future Function(QueryDelegate p1) run) async {
+    await runInTransaction(run);
+  }
 
   /// Start a transaction, which we assume implements [QueryDelegate], and call
   /// [run] with the transaction.

@@ -34,20 +34,20 @@ void main() {
     expect(aliasA.hashCode == db.alias(db.users, 'a').hashCode, isTrue);
   });
 
-  test('can convert a companion to a row class', () {
+  test('can convert a companion to a row class', () async {
     const companion = SharedTodosCompanion(
       todo: Value(3),
       user: Value(4),
     );
 
-    final user = db.sharedTodos.mapFromCompanion(companion);
+    final user = await db.sharedTodos.mapFromCompanion(companion, db);
     expect(
       user,
-      SharedTodo(todo: 3, user: 4),
+      const SharedTodo(todo: 3, user: 4),
     );
   });
 
-  test('can map from row without table prefix', () {
+  test('can map from row without table prefix', () async {
     final rowData = {
       'id': 1,
       'title': 'some title',
@@ -55,10 +55,10 @@ void main() {
       'target_date': null,
       'category': null,
     };
-    final todo = db.todosTable.mapFromRowOrNull(QueryRow(rowData, db));
+    final todo = await db.todosTable.mapFromRowOrNull(QueryRow(rowData, db));
     expect(
       todo,
-      TodoEntry(
+      const TodoEntry(
         id: 1,
         title: 'some title',
         content: 'do this',

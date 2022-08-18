@@ -1,7 +1,7 @@
 part of '../types.dart';
 
 class TypeGraph {
-  final _ResolvedVariables variables = _ResolvedVariables();
+  final _ResolvedVariables _variables = _ResolvedVariables();
 
   final Map<Typeable, ResolvedType> _knownTypes = {};
   final Map<Typeable, bool?> _knownNullability = {};
@@ -13,7 +13,7 @@ class TypeGraph {
   final List<DefaultType> _defaultTypes = [];
 
   ResolvedType? operator [](Typeable t) {
-    final normalized = variables.normalize(t);
+    final normalized = _variables.normalize(t);
 
     if (_knownTypes.containsKey(normalized)) {
       final type = _knownTypes[normalized];
@@ -29,7 +29,7 @@ class TypeGraph {
   }
 
   void operator []=(Typeable t, ResolvedType type) {
-    final normalized = variables.normalize(t);
+    final normalized = _variables.normalize(t);
     _knownTypes[normalized] = type;
 
     if (type.nullable != null && !_knownNullability.containsKey(normalized)) {
@@ -38,10 +38,11 @@ class TypeGraph {
     }
   }
 
-  bool knowsType(Typeable t) => _knownTypes.containsKey(variables.normalize(t));
+  bool knowsType(Typeable t) =>
+      _knownTypes.containsKey(_variables.normalize(t));
 
   bool knowsNullability(Typeable t) {
-    final normalized = variables.normalize(t);
+    final normalized = _variables.normalize(t);
     final knownType = _knownTypes[normalized];
 
     return (knownType != null && knownType.nullable != null) ||
@@ -53,7 +54,7 @@ class TypeGraph {
   }
 
   void markNullability(Typeable t, bool isNullable) {
-    _knownNullability[variables.normalize(t)] = isNullable;
+    _knownNullability[_variables.normalize(t)] = isNullable;
   }
 
   void performResolve() {
@@ -108,7 +109,8 @@ class TypeGraph {
           _copyType(resolved, t, other);
         }
       } else if (edge is CopyAndCast) {
-        _copyType(resolved, t, edge.target, this[t]!.cast(edge.cast));
+        _copyType(resolved, t, edge.target,
+            this[t]!.cast(edge.cast, edge.dropTypeHint));
       } else if (edge is MultiSourceRelation) {
         // handle many-to-one changes, if all targets have been resolved or
         // lax handling is enabled.
@@ -131,7 +133,7 @@ class TypeGraph {
 
         if (encapsulated != null) {
           if (edge.cast != null) {
-            encapsulated = encapsulated.cast(edge.cast!);
+            encapsulated = encapsulated.cast(edge.cast!, false);
           }
           this[edge.target] = encapsulated;
           resolved.add(edge.target);
@@ -270,11 +272,24 @@ class _ResolvedVariables {
 }
 
 extension ResolvedTypeUtils on ResolvedType {
-  ResolvedType cast(CastMode mode) {
+  ResolvedType cast(CastMode mode, bool dropTypeHint) {
     switch (mode) {
       case CastMode.numeric:
       case CastMode.numericPreferInt:
-        if (type == BasicType.int || type == BasicType.real) return this;
+        if (type == BasicType.int || type == BasicType.real) {
+          final newHint = dropTypeHint ? null : hint;
+
+          if (newHint != hint) {
+            return ResolvedType(
+              type: type,
+              hint: newHint,
+              nullable: nullable,
+              isArray: isArray,
+            );
+          } else {
+            return this;
+          }
+        }
 
         return mode == CastMode.numeric
             ? const ResolvedType(type: BasicType.real)

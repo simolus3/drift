@@ -8,7 +8,8 @@ enum _ParseKind { statement, driftFile }
 void main() {
   final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
 
-  void testFormat(String input, {_ParseKind kind = _ParseKind.statement}) {
+  void testFormat(String input,
+      {_ParseKind kind = _ParseKind.statement, String? expectedOutput}) {
     AstNode parse(String input) {
       late ParseResult result;
 
@@ -30,12 +31,18 @@ void main() {
 
     final originalAst = parse(input);
     final formatted = originalAst.toSql();
-    final newAst = parse(formatted);
 
-    try {
-      enforceEqual(originalAst, newAst);
-    } catch (e) {
-      fail('Not equal after formatting: $input to $formatted: $e');
+    if (expectedOutput != null) {
+      expect(formatted, expectedOutput);
+    } else {
+      // Just make sure we emit something equal to what we got
+      final newAst = parse(formatted);
+
+      try {
+        enforceEqual(originalAst, newAst);
+      } catch (e) {
+        fail('Not equal after formatting: $input to $formatted: $e');
+      }
     }
   }
 
@@ -250,8 +257,18 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
-      test('joins', () {
-        testFormat('''
+      group('joins', () {
+        for (final kind in ['LEFT', 'RIGHT', 'FULL']) {
+          test(kind, () {
+            testFormat('SELECT * FROM foo $kind JOIN bar;');
+            testFormat('SELECT * FROM foo $kind OUTER JOIN bar;');
+            testFormat('SELECT * FROM foo NATURAL $kind JOIN bar;');
+            testFormat('SELECT * FROM foo NATURAL $kind OUTER JOIN bar;');
+          });
+        }
+
+        test('complex', () {
+          testFormat('''
           SELECT * FROM
             foo AS f,
             bar
@@ -262,6 +279,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             INNER JOIN (SELECT * FROM bar) AS b
             INNER JOIN table_valued_function(foo)
         ''');
+        });
       });
 
       test('table references', () {
@@ -409,6 +427,14 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     test('is', () {
       testFormat('SELECT foo IS bar');
       testFormat('SELECT foo IS NOT bar');
+    });
+
+    test('is DISTINCT FROM', () {
+      testFormat('SELECT foo IS DISTINCT FROM bar',
+          expectedOutput: 'SELECT foo IS NOT bar');
+
+      testFormat('SELECT foo IS NOT DISTINCT FROM bar',
+          expectedOutput: 'SELECT foo IS bar');
     });
 
     test('is null', () {

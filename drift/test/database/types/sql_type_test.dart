@@ -3,12 +3,11 @@ import 'package:test/test.dart';
 
 void main() {
   test('types map null values to null', () {
-    const typeSystem = SqlTypeSystem.defaultInstance;
+    const options = DriftDatabaseOptions();
+    expect(options.types.mapToSqlVariable(null), isNull);
 
-    for (final type in typeSystem.types) {
-      expect(type.mapToSqlVariable(null), isNull,
-          reason: '$type should map null to null variables');
-      expect(type.mapFromDatabaseResponse(null), isNull,
+    for (final type in DriftSqlType.values) {
+      expect(options.types.read(type, null), isNull,
           reason: '$type should map null response to null value');
     }
   });

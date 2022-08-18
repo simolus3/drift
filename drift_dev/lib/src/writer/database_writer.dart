@@ -47,14 +47,14 @@ class DatabaseWriter {
 
     firstLeaf.write('class $className extends GeneratedDatabase {\n'
         '$className(QueryExecutor e) : '
-        'super(SqlTypeSystem.defaultInstance, e); \n');
+        'super(e); \n');
 
     if (dbScope.options.generateConnectConstructor) {
       firstLeaf.write(
           '$className.connect(DatabaseConnection c): super.connect(c); \n');
     }
 
-    final entityGetters = <MoorSchemaEntity, String>{};
+    final entityGetters = <DriftSchemaEntity, String>{};
 
     for (final entity in db.entities) {
       final getterName = entity.dbGetterName;
@@ -62,7 +62,7 @@ class DatabaseWriter {
         entityGetters[entity] = getterName;
       }
 
-      if (entity is MoorTable) {
+      if (entity is DriftTable) {
         final tableClassName = entity.entityInfoName;
 
         writeMemoizedGetter(
@@ -70,7 +70,6 @@ class DatabaseWriter {
           getterName: entity.dbGetterName,
           returnType: tableClassName,
           code: '$tableClassName(this)',
-          options: scope.generationOptions,
         );
       } else if (entity is MoorTrigger) {
         writeMemoizedGetter(
@@ -79,7 +78,6 @@ class DatabaseWriter {
           returnType: 'Trigger',
           code: 'Trigger(${asDartLiteral(entity.createSql(scope.options))}, '
               '${asDartLiteral(entity.displayName)})',
-          options: scope.generationOptions,
         );
       } else if (entity is MoorIndex) {
         writeMemoizedGetter(
@@ -88,7 +86,6 @@ class DatabaseWriter {
           returnType: 'Index',
           code: 'Index(${asDartLiteral(entity.displayName)}, '
               '${asDartLiteral(entity.createSql(scope.options))})',
-          options: scope.generationOptions,
         );
       } else if (entity is MoorView) {
         writeMemoizedGetter(
@@ -96,14 +93,13 @@ class DatabaseWriter {
           getterName: entity.dbGetterName,
           returnType: entity.entityInfoName,
           code: '${entity.entityInfoName}(this)',
-          options: scope.generationOptions,
         );
       }
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
     for (final dao in db.daos) {
-      final typeName = dao.codeString(scope.generationOptions);
+      final typeName = dao.codeString();
       final getterName = ReCase(typeName).camelCase;
       final databaseImplName = db.fromClass!.name;
 
@@ -112,7 +108,6 @@ class DatabaseWriter {
         getterName: getterName,
         returnType: typeName,
         code: '$typeName(this as $databaseImplName)',
-        options: scope.generationOptions,
       );
     }
 
@@ -122,8 +117,9 @@ class DatabaseWriter {
     // Write List of tables
     final schemaScope = dbScope.leaf();
     schemaScope
-      ..write('@override\nIterable<TableInfo> get allTables => ')
-      ..write('allSchemaEntities.whereType<TableInfo>();\n')
+      ..write(
+          '@override\nIterable<TableInfo<Table, dynamic>> get allTables => ')
+      ..write('allSchemaEntities.whereType<TableInfo<Table, Object?>>();\n')
       ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
       ..write('=> [');
 
@@ -159,6 +155,14 @@ class DatabaseWriter {
       schemaScope
         ..writeln('@override')
         ..writeln('int get schemaVersion => $version;');
+    }
+
+    if (scope.options.storeDateTimeValuesAsText) {
+      // Override database options to reflect that DateTimes are stored as text.
+      schemaScope
+        ..writeln('@override')
+        ..writeln('DriftDatabaseOptions get options => '
+            'const DriftDatabaseOptions(storeDateTimeAsText: true);');
     }
 
     // close the class

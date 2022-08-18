@@ -58,16 +58,16 @@ const String _errorMessage = 'This getter does not create a valid column that '
 /// the invocations on our way, we can extract the constraint for the column
 /// (e.g. its name, whether it has auto increment, is a primary key and so on).
 class ColumnParser {
-  final MoorDartParser base;
+  final DriftDartParser base;
 
   ColumnParser(this.base);
 
-  MoorColumn? parse(MethodDeclaration getter, Element element) {
+  DriftColumn? parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
     if (expr is! FunctionExpressionInvocation) {
       base.step.reportError(ErrorInDartCode(
-        affectedElement: getter.declaredElement,
+        affectedElement: getter.declaredElement2,
         message: _errorMessage,
         severity: Severity.criticalError,
       ));
@@ -81,8 +81,7 @@ class ColumnParser {
     String? foundCustomConstraint;
     Expression? foundDefaultExpression;
     Expression? clientDefaultExpression;
-    Expression? createdTypeConverter;
-    DriftDartType? typeConverterRuntime;
+    _PartialTypeConverterInformation? mappedAs;
     ColumnGeneratedAs? generatedAs;
     var nullable = false;
     var hasDefaultConstraints = false;
@@ -107,7 +106,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
-                affectedElement: getter.declaredElement,
+                affectedElement: getter.declaredElement2,
                 message:
                     "You're setting more than one name here, the first will "
                     'be used',
@@ -120,7 +119,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.error,
-                affectedElement: getter.declaredElement,
+                affectedElement: getter.declaredElement2,
                 message:
                     'This table name is cannot be resolved! Please only use '
                     'a constant string as parameter for .named().',
@@ -135,7 +134,7 @@ class ColumnParser {
           if (first is! Identifier) {
             base.step.reportError(ErrorInDartCode(
               message: 'This parameter should be a simple class name',
-              affectedElement: getter.declaredElement,
+              affectedElement: getter.declaredElement2,
               affectedNode: first,
             ));
             break;
@@ -145,7 +144,7 @@ class ColumnParser {
           if (staticElement is! ClassElement) {
             base.step.reportError(ErrorInDartCode(
               message: '${first.name} is not a class!',
-              affectedElement: getter.declaredElement,
+              affectedElement: getter.declaredElement2,
               affectedNode: first,
             ));
             break;
@@ -155,7 +154,7 @@ class ColumnParser {
           if (columnNameNode is! SymbolLiteral) {
             base.step.reportError(ErrorInDartCode(
               message: 'This should be a symbol literal (`#columnName`)',
-              affectedElement: getter.declaredElement,
+              affectedElement: getter.declaredElement2,
               affectedNode: columnNameNode,
             ));
             break;
@@ -171,7 +170,7 @@ class ColumnParser {
               base.step.reportError(ErrorInDartCode(
                 message:
                     'Should be a direct enum reference (`KeyAction.cascade`)',
-                affectedElement: getter.declaredElement,
+                affectedElement: getter.declaredElement2,
                 affectedNode: expr,
               ));
               return null;
@@ -210,7 +209,7 @@ class ColumnParser {
             columnName,
             onUpdate,
             onDelete,
-            getter.declaredElement,
+            getter.declaredElement2,
             first,
             columnNameNode,
           ));
@@ -243,7 +242,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
-                affectedElement: getter.declaredElement,
+                affectedElement: getter.declaredElement2,
                 affectedNode: remainingExpr.methodName,
                 message:
                     "You've already set custom constraints on this column, "
@@ -257,7 +256,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
-                affectedElement: getter.declaredElement,
+                affectedElement: getter.declaredElement2,
                 message:
                     'This constraint is cannot be resolved! Please only use '
                     'a constant string as parameter for .customConstraint().',
@@ -277,11 +276,6 @@ class ColumnParser {
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
 
-          // the map method has a parameter type that resolved to the runtime
-          // type of the custom object
-          final type = remainingExpr.typeArgumentTypes!.single;
-          createdTypeConverter = expression;
-
           // If the converter type references a class that doesn't exist yet,
           // (and is hence `dynamic`), we assume that it will be generated and
           // accessible in the code. In this case, we copy the source into the
@@ -289,20 +283,18 @@ class ColumnParser {
           final checkDynamic = _ContainsDynamicDueToMissingClass();
           remainingExpr.typeArguments?.accept(checkDynamic);
           expression.accept(checkDynamic);
+          DriftDartType? resolved;
 
-          // If converter type argument is dynamic, the referenced
-          // class is not exists yet. We assume it will be generated
-          if (checkDynamic.foundDynamicDueToMissingClass &&
-              remainingExpr.typeArguments != null) {
-            typeConverterRuntime = DriftDartType(
-              type: type,
+          if (checkDynamic.foundDynamicDueToMissingClass) {
+            resolved = DriftDartType(
+              type: remainingExpr.typeArgumentTypes!.single,
               overiddenSource:
                   remainingExpr.typeArguments!.arguments[0].toSource(),
               nullabilitySuffix: type.nullabilitySuffix,
             );
-          } else {
-            typeConverterRuntime = DriftDartType.of(type);
           }
+
+          mappedAs = _PartialTypeConverterInformation(expression, resolved);
           break;
         case _methodGenerated:
           Expression? generatedExpression;
@@ -345,20 +337,27 @@ class ColumnParser {
     if (foundExplicitName != null) {
       name = ColumnName.explicitly(foundExplicitName);
     } else {
-      name = ColumnName.implicitly(ReCase(getter.name.name).snakeCase);
+      name = ColumnName.implicitly(ReCase(getter.name2.lexeme).snakeCase);
     }
 
     final columnType = _startMethodToColumnType(foundStartMethod);
-
     UsedTypeConverter? converter;
-    if (createdTypeConverter != null && typeConverterRuntime != null) {
-      converter = UsedTypeConverter(
-        expression: createdTypeConverter.toSource(),
-        mappedType: typeConverterRuntime,
-        sqlType: columnType,
-        alsoAppliesToJsonConversion: base.step.resolvedHelper
-            .isJsonAwareTypeConverter(
-                createdTypeConverter.staticType, base.step.library),
+
+    if (mappedAs != null) {
+      converter = readTypeConverter(
+        base.step.library,
+        mappedAs.dartExpression,
+        columnType,
+        nullable,
+        (message) => base.step.reportError(
+          ErrorInDartCode(
+            message: message,
+            affectedNode: mappedAs!.dartExpression,
+            affectedElement: element,
+          ),
+        ),
+        base.step.resolvedHelper,
+        resolvedDartType: mappedAs.literalDartType,
       );
     }
 
@@ -367,18 +366,19 @@ class ColumnParser {
         base.step.reportError(ErrorInDartCode(
           message: 'Using $startEnum will apply a custom converter by default, '
               "so you can't add an additional converter",
-          affectedElement: getter.declaredElement,
+          affectedElement: getter.declaredElement2,
           severity: Severity.warning,
         ));
       }
 
       final enumType = remainingExpr.typeArgumentTypes![0];
       try {
-        converter = UsedTypeConverter.forEnumColumn(enumType, nullable);
+        converter = UsedTypeConverter.forEnumColumn(
+            enumType, nullable, base.step.library.typeProvider);
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
           message: e.errorDescription,
-          affectedElement: getter.declaredElement,
+          affectedElement: getter.declaredElement2,
           severity: Severity.error,
         ));
       }
@@ -388,7 +388,7 @@ class ColumnParser {
       base.step.reportError(
         ErrorInDartCode(
           severity: Severity.warning,
-          affectedElement: getter.declaredElement,
+          affectedElement: getter.declaredElement2,
           message: 'clientDefault() and withDefault() are mutually exclusive, '
               "they can't both be used. Use clientDefault() for values that "
               'are different for each row and withDefault() otherwise.',
@@ -401,7 +401,7 @@ class ColumnParser {
       base.step.reportError(
         ErrorInDartCode(
           severity: Severity.error,
-          affectedElement: getter.declaredElement,
+          affectedElement: getter.declaredElement2,
           message: 'Primary key column cannot have UNIQUE constraint',
         ),
       );
@@ -411,7 +411,7 @@ class ColumnParser {
       base.step.reportError(
         ErrorInDartCode(
           severity: Severity.warning,
-          affectedElement: getter.declaredElement,
+          affectedElement: getter.declaredElement2,
           message: 'This column definition is using both drift-defined '
               'constraints (like references, autoIncrement, ...) and a '
               'customConstraint(). Only the custom constraint will be added '
@@ -422,9 +422,9 @@ class ColumnParser {
 
     final docString =
         getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
-    return MoorColumn(
+    return DriftColumn(
       type: columnType,
-      dartGetterName: getter.name.name,
+      dartGetterName: getter.name2.lexeme,
       name: name,
       overriddenJsonName: _readJsonKey(element),
       customConstraints: foundCustomConstraint,
@@ -439,16 +439,16 @@ class ColumnParser {
     );
   }
 
-  ColumnType _startMethodToColumnType(String name) {
+  DriftSqlType _startMethodToColumnType(String name) {
     return const {
-      startBool: ColumnType.boolean,
-      startString: ColumnType.text,
-      startInt: ColumnType.integer,
-      startInt64: ColumnType.bigInt,
-      startEnum: ColumnType.integer,
-      startDateTime: ColumnType.datetime,
-      startBlob: ColumnType.blob,
-      startReal: ColumnType.real,
+      startBool: DriftSqlType.bool,
+      startString: DriftSqlType.string,
+      startInt: DriftSqlType.int,
+      startInt64: DriftSqlType.bigInt,
+      startEnum: DriftSqlType.int,
+      startDateTime: DriftSqlType.dateTime,
+      startBlob: DriftSqlType.blob,
+      startReal: DriftSqlType.double,
     }[name]!;
   }
 
@@ -456,9 +456,11 @@ class ColumnParser {
     final annotations = getter.metadata;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
-      return value != null &&
-          isFromMoor(value.type!) &&
-          value.type!.element!.name == 'JsonKey';
+      final valueType = value?.type;
+
+      return valueType is InterfaceType &&
+          isFromDrift(valueType) &&
+          valueType.element2.name == 'JsonKey';
     });
 
     if (object == null) return null;
@@ -478,4 +480,21 @@ class _ContainsDynamicDueToMissingClass extends RecursiveAstVisitor<void> {
       super.visitNamedType(node);
     }
   }
+}
+
+/// Information used to resolve a type converter later.
+///
+/// To check whether a type converter is valid, we need to know the exact
+/// column type and whether `nullable` was called at some point.
+/// So we just store some information when we hit a `map` call and resolve the
+/// type converter after all other methods in the column builder chain have been
+/// evaluated.
+class _PartialTypeConverterInformation {
+  final Expression dartExpression;
+
+  /// An attempt to recover the syntactic type of [dartExpression] during
+  /// generation in case it hasn't been generated yet when the analyzer runs.
+  final DriftDartType? literalDartType;
+
+  _PartialTypeConverterInformation(this.dartExpression, this.literalDartType);
 }

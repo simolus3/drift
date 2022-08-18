@@ -91,7 +91,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       String chosenAlias;
       if (column is GeneratedColumn) {
         if (ctx.generatingForView == column.tableName) {
-          chosenAlias = '${column.$name}';
+          chosenAlias = column.$name;
         } else {
           chosenAlias = '${column.tableName}.${column.$name}';
         }
@@ -136,7 +136,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// ])
   /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
   /// ```
-  void where(Expression<bool?> predicate) {
+  void where(Expression<bool> predicate) {
     if (whereExpr == null) {
       whereExpr = Where(predicate);
     } else {
@@ -192,7 +192,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// Groups the result by values in [expressions].
   ///
   /// An optional [having] attribute can be set to exclude certain groups.
-  void groupBy(Iterable<Expression> expressions, {Expression<bool?>? having}) {
+  void groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
     _groupBy = GroupBy._(expressions.toList(), having);
   }
 
@@ -207,7 +207,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
     return database
         .createStream(fetcher)
-        .map((rows) => _mapResponse(ctx, rows));
+        .asyncMap((rows) => _mapResponse(ctx, rows));
   }
 
   @override
@@ -224,7 +224,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       } catch (e, s) {
         final foundTables = <String>{};
         for (final table in _queriedTables()) {
-          if (!foundTables.add(table.entityName)) {
+          if (!foundTables.add(table.aliasedName)) {
             _warnAboutDuplicate(e, s, table);
           }
         }
@@ -234,9 +234,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     });
   }
 
-  List<TypedResult> _mapResponse(
+  Future<List<TypedResult>> _mapResponse(
       GenerationContext ctx, List<Map<String, Object?>> rows) {
-    return rows.map((row) {
+    return Future.wait(rows.map((row) async {
       final readTables = <ResultSetImplementation, dynamic>{};
       final readColumns = <Expression, dynamic>{};
 
@@ -244,7 +244,8 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         final prefix = '${table.aliasedName}.';
         // if all columns of this table are null, skip the table
         if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
-          readTables[table] = table.map(row, tablePrefix: table.aliasedName);
+          readTables[table] =
+              await table.map(row, tablePrefix: table.aliasedName);
         }
       }
 
@@ -252,12 +253,11 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         final expr = aliasedColumn.key;
         final value = row[aliasedColumn.value];
 
-        final type = expr.findType(ctx.typeSystem);
-        readColumns[expr] = type.mapFromDatabaseResponse(value);
+        readColumns[expr] = ctx.options.types.read(expr.driftSqlType, value);
       }
 
       return TypedResult(readTables, QueryRow(row, database), readColumns);
-    }).toList();
+    }));
   }
 
   @alwaysThrows

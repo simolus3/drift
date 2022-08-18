@@ -1,11 +1,10 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:drift_dev/src/model/table.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
-import 'package:drift_dev/src/writer/writer.dart';
 
-import 'column.dart';
 import 'types.dart';
 
 class UsedTypeConverter {
@@ -13,47 +12,91 @@ class UsedTypeConverter {
   int? index;
 
   /// The table using this type converter.
-  MoorTable? table;
+  DriftTable? table;
 
   /// The expression that will construct the type converter at runtime. The
-  /// type converter constructed will map a [mappedType] to the [sqlType] and
+  /// type converter constructed will map a [dartType] to the [sqlType] and
   /// vice-versa.
   final String expression;
 
-  /// The type that will be present at runtime.
-  final DriftDartType mappedType;
+  /// The "Dart" type of this type converter.
+  ///
+  /// Note that, even when this type is non-nullable, the actual type used on
+  /// data classes and companions can still be nullable. For instance, when a
+  /// non-nullable type converter is applied to a nullable column, drift will
+  /// implicitly map `null` values to `null` without invoking the converter.
+  final DriftDartType dartType;
 
-  /// The type that will be written to the database.
-  final ColumnType sqlType;
+  /// The "SQL" type of this type converter. This is the type used to represent
+  /// mapped values in the database.
+  final DartType sqlType;
+
+  /// Whether the Dart-value output of this type converter is nullable.
+  ///
+  /// In other words, [dartType] is potentially nullable.
+  final bool dartTypeIsNullable;
+
+  /// Whether the SQL-value output of this type converter is nullable.
+  ///
+  /// In other words, [sqlType] is potentially nullable.
+  final bool sqlTypeIsNullable;
 
   /// Whether this type converter should also be used in the generated JSON
   /// serialization.
   final bool alsoAppliesToJsonConversion;
 
+  /// Whether this type converter can be skipped for `null` values.
+  ///
+  /// This applies to type converters with a non-nullable Dart and SQL type if
+  /// the column is nullable. For those converters, drift maps `null` to `null`
+  /// without calling the type converter at all.
+  ///
+  /// For nullable columns, this is implemented by wrapping it in a
+  /// `NullAwareTypeConverter` in the generated code for table classes. For
+  /// nullable references to non-nullable columns (e.g. from outer joins), this
+  /// is done with static helper methods on `NullAwareTypeConverter`.
+  final bool canBeSkippedForNulls;
+
   /// Type converters are stored as static fields in the table that created
   /// them. This will be the field name for this converter.
   String get fieldName => '\$converter$index';
 
+  /// If this converter [canBeSkippedForNulls] and is applied to a nullable
+  /// column, drift generates a new wrapped type converter which will deal with
+  /// `null` values.
+  /// That converter is stored in this field.
+  String get nullableFieldName => '${fieldName}n';
+
   /// A Dart expression resolving to this converter.
-  String get tableAndField => '${table!.entityInfoName}.$fieldName';
+  String tableAndField({bool forNullableColumn = false}) {
+    final field = canBeSkippedForNulls && forNullableColumn
+        ? nullableFieldName
+        : fieldName;
+
+    return '${table!.entityInfoName}.$field';
+  }
 
   UsedTypeConverter({
     required this.expression,
-    required this.mappedType,
+    required this.dartType,
     required this.sqlType,
+    required this.dartTypeIsNullable,
+    required this.sqlTypeIsNullable,
     this.alsoAppliesToJsonConversion = false,
+    this.canBeSkippedForNulls = false,
   });
 
-  bool get hasNullableDartType =>
-      mappedType.nullabilitySuffix == NullabilitySuffix.question;
-
-  factory UsedTypeConverter.forEnumColumn(DartType enumType, bool nullable) {
-    if (enumType.element is! ClassElement) {
+  factory UsedTypeConverter.forEnumColumn(
+    DartType enumType,
+    bool nullable,
+    TypeProvider typeProvider,
+  ) {
+    if (enumType is! InterfaceType) {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
     }
 
-    final creatingClass = enumType.element as ClassElement;
-    if (!creatingClass.isEnum) {
+    final creatingClass = enumType.element2;
+    if (creatingClass is! EnumElement) {
       throw InvalidTypeForEnumConverterException('Not an enum', enumType);
     }
 
@@ -61,25 +104,49 @@ class UsedTypeConverter {
     final suffix =
         nullable ? NullabilitySuffix.question : NullabilitySuffix.none;
 
+    var expression = 'EnumIndexConverter<$className>($className.values)';
+    if (nullable) {
+      expression = 'NullAwareTypeConverter.wrap($expression)';
+    }
+
     return UsedTypeConverter(
-      expression: 'const EnumIndexConverter<$className>($className.values)',
-      mappedType: DriftDartType(
+      expression: 'const $expression',
+      dartType: DriftDartType(
         type: creatingClass.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none),
         overiddenSource: creatingClass.name,
         nullabilitySuffix: suffix,
       ),
-      sqlType: ColumnType.integer,
+      sqlTypeIsNullable: nullable,
+      dartTypeIsNullable: nullable,
+      sqlType: nullable
+          ? typeProvider.intElement.instantiate(
+              typeArguments: const [],
+              nullabilitySuffix: NullabilitySuffix.question)
+          : typeProvider.intType,
     );
   }
 
+  bool mapsToNullableDart(bool nullableInSql) {
+    return dartTypeIsNullable || (canBeSkippedForNulls && nullableInSql);
+  }
+
+  String dartTypeCode(bool nullableInSql) {
+    var type = dartType.codeString();
+    if (canBeSkippedForNulls && nullableInSql) type += '?';
+
+    return type;
+  }
+
   /// A suitable typename to store an instance of the type converter used here.
-  String converterNameInCode(GenerationOptions options) {
-    final sqlDartType = dartTypeNames[sqlType];
+  String converterNameInCode({bool makeNullable = false}) {
+    var sqlDartType = sqlType.getDisplayString(withNullability: true);
+    if (makeNullable) sqlDartType += '?';
+
     final className =
         alsoAppliesToJsonConversion ? 'JsonTypeConverter' : 'TypeConverter';
 
-    return '$className<${mappedType.codeString(options)}, $sqlDartType>';
+    return '$className<${dartTypeCode(makeNullable)}, $sqlDartType>';
   }
 }
 

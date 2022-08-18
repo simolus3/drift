@@ -2,12 +2,12 @@ part of 'parser.dart';
 
 /// Parses a [MoorView] from a Dart class.
 class ViewParser {
-  final MoorDartParser base;
+  final DriftDartParser base;
 
   ViewParser(this.base);
 
   Future<MoorView?> parseView(
-      ClassElement element, List<MoorTable> tables) async {
+      ClassElement element, List<DriftTable> tables) async {
     final name = await _parseViewName(element);
     final columns = (await _parseColumns(element)).toList();
     final staticReferences = await _parseStaticReferences(element, tables);
@@ -34,14 +34,14 @@ class ViewParser {
   }
 
   _DataClassInformation _readDataClassInformation(
-      List<MoorColumn> columns, ClassElement element) {
+      List<DriftColumn> columns, ClassElement element) {
     DartObject? useRowClass;
     DartObject? driftView;
     String? customParentClass;
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.element!.name;
+      final annotationClass = computed!.type!.nameIfInterfaceType;
 
       if (annotationClass == 'DriftView') {
         driftView = computed;
@@ -80,8 +80,8 @@ class ViewParser {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element, type.typeArguments);
-        name = type.element.name;
+        existingClass = FoundDartClass(type.element2, type.typeArguments);
+        name = type.element2.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -100,7 +100,7 @@ class ViewParser {
   Future<String> _parseViewName(ClassElement element) async {
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.element!.name;
+      final annotationClass = computed!.type!.nameIfInterfaceType;
 
       if (annotationClass == 'DriftView') {
         final name = computed.getField('name')?.toStringValue();
@@ -114,9 +114,9 @@ class ViewParser {
     return ReCase(element.name).snakeCase;
   }
 
-  Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
+  Future<Iterable<DriftColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
-        .map((t) => t.element)
+        .map((t) => t.element2)
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
@@ -134,16 +134,16 @@ class ViewParser {
 
     final results = await Future.wait(fields.map((field) async {
       final dartType = (field.type as InterfaceType).typeArguments[0];
-      final typeName = dartType.element!.name!;
+      final typeName = dartType.nameIfInterfaceType!;
       final sqlType = _dartTypeToColumnType(typeName);
 
       if (sqlType == null) {
         final String errorMessage;
         if (typeName == 'dynamic') {
-          errorMessage = 'You must specify Expression<?> type argument';
+          errorMessage = 'You must specify Expression<> type argument';
         } else {
           errorMessage =
-              'Invalid Expression<?> type argument `$typeName` found. '
+              'Invalid Expression<> type argument `$typeName` found. '
               'Must be one of: '
               'bool, String, int, DateTime, Uint8List, double';
         }
@@ -154,7 +154,7 @@ class ViewParser {
           await base.loadElementDeclaration(field.getter!) as MethodDeclaration;
       final expression = (node.body as ExpressionFunctionBody).expression;
 
-      return MoorColumn(
+      return DriftColumn(
         type: sqlType,
         dartGetterName: field.name,
         name: ColumnName.implicitly(ReCase(field.name).snakeCase),
@@ -166,22 +166,22 @@ class ViewParser {
     return results.whereType();
   }
 
-  ColumnType? _dartTypeToColumnType(String name) {
+  DriftSqlType? _dartTypeToColumnType(String name) {
     return const {
-      'bool': ColumnType.boolean,
-      'String': ColumnType.text,
-      'int': ColumnType.integer,
-      'BigInt': ColumnType.bigInt,
-      'DateTime': ColumnType.datetime,
-      'Uint8List': ColumnType.blob,
-      'double': ColumnType.real,
+      'bool': DriftSqlType.bool,
+      'String': DriftSqlType.string,
+      'int': DriftSqlType.int,
+      'BigInt': DriftSqlType.bigInt,
+      'DateTime': DriftSqlType.dateTime,
+      'Uint8List': DriftSqlType.blob,
+      'double': DriftSqlType.double,
     }[name];
   }
 
   Future<List<TableReferenceInDartView>> _parseStaticReferences(
-      ClassElement element, List<MoorTable> tables) async {
+      ClassElement element, List<DriftTable> tables) async {
     return await Stream.fromIterable(element.allSupertypes
-            .map((t) => t.element)
+            .map((t) => t.element2)
             .followedBy([element]).expand((e) => e.fields))
         .asyncMap((field) => _getStaticReference(field, tables))
         .where((ref) => ref != null)
@@ -190,7 +190,7 @@ class ViewParser {
   }
 
   Future<TableReferenceInDartView?> _getStaticReference(
-      FieldElement field, List<MoorTable> tables) async {
+      FieldElement field, List<DriftTable> tables) async {
     if (field.getter != null) {
       try {
         final node = await base.loadElementDeclaration(field.getter!);
@@ -198,7 +198,7 @@ class ViewParser {
           final type = tables.firstWhereOrNull(
               (tbl) => tbl.fromClass!.name == node.returnType.toString());
           if (type != null) {
-            final name = node.name.toString();
+            final name = node.name2.lexeme;
             return TableReferenceInDartView(type, name);
           }
         }
@@ -210,7 +210,7 @@ class ViewParser {
   Future<ViewQueryInformation> _parseQuery(
       ClassElement element,
       List<TableReferenceInDartView> references,
-      List<MoorColumn> columns) async {
+      List<DriftColumn> columns) async {
     final as =
         element.methods.where((method) => method.name == 'as').firstOrNull;
 
@@ -275,7 +275,7 @@ class ViewParser {
           }
           final column =
               columns.firstWhere((col) => col.dartGetterName == parts[0]);
-          return MapEntry('${column.dartGetterName}', column);
+          return MapEntry(column.dartGetterName, column);
         }).toList();
 
         target = target.parent as MethodInvocation;

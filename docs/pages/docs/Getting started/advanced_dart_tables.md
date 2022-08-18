@@ -11,7 +11,7 @@ __Prefer sql?__ If you prefer, you can also declare tables via `CREATE TABLE` st
 Drift's sql analyzer will generate matching Dart code. [Details]({{ "starting_with_sql.md" | pageUrl }}).
 {% endblock %}
 
-{% assign snippets = 'package:moor_documentation/snippets/tables/advanced.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/tables/advanced.dart.excerpt.json' | readString | json_decode %}
 
 As shown in the [getting started guide]({{ "index.md" | pageUrl }}), sql tables can be written in Dart:
 ```dart
@@ -172,8 +172,9 @@ Drift supports a variety of column types out of the box. You can store custom cl
 | `double`     | `real()`      | `REAL`                                              |
 | `boolean`    | `boolean()`   | `INTEGER`, which a `CHECK` to only allow `0` or `1` |
 | `String`     | `text()`      | `TEXT`                                              |
-| `DateTime`   | `dateTime()`  | `INTEGER` (Unix timestamp in seconds)               |
+| `DateTime`   | `dateTime()`  | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)               |
 | `Uint8List`  | `blob()`      | `BLOB`                                              |
+| `Enum`       | `intEnum()`   | `INTEGER` (more information available [here]({{ "../Advanced Features/type_converters.md#implicit-enum-converters" | pageUrl }})). |
 
 Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
 the database.
@@ -194,7 +195,7 @@ loss of precision.
 Be aware that `BigInt`s have a higher overhead than `int`s, so we recommend using
 `int64()` only for columns where this is necessary:
 
-{% block "blocks/alert" title="You might not need this!" color="warning" %}
+{% block "blocks/alert" title="You might not need this!" color="info" %}
 In sqlite3, an `INTEGER` column is stored as a 64-bit integer.
 For apps running in the Dart VM (e.g. on everything except for the web), the `int`
 type in Dart is the _perfect_ match for that since it's also a 64-bit int.
@@ -203,7 +204,7 @@ For those apps, we recommend using the regular `integer()` column builder.
 Essentially, you should use `int64()` if both of these are true:
 
 - you're building an app that needs to work on the web, _and_
-- the column in question may store values larger than 2^52.
+- the column in question may store values larger than 2<sup>52</sup>.
 
 In all other cases, using a regular `integer()` column is more efficient.
 {% endblock %}
@@ -222,6 +223,118 @@ Here are some more pointers on using `BigInt`s in drift:
 - To use `BigInt` support on a `WebDatabase`, set the `readIntsAsBigInt: true`
   flag when instantiating it.
 - Both `NativeDatabase` and `WasmDatabase` have builtin support for bigints.
+
+### `DateTime` options
+
+Drift supports two approaches of storing `DateTime` values in SQL:
+
+1. __As unix timestamp__ (the default): In this mode, drift stores date time
+   values as an SQL `INTEGER` containing the unix timestamp (in seconds).
+   When date times are mapped from SQL back to Dart, drift always returns a
+   non-UTC value. So even when UTC date times are stored, this information is
+   lost when retrieving rows.
+2. __As ISO 8601 string__: In this mode, datetime values are stored in a
+   textual format based on `DateTime.toIso8601String()`: UTC values are stored
+   unchanged (e.g. `2022-07-25 09:28:42.015Z`), while local values have their
+   UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).
+   Most of sqlite3's date and time functions operate on UTC values, but parsing
+   datetimes in SQL respects the UTC offset added to the value.
+
+   When reading values back from the database, drift will use `DateTime.parse`
+   as following:
+    - If the textual value ends with `Z`, drift will use `DateTime.parse`
+      directly. The `Z` suffix will be recognized and a UTC value is returned.
+    - If the textual value ends with a UTC offset (e.g. `+02:00`), drift first
+      uses `DateTime.parse` which respects the modifier but returns a UTC
+      datetime. Drift then calls `toLocal()` on this intermediate result to
+      return a local value.
+    - If the textual value neither has a `Z` suffix nor a UTC offset, drift
+      will parse it as if it had a `Z` modifier, returning a UTC datetime.
+      The motivation for this is that the `datetime` function in sqlite3 returns
+      values in this format and uses UTC by default.
+
+   This behavior works well with the date functions in sqlite3 while also
+   preserving "UTC-ness" for stored values.
+
+The mode can be changed with the `store_date_time_values_as_text` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}).
+
+Regardless of the option used, drift's builtin support for
+[date and time functions]({{ '../Advanced Features/expressions.md#date-and-time' | pageUrl }})
+return an equivalent values. Drift internally inserts the `unixepoch`
+[modifier](https://sqlite.org/lang_datefunc.html#modifiers) when unix timestamps
+are used to make the date functions work. When comparing dates stored as text,
+drift will compare their `julianday` values behind the scenes.
+
+#### Migrating between the two modes
+
+While making drift change the date time modes is as simple as changing a build
+option, toggling this behavior is not compatible with existing database schemas:
+
+1. Depending on the build option, drift expects strings or integers for datetime
+   values. So you need to migrate stored columns to the new format when changing
+   the option.
+2. If you are using SQL statements defined in `.drift` files, use custom SQL
+  at runtime or manually invoke datetime expressions with a direct
+  `FunctionCallExpression` instead of using the higher-level date time APIs, you
+  may have to adapt those usages.
+
+   For instance, comparison operators like `<` work on unix timestamps, but they
+  will compare textual datetime values lexicographically. So depending on the
+  mode used, you will have to wrap the value in `unixepoch` or `julianday` to
+  make them comparable.
+
+As the second point is specific to usages in your app, this documentation only
+describes how to migrate stored columns between the format:
+
+{% assign snippets = "package:drift_docs/snippets/migrations/datetime_conversion.dart.excerpt.json" | readString | json_decode %}
+
+Note that the JSON serialization generated by default is not affected by the
+datetime mode chosen. By default, drift will serialize `DateTime` values to a
+unix timestamp in milliseconds. You can change this by creating a
+`ValueSerializer.defaults(serializeDateTimeValuesAsString: true)` and assigning
+it to `driftRuntimeOptions.defaultSerializer`.
+
+##### Migrating from unix timestamps to text
+
+To migrate from using timestamps (the default option) to storing datetimes as
+text, follow these steps:
+
+1. Enable the `store_date_time_values_as_text` build option.
+2. Add the following method (or an adaption of it suiting your needs) to your
+   database class.
+3. Increment the `schemaVersion` in your database class.
+4. Write a migration step in `onUpgrade` that calls
+  `migrateFromUnixTimestampsToText` for this schema version increase.
+  __Remember that triggers, views or other custom SQL entries in your database
+  will require a custom migration that is not covered by this guide.__
+
+{% include "blocks/snippet" snippets = snippets name = "unix-to-text" %}
+
+##### Migrating from text to unix timestamps
+
+To migrate from datetimes stored as text back to unix timestamps, follow these
+steps:
+
+1. Disable the `store_date_time_values_as_text` build option.
+2. Add the following method (or an adaption of it suiting your needs) to your
+   database class.
+3. Increment the `schemaVersion` in your database class.
+4. Write a migration step in `onUpgrade` that calls
+  `migrateFromTextDateTimesToUnixTimestamps` for this schema version increase.
+  __Remember that triggers, views or other custom SQL entries in your database
+  will require a custom migration that is not covered by this guide.__
+
+{% include "blocks/snippet" snippets = snippets name = "text-to-unix" %}
+
+Note that this snippet uses the `unixepoch` sqlite3 function, which has been
+added in sqlite 3.38. To support older sqlite3 versions, you can use `strftime`
+and cast to an integer instead:
+
+{% include "blocks/snippet" snippets = snippets name = "text-to-unix-old" %}
+
+When using a `NativeDatabase` with a recent dependency on the
+`sqlite3_flutter_libs` package, you can safely assume that you are on a recent
+sqlite3 version with support for `unixepoch`.
 
 ## Custom constraints
 
@@ -294,9 +407,16 @@ abstract class CategoryTodoCount extends View {
 
 Inside a Dart view, use
 
-- abstract getters to declare tables that you'll read from (e.g. `TodosTable get todos`)
-- `Expression` getters to add columns: (e.g. `itemCount => todos.id.count()`);
-- the overridden `as` method to define the select statement backing the view
+- abstract getters to declare tables that you'll read from (e.g. `TodosTable get todos`).
+- `Expression` getters to add columns: (e.g. `itemCount => todos.id.count()`).
+- the overridden `as` method to define the select statement backing the view.
+  The columns referenced in `select` may refer to two kinds of columns:
+   - Columns defined on the view itself (like `itemCount` in the example above).
+   - Columns defined on referenced tables (like `categories.description` in the example).
+     For these references, advanced drift features like [type converters]({{ '../Advanced Features/type_converters.md' | pageUrl }})
+     used in the column's definition from the table are also applied to the view's column.
+
+   Both kind of columns will be added to the data class for the view when selected.
 
 Finally, a view needs to be added to a database or accessor by including it in the
 `views` parameter:

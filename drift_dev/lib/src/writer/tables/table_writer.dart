@@ -9,11 +9,11 @@ import '../utils/column_constraints.dart';
 ///
 /// Both classes need to generate column getters and a mapping function.
 abstract class TableOrViewWriter {
-  MoorEntityWithResultSet get tableOrView;
+  DriftEntityWithResultSet get tableOrView;
   StringBuffer get buffer;
 
   void writeColumnGetter(
-      MoorColumn column, GenerationOptions options, bool isOverride) {
+      DriftColumn column, GenerationOptions options, bool isOverride) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
@@ -39,10 +39,10 @@ abstract class TableOrViewWriter {
       }
     }
 
-    additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';
+    additionalParams['type'] = column.type.toString();
 
-    if (tableOrView is MoorTable) {
-      additionalParams['requiredDuringInsert'] = (tableOrView as MoorTable)
+    if (tableOrView is DriftTable) {
+      additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)
           .isColumnRequiredForInsert(column)
           .toString();
     }
@@ -73,7 +73,7 @@ abstract class TableOrViewWriter {
       }
     }
 
-    final innerType = column.innerColumnType(options);
+    final innerType = column.innerColumnType();
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer
       ..write(type)
@@ -100,13 +100,17 @@ abstract class TableOrViewWriter {
     if (converter != null) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
-      final mappedType = converter.mappedType.codeString(options);
+      final mappedType = converter.dartTypeCode(column.nullable);
+
+      final converterCode =
+          converter.tableAndField(forNullableColumn: column.nullable);
+
       type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
       expressionBuffer
         ..write('.withConverter<')
         ..write(mappedType)
         ..write('>(')
-        ..write(converter.tableAndField)
+        ..write(converterCode)
         ..write(')');
     }
 
@@ -115,35 +119,37 @@ abstract class TableOrViewWriter {
       getterName: column.dartGetterName,
       returnType: type,
       code: expressionBuffer.toString(),
-      options: options,
       hasOverride: isOverride,
     );
   }
 
   void writeMappingMethod(Scope scope) {
     if (!scope.generationOptions.writeDataClasses) {
-      final nullableString = scope.nullableType('String');
       buffer.writeln('''
         @override
-        Never map(Map<String, dynamic> data, {$nullableString tablePrefix}) {
+        Never map(Map<String, dynamic> data, {$String? tablePrefix}) {
           throw UnsupportedError('TableInfo.map in schema verification code');
         }
       ''');
       return;
     }
 
-    final dataClassName = tableOrView.dartTypeCode(scope.generationOptions);
+    final dataClassName = tableOrView.dartTypeCode();
 
-    buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
-        '{${scope.nullableType('String')} tablePrefix}) {\n');
+    final isAsync = tableOrView.existingRowClass?.isAsyncFactory == true;
+    final returnType = isAsync ? 'Future<$dataClassName>' : dataClassName;
+    final asyncModifier = isAsync ? 'async' : '';
 
-    if (tableOrView.hasExistingRowClass) {
-      buffer.write('final effectivePrefix = '
+    buffer
+      ..write('@override $returnType map(Map<String, dynamic> data, '
+          '{String? tablePrefix}) $asyncModifier {\n')
+      ..write('final effectivePrefix = '
           "tablePrefix != null ? '\$tablePrefix.' : '';");
 
+    if (tableOrView.hasExistingRowClass) {
       final info = tableOrView.existingRowClass!;
-      final positionalToIndex = <MoorColumn, int>{};
-      final named = <MoorColumn, String>{};
+      final positionalToIndex = <DriftColumn, int>{};
+      final named = <DriftColumn, String>{};
 
       final parameters = info.constructor.parameters;
       info.mapping.forEach((column, parameter) {
@@ -161,17 +167,18 @@ abstract class TableOrViewWriter {
             (a, b) => positionalToIndex[a]!.compareTo(positionalToIndex[b]!));
 
       final writer = RowMappingWriter(
-        positional,
-        named,
-        tableOrView,
-        scope.generationOptions,
-        scope.options,
+        positional: positional,
+        named: named,
+        table: tableOrView,
+        options: scope.generationOptions,
+        databaseGetter: 'attachedDatabase',
       );
 
       final classElement = info.targetClass;
       final ctor = info.constructor;
       buffer
         ..write('return ')
+        ..write(isAsync ? 'await ' : '')
         ..write(classElement.name);
       if (ctor.name.isNotEmpty) {
         buffer
@@ -182,16 +189,26 @@ abstract class TableOrViewWriter {
       writer.writeArguments(buffer);
       buffer.write(';\n');
     } else {
-      // Use default .fromData constructor in the moor-generated data class
-      final hasDbParameter = scope.generationOptions.writeForMoorPackage &&
-          tableOrView is MoorTable;
-      if (hasDbParameter) {
-        buffer.write('return $dataClassName.fromData(data, attachedDatabase, '
-            "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
+      List<DriftColumn> columns;
+
+      final view = tableOrView;
+      if (view is MoorView && view.viewQuery != null) {
+        columns = view.viewQuery!.columns.map((e) => e.value).toList();
       } else {
-        buffer.write('return $dataClassName.fromData(data, '
-            "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
+        columns = tableOrView.columns;
       }
+
+      final writer = RowMappingWriter(
+        positional: const [],
+        named: {for (final column in columns) column: column.dartGetterName},
+        table: tableOrView,
+        options: scope.generationOptions,
+        databaseGetter: 'attachedDatabase',
+      );
+
+      buffer.write('return ${tableOrView.dartTypeCode()}');
+      writer.writeArguments(buffer);
+      buffer.writeln(';');
     }
 
     buffer.write('}\n');
@@ -211,14 +228,14 @@ abstract class TableOrViewWriter {
 }
 
 class TableWriter extends TableOrViewWriter {
-  final MoorTable table;
+  final DriftTable table;
   final Scope scope;
 
   @override
   late StringBuffer buffer;
 
   @override
-  MoorTable get tableOrView => table;
+  DriftTable get tableOrView => table;
 
   TableWriter(this.table, this.scope);
 
@@ -271,7 +288,7 @@ class TableWriter extends TableOrViewWriter {
       ..writeln('{')
       // write a GeneratedDatabase reference that is set in the constructor
       ..writeln('@override final GeneratedDatabase attachedDatabase;')
-      ..writeln('final ${scope.nullableType('String')} _alias;')
+      ..writeln('final String? _alias;')
       ..writeln(
           '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
 
@@ -309,13 +326,36 @@ class TableWriter extends TableOrViewWriter {
 
   void _writeConvertersAsStaticFields() {
     for (final converter in table.converters) {
-      final typeName = converter.converterNameInCode(scope.generationOptions);
+      final typeName = converter.converterNameInCode();
       final code = converter.expression;
+
       buffer.write('static $typeName ${converter.fieldName} = $code;');
+    }
+
+    // Generate wrappers for non-nullable type converters that are applied to
+    // nullable converters.
+    for (final column in table.columns) {
+      final converter = column.typeConverter;
+      if (converter != null &&
+          converter.canBeSkippedForNulls &&
+          column.nullable) {
+        final nullableTypeName =
+            converter.converterNameInCode(makeNullable: true);
+
+        final wrap = converter.alsoAppliesToJsonConversion
+            ? 'JsonTypeConverter.asNullable'
+            : 'NullAwareTypeConverter.wrap';
+
+        final code = '$wrap(${converter.fieldName})';
+
+        buffer
+            .write('static $nullableTypeName ${converter.nullableFieldName} = '
+                '$code;');
+      }
     }
   }
 
-  void _writeColumnVerificationMeta(MoorColumn column) {
+  void _writeColumnVerificationMeta(DriftColumn column) {
     if (!_skipVerification) {
       buffer
         ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
@@ -336,8 +376,6 @@ class TableWriter extends TableOrViewWriter {
 
     const locals = {'instance', 'isInserting', 'context', 'data'};
 
-    final nonNullAssert = scope.generationOptions.nnbd ? '!' : '';
-
     for (final column in table.columns) {
       final getterName = column.thisIfNeeded(locals);
       final metaName = _fieldNameForColumnMeta(column);
@@ -356,7 +394,7 @@ class TableWriter extends TableOrViewWriter {
         ..write('context.handle('
             '$metaName, '
             '$getterName.isAcceptableOrUnknown('
-            'data[$columnNameString]$nonNullAssert, $metaName));')
+            'data[$columnNameString]!, $metaName));')
         ..write('}');
 
       if (table.isColumnRequiredForInsert(column)) {
@@ -369,7 +407,7 @@ class TableWriter extends TableOrViewWriter {
     buffer.write('return context;\n}\n');
   }
 
-  String _fieldNameForColumnMeta(MoorColumn column) {
+  String _fieldNameForColumnMeta(DriftColumn column) {
     return '_${column.dartGetterName}Meta';
   }
 

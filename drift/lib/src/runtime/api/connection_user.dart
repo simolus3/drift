@@ -5,21 +5,21 @@ const _zoneRootUserKey = #DatabaseConnectionUser;
 typedef _CustomWriter<T> = Future<T> Function(
     QueryExecutor e, String sql, List<dynamic> vars);
 
-typedef _BatchRunner = FutureOr<void> Function(Batch batch);
-
 /// Manages a [DatabaseConnection] to send queries to the database.
 abstract class DatabaseConnectionUser {
   /// The database connection used by this [DatabaseConnectionUser].
   @protected
   final DatabaseConnection connection;
 
+  /// The [DriftDatabaseOptions] to use for this database instance.
+  ///
+  /// Mainly, these options describe how values are mapped from Dart to SQL
+  /// values. In the future, they could be expanded to dialect-specific options.
+  DriftDatabaseOptions get options => attachedDatabase.options;
+
   /// The database class that this user is attached to.
   @visibleForOverriding
   GeneratedDatabase get attachedDatabase;
-
-  /// The type system to use with this database. The type system is responsible
-  /// for mapping Dart objects into sql expressions and vice-versa.
-  SqlTypeSystem get typeSystem => connection.typeSystem;
 
   /// The executor to use when queries are executed.
   QueryExecutor get executor => connection.executor;
@@ -31,21 +31,17 @@ abstract class DatabaseConnectionUser {
 
   /// Constructs a database connection user, which is responsible to store query
   /// streams, wrap the underlying executor and perform type mapping.
-  DatabaseConnectionUser(SqlTypeSystem typeSystem, QueryExecutor executor,
+  DatabaseConnectionUser(QueryExecutor executor,
       {StreamQueryStore? streamQueries})
-      : connection = DatabaseConnection(
-            typeSystem, executor, streamQueries ?? StreamQueryStore());
+      : connection = DatabaseConnection(executor, streamQueries: streamQueries);
 
   /// Creates another [DatabaseConnectionUser] by referencing the implementation
   /// from the [other] user.
   DatabaseConnectionUser.delegate(DatabaseConnectionUser other,
-      {SqlTypeSystem? typeSystem,
-      QueryExecutor? executor,
-      StreamQueryStore? streamQueries})
+      {QueryExecutor? executor, StreamQueryStore? streamQueries})
       : connection = DatabaseConnection(
-          typeSystem ?? other.connection.typeSystem,
           executor ?? other.connection.executor,
-          streamQueries ?? other.connection.streamQueries,
+          streamQueries: streamQueries ?? other.connection.streamQueries,
         );
 
   /// Constructs a [DatabaseConnectionUser] that will use the provided
@@ -80,7 +76,7 @@ abstract class DatabaseConnectionUser {
   /// Inside a [transaction] block, drift will replace this [resolvedEngine]
   /// with an engine specific to the transaction. All other methods on this
   /// class implicitly use the [resolvedEngine] to run their SQL statements.
-  /// This let's users call methods on their top-level database or dao class
+  /// This lets users call methods on their top-level database or dao class
   /// but run them in a transaction-specific executor.
   @internal
   DatabaseConnectionUser get resolvedEngine {
@@ -160,21 +156,6 @@ abstract class DatabaseConnectionUser {
     return executor.ensureOpen(attachedDatabase).then((_) => fn(executor));
   }
 
-  /// Captures a [table] or view for easier subsequent operations.
-  ///
-  /// The [TableOrViewOperations] class (or the [TableOperations] extension
-  /// for tables) provides convenience methods that make common operations
-  /// easier to write than using the methods from this class directly.
-  ///
-  /// This method is deprecated. For an even easier access, the methods that
-  /// were made available here are now available on the [table] or view instance
-  /// directly.
-  @Deprecated('Experiment ended - use the methods on the [table] directly')
-  TableOrViewOperations<T, D> from<T extends HasResultSet, D>(
-      ResultSetImplementation<T, D> table) {
-    return TableOrViewOperations._(this, table);
-  }
-
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   InsertStatement<T, D> into<T extends Table, D>(TableInfo<T, D> table) {
@@ -244,13 +225,6 @@ abstract class DatabaseConnectionUser {
   /// The [distinct] parameter (defaults to false) can be used to remove
   /// duplicate rows from the result set.
   ///
-  /// The [includeJoinedTableColumns] parameter (defaults to true) can be used
-  /// to determinate join statement's `useColumns` parameter default value. Set
-  /// it to false if you don't want to include joined table columns by default.
-  /// If you leave it on true and don't set `useColumns` parameter to false in
-  /// join declarations, all columns of joined table will be included in query
-  /// by default.
-  ///
   /// For simple queries, use [select].
   ///
   /// See also:
@@ -258,10 +232,9 @@ abstract class DatabaseConnectionUser {
   ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
-      {bool distinct = false,
-      bool includeJoinedTableColumns = true}) {
+      {bool distinct = false}) {
     return JoinedSelectStatement<T, R>(
-        resolvedEngine, table, [], distinct, false, includeJoinedTableColumns);
+        resolvedEngine, table, [], distinct, false, false);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
@@ -427,15 +400,50 @@ abstract class DatabaseConnectionUser {
   ///   successful or not, streams created in it will close. Writes happening
   ///   outside of this transaction will not affect the stream.
   ///
-  /// Please note that nested transactions are not supported. Creating another
-  /// transaction inside a transaction returns the parent transaction.
+  /// Starting from drift version 2.0, nested transactions are supported on most
+  /// database implementations (including `NativeDatabase`, `WebDatabase`,
+  /// `WasmDatabase`, `SqfliteQueryExecutor`, databases relayed through
+  /// isolates or web workers).
+  /// When calling [transaction] inside a [transaction] block on supported
+  /// database implementations, a new transaction will be started.
+  /// For backwards-compatibility, the current transaction will be re-used if
+  /// a nested transaction is started with a database implementation not
+  /// supporting nested transactions. The [requireNew] parameter can be set to
+  /// instead turn this case into a runtime error.
+  ///
+  /// Nested transactions are conceptionally similar to regular, top-level
+  /// transactions in the sense that their writes are not seen by users outside
+  /// of the transaction until it is commited. However, their behavior around
+  /// completions is different:
+  ///
+  /// - When a nested transaction completes, nothing is being persisted right
+  ///   away. The parent transaction can now see changes from the child
+  ///   transaction and continues to run. When the outermost transaction
+  ///   completes, its changes (including changes from child transactions) are
+  ///   written to the database.
+  /// - When a nested transaction is aborted (which happens due to exceptions),
+  ///   only changes in that inner transaction are reverted. The outer
+  ///   transaction can continue to run if it catched the exception thrown by
+  ///   the inner transaction when it aborted.
   ///
   /// See also:
   ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
-  Future<T> transaction<T>(Future<T> Function() action) async {
+  Future<T> transaction<T>(Future<T> Function() action,
+      {bool requireNew = false}) async {
     final resolved = resolvedEngine;
+
+    // Are we about to start a nested transaction?
     if (resolved is Transaction) {
-      return action();
+      final executor = resolved.executor as TransactionExecutor;
+      if (!executor.supportsNestedTransactions) {
+        if (requireNew) {
+          throw UnsupportedError('The current database implementation does '
+              'not support nested transactions.');
+        } else {
+          // Just run the block in the current transaction zone.
+          return action();
+        }
+      }
     }
 
     return await resolved.doWhenOpened((executor) {
@@ -494,7 +502,7 @@ abstract class DatabaseConnectionUser {
   ///    );
   ///  });
   /// ```
-  Future<void> batch(_BatchRunner runInBatch) {
+  Future<void> batch(FutureOr<void> Function(Batch batch) runInBatch) {
     final engine = resolvedEngine;
 
     final batch = Batch._(engine, engine is! Transaction);
@@ -558,128 +566,6 @@ abstract class DatabaseConnectionUser {
     }
 
     return buffer.toString();
-  }
-}
-
-/// A capture of a table and a generated database.
-///
-/// Table operations can be captured with [DatabaseConnectionUser.from], which
-/// may make some common operations easier to write:
-///
-/// - Use `from(table).select()` or `from(table).selectOnly()` instead of
-///   `select(table)` or `selectOnly(table)`, respectively.
-/// - Use `from(table).insert()` instead of `insert(table)`. You can also use
-///  `from(table).insertOne`, or [TableOperations.insertOnConflictUpdate] to
-///   insert rows directly.
-/// - Use `from(table).update()` instead of `update(table)`. You can also use
-///   `from(table).replace()` to replace an existing row.
-/// - Use `from(table).delete()`, `from(table).deleteOne()` or
-///  `from(table).deleteWhere` to delete rows easily.
-@sealed
-class TableOrViewOperations<Tbl extends HasResultSet, Row> {
-  final DatabaseConnectionUser _user;
-  final ResultSetImplementation<Tbl, Row> _sourceSet;
-
-  TableOrViewOperations._(this._user, this._sourceSet);
-
-  /// Composes a `SELECT` statement on the captured table or view.
-  ///
-  /// This is equivalent to calling [DatabaseConnectionUser.select].
-  SimpleSelectStatement<Tbl, Row> select({bool distinct = false}) {
-    return _user.select(_sourceSet, distinct: distinct);
-  }
-
-  /// Composes a `SELECT` statement only selecting a subset of columns.
-  ///
-  /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
-  JoinedSelectStatement<Tbl, Row> selectOnly(
-      {bool distinct = false, bool includeJoinedTableColumns = true}) {
-    return _user.selectOnly(_sourceSet,
-        distinct: distinct,
-        includeJoinedTableColumns: includeJoinedTableColumns);
-  }
-}
-
-/// Additional methods for a [TableOrViewOperations] that are only available on
-/// tables.
-extension TableOperations<Tbl extends Table, Row>
-    on TableOrViewOperations<Tbl, Row> {
-  TableInfo<Tbl, Row> get _table => _sourceSet as TableInfo<Tbl, Row>;
-
-  /// Creates an insert statment to be used to compose an insert on the captured
-  /// table.
-  ///
-  /// This is equivalent to calling [DatabaseConnectionUser.into] on the
-  /// captured table. See that method for more information.
-  InsertStatement<Tbl, Row> insert() => _user.into(_table);
-
-  /// Inserts one row into the captured table.
-  ///
-  /// This is equivalent to calling [InsertStatement.insert] - see that method
-  /// for more information.
-  Future<int> insertOne(
-    Insertable<Row> row, {
-    InsertMode? mode,
-    UpsertClause<Tbl, Row>? onConflict,
-  }) {
-    return insert().insert(row, mode: mode, onConflict: onConflict);
-  }
-
-  /// Inserts one row into the captured table, replacing an existing row if it
-  /// exists already.
-  ///
-  /// Please note that this method is only available on recent sqlite3 versions.
-  /// See also [InsertStatement.insertOnConflictUpdate].
-  Future<int> insertOnConflictUpdate(Insertable<Row> row) {
-    return insert().insertOnConflictUpdate(row);
-  }
-
-  /// Inserts one row into the captured table and returns it, along with auto-
-  /// generated fields.
-  ///
-  /// Please note that this method is only available on recent sqlite3 versions.
-  /// See also [InsertStatement.insertReturning].
-  Future<Row> insertReturning(
-    Insertable<Row> row, {
-    InsertMode? mode,
-    UpsertClause<Tbl, Row>? onConflict,
-  }) {
-    return insert().insertReturning(
-      row,
-      mode: mode,
-      onConflict: onConflict,
-    );
-  }
-
-  /// Creates a statement to compose an `UPDATE` into the database.
-  ///
-  /// This is equivalent to calling [DatabaseConnectionUser.update] with the
-  /// captured table.
-  UpdateStatement<Tbl, Row> update() => _user.update(_table);
-
-  /// Replaces a single row with an update statement.
-  ///
-  /// See also [UpdateStatement.replace].
-  Future<void> replace(Insertable<Row> row) {
-    return update().replace(row);
-  }
-
-  /// Creates a statement to compose a `DELETE` from the database.
-  ///
-  /// This is equivalent to calling [DatabaseConnectionUser.delete] with the
-  /// captured table.
-  DeleteStatement<Tbl, Row> delete() => _user.delete(_table);
-
-  /// Deletes the [row] from the captured table.
-  Future<bool> deleteOne(Insertable<Row> row) async {
-    return await (delete()..whereSamePrimaryKey(row)).go() != 0;
-  }
-
-  /// Deletes all rows matching the [filter] from the table.
-  ///
-  /// See also [SingleTableQueryMixin.where].
-  Future<int> deleteWhere(Expression<bool?> Function(Tbl tbl) filter) {
-    return (delete()..where(filter)).go();
   }
 }
 

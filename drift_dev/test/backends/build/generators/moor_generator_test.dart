@@ -14,17 +14,17 @@ void main() {
       logs.stream,
       emitsThrough(
         allOf(
-          contains('Dart 2.1'),
+          contains('Dart 2.11'),
           contains('Please consider raising the minimum SDK version'),
         ),
       ),
     );
 
     await testBuilder(
-      moorBuilder(BuilderOptions.empty),
+      driftBuilder(BuilderOptions.empty),
       {
         'foo|lib/a.dart': '''
-// @dart = 2.1
+// @dart = 2.11
 
 import 'package:drift/drift.dart';
 

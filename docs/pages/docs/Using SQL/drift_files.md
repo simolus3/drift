@@ -11,9 +11,9 @@ aliases:
 template: layouts/docs/single
 ---
 
-{% assign dart_snippets = "package:moor_documentation/snippets/drift_files/database.dart.excerpt.json" | readString | json_decode %}
-{% assign drift_tables = "package:moor_documentation/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
-{% assign small = "package:moor_documentation/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
+{% assign dart_snippets = "package:drift_docs/snippets/drift_files/database.dart.excerpt.json" | readString | json_decode %}
+{% assign drift_tables = "package:drift_docs/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
+{% assign small = "package:drift_docs/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
 
 Drift files are a new feature that lets you write all your database code in SQL - drift will generate typesafe APIs for them.
 
@@ -97,12 +97,16 @@ it. Of course, `id IN ? OR title = ?` will work as expected.
 
 ## Supported column types
 
-We use [this algorithm](https://www.sqlite.org/datatype3.html#determination_of_column_affinity)
+Just like sqlite itself, we use [this algorithm](https://www.sqlite.org/datatype3.html#determination_of_column_affinity)
 to determine the column type based on the declared type name.
 
 Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
-`bool` or `DateTime` as their Dart counterpart. Both will be
-written as an `INTEGER` column when the table gets created.
+`bool` or `DateTime` as their Dart counterpart.
+Booleans are stored as `INTEGER` (either `0` or `1`). Datetimes are stored as
+unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) depending on a configurable
+build option.
+For details on all supported types, and information on how to switch between the
+datetime modes, see [this section]({{ '../Getting started/advanced_dart_tables.md#supported-column-types' | pageUrl }}).
 
 ## Imports
 You can put import statements at the top of a `drift` file:
@@ -125,7 +129,7 @@ know from Dart.
 
 ## Nested results
 
-{% assign nested = "package:moor_documentation/snippets/drift_files/nested.drift.excerpt.json" | readString | json_decode %}
+{% assign nested = "package:drift_docs/snippets/drift_files/nested.drift.excerpt.json" | readString | json_decode %}
 
 Many queries fetch all columns from some table, typically by using the
 `SELECT table.*` syntax. That approach can become a bit tedious when applied
@@ -200,9 +204,6 @@ Internally, drift will split this query into two separate queries:
 
 While `LIST()` subqueries are a very powerful feature, they can be costly when the outer query
 has lots of rows (as the inner query is executed for each outer row).
-
-Also, as `LIST()` needs a semantic rewrite of the original statement, this feature is only
-supported with the `new_sql_code_generation` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}).
 
 ## Dart interop
 Drift files work perfectly together with drift's existing Dart API:

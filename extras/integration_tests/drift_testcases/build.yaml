@@ -1,0 +1,20 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          override_hash_and_equals_in_result_sets: true
+          use_column_name_as_json_key_when_defined_in_moor_file: true
+          generate_connect_constructor: true
+          write_from_json_string_constructor: true
+          raw_result_set_data: false
+          named_parameters: false
+          sql:
+            # As sqlite3 is compatible with the postgres dialect (but not vice-versa), we're
+            # using this dialect so that we can run the tests on postgres as well.
+            dialect: postgres
+            options:
+              version: "3.37"
+              modules:
+                - json1
+                - fts5

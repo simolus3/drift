@@ -15,6 +15,12 @@
   status = 301
   force = true
 
+[[redirects]]
+  from = "/name"
+  to = "/docs/upgrading/#name"
+  status = 301
+  force = true
+
 [context.production]
   environment = { BUILD_RELEASE="release" }
 

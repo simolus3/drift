@@ -9,8 +9,8 @@ class EngineOptions {
 
   /// The target sqlite version.
   ///
-  /// The library will report when using sqlite features that were added after
-  /// the desired [version].
+  /// This library will report analysis errors when using features there weren't
+  /// available in the targeted [version].
   /// Defaults to [SqliteVersion.minimum].
   final SqliteVersion version;
 
@@ -79,6 +79,12 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// can't provide analysis warnings when using recent sqlite3 features.
   static const SqliteVersion minimum = SqliteVersion.v3(34);
 
+  /// Version `3.39.0` of `sqlite3`.
+  ///
+  /// New language features include `RIGHT` / `FULL OUTER JOIN` and `IS DISTINCT
+  /// FROM`.
+  static const SqliteVersion v3_39 = SqliteVersion.v3(39);
+
   /// Version `3.38.0` of `sqlite3`.
   static const SqliteVersion v3_38 = SqliteVersion.v3(38);
 
@@ -91,7 +97,7 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = v3_38;
+  static const SqliteVersion current = v3_39;
 
   /// The major version of sqlite.
   ///

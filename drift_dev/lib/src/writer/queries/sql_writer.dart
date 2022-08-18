@@ -27,7 +27,7 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
   final SqlQuery? query;
-  final MoorOptions options;
+  final DriftOptions options;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
   bool get _isPostgres => options.effectiveDialect == SqlDialect.postgres;
@@ -37,7 +37,7 @@ class SqlWriter extends NodeSqlBuilder {
       : _out = out,
         super(escapeForDart ? _DartEscapingSink(out) : out);
 
-  factory SqlWriter(MoorOptions options,
+  factory SqlWriter(DriftOptions options,
       {SqlQuery? query, bool escapeForDart = true}) {
     // Index nested results by their syntactic origin for faster lookups later
     var doubleStarColumnToResolvedTable =

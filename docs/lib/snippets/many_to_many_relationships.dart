@@ -22,9 +22,9 @@ class ShoppingCarts extends Table {
 @DataClassName('ShoppingCartEntry')
 class ShoppingCartEntries extends Table {
   // id of the cart that should contain this item.
-  IntColumn get shoppingCart => integer()();
+  IntColumn get shoppingCart => integer().references(ShoppingCarts, #id)();
   // id of the item in this cart
-  IntColumn get item => integer()();
+  IntColumn get item => integer().references(BuyableItems, #id)();
   // again, we could store additional information like when the item was
   // added, an amount, etc.
 }

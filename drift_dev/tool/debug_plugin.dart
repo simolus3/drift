@@ -25,7 +25,7 @@ void main(List<String> args) {
     return;
   }
 
-  MoorPlugin.forProduction().start(_WebSocketPluginServer(port: port));
+  DriftPlugin.forProduction().start(_WebSocketPluginServer(port: port));
 }
 
 class _WebSocketPluginServer implements PluginCommunicationChannel {

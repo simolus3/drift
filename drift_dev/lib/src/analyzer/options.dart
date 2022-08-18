@@ -7,14 +7,8 @@ part 'options.g.dart';
 
 /// Controllable options to define the behavior of the analyzer and the
 /// generator.
-@JsonSerializable(
-  checked: true,
-  anyMap: true,
-  disallowUnrecognizedKeys: true,
-  fieldRename: FieldRename.snake,
-  createToJson: false,
-)
-class MoorOptions {
+@JsonSerializable()
+class DriftOptions {
   static const _defaultSqliteVersion = SqliteVersion.v3(34);
 
   /// Whether moor should generate a `fromJsonString` factory for data classes.
@@ -30,13 +24,6 @@ class MoorOptions {
   /// name for backwards compatibility.
   @JsonKey(name: 'override_hash_and_equals_in_result_sets', defaultValue: false)
   final bool overrideHashAndEqualsInResultSets;
-
-  /// Also enable the compact query methods from moor files on queries defined
-  /// in a `UseMoor` annotation. Compact queries return a `Selectable` instead
-  /// of generating two methods (with one returning a stream and another
-  /// returning a future)
-  @JsonKey(name: 'compact_query_methods', defaultValue: true)
-  final bool compactQueryMethods;
 
   /// Remove verification logic in the generated code.
   @JsonKey(name: 'skip_verification_code', defaultValue: false)
@@ -69,9 +56,6 @@ class MoorOptions {
   @JsonKey(name: 'sql')
   final DialectOptions? dialect;
 
-  @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
-  final bool eagerlyLoadDartAst;
-
   @JsonKey(name: 'data_class_to_companions', defaultValue: true)
   final bool dataClassToCompanions;
 
@@ -83,10 +67,10 @@ class MoorOptions {
   @JsonKey(name: 'raw_result_set_data', defaultValue: false)
   final bool rawResultSetData;
 
-  @JsonKey(name: 'apply_converters_on_variables', defaultValue: false)
+  @JsonKey(name: 'apply_converters_on_variables', defaultValue: true)
   final bool applyConvertersOnVariables;
 
-  @JsonKey(name: 'generate_values_in_copy_with', defaultValue: false)
+  @JsonKey(name: 'generate_values_in_copy_with', defaultValue: true)
   final bool generateValuesInCopyWith;
 
   @JsonKey(name: 'named_parameters', defaultValue: false)
@@ -95,49 +79,43 @@ class MoorOptions {
   @JsonKey(name: 'named_parameters_always_required', defaultValue: false)
   final bool namedParametersAlwaysRequired;
 
-  @JsonKey(name: 'new_sql_code_generation', defaultValue: false)
-  final bool newSqlCodeGeneration;
-
-  @JsonKey(name: 'scoped_dart_components', defaultValue: false)
+  @JsonKey(name: 'scoped_dart_components', defaultValue: true)
   final bool scopedDartComponents;
 
-  @JsonKey(name: 'null_aware_type_converters', defaultValue: false)
-  final bool nullAwareTypeConverters;
+  /// Whether `DateTime` columns should be stored as text (via
+  /// [DateTime.toIso8601String]) instead of integers (unix timestamp).
+  @JsonKey(defaultValue: false)
+  final bool storeDateTimeValuesAsText;
 
   @internal
-  const MoorOptions.defaults({
+  const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
-    this.compactQueryMethods = false,
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
-    this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
+    this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
     this.generateConnectConstructor = false,
-    this.eagerlyLoadDartAst = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
     this.rawResultSetData = false,
-    this.applyConvertersOnVariables = false,
-    this.generateValuesInCopyWith = false,
+    this.applyConvertersOnVariables = true,
+    this.generateValuesInCopyWith = true,
     this.generateNamedParameters = false,
     this.namedParametersAlwaysRequired = false,
-    this.newSqlCodeGeneration = false,
-    this.scopedDartComponents = false,
+    this.scopedDartComponents = true,
     this.modules = const [],
     this.sqliteAnalysisOptions,
+    this.storeDateTimeValuesAsText = false,
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
-    this.nullAwareTypeConverters = false,
   });
 
-  MoorOptions({
+  DriftOptions({
     required this.generateFromJsonStringConstructor,
     required this.overrideHashAndEqualsInResultSets,
-    required this.compactQueryMethods,
     required this.skipVerificationCode,
     required this.useDataClassNameForCompanions,
     required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
     required this.generateConnectConstructor,
-    required this.eagerlyLoadDartAst,
     required this.dataClassToCompanions,
     required this.generateMutableClasses,
     required this.rawResultSetData,
@@ -145,15 +123,16 @@ class MoorOptions {
     required this.generateValuesInCopyWith,
     required this.generateNamedParameters,
     required this.namedParametersAlwaysRequired,
-    required this.newSqlCodeGeneration,
     required this.scopedDartComponents,
     required this.modules,
     required this.sqliteAnalysisOptions,
-    required this.nullAwareTypeConverters,
+    required this.storeDateTimeValuesAsText,
     this.dialect,
   }) {
+    // ignore: deprecated_member_use_from_same_package
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {
       throw ArgumentError.value(
+        // ignore: deprecated_member_use_from_same_package
         modules,
         'modules',
         'May not be set when sqlite options are present. \n'
@@ -171,7 +150,7 @@ class MoorOptions {
     }
   }
 
-  factory MoorOptions.fromJson(Map json) => _$MoorOptionsFromJson(json);
+  factory DriftOptions.fromJson(Map json) => _$DriftOptionsFromJson(json);
 
   SqliteAnalysisOptions? get sqliteOptions {
     return dialect?.options ?? sqliteAnalysisOptions;
@@ -179,6 +158,7 @@ class MoorOptions {
 
   /// All enabled sqlite modules from these options.
   List<SqlModule> get effectiveModules {
+    // ignore: deprecated_member_use_from_same_package
     return sqliteOptions?.modules ?? modules;
   }
 
@@ -186,7 +166,10 @@ class MoorOptions {
   bool hasModule(SqlModule module) => effectiveModules.contains(module);
 
   /// Checks whether a deprecated option is enabled.
-  bool get enabledDeprecatedOption => eagerlyLoadDartAst;
+  ///
+  /// At this time, all deprecated options have been removed, meaning that this
+  /// getter always returns `false`.
+  bool get enabledDeprecatedOption => false;
 
   SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;
 
@@ -194,6 +177,8 @@ class MoorOptions {
   SqliteVersion get sqliteVersion {
     return sqliteOptions?.version ?? _defaultSqliteVersion;
   }
+
+  Map<String, Object?> toJson() => _$DriftOptionsToJson(this);
 }
 
 @JsonSerializable()
@@ -204,14 +189,16 @@ class DialectOptions {
   const DialectOptions(this.dialect, this.options);
 
   factory DialectOptions.fromJson(Map json) => _$DialectOptionsFromJson(json);
+
+  Map<String, Object?> toJson() => _$DialectOptionsToJson(this);
 }
 
 @JsonSerializable()
 class SqliteAnalysisOptions {
-  @JsonKey(name: 'modules', defaultValue: [])
+  @JsonKey(name: 'modules')
   final List<SqlModule> modules;
 
-  @JsonKey(fromJson: _parseSqliteVersion)
+  @_SqliteVersionConverter()
   final SqliteVersion? version;
 
   const SqliteAnalysisOptions({this.modules = const [], this.version});
@@ -219,40 +206,53 @@ class SqliteAnalysisOptions {
   factory SqliteAnalysisOptions.fromJson(Map json) {
     return _$SqliteAnalysisOptionsFromJson(json);
   }
+
+  Map<String, Object?> toJson() => _$SqliteAnalysisOptionsToJson(this);
 }
 
-final _versionRegex = RegExp(r'(\d+)\.(\d+)');
+class _SqliteVersionConverter extends JsonConverter<SqliteVersion, String> {
+  static final _versionRegex = RegExp(r'(\d+)\.(\d+)');
 
-SqliteVersion? _parseSqliteVersion(String? name) {
-  if (name == null) return null;
+  const _SqliteVersionConverter();
 
-  final match = _versionRegex.firstMatch(name);
-  if (match == null) {
-    throw ArgumentError.value(name, 'name',
-        'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)');
+  @override
+  SqliteVersion fromJson(String json) {
+    final match = _versionRegex.firstMatch(json);
+    if (match == null) {
+      throw ArgumentError.value(
+        json,
+        'json',
+        'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)',
+      );
+    }
+
+    final major = int.parse(match.group(1)!);
+    final minor = int.parse(match.group(2)!);
+
+    final version = SqliteVersion(major, minor, 0);
+    if (version < SqliteVersion.minimum) {
+      throw ArgumentError.value(
+        json,
+        'json',
+        'Version is not supported for analysis (minimum is '
+            '${SqliteVersion.minimum}).',
+      );
+    } else if (version > SqliteVersion.current) {
+      throw ArgumentError.value(
+        json,
+        'json',
+        'Version is not supported for analysis (current maximum is '
+            '${SqliteVersion.current}).',
+      );
+    }
+
+    return version;
   }
 
-  final major = int.parse(match.group(1)!);
-  final minor = int.parse(match.group(2)!);
-
-  final version = SqliteVersion(major, minor, 0);
-  if (version < SqliteVersion.minimum) {
-    throw ArgumentError.value(
-      name,
-      'name',
-      'Version is not supported for analysis (minimum is '
-          '${SqliteVersion.minimum}).',
-    );
-  } else if (version > SqliteVersion.current) {
-    throw ArgumentError.value(
-      name,
-      'name',
-      'Version is not supported for analysis (current maximum is '
-          '${SqliteVersion.current}).',
-    );
+  @override
+  String toJson(SqliteVersion object) {
+    return '${object.major}.${object.minor}';
   }
-
-  return version;
 }
 
 /// Set of sqlite modules that require special knowledge from the generator.

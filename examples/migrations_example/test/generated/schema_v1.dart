@@ -4,14 +4,7 @@ import 'package:drift/drift.dart';
 
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
-  UsersData({required this.id});
-  factory UsersData.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return UsersData(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-    );
-  }
+  const UsersData({required this.id});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -103,9 +96,9 @@ class Users extends Table with TableInfo<Users, UsersData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: const IntType(),
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
@@ -118,8 +111,11 @@ class Users extends Table with TableInfo<Users, UsersData> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return UsersData.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UsersData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+    );
   }
 
   @override
@@ -132,11 +128,12 @@ class Users extends Table with TableInfo<Users, UsersData> {
 }
 
 class DatabaseAtV1 extends GeneratedDatabase {
-  DatabaseAtV1(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV1(QueryExecutor e) : super(e);
   DatabaseAtV1.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users];
   @override

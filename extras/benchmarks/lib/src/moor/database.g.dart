@@ -3,23 +3,14 @@
 part of 'database.dart';
 
 // **************************************************************************
-// MoorGenerator
+// DriftDatabaseGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;
   final String value;
-  KeyValue({required this.key, required this.value});
-  factory KeyValue.fromData(Map<String, dynamic> data, {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return KeyValue(
-      key: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}key'])!,
-      value: const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}value'])!,
-    );
-  }
+  const KeyValue({required this.key, required this.value});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -132,14 +123,14 @@ class $KeyValuesTable extends KeyValues
   $KeyValuesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
-  late final GeneratedColumn<String?> key = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
       'key', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   final VerificationMeta _valueMeta = const VerificationMeta('value');
   @override
-  late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
       'value', aliasedName, false,
-      type: const StringType(), requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [key, value];
   @override
@@ -169,11 +160,14 @@ class $KeyValuesTable extends KeyValues
   @override
   Set<GeneratedColumn> get $primaryKey => {key};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [];
-  @override
   KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return KeyValue.fromData(data,
-        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KeyValue(
+      key: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
+    );
   }
 
   @override
@@ -183,10 +177,11 @@ class $KeyValuesTable extends KeyValues
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$Database(QueryExecutor e) : super(e);
   late final $KeyValuesTable keyValues = $KeyValuesTable(this);
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [keyValues];
 }

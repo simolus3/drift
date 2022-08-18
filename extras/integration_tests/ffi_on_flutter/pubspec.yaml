@@ -1,5 +1,5 @@
 name: flutter_db
-description: Moor integration tests running on sqflite
+description: Testing drift's `NativeDatabase` on Flutter.
 version: 1.0.0+1
 
 publish_to: none
@@ -9,22 +9,25 @@ environment:
   flutter: ">=1.12.0"
 
 dependencies:
+  drift: ^2.0.0-0
+  path: ^1.8.0
+  sqlite3: ^1.7.2
   flutter:
     sdk: flutter
-  tests:
-    path: ../tests
-  sqlite3_flutter_libs: ^0.2.0
+  drift_testcases:
+    path: ../drift_testcases
+  sqlite3_flutter_libs: ^0.5.7
+  sqflite: ^2.0.2+1
 
 dev_dependencies:
-  test:
+  test: ^1.18.0
+  flutter_lints: ^2.0.1
+  integration_test:
+    sdk: flutter
 
 dependency_overrides:
   drift:
     path: ../../../drift
-  moor_flutter:
-    path: ../../../moor_flutter
-  moor:
-    path: ../../../moor
 
 flutter:
   assets:

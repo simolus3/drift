@@ -138,7 +138,7 @@ install the dynamic library for `sqlite` next to your application executable.
 This example shows how to do that on Linux, by using a custom `sqlite3.so` that we assume
 lives next to your application:
 
-{% assign snippets = 'package:moor_documentation/snippets/platforms.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/platforms.dart.excerpt.json' | readString | json_decode %}
 {% include "blocks/snippet" snippets = snippets %}
 
 Be sure to use drift _after_ you set the platform-specific overrides.

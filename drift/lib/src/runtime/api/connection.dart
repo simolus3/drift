@@ -1,31 +1,27 @@
 part of 'runtime_api.dart';
 
-/// A database connection managed by drift. Contains three components:
-/// - a [SqlTypeSystem], which is responsible to map between Dart types and
-///   values understood by the database engine.
-/// - a [QueryExecutor], which runs sql commands
+/// A database connection managed by drift. This consists of two components:
+///
+/// - a [QueryExecutor], which runs sql statements.
 /// - a [StreamQueryStore], which dispatches table changes to listening queries,
 ///   on which the auto-updating queries are based.
 class DatabaseConnection {
-  /// The type system to use with this database. The type system is responsible
-  /// for mapping Dart objects into sql expressions and vice-versa.
-  @Deprecated('Only the default type system is supported')
-  final SqlTypeSystem typeSystem;
-
   /// The executor to use when queries are executed.
   final QueryExecutor executor;
 
   /// Manages active streams from select statements.
   final StreamQueryStore streamQueries;
 
-  /// Constructs a raw database connection from the three components.
-  DatabaseConnection(this.typeSystem, this.executor, this.streamQueries);
+  /// Constructs a raw database connection from the [executor] and optionally a
+  /// specified [streamQueries] implementation to use.
+  DatabaseConnection(this.executor, {StreamQueryStore? streamQueries})
+      : streamQueries = streamQueries ?? StreamQueryStore();
 
   /// Constructs a [DatabaseConnection] from the [QueryExecutor] by using the
   /// default type system and a new [StreamQueryStore].
-  DatabaseConnection.fromExecutor(this.executor)
-      : typeSystem = SqlTypeSystem.defaultInstance,
-        streamQueries = StreamQueryStore();
+  @Deprecated('Use the default unnamed constructor of `DatabaseConnection` '
+      'instead')
+  DatabaseConnection.fromExecutor(QueryExecutor executor) : this(executor);
 
   /// Database connection that is instantly available, but delegates work to a
   /// connection only available through a `Future`.
@@ -54,15 +50,15 @@ class DatabaseConnection {
     }
 
     return DatabaseConnection(
-      SqlTypeSystem.defaultInstance,
       LazyDatabase(() async => (await connection).executor),
-      DelayedStreamQueryStore(connection.then((conn) => conn.streamQueries)),
+      streamQueries: DelayedStreamQueryStore(
+          connection.then((conn) => conn.streamQueries)),
     );
   }
 
   /// Returns a database connection that is identical to this one, except that
   /// it uses the provided [executor].
   DatabaseConnection withExecutor(QueryExecutor executor) {
-    return DatabaseConnection(typeSystem, executor, streamQueries);
+    return DatabaseConnection(executor, streamQueries: streamQueries);
   }
 }

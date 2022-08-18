@@ -44,7 +44,7 @@ void main() {
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
-          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
+          "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
           'CHECK(creation_time > -631152000)'
           ');',
           []));
@@ -101,7 +101,7 @@ void main() {
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
-          "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)) "
+          "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
           'CHECK(creation_time > -631152000)'
           ');',
           []));
@@ -187,12 +187,32 @@ void main() {
     verify(executor.transactions.runCustom(any, any));
     verifyNever(executor.runCustom(any, any));
   });
+
+  test('removes variables in `CREATE TABLE` statements', () async {
+    final executor = MockExecutor();
+    final db = _DefaultDb(executor);
+
+    late GeneratedColumn<int> column;
+    column = GeneratedColumn<int>(
+      'foo',
+      'foo',
+      true,
+      type: DriftSqlType.int,
+      check: () => column.isSmallerThan(const Variable(3)),
+    );
+    final table = CustomTable('foo', db, [column]);
+
+    await db.createMigrator().createTable(table);
+    await db.close();
+
+    // This should not attempt to generate a parameter (`?`)
+    // https://github.com/simolus3/drift/discussions/1936
+    verify(executor.runCustom(argThat(contains('CHECK(foo < 3)')), []));
+  });
 }
 
 class _DefaultDb extends GeneratedDatabase {
-  _DefaultDb(QueryExecutor executor)
-      // ignore: prefer_const_constructors
-      : super(SqlTypeSystem.withDefaults(), executor);
+  _DefaultDb(QueryExecutor executor) : super(executor);
 
   @override
   List<TableInfo<Table, DataClass>> get allTables => [];

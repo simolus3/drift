@@ -93,7 +93,7 @@ abstract class ResultSetImplementation<Tbl, Row> extends DatabaseSchemaEntity {
   List<GeneratedColumn> get $columns;
 
   /// Maps the given row returned by the database into the fitting data class.
-  Row map(Map<String, dynamic> data, {String? tablePrefix});
+  FutureOr<Row> map(Map<String, dynamic> data, {String? tablePrefix});
 
   /// Creates an alias of this table or view that will write the name [alias]
   /// when used in a query.
@@ -125,7 +125,7 @@ class _AliasResultSet<Tbl, Row> extends ResultSetImplementation<Tbl, Row> {
   String get entityName => _inner.entityName;
 
   @override
-  Row map(Map<String, dynamic> data, {String? tablePrefix}) {
+  FutureOr<Row> map(Map<String, dynamic> data, {String? tablePrefix}) {
     return _inner.map(data, tablePrefix: tablePrefix);
   }
 

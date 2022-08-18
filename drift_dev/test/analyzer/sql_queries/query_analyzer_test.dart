@@ -17,7 +17,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     state.close();
 
     expect(file.errors.errors, isEmpty);
-    final content = file.currentResult as ParsedMoorFile;
+    final content = file.currentResult as ParsedDriftFile;
 
     final query = content.resolvedQueries!.single;
     expect(query, const TypeMatcher<SqlSelectQuery>());
@@ -26,7 +26,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     expect(resultSet.matchingTable, isNull);
     expect(resultSet.columns.map((c) => c.name), ['?', ':foo']);
     expect(resultSet.columns.map((c) => c.type),
-        [ColumnType.text, ColumnType.boolean]);
+        [DriftSqlType.string, DriftSqlType.bool]);
   });
 
   test('reads REQUIRED syntax', () async {
@@ -41,7 +41,7 @@ bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
     state.close();
 
     expect(file.errors.errors, isEmpty);
-    final content = file.currentResult as ParsedMoorFile;
+    final content = file.currentResult as ParsedDriftFile;
 
     final query = content.resolvedQueries!.single;
     expect(
