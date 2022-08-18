@@ -83,7 +83,6 @@ class CreateTableReader {
           try {
             converter = UsedTypeConverter.forEnumColumn(
               dartType,
-              column.type.nullable != false,
               helper.helperLibrary.typeProvider,
             );
           } on InvalidTypeForEnumConverterException catch (e) {

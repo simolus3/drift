@@ -286,6 +286,8 @@ class ColumnParser {
           DriftDartType? resolved;
 
           if (checkDynamic.foundDynamicDueToMissingClass) {
+            final type = remainingExpr.typeArgumentTypes!.single;
+
             resolved = DriftDartType(
               type: remainingExpr.typeArgumentTypes!.single,
               overiddenSource:
@@ -374,7 +376,7 @@ class ColumnParser {
       final enumType = remainingExpr.typeArgumentTypes![0];
       try {
         converter = UsedTypeConverter.forEnumColumn(
-            enumType, nullable, base.step.library.typeProvider);
+            enumType, base.step.library.typeProvider);
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
           message: e.errorDescription,
