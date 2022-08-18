@@ -88,7 +88,6 @@ class UsedTypeConverter {
 
   factory UsedTypeConverter.forEnumColumn(
     DartType enumType,
-    bool nullable,
     TypeProvider typeProvider,
   ) {
     if (enumType is! InterfaceType) {
@@ -101,13 +100,8 @@ class UsedTypeConverter {
     }
 
     final className = creatingClass.name;
-    final suffix =
-        nullable ? NullabilitySuffix.question : NullabilitySuffix.none;
 
-    var expression = 'EnumIndexConverter<$className>($className.values)';
-    if (nullable) {
-      expression = 'NullAwareTypeConverter.wrap($expression)';
-    }
+    final expression = 'EnumIndexConverter<$className>($className.values)';
 
     return UsedTypeConverter(
       expression: 'const $expression',
@@ -115,15 +109,12 @@ class UsedTypeConverter {
         type: creatingClass.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none),
         overiddenSource: creatingClass.name,
-        nullabilitySuffix: suffix,
+        nullabilitySuffix: NullabilitySuffix.none,
       ),
-      sqlTypeIsNullable: nullable,
-      dartTypeIsNullable: nullable,
-      sqlType: nullable
-          ? typeProvider.intElement.instantiate(
-              typeArguments: const [],
-              nullabilitySuffix: NullabilitySuffix.question)
-          : typeProvider.intType,
+      canBeSkippedForNulls: true,
+      sqlTypeIsNullable: false,
+      dartTypeIsNullable: false,
+      sqlType: typeProvider.intType,
     );
   }
 

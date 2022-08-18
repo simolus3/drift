@@ -286,11 +286,13 @@ class ColumnParser {
           DriftDartType? resolved;
 
           if (checkDynamic.foundDynamicDueToMissingClass) {
+            final type = remainingExpr.typeArgumentTypes!.single;
+
             resolved = DriftDartType(
               type: remainingExpr.typeArgumentTypes!.single,
               overiddenSource:
                   remainingExpr.typeArguments!.arguments[0].toSource(),
-              nullabilitySuffix: NullabilitySuffix.none,
+              nullabilitySuffix: type.nullabilitySuffix,
             );
           }
 
@@ -374,7 +376,7 @@ class ColumnParser {
       final enumType = remainingExpr.typeArgumentTypes![0];
       try {
         converter = UsedTypeConverter.forEnumColumn(
-            enumType, nullable, base.step.library.typeProvider);
+            enumType, base.step.library.typeProvider);
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
           message: e.errorDescription,

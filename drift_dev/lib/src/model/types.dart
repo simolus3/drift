@@ -44,16 +44,7 @@ class DriftDartType {
   String getDisplayString({required bool withNullability}) {
     final source = overiddenSource;
     if (source != null) {
-      if (withNullability) {
-        switch (nullabilitySuffix) {
-          case NullabilitySuffix.question:
-            return '$source?';
-          case NullabilitySuffix.star:
-            return '$source*';
-          case NullabilitySuffix.none:
-            return source;
-        }
-      }
+      return source;
     }
 
     return type.getDisplayString(withNullability: withNullability);
@@ -74,8 +65,14 @@ class DriftDartType {
 extension OperationOnTypes on HasType {
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
-    return (nullable && !isArray) ||
-        typeConverter?.mapsToNullableDart(nullable) == true;
+    if (isArray) return false; // Is a List<Something> in Dart, not nullable
+
+    final converter = typeConverter;
+    if (converter != null) {
+      return converter.mapsToNullableDart(nullable);
+    }
+
+    return nullable;
   }
 
   /// the Dart type of this column that can be handled by moors type mapping.
