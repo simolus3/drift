@@ -1605,12 +1605,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readMultiple(List<String> var1,
-      {ReadMultipleClause clause = ReadMultipleClauseDefault}) {
+      {ReadMultipleClause? clause}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    final generatedclause =
-        $write(clause(this.config), startIndex: $arrayStartIndex);
+    final generatedclause = $write(
+        clause?.call(this.config) ?? const OrderBy.nothing(),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
@@ -1624,11 +1625,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap(config.mapFromRow);
   }
 
-  Selectable<Config> readDynamic(
-      {ReadDynamicPredicate predicate = ReadDynamicPredicateDefault}) {
+  Selectable<Config> readDynamic({ReadDynamicPredicate? predicate}) {
     var $arrayStartIndex = 1;
-    final generatedpredicate =
-        $write(predicate(this.config), startIndex: $arrayStartIndex);
+    final generatedpredicate = $write(
+        predicate?.call(this.config) ?? const CustomExpression('(TRUE)'),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [
@@ -1641,10 +1642,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
-      {TypeConverterVarPred pred = TypeConverterVarPredDefault}) {
+      {TypeConverterVarPred? pred}) {
     var $arrayStartIndex = 2;
-    final generatedpred =
-        $write(pred(this.config), startIndex: $arrayStartIndex);
+    final generatedpred = $write(
+        pred?.call(this.config) ?? const CustomExpression('(TRUE)'),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
@@ -1857,13 +1859,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-OrderBy ReadMultipleClauseDefault(ConfigTable _) => const OrderBy.nothing();
 typedef ReadMultipleClause = OrderBy Function(ConfigTable config);
-Expression<bool> ReadDynamicPredicateDefault(ConfigTable _) =>
-    const CustomExpression('(TRUE)');
 typedef ReadDynamicPredicate = Expression<bool> Function(ConfigTable config);
-Expression<bool> TypeConverterVarPredDefault(ConfigTable _) =>
-    const CustomExpression('(TRUE)');
 typedef TypeConverterVarPred = Expression<bool> Function(ConfigTable config);
 
 class JsonResult extends CustomResultSet {

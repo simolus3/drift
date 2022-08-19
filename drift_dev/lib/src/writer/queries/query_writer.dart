@@ -312,66 +312,27 @@ class QueryWriter {
         needsComma = true;
 
         String? defaultCode;
+        var isNullable = false;
+        var type = typeFor(optional);
 
         if (optional is FoundDartPlaceholder) {
-          final kind = optional.type;
-          if (kind is ExpressionDartPlaceholderType &&
-              kind.defaultValue != null) {
-            // Wrap the default expression in parentheses to avoid issues with
-            // the surrounding precedence in SQL.
-            final sql = SqlWriter(scope.options)
-                .writeNodeIntoStringLiteral(Parentheses(kind.defaultValue!));
-            defaultCode = 'const CustomExpression($sql)';
-          } else if (kind is SimpleDartPlaceholderType &&
-              kind.kind == SimpleDartPlaceholderKind.orderBy) {
-            defaultCode = 'const OrderBy.nothing()';
-          }
+          // If optional Dart placeholders are written as functions, they are
+          // generated as nullable parameters. The default is handled with a
+          // `??` in the method's body.
+          if (optional.writeAsScopedFunction(options)) {
+            isNullable = optional.hasDefaultOrImplicitFallback;
+            type = writeScopedTypeFor(optional);
 
-          // If the parameter is converted to a scoped function, we also need to
-          // generate a scoped function as a default value. Since defaults have
-          // to be constants, we generate a top-level function which is then
-          // used as a tear-off.
-          if (optional.writeAsScopedFunction(options) && defaultCode != null) {
-            final root = scope.root;
-            // ignore: prefer_interpolation_to_compose_strings
-            final typeName = scopedTypeName(optional);
-            final functionName = '${typeName}Default';
-
-            final buffer = root.leaf()
-              ..write(optional.dartTypeCode(scope.generationOptions))
-              ..write(' ')
-              ..write(functionName)
-              ..write('(');
-            var i = 0;
-            for (final arg in optional.availableResultSets) {
-              if (i != 0) buffer.write(', ');
-
-              buffer
-                ..write(arg.argumentType)
-                ..write(' ')
-                ..write('_' * (i + 1));
-              i++;
+            if (isNullable) {
+              type += '?';
             }
-            buffer
-              ..write(') => ')
-              ..write(defaultCode)
-              ..write(';');
-
-            // With the function being written, the default code is just a tear-
-            // off of that function
-            defaultCode = functionName;
+          } else {
+            defaultCode = _defaultForDartPlaceholder(optional, scope);
           }
-        }
-
-        var type = typeFor(optional);
-        if (optional is FoundDartPlaceholder &&
-            optional.writeAsScopedFunction(options)) {
-          type = writeScopedTypeFor(optional);
         }
 
         // No default value, this element is required if it's not nullable
         var isMarkedAsRequired = false;
-        var isNullable = false;
         if (optional is FoundVariable) {
           isMarkedAsRequired = optional.isRequired;
           isNullable = optional.nullableInDart;
@@ -396,7 +357,7 @@ class QueryWriter {
   }
 
   void _writeExpandedDeclarations(SqlQuery query) {
-    _ExpandedDeclarationWriter(query, options, _buffer)
+    _ExpandedDeclarationWriter(query, options, scope, _buffer)
         .writeExpandedDeclarations();
   }
 
@@ -455,13 +416,15 @@ String _converter(UsedTypeConverter converter) {
 class _ExpandedDeclarationWriter {
   final SqlQuery query;
   final DriftOptions options;
+  final Scope _scope;
   final StringBuffer _buffer;
 
   bool indexCounterWasDeclared = false;
   bool needsIndexCounter = false;
   int highestIndexBeforeArray = 0;
 
-  _ExpandedDeclarationWriter(this.query, this.options, this._buffer);
+  _ExpandedDeclarationWriter(
+      this.query, this.options, this._scope, this._buffer);
 
   void writeExpandedDeclarations() {
     // When the SQL query is written to a Dart string, we give each variable an
@@ -546,7 +509,17 @@ class _ExpandedDeclarationWriter {
             return table;
           }
         }).join(', ');
-        return '${element.dartParameterName}($args)';
+
+        final defaultValue = _defaultForDartPlaceholder(element, _scope);
+
+        if (defaultValue != null) {
+          // Optional elements written as a function are generated as nullable
+          // parameters. We need to emit the default if the actual value is
+          // null at runtime.
+          return '${element.dartParameterName}?.call($args) ?? $defaultValue';
+        } else {
+          return '${element.dartParameterName}($args)';
+        }
       } else {
         // We can just use the parameter directly
         return element.dartParameterName;
@@ -706,5 +679,23 @@ class _ExpandedVariableWriter {
 
   void _writeDartPlaceholder(FoundDartPlaceholder element) {
     _buffer.write('...${placeholderContextName(element)}.introducedVariables');
+  }
+}
+
+String? _defaultForDartPlaceholder(
+    FoundDartPlaceholder placeholder, Scope scope) {
+  final kind = placeholder.type;
+  if (kind is ExpressionDartPlaceholderType && kind.defaultValue != null) {
+    // Wrap the default expression in parentheses to avoid issues with
+    // the surrounding precedence in SQL.
+    final sql = SqlWriter(scope.options)
+        .writeNodeIntoStringLiteral(Parentheses(kind.defaultValue!));
+    return 'const CustomExpression($sql)';
+  } else if (kind is SimpleDartPlaceholderType &&
+      kind.kind == SimpleDartPlaceholderKind.orderBy) {
+    return 'const OrderBy.nothing()';
+  } else {
+    assert(!placeholder.hasDefaultOrImplicitFallback);
+    return null;
   }
 }

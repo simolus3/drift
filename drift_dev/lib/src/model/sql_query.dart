@@ -827,6 +827,12 @@ class FoundDartPlaceholder extends FoundElement {
       type is ExpressionDartPlaceholderType &&
       (type as ExpressionDartPlaceholderType).defaultValue != null;
 
+  bool get hasDefaultOrImplicitFallback =>
+      hasDefault ||
+      (type is SimpleDartPlaceholderType &&
+          (type as SimpleDartPlaceholderType).kind ==
+              SimpleDartPlaceholderKind.orderBy);
+
   FoundDartPlaceholder(this.type, this.name, this.availableResultSets);
 
   @override
