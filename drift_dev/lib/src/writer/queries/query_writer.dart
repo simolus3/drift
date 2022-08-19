@@ -256,7 +256,7 @@ class QueryWriter {
     final namedElements = <FoundElement>[];
 
     String scopedTypeName(FoundDartPlaceholder element) {
-      return '${ReCase(query.name).pascalCase}${ReCase(element.name).pascalCase}';
+      return '${ReCase(query.name).pascalCase}\$${ReCase(element.name).camelCase}';
     }
 
     String typeFor(FoundElement element) {
