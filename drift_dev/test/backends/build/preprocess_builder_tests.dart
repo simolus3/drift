@@ -42,7 +42,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_drift')]!);
+        utf8.decode(writer.assets[AssetId.parse('foo|main.drift_prep.json')]!);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {
@@ -90,7 +90,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_drift')]!);
+        utf8.decode(writer.assets[AssetId.parse('foo|main.drift_prep.json')]!);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {

@@ -8,6 +8,8 @@ import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/backends/backend.dart';
 import 'package:logging/logging.dart';
 
+import '../../analysis/runner/preprocess_drift.dart';
+
 class BuildBackend extends Backend {
   final DriftOptions options;
 
@@ -71,7 +73,7 @@ class BuildBackendTask extends BackendTask {
     // we try to detect all calls of resolveTypeOf in an earlier builder and
     // prepare the result. See PreprocessBuilder for details
     final preparedHelperFile =
-        _resolve(context).changeExtension('.dart_in_drift');
+        _resolve(context).changeExtension('.drift_prep.json');
     final temporaryFile = _resolve(context).changeExtension('.temp.dart');
 
     if (!await step.canRead(preparedHelperFile)) {
@@ -79,10 +81,12 @@ class BuildBackendTask extends BackendTask {
           'Check the build log for earlier errors.');
     }
 
+    // todo: Cache this step?
     final content = await step.readAsString(preparedHelperFile);
-    final json =
-        (jsonDecode(content) as Map<String, dynamic>).cast<String, String>();
-    final fieldName = json[dartExpression];
+    final json = DriftPreprocessorResult.fromJson(
+        jsonDecode(content) as Map<String, Object?>);
+
+    final fieldName = json.inlineDartExpressionsToHelperField[dartExpression];
     if (fieldName == null) {
       throw CannotReadExpressionException(
           'Generated helper file does not contain '
