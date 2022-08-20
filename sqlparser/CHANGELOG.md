@@ -1,3 +1,7 @@
+## 0.23.1-dev
+
+- Gracefully handle tokenizer errors related to `@` or `$` variables.
+
 ## 0.23.0
 
 - Apply type hints for date times on textual datetime functions as well.

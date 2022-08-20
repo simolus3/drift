@@ -41,4 +41,42 @@ void main() {
       isA<Token>().having((e) => e.type, 'tokenType', TokenType.eof),
     ]);
   });
+
+  group('reports error message', () {
+    test(r'for missing identifier after `$`', () {
+      expect(
+        Scanner(r'$ order').scanTokens,
+        throwsA(
+          isA<CumulatedTokenizerException>().having(
+            (e) => e.errors,
+            'errors',
+            contains(
+              isA<TokenizerError>()
+                  .having((e) => e.message, 'message',
+                      r'Expected identifier after `$`')
+                  .having((e) => e.location.offset, 'location.offset', 1),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('for missing identifier after `@`', () {
+      expect(
+        Scanner(r'@ order').scanTokens,
+        throwsA(
+          isA<CumulatedTokenizerException>().having(
+            (e) => e.errors,
+            'errors',
+            contains(
+              isA<TokenizerError>()
+                  .having((e) => e.message, 'message',
+                      r'Expected identifier after `@`')
+                  .having((e) => e.location.offset, 'location.offset', 1),
+            ),
+          ),
+        ),
+      );
+    });
+  });
 }
