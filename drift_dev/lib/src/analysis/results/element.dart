@@ -19,4 +19,5 @@ class DriftDeclaration {
 
 abstract class DriftElement {
   DriftElementId get id;
+  DriftDeclaration get declaration;
 }
