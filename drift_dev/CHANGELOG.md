@@ -1,3 +1,8 @@
+## 2.0.2
+
+- Generate public typedefs for the signatures of `scoped_dart_components`,
+  making it easier to re-use them for own methods.
+
 ## 2.0.1
 
 - Recognize options for an applied `not_shared` builder when exporting schemas.

@@ -1,4 +1,4 @@
-## 0.23.1-dev
+## 0.23.1
 
 - Gracefully handle tokenizer errors related to `@` or `$` variables.
 
