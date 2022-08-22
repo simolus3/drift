@@ -6,6 +6,7 @@ class Fts5Extension implements Extension {
   @override
   void register(SqlEngine engine) {
     engine.registerModule(_Fts5Module());
+    engine.registerModule(_Fts5VocabModule());
     engine.registerFunctionHandler(const _Fts5Functions());
   }
 }
@@ -32,6 +33,59 @@ class _Fts5Module extends Module {
       ],
       definition: stmt,
     );
+  }
+}
+
+class _Fts5VocabModule extends Module {
+  _Fts5VocabModule() : super('fts5vocab');
+
+  @override
+  Table parseTable(CreateVirtualTableStatement stmt) {
+    if (stmt.argumentContent.length < 2 || stmt.argumentContent.length > 3) {
+      throw ArgumentError('''
+fts5vocab table requires at least 
+two arguments (<referenced fts5 table name>, <type>) 
+and maximum three arguments when using an attached database
+ ''');
+    }
+
+    final type = stmt.argumentContent.last.replaceAll(RegExp(r'''["' ]'''), '');
+    switch (type) {
+      case 'row':
+        return Table(
+            name: stmt.tableName,
+            resolvedColumns: [
+              TableColumn('term', const ResolvedType(type: BasicType.text)),
+              TableColumn('doc', const ResolvedType(type: BasicType.int)),
+              TableColumn('cnt', const ResolvedType(type: BasicType.int)),
+            ],
+            definition: stmt,
+            isVirtual: true);
+      case 'col':
+        return Table(
+            name: stmt.tableName,
+            resolvedColumns: [
+              TableColumn('term', const ResolvedType(type: BasicType.text)),
+              TableColumn('col', const ResolvedType(type: BasicType.text)),
+              TableColumn('doc', const ResolvedType(type: BasicType.int)),
+              TableColumn('cnt', const ResolvedType(type: BasicType.int)),
+            ],
+            definition: stmt,
+            isVirtual: true);
+      case 'instance':
+        return Table(
+            name: stmt.tableName,
+            resolvedColumns: [
+              TableColumn('term', const ResolvedType(type: BasicType.text)),
+              TableColumn('doc', const ResolvedType(type: BasicType.int)),
+              TableColumn('col', const ResolvedType(type: BasicType.text)),
+              TableColumn('offset', const ResolvedType(type: BasicType.int)),
+            ],
+            definition: stmt,
+            isVirtual: true);
+      default:
+        throw ArgumentError('Unknown fts5vocab table type');
+    }
   }
 }
 
