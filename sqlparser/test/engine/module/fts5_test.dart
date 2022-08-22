@@ -20,6 +20,48 @@ void main() {
       expect(columns.single.name, 'bar');
     });
 
+    group('creating fts5vocab tables', () {
+      final engine = SqlEngine(_fts5Options);
+
+      test('can create fts5vocab instance table', () {
+        final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+            'fts5vocab(bar, instance)');
+
+        final table = const SchemaFromCreateTable()
+            .read(result.root as TableInducingStatement);
+
+        expect(table.name, 'foo');
+        final columns = table.resultColumns;
+        expect(columns, hasLength(4));
+        expect(columns.map((e) => e.name), contains('offset'));
+      });
+
+      test('can create fts5vocab row table', () {
+        final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+            'fts5vocab(bar, row)');
+
+        final table = const SchemaFromCreateTable()
+            .read(result.root as TableInducingStatement);
+
+        expect(table.name, 'foo');
+        final columns = table.resultColumns;
+        expect(columns, hasLength(3));
+      });
+
+      test('can create fts5vocab col table', () {
+        final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+            'fts5vocab(bar, col)');
+
+        final table = const SchemaFromCreateTable()
+            .read(result.root as TableInducingStatement);
+
+        expect(table.name, 'foo');
+        final columns = table.resultColumns;
+        expect(columns, hasLength(4));
+        expect(columns.map((e) => e.name), contains('col'));
+      });
+    });
+
     test('handles the UNINDEXED column option', () {
       final result = engine
           .analyze('CREATE VIRTUAL TABLE foo USING fts5(bar, baz UNINDEXED)');
