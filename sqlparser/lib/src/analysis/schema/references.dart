@@ -24,6 +24,13 @@ mixin Referencable {
 abstract class ReferenceScope {
   RootScope get rootScope;
 
+  /// All available result sets that can also be seen in child scopes.
+  ///
+  /// Usually, this is the same list as the result sets being declared in this
+  /// scope. However, some exceptions apply (see e.g. [SubqueryInFromScope]).
+  Iterable<ResultSetAvailableInStatement> get resultSetAvailableToChildScopes =>
+      const Iterable.empty();
+
   /// The list of column to which a `*` would expand to.
   ///
   /// This is not necessary the same list of columns that could be resolved
@@ -101,6 +108,30 @@ class RootScope extends ReferenceScope {
   final Map<String, Module> knownModules = CaseInsensitiveMap();
 }
 
+mixin _HasParentScope on ReferenceScope {
+  ReferenceScope get _parentScopeForLookups;
+
+  @override
+  RootScope get rootScope => _parentScopeForLookups.rootScope;
+
+  @override
+  Iterable<ResultSetAvailableInStatement> get resultSetAvailableToChildScopes =>
+      _parentScopeForLookups.resultSetAvailableToChildScopes;
+
+  @override
+  ResultSetAvailableInStatement? resolveResultSet(String name) =>
+      _parentScopeForLookups.resolveResultSet(name);
+
+  @override
+  ResultSet? resolveResultSetToAdd(String name) =>
+      _parentScopeForLookups.resolveResultSetToAdd(name);
+
+  @override
+  List<Column> resolveUnqualifiedReference(String columnName,
+          {bool allowReferenceToResultColumn = false}) =>
+      _parentScopeForLookups.resolveUnqualifiedReference(columnName);
+}
+
 /// A scope used by statements.
 ///
 /// Tables added from `FROM` clauses are added to [resultSets], CTEs are added
@@ -118,8 +149,11 @@ class RootScope extends ReferenceScope {
 ///    [SubqueryInFromScope] is insertted as an intermediatet scope to prevent
 ///    the inner scope from seeing the outer columns.
 
-class StatementScope extends ReferenceScope {
+class StatementScope extends ReferenceScope with _HasParentScope {
   final ReferenceScope parent;
+
+  @override
+  get _parentScopeForLookups => parent;
 
   /// Additional tables (that haven't necessarily been added in a `FROM` clause
   /// that are only visible in this scope).
@@ -153,28 +187,16 @@ class StatementScope extends ReferenceScope {
 
   StatementScope(this.parent);
 
-  StatementScope? get parentStatementScope {
-    final parent = this.parent;
-    if (parent is StatementScope) {
-      return parent;
-    } else if (parent is MiscStatementSubScope) {
-      return parent.parent;
-    } else {
-      return null;
-    }
+  @override
+  Iterable<ResultSetAvailableInStatement> get resultSetAvailableToChildScopes {
+    return allAvailableResultSets;
   }
 
   /// All result sets available in this and parent scopes.
   Iterable<ResultSetAvailableInStatement> get allAvailableResultSets {
     final here = resultSets.values;
-    final parent = parentStatementScope;
-    return parent != null
-        ? here.followedBy(parent.allAvailableResultSets)
-        : here;
+    return parent.resultSetAvailableToChildScopes.followedBy(here);
   }
-
-  @override
-  RootScope get rootScope => parent.rootScope;
 
   @override
   void addAlias(AstNode origin, ResultSet resultSet, String alias) {
@@ -184,21 +206,19 @@ class StatementScope extends ReferenceScope {
   }
 
   @override
-  ResultSetAvailableInStatement? resolveResultSet(String name) {
-    return resultSets[name] ?? parentStatementScope?.resolveResultSet(name);
-  }
-
-  @override
   void addResolvedResultSet(
       String? name, ResultSetAvailableInStatement resultSet) {
     resultSets[name] = resultSet;
   }
 
   @override
+  ResultSetAvailableInStatement? resolveResultSet(String name) {
+    return resultSets[name] ?? parent.resolveResultSet(name);
+  }
+
+  @override
   ResultSet? resolveResultSetToAdd(String name) {
-    return additionalKnownTables[name] ??
-        parentStatementScope?.resolveResultSetToAdd(name) ??
-        rootScope.knownTables[name];
+    return additionalKnownTables[name] ?? parent.resolveResultSetToAdd(name);
   }
 
   @override
@@ -212,43 +232,28 @@ class StatementScope extends ReferenceScope {
       }
     }
 
-    StatementScope? currentScope = this;
+    final available = resultSets.values;
+    final sourceColumns = <Column>{};
+    final availableColumns = <AvailableColumn>[];
 
-    // Search scopes for a matching column in an added result set. If a column
-    // reference is found in a closer scope, it takes precedence over outer
-    // scopes. However, it's an error if two columns with the same name are
-    // found in the same scope.
-    while (currentScope != null) {
-      final available = currentScope.resultSets.values;
-      final sourceColumns = <Column>{};
-      final availableColumns = <AvailableColumn>[];
+    for (final availableSource in available) {
+      final resolvedColumns =
+          availableSource.resultSet.resultSet?.resolvedColumns;
+      if (resolvedColumns == null) continue;
 
-      for (final availableSource in available) {
-        final resolvedColumns =
-            availableSource.resultSet.resultSet?.resolvedColumns;
-        if (resolvedColumns == null) continue;
-
-        for (final column in resolvedColumns) {
-          if (column.name.toLowerCase() == columnName.toLowerCase() &&
-              sourceColumns.add(column)) {
-            availableColumns.add(AvailableColumn(column, availableSource));
-          }
+      for (final column in resolvedColumns) {
+        if (column.name.toLowerCase() == columnName.toLowerCase() &&
+            sourceColumns.add(column)) {
+          availableColumns.add(AvailableColumn(column, availableSource));
         }
-      }
-
-      if (availableColumns.isEmpty) {
-        currentScope = currentScope.parentStatementScope;
-        if (currentScope == null) {
-          // Reached the outermost scope without finding a reference target.
-          return const [];
-        }
-        continue;
-      } else {
-        return availableColumns;
       }
     }
 
-    return const [];
+    if (availableColumns.isEmpty) {
+      return parent.resolveUnqualifiedReference(columnName);
+    } else {
+      return availableColumns;
+    }
   }
 
   factory StatementScope.forStatement(RootScope root, Statement statement) {
@@ -269,13 +274,24 @@ class StatementScope extends ReferenceScope {
 
 /// A special intermediate scope used for subqueries appearing in a `FROM`
 /// clause so that the subquery can't see outer columns and tables being added.
-class SubqueryInFromScope extends ReferenceScope {
+class SubqueryInFromScope extends ReferenceScope with _HasParentScope {
   final StatementScope enclosingStatement;
 
   SubqueryInFromScope(this.enclosingStatement);
 
   @override
   RootScope get rootScope => enclosingStatement.rootScope;
+
+  // This scope can't see elements from the enclosing statement, but it can see
+  // elements from grandparents.
+  @override
+  ReferenceScope get _parentScopeForLookups => enclosingStatement.parent;
+
+  @override
+  ResultSet? resolveResultSetToAdd(String name) {
+    // CTEs from the enclosing statement are also available here
+    return enclosingStatement.resolveResultSetToAdd(name);
+  }
 }
 
 /// A rarely used sub-scope for AST nodes that belong to a statement, but may
@@ -283,8 +299,11 @@ class SubqueryInFromScope extends ReferenceScope {
 ///
 /// For instance, the body of an `ON CONFLICT DO UPDATE`-clause may refer to a
 /// table alias `excluded` to get access to a conflicting table.
-class MiscStatementSubScope extends ReferenceScope {
+class MiscStatementSubScope extends ReferenceScope with _HasParentScope {
   final StatementScope parent;
+
+  @override
+  get _parentScopeForLookups => parent;
 
   final Map<String?, ResultSetAvailableInStatement> additionalResultSets =
       CaseInsensitiveMap();
@@ -303,12 +322,6 @@ class MiscStatementSubScope extends ReferenceScope {
   void addResolvedResultSet(
       String? name, ResultSetAvailableInStatement resultSet) {
     additionalResultSets[name] = resultSet;
-  }
-
-  @override
-  List<Column> resolveUnqualifiedReference(String columnName,
-      {bool allowReferenceToResultColumn = false}) {
-    return parent.resolveUnqualifiedReference(columnName);
   }
 }
 

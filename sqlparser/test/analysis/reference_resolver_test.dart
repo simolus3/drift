@@ -163,13 +163,78 @@ void main() {
     });
   });
 
-  test('resolves sub-queries', () {
-    final engine = SqlEngine()..registerTable(demoTable);
+  group('sub-queries', () {
+    test('are resolved', () {
+      final engine = SqlEngine()..registerTable(demoTable);
 
-    final context = engine.analyze(
-        'SELECT d.*, (SELECT id FROM demo WHERE id = d.id) FROM demo d;');
+      final context = engine.analyze(
+          'SELECT d.*, (SELECT id FROM demo WHERE id = d.id) FROM demo d;');
 
-    expect(context.errors, isEmpty);
+      expect(context.errors, isEmpty);
+    });
+
+    test('cannot refer to outer tables if used in FROM', () {
+      final engine = SqlEngine()..registerTable(demoTable);
+
+      final context = engine.analyze(
+          'SELECT d.* FROM demo d, (SELECT * FROM demo WHERE id = d.id);');
+
+      context.expectError('d.id',
+          type: AnalysisErrorType.referencedUnknownTable);
+    });
+
+    test('can refer to CTEs if used in FROM', () {
+      final engine = SqlEngine()..registerTable(demoTable);
+
+      final context = engine.analyze('WITH cte AS (SELECT * FROM demo) '
+          'SELECT d.* FROM demo d, (SELECT * FROM cte);');
+
+      expect(context.errors, isEmpty);
+    });
+
+    test('can nest and see outer tables if that is a subquery', () {
+      final engine = SqlEngine()..registerTable(demoTable);
+
+      final context = engine.analyze('''
+SELECT
+  (SELECT *
+   FROM
+     demo "inner",
+     (SELECT * FROM demo WHERE "inner".id = "outer".id)
+  )
+  FROM demo "outer";
+''');
+
+      // note that "outer".id is visible and should not report an error
+      context.expectError('"inner".id',
+          type: AnalysisErrorType.referencedUnknownTable);
+    });
+
+    test('nested via FROM cannot see outer result sets', () {
+      final engine = SqlEngine()..registerTable(demoTable);
+
+      final context = engine.analyze('''
+SELECT *
+  FROM
+    demo "outer",
+    (SELECT * FROM demo "inner",
+      (SELECT * FROM demo WHERE "inner".id = "outer".id))
+''');
+
+      expect(
+        context.errors,
+        [
+          analysisErrorWith(
+            lexeme: '"inner".id',
+            type: AnalysisErrorType.referencedUnknownTable,
+          ),
+          analysisErrorWith(
+            lexeme: '"outer".id',
+            type: AnalysisErrorType.referencedUnknownTable,
+          ),
+        ],
+      );
+    });
   });
 
   test('resolves sub-queries as data sources', () {

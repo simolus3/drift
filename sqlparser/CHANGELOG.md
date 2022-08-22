@@ -1,3 +1,9 @@
+## 0.23.2-dev
+
+- Support resolving the `fts5vocab` module when `fts5` is enabled - thanks to
+  [@FaFre](https://github.com/FaFre).
+- Improve references resolving across subqueries.
+
 ## 0.23.1
 
 - Gracefully handle tokenizer errors related to `@` or `$` variables.
