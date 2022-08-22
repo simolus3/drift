@@ -74,17 +74,6 @@ class _SqfliteDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<void> runBatched(BatchedStatements statements) async {
-    final batch = db.batch();
-
-    for (final arg in statements.arguments) {
-      batch.execute(statements.statements[arg.statementIndex], arg.arguments);
-    }
-
-    await batch.commit(noResult: true);
-  }
-
-  @override
   Future<void> runCustom(String statement, List<Object?> args) {
     return db.execute(statement, args);
   }
