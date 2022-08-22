@@ -275,4 +275,6 @@ enum SqlModule {
   ///
   /// [math funs]: https://www.sqlite.org/lang_mathfunc.html
   math,
+
+  spellfix1,
 }

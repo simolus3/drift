@@ -140,6 +140,7 @@ const _$SqlModuleEnumMap = {
   SqlModule.fts5: 'fts5',
   SqlModule.moor_ffi: 'moor_ffi',
   SqlModule.math: 'math',
+  SqlModule.spellfix1: 'spellfix1',
 };
 
 DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
