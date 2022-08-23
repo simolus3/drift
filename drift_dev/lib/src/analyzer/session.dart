@@ -45,6 +45,7 @@ class MoorSession {
         if (options.hasModule(SqlModule.json1)) const Json1Extension(),
         if (options.hasModule(SqlModule.moor_ffi)) const MoorFfiExtension(),
         if (options.hasModule(SqlModule.math)) const BuiltInMathExtension(),
+        if (options.hasModule(SqlModule.rtree)) const RTreeExtension(),
       ],
       version: options.sqliteVersion,
     );
