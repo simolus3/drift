@@ -6,17 +6,16 @@ env:
   PUB_ENVIRONMENT: bot.github
 
 jobs:
-  # Compile the latest sqlite3 library, which will be used to run tests in moor
+  # Compile the latest sqlite3 library, which will be used to run tests in drift
   # and sqlparser
   compile_sqlite3:
     name: "Compile sqlite3 for tests"
     runs-on: ubuntu-latest
     env:
       SQLITE_YEAR: "2022"
-      SQLITE_VERSION: "3380000"
+      SQLITE_VERSION: "3390200"
 
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/cache@v2
         id: cache_build
         with:
@@ -28,14 +27,16 @@ jobs:
           cd /tmp/
           mkdir sqlite
           cd sqlite
-          curl https://sqlite.org/$SQLITE_YEAR/sqlite-autoconf-$SQLITE_VERSION.tar.gz --output sqlite.tar.gz
-          tar zxvf sqlite.tar.gz
-          cd sqlite-autoconf-$SQLITE_VERSION
-          ./configure
-          make
+          curl https://sqlite.org/$SQLITE_YEAR/sqlite-autoconf-$SQLITE_VERSION.tar.gz --output sqlite.zip
+          unzip sqlite.zip
+          cd sqlite-src-$SQLITE_VERSION
+          ./configure --enable-fts5 --enable-rtree
+          make -j
+          gcc -shared -o .libs/libspellfix1.so -fpic -I src/ ext/misc/spellfix.c
           mkdir ../out
           cp sqlite3 ../out
           cp .libs/libsqlite3.so ../out
+          cp .libs/libspellfix1.so ../out
       - name: Upload built sqlite3 binaries
         uses: actions/upload-artifact@v2
         with:
