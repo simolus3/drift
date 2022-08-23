@@ -18,11 +18,16 @@ class _Spellfix1Module extends Module {
         name: stmt.tableName,
         resolvedColumns: [
           TableColumn('word', const ResolvedType(type: BasicType.text)),
-          TableColumn('rank', const ResolvedType(type: BasicType.int)),
-          TableColumn('distance', const ResolvedType(type: BasicType.int)),
-          TableColumn('langid', const ResolvedType(type: BasicType.int)),
-          TableColumn('score', const ResolvedType(type: BasicType.int)),
-          TableColumn('matchlen', const ResolvedType(type: BasicType.int)),
+          TableColumn(
+              'rank', const ResolvedType(type: BasicType.int, nullable: true)),
+          TableColumn('distance',
+              const ResolvedType(type: BasicType.int, nullable: true)),
+          TableColumn('langid',
+              const ResolvedType(type: BasicType.int, nullable: true)),
+          TableColumn(
+              'score', const ResolvedType(type: BasicType.int, nullable: true)),
+          TableColumn('matchlen',
+              const ResolvedType(type: BasicType.int, nullable: true)),
           HiddenColumn(
             'top',
             const ResolvedType(type: BasicType.int),
