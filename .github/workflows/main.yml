@@ -27,7 +27,7 @@ jobs:
           cd /tmp/
           mkdir sqlite
           cd sqlite
-          curl https://sqlite.org/$SQLITE_YEAR/sqlite-autoconf-$SQLITE_VERSION.tar.gz --output sqlite.zip
+          curl https://sqlite.org/$SQLITE_YEAR/sqlite-src-$SQLITE_VERSION.zip --output sqlite.zip
           unzip sqlite.zip
           cd sqlite-src-$SQLITE_VERSION
           ./configure --enable-fts5 --enable-rtree
