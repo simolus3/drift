@@ -24,7 +24,7 @@ class _RTreeModule extends Module {
     if (columnNames.length.isEven) {
       throw ArgumentError(
           'The rtree has not been initialized with a proper dimension. '
-          'Required is an index, follwoed by a even number of min/max pairs');
+          'Required is an index, followed by a even number of min/max pairs');
     }
 
     return Table(name: stmt.tableName, resolvedColumns: [
