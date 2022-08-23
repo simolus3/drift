@@ -23,6 +23,26 @@ class _Spellfix1Module extends Module {
           TableColumn('langid', const ResolvedType(type: BasicType.int)),
           TableColumn('score', const ResolvedType(type: BasicType.int)),
           TableColumn('matchlen', const ResolvedType(type: BasicType.int)),
+          HiddenColumn(
+            'top',
+            const ResolvedType(type: BasicType.int),
+          ),
+          HiddenColumn(
+            'scope',
+            const ResolvedType(type: BasicType.int),
+          ),
+          HiddenColumn(
+            'srchcnt',
+            const ResolvedType(type: BasicType.int),
+          ),
+          HiddenColumn(
+            'soundslike',
+            const ResolvedType(type: BasicType.text),
+          ),
+          HiddenColumn(
+            'command',
+            const ResolvedType(type: BasicType.int),
+          ),
         ],
         definition: stmt,
         isVirtual: true);

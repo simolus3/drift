@@ -134,6 +134,15 @@ class TableColumn extends Column implements ColumnWithType {
   }
 }
 
+/// A column that is hidden, as specified in
+/// https://www.sqlite.org/vtab.html#hidden_columns_in_virtual_tables
+class HiddenColumn extends TableColumn {
+  @override
+  bool get includedInResults => false;
+
+  HiddenColumn(String name, ResolvedType type) : super(name, type);
+}
+
 /// A column that is part of a view.
 class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
   final String? _name;
