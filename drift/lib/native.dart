@@ -19,7 +19,7 @@ import 'backends.dart';
 import 'src/sqlite3/database.dart';
 import 'src/sqlite3/database_tracker.dart';
 
-export 'package:sqlite3/sqlite3.dart' show SqliteException;
+export 'package:sqlite3/sqlite3.dart' show SqliteException, LoadableExtension;
 
 /// Signature of a function that can perform setup work on a [database] before
 /// drift is fully ready.
