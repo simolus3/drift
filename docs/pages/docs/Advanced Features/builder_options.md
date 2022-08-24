@@ -130,7 +130,7 @@ targets:
               modules:
                 - json1
                 - fts5
-                - moor_ffi
+                - math
 ```
 
 We currently support the following extensions:
@@ -138,6 +138,9 @@ We currently support the following extensions:
 - [json1](https://www.sqlite.org/json1.html): Support static analysis for `json_` functions in moor files
 - [fts5](https://www.sqlite.org/fts5.html): Support `CREATE VIRTUAL TABLE` statements for `fts5` tables and the `MATCH` operator.
   Functions like `highlight` or `bm25` are available as well.
+- `rtree`: Static analysis support for the [R*Tree](https://www.sqlite.org/rtree.html) extension.
+  Enabling this option is safe when using a `NativeDatabase` with `sqlite3_flutter_libs`,
+  which compiles sqlite3 with the R*Tree extension enabled.
 - `moor_ffi`: Enables support for functions that are only available when using a `NativeDatabase`. This contains `pow`, `sqrt` and a variety
   of trigonometric functions. Details on those functions are available [here]({{ "../Other engines/vm.md#moor-only-functions" | pageUrl }}).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).

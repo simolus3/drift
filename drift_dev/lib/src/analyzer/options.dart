@@ -275,4 +275,8 @@ enum SqlModule {
   ///
   /// [math funs]: https://www.sqlite.org/lang_mathfunc.html
   math,
+
+  /// Enables support for the rtree module and its functions when parsing sql
+  /// queries.
+  rtree,
 }
