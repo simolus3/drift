@@ -25,6 +25,52 @@ CREATE VIRTUAL TABLE demo_index USING rtree(
       expect(columns.first.type.type, equals(BasicType.int));
       expect(columns.last.type.type, equals(BasicType.real));
     });
+
+    group('validate arguments', () {
+      test('invalid coordinate count', () {
+        final result = engine.analyze('''
+CREATE VIRTUAL TABLE demo_index USING rtree(
+   id,              -- Integer primary key
+   minX, maxX,      -- Minimum and maximum X coordinate
+   minY
+);''');
+
+        expect(
+            () => const SchemaFromCreateTable()
+                .read(result.root as TableInducingStatement),
+            throwsArgumentError);
+      });
+
+      test('no coordinates', () {
+        final result = engine.analyze('''
+CREATE VIRTUAL TABLE demo_index USING rtree(
+   id              -- Integer primary key
+);''');
+
+        expect(
+            () => const SchemaFromCreateTable()
+                .read(result.root as TableInducingStatement),
+            throwsArgumentError);
+      });
+
+      test('too many dimensions', () {
+        final result = engine.analyze('''
+CREATE VIRTUAL TABLE demo_index USING rtree(
+   id,              -- Integer primary key
+   minX, maxX,      -- Minimum and maximum X coordinate
+   minY, maxY,
+   minY, maxY,
+   minY, maxY,
+   minY, maxY,
+   minY, maxY
+);''');
+
+        expect(
+            () => const SchemaFromCreateTable()
+                .read(result.root as TableInducingStatement),
+            throwsArgumentError);
+      });
+    });
   });
 
   group('type inference for function arguments', () {
