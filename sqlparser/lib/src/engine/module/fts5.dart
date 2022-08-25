@@ -28,6 +28,8 @@ class _Fts5Module extends Module {
     return _Fts5Table(
       name: stmt.tableName,
       columns: [
+        if (stmt.argumentContent.any((arg) => arg.startsWith('content_rowid')))
+          TableColumn('rowid', const ResolvedType(type: BasicType.int)),
         for (var arg in columnNames)
           TableColumn(arg, const ResolvedType(type: BasicType.text)),
       ],

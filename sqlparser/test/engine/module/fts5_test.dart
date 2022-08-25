@@ -20,6 +20,19 @@ void main() {
       expect(columns.single.name, 'bar');
     });
 
+    test('can create fts5 tables with content table', () {
+      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+          "fts5(bar , tokenize = 'porter ascii',content=tbl, content_rowid=d)");
+
+      final table = const SchemaFromCreateTable()
+          .read(result.root as TableInducingStatement);
+
+      expect(table.name, 'foo');
+      final columns = table.resultColumns;
+      expect(columns, hasLength(2));
+      expect(columns.first.name, 'rowid');
+    });
+
     group('creating fts5vocab tables', () {
       final engine = SqlEngine(_fts5Options);
 
