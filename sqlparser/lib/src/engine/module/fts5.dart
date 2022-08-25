@@ -14,6 +14,7 @@ class Fts5Extension implements Extension {
 /// FTS5 module for `CREATE VIRTUAL TABLE USING fts5` support
 class _Fts5Module extends Module {
   static final RegExp _option = RegExp(r'^(.+)\s*=\s*(.+)$');
+  static final RegExp _cleanTicks = RegExp('[\'"]');
 
   _Fts5Module() : super('fts5');
 
@@ -31,14 +32,21 @@ class _Fts5Module extends Module {
         // actual syntax is <name> <options...>
         columnNames.add(argument.trim().split(' ').first);
       } else {
-        options[match.group(1)!] = match.group(2)!;
+        options[match.group(1)!.replaceAll(_cleanTicks, '')] =
+            match.group(2)!.replaceAll(_cleanTicks, '');
       }
     }
 
+    //No external content when null or empty String
+    final contentTable =
+        (options['content']?.isNotEmpty ?? false) ? options['content'] : null;
+    //Fallback to "rowid" when option is not set
+    final contentRowId = options['content_rowid'] ?? 'rowid';
+
     return Fts5Table._(
       name: stmt.tableName,
-      contentTable: options['content'],
-      contentRowId: options['content_rowid'],
+      contentTable: contentTable,
+      contentRowId: (contentTable != null) ? contentRowId : null,
       columns: [
         for (var arg in columnNames)
           TableColumn(arg, const ResolvedType(type: BasicType.text)),
