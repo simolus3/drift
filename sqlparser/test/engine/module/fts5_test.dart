@@ -28,9 +28,16 @@ void main() {
           .read(result.root as TableInducingStatement);
 
       expect(table.name, 'foo');
-      final columns = table.resultColumns;
-      expect(columns, hasLength(2));
-      expect(columns.first.name, 'rowid');
+      expect(table.resultColumns,
+          [isA<Column>().having((c) => c.name, 'name', 'bar')]);
+      expect(table.findColumn('oid'), isA<RowId>());
+
+      expect(
+        table,
+        isA<Fts5Table>()
+            .having((e) => e.contentTable, 'contentTable', 'tbl')
+            .having((e) => e.contentRowId, 'contentRowId', 'd'),
+      );
     });
 
     group('creating fts5vocab tables', () {
