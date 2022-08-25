@@ -44,7 +44,7 @@ class DriftTable extends DriftEntityWithResultSet {
   @override
   final List<DriftColumn> columns;
 
-  /// The (unescaped) name of this table when stored in the database
+  @override
   final String sqlName;
 
   /// The name for the data class associated with this table
@@ -120,7 +120,7 @@ class DriftTable extends DriftEntityWithResultSet {
   final List<String>? overrideTableConstraints;
 
   @override
-  final Set<DriftTable> references = {};
+  final Set<DriftEntityWithResultSet> references = {};
 
   /// Returns whether this table was created from a `CREATE VIRTUAL TABLE`
   /// statement in a moor file

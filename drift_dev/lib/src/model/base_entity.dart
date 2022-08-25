@@ -37,6 +37,9 @@ abstract class DriftEntityWithResultSet extends DriftSchemaEntity {
   @Deprecated('Use dartTypeCode instead')
   String get dartTypeName;
 
+  /// The (unescaped) name of this table when stored in the database
+  String get sqlName;
+
   /// The type name of the Dart row class for this result set.
   ///
   /// This may contain generics.

@@ -4,6 +4,7 @@ import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_analyzer.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
@@ -39,6 +40,11 @@ class EntityHandler extends BaseAnalyzer {
         final node =
             _handleMoorDeclaration<DriftTableDeclaration>(entity, _tables);
         _lint(node, entity.sqlName);
+
+        final parserTable = entity.parserTable;
+        if (parserTable is Fts5Table) {
+          _checkFts5References(entity, parserTable);
+        }
       } else if (entity is MoorTrigger) {
         entity.clearResolvedReferences();
 
@@ -73,6 +79,63 @@ class EntityHandler extends BaseAnalyzer {
     lintContext(context, displayName);
   }
 
+  void _checkFts5References(DriftTable drift, Fts5Table rawTable) {
+    FileSpan? span;
+    final declaration = drift.declaration;
+    if (declaration is DriftTableDeclaration) {
+      span = declaration.node.tableNameToken?.span;
+    }
+
+    final contentTable = rawTable.contentTable;
+    final contentRowId = rawTable.contentRowId;
+
+    if (contentTable != null && contentTable.isNotEmpty) {
+      final referenced = _resolveTableOrView(contentTable);
+
+      if (referenced != null) {
+        drift.references.add(referenced);
+
+        // Check that fts5 columns also exist in the reference table.
+        for (final column in rawTable.resultColumns) {
+          final name = column.name.toLowerCase();
+          final foundColumn =
+              referenced.columns.any((c) => c.name.name.toLowerCase() == name);
+
+          if (!foundColumn) {
+            step.reportError(ErrorInDriftFile(
+              severity: Severity.error,
+              span: span,
+              message: 'The content table has no column `${column.name}`, but '
+                  'this fts5 table references it',
+            ));
+          }
+        }
+
+        // If a custom rowid is set, check that it exists
+        if (contentRowId != null && !aliasesForRowId.contains(contentRowId)) {
+          final name = contentRowId.toLowerCase();
+          final foundColumn = referenced.columns
+              .firstWhereOrNull((c) => c.name.name.toLowerCase() == name);
+
+          if (foundColumn == null) {
+            step.reportError(ErrorInDriftFile(
+              severity: Severity.error,
+              span: span,
+              message: 'The content table has no column `$contentRowId`, but '
+                  'this fts5 table is declared to use it as a row id',
+            ));
+          }
+        }
+      } else {
+        step.reportError(ErrorInDriftFile(
+          severity: Severity.error,
+          span: span,
+          message: 'Content table `$contentTable` could not be found.',
+        ));
+      }
+    }
+  }
+
   Iterable<DriftTable> _findTables(AstNode node) {
     return findReferences(node, includeViews: false).cast();
   }
@@ -105,6 +168,18 @@ class EntityHandler extends BaseAnalyzer {
   MoorIndex? _inducedIndex(CreateIndexStatement stmt) {
     return _indexes[stmt];
   }
+
+  DriftTable? _resolveTable(String name) {
+    final lower = name.toLowerCase();
+    return tables.firstWhereOrNull((t) => t.sqlName.toLowerCase() == lower);
+  }
+
+  DriftEntityWithResultSet? _resolveTableOrView(String name) {
+    final lower = name.toLowerCase();
+
+    return _resolveTable(name) ??
+        views.firstWhereOrNull((v) => v.name.toLowerCase() == lower);
+  }
 }
 
 class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
@@ -113,8 +188,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
   _ReferenceResolvingVisitor(this.handler);
 
   DriftTable? _resolveTable(TableReference reference) {
-    return handler.tables
-        .firstWhereOrNull((t) => t.sqlName == reference.tableName);
+    return handler._resolveTable(reference.tableName);
   }
 
   @override
