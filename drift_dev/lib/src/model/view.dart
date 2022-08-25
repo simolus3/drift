@@ -22,6 +22,9 @@ class MoorView extends DriftEntityWithResultSet {
   final String name;
 
   @override
+  String get sqlName => name;
+
+  @override
   List<DriftSchemaEntity> references = [];
 
   @override

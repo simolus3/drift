@@ -18,6 +18,77 @@ void main() {
       final columns = table.resultColumns;
       expect(columns, hasLength(1));
       expect(columns.single.name, 'bar');
+      expect(
+        table,
+        isA<Fts5Table>()
+            .having((e) => e.contentTable, 'contentTable', null)
+            .having((e) => e.contentRowId, 'contentRowId', null),
+      );
+    });
+
+    test('can create fts5 tables with content table', () {
+      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+          "fts5(bar , tokenize = 'porter ascii',content=tbl, content_rowid=d)");
+
+      final table = const SchemaFromCreateTable()
+          .read(result.root as TableInducingStatement);
+
+      expect(table.name, 'foo');
+      expect(table.resultColumns,
+          [isA<Column>().having((c) => c.name, 'name', 'bar')]);
+      expect(table.findColumn('oid'), isA<RowId>());
+
+      expect(
+        table,
+        isA<Fts5Table>()
+            .having((e) => e.contentTable, 'contentTable', 'tbl')
+            .having((e) => e.contentRowId, 'contentRowId', 'd'),
+      );
+    });
+
+    test('does clean option values', () {
+      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+          "fts5(bar , tokenize = 'porter ascii', content='tbl', content_rowid='d')");
+
+      final table = const SchemaFromCreateTable()
+          .read(result.root as TableInducingStatement);
+
+      expect(
+        table,
+        isA<Fts5Table>()
+            .having((e) => e.contentTable, 'contentTable', 'tbl')
+            .having((e) => e.contentRowId, 'contentRowId', 'd'),
+      );
+    });
+
+    test('detects empty content table', () {
+      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+          "fts5(bar , tokenize = 'porter ascii',content='', content_rowid='d')");
+
+      final table = const SchemaFromCreateTable()
+          .read(result.root as TableInducingStatement);
+
+      expect(
+        table,
+        isA<Fts5Table>()
+            .having((e) => e.contentTable, 'contentTable', null)
+            .having((e) => e.contentRowId, 'contentRowId', null),
+      );
+    });
+
+    test('content table undefined rowid falls back', () {
+      final result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+          "fts5(bar , tokenize = 'porter ascii',content='tbl')");
+
+      final table = const SchemaFromCreateTable()
+          .read(result.root as TableInducingStatement);
+
+      expect(
+        table,
+        isA<Fts5Table>()
+            .having((e) => e.contentTable, 'contentTable', 'tbl')
+            .having((e) => e.contentRowId, 'contentRowId', 'rowid'),
+      );
     });
 
     group('creating fts5vocab tables', () {
