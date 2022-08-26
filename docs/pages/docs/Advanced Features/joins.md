@@ -8,6 +8,8 @@ aliases:
 template: layouts/docs/single
 ---
 
+{% assign snippets = 'package:drift_docs/snippets/queries.dart.excerpt.json' | readString | json_decode %}
+
 ## Joins
 
 Drift supports sql joins to write queries that operate on more than one table. To use that feature, start
@@ -15,24 +17,11 @@ a select regular select statement with `select(table)` and then add a list of jo
 inner and left outer joins, a `ON` expression needs to be specified. Here's an example using the tables
 defined in the [example]({{ "../Getting started/index.md" | pageUrl }}).
 
-```dart
-// we define a data class to contain both a todo entry and the associated category
-class EntryWithCategory {
-  EntryWithCategory(this.entry, this.category);
+{% include "blocks/snippet" snippets = snippets name = 'joinIntro' %}
 
-  final TodoEntry entry;
-  final Category category;
-}
+Of course, you can also join multiple tables:
 
-// in the database class, we can then load the category for each entry
-Stream<List<EntryWithCategory>> entriesWithCategory() {
-  final query = select(todos).join([
-    leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
-  ]);
-
-  // see next section on how to parse the result
-}
-```
+{% include "blocks/snippet" snippets = snippets name = 'otherTodosInSameCategory' %}
 
 ## Parsing results
 
@@ -42,16 +31,8 @@ read. It contains a `rawData` getter to obtain the raw columns. But more importa
 `readTable` method can be used to read a data class from a table.
 
 In the example query above, we can read the todo entry and the category from each row like this:
-```dart
-return query.watch().map((rows) {
-  return rows.map((row) {
-    return EntryWithCategory(
-      row.readTable(todos),
-      row.readTableOrNull(categories),
-    );
-  }).toList();
-});
-```
+
+{% include "blocks/snippet" snippets = snippets name = 'results' %}
 
 _Note_: `readTable` will throw an `ArgumentError` when a table is not present in the row. For instance,
 todo entries might not be in any category. To account for that, we use `row.readTableOrNull` to load
@@ -173,8 +154,6 @@ be specified directly (unlike the callback on single-table queries that gets cal
 with the right table by default).
 
 ## Group by
-
-{% assign snippets = 'package:drift_docs/snippets/queries.dart.excerpt.json' | readString | json_decode %}
 
 Sometimes, you need to run queries that _aggregate_ data, meaning that data you're interested in
 comes from multiple rows. Common questions include
