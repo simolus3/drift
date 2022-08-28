@@ -14,6 +14,20 @@ const _modeToString = {
   OrderingMode.desc: 'DESC',
 };
 
+/// Describes how to order nulls
+enum NullsOrder {
+  /// Place NULLs at the start
+  first,
+
+  /// Place NULLs at the end
+  last,
+}
+
+const _nullsOrderToString = {
+  NullsOrder.first: 'NULLS FIRST',
+  NullsOrder.last: 'NULLS LAST',
+};
+
 /// A single term in a [OrderBy] clause. The priority of this term is determined
 /// by its position in [OrderBy.terms].
 class OrderingTerm extends Component {
@@ -23,9 +37,21 @@ class OrderingTerm extends Component {
   /// The ordering mode (ascending or descending).
   final OrderingMode mode;
 
+  /// How to order NULLs.
+  /// When [nullsOrder] is [null], then it's ignored.
+  ///
+  /// Note that this feature are only available in sqlite3 version `3.30.0` and
+  /// newer. When using `sqlite3_flutter_libs` or a web database, this is not
+  /// a problem.
+  final NullsOrder? nullsOrder;
+
   /// Creates an ordering term by the [expression] and the [mode] (defaults to
   /// ascending).
-  OrderingTerm({required this.expression, this.mode = OrderingMode.asc});
+  OrderingTerm({
+    required this.expression,
+    this.mode = OrderingMode.asc,
+    this.nullsOrder,
+  });
 
   /// Creates an ordering term that sorts for ascending values of [expression].
   factory OrderingTerm.asc(Expression expression) {
@@ -48,6 +74,10 @@ class OrderingTerm extends Component {
     expression.writeInto(context);
     context.writeWhitespace();
     context.buffer.write(_modeToString[mode]);
+    if (nullsOrder != null) {
+      context.writeWhitespace();
+      context.buffer.write(_nullsOrderToString[nullsOrder]);
+    }
   }
 }
 
