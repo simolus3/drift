@@ -29,7 +29,7 @@ void main() {
     query.orderBy([
       (tbl) => OrderingTerm(
             expression: tbl.name,
-            nullsOrder: NullsOrder.last,
+            nulls: NullsOrder.last,
           ),
     ]);
     await query.get();
@@ -44,7 +44,7 @@ void main() {
     query.orderBy([
       (tbl) => OrderingTerm(
             expression: tbl.name,
-            nullsOrder: NullsOrder.first,
+            nulls: NullsOrder.first,
           ),
     ]);
     await query.get();
@@ -59,14 +59,14 @@ void main() {
     query.orderBy([
       (tbl) => OrderingTerm(
             expression: tbl.name,
-            nullsOrder: NullsOrder.first,
+            nulls: NullsOrder.first,
           ),
       (tbl) => OrderingTerm(
             expression: tbl.creationTime,
           ),
       (tbl) => OrderingTerm(
             expression: tbl.profilePicture,
-            nullsOrder: NullsOrder.last,
+            nulls: NullsOrder.last,
           ),
     ]);
     await query.get();
