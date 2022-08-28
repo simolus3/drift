@@ -75,4 +75,14 @@ void main() {
       argThat(isEmpty),
     ));
   });
+
+  test('works with helper factories', () {
+    final table = db.users;
+
+    expect(OrderingTerm.asc(table.id), generates('id ASC'));
+    expect(OrderingTerm.asc(table.id, nulls: NullsOrder.last),
+        generates('id ASC NULLS LAST'));
+    expect(OrderingTerm.desc(table.id, nulls: NullsOrder.first),
+        generates('id DESC NULLS FIRST'));
+  });
 }

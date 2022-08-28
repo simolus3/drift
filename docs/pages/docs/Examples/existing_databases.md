@@ -46,7 +46,6 @@ import 'package:drift/drift.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart' as p;
 
-
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     // put the database file, called db.sqlite here, into the documents folder

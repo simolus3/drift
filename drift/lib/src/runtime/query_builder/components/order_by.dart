@@ -53,7 +53,7 @@ class OrderingTerm extends Component {
 
   /// Creates an ordering term that sorts for ascending values
   /// of [expression] and the [nulls].
-  factory OrderingTerm.asc(Expression expression, [NullsOrder? nulls]) {
+  factory OrderingTerm.asc(Expression expression, {NullsOrder? nulls}) {
     return OrderingTerm(
       expression: expression,
       mode: OrderingMode.asc,
@@ -63,7 +63,7 @@ class OrderingTerm extends Component {
 
   /// Creates an ordering term that sorts for descending values
   /// of [expression] and the [nulls].
-  factory OrderingTerm.desc(Expression expression, [NullsOrder? nulls]) {
+  factory OrderingTerm.desc(Expression expression, {NullsOrder? nulls}) {
     return OrderingTerm(
       expression: expression,
       mode: OrderingMode.desc,
