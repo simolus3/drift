@@ -62,11 +62,11 @@ class _Fts5VocabModule extends Module {
   @override
   Table parseTable(CreateVirtualTableStatement stmt) {
     if (stmt.argumentContent.length < 2 || stmt.argumentContent.length > 3) {
-      throw ArgumentError('''
-fts5vocab table requires at least 
-two arguments (<referenced fts5 table name>, <type>) 
-and maximum three arguments when using an attached database
- ''');
+      throw ArgumentError(
+        'fts5vocab table requires at least two arguments '
+        '(<referenced fts5 table name>, <type>) and maximum three arguments '
+        'when using an attached database',
+      );
     }
 
     final type = stmt.argumentContent.last.replaceAll(RegExp(r'''["' ]'''), '');
