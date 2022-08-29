@@ -122,15 +122,18 @@ class ParseDartStep extends Step {
   Future<List<DriftTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
-      if (!_tableTypeChecker.isAssignableFromType(type)) {
+      final element = type is InterfaceType ? type.element2 : null;
+
+      if (!_tableTypeChecker.isAssignableFromType(type) ||
+          element is! ClassElement) {
         reportError(ErrorInDartCode(
           severity: Severity.criticalError,
-          message: 'The type $type is not a moor table',
+          message: 'The type $type is not a drift table class.',
           affectedElement: initializedBy,
         ));
         return Future.value(null);
       } else {
-        return _parseTable((type as InterfaceType).element2 as ClassElement);
+        return _parseTable(element);
       }
     })).then((list) {
       // only keep tables that were resolved successfully
@@ -145,16 +148,18 @@ class ParseDartStep extends Step {
   Future<List<MoorView>> parseViews(Iterable<DartType> types,
       Element initializedBy, List<DriftTable> tables) {
     return Future.wait(types.map((type) {
-      if (!_viewTypeChecker.isAssignableFromType(type)) {
+      final element = type is InterfaceType ? type.element2 : null;
+
+      if (!_viewTypeChecker.isAssignableFromType(type) ||
+          element is! ClassElement) {
         reportError(ErrorInDartCode(
           severity: Severity.criticalError,
-          message: 'The type $type is not a drift view',
+          message: 'The type $type is not a drift view class.',
           affectedElement: initializedBy,
         ));
         return Future.value(null);
       } else {
-        return _parseView(
-            (type as InterfaceType).element2 as ClassElement, tables);
+        return _parseView(element, tables);
       }
     })).then((list) {
       // only keep tables that were resolved successfully
