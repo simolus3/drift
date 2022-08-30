@@ -1,6 +1,7 @@
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
 import '../driver/driver.dart';
+import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/element.dart';
 import 'intermediate_state.dart';
@@ -41,12 +42,22 @@ class DiscoverStep {
           break;
         }
 
-        // todo: Handle parse errors
         final parsed = engine.parseDriftFile(contents);
+        for (final error in parsed.errors) {
+          _file.errorsDuringDiscovery
+              .add(DriftAnalysisError(error.token.span, error.message));
+        }
+
         final ast = parsed.rootNode as DriftFile;
+        final imports = <DriftFileImport>[];
 
         for (final node in ast.childNodes) {
-          if (node is TableInducingStatement) {
+          if (node is ImportStatement) {
+            final uri =
+                _driver.backend.resolveUri(_file.ownUri, node.importedFile);
+
+            imports.add(DriftFileImport(node, uri));
+          } else if (node is TableInducingStatement) {
             pendingElements
                 .add(DiscoveredDriftTable(_id(node.createdName), node));
           } else if (node is CreateViewStatement) {
@@ -55,6 +66,11 @@ class DiscoverStep {
           }
         }
 
+        _file.discovery = DiscoveredDriftFile(
+          ast: parsed.rootNode as DriftFile,
+          imports: imports,
+          locallyDefinedElements: pendingElements,
+        );
         break;
     }
   }

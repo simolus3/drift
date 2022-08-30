@@ -12,8 +12,8 @@ class FileState {
   DiscoveredFileState? discovery;
   AnalyzedFile? results;
 
-  final List<AnalysisError> errorsDuringDiscovery = [];
-  final List<AnalysisError> errorsDuringAnalysis = [];
+  final List<DriftAnalysisError> errorsDuringDiscovery = [];
+  final List<DriftAnalysisError> errorsDuringAnalysis = [];
 
   FileState(this.ownUri);
 
@@ -23,17 +23,42 @@ class FileState {
 abstract class DiscoveredFileState {
   final List<DiscoveredElement> locallyDefinedElements;
 
+  bool get isValidImport => false;
+
+  Iterable<Uri> get importDependencies => const [];
+
   DiscoveredFileState(this.locallyDefinedElements);
 }
 
 class DiscoveredDriftFile extends DiscoveredFileState {
   final DriftFile ast;
+  final List<DriftFileImport> imports;
 
-  DiscoveredDriftFile(this.ast, super.locallyDefinedElements);
+  @override
+  bool get isValidImport => true;
+
+  @override
+  Iterable<Uri> get importDependencies => imports.map((e) => e.importedUri);
+
+  DiscoveredDriftFile({
+    required this.ast,
+    required this.imports,
+    required List<DiscoveredElement> locallyDefinedElements,
+  }) : super(locallyDefinedElements);
+}
+
+class DriftFileImport {
+  final ImportStatement ast;
+  final Uri importedUri;
+
+  DriftFileImport(this.ast, this.importedUri);
 }
 
 class DiscoveredDartLibrary extends DiscoveredFileState {
   final LibraryElement library;
+
+  @override
+  bool get isValidImport => true;
 
   DiscoveredDartLibrary(this.library, super.locallyDefinedElements);
 }

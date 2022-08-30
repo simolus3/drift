@@ -14,6 +14,12 @@ class DriftBuildBackend extends DriftBackend {
   Logger get log => build.log;
 
   @override
+  Uri resolveUri(Uri base, String uriString) {
+    return AssetId.resolve(Uri.parse(uriString), from: AssetId.resolve(base))
+        .uri;
+  }
+
+  @override
   Future<String> readAsString(Uri uri) {
     return _buildStep.readAsString(AssetId.resolve(uri));
   }
