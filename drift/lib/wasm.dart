@@ -85,8 +85,49 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
     }
   }
 
-  @override
-  Future<void> flush() async {
+  Future<void> _flush() async {
     await _fileSystem?.flush();
+  }
+
+  Future _runWithArgs(String statement, List<Object?> args) async {
+    runWithArgsSync(statement, args);
+
+    if (!isInTransaction) {
+      await _flush();
+    }
+  }
+
+  @override
+  Future<void> runCustom(String statement, List<Object?> args) async {
+    await _runWithArgs(statement, args);
+  }
+
+  @override
+  Future<int> runInsert(String statement, List<Object?> args) async {
+    await _runWithArgs(statement, args);
+    return database.lastInsertRowId;
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List<Object?> args) async {
+    await _runWithArgs(statement, args);
+    return database.getUpdatedRows();
+  }
+
+  @override
+  Future<void> runBatched(BatchedStatements statements) async {
+    runBatchSync(statements);
+
+    if (!isInTransaction) {
+      await _flush();
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    if (closeUnderlyingWhenClosed) {
+      database.dispose();
+      await _flush();
+    }
   }
 }

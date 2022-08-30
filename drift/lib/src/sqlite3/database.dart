@@ -14,20 +14,21 @@ import 'native_functions.dart';
 /// through `package:js`.
 abstract class Sqlite3Delegate<DB extends CommonDatabase>
     extends DatabaseDelegate {
-  late DB _db;
+  late DB database;
 
   bool _hasCreatedDatabase = false;
   bool _isOpen = false;
 
   final void Function(DB)? _setup;
-  final bool _closeUnderlyingWhenClosed;
+  final bool closeUnderlyingWhenClosed;
 
   /// A delegate that will call [openDatabase] to open the database.
-  Sqlite3Delegate(this._setup) : _closeUnderlyingWhenClosed = true;
+  Sqlite3Delegate(this._setup) : closeUnderlyingWhenClosed = true;
 
   /// A delegate using an underlying sqlite3 database object that has already
   /// been opened.
-  Sqlite3Delegate.opened(this._db, this._setup, this._closeUnderlyingWhenClosed)
+  Sqlite3Delegate.opened(
+      this.database, this._setup, this.closeUnderlyingWhenClosed)
       : _hasCreatedDatabase = true {
     _initializeDatabase();
   }
@@ -35,10 +36,6 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// This method is overridden by the platform-specific implementation to open
   /// the right sqlite3 database instance.
   DB openDatabase();
-
-  /// This method may optionally be overridden by the platform-specific
-  /// implementation to get notified before a database would be closed.
-  void beforeClose(DB database) {}
 
   @override
   TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
@@ -48,12 +45,6 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   Future<bool> get isOpen => Future.value(_isOpen);
-
-  /// Flush pending writes to the file system on platforms where that is
-  /// necessary.
-  ///
-  /// At the moment, we only support this for the WASM backend.
-  FutureOr<void> flush() => null;
 
   @override
   Future<void> open(QueryExecutorUser db) async {
@@ -70,22 +61,21 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     assert(!_hasCreatedDatabase);
     _hasCreatedDatabase = true;
 
-    _db = openDatabase();
+    database = openDatabase();
   }
 
   void _initializeDatabase() {
-    _db.useNativeFunctions();
-    _setup?.call(_db);
-    versionDelegate = _VmVersionDelegate(_db);
+    database.useNativeFunctions();
+    _setup?.call(database);
+    versionDelegate = _VmVersionDelegate(database);
   }
 
-  @override
-  Future<void> runBatched(BatchedStatements statements) async {
+  void runBatchSync(BatchedStatements statements) {
     final prepared = <CommonPreparedStatement>[];
 
     try {
       for (final stmt in statements.statements) {
-        prepared.add(_db.prepare(stmt, checkNoTail: true));
+        prepared.add(database.prepare(stmt, checkNoTail: true));
       }
 
       for (final application in statements.arguments) {
@@ -98,64 +88,29 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
         stmt.dispose();
       }
     }
-
-    if (!isInTransaction) {
-      await flush();
-    }
   }
 
-  Future _runWithArgs(String statement, List<Object?> args) async {
+  void runWithArgsSync(String statement, List<Object?> args) {
     if (args.isEmpty) {
-      _db.execute(statement);
+      database.execute(statement);
     } else {
-      final stmt = _db.prepare(statement, checkNoTail: true);
+      final stmt = database.prepare(statement, checkNoTail: true);
       try {
         stmt.execute(args);
       } finally {
         stmt.dispose();
       }
     }
-
-    if (!isInTransaction) {
-      await flush();
-    }
-  }
-
-  @override
-  Future<void> runCustom(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
-  }
-
-  @override
-  Future<int> runInsert(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
-    return _db.lastInsertRowId;
-  }
-
-  @override
-  Future<int> runUpdate(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
-    return _db.getUpdatedRows();
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
-    final stmt = _db.prepare(statement, checkNoTail: true);
+    final stmt = database.prepare(statement, checkNoTail: true);
     try {
       final result = stmt.select(args);
       return QueryResult.fromRows(result.toList());
     } finally {
       stmt.dispose();
-    }
-  }
-
-  @override
-  Future<void> close() async {
-    if (_closeUnderlyingWhenClosed) {
-      beforeClose(_db);
-      _db.dispose();
-
-      await flush();
     }
   }
 }
