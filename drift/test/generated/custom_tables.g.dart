@@ -1606,12 +1606,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readMultiple(List<String> var1,
-      {OrderBy Function(ConfigTable config) clause = _$moor$default$0}) {
+      {ReadMultiple$clause? clause}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    final generatedclause =
-        $write(clause(this.config), startIndex: $arrayStartIndex);
+    final generatedclause = $write(
+        clause?.call(this.config) ?? const OrderBy.nothing(),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
@@ -1625,12 +1626,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap(config.mapFromRow);
   }
 
-  Selectable<Config> readDynamic(
-      {Expression<bool> Function(ConfigTable config) predicate =
-          _$moor$default$1}) {
+  Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
     var $arrayStartIndex = 1;
-    final generatedpredicate =
-        $write(predicate(this.config), startIndex: $arrayStartIndex);
+    final generatedpredicate = $write(
+        predicate?.call(this.config) ?? const CustomExpression('(TRUE)'),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [
@@ -1643,10 +1643,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
-      {Expression<bool> Function(ConfigTable config) pred = _$moor$default$2}) {
+      {TypeConverterVar$pred? pred}) {
     var $arrayStartIndex = 2;
-    final generatedpred =
-        $write(pred(this.config), startIndex: $arrayStartIndex);
+    final generatedpred = $write(
+        pred?.call(this.config) ?? const CustomExpression('(TRUE)'),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
@@ -1694,9 +1695,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<MultipleResult> multiple(
-      {required Expression<bool> Function(WithDefaults d, WithConstraints c)
-          predicate}) {
+  Selectable<MultipleResult> multiple({required Multiple$predicate predicate}) {
     var $arrayStartIndex = 1;
     final generatedpredicate = $write(
         predicate(
@@ -1734,8 +1733,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap(email.mapFromRow);
   }
 
-  Selectable<ReadRowIdResult> readRowId(
-      {required Expression<int> Function(ConfigTable config) expr}) {
+  Selectable<ReadRowIdResult> readRowId({required ReadRowId$expr expr}) {
     var $arrayStartIndex = 1;
     final generatedexpr =
         $write(expr(this.config), startIndex: $arrayStartIndex);
@@ -1865,11 +1863,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-OrderBy _$moor$default$0(ConfigTable _) => const OrderBy.nothing();
-Expression<bool> _$moor$default$1(ConfigTable _) =>
-    const CustomExpression('(TRUE)');
-Expression<bool> _$moor$default$2(ConfigTable _) =>
-    const CustomExpression('(TRUE)');
+typedef ReadMultiple$clause = OrderBy Function(ConfigTable config);
+typedef ReadDynamic$predicate = Expression<bool> Function(ConfigTable config);
+typedef TypeConverterVar$pred = Expression<bool> Function(ConfigTable config);
 
 class JsonResult extends CustomResultSet {
   final String key;
@@ -1927,6 +1923,9 @@ class MultipleResult extends CustomResultSet {
   }
 }
 
+typedef Multiple$predicate = Expression<bool> Function(
+    WithDefaults d, WithConstraints c);
+
 class ReadRowIdResult extends CustomResultSet {
   final int rowid;
   final String configKey;
@@ -1965,6 +1964,8 @@ class ReadRowIdResult extends CustomResultSet {
         .toString();
   }
 }
+
+typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
 
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;

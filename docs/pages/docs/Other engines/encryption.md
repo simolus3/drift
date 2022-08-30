@@ -5,17 +5,22 @@ data:
 template: layouts/docs/single
 ---
 
-There are two ways to use drift on encrypted databases. 
-The `encrypted_moor` package is similar to `moor_flutter` and uses a platform plugin written in
+There are two ways to use drift on encrypted databases.
+The `encrypted_drift` package is similar to `drift_sqflite` and uses a platform plugin written in
 Java.
 Alternatively, you can use the ffi-based implementation with the `sqlcipher_flutter_libs` package.
 
-## Using `encrypted_moor`
+For new apps, we recommend using `sqlcipher_flutter_libs` with a `NativeDatabase`
+from drift.
+An example of a Flutter app using the new encryption package is available
+[here](https://github.com/simolus3/drift/tree/develop/examples/encryption).
 
-Starting from 1.7, we have a version of drift that can work with encrypted databases by using the
+## Using `encrypted_drift`
+
+The drift repository provides a version of drift that can work with encrypted databases by using the
 [sqflite_sqlcipher](https://pub.dev/packages/sqflite_sqlcipher) library
 by [@davidmartos96](https://github.com/davidmartos96). To use it, you need to
-remove the dependency on `moor_flutter` from your `pubspec.yaml` and replace it
+remove the dependency on `drift_sqflite` from your `pubspec.yaml` and replace it
 with this:
 
 {% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
@@ -23,16 +28,16 @@ with this:
 ```yaml
 dependencies:
   drift: ^{{ versions.drift }}
-  encrypted_moor:
+  encrypted_drift:
    git:
     url: https://github.com/simolus3/drift.git
-    path: extras/encryption 
+    path: extras/encryption
 ```
 
-Instead of importing `package:moor_flutter/moor_flutter` (or `package:drift/native.dart`) in your apps, 
-you would then import both `package:drift/drift.dart` and `package:encrypted_moor/encrypted_moor.dart`.
+Instead of importing `package:drift_sqflite/drift_sqflite.dart` (or `package:drift/native.dart`) in your apps, 
+you would then import both `package:drift/drift.dart` and `package:encrypted_drift/encrypted_drift.dart`.
 
-Finally, you can replace `FlutterQueryExecutor` (or a `NativeDatabase`) with an `EncryptedExecutor`.
+Finally, you can replace `SqfliteQueryExecutor` (or a `NativeDatabase`) with an `EncryptedExecutor`.
 
 ### Extra setup on Android and iOS
 

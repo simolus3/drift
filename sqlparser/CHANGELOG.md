@@ -1,3 +1,14 @@
+## 0.23.2
+
+- Support resolving the `fts5vocab` module when `fts5` is enabled - thanks to
+  [@FaFre](https://github.com/FaFre).
+- Support the `rtree` extension - also thanks to [@FaFre](https://github.com/FaFre)!
+- Improve references resolving across subqueries.
+
+## 0.23.1
+
+- Gracefully handle tokenizer errors related to `@` or `$` variables.
+
 ## 0.23.0
 
 - Apply type hints for date times on textual datetime functions as well.

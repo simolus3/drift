@@ -1,7 +1,8 @@
 // ignore_for_file: directives_ordering
 
 // #docregion open
-// These imports are only needed to open the database
+// To open the database, add these imports to the existing file defining the
+// database class. They are used to open the database.
 import 'dart:io';
 
 import 'package:drift/native.dart';
@@ -62,3 +63,19 @@ LazyDatabase _openConnection() {
     return NativeDatabase(file);
   });
 }
+
+// #enddocregion open
+// #docregion usage
+Future<void> main() async {
+  final database = MyDatabase();
+
+  // Simple insert:
+  await database
+      .into(database.categories)
+      .insert(CategoriesCompanion.insert(description: 'my first category'));
+
+  // Simple select:
+  final allCategories = await database.select(database.categories).get();
+  print('Categories in database: $allCategories');
+}
+// #enddocregion usage

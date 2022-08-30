@@ -1,4 +1,4 @@
-name: encrypted_moor
+name: encrypted_drift
 description: Encryption support for drift, built with sqflite_sqlcipher
 version: 1.0.0
 
@@ -7,7 +7,19 @@ environment:
 
 dependencies:
   drift: ^2.0.0
+  path: ^1.8.1
   sqflite_sqlcipher: ^2.0.0
+
+dev_dependencies:
+  drift_testcases:
+    path: ../integration_tests/drift_testcases
+  flutter:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
 
 dependency_overrides:
   drift:

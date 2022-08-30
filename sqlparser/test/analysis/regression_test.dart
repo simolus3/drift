@@ -188,4 +188,32 @@ WHERE EXISTS(SELECT *
 
     expect(result.errors, isEmpty);
   });
+
+  test('regression test for #2010', () {
+    // https://github.com/simolus3/drift/issues/2010
+    final engine = SqlEngine()
+      ..registerTableFromSql('CREATE TABLE place_hierarchy (feature_id INT);')
+      ..registerTableFromSql('CREATE TABLE place_name (feature_id INT);')
+      ..registerTableFromSql('CREATE TABLE place (feature_id INT);');
+
+    final result = engine.analyze('''
+  SELECT
+    (
+      SELECT
+        true
+      FROM (
+        SELECT
+          'test' AS name
+        FROM
+          place_hierarchy ph
+        where
+          ph.feature_id = p.feature_id
+      ) second_select
+    ) first_select
+  FROM place_name matches
+  INNER JOIN place p ON p.feature_id = matches.feature_id;
+''');
+
+    expect(result.errors, isEmpty);
+  });
 }

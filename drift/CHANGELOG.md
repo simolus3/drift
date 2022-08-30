@@ -1,3 +1,10 @@
+## 2.1.0
+
+- Improve stack traces when using `watchSingle()` with a stream emitting a non-
+  singleton list at some point.
+- Add `OrderingTerm.nulls` to control the `NULLS FIRST` or `NULLS LAST` clause
+  in Dart.
+
 ## 2.0.2+1
 
 - Revert the breaking change around `QueryRow.read` only returning non-nullable

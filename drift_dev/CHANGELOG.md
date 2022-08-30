@@ -1,3 +1,15 @@
+## 2.1.0
+
+- Analysis support `fts5` tables with external content tables.
+- Analysis support for the `rtree` module.
+- Prepare for an upcoming breaking analyzer change around how classes are mapped
+  to elements.
+
+## 2.0.2
+
+- Generate public typedefs for the signatures of `scoped_dart_components`,
+  making it easier to re-use them for own methods.
+
 ## 2.0.1
 
 - Recognize options for an applied `not_shared` builder when exporting schemas.

@@ -165,11 +165,22 @@ class Scanner {
         }
         break;
       case $dollar:
-        final name = _matchColumnName()!;
+        final name = _matchColumnName();
+        if (name == null) {
+          errors.add(TokenizerError(
+              r'Expected identifier after `$`', _currentLocation));
+          break;
+        }
+
         tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
       case $at:
-        final name = _matchColumnName()!;
+        final name = _matchColumnName();
+        if (name == null) {
+          errors.add(TokenizerError(
+              r'Expected identifier after `@`', _currentLocation));
+          break;
+        }
         tokens.add(AtSignVariableToken(_currentSpan, name));
         break;
       case $semicolon:
