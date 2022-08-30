@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  Future<BaseDriftAccessor> _analyzeQueries(String moorFile) async {
+  Future<BaseDriftAccessor> analyzeQueries(String moorFile) async {
     final state = TestState.withContent({'foo|lib/a.moor': moorFile});
 
     final result = await state.analyze('package:foo/a.moor');
@@ -19,7 +19,7 @@ void main() {
 
   group('does not allow custom classes for queries', () {
     test('with a single column', () async {
-      final queries = await _analyzeQueries('''
+      final queries = await analyzeQueries('''
         myQuery AS MyResult: SELECT 1;
       ''');
 
@@ -35,9 +35,9 @@ void main() {
     });
 
     test('matching a table', () async {
-      final queries = await _analyzeQueries('''
+      final queries = await analyzeQueries('''
         CREATE TABLE demo (id INTEGER NOT NULL PRIMARY KEY);
-      
+
         myQuery AS MyResult: SELECT id FROM demo;
       ''');
 
@@ -57,25 +57,25 @@ void main() {
   });
 
   test('reports error for queries with different result sets', () async {
-    final queries = await _analyzeQueries('''
+    final queries = await analyzeQueries('''
       CREATE TABLE points (
         id INTEGER NOT NULL PRIMARY KEY,
         lat REAL,
         long REAL
       );
-      
+
       CREATE TABLE routes (
         "start" INTEGER REFERENCES points (id),
         "end" INTEGER REFERENCES points (id),
         PRIMARY KEY ("start", "end")
       );
-      
+
       difCols1 AS DifferentColumns: SELECT id, lat FROM points;
       difCols2 AS DifferentColumns: SELECT id, long FROM points;
-      
-      difNested1 AS DifferentNested: SELECT 
+
+      difNested1 AS DifferentNested: SELECT
         start.** FROM routes INNER JOIN points start ON start.id = routes.start;
-      difNested2 AS DifferentNested: SELECT 
+      difNested2 AS DifferentNested: SELECT
         "end".** FROM routes INNER JOIN points "end" ON "end".id = routes."end";
     ''');
 

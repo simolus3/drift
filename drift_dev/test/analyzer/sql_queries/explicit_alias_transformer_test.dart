@@ -9,7 +9,7 @@ void main() {
   engine.registerTable(const SchemaFromCreateTable()
       .read(result.rootNode as CreateTableStatement));
 
-  void _test(String input, String output) {
+  void checkTransformation(String input, String output) {
     final node = engine.analyze(input).root;
     final transformer = ExplicitAliasTransformer();
     transformer.rewrite(node);
@@ -18,29 +18,29 @@ void main() {
   }
 
   test('rewrites simple queries', () {
-    _test('SELECT 1 + 2', 'SELECT 1 + 2 AS _c0');
+    checkTransformation('SELECT 1 + 2', 'SELECT 1 + 2 AS _c0');
   });
 
   test('does not rewrite simple references', () {
-    _test('SELECT id FROM a', 'SELECT id FROM a');
+    checkTransformation('SELECT id FROM a', 'SELECT id FROM a');
   });
 
   test('rewrites references', () {
-    _test('SELECT "1+2" FROM (SELECT 1+2)',
+    checkTransformation('SELECT "1+2" FROM (SELECT 1+2)',
         'SELECT _c0 FROM (SELECT 1 + 2 AS _c0)');
   });
 
   test('does not rewrite subquery expressions', () {
-    _test('SELECT (SELECT 1)', 'SELECT (SELECT 1) AS _c0');
+    checkTransformation('SELECT (SELECT 1)', 'SELECT (SELECT 1) AS _c0');
   });
 
   test('rewrites compound select statements', () {
-    _test("SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar'",
+    checkTransformation("SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar'",
         "SELECT 1 + 2 AS _c0, 'foo' AS _c1 UNION ALL SELECT 3 + 4, 'bar'");
   });
 
   test('rewrites references for compount select statements', () {
-    _test(
+    checkTransformation(
       '''
     SELECT "1 + 2", "'foo'" FROM
       (SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar')
@@ -51,7 +51,7 @@ void main() {
   });
 
   test('rewrites references for compount select statements', () {
-    _test(
+    checkTransformation(
       '''
     WITH
      foo AS (SELECT 2 * 3 UNION ALL SELECT 3)
@@ -63,7 +63,7 @@ void main() {
   });
 
   test('does not rewrite compound select statements with explicit names', () {
-    _test(
+    checkTransformation(
       '''
     WITH
      foo(x) AS (SELECT 2 * 3 UNION ALL SELECT 3)
@@ -75,7 +75,7 @@ void main() {
   });
 
   test('rewrites RETURNING clauses', () {
-    _test(
+    checkTransformation(
       'INSERT INTO a VALUES (1), (2) RETURNING id * 3',
       'INSERT INTO a VALUES (1), (2) RETURNING id * 3 AS _c0',
     );
