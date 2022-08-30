@@ -8,7 +8,7 @@ import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/backends/backend.dart';
 import 'package:logging/logging.dart';
 
-import '../../analysis/runner/preprocess_drift.dart';
+import '../../analysis/preprocess_drift.dart';
 
 class BuildBackend extends Backend {
   final DriftOptions options;

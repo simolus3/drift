@@ -76,3 +76,11 @@ abstract class DiscoveredElement {
 
   DiscoveredElement(this.ownId);
 }
+
+abstract class AnalyzedElement {
+  final DriftElementId ownId;
+
+  AnalyzedElement(this.ownId);
+
+  Iterable<DriftElementId> get references;
+}

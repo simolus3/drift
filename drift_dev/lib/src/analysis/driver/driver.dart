@@ -33,11 +33,15 @@ class DriftAnalysisDriver {
 
     if (known.discovery == null) {
       await DiscoverStep(this, cache.notifyFileChanged(uri)).discover();
+      // todo: Mark elements that need to be analyzed again
 
       // To analyze a drift file, we also need to be able to analyze imports.
       final state = known.discovery;
       if (state is DiscoveredDriftFile) {
         for (final import in state.imports) {
+          // todo: We shouldn't unconditionally crawl files like this. The build
+          // backend should emit prepared file results in a previous step which
+          // should be used here.
           final file = await prepareFileForAnalysis(import.importedUri);
 
           if (file.discovery?.isValidImport != true) {

@@ -2,8 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:path/path.dart' show url;
 
-import '../../utils/string_escaper.dart';
-import '../backend.dart';
+import '../utils/string_escaper.dart';
+import 'backend.dart';
 
 part 'preprocess_drift.g.dart';
 

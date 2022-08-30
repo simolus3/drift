@@ -1,7 +1,7 @@
-import 'package:drift_dev/src/analysis/runner/preprocess_drift.dart';
+import 'package:drift_dev/src/analysis/preprocess_drift.dart';
 import 'package:test/test.dart';
 
-import '../test_utils.dart';
+import 'test_utils.dart';
 
 void main() {
   test('finds dart expressions', () async {
