@@ -101,7 +101,7 @@ void main() {
 
     tearDown(() => state.close());
 
-    Future<void> _runTest(DriftOptions options, Matcher expectation) async {
+    Future<void> runTest(DriftOptions options, Matcher expectation) async {
       final file = await state.analyze('package:a/main.moor');
       final fileState = file.currentResult as ParsedDriftFile;
 
@@ -114,7 +114,7 @@ void main() {
     }
 
     test('with the new query generator', () {
-      return _runTest(
+      return runTest(
         const DriftOptions.defaults(),
         allOf(
           contains(r'var $arrayStartIndex = 3;'),
@@ -139,10 +139,10 @@ void main() {
             c TEXT
           );
 
-          query: 
-          SELECT 
-            parent.a, 
-            LIST(SELECT b, c FROM tbl WHERE a = :a OR a = parent.a AND b = :b) 
+          query:
+          SELECT
+            parent.a,
+            LIST(SELECT b, c FROM tbl WHERE a = :a OR a = parent.a AND b = :b)
           FROM tbl AS parent WHERE parent.a = :a;
         ''',
       });
@@ -150,7 +150,7 @@ void main() {
 
     tearDown(() => state.close());
 
-    Future<void> _runTest(
+    Future<void> runTest(
         DriftOptions options, List<Matcher> expectation) async {
       final file = await state.analyze('package:a/main.moor');
       final fileState = file.currentResult as ParsedDriftFile;
@@ -167,7 +167,7 @@ void main() {
     }
 
     test('should generate correct queries with variables', () {
-      return _runTest(
+      return runTest(
         const DriftOptions.defaults(),
         [
           contains(
@@ -187,7 +187,7 @@ void main() {
     });
 
     test('should generate correct data class', () {
-      return _runTest(
+      return runTest(
         const DriftOptions.defaults(),
         [
           contains('QueryNestedQuery0({this.b,this.c,})'),

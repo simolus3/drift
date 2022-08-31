@@ -6,11 +6,45 @@ data:
 template: layouts/docs/list
 ---
 
+For a full example of a cross-platform Flutter app using drift following best
+practices, see [app example](https://github.com/simolus3/drift/tree/develop/examples/app) in drift's repository.
+For interested users wanting to take a look at how to use drift in a Flutter app
+with a modern architecture, this is perhaps the best example to use as a starting
+point.
 
-We have an [example in the repo](https://github.com/simolus3/drift/tree/master/moor_flutter/example), it's a simple todo list app,
-written with drift. [Rody Davis](https://github.com/rodydavis) has built a cleaner version of the example that works on all
-Flutter platforms - including Web and Desktop! You can check it out [here](https://github.com/rodydavis/moor_shared).
-An updated version of this example is also present in drift's [repository](https://github.com/simolus3/drift/tree/develop/examples/app).
-[Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an animated version of the todo app available [here](https://github.com/abdelrahmanelmarakby/todo_with_moor_and_animation).
+Drift's repository also contains a number of smaller examples showcasing select
+drift features:
 
-The [HackerNews reader app](https://github.com/filiph/hn_app) from the [Boring Flutter Show](https://www.youtube.com/playlist?list=PLjxrf2q8roU3ahJVrSgAnPjzkpGmL9Czl) also uses drift to keep a list of favorite articles.
+- The [encryption] example contains a simple Flutter app using an encrypted drift
+  database, powered by the `sqlcipher_flutter_libs` package.
+- [web_worker] and [flutter_web_worker] are small web-only apps using drift in
+  a shared web worker, which allows for a real-time synchronization of the
+  database across tabs. Of course, this pattern can only be embedded into
+  multi-platform apps.
+- The [migration] example makes use of advanced schema migrations and shows how
+  to test migrations between different database schemas by using drift's
+  [dedicated tooling][migration tooling] for this purpose.
+- [Another example][with_built_value] shows how to use drift-generated code in
+  other builders (here, `built_value`).
+
+Additional examples from our awesome community are available as well:
+
+- [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an animated version of the todo app available [here](https://github.com/abdelrahmanelmarakby/todo_with_moor_and_animation).
+- The [HackerNews reader app](https://github.com/filiph/hn_app) from the [Boring Flutter Show](https://www.youtube.com/playlist?list=PLjxrf2q8roU3ahJVrSgAnPjzkpGmL9Czl)
+  also uses drift to keep a list of favorite articles.
+
+If you too have an open-source application using drift, feel free to reach out
+and have it added to this list!
+
+If you are interested in seeing more drift examples, or want to contribute more
+examples yourself, don't hesitate to open an issue either.
+Providing more up-to-date examples would be a much appreciated contribution!
+
+Additional patterns are also shown and explained on this website:
+
+[encryption]: https://github.com/simolus3/drift/tree/develop/examples/encryption
+[web_worker]: https://github.com/simolus3/drift/tree/develop/examples/web_worker_example
+[flutter_web_worker]: https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example
+[migration]: https://github.com/simolus3/drift/tree/develop/examples/migrations_example
+[migration tooling]: {{ '../Advanced Features/migrations.md#verifying-migrations' | pageUrl }}
+[with_built_value]: https://github.com/simolus3/drift/tree/develop/examples/with_built_value

@@ -43,7 +43,7 @@ void main() {
             'message',
             contains('Is it a part file?'),
           )
-          .having((e) => e.span.text, 'span.text', "import 'tables.dart';"),
+          .having((e) => e.span?.text, 'span.text', "import 'tables.dart';"),
     );
   });
 }

@@ -23,7 +23,7 @@ Future<FoundDartClass?> findDartClass(
     }
 
     final foundElement = library.exportNamespace.get(identifier);
-    if (foundElement is ClassElement) {
+    if (foundElement is InterfaceElement) {
       return FoundDartClass(foundElement, null);
     } else if (foundElement is TypeAliasElement) {
       final innerType = foundElement.aliasedType;

@@ -13,20 +13,40 @@ class Fts5Extension implements Extension {
 
 /// FTS5 module for `CREATE VIRTUAL TABLE USING fts5` support
 class _Fts5Module extends Module {
+  static final RegExp _option = RegExp(r'^(.+)\s*=\s*(.+)$');
+  static final RegExp _cleanTicks = RegExp('[\'"]');
+
   _Fts5Module() : super('fts5');
 
   @override
   Table parseTable(CreateVirtualTableStatement stmt) {
-    // arguments with an equals sign are parameters passed to the fts5 module.
-    // they're not part of the schema.
-    final columnNames =
-        stmt.argumentContent.where((arg) => !arg.contains('=')).map((c) {
-      // actual syntax is <name> <options...>
-      return c.trim().split(' ').first;
-    });
+    final columnNames = <String>[];
+    final options = <String, String>{};
 
-    return _Fts5Table(
+    for (final argument in stmt.argumentContent) {
+      // arguments with an equals sign are parameters passed to the fts5 module.
+      // they're not part of the schema.
+      final match = _option.firstMatch(argument);
+
+      if (match == null) {
+        // actual syntax is <name> <options...>
+        columnNames.add(argument.trim().split(' ').first);
+      } else {
+        options[match.group(1)!.replaceAll(_cleanTicks, '')] =
+            match.group(2)!.replaceAll(_cleanTicks, '');
+      }
+    }
+
+    //No external content when null or empty String
+    final contentTable =
+        (options['content']?.isNotEmpty ?? false) ? options['content'] : null;
+    //Fallback to "rowid" when option is not set
+    final contentRowId = options['content_rowid'] ?? 'rowid';
+
+    return Fts5Table._(
       name: stmt.tableName,
+      contentTable: contentTable,
+      contentRowId: (contentTable != null) ? contentRowId : null,
       columns: [
         for (var arg in columnNames)
           TableColumn(arg, const ResolvedType(type: BasicType.text)),
@@ -42,11 +62,11 @@ class _Fts5VocabModule extends Module {
   @override
   Table parseTable(CreateVirtualTableStatement stmt) {
     if (stmt.argumentContent.length < 2 || stmt.argumentContent.length > 3) {
-      throw ArgumentError('''
-fts5vocab table requires at least 
-two arguments (<referenced fts5 table name>, <type>) 
-and maximum three arguments when using an attached database
- ''');
+      throw ArgumentError(
+        'fts5vocab table requires at least two arguments '
+        '(<referenced fts5 table name>, <type>) and maximum three arguments '
+        'when using an attached database',
+      );
     }
 
     final type = stmt.argumentContent.last.replaceAll(RegExp(r'''["' ]'''), '');
@@ -89,14 +109,20 @@ and maximum three arguments when using an attached database
   }
 }
 
-class _Fts5Table extends Table {
-  _Fts5Table(
-      {required String name,
-      required List<TableColumn> columns,
-      CreateVirtualTableStatement? definition})
-      : super(
+class Fts5Table extends Table {
+  final String? contentTable;
+  final String? contentRowId;
+
+  Fts5Table._({
+    required String name,
+    required List<TableColumn> columns,
+    this.contentTable,
+    this.contentRowId,
+    CreateVirtualTableStatement? definition,
+  }) : super(
           name: name,
           resolvedColumns: [
+            if (contentTable != null && contentRowId != null) RowId(),
             ...columns,
             _Fts5RankColumn(),
             _Fts5TableColumn(name),

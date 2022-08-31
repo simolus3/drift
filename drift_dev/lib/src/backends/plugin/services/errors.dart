@@ -42,11 +42,13 @@ class ErrorService {
   Location _findLocationForError(DriftError error, String path) {
     if (error is ErrorInDriftFile) {
       final span = error.span;
-      final start = span.start;
-      final end = span.end;
-      return Location(
-          path, start.offset, span.length, start.line + 1, start.column + 1,
-          endLine: end.line + 1, endColumn: end.column + 1);
+      if (span != null) {
+        final start = span.start;
+        final end = span.end;
+        return Location(
+            path, start.offset, span.length, start.line + 1, start.column + 1,
+            endLine: end.line + 1, endColumn: end.column + 1);
+      }
     }
 
     return Location(path, 0, 0, 0, 0);

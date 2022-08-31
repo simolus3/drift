@@ -54,11 +54,16 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
     for (final column in resolvedColumns) {
       column.table = this;
 
-      if (_rowIdColumn == null && column.isAliasForRowId()) {
-        _rowIdColumn = column;
-        // By design, the rowid is non-nullable, even if there isn't a NOT NULL
-        // constraint set on the column definition.
-        column._type = const ResolvedType(type: BasicType.int, nullable: false);
+      if (_rowIdColumn == null) {
+        if (column is RowId) {
+          _rowIdColumn = column;
+        } else if (column.isAliasForRowId()) {
+          _rowIdColumn = column;
+          // By design, the rowid is non-nullable, even if there isn't a NOT NULL
+          // constraint set on the column definition.
+          column._type =
+              const ResolvedType(type: BasicType.int, nullable: false);
+        }
       }
     }
   }

@@ -22,13 +22,13 @@ class HelperLibrary {
   /// Returns `null` if [type] is not a subtype of `TypeConverter`.
   InterfaceType? asTypeConverter(DartType type) {
     final converter =
-        helperLibrary.exportNamespace.get('TypeConverter') as ClassElement;
+        helperLibrary.exportNamespace.get('TypeConverter') as InterfaceElement;
     return type.asInstanceOf(converter);
   }
 
   bool isJsonAwareTypeConverter(DartType? type, LibraryElement context) {
-    final jsonMixin =
-        helperLibrary.exportNamespace.get('JsonTypeConverter') as ClassElement;
+    final jsonMixin = helperLibrary.exportNamespace.get('JsonTypeConverter')
+        as InterfaceElement;
     final jsonConverterType = jsonMixin.instantiate(
       typeArguments: [
         context.typeProvider.dynamicType,

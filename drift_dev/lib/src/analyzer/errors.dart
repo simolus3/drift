@@ -78,7 +78,7 @@ class ErrorInDartCode extends DriftError {
 }
 
 class ErrorInDriftFile extends DriftError {
-  final FileSpan span;
+  final FileSpan? span;
 
   ErrorInDriftFile(
       {required this.span,
@@ -108,7 +108,12 @@ class ErrorInDriftFile extends DriftError {
 
   @override
   void writeDescription(LogFunction log) {
-    log(span.message(message, color: isError));
+    final errorSpan = span;
+    if (errorSpan != null) {
+      log(errorSpan.message(message, color: isError));
+    } else {
+      log(message);
+    }
   }
 }
 

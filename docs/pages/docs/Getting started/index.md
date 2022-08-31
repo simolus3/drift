@@ -48,7 +48,9 @@ If you're wondering why so many packages are necessary, here's a quick overview 
 
 ### Declaring tables
 
-Using drift, you can model the structure of your tables with simple dart code:
+Using drift, you can model the structure of your tables with simple dart code.
+Let's write a file (simply called `filename.dart` in this snippet) containing
+two simple tables and a database class using drift to get started:
 
 {% include "blocks/snippet" snippets = snippets name = "overview" %}
 
@@ -58,14 +60,24 @@ operator and can't contain anything more than what's included in the documentati
 examples. Otherwise, the generator won't be able to know what's going on.
 
 ## Generating the code
+
 Drift integrates with Dart's `build` system, so you can generate all the code needed with 
 `flutter pub run build_runner build`. If you want to continuously rebuild the generated code
 where you change your code, run `flutter pub run build_runner watch` instead.
-After running either command once, the drift generator will have created a class for your
-database and data classes for your entities. To use it, change the `MyDatabase` class as
-follows:
+After running either command once, drift's generator will have created a class for your
+database and data classes for your entities. To use it, change the `MyDatabase` class
+defined in the earlier snippet as follows:
 
 {% include "blocks/snippet" snippets = snippets name = "open" %}
+
+That's it! You can now use drift by creating an instance of `MyDatabase`.
+In a simple app from a `main` entrypoint, this may look like the following:
+
+{% include "blocks/snippet" snippets = snippets name = "usage" %}
+
+The articles linked below explain how to use the database in actual, complete
+Flutter apps.
+A complete example for a Flutter app using drift is also available [here](https://github.com/simolus3/drift/tree/develop/examples/app).
 
 ## Next steps
 

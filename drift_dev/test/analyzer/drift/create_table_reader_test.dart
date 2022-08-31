@@ -118,7 +118,7 @@ void main() {
               'message',
               allOf(contains('NotAnEnum'), contains('Not an enum')),
             )
-            .having((e) => e.span.text, 'span', 'ENUM(NotAnEnum)'),
+            .having((e) => e.span?.text, 'span', 'ENUM(NotAnEnum)'),
       ),
     );
   });

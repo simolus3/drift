@@ -117,7 +117,7 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
     final fileB = await state.analyze('package:foo/b.moor');
     expect(fileB.errors.errors, [
       const TypeMatcher<ErrorInDriftFile>()
-          .having((e) => e.span.text, 'span.text', 'sin(oid, foo)')
+          .having((e) => e.span?.text, 'span.text', 'sin(oid, foo)')
     ]);
   });
 }

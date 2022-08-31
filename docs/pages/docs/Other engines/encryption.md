@@ -12,6 +12,8 @@ Alternatively, you can use the ffi-based implementation with the `sqlcipher_flut
 
 For new apps, we recommend using `sqlcipher_flutter_libs` with a `NativeDatabase`
 from drift.
+An example of a Flutter app using the new encryption package is available
+[here](https://github.com/simolus3/drift/tree/develop/examples/encryption).
 
 ## Using `encrypted_drift`
 

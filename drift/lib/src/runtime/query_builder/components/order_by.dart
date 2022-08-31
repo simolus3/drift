@@ -3,16 +3,28 @@ part of '../query_builder.dart';
 /// Describes how to order rows
 enum OrderingMode {
   /// Ascending ordering mode (lowest items first)
-  asc,
+  asc._('ASC'),
 
   /// Descending ordering mode (highest items first)
-  desc
+  desc._('DESC');
+
+  final String _mode;
+
+  const OrderingMode._(this._mode);
 }
 
-const _modeToString = {
-  OrderingMode.asc: 'ASC',
-  OrderingMode.desc: 'DESC',
-};
+/// Describes how to order nulls
+enum NullsOrder {
+  /// Place NULLs at the start
+  first._('NULLS FIRST'),
+
+  /// Place NULLs at the end
+  last._('NULLS LAST');
+
+  final String _order;
+
+  const NullsOrder._(this._order);
+}
 
 /// A single term in a [OrderBy] clause. The priority of this term is determined
 /// by its position in [OrderBy.terms].
@@ -23,18 +35,40 @@ class OrderingTerm extends Component {
   /// The ordering mode (ascending or descending).
   final OrderingMode mode;
 
-  /// Creates an ordering term by the [expression] and the [mode] (defaults to
-  /// ascending).
-  OrderingTerm({required this.expression, this.mode = OrderingMode.asc});
+  /// How to order NULLs.
+  /// When [nulls] is [null], then it's ignored.
+  ///
+  /// Note that this feature are only available in sqlite3 version `3.30.0` and
+  /// newer. When using `sqlite3_flutter_libs` or a web database, this is not
+  /// a problem.
+  final NullsOrder? nulls;
 
-  /// Creates an ordering term that sorts for ascending values of [expression].
-  factory OrderingTerm.asc(Expression expression) {
-    return OrderingTerm(expression: expression, mode: OrderingMode.asc);
+  /// Creates an ordering term by the [expression], the [mode] (defaults to
+  /// ascending) and the [nulls].
+  OrderingTerm({
+    required this.expression,
+    this.mode = OrderingMode.asc,
+    this.nulls,
+  });
+
+  /// Creates an ordering term that sorts for ascending values
+  /// of [expression] and the [nulls].
+  factory OrderingTerm.asc(Expression expression, {NullsOrder? nulls}) {
+    return OrderingTerm(
+      expression: expression,
+      mode: OrderingMode.asc,
+      nulls: nulls,
+    );
   }
 
-  /// Creates an ordering term that sorts for descending values of [expression].
-  factory OrderingTerm.desc(Expression expression) {
-    return OrderingTerm(expression: expression, mode: OrderingMode.desc);
+  /// Creates an ordering term that sorts for descending values
+  /// of [expression] and the [nulls].
+  factory OrderingTerm.desc(Expression expression, {NullsOrder? nulls}) {
+    return OrderingTerm(
+      expression: expression,
+      mode: OrderingMode.desc,
+      nulls: nulls,
+    );
   }
 
   /// Creates an ordering term  to get a number of random rows
@@ -47,7 +81,11 @@ class OrderingTerm extends Component {
   void writeInto(GenerationContext context) {
     expression.writeInto(context);
     context.writeWhitespace();
-    context.buffer.write(_modeToString[mode]);
+    context.buffer.write(mode._mode);
+    if (nulls != null) {
+      context.writeWhitespace();
+      context.buffer.write(nulls?._order);
+    }
   }
 }
 

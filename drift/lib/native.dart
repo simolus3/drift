@@ -32,7 +32,7 @@ typedef DatabaseSetup = void Function(Database database);
 /// Dart VM or an AOT compiled Dart/Flutter application.
 class NativeDatabase extends DelegatedDatabase {
   NativeDatabase._(DatabaseDelegate delegate, bool logStatements)
-      : super(delegate, isSequential: true, logStatements: logStatements);
+      : super(delegate, isSequential: false, logStatements: logStatements);
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
@@ -173,7 +173,36 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
   }
 
   @override
-  void beforeClose(Database database) {
-    tracker.markClosed(database);
+  Future<void> runBatched(BatchedStatements statements) {
+    return Future.sync(() => runBatchSync(statements));
+  }
+
+  @override
+  Future<void> runCustom(String statement, List<Object?> args) {
+    return Future.sync(() => runWithArgsSync(statement, args));
+  }
+
+  @override
+  Future<int> runInsert(String statement, List<Object?> args) {
+    return Future.sync(() {
+      runWithArgsSync(statement, args);
+      return database.lastInsertRowId;
+    });
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List<Object?> args) {
+    return Future.sync(() {
+      runWithArgsSync(statement, args);
+      return database.getUpdatedRows();
+    });
+  }
+
+  @override
+  Future<void> close() async {
+    if (closeUnderlyingWhenClosed) {
+      tracker.markClosed(database);
+      database.dispose();
+    }
   }
 }

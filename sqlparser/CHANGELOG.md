@@ -1,4 +1,4 @@
-## 0.23.2-dev
+## 0.23.2
 
 - Support resolving the `fts5vocab` module when `fts5` is enabled - thanks to
   [@FaFre](https://github.com/FaFre).
