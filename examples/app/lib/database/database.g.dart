@@ -623,6 +623,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Trigger todosInsert = Trigger(
       'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
       'todos_insert');
+  late final Trigger todosDelete = Trigger(
+      'CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', old.id, old.description);END',
+      'todos_delete');
+  late final Trigger todosUpdate = Trigger(
+      'CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', new.id, new.description);INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
+      'todos_update');
   Selectable<CategoriesWithCountResult> _categoriesWithCount() {
     return customSelect(
         'SELECT c.*, (SELECT COUNT(*) FROM todo_entries WHERE category = c.id) AS amount FROM categories AS c UNION ALL SELECT NULL, NULL, NULL, (SELECT COUNT(*) FROM todo_entries WHERE category IS NULL)',
@@ -663,14 +669,34 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   Iterable<TableInfo<Table, dynamic>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [categories, todoEntries, textEntries, todosInsert];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        categories,
+        todoEntries,
+        textEntries,
+        todosInsert,
+        todosDelete,
+        todosUpdate
+      ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
           WritePropagation(
             on: TableUpdateQuery.onTableName('todo_entries',
                 limitUpdateKind: UpdateKind.insert),
+            result: [
+              TableUpdate('text_entries', kind: UpdateKind.insert),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('todo_entries',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('text_entries', kind: UpdateKind.insert),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('todo_entries',
+                limitUpdateKind: UpdateKind.update),
             result: [
               TableUpdate('text_entries', kind: UpdateKind.insert),
             ],

@@ -15,17 +15,14 @@ CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN
   INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);
 END;
 
--- todo: Investigate why these two triggers are causing problems
-/*
-CREATE TRIGGER todos_delete AFTER INSERT ON todo_entries BEGIN
-  INSERT INTO text_entries(text_entries, rowid, description) VALUES ('delete', new.id, new.description);
+CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN
+  INSERT INTO text_entries(text_entries, rowid, description) VALUES ('delete', old.id, old.description);
 END;
 
-CREATE TRIGGER todos_update AFTER INSERT ON todo_entries BEGIN
+CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN
   INSERT INTO text_entries(text_entries, rowid, description) VALUES ('delete', new.id, new.description);
   INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);
 END;
-*/
 
 -- Queries can also be defined here, they're then added as methods to the database.
 _categoriesWithCount: SELECT c.*,
