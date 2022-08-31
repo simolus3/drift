@@ -1,4 +1,5 @@
 import '../driver/driver.dart';
+import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/element.dart';
 
@@ -8,13 +9,21 @@ import 'intermediate_state.dart';
 class DriftResolver {
   final DriftAnalysisDriver driver;
 
+  final List<DriftElementId> _currentDependencyPath = [];
+
   DriftResolver(this.driver);
 
   Future<DriftElement> resolveDiscovered(DiscoveredElement discovered) {
     LocalElementResolver resolver;
 
+    final fileState = driver.cache.knownFiles[discovered.ownId.libraryUri]!;
+    final elementState = fileState.analysis.putIfAbsent(
+        discovered.ownId, () => ElementAnalysisState(discovered.ownId));
+
+    elementState.errorsDuringAnalysis.clear();
+
     if (discovered is DiscoveredDriftTable) {
-      resolver = drift_table.DriftTableResolver(discovered, this);
+      resolver = drift_table.DriftTableResolver(discovered, this, elementState);
     } else {
       throw UnimplementedError('TODO: Handle $discovered');
     }
@@ -24,21 +33,48 @@ class DriftResolver {
 
   Future<ResolveReferencedElementResult> resolveReferencedElement(
       DriftElementId owner, DriftElementId reference) async {
+    if (owner == reference) {
+      return InvalidReferenceResult(
+        InvalidReferenceError.referencesItself,
+        'References itself',
+      );
+    }
+
+    // If this element is in the backlog of things currently being analyzed,
+    // that's a circular reference.
+    if (_currentDependencyPath.contains(reference)) {
+      final offset = _currentDependencyPath.indexOf(reference);
+      final message = _currentDependencyPath
+          .skip(offset)
+          .followedBy([reference])
+          .map((e) => '`${e.name}`')
+          .join(' -> ');
+
+      return InvalidReferenceResult(
+        InvalidReferenceError.referencesItself,
+        'Illegal circular reference found: $message',
+      );
+    }
+
     final existing = driver.cache.resolvedElements[reference];
     if (existing != null) {
-      // todo: Check for circular references
+      // todo: Check for circular references for existing elements
       return ResolvedReferenceFound(existing);
     }
 
     final pending = driver.cache.discoveredElements[reference];
     if (pending != null) {
+      _currentDependencyPath.add(reference);
+
       try {
-        // todo: Check for circular references
         final resolved = await resolveDiscovered(pending);
         return ResolvedReferenceFound(resolved);
       } catch (e, s) {
         driver.backend.log.warning('Could not analze $reference', e, s);
         return ReferencedElementCouldNotBeResolved();
+      } finally {
+        final removed = _currentDependencyPath.removeLast();
+        assert(identical(removed, reference));
       }
     }
 
@@ -52,17 +88,14 @@ class DriftResolver {
     final file = driver.cache.knownFiles[owner.libraryUri]!;
 
     for (final available in driver.cache.crawl(file)) {
-      final result = available.results;
-      final discovery = available.discovery;
+      final localElementIds = {
+        ...available.analysis.keys,
+        ...?available.discovery?.locallyDefinedElements.map((e) => e.ownId),
+      };
 
-      if (result != null) {
-        // todo
-        throw UnimplementedError('Pre-read results');
-      } else {
-        for (final definedLocally in discovery!.locallyDefinedElements) {
-          if (definedLocally.ownId.sameName(reference)) {
-            candidates.add(definedLocally.ownId);
-          }
+      for (final definedLocally in localElementIds) {
+        if (definedLocally.sameName(reference)) {
+          candidates.add(definedLocally);
         }
       }
     }
@@ -89,8 +122,13 @@ class DriftResolver {
 abstract class LocalElementResolver<T extends DiscoveredElement> {
   final T discovered;
   final DriftResolver resolver;
+  final ElementAnalysisState state;
 
-  LocalElementResolver(this.discovered, this.resolver);
+  LocalElementResolver(this.discovered, this.resolver, this.state);
+
+  void reportError(DriftAnalysisError error) {
+    state.errorsDuringAnalysis.add(error);
+  }
 
   Future<DriftElement> resolve();
 }
@@ -105,6 +143,7 @@ class ResolvedReferenceFound extends ResolveReferencedElementResult {
 
 enum InvalidReferenceError {
   causesCircularReference,
+  referencesItself,
 
   /// Reported by [DriftResolver.resolveReference] when no element with the
   /// given name exists in transitive imports.

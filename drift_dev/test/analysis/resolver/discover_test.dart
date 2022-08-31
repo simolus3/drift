@@ -56,7 +56,6 @@ CREATE TABLE valid_2 (bar INTEGER);
       expect(state.errorsDuringDiscovery, [
         isDriftError(contains('Expected a table name')),
       ]);
-      expect(state.errorsDuringAnalysis, isEmpty);
 
       // The syntax error should only affect the single statement
       expect(

@@ -3,17 +3,15 @@ import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
 import '../results/element.dart';
-import '../results/file.dart';
 import 'error.dart';
 
 class FileState {
   final Uri ownUri;
 
   DiscoveredFileState? discovery;
-  AnalyzedFile? results;
+  final Map<DriftElementId, ElementAnalysisState> analysis = {};
 
   final List<DriftAnalysisError> errorsDuringDiscovery = [];
-  final List<DriftAnalysisError> errorsDuringAnalysis = [];
 
   FileState(this.ownUri);
 
@@ -77,10 +75,13 @@ abstract class DiscoveredElement {
   DiscoveredElement(this.ownId);
 }
 
-abstract class AnalyzedElement {
+class ElementAnalysisState {
   final DriftElementId ownId;
+  final List<DriftAnalysisError> errorsDuringAnalysis = [];
 
-  AnalyzedElement(this.ownId);
+  DriftElement? result;
 
-  Iterable<DriftElementId> get references;
+  bool isUpToDate = false;
+
+  ElementAnalysisState(this.ownId);
 }

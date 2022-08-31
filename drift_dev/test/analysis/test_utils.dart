@@ -55,7 +55,8 @@ class TestBackend extends DriftBackend {
 
 Matcher get hasNoErrors => isA<FileState>()
     .having((e) => e.errorsDuringDiscovery, 'errorsDuringDiscovery', isEmpty)
-    .having((e) => e.errorsDuringAnalysis, 'errorsDuringAnalysis', isEmpty);
+    .having((e) => e.analysis.values.expand((e) => e.errorsDuringAnalysis),
+        '(errors in analyzed elements)', isEmpty);
 
 Matcher isDriftError(dynamic message) {
   return isA<DriftAnalysisError>().having((e) => e.message, 'message', message);

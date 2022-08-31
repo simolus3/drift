@@ -4,6 +4,7 @@ import 'package:sqlparser/sqlparser.dart';
 import '../../analyzer/options.dart';
 import '../backend.dart';
 import '../resolver/discover.dart';
+import '../resolver/resolver.dart';
 import 'cache.dart';
 import 'error.dart';
 import 'state.dart';
@@ -60,11 +61,24 @@ class DriftAnalysisDriver {
     return known;
   }
 
+  Future<void> _analyzePrepared(FileState state) async {
+    assert(state.discovery != null);
+
+    for (final element in state.discovery!.locallyDefinedElements) {
+      if (cache.resolvedElements[element.ownId] == null) {
+        final resolver = DriftResolver(this);
+        await resolver.resolveDiscovered(element);
+      }
+    }
+  }
+
   Future<void> fullyAnalyze(Uri uri) async {
     var known = cache.knownFiles[uri];
 
     if (known == null || known.discovery == null) {
-      await prepareFileForAnalysis(uri);
+      known = await prepareFileForAnalysis(uri);
     }
+
+    await _analyzePrepared(known);
   }
 }

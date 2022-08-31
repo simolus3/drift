@@ -12,8 +12,7 @@ class DriftAnalysisCache {
 
     return knownFiles.putIfAbsent(uri, () => FileState(uri))
       ..errorsDuringDiscovery.clear()
-      ..errorsDuringAnalysis.clear()
-      ..results = null
+      ..analysis.clear()
       ..discovery = null;
   }
 

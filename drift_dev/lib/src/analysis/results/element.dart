@@ -1,6 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
 
+import 'column.dart';
+
 @sealed
 class DriftElementId {
   final Uri libraryUri;
@@ -40,5 +42,20 @@ abstract class DriftElement {
   final DriftElementId id;
   final DriftDeclaration? declaration;
 
+  Iterable<DriftElementId> get references => const Iterable.empty();
+
   DriftElement(this.id, this.declaration);
+}
+
+abstract class DriftSchemaElement extends DriftElement {
+  DriftSchemaElement(super.id, super.declaration);
+
+  /// The exact, unaliased name of this element in the database's schema.
+  String get schemaName => id.name;
+}
+
+abstract class DriftElementWithResultSet extends DriftSchemaElement {
+  List<DriftColumn> get columns;
+
+  DriftElementWithResultSet(super.id, super.declaration);
 }
