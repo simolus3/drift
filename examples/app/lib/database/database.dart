@@ -16,15 +16,29 @@ class AppDatabase extends _$AppDatabase {
       : super.connect(connection);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: ((m, from, to) async {
-        if (from == 1) {
-          // The todoEntries.dueDate column was added in version 2.
-          await m.addColumn(todoEntries, todoEntries.dueDate);
+        for (var step = from + 1; step <= to; step++) {
+          switch (step) {
+            case 2:
+              // The todoEntries.dueDate column was added in version 2.
+              await m.addColumn(todoEntries, todoEntries.dueDate);
+              break;
+            case 3:
+              // New triggers were added in version 3:
+              await m.create(todosDelete);
+              await m.create(todosUpdate);
+
+              // Also, the `REFERENCES` constraint was added to
+              // [TodoEntries.category]. Run a table migration to rebuild all
+              // column constraints without loosing data.
+              await m.alterTable(TableMigration(todoEntries));
+              break;
+          }
         }
       }),
       beforeOpen: (details) async {

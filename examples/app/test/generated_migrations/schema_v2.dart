@@ -81,13 +81,18 @@ class TodoEntries extends Table with TableInfo {
   bool get dontWriteConstraints => false;
 }
 
-class text_entriesTable extends Table with TableInfo, VirtualTableInfo {
+class TextEntries extends Table with TableInfo, VirtualTableInfo {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  text_entriesTable(this.attachedDatabase, [this._alias]);
+  TextEntries(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
   @override
-  List<GeneratedColumn> get $columns => [];
+  List<GeneratedColumn> get $columns => [description];
   @override
   String get aliasedName => _alias ?? 'text_entries';
   @override
@@ -100,8 +105,8 @@ class text_entriesTable extends Table with TableInfo, VirtualTableInfo {
   }
 
   @override
-  text_entriesTable createAlias(String alias) {
-    return text_entriesTable(attachedDatabase, alias);
+  TextEntries createAlias(String alias) {
+    return TextEntries(attachedDatabase, alias);
   }
 
   @override
@@ -116,12 +121,13 @@ class DatabaseAtV2 extends GeneratedDatabase {
   DatabaseAtV2.connect(DatabaseConnection c) : super.connect(c);
   late final Categories categories = Categories(this);
   late final TodoEntries todoEntries = TodoEntries(this);
-  late final text_entriesTable textEntries = text_entriesTable(this);
+  late final TextEntries textEntries = TextEntries(this);
   late final Trigger todosInsert = Trigger(
       'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN\n  INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);\nEND;',
       'todos_insert');
   @override
-  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [categories, todoEntries, textEntries, todosInsert];
