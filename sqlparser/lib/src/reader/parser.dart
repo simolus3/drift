@@ -739,7 +739,7 @@ class Parser {
   Literal? _literalOrNull() {
     final token = _peek;
 
-    Literal? _parseInner() {
+    Literal? parseInner() {
       if (_check(TokenType.numberLiteral)) {
         return _numericLiteral();
       }
@@ -770,7 +770,7 @@ class Parser {
       return null;
     }
 
-    final literal = _parseInner();
+    final literal = parseInner();
     literal?.setSpan(token, token);
     return literal;
   }

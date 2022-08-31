@@ -55,9 +55,14 @@ class TodoEntries extends Table with TableInfo {
       type: DriftSqlType.string, requiredDuringInsert: true);
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: 'REFERENCES categories (id)');
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
+      'due_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns => [id, description, category];
+  List<GeneratedColumn> get $columns => [id, description, category, dueDate];
   @override
   String get aliasedName => _alias ?? 'todo_entries';
   @override
@@ -113,21 +118,33 @@ class TextEntries extends Table with TableInfo, VirtualTableInfo {
       'fts5(description, content=todo_entries, content_rowid=id)';
 }
 
-class DatabaseAtV1 extends GeneratedDatabase {
-  DatabaseAtV1(QueryExecutor e) : super(e);
-  DatabaseAtV1.connect(DatabaseConnection c) : super.connect(c);
+class DatabaseAtV3 extends GeneratedDatabase {
+  DatabaseAtV3(QueryExecutor e) : super(e);
+  DatabaseAtV3.connect(DatabaseConnection c) : super.connect(c);
   late final Categories categories = Categories(this);
   late final TodoEntries todoEntries = TodoEntries(this);
   late final TextEntries textEntries = TextEntries(this);
   late final Trigger todosInsert = Trigger(
-      'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN\n  INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);\nEND;',
+      'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
       'todos_insert');
+  late final Trigger todosDelete = Trigger(
+      'CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', old.id, old.description);END',
+      'todos_delete');
+  late final Trigger todosUpdate = Trigger(
+      'CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', new.id, new.description);INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
+      'todos_update');
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [categories, todoEntries, textEntries, todosInsert];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        categories,
+        todoEntries,
+        textEntries,
+        todosInsert,
+        todosDelete,
+        todosUpdate
+      ];
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 }

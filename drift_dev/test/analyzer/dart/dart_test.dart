@@ -33,25 +33,25 @@ void main() {
     final parser = DriftDartParser(ParseDartStep(
         task, session.registerFile(input), library, await task.helper));
 
-    Future<MethodDeclaration> _loadDeclaration(Element element) async {
+    Future<MethodDeclaration> loadDeclaration(Element element) async {
       final node = await parser.loadElementDeclaration(element);
       return node as MethodDeclaration;
     }
 
-    Future<void> _verifyReturnExpressionMatches(
+    Future<void> verifyReturnExpressionMatches(
         Element element, String source) async {
-      final node = await _loadDeclaration(element);
+      final node = await loadDeclaration(element);
       expect(parser.returnExpressionOfMethod(node)!.toSource(), source);
     }
 
     final testClass = library.getClass('Test');
 
-    await _verifyReturnExpressionMatches(
+    await verifyReturnExpressionMatches(
         testClass!.getGetter('getter')!, "'foo'");
-    await _verifyReturnExpressionMatches(
+    await verifyReturnExpressionMatches(
         testClass.getMethod('function')!, "'bar'");
 
-    final invalidDecl = await _loadDeclaration(testClass.getMethod('invalid')!);
+    final invalidDecl = await loadDeclaration(testClass.getMethod('invalid')!);
     expect(parser.returnExpressionOfMethod(invalidDecl), isNull);
     expect(parser.step.errors.errors, isNotEmpty);
 

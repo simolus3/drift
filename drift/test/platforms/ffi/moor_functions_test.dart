@@ -20,23 +20,23 @@ void main() {
   }
 
   group('pow', () {
-    dynamic _resultOfPow(String a, String b) {
+    dynamic resultOfPow(String a, String b) {
       return selectSingle('pow($a, $b)');
     }
 
     test('returns null when any argument is null', () {
-      expect(_resultOfPow('null', 'null'), isNull);
-      expect(_resultOfPow('3', 'null'), isNull);
-      expect(_resultOfPow('null', '3'), isNull);
+      expect(resultOfPow('null', 'null'), isNull);
+      expect(resultOfPow('3', 'null'), isNull);
+      expect(resultOfPow('null', '3'), isNull);
     });
 
     test('returns correct results', () {
-      expect(_resultOfPow('10', '0'), 1);
-      expect(_resultOfPow('0', '10'), 0);
-      expect(_resultOfPow('0', '0'), 1);
-      expect(_resultOfPow('2', '5'), 32);
-      expect(_resultOfPow('3.5', '2'), 12.25);
-      expect(_resultOfPow('10', '-1'), 0.1);
+      expect(resultOfPow('10', '0'), 1);
+      expect(resultOfPow('0', '10'), 0);
+      expect(resultOfPow('0', '0'), 1);
+      expect(resultOfPow('2', '5'), 32);
+      expect(resultOfPow('3.5', '2'), 12.25);
+      expect(resultOfPow('10', '-1'), 0.1);
     });
   });
 

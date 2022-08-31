@@ -38,7 +38,7 @@ void main() {
   });
 
   group('delegates queries', () {
-    void _runTests(bool sequential) {
+    void runTests(bool sequential) {
       test('when sequential = $sequential', () async {
         final db = DelegatedDatabase(delegate, isSequential: sequential);
         await db.ensureOpen(_FakeExecutorUser());
@@ -61,8 +61,8 @@ void main() {
       });
     }
 
-    _runTests(false);
-    _runTests(true);
+    runTests(false);
+    runTests(true);
   });
 
   group('migrations', () {

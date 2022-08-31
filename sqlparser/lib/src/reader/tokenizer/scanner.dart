@@ -319,7 +319,7 @@ class Scanner {
 
     /// Returns true without advancing if the next char is a digit. Returns
     /// false and logs an error with the message otherwise.
-    bool _requireDigit(String message) {
+    bool requireDigit(String message) {
       final noDigit = _isAtEnd || !isDigit(_peek());
       if (noDigit) {
         errors.add(TokenizerError(message, _currentLocation));
@@ -335,7 +335,7 @@ class Scanner {
     if (firstChar == $dot) {
       // started with a decimal point. the next char has to be numeric
       hasDecimal = true;
-      if (_requireDigit('Expected a digit after the decimal dot')) {
+      if (requireDigit('Expected a digit after the decimal dot')) {
         afterDecimal = consumeDigits();
       }
     } else {
@@ -380,7 +380,7 @@ class Scanner {
         parsedExponent = int.parse(exponent);
       } else {
         if (char == $plus || char == $minus) {
-          _requireDigit('Expected digits for the exponent');
+          requireDigit('Expected digits for the exponent');
           final exponent = consumeDigits();
 
           parsedExponent =
