@@ -12,7 +12,7 @@ class ResultSetWriter {
 
   void write() {
     final className = query.resultClassName;
-    final fieldNames = <String>[];
+    final fields = <EqualityField>[];
     final nonNullableFields = <String>{};
     final into = scope.leaf();
 
@@ -34,7 +34,7 @@ class ResultSetWriter {
 
       into.write('$modifier $runtimeType $name\n;');
 
-      fieldNames.add(name);
+      fields.add(EqualityField(name, isList: column.isUint8ListInDart));
       if (!column.nullable) nonNullableFields.add(name);
     }
 
@@ -49,7 +49,7 @@ class ResultSetWriter {
 
         into.write('$modifier $typeName $fieldName;\n');
 
-        fieldNames.add(fieldName);
+        fields.add(EqualityField(fieldName));
         if (!nested.isNullable) nonNullableFields.add(fieldName);
       } else if (nested is NestedResultQuery) {
         final fieldName = nested.filedName();
@@ -61,7 +61,7 @@ class ResultSetWriter {
 
         into.write('$modifier List<$typeName> $fieldName;\n');
 
-        fieldNames.add(fieldName);
+        fields.add(EqualityField(fieldName));
         nonNullableFields.add(fieldName);
       }
     }
@@ -73,11 +73,11 @@ class ResultSetWriter {
       into.write('$className({');
     }
 
-    for (final column in fieldNames) {
-      if (nonNullableFields.contains(column)) {
+    for (final column in fields) {
+      if (nonNullableFields.contains(column.lexeme)) {
         into.write('required ');
       }
-      into.write('this.$column,');
+      into.write('this.${column.lexeme},');
     }
 
     if (scope.options.rawResultSetData) {
@@ -89,11 +89,11 @@ class ResultSetWriter {
     // if requested, override hashCode and equals
     if (scope.writer.options.overrideHashAndEqualsInResultSets) {
       into.write('@override int get hashCode => ');
-      const HashCodeWriter().writeHashCode(fieldNames, into);
+      writeHashCode(fields, into);
       into.write(';\n');
 
-      overrideEquals(fieldNames, className, into);
-      overrideToString(className, fieldNames, into);
+      overrideEquals(fields, className, into);
+      overrideToString(className, fields.map((f) => f.lexeme).toList(), into);
     }
 
     into.write('}\n');

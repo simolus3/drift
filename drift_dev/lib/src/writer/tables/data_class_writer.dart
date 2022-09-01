@@ -87,7 +87,11 @@ class DataClassWriter {
     _writeHashCode();
 
     overrideEquals(
-        columns.map((c) => c.dartGetterName), table.dartTypeCode(), _buffer);
+      columns.map(
+          (c) => EqualityField(c.dartGetterName, isList: c.isUint8ListInDart)),
+      table.dartTypeCode(),
+      _buffer,
+    );
 
     // finish class declaration
     _buffer.write('}');
@@ -312,8 +316,11 @@ class DataClassWriter {
   void _writeHashCode() {
     _buffer.write('@override\n int get hashCode => ');
 
-    final fields = columns.map((c) => c.dartGetterName).toList();
-    const HashCodeWriter().writeHashCode(fields, _buffer);
+    final fields = columns
+        .map(
+            (c) => EqualityField(c.dartGetterName, isList: c.isUint8ListInDart))
+        .toList();
+    writeHashCode(fields, _buffer);
     _buffer.write(';');
   }
 }

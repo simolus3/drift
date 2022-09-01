@@ -1,30 +1,42 @@
 import 'package:charcode/ascii.dart';
-import 'package:drift_dev/src/writer/utils/hash_code.dart';
+import 'package:drift_dev/src/writer/utils/hash_and_equals.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('hash code for no fields', () {
     final buffer = StringBuffer();
-    const HashCodeWriter().writeHashCode([], buffer);
+    writeHashCode([], buffer);
     expect(buffer.toString(), r'identityHashCode(this)');
   });
 
-  test('hash code for a single field', () {
+  test('hash code for a single field - not a list', () {
     final buffer = StringBuffer();
-    const HashCodeWriter().writeHashCode(['a'], buffer);
+    writeHashCode([EqualityField('a')], buffer);
     expect(buffer.toString(), r'a.hashCode');
+  });
+
+  test('hash code for a single field - list', () {
+    final buffer = StringBuffer();
+    writeHashCode([EqualityField('a', isList: true)], buffer);
+    expect(buffer.toString(), r'$driftBlobEquality.hash(a)');
   });
 
   test('hash code for multiple fields', () {
     final buffer = StringBuffer();
-    const HashCodeWriter().writeHashCode(['a', 'b', 'c'], buffer);
-    expect(buffer.toString(), r'Object.hash(a, b, c)');
+    writeHashCode([
+      EqualityField('a'),
+      EqualityField('b', isList: true),
+      EqualityField('c'),
+    ], buffer);
+    expect(buffer.toString(), r'Object.hash(a, $driftBlobEquality.hash(b), c)');
   });
 
   test('hash code for lots of fields', () {
     final buffer = StringBuffer();
-    const HashCodeWriter().writeHashCode(
-        List.generate(26, (index) => String.fromCharCode($a + index)), buffer);
+    writeHashCode(
+        List.generate(
+            26, (index) => EqualityField(String.fromCharCode($a + index))),
+        buffer);
     expect(
       buffer.toString(),
       r'Object.hashAll([a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, '
