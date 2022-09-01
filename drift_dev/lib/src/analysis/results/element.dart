@@ -13,7 +13,7 @@ class DriftElementId {
   bool get isDefinedInDart => url.extension(libraryUri.path) == '.dart';
   bool get isDefinedInDrift => url.extension(libraryUri.path) == '.drift';
 
-  bool sameName(String name) => name.toLowerCase() == name.toLowerCase();
+  bool sameName(String name) => this.name.toLowerCase() == name.toLowerCase();
 
   @override
   int get hashCode => Object.hash(DriftElementId, libraryUri, name);
@@ -42,7 +42,7 @@ abstract class DriftElement {
   final DriftElementId id;
   final DriftDeclaration? declaration;
 
-  Iterable<DriftElementId> get references => const Iterable.empty();
+  Iterable<DriftElement> get references => const Iterable.empty();
 
   DriftElement(this.id, this.declaration);
 }

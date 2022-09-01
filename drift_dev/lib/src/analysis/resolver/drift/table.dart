@@ -3,6 +3,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../../driver/error.dart';
 import '../../results/column.dart';
+import '../../results/element.dart';
 import '../../results/table.dart';
 import '../intermediate_state.dart';
 import '../resolver.dart';
@@ -14,6 +15,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
   @override
   Future<DriftTable> resolve() async {
     Table table;
+    final references = <DriftElement>{};
 
     try {
       final reader = SchemaFromCreateTable(
@@ -43,10 +45,22 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         if (constraint is DriftDartName) {
           overriddenDartName = constraint.dartName;
         } else if (constraint is ForeignKeyColumnConstraint) {
-          final referencedTable = await resolver.resolveReference(
-            discovered.ownId,
+          // Note: Warnings about whether the referenced column exists or not
+          // are reported later, we just need to know dependencies before the
+          // lint step of the analysis.
+          final referenced =
+              await resolver.resolveReferenceOrReportError<DriftTable>(
+            this,
             constraint.clause.foreignTable.tableName,
+            (msg) => DriftAnalysisError.inDriftFile(
+              constraint.clause.foreignTable.tableNameToken ?? constraint,
+              msg,
+            ),
           );
+
+          if (referenced != null) {
+            references.add(referenced);
+          }
         }
       }
 
@@ -58,6 +72,11 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       ));
     }
 
-    return DriftTable(discovered.ownId, null, columns: columns);
+    return DriftTable(
+      discovered.ownId,
+      null,
+      columns: columns,
+      references: references.toList(),
+    );
   }
 }

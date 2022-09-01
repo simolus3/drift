@@ -13,7 +13,7 @@ class DriftResolver {
 
   DriftResolver(this.driver);
 
-  Future<DriftElement> resolveDiscovered(DiscoveredElement discovered) {
+  Future<DriftElement> resolveDiscovered(DiscoveredElement discovered) async {
     LocalElementResolver resolver;
 
     final fileState = driver.cache.knownFiles[discovered.ownId.libraryUri]!;
@@ -28,16 +28,18 @@ class DriftResolver {
       throw UnimplementedError('TODO: Handle $discovered');
     }
 
-    return resolver.resolve();
+    final resolved = await resolver.resolve();
+
+    elementState
+      ..result = resolved
+      ..isUpToDate = true;
+    return resolved;
   }
 
   Future<ResolveReferencedElementResult> resolveReferencedElement(
       DriftElementId owner, DriftElementId reference) async {
     if (owner == reference) {
-      return InvalidReferenceResult(
-        InvalidReferenceError.referencesItself,
-        'References itself',
-      );
+      return const ReferencesItself();
     }
 
     // If this element is in the backlog of things currently being analyzed,
@@ -51,12 +53,13 @@ class DriftResolver {
           .join(' -> ');
 
       return InvalidReferenceResult(
-        InvalidReferenceError.referencesItself,
+        InvalidReferenceError.causesCircularReference,
         'Illegal circular reference found: $message',
       );
     }
 
-    final existing = driver.cache.resolvedElements[reference];
+    final existing = driver
+        .cache.knownFiles[reference.libraryUri]?.analysis[reference]?.result;
     if (existing != null) {
       // todo: Check for circular references for existing elements
       return ResolvedReferenceFound(existing);
@@ -117,6 +120,29 @@ class DriftResolver {
 
     return resolveReferencedElement(owner, candidates.single);
   }
+
+  Future<T?> resolveReferenceOrReportError<T extends DriftElement>(
+    LocalElementResolver owner,
+    String reference,
+    DriftAnalysisError Function(String msg) createError,
+  ) async {
+    final result = await resolveReference(owner.discovered.ownId, reference);
+
+    if (result is ResolvedReferenceFound) {
+      final element = result.element;
+      if (element is T) {
+        return element;
+      } else {
+        // todo: Better type description in error message
+        owner.state.errorsDuringAnalysis.add(
+            createError('Expected a $T, but got a ${element.runtimeType}'));
+      }
+    } else if (result is InvalidReferenceResult) {
+      owner.state.errorsDuringAnalysis.add(createError(result.message));
+    }
+
+    return null;
+  }
 }
 
 abstract class LocalElementResolver<T extends DiscoveredElement> {
@@ -133,7 +159,9 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
   Future<DriftElement> resolve();
 }
 
-abstract class ResolveReferencedElementResult {}
+abstract class ResolveReferencedElementResult {
+  const ResolveReferencedElementResult();
+}
 
 class ResolvedReferenceFound extends ResolveReferencedElementResult {
   final DriftElement element;
@@ -143,7 +171,6 @@ class ResolvedReferenceFound extends ResolveReferencedElementResult {
 
 enum InvalidReferenceError {
   causesCircularReference,
-  referencesItself,
 
   /// Reported by [DriftResolver.resolveReference] when no element with the
   /// given name exists in transitive imports.
@@ -163,3 +190,7 @@ class InvalidReferenceResult extends ResolveReferencedElementResult {
 
 class ReferencedElementCouldNotBeResolved
     extends ResolveReferencedElementResult {}
+
+class ReferencesItself extends ResolveReferencedElementResult {
+  const ReferencesItself();
+}

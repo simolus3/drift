@@ -4,7 +4,6 @@ import 'state.dart';
 class DriftAnalysisCache {
   final Map<Uri, FileState> knownFiles = {};
   final Map<DriftElementId, DiscoveredElement> discoveredElements = {};
-  final Map<DriftElementId, DriftElement> resolvedElements = {};
 
   FileState notifyFileChanged(Uri uri) {
     // todo: Mark references for files that import this one as stale.
@@ -17,6 +16,18 @@ class DriftAnalysisCache {
   }
 
   void notifyFileDeleted(Uri uri) {}
+
+  void postFileDiscoveryResults(FileState state) {
+    discoveredElements.removeWhere((key, _) => key.libraryUri == state.ownUri);
+
+    final discovery = state.discovery;
+    if (discovery != null) {
+      discoveredElements.addAll({
+        for (final definedHere in discovery.locallyDefinedElements)
+          definedHere.ownId: definedHere,
+      });
+    }
+  }
 
   /// From a given [entrypoint], yield the [entrypoint] itself and all
   /// transitive imports.
@@ -33,7 +44,7 @@ class DriftAnalysisCache {
 
       for (final imported
           in found.discovery?.importDependencies ?? const <Uri>[]) {
-        if (!seenUris.add(imported)) {
+        if (seenUris.add(imported)) {
           pending.add(knownFiles[imported]!);
         }
       }

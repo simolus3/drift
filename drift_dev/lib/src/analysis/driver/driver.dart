@@ -33,7 +33,9 @@ class DriftAnalysisDriver {
     var known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
 
     if (known.discovery == null) {
-      await DiscoverStep(this, cache.notifyFileChanged(uri)).discover();
+      await DiscoverStep(this, known).discover();
+      cache.postFileDiscoveryResults(known);
+
       // todo: Mark elements that need to be analyzed again
 
       // To analyze a drift file, we also need to be able to analyze imports.
@@ -64,15 +66,15 @@ class DriftAnalysisDriver {
   Future<void> _analyzePrepared(FileState state) async {
     assert(state.discovery != null);
 
-    for (final element in state.discovery!.locallyDefinedElements) {
-      if (cache.resolvedElements[element.ownId] == null) {
+    for (final discovered in state.discovery!.locallyDefinedElements) {
+      if (!state.elementIsAnalyzed(discovered.ownId)) {
         final resolver = DriftResolver(this);
-        await resolver.resolveDiscovered(element);
+        await resolver.resolveDiscovered(discovered);
       }
     }
   }
 
-  Future<void> fullyAnalyze(Uri uri) async {
+  Future<FileState> fullyAnalyze(Uri uri) async {
     var known = cache.knownFiles[uri];
 
     if (known == null || known.discovery == null) {
@@ -80,5 +82,6 @@ class DriftAnalysisDriver {
     }
 
     await _analyzePrepared(known);
+    return known;
   }
 }
