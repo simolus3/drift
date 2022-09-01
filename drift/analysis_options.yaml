@@ -5,3 +5,7 @@ analyzer:
     implicit-casts: false
   exclude:
     - "**/*.g.dart"
+
+linter:
+  rules:
+    public_member_api_docs: true
