@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'preprocess_drift.dart';
+part of '../../analysis/preprocess_drift.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

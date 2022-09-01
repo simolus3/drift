@@ -5,7 +5,7 @@ import 'package:path/path.dart' show url;
 import '../utils/string_escaper.dart';
 import 'backend.dart';
 
-part 'preprocess_drift.g.dart';
+part '../generated/analysis/preprocess_drift.g.dart';
 
 @JsonSerializable(constructor: '_')
 class DriftPreprocessorResult {

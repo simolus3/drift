@@ -14,5 +14,9 @@ class DriftTable extends DriftElementWithResultSet {
     super.declaration, {
     required this.columns,
     this.references = const [],
-  });
+  }) {
+    for (final column in columns) {
+      column.owner = this;
+    }
+  }
 }

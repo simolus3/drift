@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'options.dart';
+part of '../../analyzer/options.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

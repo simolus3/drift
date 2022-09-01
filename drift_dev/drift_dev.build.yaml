@@ -11,3 +11,8 @@ targets:
           disallow_unrecognized_keys: true
           field_rename: snake
           explicit_to_json: true
+      # https://simonbinder.eu/posts/build_directory_moves/#generating-into-a-directory-with-source_gen
+      source_gen:combining_builder:
+        options:
+          build_extensions:
+            '^lib/src/{{}}.dart': 'lib/src/generated/{{}}.g.dart'

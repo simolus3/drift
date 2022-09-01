@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -40,6 +41,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     for (final column in table.resultColumns) {
       String? overriddenDartName;
       final type = column.type.sqlTypeToDrift(resolver.driver.options);
+      final constraints = <DriftColumnConstraint>[];
 
       for (final constraint in column.constraints) {
         if (constraint is DriftDartName) {
@@ -60,6 +62,23 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
 
           if (referenced != null) {
             references.add(referenced);
+
+            // Try to resolve this column to track the exact dependency. Don't
+            // report a warning if this fails, a separate lint step does that.
+            final columnName =
+                constraint.clause.columnNames.firstOrNull?.columnName;
+            if (columnName != null) {
+              final targetColumn = referenced.columns
+                  .firstWhereOrNull((c) => c.hasEqualSqlName(columnName));
+
+              if (targetColumn != null) {
+                constraints.add(ForeignKeyReference(
+                  targetColumn,
+                  constraint.clause.onUpdate,
+                  constraint.clause.onDelete,
+                ));
+              }
+            }
           }
         }
       }
@@ -69,12 +88,20 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         nullable: column.type.nullable != false,
         nameInSql: column.name,
         nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
+        constraints: constraints,
+        declaration: DriftDeclaration(
+          state.ownId.libraryUri,
+          column.definition!.nameToken!.span.start.offset,
+        ),
       ));
     }
 
     return DriftTable(
       discovered.ownId,
-      null,
+      DriftDeclaration(
+        state.ownId.libraryUri,
+        discovered.createTable.firstPosition,
+      ),
       columns: columns,
       references: references.toList(),
     );
