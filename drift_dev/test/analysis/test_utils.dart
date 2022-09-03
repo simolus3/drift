@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:drift_dev/src/analysis/backend.dart';
@@ -47,6 +48,12 @@ class TestBackend extends DriftBackend {
   @override
   Future<LibraryElement> readDart(Uri uri) {
     // TODO: implement readDart
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AstNode?> loadElementDeclaration(Element element) {
+    // TODO: implement loadElementDeclaration
     throw UnimplementedError();
   }
 

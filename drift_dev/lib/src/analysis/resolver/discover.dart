@@ -1,9 +1,15 @@
+import 'package:analyzer/dart/ast/ast.dart' as dart;
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/visitor.dart';
+import 'package:recase/recase.dart';
+import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
 import '../driver/driver.dart';
 import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/element.dart';
+import 'dart/helper.dart';
 import 'intermediate_state.dart';
 
 class DiscoverStep {
@@ -22,7 +28,12 @@ class DiscoverStep {
       case '.dart':
         try {
           final library = await _driver.backend.readDart(_file.ownUri);
-          _file.discovery = DiscoveredDartLibrary(library, []);
+          final finder =
+              _FindDartElements(this, library, await _driver.loadKnownTypes());
+          await finder.find();
+
+          _file.errorsDuringDiscovery.addAll(finder.errors);
+          _file.discovery = DiscoveredDartLibrary(library, finder.found);
         } catch (e, s) {
           _driver.backend.log
               .fine('Could not read Dart library from ${_file.ownUri}', e, s);
@@ -30,7 +41,6 @@ class DiscoverStep {
         }
         break;
       case '.drift':
-      case '.moor':
         final engine = _driver.newSqlEngine();
         String contents;
         try {
@@ -73,5 +83,79 @@ class DiscoverStep {
         );
         break;
     }
+  }
+}
+
+class _FindDartElements extends RecursiveElementVisitor<void> {
+  final DiscoverStep _discoverStep;
+  final LibraryElement _library;
+  final TypeChecker _isTable;
+
+  final List<Future<void>> _pendingWork = [];
+
+  final errors = <DriftAnalysisError>[];
+  final found = <DiscoveredElement>[];
+
+  _FindDartElements(
+      this._discoverStep, this._library, KnownDriftTypes knownTypes)
+      : _isTable = TypeChecker.fromStatic(knownTypes.tableType);
+
+  Future<void> find() async {
+    visitLibraryElement(_library);
+    await Future.wait(_pendingWork);
+  }
+
+  @override
+  void visitClassElement(ClassElement element) {
+    if (_isTable.isAssignableFrom(element)) {
+      _pendingWork.add(Future.sync(() async {
+        final name = await _sqlNameOfTable(element);
+        final id = _discoverStep._id(name);
+
+        found.add(DiscoveredDartTable(id, element));
+      }));
+    }
+
+    super.visitClassElement(element);
+  }
+
+  /// Obtains the SQL schema name of a Dart-defined table.
+  ///
+  /// By default, we use the `snake_case` transformation of the classes' name.
+  /// E.g. a class `class TrackedUsers extends Table` will yield a SQL table
+  /// named `tracked_user`.
+  /// The default behavior can be overridden by declaring a getter named
+  /// `tableName` returning a direct string literal.
+  Future<String> _sqlNameOfTable(ClassElement table) async {
+    final defaultName = ReCase(table.name).snakeCase;
+
+    final tableNameGetter = table.lookUpGetter('tableName', _library);
+    if (tableNameGetter == null ||
+        tableNameGetter.isFromDefaultTable ||
+        tableNameGetter.isAbstract) {
+      // class does not override tableName, so fall back to the default case.
+      return defaultName;
+    }
+
+    final node = await _discoverStep._driver.backend
+        .loadElementDeclaration(tableNameGetter);
+    final returnExpr = returnExpressionOfMethod(node as dart.MethodDeclaration);
+
+    const message =
+        'This getter must directly return a string literal with the `=>` syntax';
+
+    if (returnExpr == null) {
+      errors.add(DriftAnalysisError.forDartElement(tableNameGetter, message));
+      return defaultName;
+    }
+
+    final value =
+        (returnExpr is dart.StringLiteral) ? returnExpr.stringValue : null;
+    if (value == null) {
+      errors.add(DriftAnalysisError.forDartElement(tableNameGetter, message));
+      return defaultName;
+    }
+
+    return value;
   }
 }

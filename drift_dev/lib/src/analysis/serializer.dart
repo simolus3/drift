@@ -9,6 +9,12 @@ import 'results/element.dart';
 import 'results/table.dart';
 
 class ElementSerializer {
+  Map<String, Object?> serializeElements(Iterable<DriftElement> elements) {
+    return {
+      for (final element in elements) element.id.name: serialize(element),
+    };
+  }
+
   Map<String, Object?> serialize(DriftElement element) {
     if (element is DriftTable) {
       return {

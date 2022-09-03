@@ -3,6 +3,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../../analyzer/options.dart';
 import '../backend.dart';
+import '../resolver/dart/helper.dart';
 import '../resolver/discover.dart';
 import '../resolver/resolver.dart';
 import 'cache.dart';
@@ -13,6 +14,8 @@ class DriftAnalysisDriver {
   final DriftBackend backend;
   final DriftAnalysisCache cache = DriftAnalysisCache();
   final DriftOptions options;
+
+  KnownDriftTypes? _knownTypes;
 
   DriftAnalysisDriver(this.backend, this.options);
 
@@ -26,6 +29,10 @@ class DriftAnalysisDriver {
         version: options.sqliteVersion,
       ),
     );
+  }
+
+  Future<KnownDriftTypes> loadKnownTypes() async {
+    return _knownTypes ??= await KnownDriftTypes.resolve(this);
   }
 
   @visibleForTesting

@@ -1,3 +1,6 @@
+import 'package:analyzer/dart/ast/syntactic_entity.dart' as dart;
+import 'package:analyzer/dart/element/element.dart' as dart;
+import 'package:source_gen/source_gen.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
@@ -6,6 +9,24 @@ class DriftAnalysisError {
   final String message;
 
   DriftAnalysisError(this.span, this.message);
+
+  factory DriftAnalysisError.forDartElement(
+      dart.Element element, String message) {
+    return DriftAnalysisError(
+      spanForElement(element),
+      message,
+    );
+  }
+
+  factory DriftAnalysisError.inDartAst(
+      dart.Element element, dart.SyntacticEntity entity, String message) {
+    final span = spanForElement(element) as FileSpan;
+
+    return DriftAnalysisError(
+      span.file.span(entity.offset, entity.end),
+      message,
+    );
+  }
 
   factory DriftAnalysisError.inDriftFile(
       sql.SyntacticEntity sql, String message) {

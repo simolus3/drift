@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
 import 'package:build/build.dart';
@@ -27,5 +28,10 @@ class DriftBuildBackend extends DriftBackend {
   @override
   Future<LibraryElement> readDart(Uri uri) {
     return _buildStep.resolver.libraryFor(AssetId.resolve(uri));
+  }
+
+  @override
+  Future<AstNode?> loadElementDeclaration(Element element) {
+    return _buildStep.resolver.astNodeFor(element, resolve: true);
   }
 }
