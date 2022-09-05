@@ -17,8 +17,7 @@ import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-import 'package:test/expect.dart';
-import 'package:test/scaffolding.dart';
+import 'package:test/test.dart';
 
 /// A [DriftBackend] implementation used for testing.
 ///
@@ -26,7 +25,7 @@ import 'package:test/scaffolding.dart';
 /// the package `a` are available for analysis. In addition, `drift` and
 /// `drift_dev` imports can be analyzed as well.
 class TestBackend extends DriftBackend {
-  final Map<Uri, String> sourceContents;
+  final Map<String, String> sourceContents;
 
   late final DriftAnalysisDriver driver;
 
@@ -35,7 +34,7 @@ class TestBackend extends DriftBackend {
   TestBackend(Map<String, String> sourceContents, DriftOptions options)
       : sourceContents = {
           for (final entry in sourceContents.entries)
-            AssetId.parse(entry.key).uri: entry.value,
+            AssetId.parse(entry.key).uri.toString(): entry.value,
         } {
     driver = DriftAnalysisDriver(this, options);
   }
@@ -69,7 +68,9 @@ class TestBackend extends DriftBackend {
 
     // Also put sources into the overlay:
     sourceContents.forEach((key, value) {
-      if (key.scheme == 'package') {
+      final uri = Uri.parse(key);
+
+      if (uri.scheme == 'package') {
         final package = uri.pathSegments.first;
         final path =
             p.url.joinAll(['/$package/lib', ...uri.pathSegments.skip(1)]);
@@ -79,7 +80,7 @@ class TestBackend extends DriftBackend {
     });
 
     final collection = AnalysisContextCollection(
-      includedPaths: ['/a/'],
+      includedPaths: ['/a'],
       resourceProvider: provider,
     );
 
@@ -116,9 +117,16 @@ class TestBackend extends DriftBackend {
   }
 
   @override
-  Future<AstNode?> loadElementDeclaration(Element element) {
-    // TODO: implement loadElementDeclaration
-    throw UnimplementedError();
+  Future<AstNode?> loadElementDeclaration(Element element) async {
+    final library = element.library;
+    if (library == null) return null;
+
+    final info = await library.session.getResolvedLibraryByElement(library);
+    if (info is ResolvedLibraryResult) {
+      return info.getElementDeclaration(element)?.node;
+    } else {
+      return null;
+    }
   }
 
   Future<void> dispose() async {}

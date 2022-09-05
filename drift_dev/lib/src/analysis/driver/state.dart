@@ -77,6 +77,11 @@ abstract class DiscoveredElement {
   final DriftElementId ownId;
 
   DiscoveredElement(this.ownId);
+
+  @override
+  String toString() {
+    return '$runtimeType:$ownId';
+  }
 }
 
 class ElementAnalysisState {

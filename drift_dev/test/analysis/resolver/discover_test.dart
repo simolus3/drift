@@ -114,4 +114,91 @@ CREATE TABLE valid_2 (bar INTEGER);
       });
     });
   });
+
+  group('dart files', () {
+    test('fails for part files', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/a.dart': '''
+part of 'b.dart';
+''',
+        'a|lib/b.dart': '''
+part 'a.dart';
+''',
+      });
+
+      final uri = Uri.parse('package:a/a.dart');
+      final state = await backend.driver.prepareFileForAnalysis(uri);
+
+      expect(state, hasNoErrors);
+      expect(state.discovery, isA<NotADartLibrary>());
+    });
+
+    test('finds tables', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer()();
+}
+
+class Groups extends Table {
+  IntColumn get id => integer()();
+
+  String get tableName => 'my_custom_table';
+}
+''',
+      });
+
+      final uri = Uri.parse('package:a/a.dart');
+      final state = await backend.driver.prepareFileForAnalysis(uri);
+
+      expect(state, hasNoErrors);
+      expect(
+        state.discovery,
+        isA<DiscoveredDartLibrary>().having(
+          (e) => e.locallyDefinedElements,
+          'locallyDefinedElements',
+          [
+            isA<DiscoveredDartTable>()
+                .having((t) => t.ownId, 'ownId', DriftElementId(uri, 'users')),
+            isA<DiscoveredDartTable>().having((t) => t.ownId, 'ownId',
+                DriftElementId(uri, 'my_custom_table')),
+          ],
+        ),
+      );
+    });
+
+    test('table name errors', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/expr.dart': '''
+import 'package:drift/drift.dart';
+
+class InvalidExpression extends Table {
+  String get tableName => 'foo'.toLowerCase();
+}
+''',
+        'a|lib/getter.dart': '''
+import 'package:drift/drift.dart';
+
+class InvalidGetter extends Table {
+  String get tableName {
+    return '';
+  }
+}
+''',
+      });
+
+      for (final source in backend.sourceContents.keys) {
+        final state =
+            await backend.driver.prepareFileForAnalysis(Uri.parse(source));
+
+        expect(
+          state.errorsDuringDiscovery,
+          [isDriftError(contains('must directly return a string literal'))],
+          reason: 'Should report error for $source',
+        );
+      }
+    });
+  });
 }
