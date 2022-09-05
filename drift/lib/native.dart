@@ -47,10 +47,10 @@ class NativeDatabase extends DelegatedDatabase {
   /// {@endtemplate}
   factory NativeDatabase(File file,
       {bool logStatements = false,
-      List<LoadableExtension>? loadableExtensions,
+      List<SqliteExtension>? extensions,
       DatabaseSetup? setup}) {
     return NativeDatabase._(
-        _NativeDelegate(file, loadableExtensions, setup), logStatements);
+        _NativeDelegate(file, extensions, setup), logStatements);
   }
 
   /// Creates an in-memory database won't persist its changes on disk.
@@ -58,10 +58,10 @@ class NativeDatabase extends DelegatedDatabase {
   /// {@macro drift_vm_database_factory}
   factory NativeDatabase.memory(
       {bool logStatements = false,
-      List<LoadableExtension>? loadableExtensions,
+      List<SqliteExtension>? extensions,
       DatabaseSetup? setup}) {
     return NativeDatabase._(
-        _NativeDelegate(null, loadableExtensions, setup), logStatements);
+        _NativeDelegate(null, extensions, setup), logStatements);
   }
 
   /// Creates a drift executor for an opened [database] from the `sqlite3`
@@ -137,15 +137,15 @@ class NativeDatabase extends DelegatedDatabase {
 
 class _NativeDelegate extends Sqlite3Delegate<Database> {
   final File? file;
-  final List<LoadableExtension>? _loadableExtensions;
+  final List<SqliteExtension>? _extensions;
 
-  _NativeDelegate(this.file, this._loadableExtensions, DatabaseSetup? setup)
+  _NativeDelegate(this.file, this._extensions, DatabaseSetup? setup)
       : super(setup);
 
   _NativeDelegate.opened(
       Database db, DatabaseSetup? setup, bool closeUnderlyingWhenClosed)
       : file = null,
-        _loadableExtensions = null,
+        _extensions = null,
         super.opened(db, setup, closeUnderlyingWhenClosed);
 
   @override
@@ -153,7 +153,7 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
     final file = this.file;
     Database db;
 
-    _loadableExtensions?.forEach(sqlite3.ensureExtensionLoaded);
+    _extensions?.forEach(sqlite3.ensureExtensionLoaded);
 
     if (file != null) {
       // Create the parent directory if it doesn't exist. sqlite will emit
