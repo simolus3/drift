@@ -45,7 +45,7 @@ project. For a full list of updates, see the [changelog](https://pub.dev/package
       of your queries, please open an issue!
     - `null_aware_type_converters`: This is always enabled now with the new
       semantics for type converters.
-    - `compact_query_method`: Has been enabled by default before, can no longer
+    - `compact_query_methods`: Has been enabled by default before, can no longer
       be disabled now.
     - `eagerly_load_dart_ast`: This option used to not do anything for a while
       and has been removed entirely now.

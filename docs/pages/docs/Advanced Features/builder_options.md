@@ -26,7 +26,7 @@ targets:
     builders:
       drift_dev:
         options:
-          compact_query_methods: true
+          store_date_time_values_as_text: true
 ```
 
 ## Available options
@@ -40,12 +40,6 @@ At the moment, drift supports these options:
    to hold the result of generated select queries, this flag controls whether drift should
    override `operator ==` and `hashCode` in those classes. In recent versions, it will also
    override `toString` if this option is enabled.
-* `compact_query_methods` (defaults to `true`):
-   For queries declared on a `@DriftDatabase` or `@DriftAccessor` annotation, drift used to generate three methods:
-   A base method returning a `Selectable` and then two helper methods returning a `Stream` or a `Future`.
-   As the `Selectable` class contains its own methods to convert it to a `Stream` and `Future`, the two
-   later methods only exist for backwards compatibility. When this flag is enabled, drift won't write them at all.
-   This flag is enabled by default in moor 3.0 and drift, but it can still be disabled.
 * `skip_verification_code`: Generated tables contain a significant chunk of code to verify integrity
   of inserted data and report detailed errors when the integrity is violated. If you're only using
   inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
@@ -61,8 +55,6 @@ At the moment, drift supports these options:
   (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).
 * `generate_connect_constructor`: Generate necessary code to support the [isolate runtime]({{ "isolates.md" | pageUrl }}).
   This is a build option because isolates are still experimental. This will be the default option eventually.
-* `eagerly_load_dart_ast`: Drift's builder will load the resolved AST whenever it encounters a Dart file,
-  instead of lazily when it reads a table. This is used to investigate rare builder crashes.
 * `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
    data classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
