@@ -19,6 +19,7 @@
 - Removes the following build options, which are always turned on now:
  - `null_aware_type_converters`
  - `new_sql_code_generation`
+ - `compact_query_methods`
 - Starting from this version, drift only supports generating non-nullable Dart code.
   You'll have to at least opt your database code into null-safety to use this and
   upcoming drift releases.
