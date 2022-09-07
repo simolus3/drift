@@ -28,7 +28,7 @@ project. For a full list of updates, see the [changelog](https://pub.dev/package
    a complex select in Dart) only supports non-nullable values now. To read
    nullable values, use `readNullable`.
 4. __Updated type converters__: The `mapToSql` and `mapToDart` methods have been
-   renamed to simply `toSql` and `toDart`, respectively.
+   renamed to simply `toSql` and `fromSql`, respectively.
    Also, a type converter only needs to support the exact types that it was
    declared with. In particular, a `TypeConverter<MyObject, String>` no longer
    needs to deal with `null` values in either direction.
