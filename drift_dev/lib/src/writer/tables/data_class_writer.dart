@@ -6,7 +6,8 @@ import 'package:drift_dev/writer.dart';
 class DataClassWriter {
   final DriftEntityWithResultSet table;
   final Scope scope;
-  final columns = <DriftColumn>[];
+
+  List<DriftColumn> get columns => table.columns;
 
   bool get isInsertable => table is DriftTable;
 
@@ -28,14 +29,6 @@ class DataClassWriter {
       _buffer.writeln('implements Insertable<${table.dartTypeCode()}> {');
     } else {
       _buffer.writeln('{');
-    }
-
-    // write view columns
-    final view = table;
-    if (view is MoorView && view.viewQuery != null) {
-      columns.addAll(view.viewQuery!.columns.map((e) => e.value));
-    } else {
-      columns.addAll(table.columns);
     }
 
     // write individual fields

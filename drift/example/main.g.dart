@@ -465,15 +465,14 @@ class $TodoItemsTable extends TodoItems
 
 class TodoCategoryItemCountData extends DataClass {
   final String name;
-  final int itemCount;
-  const TodoCategoryItemCountData(
-      {required this.name, required this.itemCount});
+  final int? itemCount;
+  const TodoCategoryItemCountData({required this.name, this.itemCount});
   factory TodoCategoryItemCountData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoCategoryItemCountData(
       name: serializer.fromJson<String>(json['name']),
-      itemCount: serializer.fromJson<int>(json['itemCount']),
+      itemCount: serializer.fromJson<int?>(json['itemCount']),
     );
   }
   factory TodoCategoryItemCountData.fromJsonString(String encodedJson,
@@ -486,14 +485,15 @@ class TodoCategoryItemCountData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'name': serializer.toJson<String>(name),
-      'itemCount': serializer.toJson<int>(itemCount),
+      'itemCount': serializer.toJson<int?>(itemCount),
     };
   }
 
-  TodoCategoryItemCountData copyWith({String? name, int? itemCount}) =>
+  TodoCategoryItemCountData copyWith(
+          {String? name, Value<int?> itemCount = const Value.absent()}) =>
       TodoCategoryItemCountData(
         name: name ?? this.name,
-        itemCount: itemCount ?? this.itemCount,
+        itemCount: itemCount.present ? itemCount.value : this.itemCount,
       );
   @override
   String toString() {
@@ -525,7 +525,7 @@ class $TodoCategoryItemCountView
   $TodoCategoriesTable get todoCategories =>
       attachedDatabase.todoCategories.createAlias('t1');
   @override
-  List<GeneratedColumn> get $columns => [todoCategories.name, itemCount];
+  List<GeneratedColumn> get $columns => [name, itemCount];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -542,15 +542,16 @@ class $TodoCategoryItemCountView
       name: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       itemCount: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}item_count'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
     );
   }
 
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
-      type: DriftSqlType.string);
+      type: DriftSqlType.string,
+      generatedAs: GeneratedAs(todoCategories.name, false));
   late final GeneratedColumn<int> itemCount = GeneratedColumn<int>(
-      'item_count', aliasedName, false,
+      'item_count', aliasedName, true,
       type: DriftSqlType.int,
       generatedAs: GeneratedAs(todoItems.id.count(), false));
   @override
@@ -569,15 +570,14 @@ class $TodoCategoryItemCountView
 
 class TodoItemWithCategoryNameViewData extends DataClass {
   final int id;
-  final String title;
-  const TodoItemWithCategoryNameViewData(
-      {required this.id, required this.title});
+  final String? title;
+  const TodoItemWithCategoryNameViewData({required this.id, this.title});
   factory TodoItemWithCategoryNameViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoItemWithCategoryNameViewData(
       id: serializer.fromJson<int>(json['id']),
-      title: serializer.fromJson<String>(json['title']),
+      title: serializer.fromJson<String?>(json['title']),
     );
   }
   factory TodoItemWithCategoryNameViewData.fromJsonString(String encodedJson,
@@ -590,14 +590,15 @@ class TodoItemWithCategoryNameViewData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'title': serializer.toJson<String>(title),
+      'title': serializer.toJson<String?>(title),
     };
   }
 
-  TodoItemWithCategoryNameViewData copyWith({int? id, String? title}) =>
+  TodoItemWithCategoryNameViewData copyWith(
+          {int? id, Value<String?> title = const Value.absent()}) =>
       TodoItemWithCategoryNameViewData(
         id: id ?? this.id,
-        title: title ?? this.title,
+        title: title.present ? title.value : this.title,
       );
   @override
   String toString() {
@@ -629,7 +630,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   $TodoCategoriesTable get todoCategories =>
       attachedDatabase.todoCategories.createAlias('t1');
   @override
-  List<GeneratedColumn> get $columns => [todoItems.id, title];
+  List<GeneratedColumn> get $columns => [id, title];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -646,14 +647,15 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
       id: attachedDatabase.options.types
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       title: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
     );
   }
 
-  late final GeneratedColumn<int> id =
-      GeneratedColumn<int>('id', aliasedName, false, type: DriftSqlType.int);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: DriftSqlType.int, generatedAs: GeneratedAs(todoItems.id, false));
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
+      'title', aliasedName, true,
       type: DriftSqlType.string,
       generatedAs: GeneratedAs(
           todoItems.title +

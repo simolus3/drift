@@ -83,8 +83,8 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS todo_with_category_view '
           '(title, "desc") AS SELECT '
-          't0.title AS "t0.title", '
-          't1."desc" AS "t1.desc" '
+          't0.title AS "title", '
+          't1."desc" AS "desc" '
           'FROM todos t0 '
           'INNER JOIN categories t1 '
           'ON t1.id = t0.category',

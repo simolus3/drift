@@ -17,18 +17,17 @@ class DartViewDeclaration implements ViewDeclaration, DartDeclaration {
   @override
   final ClassElement element;
 
+  final String dartQuerySource;
+  final TableReferenceInDartView? primaryFrom;
   final List<TableReferenceInDartView> staticReferences;
 
-  DartViewDeclaration._(this.declaration, this.element, this.staticReferences);
-
-  factory DartViewDeclaration(ClassElement element, FoundFile file,
-      List<TableReferenceInDartView> staticReferences) {
-    return DartViewDeclaration._(
-      SourceRange.fromElementAndFile(element, file),
-      element,
-      staticReferences,
-    );
-  }
+  DartViewDeclaration(
+    this.element,
+    FoundFile file,
+    this.primaryFrom,
+    this.staticReferences,
+    this.dartQuerySource,
+  ) : declaration = SourceRange.fromElementAndFile(element, file);
 }
 
 class TableReferenceInDartView {
