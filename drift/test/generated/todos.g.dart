@@ -1380,16 +1380,15 @@ class $PureDefaultsTable extends PureDefaults
 }
 
 class CategoryTodoCountViewData extends DataClass {
-  final String description;
-  final int itemCount;
-  const CategoryTodoCountViewData(
-      {required this.description, required this.itemCount});
+  final String? description;
+  final int? itemCount;
+  const CategoryTodoCountViewData({this.description, this.itemCount});
   factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CategoryTodoCountViewData(
-      description: serializer.fromJson<String>(json['description']),
-      itemCount: serializer.fromJson<int>(json['itemCount']),
+      description: serializer.fromJson<String?>(json['description']),
+      itemCount: serializer.fromJson<int?>(json['itemCount']),
     );
   }
   factory CategoryTodoCountViewData.fromJsonString(String encodedJson,
@@ -1401,15 +1400,17 @@ class CategoryTodoCountViewData extends DataClass {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'description': serializer.toJson<String>(description),
-      'itemCount': serializer.toJson<int>(itemCount),
+      'description': serializer.toJson<String?>(description),
+      'itemCount': serializer.toJson<int?>(itemCount),
     };
   }
 
-  CategoryTodoCountViewData copyWith({String? description, int? itemCount}) =>
+  CategoryTodoCountViewData copyWith(
+          {Value<String?> description = const Value.absent(),
+          Value<int?> itemCount = const Value.absent()}) =>
       CategoryTodoCountViewData(
-        description: description ?? this.description,
-        itemCount: itemCount ?? this.itemCount,
+        description: description.present ? description.value : this.description,
+        itemCount: itemCount.present ? itemCount.value : this.itemCount,
       );
   @override
   String toString() {
@@ -1456,19 +1457,19 @@ class $CategoryTodoCountViewView
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CategoryTodoCountViewData(
       description: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
       itemCount: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}item_count'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
     );
   }
 
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'description', aliasedName, false,
+      'description', aliasedName, true,
       type: DriftSqlType.string,
       generatedAs:
           GeneratedAs(categories.description + const Variable('!'), false));
   late final GeneratedColumn<int> itemCount = GeneratedColumn<int>(
-      'item_count', aliasedName, false,
+      'item_count', aliasedName, true,
       type: DriftSqlType.int,
       generatedAs: GeneratedAs(todos.id.count(), false));
   @override
@@ -1547,7 +1548,7 @@ class $TodoWithCategoryViewView
   $CategoriesTable get categories =>
       attachedDatabase.categories.createAlias('t1');
   @override
-  List<GeneratedColumn> get $columns => [todos.title, categories.description];
+  List<GeneratedColumn> get $columns => [title, description];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -1569,11 +1570,12 @@ class $TodoWithCategoryViewView
   }
 
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string);
+      'title', aliasedName, true,
+      type: DriftSqlType.string, generatedAs: GeneratedAs(todos.title, false));
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'desc', aliasedName, false,
-      type: DriftSqlType.string);
+      type: DriftSqlType.string,
+      generatedAs: GeneratedAs(categories.description, false));
   @override
   $TodoWithCategoryViewView createAlias(String alias) {
     return $TodoWithCategoryViewView(attachedDatabase, alias);

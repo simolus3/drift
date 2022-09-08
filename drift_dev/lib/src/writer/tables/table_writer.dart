@@ -189,14 +189,7 @@ abstract class TableOrViewWriter {
       writer.writeArguments(buffer);
       buffer.write(';\n');
     } else {
-      List<DriftColumn> columns;
-
-      final view = tableOrView;
-      if (view is MoorView && view.viewQuery != null) {
-        columns = view.viewQuery!.columns.map((e) => e.value).toList();
-      } else {
-        columns = tableOrView.columns;
-      }
+      final columns = tableOrView.columns;
 
       final writer = RowMappingWriter(
         positional: const [],

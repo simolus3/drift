@@ -1,3 +1,7 @@
+## 2.2.0-dev
+
+- Fix the nullability of columns generated for Dart-defined views.
+
 ## 2.1.0
 
 - Analysis support `fts5` tables with external content tables.
