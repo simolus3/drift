@@ -12,20 +12,20 @@ DartTopLevelSymbol _$DartTopLevelSymbolFromJson(Map json) => $checkedCreate(
       ($checkedConvert) {
         $checkKeys(
           json,
-          allowedKeys: const ['lexeme', 'element_id'],
+          allowedKeys: const ['lexeme', 'import_uri'],
         );
         final val = DartTopLevelSymbol(
           $checkedConvert('lexeme', (v) => v as String),
           $checkedConvert(
-              'element_id', (v) => DriftElementId.fromJson(v as Map)),
+              'import_uri', (v) => v == null ? null : Uri.parse(v as String)),
         );
         return val;
       },
-      fieldKeyMap: const {'elementId': 'element_id'},
+      fieldKeyMap: const {'importUri': 'import_uri'},
     );
 
 Map<String, dynamic> _$DartTopLevelSymbolToJson(DartTopLevelSymbol instance) =>
     <String, dynamic>{
       'lexeme': instance.lexeme,
-      'element_id': instance.elementId.toJson(),
+      'import_uri': instance.importUri?.toString(),
     };

@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
@@ -5,17 +6,21 @@ import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 import '../../analyzer/options.dart';
 import 'dart.dart';
 import 'element.dart';
+import 'types.dart';
 
-part '../../generated/analysis/results/column.g.dart';
-
-class DriftColumn {
+class DriftColumn implements HasType {
+  @override
   final DriftSqlType sqlType;
+
+  @override
+  bool get isArray => false;
 
   /// Whether the user has explicitly declared this column to be nullable.
   ///
   /// For Dart-defined columns, this defaults to `false`. For columns defined in
   /// a drift file, this value will be `true` if there is no `NOT NULL`
   /// constraint present on the column's definition.
+  @override
   final bool nullable;
 
   /// The (unescaped) name of this column in the database schema.
@@ -50,6 +55,7 @@ class DriftColumn {
   /// set.
   final AnnotatedDartCode? clientDefaultCode;
 
+  @override
   final AppliedTypeConverter? typeConverter;
 
   final DriftDeclaration declaration;
@@ -97,12 +103,11 @@ class DriftColumn {
   }
 }
 
-@JsonSerializable()
 class AppliedTypeConverter {
   /// The Dart expression creating an instance of the applied type converter.
   final AnnotatedDartCode expression;
 
-  final AnnotatedDartCode dartType;
+  final DartType dartType;
   final DriftSqlType sqlType;
 
   /// Whether the Dart-value output of this type converter is nullable.
@@ -131,6 +136,12 @@ class AppliedTypeConverter {
   /// is done with static helper methods on `NullAwareTypeConverter`.
   bool get canBeSkippedForNulls => !dartTypeIsNullable && !sqlTypeIsNullable;
 
+  /// Whether this converter maps to a nullable Dart type, depending on
+  /// whether the type in SQL is nullable.
+  bool mapsToNullableDart(bool nullableInSql) {
+    return dartTypeIsNullable || (canBeSkippedForNulls && nullableInSql);
+  }
+
   AppliedTypeConverter({
     required this.expression,
     required this.dartType,
@@ -139,14 +150,21 @@ class AppliedTypeConverter {
     required this.sqlTypeIsNullable,
     this.alsoAppliesToJsonConversion = false,
   });
-
-  factory AppliedTypeConverter.fromJson(Map json) =>
-      _$AppliedTypeConverterFromJson(json);
-
-  Map<String, Object?> toJson() => _$AppliedTypeConverterToJson(this);
 }
 
-abstract class DriftColumnConstraint {}
+abstract class DriftColumnConstraint {
+  const DriftColumnConstraint();
+}
+
+class UniqueColumn extends DriftColumnConstraint {
+  const UniqueColumn();
+}
+
+class PrimaryKeyColumn extends DriftColumnConstraint {
+  final bool isAutoIncrement;
+
+  PrimaryKeyColumn(this.isAutoIncrement);
+}
 
 class ForeignKeyReference extends DriftColumnConstraint {
   final DriftColumn otherColumn;

@@ -1,12 +1,15 @@
 import 'dart:convert' as convert;
 
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/type_provider.dart';
+import 'package:analyzer/dart/element/type_system.dart';
+import 'package:analyzer/dart/element/type_visitor.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
-import 'package:drift_dev/src/analysis/results/dart.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
-import 'results/column.dart';
-import 'results/element.dart';
-import 'results/table.dart';
+import 'results/results.dart';
 
 class ElementSerializer {
   Map<String, Object?> serializeElements(Iterable<DriftElement> elements) {
@@ -28,6 +31,7 @@ class ElementSerializer {
         'columns': [
           for (final column in element.columns) _serializeColumn(column),
         ],
+        'existing_data_class': element.existingRowClass?.toJson(),
       };
     }
 
@@ -41,7 +45,9 @@ class ElementSerializer {
       'nameInSql': column.nameInSql,
       'nameInDart': column.nameInDart,
       'declaration': column.declaration.toJson(),
-      'typeConverter': column.typeConverter?.toJson(),
+      'typeConverter': column.typeConverter != null
+          ? _serializeTypeConverter(column.typeConverter!)
+          : null,
       'clientDefaultCode': column.clientDefaultCode?.toJson(),
       'defaultArgument': column.clientDefaultCode?.toJson(),
       'overriddenJsonName': column.overriddenJsonName,
@@ -68,6 +74,17 @@ class ElementSerializer {
     }
   }
 
+  Map<String, Object?> _serializeTypeConverter(AppliedTypeConverter converter) {
+    return {
+      'expression': converter.expression.toJson(),
+      'dart_type': converter.dartType.accept(const _DartTypeSerializer()),
+      'sql_type': converter.sqlType.name,
+      'dart_type_is_nullable': converter.dartTypeIsNullable,
+      'sql_type_is_nullable': converter.sqlTypeIsNullable,
+      'also_applies_to_json_conversion': converter.alsoAppliesToJsonConversion,
+    };
+  }
+
   Map<String, Object?> _serializeElementReference(DriftElement element) {
     return element.id.toJson();
   }
@@ -80,13 +97,104 @@ class ElementSerializer {
   }
 }
 
+class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
+  const _DartTypeSerializer();
+
+  Map<String, Object?> _simple(String kind, NullabilitySuffix suffix) {
+    return {
+      'kind': kind,
+      'suffix': suffix.name,
+    };
+  }
+
+  @override
+  Map<String, Object?> visitDynamicType(DynamicType type) {
+    return _simple('dynamic', type.nullabilitySuffix);
+  }
+
+  @override
+  Map<String, Object?> visitFunctionType(FunctionType type) {
+    // We don't support function types yet.
+    return _simple('dynamic', type.nullabilitySuffix);
+  }
+
+  @override
+  Map<String, Object?> visitInterfaceType(InterfaceType type) {
+    return {
+      'kind': 'interface',
+      'suffix': type.nullabilitySuffix.name,
+      'library': type.element2.library.source.uri,
+      'element': type.element2.name,
+      'instantiation': [
+        for (final instantiation in type.typeArguments)
+          instantiation.accept(this),
+      ]
+    };
+  }
+
+  @override
+  Map<String, Object?> visitNeverType(NeverType type) {
+    return _simple('Never', type.nullabilitySuffix);
+  }
+
+  @override
+  Map<String, Object?> visitTypeParameterType(TypeParameterType type) {
+    // We don't support function types yet, and only serialize non-parametric
+    // type otherwise.
+    return _simple('dynamic', type.nullabilitySuffix);
+  }
+
+  @override
+  Map<String, Object?> visitVoidType(VoidType type) {
+    return _simple('void', type.nullabilitySuffix);
+  }
+}
+
 abstract class ElementDeserializer {
   final Map<Uri, Map<String, Object?>> _loadedJson = {};
   final Map<DriftElementId, DriftElement> _deserializedElements = {};
+  final Map<Uri, LibraryElement> _loadedLibraries = {};
+
+  final TypeProvider defaultTypeProvider;
+  final TypeSystem typeSystem;
+
+  ElementDeserializer(this.defaultTypeProvider, this.typeSystem);
 
   /// Loads the serialized definitions of all elements with a
   /// [DriftElementId.libraryUri] matching the [uri].
   Future<String> loadStateForUri(Uri uri);
+
+  Future<LibraryElement> loadDartLibrary(Uri uri);
+
+  Future<DartType> _readDartType(Map json) async {
+    final suffix = NullabilitySuffix.values.byName(json['suffix'] as String);
+
+    switch (json['kind'] as String) {
+      case 'dynamic':
+        return defaultTypeProvider.dynamicType;
+      case 'Never':
+        return suffix == NullabilitySuffix.none
+            ? defaultTypeProvider.neverType
+            : defaultTypeProvider.nullType;
+      case 'void':
+        return defaultTypeProvider.voidType;
+      case 'interface':
+        final libraryUri = Uri.parse(json['library'] as String);
+        final lib =
+            _loadedLibraries[libraryUri] ??= await loadDartLibrary(libraryUri);
+        final element = lib.exportNamespace.get(json['element'] as String)
+            as InterfaceElement;
+        final instantiation = [
+          for (final type in json['instantiation'])
+            await _readDartType(type as Map)
+        ];
+
+        return element.instantiate(
+            typeArguments: instantiation, nullabilitySuffix: suffix);
+      default:
+        throw ArgumentError.value(json, 'json', 'Invalid type descriptor');
+    }
+  }
 
   Future<DriftElement> _readElementReference(Map json) async {
     final id = DriftElementId.fromJson(json);
@@ -110,13 +218,25 @@ abstract class ElementDeserializer {
     final type = json['type'] as String;
     final id = DriftElementId.fromJson(json['id'] as Map);
     final declaration = DriftDeclaration.fromJson(json['declaration'] as Map);
+    final references = <DriftElement>[
+      for (final reference in json['references'])
+        await _readElementReference(reference as Map),
+    ];
 
     switch (type) {
       case 'table':
-        return DriftTable(id, declaration, columns: [
-          for (final rawColumn in json['columns'] as List)
-            await _readColumn(rawColumn as Map),
-        ]);
+        return DriftTable(
+          id,
+          declaration,
+          references: references,
+          columns: [
+            for (final rawColumn in json['columns'] as List)
+              await _readColumn(rawColumn as Map),
+          ],
+          existingRowClass: json['existing_data_class'] != null
+              ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
+              : null,
+        );
       default:
         throw UnimplementedError('Unsupported element type: $type');
     }
@@ -130,7 +250,7 @@ abstract class ElementDeserializer {
       nameInDart: json['nameInDart'] as String,
       declaration: DriftDeclaration.fromJson(json['declaration'] as Map),
       typeConverter: json['typeConverter'] != null
-          ? AppliedTypeConverter.fromJson(json['typeConverter'] as Map)
+          ? await _readTypeConverter(json['typeConverter'] as Map)
           : null,
       clientDefaultCode: json['clientDefaultCode'] != null
           ? AnnotatedDartCode.fromJson(json['clientDefaultCode'] as Map)
@@ -145,6 +265,18 @@ abstract class ElementDeserializer {
           await _readConstraint(rawConstraint as Map)
       ],
       customConstraints: json['customConstraints'] as String?,
+    );
+  }
+
+  Future<AppliedTypeConverter> _readTypeConverter(Map json) async {
+    return AppliedTypeConverter(
+      expression: AnnotatedDartCode.fromJson(json['expression'] as Map),
+      dartType: await _readDartType(json['dart_type'] as Map),
+      sqlType: DriftSqlType.values.byName(json['sql_type'] as String),
+      dartTypeIsNullable: json['dart_type_is_nullable'] as bool,
+      sqlTypeIsNullable: json['sql_type_is_nullable'] as bool,
+      alsoAppliesToJsonConversion:
+          json['also_applies_to_json_conversion'] as bool,
     );
   }
 

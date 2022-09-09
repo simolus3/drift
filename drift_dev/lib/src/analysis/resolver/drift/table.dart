@@ -3,15 +3,16 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../driver/error.dart';
-import '../../results/column.dart';
-import '../../results/element.dart';
-import '../../results/table.dart';
+import '../../results/results.dart';
 import '../intermediate_state.dart';
 import '../resolver.dart';
+import '../shared/dart_types.dart';
+import '../shared/data_class.dart';
+import 'find_dart_class.dart';
 import 'type_mapper.dart';
 
 class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
-  DriftTableResolver(super.discovered, super.resolver, super.state);
+  DriftTableResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
   Future<DriftTable> resolve() async {
@@ -96,6 +97,41 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       ));
     }
 
+    String? dartTableName, dataClassName;
+    ExistingRowClass? existingRowClass;
+
+    final driftTableInfo = discovered.createTable.driftTableName;
+    if (driftTableInfo != null) {
+      final overriddenNames = driftTableInfo.overriddenDataClassName;
+
+      if (driftTableInfo.useExistingDartClass) {
+        final imports = file.discovery!.importDependencies.toList();
+        final clazz = await findDartClass(imports, overriddenNames);
+        if (clazz == null) {
+          reportError(DriftAnalysisError.inDriftFile(
+            discovered.createTable.tableNameToken!,
+            'Existing Dart class $overriddenNames was not found, are '
+            'you missing an import?',
+          ));
+        } else {
+          existingRowClass =
+              validateExistingClass(columns, clazz, '', false, this);
+          dataClassName = existingRowClass?.targetClass.toString();
+        }
+      } else if (overriddenNames.contains('/')) {
+        // Feature to also specify the generated table class. This is extremely
+        // rarely used if there's a conflicting class from drift. See #932
+        final names = overriddenNames.split('/');
+        dataClassName = names[0];
+        dartTableName = names[1];
+      } else {
+        dataClassName = overriddenNames;
+      }
+    }
+
+    dartTableName ??= ReCase(state.ownId.name).pascalCase;
+    dataClassName ??= dataClassNameForClassName(dartTableName);
+
     return DriftTable(
       discovered.ownId,
       DriftDeclaration(
@@ -104,6 +140,10 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       ),
       columns: columns,
       references: references.toList(),
+      dartTypeName: dataClassName,
+      baseDartName: dartTableName,
+      existingRowClass: existingRowClass,
+      strict: table.isStrict,
     );
   }
 }

@@ -12,3 +12,12 @@ abstract class DriftBackend {
   Future<LibraryElement> readDart(Uri uri);
   Future<AstNode?> loadElementDeclaration(Element element);
 }
+
+/// Thrown when attempting to read a Dart library from a file that's not a
+/// library.
+class NotALibraryException implements Exception {
+  /// The uri of the file that was attempted to read.
+  final Uri uri;
+
+  NotALibraryException(this.uri);
+}

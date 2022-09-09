@@ -8,8 +8,15 @@ import '../../driver/driver.dart';
 class KnownDriftTypes {
   final ClassElement tableElement;
   final InterfaceType tableType;
+  final InterfaceElement typeConverter;
+  final InterfaceElement jsonTypeConverter;
 
-  KnownDriftTypes._(this.tableElement, this.tableType);
+  KnownDriftTypes._(
+    this.tableElement,
+    this.tableType,
+    this.typeConverter,
+    this.jsonTypeConverter,
+  );
 
   /// Constructs the set of known drift types from a helper library, which is
   /// resolved from `package:drift/drift_dev_helper.dart`.
@@ -23,7 +30,30 @@ class KnownDriftTypes {
         typeArguments: const [],
         nullabilitySuffix: NullabilitySuffix.none,
       ),
+      exportNamespace.get('TypeConverter') as InterfaceElement,
+      exportNamespace.get('JsonTypeConverter') as InterfaceElement,
     );
+  }
+
+  /// Converts the given Dart [type] into an instantiation of the
+  /// `TypeConverter` class from drift.
+  ///
+  /// Returns `null` if [type] is not a subtype of `TypeConverter`.
+  InterfaceType? asTypeConverter(DartType type) {
+    return type.asInstanceOf(typeConverter);
+  }
+
+  bool isJsonAwareTypeConverter(DartType? type, LibraryElement context) {
+    final jsonConverterType = jsonTypeConverter.instantiate(
+      typeArguments: [
+        context.typeProvider.dynamicType,
+        context.typeProvider.dynamicType
+      ],
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
+
+    return type != null &&
+        context.typeSystem.isSubtypeOf(type, jsonConverterType);
   }
 
   static Future<KnownDriftTypes> resolve(DriftAnalysisDriver driver) async {
@@ -45,6 +75,15 @@ Expression? returnExpressionOfMethod(MethodDeclaration method,
   return body.expression;
 }
 
+bool isColumn(DartType type) {
+  final name = type.nameIfInterfaceType;
+
+  return isFromDrift(type) &&
+      name != null &&
+      name.contains('Column') &&
+      !name.contains('Builder');
+}
+
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
@@ -61,5 +100,24 @@ extension IsFromDrift on Element {
     return parent is ClassElement &&
         parent.name == 'Table' &&
         isFromDrift(parent.thisType);
+  }
+}
+
+extension TypeUtils on DartType {
+  String? get nameIfInterfaceType {
+    final $this = this;
+    return $this is InterfaceType ? $this.element2.name : null;
+  }
+
+  String get userVisibleName => getDisplayString(withNullability: true);
+
+  /// How this type should look like in generated code.
+  String codeString() {
+    if (nullabilitySuffix == NullabilitySuffix.star) {
+      // We can't actually use the legacy star in code, so don't show it.
+      return getDisplayString(withNullability: false);
+    }
+
+    return getDisplayString(withNullability: true);
   }
 }

@@ -1,8 +1,7 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
-
-import 'column.dart';
 
 part '../../generated/analysis/results/element.g.dart';
 
@@ -46,6 +45,10 @@ class DriftDeclaration {
 
   DriftDeclaration(this.sourceUri, this.offset);
 
+  factory DriftDeclaration.dartElement(Element element) {
+    return DriftDeclaration(element.source!.uri, element.nameOffset);
+  }
+
   factory DriftDeclaration.fromJson(Map json) =>
       _$DriftDeclarationFromJson(json);
 
@@ -69,10 +72,4 @@ abstract class DriftSchemaElement extends DriftElement {
 
   /// The exact, unaliased name of this element in the database's schema.
   String get schemaName => id.name;
-}
-
-abstract class DriftElementWithResultSet extends DriftSchemaElement {
-  List<DriftColumn> get columns;
-
-  DriftElementWithResultSet(super.id, super.declaration);
 }

@@ -3,6 +3,7 @@ import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/element.dart';
 
+import 'dart/table.dart' as dart_table;
 import 'drift/table.dart' as drift_table;
 import 'intermediate_state.dart';
 
@@ -23,7 +24,11 @@ class DriftResolver {
     elementState.errorsDuringAnalysis.clear();
 
     if (discovered is DiscoveredDriftTable) {
-      resolver = drift_table.DriftTableResolver(discovered, this, elementState);
+      resolver = drift_table.DriftTableResolver(
+          fileState, discovered, this, elementState);
+    } else if (discovered is DiscoveredDartTable) {
+      resolver = dart_table.DartTableResolver(
+          fileState, discovered, this, elementState);
     } else {
       throw UnimplementedError('TODO: Handle $discovered');
     }
@@ -146,11 +151,12 @@ class DriftResolver {
 }
 
 abstract class LocalElementResolver<T extends DiscoveredElement> {
+  final FileState file;
   final T discovered;
   final DriftResolver resolver;
   final ElementAnalysisState state;
 
-  LocalElementResolver(this.discovered, this.resolver, this.state);
+  LocalElementResolver(this.file, this.discovered, this.resolver, this.state);
 
   void reportError(DriftAnalysisError error) {
     state.errorsDuringAnalysis.add(error);
