@@ -26,6 +26,12 @@ class DriftBuildBackend extends DriftBackend {
   }
 
   @override
+  Future<Uri> uriOfDart(Element element) async {
+    final id = await _buildStep.resolver.assetIdForElement(element);
+    return id.uri;
+  }
+
+  @override
   Future<LibraryElement> readDart(Uri uri) {
     return _buildStep.resolver.libraryFor(AssetId.resolve(uri));
   }

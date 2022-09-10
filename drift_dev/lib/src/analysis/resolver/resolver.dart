@@ -1,3 +1,5 @@
+import 'package:analyzer/dart/element/element.dart';
+
 import '../driver/driver.dart';
 import '../driver/error.dart';
 import '../driver/state.dart';
@@ -90,6 +92,14 @@ class DriftResolver {
         'Unknown pending element $reference, this is a bug in drift_dev');
   }
 
+  Future<ResolveReferencedElementResult> resolveDartReference(
+      DriftElementId owner, Element element) async {
+    final uri = await driver.backend.uriOfDart(element.library!);
+    final id = DriftElementId(uri, element.name!);
+
+    return resolveReferencedElement(owner, id);
+  }
+
   Future<ResolveReferencedElementResult> resolveReference(
       DriftElementId owner, String reference) async {
     final candidates = <DriftElementId>[];
@@ -125,29 +135,6 @@ class DriftResolver {
 
     return resolveReferencedElement(owner, candidates.single);
   }
-
-  Future<T?> resolveReferenceOrReportError<T extends DriftElement>(
-    LocalElementResolver owner,
-    String reference,
-    DriftAnalysisError Function(String msg) createError,
-  ) async {
-    final result = await resolveReference(owner.discovered.ownId, reference);
-
-    if (result is ResolvedReferenceFound) {
-      final element = result.element;
-      if (element is T) {
-        return element;
-      } else {
-        // todo: Better type description in error message
-        owner.state.errorsDuringAnalysis.add(
-            createError('Expected a $T, but got a ${element.runtimeType}'));
-      }
-    } else if (result is InvalidReferenceResult) {
-      owner.state.errorsDuringAnalysis.add(createError(result.message));
-    }
-
-    return null;
-  }
 }
 
 abstract class LocalElementResolver<T extends DiscoveredElement> {
@@ -160,6 +147,38 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
 
   void reportError(DriftAnalysisError error) {
     state.errorsDuringAnalysis.add(error);
+  }
+
+  Future<E?> resolveSqlReferenceOrReportError<E extends DriftElement>(
+    String reference,
+    DriftAnalysisError Function(String msg) createError,
+  ) async {
+    final result = await resolver.resolveReference(discovered.ownId, reference);
+
+    if (result is ResolvedReferenceFound) {
+      final element = result.element;
+      if (element is E) {
+        return element;
+      } else {
+        // todo: Better type description in error message
+        reportError(
+            createError('Expected a $T, but got a ${element.runtimeType}'));
+      }
+    } else {
+      reportErrorForUnresolvedReference(result, createError);
+    }
+
+    return null;
+  }
+
+  void reportErrorForUnresolvedReference(ResolveReferencedElementResult result,
+      DriftAnalysisError Function(String msg) createError) {
+    if (result is InvalidReferenceResult) {
+      reportError(createError(result.message));
+    } else if (result is ReferencedElementCouldNotBeResolved) {
+      reportError(createError(
+          'The referenced element could not be analyzed due to a bug in drift.'));
+    }
   }
 
   Future<DriftElement> resolve();

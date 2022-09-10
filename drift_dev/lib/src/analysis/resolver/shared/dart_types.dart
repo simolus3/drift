@@ -220,6 +220,40 @@ AppliedTypeConverter? readTypeConverter(
   );
 }
 
+AppliedTypeConverter readEnumConverter(
+  void Function(String) reportError,
+  DartType enumType,
+) {
+  if (enumType is! InterfaceType) {
+    reportError('Not a class: `$enumType`');
+  }
+
+  final creatingClass = enumType.element2;
+  if (creatingClass is! EnumElement) {
+    reportError('Not an enum: `${creatingClass!.displayName}`');
+  }
+
+  // `const EnumIndexConverter<EnumType>(EnumType.values)`
+  final expression = AnnotatedDartCode.build((builder) {
+    builder
+      ..addText('const ')
+      ..addSymbol('EnumIndexConverter', AnnotatedDartCode.drift)
+      ..addText('<')
+      ..addDartType(enumType)
+      ..addText('>(')
+      ..addDartType(enumType)
+      ..addText('.values)');
+  });
+
+  return AppliedTypeConverter(
+    expression: expression,
+    dartType: enumType,
+    sqlType: DriftSqlType.int,
+    dartTypeIsNullable: false,
+    sqlTypeIsNullable: false,
+  );
+}
+
 void _checkParameterType(ParameterElement element, DriftColumn column,
     LocalElementResolver resolver) {
   final type = element.type;

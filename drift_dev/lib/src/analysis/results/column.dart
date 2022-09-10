@@ -79,6 +79,9 @@ class DriftColumn implements HasType {
     this.customConstraints,
   });
 
+  /// Whether this column has a `GENERATED AS` column constraint.
+  bool get isGenerated => constraints.any((e) => e is ColumnGeneratedAs);
+
   /// Whether this column was declared inside a `.drift` file.
   bool get declaredInDriftFile => declaration.isDriftDeclaration;
 
@@ -167,15 +170,50 @@ class PrimaryKeyColumn extends DriftColumnConstraint {
 }
 
 class ForeignKeyReference extends DriftColumnConstraint {
-  final DriftColumn otherColumn;
+  late final DriftColumn otherColumn;
   final ReferenceAction? onUpdate;
   final ReferenceAction? onDelete;
 
   ForeignKeyReference(this.otherColumn, this.onUpdate, this.onDelete);
 
+  ForeignKeyReference.unresolved(this.onUpdate, this.onDelete);
+
   @override
   String toString() {
     return 'ForeignKeyReference(to $otherColumn, onUpdate = $onUpdate, '
         'onDelete = $onDelete)';
+  }
+}
+
+class ColumnGeneratedAs extends DriftColumnConstraint {
+  final AnnotatedDartCode dartExpression;
+  final bool stored;
+
+  ColumnGeneratedAs(this.dartExpression, this.stored);
+}
+
+/// A column with a `CHECK()` generated from a Dart expression.
+class DartCheckExpression extends DriftColumnConstraint {
+  final AnnotatedDartCode dartExpression;
+
+  DartCheckExpression(this.dartExpression);
+}
+
+class LimitingTextLength extends DriftColumnConstraint {
+  final int? minLength;
+
+  final int? maxLength;
+
+  LimitingTextLength({this.minLength, this.maxLength});
+
+  @override
+  int get hashCode => minLength.hashCode ^ maxLength.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) return false;
+    final typedOther = other as LimitingTextLength;
+    return typedOther.minLength == minLength &&
+        typedOther.maxLength == maxLength;
   }
 }

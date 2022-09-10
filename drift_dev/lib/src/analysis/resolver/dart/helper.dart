@@ -2,6 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
 
 import '../../driver/driver.dart';
 
@@ -73,6 +74,33 @@ Expression? returnExpressionOfMethod(MethodDeclaration method,
   }
 
   return body.expression;
+}
+
+String? readStringLiteral(Expression expression) {
+  if (expression is StringLiteral) {
+    final value = expression.stringValue;
+    if (value != null) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+int? readIntLiteral(Expression expression) {
+  if (expression is IntegerLiteral) {
+    return expression.value;
+  } else {
+    return null;
+  }
+}
+
+Expression? findNamedArgument(ArgumentList args, String argName) {
+  final argument = args.arguments.singleWhereOrNull(
+    (e) => e is NamedExpression && e.name.label.name == argName,
+  ) as NamedExpression?;
+
+  return argument?.expression;
 }
 
 bool isColumn(DartType type) {

@@ -137,6 +137,12 @@ Matcher get hasNoErrors => isA<FileState>()
     .having((e) => e.analysis.values.expand((e) => e.errorsDuringAnalysis),
         '(errors in analyzed elements)', isEmpty);
 
-Matcher isDriftError(dynamic message) {
+TypeMatcher<DriftAnalysisError> isDriftError(dynamic message) {
   return isA<DriftAnalysisError>().having((e) => e.message, 'message', message);
+}
+
+extension DriftErrorMatchers on TypeMatcher<DriftAnalysisError> {
+  TypeMatcher<DriftAnalysisError> withSpan(lexemeMatcher) {
+    return having((e) => e.span?.text, 'span.text', lexemeMatcher);
+  }
 }

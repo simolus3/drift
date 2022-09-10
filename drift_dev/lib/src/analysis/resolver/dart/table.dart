@@ -10,6 +10,7 @@ import '../intermediate_state.dart';
 import '../resolver.dart';
 import '../shared/dart_types.dart';
 import '../shared/data_class.dart';
+import 'column.dart';
 import 'helper.dart';
 
 class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
@@ -19,7 +20,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   Future<DriftElement> resolve() async {
     final element = discovered.element;
 
-    final columns = (await _parseColumns(element)).toList();
+    final pendingColumns = (await _parseColumns(element)).toList();
+    final columns = [for (final column in pendingColumns) column.column];
     final primaryKey = await _readPrimaryKey(element, columns);
     final uniqueKeys = await _readUniqueKeys(element, columns);
 
@@ -29,7 +31,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       discovered.ownId,
       DriftDeclaration.dartElement(element),
       columns: columns,
-      dartTypeName: dataClassInfo.enforcedName,
+      nameOfRowClass: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       baseDartName: element.name,
@@ -37,6 +39,18 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       uniqueKeysFromTableConstraint: uniqueKeys ?? const [],
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
     );
+
+    // Resolve local foreign key references in pending columns
+    for (final column in pendingColumns) {
+      if (column.referencesColumnInSameTable != null) {
+        final ref =
+            column.column.constraints.whereType<ForeignKeyReference>().first;
+        final referencedColumn = columns.firstWhere(
+            (e) => e.nameInDart == column.referencesColumnInSameTable);
+
+        ref.otherColumn = referencedColumn;
+      }
+    }
 
     if (primaryKey != null &&
         columns.any((c) => c.constraints.any((e) => e is PrimaryKeyColumn))) {
@@ -271,7 +285,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return null;
   }
 
-  Future<Iterable<DriftColumn>> _parseColumns(ClassElement element) async {
+  Future<Iterable<PendingColumnInformation>> _parseColumns(
+      ClassElement element) async {
     final columnNames = element.allSupertypes
         .map((t) => t.element2)
         .followedBy([element])
@@ -290,8 +305,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     });
 
     final results = await Future.wait(fields.map((field) async {
-      final node = await resolver.driver.backend.loadElementDeclaration(element)
-          as MethodDeclaration;
+      final node = await resolver.driver.backend
+          .loadElementDeclaration(field.getter!) as MethodDeclaration;
 
       return await _parseColumn(node, field.getter!);
     }));
@@ -299,8 +314,10 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return results.whereType();
   }
 
-  Future<DriftColumn> _parseColumn(
-      MethodDeclaration declaration, Element element) async {}
+  Future<PendingColumnInformation?> _parseColumn(
+      MethodDeclaration declaration, Element element) async {
+    return ColumnParser(this).parse(declaration, element);
+  }
 }
 
 class _DataClassInformation {

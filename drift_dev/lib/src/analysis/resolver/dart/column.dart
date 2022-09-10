@@ -1,0 +1,466 @@
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
+import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:recase/recase.dart';
+import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
+
+import '../../driver/error.dart';
+import '../../results/results.dart';
+import '../resolver.dart';
+import '../shared/dart_types.dart';
+import 'helper.dart';
+import 'table.dart';
+
+const String _startInt = 'integer';
+const String _startInt64 = 'int64';
+const String _startEnum = 'intEnum';
+const String _startString = 'text';
+const String _startBool = 'boolean';
+const String _startDateTime = 'dateTime';
+const String _startBlob = 'blob';
+const String _startReal = 'real';
+
+const Set<String> _starters = {
+  _startInt,
+  _startInt64,
+  _startEnum,
+  _startString,
+  _startBool,
+  _startDateTime,
+  _startBlob,
+  _startReal,
+};
+
+const String _methodNamed = 'named';
+const String _methodReferences = 'references';
+const String _methodAutoIncrement = 'autoIncrement';
+const String _methodWithLength = 'withLength';
+const String _methodNullable = 'nullable';
+const String _methodUnique = 'unique';
+const String _methodCustomConstraint = 'customConstraint';
+const String _methodDefault = 'withDefault';
+const String _methodClientDefault = 'clientDefault';
+const String _methodMap = 'map';
+const String _methodGenerated = 'generatedAs';
+const String _methodCheck = 'check';
+const Set<String> _addsSqlConstraint = {
+  _methodReferences,
+  _methodAutoIncrement,
+  _methodUnique,
+  _methodDefault,
+  _methodGenerated,
+  _methodCheck,
+};
+
+const String _errorMessage = 'This getter does not create a valid column that '
+    'can be parsed by drift. Please refer to the readme from drift to see how '
+    'columns are formed. If you have any questions, feel free to raise an '
+    'issue.';
+
+/// Parses a single column defined in a Dart table. These columns are a chain
+/// or [MethodInvocation]s. An example getter might look like this:
+/// ```dart
+/// IntColumn get id => integer().autoIncrement()();
+/// ```
+/// The last call `()` is a [FunctionExpressionInvocation], the entries for
+/// before that (in this case `autoIncrement()` and `integer()` are a)
+/// [MethodInvocation]. We work our way through that syntax until we hit a
+/// method that starts the chain (contained in [starters]). By visiting all
+/// the invocations on our way, we can extract the constraint for the column
+/// (e.g. its name, whether it has auto increment, is a primary key and so on).
+class ColumnParser {
+  final DartTableResolver _resolver;
+
+  ColumnParser(this._resolver);
+
+  Future<PendingColumnInformation?> parse(
+      MethodDeclaration getter, Element element) async {
+    final expr = returnExpressionOfMethod(getter);
+
+    if (expr is! FunctionExpressionInvocation) {
+      _resolver.reportError(
+          DriftAnalysisError.forDartElement(element, _errorMessage));
+      return null;
+    }
+
+    var remainingExpr = expr.function as MethodInvocation;
+
+    String? foundStartMethod;
+    String? foundExplicitName;
+    String? foundCustomConstraint;
+    AnnotatedDartCode? foundDefaultExpression;
+    AnnotatedDartCode? clientDefaultExpression;
+    Expression? mappedAs;
+    String? referencesColumnInSameTable;
+
+    var nullable = false;
+    var hasDefaultConstraints = false;
+
+    final foundConstraints = <DriftColumnConstraint>[];
+
+    while (true) {
+      final methodName = remainingExpr.methodName.name;
+
+      if (_starters.contains(methodName)) {
+        foundStartMethod = methodName;
+        break;
+      }
+
+      if (_addsSqlConstraint.contains(methodName)) {
+        hasDefaultConstraints = true;
+      }
+
+      switch (methodName) {
+        case _methodNamed:
+          if (foundExplicitName != null) {
+            _resolver.reportError(
+              DriftAnalysisError.forDartElement(
+                element,
+                "You're setting more than one name here, the first will "
+                'be used',
+              ),
+            );
+          }
+
+          foundExplicitName =
+              readStringLiteral(remainingExpr.argumentList.arguments.first);
+          if (foundExplicitName == null) {
+            _resolver.reportError(DriftAnalysisError.inDartAst(
+                element,
+                remainingExpr.argumentList,
+                'This table name is cannot be resolved! Please only use '
+                'a constant string as parameter for .named().'));
+          }
+          break;
+        case _methodReferences:
+          final args = remainingExpr.argumentList.arguments;
+          final first = args.first;
+
+          if (first is! Identifier) {
+            _resolver.reportError(DriftAnalysisError.inDartAst(
+              element,
+              first,
+              'This parameter should be a simple class name',
+            ));
+            break;
+          }
+
+          final staticElement = first.staticElement;
+          if (staticElement is! ClassElement) {
+            _resolver.reportError(DriftAnalysisError.inDartAst(
+              element,
+              first,
+              '`${first.name}` is not a class!',
+            ));
+            break;
+          }
+
+          final columnNameNode = args[1];
+          if (columnNameNode is! SymbolLiteral) {
+            _resolver.reportError(DriftAnalysisError.inDartAst(
+              element,
+              columnNameNode,
+              'This should be a symbol literal (`#columnName`)',
+            ));
+            break;
+          }
+
+          final columnName =
+              columnNameNode.components.map((token) => token.lexeme).join('.');
+
+          ReferenceAction? onUpdate, onDelete;
+
+          ReferenceAction? parseAction(Expression expr) {
+            if (expr is! PrefixedIdentifier) {
+              _resolver.reportError(DriftAnalysisError.inDartAst(element, expr,
+                  'Should be a direct enum reference (`KeyAction.cascade`)'));
+              return null;
+            }
+
+            final name = expr.identifier.name;
+            switch (name) {
+              case 'setNull':
+                return ReferenceAction.setNull;
+              case 'setDefault':
+                return ReferenceAction.setDefault;
+              case 'cascade':
+                return ReferenceAction.cascade;
+              case 'restrict':
+                return ReferenceAction.restrict;
+              case 'noAction':
+              default:
+                return ReferenceAction.noAction;
+            }
+          }
+
+          for (final expr in args) {
+            if (expr is! NamedExpression) continue;
+
+            final name = expr.name.label.name;
+            final value = expr.expression;
+            if (name == 'onUpdate') {
+              onUpdate = parseAction(value);
+            } else if (name == 'onDelete') {
+              onDelete = parseAction(value);
+            }
+          }
+
+          final referencedTable = await _resolver.resolver
+              .resolveDartReference(_resolver.discovered.ownId, staticElement);
+
+          if (referencedTable is ReferencesItself) {
+            // "Foreign" key to a column in the same table.
+            foundConstraints
+                .add(ForeignKeyReference.unresolved(onUpdate, onDelete));
+            referencesColumnInSameTable = columnName;
+          } else if (referencedTable is ResolvedReferenceFound) {
+            final driftElement = referencedTable.element;
+
+            if (driftElement is DriftTable) {
+              final column = driftElement.columns.firstWhereOrNull(
+                  (element) => element.nameInDart == columnName);
+
+              if (column == null) {
+                _resolver.reportError(DriftAnalysisError.inDartAst(
+                  element,
+                  first,
+                  'The referenced table `${driftElement.schemaName}` has no '
+                  'column named `$columnName` in Dart.',
+                ));
+              } else {
+                foundConstraints
+                    .add(ForeignKeyReference(column, onUpdate, onDelete));
+              }
+            } else {
+              _resolver.reportError(
+                  DriftAnalysisError.inDartAst(element, first, 'Not a table'));
+            }
+          } else {
+            // Could not resolve foreign table, emit warning
+            _resolver.reportErrorForUnresolvedReference(referencedTable,
+                (msg) => DriftAnalysisError.inDartAst(element, first, msg));
+          }
+
+          break;
+        case _methodWithLength:
+          final args = remainingExpr.argumentList;
+          final minArg = findNamedArgument(args, 'min');
+          final maxArg = findNamedArgument(args, 'max');
+
+          foundConstraints.add(LimitingTextLength(
+            minLength: minArg != null ? readIntLiteral(minArg) : null,
+            maxLength: maxArg != null ? readIntLiteral(maxArg) : null,
+          ));
+          break;
+        case _methodAutoIncrement:
+          foundConstraints.add(PrimaryKeyColumn(true));
+          break;
+        case _methodNullable:
+          nullable = true;
+          break;
+        case _methodUnique:
+          foundConstraints.add(const UniqueColumn());
+          break;
+        case _methodCustomConstraint:
+          if (foundCustomConstraint != null) {
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                remainingExpr.methodName,
+                "You've already set custom constraints on this column, "
+                'they will be overriden by this call.',
+              ),
+            );
+          }
+
+          foundCustomConstraint =
+              readStringLiteral(remainingExpr.argumentList.arguments.first);
+
+          if (foundCustomConstraint == null) {
+            _resolver.reportError(DriftAnalysisError.forDartElement(
+              element,
+              'This constraint is cannot be resolved! Please only use '
+              'a constant string as parameter for .customConstraint().',
+            ));
+          }
+          break;
+        case _methodDefault:
+          final args = remainingExpr.argumentList;
+          final expression = args.arguments.single;
+          foundDefaultExpression = AnnotatedDartCode.ast(expression);
+          break;
+        case _methodClientDefault:
+          clientDefaultExpression = AnnotatedDartCode.ast(
+              remainingExpr.argumentList.arguments.single);
+          break;
+        case _methodMap:
+          final args = remainingExpr.argumentList;
+          mappedAs = args.arguments.single;
+          break;
+        case _methodGenerated:
+          Expression? generatedExpression;
+          var stored = false;
+
+          for (final expr in remainingExpr.argumentList.arguments) {
+            if (expr is NamedExpression && expr.name.label.name == 'stored') {
+              final storedValue = expr.expression;
+              if (storedValue is BooleanLiteral) {
+                stored = storedValue.value;
+              } else {
+                _resolver.reportError(DriftAnalysisError.inDartAst(
+                    element, expr, 'Must be a boolean literal'));
+              }
+            } else {
+              generatedExpression = expr;
+            }
+          }
+
+          if (generatedExpression != null) {
+            final code = AnnotatedDartCode.ast(generatedExpression);
+            foundConstraints.add(ColumnGeneratedAs(code, stored));
+          }
+          break;
+        case _methodCheck:
+          final expr = remainingExpr.argumentList.arguments.first;
+          foundConstraints
+              .add(DartCheckExpression(AnnotatedDartCode.ast(expr)));
+      }
+
+      // We're not at a starting method yet, so we need to go deeper!
+      final inner = remainingExpr.target as MethodInvocation;
+      remainingExpr = inner;
+    }
+
+    final sqlName = foundExplicitName ?? ReCase(getter.name2.lexeme).snakeCase;
+    final sqlType = _startMethodToColumnType(foundStartMethod);
+
+    AppliedTypeConverter? converter;
+    if (mappedAs != null) {
+      converter = readTypeConverter(
+        element.library!,
+        mappedAs,
+        sqlType,
+        nullable,
+        (message) => _resolver.reportError(
+            DriftAnalysisError.inDartAst(element, mappedAs!, message)),
+        await _resolver.resolver.driver.loadKnownTypes(),
+      );
+    }
+
+    if (foundStartMethod == _startEnum) {
+      if (converter != null) {
+        _resolver.reportError(DriftAnalysisError.forDartElement(
+          element,
+          'Using $_startEnum will apply a custom converter by default, '
+          "so you can't add an additional converter",
+        ));
+      }
+
+      final enumType = remainingExpr.typeArgumentTypes![0];
+      converter = readEnumConverter(
+        (msg) => DriftAnalysisError.inDartAst(element,
+            remainingExpr.typeArguments ?? remainingExpr.methodName, msg),
+        enumType,
+      );
+    }
+
+    if (foundDefaultExpression != null && clientDefaultExpression != null) {
+      _resolver.reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'clientDefault() and withDefault() are mutually exclusive, '
+          "they can't both be used. Use clientDefault() for values that "
+          'are different for each row and withDefault() otherwise.',
+        ),
+      );
+    }
+
+    if (foundConstraints.contains(const UniqueColumn()) &&
+        foundConstraints.any((e) => e is PrimaryKeyColumn)) {
+      _resolver.reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'Primary key column cannot have UNIQUE constraint',
+        ),
+      );
+    }
+
+    if (hasDefaultConstraints && foundCustomConstraint != null) {
+      _resolver.reportError(
+        DriftAnalysisError.forDartElement(
+          element,
+          'This column definition is using both drift-defined '
+          'constraints (like references, autoIncrement, ...) and a '
+          'customConstraint(). Only the custom constraint will be added '
+          'to the column in SQL!',
+        ),
+      );
+    }
+
+    final docString =
+        getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
+
+    return PendingColumnInformation(
+      DriftColumn(
+        sqlType: sqlType,
+        nullable: nullable,
+        nameInSql: sqlName,
+        nameInDart: element.name!,
+        declaration: DriftDeclaration.dartElement(element),
+        typeConverter: converter,
+        clientDefaultCode: clientDefaultExpression,
+        defaultArgument: foundDefaultExpression,
+        overriddenJsonName: _readJsonKey(element),
+        documentationComment: docString,
+        constraints: foundConstraints,
+        customConstraints: foundCustomConstraint,
+      ),
+      referencesColumnInSameTable: referencesColumnInSameTable,
+    );
+  }
+
+  DriftSqlType _startMethodToColumnType(String name) {
+    return const {
+      _startBool: DriftSqlType.bool,
+      _startString: DriftSqlType.string,
+      _startInt: DriftSqlType.int,
+      _startInt64: DriftSqlType.bigInt,
+      _startEnum: DriftSqlType.int,
+      _startDateTime: DriftSqlType.dateTime,
+      _startBlob: DriftSqlType.blob,
+      _startReal: DriftSqlType.double,
+    }[name]!;
+  }
+
+  String? _readJsonKey(Element getter) {
+    final annotations = getter.metadata;
+    final object = annotations.firstWhereOrNull((e) {
+      final value = e.computeConstantValue();
+      final valueType = value?.type;
+
+      return valueType is InterfaceType &&
+          isFromDrift(valueType) &&
+          valueType.element2.name == 'JsonKey';
+    });
+
+    if (object == null) return null;
+
+    return object.computeConstantValue()!.getField('key')!.toStringValue();
+  }
+}
+
+class PendingColumnInformation {
+  final DriftColumn column;
+
+  /// If the returned column references another column in the same table, its
+  /// [ForeignKeyReference] is still unresolved when the local column resolver
+  /// returns.
+  ///
+  /// It is the responsibility of the table resolver to patch the reference for
+  /// this column in that case.
+  final String? referencesColumnInSameTable;
+
+  PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
+}

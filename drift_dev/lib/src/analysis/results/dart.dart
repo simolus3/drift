@@ -11,6 +11,8 @@ import 'package:json_annotation/json_annotation.dart';
 part '../../generated/analysis/results/dart.g.dart';
 
 class AnnotatedDartCode {
+  static final Uri drift = Uri.parse('package:drift/drift.dart');
+
   final List<dynamic /* String|DartTopLevelSymbol */ > elements;
 
   AnnotatedDartCode(this.elements);
@@ -115,7 +117,7 @@ class DartTopLevelSymbol {
   DartTopLevelSymbol(this.lexeme, this.importUri);
 
   factory DartTopLevelSymbol.topLevelElement(Element element) {
-    assert(element.enclosingElement3 is LibraryElement);
+    assert(element.library?.topLevelElements.contains(element) == true);
 
     // We're using this to recover the right import URI when using
     // `package:build`:

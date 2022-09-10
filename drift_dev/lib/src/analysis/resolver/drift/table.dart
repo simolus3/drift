@@ -51,9 +51,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           // Note: Warnings about whether the referenced column exists or not
           // are reported later, we just need to know dependencies before the
           // lint step of the analysis.
-          final referenced =
-              await resolver.resolveReferenceOrReportError<DriftTable>(
-            this,
+          final referenced = await resolveSqlReferenceOrReportError<DriftTable>(
             constraint.clause.foreignTable.tableName,
             (msg) => DriftAnalysisError.inDriftFile(
               constraint.clause.foreignTable.tableNameToken ?? constraint,
@@ -140,9 +138,10 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       ),
       columns: columns,
       references: references.toList(),
-      dartTypeName: dataClassName,
+      nameOfRowClass: dataClassName,
       baseDartName: dartTableName,
       existingRowClass: existingRowClass,
+      withoutRowId: table.withoutRowId,
       strict: table.isStrict,
     );
   }

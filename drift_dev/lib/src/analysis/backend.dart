@@ -9,6 +9,10 @@ abstract class DriftBackend {
 
   Future<String> readAsString(Uri uri);
 
+  Future<Uri> uriOfDart(Element element) async {
+    return element.source!.uri;
+  }
+
   Future<LibraryElement> readDart(Uri uri);
   Future<AstNode?> loadElementDeclaration(Element element);
 }

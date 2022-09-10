@@ -32,6 +32,19 @@ class ElementSerializer {
           for (final column in element.columns) _serializeColumn(column),
         ],
         'existing_data_class': element.existingRowClass?.toJson(),
+        'primary_key_table_constraint': element.primaryKeyFromTableConstraint
+            ?.map((e) => e.nameInSql)
+            .toList(),
+        'unique_keys_table_constraint': [
+          for (final unique in element.uniqueKeysFromTableConstraint)
+            [for (final column in unique) column.nameInSql]
+        ],
+        'custom_parent_class': element.customParentClass?.toJson(),
+        'fixed_entity_info_name': element.fixedEntityInfoName,
+        'base_dart_name': element.baseDartName,
+        'row_class_name': element.nameOfRowClass,
+        'without_rowid': element.withoutRowId,
+        'strict': element.strict,
       };
     }
 
@@ -225,17 +238,49 @@ abstract class ElementDeserializer {
 
     switch (type) {
       case 'table':
+        final columns = [
+          for (final rawColumn in json['columns'] as List)
+            await _readColumn(rawColumn as Map),
+        ];
+        final columnByName = {
+          for (final column in columns) column.nameInSql: column,
+        };
+
+        Set<DriftColumn>? primaryKeyFromTableConstraint;
+        final serializedPk = json['primary_key_table_constraint'];
+        if (serializedPk != null) {
+          primaryKeyFromTableConstraint = {
+            for (final entry in serializedPk) columnByName[entry]!,
+          };
+        }
+
+        List<Set<DriftColumn>> uniqueKeysFromTableConstraint = const [];
+        final serializedUnique = json['unique_keys_table_constraint'];
+        if (serializedUnique != null) {
+          uniqueKeysFromTableConstraint = [
+            for (final entry in serializedUnique)
+              {for (final column in entry) columnByName[column]!},
+          ];
+        }
+
         return DriftTable(
           id,
           declaration,
           references: references,
-          columns: [
-            for (final rawColumn in json['columns'] as List)
-              await _readColumn(rawColumn as Map),
-          ],
+          columns: columns,
           existingRowClass: json['existing_data_class'] != null
               ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
               : null,
+          primaryKeyFromTableConstraint: primaryKeyFromTableConstraint,
+          uniqueKeysFromTableConstraint: uniqueKeysFromTableConstraint,
+          customParentClass: json['custom_parent_class'] != null
+              ? AnnotatedDartCode.fromJson(json['custom_parent_class'] as Map)
+              : null,
+          fixedEntityInfoName: json['fixed_entity_info_name'] as String?,
+          baseDartName: json['base_dart_name'] as String,
+          nameOfRowClass: json['row_class_name'] as String,
+          withoutRowId: json['without_rowid'] as bool,
+          strict: json['strict'] as bool,
         );
       default:
         throw UnimplementedError('Unsupported element type: $type');
