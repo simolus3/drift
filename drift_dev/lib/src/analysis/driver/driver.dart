@@ -4,6 +4,7 @@ import '../../analyzer/options.dart';
 import '../backend.dart';
 import '../resolver/dart/helper.dart';
 import '../resolver/discover.dart';
+import '../resolver/drift/sqlparser/mapping.dart';
 import '../resolver/resolver.dart';
 import 'cache.dart';
 import 'error.dart';
@@ -13,6 +14,8 @@ class DriftAnalysisDriver {
   final DriftBackend backend;
   final DriftAnalysisCache cache = DriftAnalysisCache();
   final DriftOptions options;
+
+  late final TypeMapping typeMapping = TypeMapping(options);
 
   KnownDriftTypes? _knownTypes;
 

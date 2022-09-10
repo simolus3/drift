@@ -29,7 +29,7 @@ class DriftAnalyzer extends Builder {
     final serializer = ElementSerializer();
     final asJson = serializer.serializeElements(
         results.analysis.values.map((e) => e.result).whereType());
-    final serialized = JsonUtf8Encoder().convert(asJson);
+    final serialized = JsonUtf8Encoder(' ' * 2).convert(asJson);
 
     await buildStep.writeAsBytes(buildStep.allowedOutputs.single, serialized);
   }

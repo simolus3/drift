@@ -33,6 +33,7 @@ abstract class DiscoveredFileState {
 }
 
 class DiscoveredDriftFile extends DiscoveredFileState {
+  final String originalSource;
   final DriftFile ast;
   final List<DriftFileImport> imports;
 
@@ -43,6 +44,7 @@ class DiscoveredDriftFile extends DiscoveredFileState {
   Iterable<Uri> get importDependencies => imports.map((e) => e.importedUri);
 
   DiscoveredDriftFile({
+    required this.originalSource,
     required this.ast,
     required this.imports,
     required List<DiscoveredElement> locallyDefinedElements,

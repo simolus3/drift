@@ -9,7 +9,6 @@ import '../resolver.dart';
 import '../shared/dart_types.dart';
 import '../shared/data_class.dart';
 import 'find_dart_class.dart';
-import 'type_mapper.dart';
 
 class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
   DriftTableResolver(super.file, super.discovered, super.resolver, super.state);
@@ -41,7 +40,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
 
     for (final column in table.resultColumns) {
       String? overriddenDartName;
-      final type = column.type.sqlTypeToDrift(resolver.driver.options);
+      final type = resolver.driver.typeMapping.sqlTypeToDrift(column.type);
       final constraints = <DriftColumnConstraint>[];
 
       for (final constraint in column.constraints) {

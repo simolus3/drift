@@ -7,6 +7,7 @@ import '../driver/state.dart';
 import '../results/element.dart';
 
 import 'dart/table.dart' as dart_table;
+import 'drift/index.dart' as drift_index;
 import 'drift/table.dart' as drift_table;
 import 'intermediate_state.dart';
 
@@ -28,6 +29,9 @@ class DriftResolver {
 
     if (discovered is DiscoveredDriftTable) {
       resolver = drift_table.DriftTableResolver(
+          fileState, discovered, this, elementState);
+    } else if (discovered is DiscoveredDriftIndex) {
+      resolver = drift_index.DriftIndexResolver(
           fileState, discovered, this, elementState);
     } else if (discovered is DiscoveredDartTable) {
       resolver = dart_table.DartTableResolver(

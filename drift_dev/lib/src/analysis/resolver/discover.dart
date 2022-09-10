@@ -73,10 +73,14 @@ class DiscoverStep {
           } else if (node is CreateViewStatement) {
             pendingElements
                 .add(DiscoveredDriftView(_id(node.createdName), node));
+          } else if (node is CreateIndexStatement) {
+            pendingElements
+                .add(DiscoveredDriftIndex(_id(node.indexName), node));
           }
         }
 
         _file.discovery = DiscoveredDriftFile(
+          originalSource: contents,
           ast: parsed.rootNode as DriftFile,
           imports: imports,
           locallyDefinedElements: pendingElements,

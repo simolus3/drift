@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
+import 'package:sqlparser/sqlparser.dart';
 
 part '../../generated/analysis/results/element.g.dart';
 
@@ -47,6 +48,10 @@ class DriftDeclaration {
 
   factory DriftDeclaration.dartElement(Element element) {
     return DriftDeclaration(element.source!.uri, element.nameOffset);
+  }
+
+  factory DriftDeclaration.driftFile(AstNode node, Uri uri) {
+    return DriftDeclaration(uri, node.firstPosition);
   }
 
   factory DriftDeclaration.fromJson(Map json) =>

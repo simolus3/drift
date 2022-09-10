@@ -2,6 +2,8 @@ library utils.find_referenced_tables;
 
 import 'package:sqlparser/sqlparser.dart';
 
+import 'node_to_text.dart';
+
 /// An AST-visitor that walks sql statements and finds all tables referenced in
 /// them.
 class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
@@ -137,4 +139,46 @@ Set<TableWrite> findWrittenTables(AstNode root) {
 /// follow the advice on [findWrittenTables] to only walk the ast once.
 Set<Table> findReferencedTables(AstNode root) {
   return (ReferencedTablesVisitor()..visit(root, null)).foundTables;
+}
+
+/// Extension to find referenced tables prior to any analysis runs.
+extension FindReferenceAnalysis on SqlEngine {
+  /// Finds tables references from the global schema before any analyis steps
+  /// ran.
+  ///
+  /// This includes tables added in `FROM` if those tables haven't been added
+  /// syntactically, for instance through a `WITH` clause.
+  ///
+  /// In a sense, this is comparable to finding "free variables" in a syntactic
+  /// construct for other languages.
+  Set<String> findReferencedSchemaTables(AstNode root) {
+    // Poorly clone the AST so that the analysis doesn't bring the original one
+    // into a weird state.
+    final sql = root.toSql();
+    final clone = parse(sql).rootNode;
+
+    final scope = _FakeRootScope();
+    final context = AnalysisContext(clone, sql, scope, EngineOptions(),
+        schemaSupport: schemaReader);
+
+    AstPreparingVisitor(context: context).start(clone);
+    clone.acceptWithoutArg(ColumnResolver(context));
+
+    return scope.addedTables;
+  }
+}
+
+class _FakeRootScope extends RootScope {
+  final Set<String> addedTables = {};
+
+  @override
+  ResultSet? resolveResultSetToAdd(String name) {
+    addedTables.add(name.toLowerCase());
+    return _FakeResultSet();
+  }
+}
+
+class _FakeResultSet extends ResultSet {
+  @override
+  List<Column>? get resolvedColumns => const [];
 }

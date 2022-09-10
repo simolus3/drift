@@ -72,7 +72,9 @@ abstract class ReferenceScope {
   /// This is used to resolve table references. Usually, after a result set to
   /// add has been resolve,d a [ResultSetAvailableInStatement] is added to the
   /// scope and [resolveResultSet] will find that afterwards.
-  ResultSet? resolveResultSetToAdd(String name) => rootScope.knownTables[name];
+  ResultSet? resolveResultSetToAdd(String name) {
+    return rootScope.resolveResultSetToAdd(name);
+  }
 
   /// Attempts to resolve an unqualified reference from a [columnName].
   ///
@@ -106,6 +108,11 @@ class RootScope extends ReferenceScope {
   ///
   /// This is used to resolve `CREATE VIRTUAL TABLE` statements.
   final Map<String, Module> knownModules = CaseInsensitiveMap();
+
+  @override
+  ResultSet? resolveResultSetToAdd(String name) {
+    return knownTables[name];
+  }
 }
 
 mixin _HasParentScope on ReferenceScope {

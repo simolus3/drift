@@ -6,6 +6,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:analyzer/dart/element/type_visitor.dart';
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
@@ -19,15 +20,11 @@ class ElementSerializer {
   }
 
   Map<String, Object?> serialize(DriftElement element) {
+    Map<String, Object?> additionalInformation;
+
     if (element is DriftTable) {
-      return {
+      additionalInformation = {
         'type': 'table',
-        'id': element.id.toJson(),
-        'declaration': element.declaration.toJson(),
-        'references': [
-          for (final referenced in element.references)
-            _serializeElementReference(referenced),
-        ],
         'columns': [
           for (final column in element.columns) _serializeColumn(column),
         ],
@@ -46,9 +43,24 @@ class ElementSerializer {
         'without_rowid': element.withoutRowId,
         'strict': element.strict,
       };
+    } else if (element is DriftIndex) {
+      additionalInformation = {
+        'type': 'index',
+        'sql': element.createStmt,
+      };
+    } else {
+      throw UnimplementedError('Unknown element $element');
     }
 
-    throw UnimplementedError('Unknown element $element');
+    return {
+      'id': element.id.toJson(),
+      'declaration': element.declaration.toJson(),
+      'references': [
+        for (final referenced in element.references)
+          _serializeElementReference(referenced),
+      ],
+      ...additionalInformation,
+    };
   }
 
   Map<String, Object?> _serializeColumn(DriftColumn column) {
@@ -291,6 +303,13 @@ abstract class ElementDeserializer {
           nameOfRowClass: json['row_class_name'] as String,
           withoutRowId: json['without_rowid'] as bool,
           strict: json['strict'] as bool,
+        );
+      case 'index':
+        return DriftIndex(
+          id,
+          declaration,
+          table: references.whereType<DriftTable>().firstOrNull,
+          createStmt: json['sql'] as String,
         );
       default:
         throw UnimplementedError('Unsupported element type: $type');

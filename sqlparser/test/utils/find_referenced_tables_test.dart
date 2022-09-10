@@ -95,4 +95,41 @@ void main() {
     expect(findWrittenTables(ctx.root), isEmpty);
     expect(ctx.errors, hasLength(3)); // unknown table, two unknown references
   });
+
+  group('find references without analysis', () {
+    void testWith(String sql, Set<String> references) {
+      final result = engine.parse(sql);
+      expect(result.errors, isEmpty);
+
+      final found = engine.findReferencedSchemaTables(result.rootNode);
+      expect(found, references,
+          reason: 'Query `$sql` references `$references`');
+    }
+
+    test('finds references for simple queries', () {
+      testWith('SELECT * FROM foo', {'foo'});
+      testWith('DELETE FROM bar', {'bar'});
+      testWith('VALUES (1, 2, 3)', {});
+    });
+
+    test('does not include references resolved in the query', () {
+      testWith('WITH foo AS (VALUES(1,2,3)) SELECT * FROM foo', {});
+    });
+
+    test('works for complex statements', () {
+      testWith('''
+CREATE TRIGGER my_trigger BEFORE DELETE on target BEGIN
+  SELECT * FROM old;
+  SELECT * FROM new; -- note: This is a delete trigger
+END
+''', {'target', 'new'});
+
+      testWith('''
+CREATE TRIGGER my_trigger BEFORE UPDATE on target BEGIN
+  SELECT * FROM old;
+  SELECT * FROM new;
+END
+''', {'target'});
+    });
+  });
 }

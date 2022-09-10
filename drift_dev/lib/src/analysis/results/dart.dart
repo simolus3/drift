@@ -280,7 +280,14 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
 
   @override
   void visitNode(AstNode node) {
+    int? offset;
+
     for (final childEntity in node.childEntities) {
+      if (offset != null && childEntity.offset > offset) {
+        _builder.addText(' ');
+      }
+      offset = childEntity.end;
+
       if (childEntity is Token) {
         _builder.addText(childEntity.lexeme);
       } else {

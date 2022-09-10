@@ -15,6 +15,12 @@ class DiscoveredDriftView extends DiscoveredElement {
   DiscoveredDriftView(super.ownId, this.createView);
 }
 
+class DiscoveredDriftIndex extends DiscoveredElement {
+  final CreateIndexStatement createIndex;
+
+  DiscoveredDriftIndex(super.ownId, this.createIndex);
+}
+
 abstract class DiscoveredDartElement<DE extends Element>
     extends DiscoveredElement {
   final DE dartElement;
