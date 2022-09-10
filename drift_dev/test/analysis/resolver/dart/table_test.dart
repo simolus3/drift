@@ -9,7 +9,7 @@ void main() {
   late TestBackend backend;
 
   setUpAll(() {
-    backend = TestBackend.inTest({
+    backend = TestBackend({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 

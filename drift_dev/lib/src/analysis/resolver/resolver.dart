@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:collection/collection.dart';
 
 import '../driver/driver.dart';
 import '../driver/error.dart';
@@ -95,9 +96,20 @@ class DriftResolver {
   Future<ResolveReferencedElementResult> resolveDartReference(
       DriftElementId owner, Element element) async {
     final uri = await driver.backend.uriOfDart(element.library!);
-    final id = DriftElementId(uri, element.name!);
+    final state = await driver.prepareFileForAnalysis(uri);
 
-    return resolveReferencedElement(owner, id);
+    final discovered = state.discovery?.locallyDefinedElements
+        .whereType<DiscoveredDartElement>()
+        .firstWhereOrNull((c) => c.dartElement == element);
+
+    if (discovered != null) {
+      return resolveReferencedElement(owner, discovered.ownId);
+    } else {
+      return InvalidReferenceResult(
+        InvalidReferenceError.noElementWichSuchName,
+        'The referenced element is not understood by drift.',
+      );
+    }
   }
 
   Future<ResolveReferencedElementResult> resolveReference(

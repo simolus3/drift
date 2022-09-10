@@ -15,8 +15,13 @@ class DiscoveredDriftView extends DiscoveredElement {
   DiscoveredDriftView(super.ownId, this.createView);
 }
 
-class DiscoveredDartTable extends DiscoveredElement {
-  final ClassElement element;
+abstract class DiscoveredDartElement<DE extends Element>
+    extends DiscoveredElement {
+  final DE dartElement;
 
-  DiscoveredDartTable(super.ownId, this.element);
+  DiscoveredDartElement(super.ownId, this.dartElement);
+}
+
+class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
+  DiscoveredDartTable(super.ownId, super.dartElement);
 }

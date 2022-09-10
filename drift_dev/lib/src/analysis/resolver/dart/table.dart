@@ -18,7 +18,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   @override
   Future<DriftElement> resolve() async {
-    final element = discovered.element;
+    final element = discovered.dartElement;
 
     final pendingColumns = (await _parseColumns(element)).toList();
     final columns = [for (final column in pendingColumns) column.column];
@@ -27,18 +27,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     final dataClassInfo = _readDataClassInformation(columns, element);
 
-    final table = DriftTable(
-      discovered.ownId,
-      DriftDeclaration.dartElement(element),
-      columns: columns,
-      nameOfRowClass: dataClassInfo.enforcedName,
-      existingRowClass: dataClassInfo.existingClass,
-      customParentClass: dataClassInfo.extending,
-      baseDartName: element.name,
-      primaryKeyFromTableConstraint: primaryKey,
-      uniqueKeysFromTableConstraint: uniqueKeys ?? const [],
-      withoutRowId: await _overrideWithoutRowId(element) ?? false,
-    );
+    final references = <DriftElement>{};
 
     // Resolve local foreign key references in pending columns
     for (final column in pendingColumns) {
@@ -49,8 +38,28 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
             (e) => e.nameInDart == column.referencesColumnInSameTable);
 
         ref.otherColumn = referencedColumn;
+      } else {
+        for (final constraint in column.column.constraints) {
+          if (constraint is ForeignKeyReference) {
+            references.add(constraint.otherColumn.owner);
+          }
+        }
       }
     }
+
+    final table = DriftTable(
+      discovered.ownId,
+      DriftDeclaration.dartElement(element),
+      columns: columns,
+      references: references.toList(),
+      nameOfRowClass: dataClassInfo.enforcedName,
+      existingRowClass: dataClassInfo.existingClass,
+      customParentClass: dataClassInfo.extending,
+      baseDartName: element.name,
+      primaryKeyFromTableConstraint: primaryKey,
+      uniqueKeysFromTableConstraint: uniqueKeys ?? const [],
+      withoutRowId: await _overrideWithoutRowId(element) ?? false,
+    );
 
     if (primaryKey != null &&
         columns.any((c) => c.constraints.any((e) => e is PrimaryKeyColumn))) {

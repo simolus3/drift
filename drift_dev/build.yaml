@@ -20,19 +20,12 @@ builders:
     build_to: cache
     applies_builders: ["drift_dev:cleanup"]
 
-  analysis:
-    import: "package:drift_dev/integrations/build.dart"
-    builder_factories: ["analyzer"]
-    build_extensions:
-      ".drift": [".drift.drift_module.json"]
-      ".dart": [".dart.drift_module.json"]
-    build_to: cache
-    required_inputs: [".drift_prep.json"]
-
   drift_dev:
     import: "package:drift_dev/integrations/build.dart"
-    builder_factories: ["driftBuilder"]
-    build_extensions: {".dart": [".drift.g.part"]}
+    builder_factories: ["analyzer", "driftBuilder"]
+    build_extensions:
+      ".dart": [".drift.g.part", ".dart.drift_module.json"]
+      ".drift": [".drift.drift_module.json"]
     auto_apply: dependents
     build_to: cache
     required_inputs: [".drift_prep.json"]

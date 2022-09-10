@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../analyzer/options.dart';
@@ -35,7 +34,6 @@ class DriftAnalysisDriver {
     return _knownTypes ??= await KnownDriftTypes.resolve(this);
   }
 
-  @visibleForTesting
   Future<FileState> prepareFileForAnalysis(Uri uri) async {
     var known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
 
@@ -76,7 +74,12 @@ class DriftAnalysisDriver {
     for (final discovered in state.discovery!.locallyDefinedElements) {
       if (!state.elementIsAnalyzed(discovered.ownId)) {
         final resolver = DriftResolver(this);
-        await resolver.resolveDiscovered(discovered);
+
+        try {
+          await resolver.resolveDiscovered(discovered);
+        } catch (e, s) {
+          backend.log.warning('Could not analyze ${discovered.ownId}', e, s);
+        }
       }
     }
   }

@@ -31,7 +31,8 @@ class TestBackend extends DriftBackend {
 
   AnalysisContext? _dartContext;
 
-  TestBackend(Map<String, String> sourceContents, DriftOptions options)
+  TestBackend(Map<String, String> sourceContents,
+      {DriftOptions options = const DriftOptions.defaults()})
       : sourceContents = {
           for (final entry in sourceContents.entries)
             AssetId.parse(entry.key).uri.toString(): entry.value,
@@ -41,7 +42,7 @@ class TestBackend extends DriftBackend {
 
   factory TestBackend.inTest(Map<String, String> sourceContents,
       {DriftOptions options = const DriftOptions.defaults()}) {
-    final backend = TestBackend(sourceContents, options);
+    final backend = TestBackend(sourceContents, options: options);
     addTearDown(backend.dispose);
 
     return backend;
