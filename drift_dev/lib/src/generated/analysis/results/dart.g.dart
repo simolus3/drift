@@ -6,22 +6,11 @@ part of '../../../analysis/results/dart.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-DartTopLevelSymbol _$DartTopLevelSymbolFromJson(Map json) => $checkedCreate(
-      'DartTopLevelSymbol',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          allowedKeys: const ['lexeme', 'import_uri'],
-        );
-        final val = DartTopLevelSymbol(
-          $checkedConvert('lexeme', (v) => v as String),
-          $checkedConvert(
-              'import_uri', (v) => v == null ? null : Uri.parse(v as String)),
-        );
-        return val;
-      },
-      fieldKeyMap: const {'importUri': 'import_uri'},
+DartTopLevelSymbol _$DartTopLevelSymbolFromJson(Map json) => DartTopLevelSymbol(
+      json['lexeme'] as String,
+      json['import_uri'] == null
+          ? null
+          : Uri.parse(json['import_uri'] as String),
     );
 
 Map<String, dynamic> _$DartTopLevelSymbolToJson(DartTopLevelSymbol instance) =>

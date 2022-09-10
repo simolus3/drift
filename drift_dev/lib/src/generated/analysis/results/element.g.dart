@@ -6,21 +6,9 @@ part of '../../../analysis/results/element.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-DriftElementId _$DriftElementIdFromJson(Map json) => $checkedCreate(
-      'DriftElementId',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          allowedKeys: const ['library_uri', 'name'],
-        );
-        final val = DriftElementId(
-          $checkedConvert('library_uri', (v) => Uri.parse(v as String)),
-          $checkedConvert('name', (v) => v as String),
-        );
-        return val;
-      },
-      fieldKeyMap: const {'libraryUri': 'library_uri'},
+DriftElementId _$DriftElementIdFromJson(Map json) => DriftElementId(
+      Uri.parse(json['library_uri'] as String),
+      json['name'] as String,
     );
 
 Map<String, dynamic> _$DriftElementIdToJson(DriftElementId instance) =>
@@ -29,21 +17,9 @@ Map<String, dynamic> _$DriftElementIdToJson(DriftElementId instance) =>
       'name': instance.name,
     };
 
-DriftDeclaration _$DriftDeclarationFromJson(Map json) => $checkedCreate(
-      'DriftDeclaration',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          allowedKeys: const ['source_uri', 'offset'],
-        );
-        final val = DriftDeclaration(
-          $checkedConvert('source_uri', (v) => Uri.parse(v as String)),
-          $checkedConvert('offset', (v) => v as int),
-        );
-        return val;
-      },
-      fieldKeyMap: const {'sourceUri': 'source_uri'},
+DriftDeclaration _$DriftDeclarationFromJson(Map json) => DriftDeclaration(
+      Uri.parse(json['source_uri'] as String),
+      json['offset'] as int,
     );
 
 Map<String, dynamic> _$DriftDeclarationToJson(DriftDeclaration instance) =>

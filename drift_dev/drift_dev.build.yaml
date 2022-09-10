@@ -2,7 +2,27 @@
 # which is what we want! Our builders depend on generated code, so they break the generated build script at the start of
 # a build.
 targets:
+  analysis_results:
+    # Analysis result serialization is drift-internal and doesn't need any of
+    # the checks the default serialization builder runs on.
+    auto_apply_builders: false
+    sources:
+      - "lib/src/analysis/**"
+    builders:
+      json_serializable:
+        enabled: true
+        options:
+          checked: false
+          disallow_unrecognized_keys: false
+          any_map: true
+          field_rename: snake
+          explicit_to_json: true
+
+      source_gen:combining_builder:
+        enabled: false # Run in default target
+
   $default:
+    dependencies: [":analysis_results"]
     builders:
       json_serializable:
         options:
@@ -11,6 +31,9 @@ targets:
           disallow_unrecognized_keys: true
           field_rename: snake
           explicit_to_json: true
+        generate_for:
+          exclude:
+            - "lib/src/analysis/**" # using different options for those files
       # https://simonbinder.eu/posts/build_directory_moves/#generating-into-a-directory-with-source_gen
       source_gen:combining_builder:
         options:

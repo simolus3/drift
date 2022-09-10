@@ -6,47 +6,16 @@ part of '../../../analysis/results/result_sets.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-ExistingRowClass _$ExistingRowClassFromJson(Map json) => $checkedCreate(
-      'ExistingRowClass',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          allowedKeys: const [
-            'target_class',
-            'target_type',
-            'constructor',
-            'is_async_factory',
-            'positional_columns',
-            'named_columns',
-            'generate_insertable'
-          ],
-        );
-        final val = ExistingRowClass(
-          targetClass: $checkedConvert(
-              'target_class', (v) => AnnotatedDartCode.fromJson(v as Map)),
-          targetType: $checkedConvert(
-              'target_type', (v) => AnnotatedDartCode.fromJson(v as Map)),
-          constructor: $checkedConvert('constructor', (v) => v as String),
-          positionalColumns: $checkedConvert('positional_columns',
-              (v) => (v as List<dynamic>).map((e) => e as String).toList()),
-          namedColumns: $checkedConvert(
-              'named_columns', (v) => Map<String, String>.from(v as Map)),
-          generateInsertable: $checkedConvert(
-              'generate_insertable', (v) => v as bool? ?? false),
-          isAsyncFactory:
-              $checkedConvert('is_async_factory', (v) => v as bool? ?? false),
-        );
-        return val;
-      },
-      fieldKeyMap: const {
-        'targetClass': 'target_class',
-        'targetType': 'target_type',
-        'positionalColumns': 'positional_columns',
-        'namedColumns': 'named_columns',
-        'generateInsertable': 'generate_insertable',
-        'isAsyncFactory': 'is_async_factory'
-      },
+ExistingRowClass _$ExistingRowClassFromJson(Map json) => ExistingRowClass(
+      targetClass: AnnotatedDartCode.fromJson(json['target_class'] as Map),
+      targetType: AnnotatedDartCode.fromJson(json['target_type'] as Map),
+      constructor: json['constructor'] as String,
+      positionalColumns: (json['positional_columns'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      namedColumns: Map<String, String>.from(json['named_columns'] as Map),
+      generateInsertable: json['generate_insertable'] as bool? ?? false,
+      isAsyncFactory: json['is_async_factory'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$ExistingRowClassToJson(ExistingRowClass instance) =>

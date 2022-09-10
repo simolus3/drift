@@ -75,15 +75,25 @@ class ElementSerializer {
 
   Map<String, Object?> _serializeColumnConstraint(
       DriftColumnConstraint constraint) {
-    if (constraint is ForeignKeyReference) {
+    if (constraint is UniqueColumn) {
+      return {'type': 'unique'};
+    } else if (constraint is PrimaryKeyColumn) {
+      return {'type': 'primary', ...constraint.toJson()};
+    } else if (constraint is ForeignKeyReference) {
       return {
         'type': 'foreign_key',
         'column': _serializeColumnReference(constraint.otherColumn),
         'onUpdate': constraint.onUpdate?.name,
         'onDelete': constraint.onDelete?.name,
       };
+    } else if (constraint is ColumnGeneratedAs) {
+      return {'type': 'generated_as', ...constraint.toJson()};
+    } else if (constraint is DartCheckExpression) {
+      return {'type': 'check', ...constraint.toJson()};
+    } else if (constraint is LimitingTextLength) {
+      return {'type': 'limit_text_length', ...constraint.toJson()};
     } else {
-      throw UnimplementedError('Unsupported column constrain: $constraint');
+      throw UnimplementedError('Unsupported column constraint: $constraint');
     }
   }
 
@@ -136,7 +146,7 @@ class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
     return {
       'kind': 'interface',
       'suffix': type.nullabilitySuffix.name,
-      'library': type.element2.library.source.uri,
+      'library': type.element2.library.source.uri.toString(),
       'element': type.element2.name,
       'instantiation': [
         for (final instantiation in type.typeArguments)
@@ -329,6 +339,10 @@ abstract class ElementDeserializer {
     final type = json['type'] as String;
 
     switch (type) {
+      case 'unique':
+        return const UniqueColumn();
+      case 'primary':
+        return PrimaryKeyColumn.fromJson(json);
       case 'foreign_key':
         ReferenceAction? readAction(String? value) {
           return value == null ? null : ReferenceAction.values.byName(value);
@@ -339,6 +353,12 @@ abstract class ElementDeserializer {
           readAction(json['onUpdate'] as String?),
           readAction(json['onDelete'] as String?),
         );
+      case 'generated_as':
+        return ColumnGeneratedAs.fromJson(json);
+      case 'check':
+        return DartCheckExpression.fromJson(json);
+      case 'limit_text_length':
+        return LimitingTextLength.fromJson(json);
       default:
         throw UnimplementedError('Unsupported constraint: $type');
     }

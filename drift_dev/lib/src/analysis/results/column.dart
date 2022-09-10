@@ -8,6 +8,8 @@ import 'dart.dart';
 import 'element.dart';
 import 'types.dart';
 
+part '../../generated/analysis/results/column.g.dart';
+
 class DriftColumn implements HasType {
   @override
   final DriftSqlType sqlType;
@@ -163,10 +165,16 @@ class UniqueColumn extends DriftColumnConstraint {
   const UniqueColumn();
 }
 
+@JsonSerializable()
 class PrimaryKeyColumn extends DriftColumnConstraint {
   final bool isAutoIncrement;
 
   PrimaryKeyColumn(this.isAutoIncrement);
+
+  factory PrimaryKeyColumn.fromJson(Map json) =>
+      _$PrimaryKeyColumnFromJson(json);
+
+  Map<String, Object?> toJson() => _$PrimaryKeyColumnToJson(this);
 }
 
 class ForeignKeyReference extends DriftColumnConstraint {
@@ -185,26 +193,44 @@ class ForeignKeyReference extends DriftColumnConstraint {
   }
 }
 
+@JsonSerializable()
 class ColumnGeneratedAs extends DriftColumnConstraint {
   final AnnotatedDartCode dartExpression;
   final bool stored;
 
   ColumnGeneratedAs(this.dartExpression, this.stored);
+
+  factory ColumnGeneratedAs.fromJson(Map json) =>
+      _$ColumnGeneratedAsFromJson(json);
+
+  Map<String, Object?> toJson() => _$ColumnGeneratedAsToJson(this);
 }
 
 /// A column with a `CHECK()` generated from a Dart expression.
+@JsonSerializable()
 class DartCheckExpression extends DriftColumnConstraint {
   final AnnotatedDartCode dartExpression;
 
   DartCheckExpression(this.dartExpression);
+
+  factory DartCheckExpression.fromJson(Map json) =>
+      _$DartCheckExpressionFromJson(json);
+
+  Map<String, Object?> toJson() => _$DartCheckExpressionToJson(this);
 }
 
+@JsonSerializable()
 class LimitingTextLength extends DriftColumnConstraint {
   final int? minLength;
 
   final int? maxLength;
 
   LimitingTextLength({this.minLength, this.maxLength});
+
+  factory LimitingTextLength.fromJson(Map json) =>
+      _$LimitingTextLengthFromJson(json);
+
+  Map<String, Object?> toJson() => _$LimitingTextLengthToJson(this);
 
   @override
   int get hashCode => minLength.hashCode ^ maxLength.hashCode;
