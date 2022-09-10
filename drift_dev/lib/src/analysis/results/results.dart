@@ -4,4 +4,5 @@ export 'element.dart';
 export 'index.dart';
 export 'result_sets.dart';
 export 'table.dart';
+export 'trigger.dart';
 export 'types.dart';

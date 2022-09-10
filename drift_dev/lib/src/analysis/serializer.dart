@@ -7,7 +7,7 @@ import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:analyzer/dart/element/type_visitor.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import 'results/results.dart';
@@ -47,6 +47,18 @@ class ElementSerializer {
       additionalInformation = {
         'type': 'index',
         'sql': element.createStmt,
+      };
+    } else if (element is DriftTrigger) {
+      additionalInformation = {
+        'type': 'trigger',
+        'sql': element.createStmt,
+        'writes': [
+          for (final write in element.writes)
+            {
+              'table': _serializeElementReference(write.table),
+              'kind': write.kind.name,
+            }
+        ],
       };
     } else {
       throw UnimplementedError('Unknown element $element');
@@ -310,6 +322,21 @@ abstract class ElementDeserializer {
           declaration,
           table: references.whereType<DriftTable>().firstOrNull,
           createStmt: json['sql'] as String,
+        );
+      case 'trigger':
+        return DriftTrigger(
+          id,
+          declaration,
+          references: references,
+          createStmt: json['sql'] as String,
+          writes: [
+            for (final write in json['writes'])
+              TriggerTableWrite(
+                await _readElementReference(write['table'] as Map)
+                    as DriftTable,
+                UpdateKind.values.byName(write['kind'] as String),
+              )
+          ],
         );
       default:
         throw UnimplementedError('Unsupported element type: $type');

@@ -76,6 +76,9 @@ class DiscoverStep {
           } else if (node is CreateIndexStatement) {
             pendingElements
                 .add(DiscoveredDriftIndex(_id(node.indexName), node));
+          } else if (node is CreateTriggerStatement) {
+            pendingElements
+                .add(DiscoveredDriftTrigger(_id(node.triggerName), node));
           }
         }
 

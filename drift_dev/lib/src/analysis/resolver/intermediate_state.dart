@@ -21,6 +21,12 @@ class DiscoveredDriftIndex extends DiscoveredElement {
   DiscoveredDriftIndex(super.ownId, this.createIndex);
 }
 
+class DiscoveredDriftTrigger extends DiscoveredElement {
+  final CreateTriggerStatement createTrigger;
+
+  DiscoveredDriftTrigger(super.ownId, this.createTrigger);
+}
+
 abstract class DiscoveredDartElement<DE extends Element>
     extends DiscoveredElement {
   final DE dartElement;
