@@ -6,3 +6,4 @@ export 'result_sets.dart';
 export 'table.dart';
 export 'trigger.dart';
 export 'types.dart';
+export 'view.dart';
