@@ -218,11 +218,11 @@ class QueryWriter {
     if (update.needsAsyncMapping) {
       _buffer.write('Future.wait(rows.map(');
       _writeMappingLambda(update);
-      _buffer.write('))');
+      _buffer.write(')).toList()');
     } else {
       _buffer.write('rows.map(');
       _writeMappingLambda(update);
-      _buffer.write(')');
+      _buffer.write(').toList()');
     }
     _buffer.write(');\n}');
   }

@@ -82,6 +82,27 @@ void main() {
     );
   });
 
+  test('generates correct returning mapping', () async {
+    final state = TestState.withContent({
+      'a|lib/main.moor': '''
+        CREATE TABLE tbl (
+          id INTEGER NULL
+        );
+
+        query: INSERT INTO tbl (id) VALUES(10) RETURNING id;
+      ''',
+    });
+    addTearDown(state.close);
+
+    final file = await state.analyze('package:a/main.moor');
+    final fileState = file.currentResult as ParsedDriftFile;
+
+    final writer = Writer(const DriftOptions.defaults());
+    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
+
+    expect(writer.writeGenerated(), contains('.toList()'));
+  });
+
   group('generates correct code for expanded arrays', () {
     late TestState state;
 
