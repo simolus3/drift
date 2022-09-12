@@ -86,10 +86,11 @@ void main() {
     final state = TestState.withContent({
       'a|lib/main.moor': '''
         CREATE TABLE tbl (
-          id INTEGER NULL
+          id INTEGER,
+          text TEXT
         );
 
-        query: INSERT INTO tbl (id) VALUES(10) RETURNING id;
+        query: INSERT INTO tbl (id, text) VALUES(10, "test") RETURNING id;
       ''',
     });
     addTearDown(state.close);
