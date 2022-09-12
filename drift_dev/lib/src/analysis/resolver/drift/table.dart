@@ -17,6 +17,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
   Future<DriftTable> resolve() async {
     Table table;
     final references = <DriftElement>{};
+    final stmt = discovered.sqlNode;
 
     try {
       final reader = SchemaFromCreateTable(
@@ -24,12 +25,12 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         driftUseTextForDateTime:
             resolver.driver.options.storeDateTimeValuesAsText,
       );
-      table = reader.read(discovered.createTable);
+      table = reader.read(stmt);
     } catch (e, s) {
       resolver.driver.backend.log
           .warning('Error reading table from internal statement', e, s);
       reportError(DriftAnalysisError.inDriftFile(
-        discovered.createTable.tableNameToken ?? discovered.createTable,
+        stmt.tableNameToken ?? stmt,
         'The structure of this table could not be extracted, possibly due to a '
         'bug in drift_dev.',
       ));
@@ -97,7 +98,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     String? dartTableName, dataClassName;
     ExistingRowClass? existingRowClass;
 
-    final driftTableInfo = discovered.createTable.driftTableName;
+    final driftTableInfo = stmt.driftTableName;
     if (driftTableInfo != null) {
       final overriddenNames = driftTableInfo.overriddenDataClassName;
 
@@ -106,7 +107,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         final clazz = await findDartClass(imports, overriddenNames);
         if (clazz == null) {
           reportError(DriftAnalysisError.inDriftFile(
-            discovered.createTable.tableNameToken!,
+            stmt.tableNameToken!,
             'Existing Dart class $overriddenNames was not found, are '
             'you missing an import?',
           ));
@@ -133,7 +134,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       discovered.ownId,
       DriftDeclaration(
         state.ownId.libraryUri,
-        discovered.createTable.firstPosition,
+        stmt.firstPosition,
       ),
       columns: columns,
       references: references.toList(),

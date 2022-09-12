@@ -48,6 +48,12 @@ class ElementSerializer {
         'type': 'index',
         'sql': element.createStmt,
       };
+    } else if (element is DefinedSqlQuery) {
+      additionalInformation = {
+        'type': 'query',
+        'sql': element.sql,
+        'offset': element.sqlOffset,
+      };
     } else if (element is DriftTrigger) {
       additionalInformation = {
         'type': 'trigger',
@@ -344,6 +350,14 @@ abstract class ElementDeserializer {
           declaration,
           table: references.whereType<DriftTable>().firstOrNull,
           createStmt: json['sql'] as String,
+        );
+      case 'query':
+        return DefinedSqlQuery(
+          id,
+          declaration,
+          references: references,
+          sql: json['sql'] as String,
+          sqlOffset: json['offset'] as int,
         );
       case 'trigger':
         return DriftTrigger(

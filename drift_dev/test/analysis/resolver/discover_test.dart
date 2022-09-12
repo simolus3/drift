@@ -64,6 +64,24 @@ CREATE TABLE valid_2 (bar INTEGER);
               'locallyDefinedElements', hasLength(2)));
     });
 
+    test('warns about duplicate elements', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/main.drift': '''
+CREATE TABLE a (id INTEGER);
+CREATE VIEW a AS VALUES(1,2,3);
+''',
+      });
+
+      final state = await backend.driver
+          .prepareFileForAnalysis(Uri.parse('package:a/main.drift'));
+      expect(state.errorsDuringDiscovery, [
+        isDriftError(contains('already defines an element named `a`')),
+      ]);
+
+      final result = state.discovery as DiscoveredDriftFile;
+      expect(result.locallyDefinedElements, [isA<DiscoveredDriftTable>()]);
+    });
+
     group('imports', () {
       test('are resolved', () async {
         final backend = TestBackend.inTest({
@@ -199,6 +217,39 @@ class InvalidGetter extends Table {
           reason: 'Should report error for $source',
         );
       }
+    });
+
+    test('warns about duplicate elements', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class A extends Table {
+  IntColumn get id => integer()();
+
+  String get tableName => 'tbl';
+}
+
+class B extends Table {
+  IntColumn get id => integer()();
+
+  String get tableName => 'tbl';
+}
+''',
+      });
+
+      final state = await backend.driver
+          .prepareFileForAnalysis(Uri.parse('package:a/a.dart'));
+
+      expect(state.errorsDuringDiscovery, [
+        isDriftError(contains('already defines an element named `tbl`')),
+      ]);
+
+      final result = state.discovery as DiscoveredDartLibrary;
+      expect(result.locallyDefinedElements, [
+        isA<DiscoveredDartTable>()
+            .having((e) => e.dartElement.name, 'dartElement.name', 'A')
+      ]);
     });
   });
 }

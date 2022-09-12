@@ -3,29 +3,17 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../driver/state.dart';
 
-class DiscoveredDriftTable extends DiscoveredElement {
-  final TableInducingStatement createTable;
+class DiscoveredDriftElement<AST extends AstNode> extends DiscoveredElement {
+  final AST sqlNode;
 
-  DiscoveredDriftTable(super.ownId, this.createTable);
+  DiscoveredDriftElement(super.ownId, this.sqlNode);
 }
 
-class DiscoveredDriftView extends DiscoveredElement {
-  final CreateViewStatement createView;
-
-  DiscoveredDriftView(super.ownId, this.createView);
-}
-
-class DiscoveredDriftIndex extends DiscoveredElement {
-  final CreateIndexStatement createIndex;
-
-  DiscoveredDriftIndex(super.ownId, this.createIndex);
-}
-
-class DiscoveredDriftTrigger extends DiscoveredElement {
-  final CreateTriggerStatement createTrigger;
-
-  DiscoveredDriftTrigger(super.ownId, this.createTrigger);
-}
+typedef DiscoveredDriftTable = DiscoveredDriftElement<TableInducingStatement>;
+typedef DiscoveredDriftView = DiscoveredDriftElement<CreateViewStatement>;
+typedef DiscoveredDriftIndex = DiscoveredDriftElement<CreateIndexStatement>;
+typedef DiscoveredDriftTrigger = DiscoveredDriftElement<CreateTriggerStatement>;
+typedef DiscoveredDriftStatement = DiscoveredDriftElement<DeclaredStatement>;
 
 abstract class DiscoveredDartElement<DE extends Element>
     extends DiscoveredElement {

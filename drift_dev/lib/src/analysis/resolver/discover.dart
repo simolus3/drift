@@ -20,9 +20,36 @@ class DiscoverStep {
 
   DriftElementId _id(String name) => DriftElementId(_file.ownUri, name);
 
+  List<DiscoveredElement> _checkForDuplicates(List<DiscoveredElement> source) {
+    final ids = <DriftElementId>{};
+    final result = <DiscoveredElement>[];
+
+    for (final found in source) {
+      if (ids.add(found.ownId)) {
+        result.add(found);
+      } else {
+        final DriftAnalysisError error;
+
+        final msg =
+            'This file already defines an element named `${found.ownId.name}`';
+
+        if (found is DiscoveredDriftElement) {
+          error = DriftAnalysisError.inDriftFile(found.sqlNode, msg);
+        } else if (found is DiscoveredDartElement) {
+          error = DriftAnalysisError.forDartElement(found.dartElement, msg);
+        } else {
+          error = DriftAnalysisError(null, msg);
+        }
+
+        _file.errorsDuringDiscovery.add(error);
+      }
+    }
+
+    return result;
+  }
+
   Future<void> discover() async {
     final extension = _file.extension;
-    final pendingElements = <DiscoveredElement>[];
 
     switch (extension) {
       case '.dart':
@@ -33,7 +60,8 @@ class DiscoverStep {
           await finder.find();
 
           _file.errorsDuringDiscovery.addAll(finder.errors);
-          _file.discovery = DiscoveredDartLibrary(library, finder.found);
+          _file.discovery =
+              DiscoveredDartLibrary(library, _checkForDuplicates(finder.found));
         } catch (e, s) {
           _driver.backend.log
               .fine('Could not read Dart library from ${_file.ownUri}', e, s);
@@ -42,6 +70,8 @@ class DiscoverStep {
         break;
       case '.drift':
         final engine = _driver.newSqlEngine();
+        final pendingElements = <DiscoveredDriftElement>[];
+
         String contents;
         try {
           contents = await _driver.backend.readAsString(_file.ownUri);
@@ -61,6 +91,8 @@ class DiscoverStep {
         final ast = parsed.rootNode as DriftFile;
         final imports = <DriftFileImport>[];
 
+        var specialQueryNameCount = 0;
+
         for (final node in ast.childNodes) {
           if (node is ImportStatement) {
             final uri =
@@ -79,6 +111,17 @@ class DiscoverStep {
           } else if (node is CreateTriggerStatement) {
             pendingElements
                 .add(DiscoveredDriftTrigger(_id(node.triggerName), node));
+          } else if (node is DeclaredStatement) {
+            String name;
+
+            final declaredName = node.identifier;
+            if (declaredName is SimpleName) {
+              name = declaredName.name;
+            } else {
+              name = 'special:${specialQueryNameCount++}';
+            }
+
+            pendingElements.add(DiscoveredDriftStatement(_id(name), node));
           }
         }
 
@@ -86,7 +129,7 @@ class DiscoverStep {
           originalSource: contents,
           ast: parsed.rootNode as DriftFile,
           imports: imports,
-          locallyDefinedElements: pendingElements,
+          locallyDefinedElements: _checkForDuplicates(pendingElements),
         );
         break;
     }

@@ -14,7 +14,7 @@ class DriftTriggerResolver
 
   @override
   Future<DriftTrigger> resolve() async {
-    final stmt = discovered.createTrigger;
+    final stmt = discovered.sqlNode;
     final references = await resolveSqlReferences(stmt);
     final engine = newEngineWithTables(references);
 

@@ -10,7 +10,7 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
 
   @override
   Future<DriftIndex> resolve() async {
-    final stmt = discovered.createIndex;
+    final stmt = discovered.sqlNode;
     final references = await resolveSqlReferences(stmt);
     final engine = newEngineWithTables(references);
 

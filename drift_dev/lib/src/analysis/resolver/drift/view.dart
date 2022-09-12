@@ -15,7 +15,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
 
   @override
   Future<DriftView> resolve() async {
-    final stmt = discovered.createView;
+    final stmt = discovered.sqlNode;
     final references = await resolveSqlReferences(stmt);
     final engine = newEngineWithTables(references);
 
@@ -76,14 +76,12 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       }
     }
 
-    final discovery = file.discovery as DiscoveredDriftFile;
-
     return DriftView(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       columns: columns,
-      source: SqlViewSource(discovery.originalSource
-          .substring(stmt.firstPosition, stmt.lastPosition)),
+      source: SqlViewSource(
+          source.substring(stmt.firstPosition, stmt.lastPosition)),
       customParentClass: null,
       entityInfoName: entityInfoName,
       existingRowClass: existingRowClass,
