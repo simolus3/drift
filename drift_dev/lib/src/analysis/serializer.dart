@@ -60,6 +60,28 @@ class ElementSerializer {
             }
         ],
       };
+    } else if (element is DriftView) {
+      Object? serializedSource;
+
+      final source = element.source;
+      if (source is SqlViewSource) {
+        serializedSource = {
+          'kind': 'sql',
+          'sql': source.createView,
+        };
+      }
+
+      additionalInformation = {
+        'type': 'view',
+        'columns': [
+          for (final column in element.columns) _serializeColumn(column),
+        ],
+        'entity_info_name': element.entityInfoName,
+        'existing_data_class': element.existingRowClass?.toJson(),
+        'custom_parent_class': element.customParentClass?.toJson(),
+        'name_of_row_class': element.nameOfRowClass,
+        'source': serializedSource,
+      };
     } else {
       throw UnimplementedError('Unknown element $element');
     }
@@ -338,6 +360,37 @@ abstract class ElementDeserializer {
               )
           ],
         );
+      case 'view':
+        final columns = [
+          for (final rawColumn in json['columns'] as List)
+            await _readColumn(rawColumn as Map),
+        ];
+
+        final serializedSource = json['serializedSource'] as Map;
+        DriftViewSource source;
+
+        if (serializedSource['kind'] == 'sql') {
+          source = SqlViewSource(serializedSource['sql'] as String);
+        } else {
+          throw UnsupportedError('Unknown view source $serializedSource');
+        }
+
+        return DriftView(
+          id,
+          declaration,
+          references: references,
+          columns: columns,
+          entityInfoName: json['entity_info_name'] as String,
+          customParentClass: json['custom_parent_class'] != null
+              ? AnnotatedDartCode.fromJson(json['custom_parent_class'] as Map)
+              : null,
+          nameOfRowClass: json['name_of_row_class'] as String,
+          existingRowClass: json['existing_data_class'] != null
+              ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
+              : null,
+          source: source,
+        );
+
       default:
         throw UnimplementedError('Unsupported element type: $type');
     }

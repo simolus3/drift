@@ -20,14 +20,31 @@ class TypeMapping {
         for (final column in table.columns)
           TableColumn(
             column.nameInSql,
-            _driftTypeToParser(column.sqlType,
-                overrideHint: column.typeConverter != null
-                    ? TypeConverterHint(column.typeConverter!)
-                    : null),
+            _columnType(column),
             isGenerated: column.isGenerated,
           ),
       ],
     );
+  }
+
+  View asSqlParserView(DriftView view) {
+    return View(
+      name: view.schemaName,
+      resolvedColumns: [
+        for (final column in view.columns)
+          _MappedViewColumn(
+            column.nameInSql,
+            _columnType(column),
+          ),
+      ],
+    );
+  }
+
+  ResolvedType _columnType(DriftColumn column) {
+    return _driftTypeToParser(column.sqlType,
+        overrideHint: column.typeConverter != null
+            ? TypeConverterHint(column.typeConverter!)
+            : null);
   }
 
   ResolvedType _driftTypeToParser(DriftSqlType type, {TypeHint? overrideHint}) {
@@ -93,4 +110,13 @@ class TypeConverterHint extends TypeHint {
   final AppliedTypeConverter converter;
 
   TypeConverterHint(this.converter);
+}
+
+class _MappedViewColumn extends Column with ColumnWithType {
+  @override
+  final String name;
+  @override
+  final ResolvedType type;
+
+  _MappedViewColumn(this.name, this.type);
 }

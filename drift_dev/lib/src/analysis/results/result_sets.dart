@@ -25,6 +25,9 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
   /// generate one on its own.
   bool get hasExistingRowClass => existingRowClass != null;
 
+  /// The name for the data class associated with this table or view.
+  String get nameOfRowClass;
+
   DriftElementWithResultSet(super.id, super.declaration);
 }
 

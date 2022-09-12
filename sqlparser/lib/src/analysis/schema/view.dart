@@ -7,7 +7,7 @@ class View extends NamedResultSet with HasMetaMixin implements HumanReadable {
   final String name;
 
   @override
-  final List<ViewColumn> resolvedColumns;
+  final List<ColumnWithType> resolvedColumns;
 
   /// The ast node that created this view
   final CreateViewStatement? definition;
@@ -22,7 +22,7 @@ class View extends NamedResultSet with HasMetaMixin implements HumanReadable {
     this.definition,
   }) {
     for (final column in resolvedColumns) {
-      column.view = this;
+      if (column is ViewColumn) column.view = this;
     }
   }
 

@@ -28,7 +28,7 @@ class DriftTable extends DriftElementWithResultSet {
   /// The default name to use for the [entityInfoName].
   final String baseDartName;
 
-  /// The name for the data class associated with this table
+  @override
   final String nameOfRowClass;
 
   final bool withoutRowId;
