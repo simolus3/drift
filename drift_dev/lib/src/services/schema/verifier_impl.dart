@@ -64,7 +64,6 @@ class VerifierImplementation implements SchemaVerifier {
 
     // Opening the helper database will instantiate the schema for us
     await executor.ensureOpen(db);
-    await executor.runCustom('PRAGMA schema_version = $version;');
     await db.close();
 
     return InitializedSchema(dbForUse, () {
