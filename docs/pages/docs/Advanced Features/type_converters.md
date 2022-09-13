@@ -28,7 +28,7 @@ Finally, we can use that converter in a table declaration:
 
 {% include "blocks/snippet" snippets = dart name = 'table' %}
 
-The generated `User` class will then have a `preferences` column of type 
+The generated `User` class will then have a `preferences` column of type
 `Preferences`. Drift will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
@@ -45,11 +45,11 @@ as their index. Since this is so common, drift has the integrated `intEnum` colu
 easier.
 
 ```dart
-enum Status { 
-   none, 
-   running, 
-   stopped, 
-   paused 
+enum Status {
+   none,
+   running,
+   stopped,
+   paused
 }
 
 class Tasks extends Table {
@@ -64,12 +64,12 @@ class Tasks extends Table {
   `Status` to `running` (index = 1).
   Now we `Status` enum to include another entry:
   ```dart
-  enum Status { 
-    none, 
+  enum Status {
+    none,
     starting, // new!
-    running, 
-    stopped, 
-    paused 
+    running,
+    stopped,
+    paused
   }
   ```
   When selecting the task, it will now report as `starting`, as that's the new value at index 1.

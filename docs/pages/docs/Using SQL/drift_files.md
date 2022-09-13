@@ -105,6 +105,29 @@ Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
 Booleans are stored as `INTEGER` (either `0` or `1`). Datetimes are stored as
 unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) depending on a configurable
 build option.
+Dart enums can automatically be stored by their index by using an `ENUM()` type
+referencing the Dart enum class:
+
+```dart
+enum Status {
+   none,
+   running,
+   stopped,
+   paused
+}
+```
+
+```sql
+import 'status.dart';
+
+CREATE TABLE tasks (
+  id INTEGER NOT NULL PRIMARY KEY,
+  status ENUM(Status)
+);
+```
+
+More information on storing enums is available [in the page on type converters]({{ '../Advanced Features/type_converters.md#using-converters-in-moor' | pageUrl }}).
+
 For details on all supported types, and information on how to switch between the
 datetime modes, see [this section]({{ '../Getting started/advanced_dart_tables.md#supported-column-types' | pageUrl }}).
 
