@@ -87,6 +87,10 @@ Input? _parseInputFromSchemaRow(
   if (name.startsWith('sqlite_')) return null;
   if (virtualTables.any((v) => name.startsWith('${v}_'))) return null;
 
+  // This file is added on some Android versions when using the native Android
+  // database APIs, https://github.com/simolus3/drift/discussions/2042
+  if (name == 'android_metadata') return null;
+
   return Input(name, row['sql'] as String);
 }
 
