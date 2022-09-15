@@ -67,7 +67,8 @@ jobs:
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - name: Check sqlite3 version
         run: sqlite3 --version
-      - run: dart pub upgrade
+      - run: dart pub global activate melos && melos bootstrap --scope drift_docs
+        working-directory: .
       - run: dart run build_runner build
       - run: dart test
 
@@ -94,7 +95,8 @@ jobs:
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - name: Check sqlite3 version
         run: sqlite3 --version
-      - run: dart pub upgrade
+      - run: dart pub global activate melos && melos bootstrap --scope drift
+        working-directory: .
       - name: Get dependencies for plugin
         run: |
           echo "dependency_overrides:" >> pubspec_overrides.yaml
@@ -128,7 +130,8 @@ jobs:
     # setup
     - uses: actions/checkout@v2
     - uses: dart-lang/setup-dart@v1
-    - run: dart pub upgrade
+    - run: dart pub global activate melos && melos bootstrap --scope drift_dev
+      working-directory: .
     # analysis
     - run: dart format -o none --set-exit-if-changed .
       name: dartfmt
@@ -202,6 +205,8 @@ jobs:
           chmod a+x /tmp/sqlite/out/sqlite3
           echo "/tmp/sqlite/out" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+      - run: dart pub global activate melos && melos bootstrap --no-flutter
+        working-directory: .
       - run: tool/misc_integration_test.sh
 
 #  upload_coverage:
