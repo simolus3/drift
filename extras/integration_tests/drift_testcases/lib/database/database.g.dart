@@ -108,8 +108,8 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, birthDate, profilePicture, preferences);
+  int get hashCode => Object.hash(id, name, birthDate,
+      $driftBlobEquality.hash(profilePicture), preferences);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -117,7 +117,8 @@ class User extends DataClass implements Insertable<User> {
           other.id == this.id &&
           other.name == this.name &&
           other.birthDate == this.birthDate &&
-          other.profilePicture == this.profilePicture &&
+          $driftBlobEquality.equals(
+              other.profilePicture, this.profilePicture) &&
           other.preferences == this.preferences);
 }
 

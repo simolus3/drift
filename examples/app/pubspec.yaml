@@ -38,13 +38,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-# We override dependencies to ensure that we always use the packages from
-# this repository. In your app, just depend on the latest drift version.
-dependency_overrides:
-  drift:
-    path: ../../drift
-  drift_dev:
-    path: ../../drift_dev
-  sqlparser:
-    path: ../../sqlparser

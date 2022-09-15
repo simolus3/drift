@@ -1,1 +1,2 @@
-find ../ -name pubspec.yaml -execdir dart pub upgrade \;
+#!/bin/bash
+melos exec -- dart pub upgrade
