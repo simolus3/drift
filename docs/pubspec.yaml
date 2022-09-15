@@ -45,13 +45,6 @@ dev_dependencies:
 
 
 dependency_overrides:
-  drift:
-    path: ../drift
-  drift_dev:
-    path: ../drift_dev
-  sqlparser:
-    path: ../sqlparser
-
   # todo: Remove after https://github.com/dart-lang/mime/pull/43
   mime:
     git:

@@ -24,10 +24,6 @@ dev_dependencies:
   drift_testcases:
     path: ../extras/integration_tests/drift_testcases
 
-dependency_overrides:
-  drift:
-    path: ../drift/
-
 flutter:
   assets:
     - test_asset.db
