@@ -14,12 +14,19 @@ import 'native_functions.dart';
 /// through `package:js`.
 abstract class Sqlite3Delegate<DB extends CommonDatabase>
     extends DatabaseDelegate {
+  /// The underlying database instance from the `sqlite3` package.
   late DB database;
 
   bool _hasCreatedDatabase = false;
   bool _isOpen = false;
 
   final void Function(DB)? _setup;
+
+  /// Whether the [database] should be closed when [close] is called on this
+  /// instance.
+  ///
+  /// This defaults to `true`, but can be disabled to virtually open multiple
+  /// connections to the same database.
   final bool closeUnderlyingWhenClosed;
 
   /// A delegate that will call [openDatabase] to open the database.
@@ -70,6 +77,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     versionDelegate = _VmVersionDelegate(database);
   }
 
+  /// Synchronously prepares and runs [statements] collected from a batch.
+  @protected
   void runBatchSync(BatchedStatements statements) {
     final prepared = <CommonPreparedStatement>[];
 
@@ -90,6 +99,9 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     }
   }
 
+  /// Synchronously prepares and runs a single [statement], replacing variables
+  /// with the given [args].
+  @protected
   void runWithArgsSync(String statement, List<Object?> args) {
     if (args.isEmpty) {
       database.execute(statement);

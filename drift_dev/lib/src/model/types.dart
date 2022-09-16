@@ -63,6 +63,9 @@ class DriftDartType {
 }
 
 extension OperationOnTypes on HasType {
+  bool get isUint8ListInDart =>
+      type == DriftSqlType.blob && typeConverter == null;
+
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
     if (isArray) return false; // Is a List<Something> in Dart, not nullable

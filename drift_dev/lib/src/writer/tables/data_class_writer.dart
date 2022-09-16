@@ -6,7 +6,8 @@ import 'package:drift_dev/writer.dart';
 class DataClassWriter {
   final DriftEntityWithResultSet table;
   final Scope scope;
-  final columns = <DriftColumn>[];
+
+  List<DriftColumn> get columns => table.columns;
 
   bool get isInsertable => table is DriftTable;
 
@@ -28,14 +29,6 @@ class DataClassWriter {
       _buffer.writeln('implements Insertable<${table.dartTypeCode()}> {');
     } else {
       _buffer.writeln('{');
-    }
-
-    // write view columns
-    final view = table;
-    if (view is MoorView && view.viewQuery != null) {
-      columns.addAll(view.viewQuery!.columns.map((e) => e.value));
-    } else {
-      columns.addAll(table.columns);
     }
 
     // write individual fields
@@ -87,7 +80,11 @@ class DataClassWriter {
     _writeHashCode();
 
     overrideEquals(
-        columns.map((c) => c.dartGetterName), table.dartTypeCode(), _buffer);
+      columns.map(
+          (c) => EqualityField(c.dartGetterName, isList: c.isUint8ListInDart)),
+      table.dartTypeCode(),
+      _buffer,
+    );
 
     // finish class declaration
     _buffer.write('}');
@@ -312,8 +309,11 @@ class DataClassWriter {
   void _writeHashCode() {
     _buffer.write('@override\n int get hashCode => ');
 
-    final fields = columns.map((c) => c.dartGetterName).toList();
-    const HashCodeWriter().writeHashCode(fields, _buffer);
+    final fields = columns
+        .map(
+            (c) => EqualityField(c.dartGetterName, isList: c.isUint8ListInDart))
+        .toList();
+    writeHashCode(fields, _buffer);
     _buffer.write(';');
   }
 }

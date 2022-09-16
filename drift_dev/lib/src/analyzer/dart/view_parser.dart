@@ -9,28 +9,32 @@ class ViewParser {
   Future<MoorView?> parseView(
       ClassElement element, List<DriftTable> tables) async {
     final name = await _parseViewName(element);
-    final columns = (await _parseColumns(element)).toList();
-    final staticReferences = await _parseStaticReferences(element, tables);
-    final dataClassInfo = _readDataClassInformation(columns, element);
-    final query = await _parseQuery(element, staticReferences, columns);
 
-    final view = MoorView(
-      declaration:
-          DartViewDeclaration(element, base.step.file, staticReferences),
+    final staticReferences = await _parseStaticReferences(element, tables);
+    final structure = await _parseSelectStructure(element, staticReferences);
+    final columns =
+        (await _parseColumns(element, structure, staticReferences)).toList();
+
+    final dataClassInfo = _readDataClassInformation(columns, element);
+
+    return MoorView(
+      declaration: DartViewDeclaration(
+        element,
+        base.step.file,
+        structure.primarySource,
+        staticReferences,
+        structure.dartQuerySource,
+      ),
       name: name,
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       entityInfoName: '\$${element.name}View',
-      viewQuery: query,
-    );
-
-    view.references = [
-      for (final staticRef in staticReferences) staticRef.table,
-    ];
-
-    view.columns = columns;
-    return view;
+    )
+      ..columns = columns
+      ..references = [
+        for (final staticRef in staticReferences) staticRef.table,
+      ];
   }
 
   _DataClassInformation _readDataClassInformation(
@@ -114,56 +118,89 @@ class ViewParser {
     return ReCase(element.name).snakeCase;
   }
 
-  Future<Iterable<DriftColumn>> _parseColumns(ClassElement element) async {
-    final columnNames = element.allSupertypes
-        .map((t) => t.element2)
-        .followedBy([element])
-        .expand((e) => e.fields)
-        .where((field) =>
-            (isExpression(field.type) || isColumn(field.type)) &&
-            field.getter != null &&
-            !field.getter!.isSynthetic)
-        .map((field) => field.name)
-        .toSet();
+  Future<List<DriftColumn>> _parseColumns(
+    ClassElement element,
+    _ParsedDartViewSelect structure,
+    List<TableReferenceInDartView> references,
+  ) async {
+    final columns = <DriftColumn>[];
 
-    final fields = columnNames.map((name) {
-      final getter = element.getGetter(name) ??
-          element.lookUpInheritedConcreteGetter(name, element.library);
-      return getter!.variable;
-    }).toList();
+    for (final columnReference in structure.selectedColumns) {
+      final parts = columnReference.toSource().split('.');
 
-    final results = await Future.wait(fields.map((field) async {
-      final dartType = (field.type as InterfaceType).typeArguments[0];
-      final typeName = dartType.nameIfInterfaceType!;
-      final sqlType = _dartTypeToColumnType(typeName);
-
-      if (sqlType == null) {
-        final String errorMessage;
-        if (typeName == 'dynamic') {
-          errorMessage = 'You must specify Expression<> type argument';
-        } else {
-          errorMessage =
-              'Invalid Expression<> type argument `$typeName` found. '
-              'Must be one of: '
-              'bool, String, int, DateTime, Uint8List, double';
+      // Column reference like `foo.bar`, where `foo` is a table that has been
+      // referenced in this view.
+      if (parts.length > 1) {
+        final reference =
+            references.firstWhereOrNull((ref) => ref.name == parts[0]);
+        if (reference == null) {
+          base.step.reportError(ErrorInDartCode(
+            message: 'Table named `${parts[0]}` not found! Maybe not '
+                'included in @DriftDatabase or not belongs to this database',
+            affectedElement: element,
+            affectedNode: columnReference,
+          ));
+          continue;
         }
-        throw analysisError(base.step, field, errorMessage);
+
+        final column = reference.table.columns
+            .firstWhere((col) => col.dartGetterName == parts[1]);
+        column.table = reference.table;
+
+        columns.add(DriftColumn(
+          type: column.type,
+          nullable: column.nullable || structure.referenceIsNullable(reference),
+          dartGetterName: column.dartGetterName,
+          name: column.name,
+          generatedAs: ColumnGeneratedAs(
+              '${reference.name}.${column.dartGetterName}', false),
+          typeConverter: column.typeConverter,
+        ));
+      } else {
+        // Locally-defined column, defined as a getter on this view class.
+        final getter = element.thisType.getGetter(parts[0]);
+
+        if (getter == null) {
+          base.step.reportError(ErrorInDartCode(
+            message: 'This column could not be found in the local view.',
+            affectedElement: element,
+            affectedNode: columnReference,
+          ));
+          continue;
+        }
+
+        final dartType = (getter.returnType as InterfaceType).typeArguments[0];
+        final typeName = dartType.nameIfInterfaceType!;
+        final sqlType = _dartTypeToColumnType(typeName);
+
+        if (sqlType == null) {
+          final String errorMessage;
+          if (typeName == 'dynamic') {
+            errorMessage = 'You must specify Expression<> type argument';
+          } else {
+            errorMessage =
+                'Invalid Expression<> type argument `$typeName` found. '
+                'Must be one of: '
+                'bool, String, int, DateTime, Uint8List, double';
+          }
+          throw analysisError(base.step, getter, errorMessage);
+        }
+
+        final node =
+            await base.loadElementDeclaration(getter) as MethodDeclaration;
+        final expression = (node.body as ExpressionFunctionBody).expression;
+
+        columns.add(DriftColumn(
+          type: sqlType,
+          dartGetterName: getter.name,
+          name: ColumnName.implicitly(ReCase(getter.name).snakeCase),
+          nullable: true,
+          generatedAs: ColumnGeneratedAs(expression.toString(), false),
+        ));
       }
+    }
 
-      final node =
-          await base.loadElementDeclaration(field.getter!) as MethodDeclaration;
-      final expression = (node.body as ExpressionFunctionBody).expression;
-
-      return DriftColumn(
-        type: sqlType,
-        dartGetterName: field.name,
-        name: ColumnName.implicitly(ReCase(field.name).snakeCase),
-        nullable: dartType.nullabilitySuffix == NullabilitySuffix.question,
-        generatedAs: ColumnGeneratedAs(expression.toString(), false),
-      );
-    }).toList());
-
-    return results.whereType();
+    return columns;
   }
 
   DriftSqlType? _dartTypeToColumnType(String name) {
@@ -207,98 +244,124 @@ class ViewParser {
     return null;
   }
 
-  Future<ViewQueryInformation> _parseQuery(
-      ClassElement element,
-      List<TableReferenceInDartView> references,
-      List<DriftColumn> columns) async {
+  Future<_ParsedDartViewSelect> _parseSelectStructure(
+    ClassElement element,
+    List<TableReferenceInDartView> references,
+  ) async {
     final as =
         element.methods.where((method) => method.name == 'as').firstOrNull;
 
-    if (as != null) {
-      try {
-        final node = await base.loadElementDeclaration(as);
+    if (as == null) {
+      throw analysisError(
+          base.step, element, 'Missing `as()` query declaration');
+    }
 
-        final body = (node as MethodDeclaration).body;
-        if (body is! ExpressionFunctionBody) {
-          throw analysisError(
+    final node = await base.loadElementDeclaration(as);
+    final body = (node as MethodDeclaration).body;
+    if (body is! ExpressionFunctionBody) {
+      throw analysisError(
+        base.step,
+        element,
+        'The `as()` query declaration must be an expression (=>). '
+        'Block function body `{ return x; }` not acceptable.',
+      );
+    }
+
+    final innerJoins = <TableReferenceInDartView>[];
+    final outerJoins = <TableReferenceInDartView>[];
+
+    // We have something like Query as() => select([...]).from(foo).join(...).
+    // First, crawl up so get the `select`:
+    Expression? target = body.expression;
+    for (;;) {
+      if (target is MethodInvocation) {
+        if (target.target == null) break;
+
+        final name = target.methodName.toSource();
+        if (name == 'join') {
+          final joinList = target.argumentList.arguments[0] as ListLiteral;
+          for (final entry in joinList.elements) {
+            // Do we have something like innerJoin(foo, bar)?
+            if (entry is MethodInvocation) {
+              final isInnerJoin = entry.methodName.toSource() == 'innerJoin';
+              final table = references.firstWhereOrNull((element) =>
+                  element.name == entry.argumentList.arguments[0].toSource());
+
+              if (table != null) {
+                final list = isInnerJoin ? innerJoins : outerJoins;
+                list.add(table);
+              }
+            }
+          }
+        }
+
+        target = target.target;
+      } else if (target is CascadeExpression) {
+        target = target.target;
+      } else {
+        throw analysisError(
             base.step,
             element,
-            'The `as()` query declaration must be an expression (=>). '
-            'Block function body `{ return x; }` not acceptable.',
-          );
-        }
-
-        Expression? target = body.expression;
-        for (;;) {
-          if (target is MethodInvocation) {
-            if (target.target == null) break;
-            target = target.target;
-          } else if (target is CascadeExpression) {
-            target = target.target;
-          } else {
-            throw analysisError(
-                base.step,
-                element,
-                'The `as()` query declaration contains invalid expression type '
-                '${target.runtimeType}');
-          }
-        }
-
-        if (target.methodName.toString() != 'select') {
-          throw analysisError(
-              base.step,
-              element,
-              'The `as()` query declaration must be started '
-              'with `select(columns).from(table)');
-        }
-
-        final columnListLiteral =
-            target.argumentList.arguments[0] as ListLiteral;
-        final columnList =
-            columnListLiteral.elements.map((col) => col.toString()).map((col) {
-          final parts = col.split('.');
-          if (parts.length > 1) {
-            final reference =
-                references.firstWhereOrNull((ref) => ref.name == parts[0]);
-            if (reference == null) {
-              throw analysisError(
-                  base.step,
-                  element,
-                  'Table named `${parts[0]}` not found! Maybe not included in '
-                  '@DriftDatabase or not belongs to this database');
-            }
-            final column = reference.table.columns
-                .firstWhere((col) => col.dartGetterName == parts[1]);
-            column.table = reference.table;
-            return MapEntry(
-                '${reference.name}.${column.dartGetterName}', column);
-          }
-          final column =
-              columns.firstWhere((col) => col.dartGetterName == parts[0]);
-          return MapEntry(column.dartGetterName, column);
-        }).toList();
-
-        target = target.parent as MethodInvocation;
-        if (target.methodName.toString() != 'from') {
-          throw analysisError(
-              base.step,
-              element,
-              'The `as()` query declaration must be started '
-              'with `select(columns).from(table)');
-        }
-
-        final from = target.argumentList.arguments[0].toString();
-        final query =
-            body.expression.toString().substring(target.toString().length);
-
-        return ViewQueryInformation(columnList, from, query);
-      } catch (e) {
-        print(e);
-        throw analysisError(
-            base.step, element, 'Failed to parse view `as()` query');
+            'The `as()` query declaration contains invalid expression type '
+            '${target.runtimeType}');
       }
     }
 
-    throw analysisError(base.step, element, 'Missing `as()` query declaration');
+    if (target.methodName.toString() != 'select') {
+      throw analysisError(
+          base.step,
+          element,
+          'The `as()` query declaration must be started '
+          'with `select(columns).from(table)');
+    }
+
+    final columnListLiteral = target.argumentList.arguments[0] as ListLiteral;
+    final columnExpressions =
+        columnListLiteral.elements.whereType<Expression>().toList();
+
+    target = target.parent as MethodInvocation;
+    if (target.methodName.toString() != 'from') {
+      throw analysisError(
+          base.step,
+          element,
+          'The `as()` query declaration must be started '
+          'with `select(columns).from(table)');
+    }
+
+    final from = target.argumentList.arguments[0].toSource();
+    final resolvedFrom =
+        references.firstWhereOrNull((element) => element.name == from);
+    if (resolvedFrom == null) {
+      base.step.reportError(
+        ErrorInDartCode(
+          message: 'Table reference `$from` not found, is it added to this '
+              'view as a getter?',
+          affectedElement: as,
+          affectedNode: target.argumentList,
+        ),
+      );
+    }
+
+    final query =
+        body.expression.toString().substring(target.toString().length);
+
+    return _ParsedDartViewSelect(
+        resolvedFrom, innerJoins, outerJoins, columnExpressions, query);
+  }
+}
+
+class _ParsedDartViewSelect {
+  final TableReferenceInDartView? primarySource;
+  final List<TableReferenceInDartView> innerJoins;
+  final List<TableReferenceInDartView> outerJoins;
+
+  final List<Expression> selectedColumns;
+  final String dartQuerySource;
+
+  _ParsedDartViewSelect(this.primarySource, this.innerJoins, this.outerJoins,
+      this.selectedColumns, this.dartQuerySource);
+
+  bool referenceIsNullable(TableReferenceInDartView ref) {
+    return ref != primarySource && !innerJoins.contains(ref);
   }
 }

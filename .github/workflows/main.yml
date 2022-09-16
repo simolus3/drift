@@ -6,18 +6,18 @@ env:
   PUB_ENVIRONMENT: bot.github
 
 jobs:
-  # Compile the latest sqlite3 library, which will be used to run tests in moor
+  # Compile the latest sqlite3 library, which will be used to run tests in drift
   # and sqlparser
   compile_sqlite3:
     name: "Compile sqlite3 for tests"
     runs-on: ubuntu-latest
     env:
       SQLITE_YEAR: "2022"
-      SQLITE_VERSION: "3380000"
+      SQLITE_VERSION: "3390300"
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         id: cache_build
         with:
           path: /tmp/sqlite/out/
@@ -44,16 +44,42 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  dart_dependencies:
+    name: Get and cache Dart dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      dart_version: ${{ steps.dart_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+      - name: Get Dart version
+        id: dart_version
+        run: |
+          version=`cat $DART_HOME/version`
+          echo "Running on Dart $version"
+          echo "::set-output name=version::$version"
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ steps.dart_version.outputs.version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-${{ steps.dart_version.outputs.version }}-
+            dart-dependencies-
+      - name: Setup melos
+        run: dart pub global activate melos
+      - name: Get Dart dependencies
+        run: melos bootstrap --no-flutter
+
   docs:
-    name: "Test snippets in documentation"
-    needs: [compile_sqlite3]
+    name: "Documentation"
+    needs: [compile_sqlite3, dart_dependencies]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: docs
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
       - name: Download sqlite3
         uses: actions/download-artifact@v2
@@ -67,20 +93,64 @@ jobs:
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - name: Check sqlite3 version
         run: sqlite3 --version
-      - run: dart pub upgrade
-      - run: dart run build_runner build
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
+            dart-dependencies-
+      - run: dart pub global activate melos && melos bootstrap --scope drift_docs
+        working-directory: .
+      - name: Run build
+        env:
+          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
+        run: dart run tool/ci_build.dart
+      - name: Analyze Dart and Drift sources
+        run: |
+          dart format -o none --set-exit-if-changed .
+          dart analyze --fatal-infos --fatal-warnings
+          dart run drift_dev analyze
       - run: dart test
+
+      - name: Deploy to netlify (Branch)
+        if: ${{ github.event_name == 'push' }}
+        uses: nwtgck/actions-netlify@v1.2
+        with:
+          production-branch: latest-release
+          publish-dir: docs/deploy
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+          netlify-config-path: "./netlify.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Deploy to netlify (Pull Request)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: nwtgck/actions-netlify@v1.2
+        with:
+          production-branch: latest-release
+          publish-dir: docs/deploy
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+          netlify-config-path: "./netlify.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alias: deploy-preview-${{ github.event.number }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
   drift:
     name: "drift package"
-    needs: [compile_sqlite3]
+    needs: [compile_sqlite3, dart_dependencies]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: drift
     steps:
       # setup
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
       - name: Download sqlite3
         uses: actions/download-artifact@v2
@@ -94,7 +164,15 @@ jobs:
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - name: Check sqlite3 version
         run: sqlite3 --version
-      - run: dart pub upgrade
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
+            dart-dependencies-
+      - run: dart pub global activate melos && melos bootstrap --scope drift
+        working-directory: .
       - name: Get dependencies for plugin
         run: |
           echo "dependency_overrides:" >> pubspec_overrides.yaml
@@ -120,15 +198,24 @@ jobs:
 
   drift_dev:
     runs-on: ubuntu-latest
+    needs: [dart_dependencies]
     timeout-minutes: 10
     defaults:
       run:
         working-directory: drift_dev
     steps:
     # setup
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: dart-lang/setup-dart@v1
-    - run: dart pub upgrade
+    - uses: actions/cache@v3
+      with:
+        path: "${{ env.PUB_CACHE }}"
+        key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
+          dart-dependencies-
+    - run: dart pub global activate melos && melos bootstrap --scope drift_dev
+      working-directory: .
     # analysis
     - run: dart format -o none --set-exit-if-changed .
       name: dartfmt
@@ -138,7 +225,7 @@ jobs:
 
   sqlparser:
     runs-on: ubuntu-latest
-    needs: [compile_sqlite3]
+    needs: [compile_sqlite3, dart_dependencies]
     defaults:
       run:
         working-directory: sqlparser
@@ -156,6 +243,13 @@ jobs:
           chmod a+x /tmp/sqlite/out/sqlite3
           echo "/tmp/sqlite/out" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
+            dart-dependencies-
       - run: dart pub upgrade
       # analysis
       - run: dart format -o none --set-exit-if-changed .
@@ -173,7 +267,7 @@ jobs:
 
   misc_integration_tests:
     name: "Integration tests"
-    needs: [compile_sqlite3]
+    needs: [compile_sqlite3, dart_dependencies]
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -188,10 +282,8 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
-        with:
-          release-channel: beta
       - name: Download sqlite3
         uses: actions/download-artifact@v2
         with:
@@ -202,6 +294,14 @@ jobs:
           chmod a+x /tmp/sqlite/out/sqlite3
           echo "/tmp/sqlite/out" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-
+      - run: dart pub global activate melos && melos bootstrap --no-flutter
+        working-directory: .
       - run: tool/misc_integration_test.sh
 
 #  upload_coverage:

@@ -279,4 +279,6 @@ enum SqlModule {
   /// Enables support for the rtree module and its functions when parsing sql
   /// queries.
   rtree,
+
+  spellfix1,
 }

@@ -64,7 +64,6 @@ class VerifierImplementation implements SchemaVerifier {
 
     // Opening the helper database will instantiate the schema for us
     await executor.ensureOpen(db);
-    await executor.runCustom('PRAGMA schema_version = $version;');
     await db.close();
 
     return InitializedSchema(dbForUse, () {
@@ -86,6 +85,10 @@ Input? _parseInputFromSchemaRow(
   // Skip sqlite-internal tables, https://www.sqlite.org/fileformat2.html#intschema
   if (name.startsWith('sqlite_')) return null;
   if (virtualTables.any((v) => name.startsWith('${v}_'))) return null;
+
+  // This file is added on some Android versions when using the native Android
+  // database APIs, https://github.com/simolus3/drift/discussions/2042
+  if (name == 'android_metadata') return null;
 
   return Input(name, row['sql'] as String);
 }

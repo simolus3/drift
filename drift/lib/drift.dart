@@ -1,5 +1,7 @@
 library drift;
 
+import 'package:collection/collection.dart';
+
 // needed for the generated code that generates data classes with an Uint8List
 // field.
 export 'dart:typed_data' show Uint8List;
@@ -17,3 +19,7 @@ export 'src/runtime/query_builder/query_builder.dart';
 export 'src/runtime/types/converters.dart';
 export 'src/runtime/types/mapping.dart';
 export 'src/utils/lazy_database.dart';
+
+/// A [ListEquality] instance used by generated drift code for the `==` and
+/// [Object.hashCode] implementation of generated classes if they contain lists.
+const ListEquality $driftBlobEquality = ListEquality();

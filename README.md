@@ -4,6 +4,7 @@ _Note: Moor has been renamed to drift_
 
 [![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://github.com/simolus3/drift/actions/workflows/main.yml/badge.svg)
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
+[![Using melos](https://img.shields.io/badge/maintained%20with-melos-f700ff.svg?style=flat-square)](https://github.com/invertase/melos)
 
 ## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22)
 
@@ -52,9 +53,10 @@ If you have any questions, feedback or ideas, feel free to [create an
 issue](https://github.com/simolus3/drift/issues/new). If you enjoy this
 project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/drift/).
 
------
+## Working on this project
 
-Important packages in this repo:
+This repository contains a number of packages making up the drift project, most
+notably:
 
 - `drift`: The main runtime for drift, which provides most apis
 - `drift_dev`: The compiler for drift tables, databases and daos. It
@@ -62,3 +64,10 @@ Important packages in this repo:
 - `sqlparser`: A sql parser and static analyzer, written in pure Dart. This package can be used without drift to perform analysis on sql statements.
 It's on pub at
 [![sqlparser](https://img.shields.io/pub/v/sqlparser.svg)](https://pub.dev/packages/sqlparser)
+
+We use [melos](https://melos.invertase.dev/) to manage the different packages
+in this repository.
+
+You can install it with `dart pub global activate melos`. If your Dart SDK was
+installed as part of Flutter, you can then run `melos bootstrap` to provision
+all dependencies. Otherwise, run `flutter pub global run melos bootstrap`.

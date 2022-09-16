@@ -63,13 +63,7 @@ class ViewWriter extends TableOrViewWriter {
       }
     }
 
-    if (view.viewQuery == null) {
-      writeGetColumnsOverride();
-    } else {
-      final columns = view.viewQuery!.columns.map((e) => e.key).join(', ');
-      buffer.write('@override\nList<GeneratedColumn> get \$columns => '
-          '[$columns];\n');
-    }
+    writeGetColumnsOverride();
 
     buffer
       ..write('@override\nString get aliasedName => '
@@ -87,21 +81,8 @@ class ViewWriter extends TableOrViewWriter {
     writeAsDslTable();
     writeMappingMethod(scope);
 
-    final columns = view.viewQuery?.columns.map((e) => e.value) ?? view.columns;
-    for (final column in columns) {
-      if (view.columns.contains(column)) {
-        writeColumnGetter(column, scope.generationOptions, false);
-      } else {
-        // This column only exists as a getter so that it can be referenced in
-        // Dart, but it wasn't defined by the user. Instead, the column is
-        // implicitly generated from a entry in the `select()` query clause.
-        // We can drop all information from it since only the name is relevant.
-        final shortColumn = DriftColumn(
-            type: column.type,
-            dartGetterName: column.dartGetterName,
-            name: column.name);
-        writeColumnGetter(shortColumn, scope.generationOptions, false);
-      }
+    for (final column in view.columns) {
+      writeColumnGetter(column, scope.generationOptions, false);
     }
 
     _writeAliasGenerator();
@@ -130,13 +111,16 @@ class ViewWriter extends TableOrViewWriter {
 
   void _writeQuery() {
     buffer.write('@override\nQuery? get query => ');
-    final query = view.viewQuery;
-    if (query != null) {
-      buffer.write('(attachedDatabase.selectOnly(${query.from})'
-          '..addColumns(\$columns))'
-          '${query.query};');
+
+    if (view.isDeclaredInDart) {
+      final definition = view.declaration as DartViewDeclaration;
+
+      buffer
+        ..write('(attachedDatabase.selectOnly(${definition.primaryFrom?.name})'
+            '..addColumns(\$columns))')
+        ..writeln('${definition.dartQuerySource};');
     } else {
-      buffer.write('null;\n');
+      buffer.writeln('null;');
     }
   }
 }

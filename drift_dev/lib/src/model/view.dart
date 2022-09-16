@@ -42,8 +42,6 @@ class MoorView extends DriftEntityWithResultSet {
   @override
   final String? customParentClass;
 
-  final ViewQueryInformation? viewQuery;
-
   MoorView({
     this.declaration,
     required this.name,
@@ -51,7 +49,6 @@ class MoorView extends DriftEntityWithResultSet {
     required this.entityInfoName,
     this.existingRowClass,
     this.customParentClass,
-    this.viewQuery,
   });
 
   @override
@@ -101,14 +98,4 @@ class MoorView extends DriftEntityWithResultSet {
 
   @override
   String get displayName => name;
-}
-
-class ViewQueryInformation {
-  /// All columns from this Dart-defined view, in the order in which they were
-  /// added to the `query` getter.
-  final List<MapEntry<String, DriftColumn>> columns;
-  final String from;
-  final String query;
-
-  ViewQueryInformation(this.columns, this.from, this.query);
 }

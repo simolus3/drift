@@ -18,3 +18,4 @@ flutter_export_environment.sh
 docs/**/*.g.dart
 
 */build/
+**/pubspec_overrides.yaml

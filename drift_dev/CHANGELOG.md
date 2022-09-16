@@ -1,3 +1,7 @@
+## 2.2.0-dev
+
+- Fix the nullability of columns generated for Dart-defined views.
+
 ## 2.1.0
 
 - Analysis support `fts5` tables with external content tables.
@@ -19,6 +23,7 @@
 - Removes the following build options, which are always turned on now:
  - `null_aware_type_converters`
  - `new_sql_code_generation`
+ - `compact_query_methods`
 - Starting from this version, drift only supports generating non-nullable Dart code.
   You'll have to at least opt your database code into null-safety to use this and
   upcoming drift releases.

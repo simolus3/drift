@@ -1,4 +1,4 @@
-import 'package:drift_dev/src/writer/utils/override_equals.dart';
+import 'package:drift_dev/src/writer/utils/hash_and_equals.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -14,12 +14,17 @@ void main() {
 
   test('overrides equals on class with fields', () {
     final buffer = StringBuffer();
-    overrideEquals(['a', 'b', 'c'], 'Foo', buffer);
+    overrideEquals([
+      EqualityField('a'),
+      EqualityField('b', isList: true),
+      EqualityField('c'),
+    ], 'Foo', buffer);
 
     expect(
         buffer.toString(),
         '@override\nbool operator ==(Object other) => '
         'identical(this, other) || (other is Foo && '
-        'other.a == this.a && other.b == this.b && other.c == this.c);\n');
+        r'other.a == this.a && $driftBlobEquality.equals(other.b, this.b) && '
+        'other.c == this.c);\n');
   });
 }
