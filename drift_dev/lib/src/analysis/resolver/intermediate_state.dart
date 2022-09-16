@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -24,4 +25,14 @@ abstract class DiscoveredDartElement<DE extends Element>
 
 class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
   DiscoveredDartTable(super.ownId, super.dartElement);
+}
+
+class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {
+  final bool isDatabase;
+  final DartObject annotation;
+
+  bool get isAccessor => !isDatabase;
+
+  DiscoveredBaseAccessor(
+      super.ownId, super.dartElement, this.annotation, this.isDatabase);
 }

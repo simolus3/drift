@@ -88,6 +88,36 @@ class ElementSerializer {
         'name_of_row_class': element.nameOfRowClass,
         'source': serializedSource,
       };
+    } else if (element is BaseDriftAccessor) {
+      String type;
+
+      if (element is DriftDatabase) {
+        type = 'database';
+      } else {
+        type = 'dao';
+      }
+
+      additionalInformation = {
+        'type': type,
+        'tables': [
+          for (final table in element.declaredTables)
+            _serializeElementReference(table),
+        ],
+        'views': [
+          for (final view in element.declaredViews)
+            _serializeElementReference(view),
+        ],
+        'includes': [
+          for (final include in element.declaredIncludes) include.toString()
+        ],
+        'queries': element.declaredQueries,
+        if (element is DatabaseAccessor)
+          'database': element.databaseClass.toJson(),
+        if (element is DriftDatabase) ...{
+          'schema_version': element.schemaVersion,
+          'daos': element.accessorTypes,
+        }
+      };
     } else {
       throw UnimplementedError('Unknown element $element');
     }
@@ -205,6 +235,11 @@ class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
           instantiation.accept(this),
       ]
     };
+  }
+
+  @override
+  Map<String, Object?> visitRecordType(RecordType type) {
+    throw UnsupportedError('Not yet supported: Record type serialization');
   }
 
   @override

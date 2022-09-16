@@ -158,6 +158,11 @@ class _AddFromDartType extends TypeVisitor<void> {
   }
 
   @override
+  void visitRecordType(RecordType type) {
+    throw UnsupportedError('RecordType to Dart source code');
+  }
+
+  @override
   void visitDynamicType(DynamicType type) {
     _builder.addText('dynamic');
     _writeSuffix(type.nullabilitySuffix);

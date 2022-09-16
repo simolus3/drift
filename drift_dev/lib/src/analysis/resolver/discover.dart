@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
+import 'package:drift/drift.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
@@ -139,7 +140,8 @@ class DiscoverStep {
 class _FindDartElements extends RecursiveElementVisitor<void> {
   final DiscoverStep _discoverStep;
   final LibraryElement _library;
-  final TypeChecker _isTable;
+
+  final TypeChecker _isTable, _isDatabase, _isDao;
 
   final List<Future<void>> _pendingWork = [];
 
@@ -148,7 +150,9 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
 
   _FindDartElements(
       this._discoverStep, this._library, KnownDriftTypes knownTypes)
-      : _isTable = TypeChecker.fromStatic(knownTypes.tableType);
+      : _isTable = TypeChecker.fromStatic(knownTypes.tableType),
+        _isDatabase = TypeChecker.fromStatic(knownTypes.driftDatabase),
+        _isDao = TypeChecker.fromStatic(knownTypes.driftAccessor);
 
   Future<void> find() async {
     visitLibraryElement(_library);
@@ -164,6 +168,18 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
 
         found.add(DiscoveredDartTable(id, element));
       }));
+    } else {
+      // Check if this class declares a database or a database accessor.
+
+      final firstDb = _isDatabase.firstAnnotationOf(element);
+      final firstDao = _isDao.firstAnnotationOf(element);
+      final id = _discoverStep._id(element.name);
+
+      if (firstDb != null) {
+        found.add(DiscoveredBaseAccessor(id, element, firstDb, true));
+      } else if (firstDao != null) {
+        found.add(DiscoveredBaseAccessor(id, element, firstDao, false));
+      }
     }
 
     super.visitClassElement(element);

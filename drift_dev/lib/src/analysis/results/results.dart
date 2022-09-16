@@ -1,5 +1,6 @@
 export 'column.dart';
 export 'dart.dart';
+export 'database.dart';
 export 'element.dart';
 export 'index.dart';
 export 'query.dart';

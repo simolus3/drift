@@ -9,6 +9,8 @@ import '../../driver/driver.dart';
 class KnownDriftTypes {
   final ClassElement tableElement;
   final InterfaceType tableType;
+  final InterfaceType driftDatabase;
+  final InterfaceType driftAccessor;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
 
@@ -17,6 +19,8 @@ class KnownDriftTypes {
     this.tableType,
     this.typeConverter,
     this.jsonTypeConverter,
+    this.driftDatabase,
+    this.driftAccessor,
   );
 
   /// Constructs the set of known drift types from a helper library, which is
@@ -24,15 +28,16 @@ class KnownDriftTypes {
   factory KnownDriftTypes._fromLibrary(LibraryElement helper) {
     final exportNamespace = helper.exportNamespace;
     final tableElement = exportNamespace.get('Table') as ClassElement;
+    final dbElement = exportNamespace.get('DriftDatabase') as ClassElement;
+    final daoElement = exportNamespace.get('DriftAccessor') as ClassElement;
 
     return KnownDriftTypes._(
       tableElement,
-      tableElement.instantiate(
-        typeArguments: const [],
-        nullabilitySuffix: NullabilitySuffix.none,
-      ),
+      tableElement.defaultInstantiation,
       exportNamespace.get('TypeConverter') as InterfaceElement,
       exportNamespace.get('JsonTypeConverter') as InterfaceElement,
+      dbElement.defaultInstantiation,
+      daoElement.defaultInstantiation,
     );
   }
 
@@ -65,8 +70,7 @@ class KnownDriftTypes {
   }
 }
 
-Expression? returnExpressionOfMethod(MethodDeclaration method,
-    {bool reportErrorOnFailure = true}) {
+Expression? returnExpressionOfMethod(MethodDeclaration method) {
   final body = method.body;
 
   if (body is! ExpressionFunctionBody) {
@@ -129,6 +133,11 @@ extension IsFromDrift on Element {
         parent.name == 'Table' &&
         isFromDrift(parent.thisType);
   }
+}
+
+extension on InterfaceElement {
+  InterfaceType get defaultInstantiation => instantiate(
+      typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
 }
 
 extension TypeUtils on DartType {

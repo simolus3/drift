@@ -1,0 +1,182 @@
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
+
+import '../../driver/error.dart';
+import '../../results/results.dart';
+import '../intermediate_state.dart';
+import '../resolver.dart';
+import 'helper.dart';
+
+class DartAccessorResolver
+    extends LocalElementResolver<DiscoveredBaseAccessor> {
+  DartAccessorResolver(
+      super.file, super.discovered, super.resolver, super.state);
+
+  @override
+  Future<BaseDriftAccessor> resolve() async {
+    final tables = <DriftTable>[];
+    final views = <DriftView>[];
+    final includes = <Uri>[];
+    final queries = <QueryOnAccessor>[];
+
+    final annotation = discovered.annotation;
+    final element = discovered.dartElement;
+
+    final rawTables = annotation.getField('tables')!.toListValue()!;
+    for (final tableType in rawTables) {
+      final dartType = tableType.toTypeValue();
+
+      if (dartType is! InterfaceType) {
+        reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            'Could not read table from '
+            '`${dartType?.getDisplayString(withNullability: true)}`, it needs '
+            'to reference a table class.',
+          ),
+        );
+        continue;
+      }
+
+      final table = await resolveDartReferenceOrReportError<DriftTable>(
+          dartType.element2,
+          (msg) => DriftAnalysisError.forDartElement(element, msg));
+      if (table != null) {
+        tables.add(table);
+      }
+    }
+
+    final rawViews = annotation.getField('views')!.toListValue()!;
+    for (final viewType in rawViews) {
+      final dartType = viewType.toTypeValue();
+
+      if (dartType is! InterfaceType) {
+        reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            'Could not read view from '
+            '`${dartType?.getDisplayString(withNullability: true)}`, it needs '
+            'to reference a view class.',
+          ),
+        );
+        continue;
+      }
+
+      final view = await resolveDartReferenceOrReportError<DriftView>(
+          dartType.element2,
+          (msg) => DriftAnalysisError.forDartElement(element, msg));
+      if (view != null) {
+        views.add(view);
+      }
+    }
+
+    for (final include in annotation.getField('include')!.toSetValue()!) {
+      final value = include.toStringValue()!;
+      final import = Uri.tryParse(value);
+
+      if (import == null) {
+        reportError(
+          DriftAnalysisError.forDartElement(
+              element, '`$value` is not a valid URI to include'),
+        );
+      } else {
+        includes.add(import);
+      }
+    }
+
+    final rawQueries = annotation.getField('queries')!.toMapValue()!;
+    rawQueries.forEach((key, value) {
+      final keyStr = key!.toStringValue()!;
+      final valueStr = value!.toStringValue()!;
+
+      queries.add(QueryOnAccessor(keyStr, valueStr));
+    });
+
+    final declaration = DriftDeclaration.dartElement(element);
+    if (discovered.isDatabase) {
+      final accessorTypes = <AnnotatedDartCode>[];
+      final rawDaos = annotation.getField('daos')!.toListValue()!;
+      for (final value in rawDaos) {
+        final type = value.toTypeValue()!;
+
+        if (type is! InterfaceType) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              'Could not read referenced DAO from '
+              '`$type?.getDisplayString(withNullability: true)}`, it needs '
+              'to reference an accessor class.',
+            ),
+          );
+          continue;
+        }
+
+        accessorTypes.add(AnnotatedDartCode.type(type));
+      }
+
+      return DriftDatabase(
+        id: discovered.ownId,
+        declaration: declaration,
+        declaredTables: tables,
+        declaredViews: views,
+        declaredIncludes: includes,
+        declaredQueries: queries,
+        schemaVersion: await _readSchemaVersion(),
+        accessorTypes: accessorTypes,
+      );
+    } else {
+      final dbType = element.allSupertypes
+          .firstWhereOrNull((i) => i.element2.name == 'DatabaseAccessor');
+
+      // inherits from DatabaseAccessor<T>, we want to know which T
+
+      final dbImpl = dbType?.typeArguments.single ??
+          element.library.typeProvider.dynamicType;
+      if (dbImpl.isDynamic) {
+        reportError(DriftAnalysisError.forDartElement(
+          element,
+          'This class must inherit from DatabaseAccessor<T>, where T is an '
+          'actual type of a database.',
+        ));
+      }
+
+      return DatabaseAccessor(
+        id: discovered.ownId,
+        declaration: declaration,
+        declaredTables: tables,
+        declaredViews: views,
+        declaredIncludes: includes,
+        declaredQueries: queries,
+        databaseClass: AnnotatedDartCode.type(dbImpl),
+      );
+    }
+  }
+
+  Future<int?> _readSchemaVersion() async {
+    final element =
+        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable;
+    if (element == null) return null;
+
+    try {
+      if (element.isSynthetic) {
+        // Getter, read from `=>` body if possible.
+        final expr = returnExpressionOfMethod(await resolver.driver.backend
+            .loadElementDeclaration(element.getter!) as MethodDeclaration);
+        if (expr is IntegerLiteral) {
+          return expr.value;
+        }
+      } else {
+        final astField = await resolver.driver.backend
+            .loadElementDeclaration(element) as VariableDeclaration;
+        if (astField.initializer is IntegerLiteral) {
+          return (astField.initializer as IntegerLiteral).value;
+        }
+      }
+    } catch (e, s) {
+      resolver.driver.backend.log
+          .warning('Could not read schemaVersion from $element', e, s);
+    }
+    return null;
+  }
+}

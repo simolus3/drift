@@ -6,8 +6,10 @@ import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/element.dart';
 
+import 'dart/accessor.dart' as dart_accessor;
 import 'dart/table.dart' as dart_table;
 import 'drift/index.dart' as drift_index;
+import 'drift/query.dart' as drift_query;
 import 'drift/table.dart' as drift_table;
 import 'drift/trigger.dart' as drift_trigger;
 import 'drift/view.dart' as drift_view;
@@ -35,6 +37,9 @@ class DriftResolver {
     } else if (discovered is DiscoveredDriftIndex) {
       resolver = drift_index.DriftIndexResolver(
           fileState, discovered, this, elementState);
+    } else if (discovered is DiscoveredDriftStatement) {
+      resolver = drift_query.DriftQueryResolver(
+          fileState, discovered, this, elementState);
     } else if (discovered is DiscoveredDriftTrigger) {
       resolver = drift_trigger.DriftTriggerResolver(
           fileState, discovered, this, elementState);
@@ -43,6 +48,9 @@ class DriftResolver {
           fileState, discovered, this, elementState);
     } else if (discovered is DiscoveredDartTable) {
       resolver = dart_table.DartTableResolver(
+          fileState, discovered, this, elementState);
+    } else if (discovered is DiscoveredBaseAccessor) {
+      resolver = dart_accessor.DartAccessorResolver(
           fileState, discovered, this, elementState);
     } else {
       throw UnimplementedError('TODO: Handle $discovered');
@@ -178,7 +186,22 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     DriftAnalysisError Function(String msg) createError,
   ) async {
     final result = await resolver.resolveReference(discovered.ownId, reference);
+    return _handleReferenceResult(result, createError);
+  }
 
+  Future<E?> resolveDartReferenceOrReportError<E extends DriftElement>(
+    Element reference,
+    DriftAnalysisError Function(String msg) createError,
+  ) async {
+    final result =
+        await resolver.resolveDartReference(discovered.ownId, reference);
+    return _handleReferenceResult(result, createError);
+  }
+
+  E? _handleReferenceResult<E extends DriftElement>(
+    ResolveReferencedElementResult result,
+    DriftAnalysisError Function(String msg) createError,
+  ) {
     if (result is ResolvedReferenceFound) {
       final element = result.element;
       if (element is E) {
