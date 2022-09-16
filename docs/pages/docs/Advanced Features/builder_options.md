@@ -137,6 +137,9 @@ We currently support the following extensions:
   of trigonometric functions. Details on those functions are available [here]({{ "../Other engines/vm.md#moor-only-functions" | pageUrl }}).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
   This module is largely incompatible with the `moor_ffi` module.
+- `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)
+  module is available. Note that this is not the case for most sqlite3 builds,
+  including the ones shipping with `sqlite3_flutter_libs`.
 
 ## Recommended options
 

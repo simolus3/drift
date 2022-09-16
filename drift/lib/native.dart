@@ -19,7 +19,7 @@ import 'backends.dart';
 import 'src/sqlite3/database.dart';
 import 'src/sqlite3/database_tracker.dart';
 
-export 'package:sqlite3/sqlite3.dart' show SqliteException, LoadableExtension;
+export 'package:sqlite3/sqlite3.dart' show SqliteException;
 
 /// Signature of a function that can perform setup work on a [database] before
 /// drift is fully ready.
@@ -46,22 +46,16 @@ class NativeDatabase extends DelegatedDatabase {
   /// SQLCipher implementations.
   /// {@endtemplate}
   factory NativeDatabase(File file,
-      {bool logStatements = false,
-      List<SqliteExtension>? extensions,
-      DatabaseSetup? setup}) {
-    return NativeDatabase._(
-        _NativeDelegate(file, extensions, setup), logStatements);
+      {bool logStatements = false, DatabaseSetup? setup}) {
+    return NativeDatabase._(_NativeDelegate(file, setup), logStatements);
   }
 
   /// Creates an in-memory database won't persist its changes on disk.
   ///
   /// {@macro drift_vm_database_factory}
   factory NativeDatabase.memory(
-      {bool logStatements = false,
-      List<SqliteExtension>? extensions,
-      DatabaseSetup? setup}) {
-    return NativeDatabase._(
-        _NativeDelegate(null, extensions, setup), logStatements);
+      {bool logStatements = false, DatabaseSetup? setup}) {
+    return NativeDatabase._(_NativeDelegate(null, setup), logStatements);
   }
 
   /// Creates a drift executor for an opened [database] from the `sqlite3`
@@ -137,23 +131,18 @@ class NativeDatabase extends DelegatedDatabase {
 
 class _NativeDelegate extends Sqlite3Delegate<Database> {
   final File? file;
-  final List<SqliteExtension>? _extensions;
 
-  _NativeDelegate(this.file, this._extensions, DatabaseSetup? setup)
-      : super(setup);
+  _NativeDelegate(this.file, DatabaseSetup? setup) : super(setup);
 
   _NativeDelegate.opened(
       Database db, DatabaseSetup? setup, bool closeUnderlyingWhenClosed)
       : file = null,
-        _extensions = null,
         super.opened(db, setup, closeUnderlyingWhenClosed);
 
   @override
   Database openDatabase() {
     final file = this.file;
     Database db;
-
-    _extensions?.forEach(sqlite3.ensureExtensionLoaded);
 
     if (file != null) {
       // Create the parent directory if it doesn't exist. sqlite will emit
