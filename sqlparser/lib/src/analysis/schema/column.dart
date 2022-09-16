@@ -41,6 +41,10 @@ class TableColumn extends Column implements ColumnWithType {
   /// Generated columns can't be inserted or updated.
   final bool isGenerated;
 
+  /// Whether this column is `HIDDEN`, as specified in
+  /// https://www.sqlite.org/vtab.html#hidden_columns_in_virtual_tables
+  final bool isHidden;
+
   @override
   ResultSet? get containingSet => table;
 
@@ -69,8 +73,16 @@ class TableColumn extends Column implements ColumnWithType {
 
   late final bool _isAliasForRowId = _computeIsAliasForRowId();
 
-  TableColumn(this.name, this._type,
-      {this.definition, this.isGenerated = false});
+  TableColumn(
+    this.name,
+    this._type, {
+    this.definition,
+    this.isGenerated = false,
+    this.isHidden = false,
+  });
+
+  @override
+  bool get includedInResults => !isHidden;
 
   /// Applies a type hint to this column.
   ///
@@ -132,15 +144,6 @@ class TableColumn extends Column implements ColumnWithType {
   String humanReadableDescription() {
     return '$name in ${table!.humanReadableDescription()}';
   }
-}
-
-/// A column that is hidden, as specified in
-/// https://www.sqlite.org/vtab.html#hidden_columns_in_virtual_tables
-class HiddenColumn extends TableColumn {
-  @override
-  bool get includedInResults => false;
-
-  HiddenColumn(String name, ResolvedType type) : super(name, type);
 }
 
 /// A column that is part of a view.

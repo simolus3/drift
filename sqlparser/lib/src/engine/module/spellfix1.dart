@@ -28,25 +28,30 @@ class _Spellfix1Module extends Module {
               'score', const ResolvedType(type: BasicType.int, nullable: true)),
           TableColumn('matchlen',
               const ResolvedType(type: BasicType.int, nullable: true)),
-          HiddenColumn(
+          TableColumn(
             'top',
             const ResolvedType(type: BasicType.int),
+            isHidden: true,
           ),
-          HiddenColumn(
+          TableColumn(
             'scope',
             const ResolvedType(type: BasicType.int),
+            isHidden: true,
           ),
-          HiddenColumn(
+          TableColumn(
             'srchcnt',
             const ResolvedType(type: BasicType.int),
+            isHidden: true,
           ),
-          HiddenColumn(
+          TableColumn(
             'soundslike',
             const ResolvedType(type: BasicType.text),
+            isHidden: true,
           ),
-          HiddenColumn(
+          TableColumn(
             'command',
             const ResolvedType(type: BasicType.int),
+            isHidden: true,
           ),
         ],
         definition: stmt,
