@@ -1,7 +1,8 @@
+import 'dart:developer';
+
 import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
-import 'package:drift/drift.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
@@ -52,22 +53,24 @@ class DiscoverStep {
   Future<void> discover() async {
     final extension = _file.extension;
 
+    debugger(when: _file.ownUri.path.endsWith('todos.dart'));
+
     switch (extension) {
       case '.dart':
+        LibraryElement library;
         try {
-          final library = await _driver.backend.readDart(_file.ownUri);
-          final finder =
-              _FindDartElements(this, library, await _driver.loadKnownTypes());
-          await finder.find();
-
-          _file.errorsDuringDiscovery.addAll(finder.errors);
-          _file.discovery =
-              DiscoveredDartLibrary(library, _checkForDuplicates(finder.found));
-        } catch (e, s) {
-          _driver.backend.log
-              .fine('Could not read Dart library from ${_file.ownUri}', e, s);
+          library = await _driver.backend.readDart(_file.ownUri);
+        } catch (e) {
           _file.discovery = NotADartLibrary();
+          break;
         }
+        final finder =
+            _FindDartElements(this, library, await _driver.loadKnownTypes());
+        await finder.find();
+
+        _file.errorsDuringDiscovery.addAll(finder.errors);
+        _file.discovery =
+            DiscoveredDartLibrary(library, _checkForDuplicates(finder.found));
         break;
       case '.drift':
         final engine = _driver.newSqlEngine();
@@ -141,7 +144,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   final DiscoverStep _discoverStep;
   final LibraryElement _library;
 
-  final TypeChecker _isTable, _isDatabase, _isDao;
+  final TypeChecker _isTable, _isTableInfo, _isDatabase, _isDao;
 
   final List<Future<void>> _pendingWork = [];
 
@@ -151,6 +154,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   _FindDartElements(
       this._discoverStep, this._library, KnownDriftTypes knownTypes)
       : _isTable = TypeChecker.fromStatic(knownTypes.tableType),
+        _isTableInfo = TypeChecker.fromStatic(knownTypes.tableInfoType),
         _isDatabase = TypeChecker.fromStatic(knownTypes.driftDatabase),
         _isDao = TypeChecker.fromStatic(knownTypes.driftAccessor);
 
@@ -159,9 +163,20 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     await Future.wait(_pendingWork);
   }
 
+  bool _isDslTable(ClassElement element) {
+    // check if the table inherits from the drift table class. The !isExactly
+    // check is here because we run this generator on drift itself and we get
+    // weird errors for the Table class itself. In weird cases where we iterate
+    // over generated code (standalone tool), don't report existing
+    // implementations as tables.
+    return _isTable.isAssignableFrom(element) &&
+        !_isTable.isExactly(element) &&
+        !_isTableInfo.isAssignableFrom(element);
+  }
+
   @override
   void visitClassElement(ClassElement element) {
-    if (_isTable.isAssignableFrom(element)) {
+    if (_isDslTable(element)) {
       _pendingWork.add(Future.sync(() async {
         final name = await _sqlNameOfTable(element);
         final id = _discoverStep._id(name);

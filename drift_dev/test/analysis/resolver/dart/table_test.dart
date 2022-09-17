@@ -102,7 +102,7 @@ class InvalidConstraints extends Table {
   final uri = Uri.parse('package:a/main.dart');
 
   Future<ElementAnalysisState?> findTable(String dartName) async {
-    final state = await backend.driver.fullyAnalyze(uri);
+    final state = await backend.driver.resolveElements(uri);
 
     return state.analysis.values.firstWhereOrNull((e) {
       final result = e.result;
@@ -133,7 +133,7 @@ class InvalidConstraints extends Table {
     });
 
     test('reports discovery error for table with wrong name', () async {
-      final state = await backend.driver.fullyAnalyze(uri);
+      final state = await backend.driver.resolveElements(uri);
       expect(state.errorsDuringDiscovery, [
         isDriftError(
           contains('This getter must directly return a string literal'),

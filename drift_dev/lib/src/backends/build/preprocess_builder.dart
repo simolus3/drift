@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:build/build.dart';
 
 import '../../analysis/preprocess_drift.dart';
-import 'new_backend.dart';
+import 'backend.dart';
 
 /// A support builder that runs before the main generator to parse and resolve
 /// inline Dart resources in a `.drift` file.

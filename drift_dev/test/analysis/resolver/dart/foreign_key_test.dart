@@ -17,8 +17,8 @@ class Foo extends Table {
 '''
       });
 
-      final file =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+      final file = await backend.driver
+          .resolveElements(Uri.parse('package:a/main.dart'));
       expect(file.errorsDuringDiscovery, isEmpty);
 
       final result = file.analysis.values.single;
@@ -41,8 +41,8 @@ class Foo extends Table {
 '''
       });
 
-      final file =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+      final file = await backend.driver
+          .resolveElements(Uri.parse('package:a/main.dart'));
       expect(file.errorsDuringDiscovery, isEmpty);
 
       final result = file.analysis.values.single;
@@ -68,8 +68,8 @@ class Foo extends Table {
 '''
       });
 
-      final file =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+      final file = await backend.driver
+          .resolveElements(Uri.parse('package:a/main.dart'));
       expect(file.errorsDuringDiscovery, isEmpty);
 
       final result = file.analysis.values.single;
@@ -98,7 +98,7 @@ class Foo extends Table {
     });
 
     final uri = Uri.parse('package:a/main.dart');
-    final file = await backend.driver.fullyAnalyze(uri);
+    final file = await backend.driver.resolveElements(uri);
     final otherTable =
         file.analysis[DriftElementId(uri, 'other_table')]!.result as DriftTable;
     final foo = file.analysis[DriftElementId(uri, 'foo')]!.result as DriftTable;
@@ -127,7 +127,7 @@ class Foo extends Table {
     });
 
     final file =
-        await backend.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+        await backend.driver.resolveElements(Uri.parse('package:a/main.dart'));
     final table = file.analysis.values.single.result as DriftTable;
 
     expect(table.references, isEmpty);

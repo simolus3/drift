@@ -21,7 +21,7 @@ CREATE TABLE b (
     });
 
     final state =
-        await backend.driver.fullyAnalyze(Uri.parse('package:a/a.drift'));
+        await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
 
     expect(state, hasNoErrors);
     final results = state.analysis.values.toList();

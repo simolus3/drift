@@ -41,7 +41,7 @@ class AnnotatedDartCode {
 
     return AnnotatedDartCode([
       for (final part in serializedElements)
-        if (part is Map) DartTopLevelSymbol.fromJson(json) else part as String
+        if (part is Map) DartTopLevelSymbol.fromJson(part) else part as String
     ]);
   }
 

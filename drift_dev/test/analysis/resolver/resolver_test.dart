@@ -20,7 +20,7 @@ CREATE TABLE b (
       });
 
       final state =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/a.drift'));
+          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
 
       expect(state, hasNoErrors);
       final results = state.analysis.values.toList();
@@ -51,7 +51,7 @@ CREATE TABLE a (
       });
 
       final state =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/a.drift'));
+          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
 
       expect(state, hasNoErrors);
 
@@ -77,7 +77,7 @@ CREATE TABLE b (
       });
 
       final stateA =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/a.drift'));
+          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
       expect(stateA, hasNoErrors);
 
       // Check that `b` has been analyzed and is in cache.
@@ -102,7 +102,7 @@ CREATE TABLE a (
       });
 
       final state =
-          await backend.driver.fullyAnalyze(Uri.parse('package:a/a.drift'));
+          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
       expect(state.errorsDuringDiscovery, isEmpty);
 
       final resultA = state.analysis.values.single;

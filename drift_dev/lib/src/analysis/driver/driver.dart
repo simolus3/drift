@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../analyzer/options.dart';
@@ -7,6 +9,8 @@ import '../resolver/dart/helper.dart';
 import '../resolver/discover.dart';
 import '../resolver/drift/sqlparser/mapping.dart';
 import '../resolver/resolver.dart';
+import '../results/results.dart';
+import '../serializer.dart';
 import 'cache.dart';
 import 'error.dart';
 import 'state.dart';
@@ -17,6 +21,9 @@ class DriftAnalysisDriver {
   final DriftOptions options;
 
   late final TypeMapping typeMapping = TypeMapping(options);
+  late final ElementDeserializer deserializer = ElementDeserializer(this);
+
+  AnalysisResultCacheReader? cacheReader;
 
   KnownDriftTypes? _knownTypes;
 
@@ -43,10 +50,45 @@ class DriftAnalysisDriver {
     return _knownTypes ??= await KnownDriftTypes.resolve(this);
   }
 
-  Future<FileState> prepareFileForAnalysis(Uri uri) async {
+  Future<Map<String, Object?>?> readStoredAnalysisResult(Uri uri) async {
+    final cached = cache.serializedElements[uri];
+    if (cached != null) return cached;
+
+    // Not available in in-memory cache, so let's read it from the file system.
+    final reader = cacheReader;
+    if (reader == null) return null;
+
+    final found = await reader.readCacheFor(uri);
+    if (found == null) return null;
+
+    final parsed = json.decode(found) as Map<String, Object?>;
+    return cache.serializedElements[uri] = parsed;
+  }
+
+  Future<bool> _recoverFromCache(FileState state) async {
+    final stored = await readStoredAnalysisResult(state.ownUri);
+    if (stored == null) return false;
+
+    var allRecovered = true;
+
+    for (final local in stored.keys) {
+      final id = DriftElementId(state.ownUri, local);
+      try {
+        await deserializer.readDriftElement(id);
+      } on CouldNotDeserializeException catch (e, s) {
+        backend.log.fine('Could not deserialize $id', e, s);
+        allRecovered = false;
+      }
+    }
+
+    return allRecovered;
+  }
+
+  Future<FileState> prepareFileForAnalysis(Uri uri,
+      {bool needsDiscovery = true}) async {
     var known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
 
-    if (known.discovery == null) {
+    if (known.discovery == null && needsDiscovery) {
       await DiscoverStep(this, known).discover();
       cache.postFileDiscoveryResults(known);
 
@@ -93,14 +135,30 @@ class DriftAnalysisDriver {
     }
   }
 
-  Future<FileState> fullyAnalyze(Uri uri) async {
-    var known = cache.knownFiles[uri];
+  Future<FileState> resolveElements(Uri uri) async {
+    var known = cache.stateForUri(uri);
+    await prepareFileForAnalysis(uri, needsDiscovery: false);
 
-    if (known == null || known.discovery == null) {
-      known = await prepareFileForAnalysis(uri);
+    if (known.isFullyAnalyzed) {
+      // Well, there's nothing to do now.
+      return known;
     }
 
+    final allRecoveredFromCache = await _recoverFromCache(known);
+    if (allRecoveredFromCache) {
+      // We were able to read all elements from cache, so we don't have to
+      // run any analysis now.
+      return known;
+    }
+
+    // We couldn't recover all analyzed elements. Let's run an analysis run
+    // now then.
+    await prepareFileForAnalysis(uri, needsDiscovery: true);
     await _analyzePrepared(known);
     return known;
   }
+}
+
+abstract class AnalysisResultCacheReader {
+  Future<String?> readCacheFor(Uri uri);
 }

@@ -7,16 +7,20 @@ import 'package:collection/collection.dart';
 import '../../driver/driver.dart';
 
 class KnownDriftTypes {
+  final LibraryElement helperLibrary;
   final ClassElement tableElement;
   final InterfaceType tableType;
+  final InterfaceType tableInfoType;
   final InterfaceType driftDatabase;
   final InterfaceType driftAccessor;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
 
   KnownDriftTypes._(
+    this.helperLibrary,
     this.tableElement,
     this.tableType,
+    this.tableInfoType,
     this.typeConverter,
     this.jsonTypeConverter,
     this.driftDatabase,
@@ -32,8 +36,10 @@ class KnownDriftTypes {
     final daoElement = exportNamespace.get('DriftAccessor') as ClassElement;
 
     return KnownDriftTypes._(
+      helper,
       tableElement,
       tableElement.defaultInstantiation,
+      (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
       exportNamespace.get('TypeConverter') as InterfaceElement,
       exportNamespace.get('JsonTypeConverter') as InterfaceElement,
       dbElement.defaultInstantiation,

@@ -1,15 +1,13 @@
-import 'dart:convert' as convert;
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/dart/element/type_provider.dart';
-import 'package:analyzer/dart/element/type_system.dart';
 import 'package:analyzer/dart/element/type_visitor.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
+import 'driver/driver.dart';
+import 'driver/state.dart';
 import 'results/results.dart';
 
 class ElementSerializer {
@@ -260,38 +258,32 @@ class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
   }
 }
 
-abstract class ElementDeserializer {
-  final Map<Uri, Map<String, Object?>> _loadedJson = {};
-  final Map<DriftElementId, DriftElement> _deserializedElements = {};
+class ElementDeserializer {
   final Map<Uri, LibraryElement> _loadedLibraries = {};
 
-  final TypeProvider defaultTypeProvider;
-  final TypeSystem typeSystem;
+  final DriftAnalysisDriver driver;
 
-  ElementDeserializer(this.defaultTypeProvider, this.typeSystem);
-
-  /// Loads the serialized definitions of all elements with a
-  /// [DriftElementId.libraryUri] matching the [uri].
-  Future<String> loadStateForUri(Uri uri);
-
-  Future<LibraryElement> loadDartLibrary(Uri uri);
+  ElementDeserializer(this.driver);
 
   Future<DartType> _readDartType(Map json) async {
     final suffix = NullabilitySuffix.values.byName(json['suffix'] as String);
+    final helper = await driver.loadKnownTypes();
+
+    final typeProvider = helper.helperLibrary.typeProvider;
 
     switch (json['kind'] as String) {
       case 'dynamic':
-        return defaultTypeProvider.dynamicType;
+        return typeProvider.dynamicType;
       case 'Never':
         return suffix == NullabilitySuffix.none
-            ? defaultTypeProvider.neverType
-            : defaultTypeProvider.nullType;
+            ? typeProvider.neverType
+            : typeProvider.nullType;
       case 'void':
-        return defaultTypeProvider.voidType;
+        return typeProvider.voidType;
       case 'interface':
         final libraryUri = Uri.parse(json['library'] as String);
-        final lib =
-            _loadedLibraries[libraryUri] ??= await loadDartLibrary(libraryUri);
+        final lib = _loadedLibraries[libraryUri] ??=
+            await driver.backend.readDart(libraryUri);
         final element = lib.exportNamespace.get(json['element'] as String)
             as InterfaceElement;
         final instantiation = [
@@ -306,14 +298,33 @@ abstract class ElementDeserializer {
     }
   }
 
-  Future<DriftElement> _readElementReference(Map json) async {
-    final id = DriftElementId.fromJson(json);
+  Future<DriftElement> _readElementReference(Map json) {
+    return readDriftElement(DriftElementId.fromJson(json));
+  }
 
-    final data = _loadedJson[id.libraryUri] ??= convert.json
-        .decode(await loadStateForUri(id.libraryUri)) as Map<String, Object?>;
+  Future<DriftElement> readDriftElement(DriftElementId id) async {
+    final state = driver.cache.stateForUri(id.libraryUri).analysis[id] ??=
+        ElementAnalysisState(id);
+    if (state.result != null && state.isUpToDate) {
+      return state.result!;
+    }
 
-    return _deserializedElements[id] ??=
-        await _readDriftElement(data[id.name] as Map);
+    final data = await driver.readStoredAnalysisResult(id.libraryUri);
+    if (data == null) {
+      throw CouldNotDeserializeException(
+          'Analysis data for ${id..libraryUri} not found');
+    }
+
+    try {
+      final result = await _readDriftElement(data[id.name] as Map);
+      state
+        ..result = result
+        ..isUpToDate = true;
+      return result;
+    } catch (e, s) {
+      throw CouldNotDeserializeException(
+          'Internal error while deserializing $id: $e at \n$s');
+    }
   }
 
   Future<DriftColumn> _readDriftColumnReference(Map json) async {
@@ -439,7 +450,54 @@ abstract class ElementDeserializer {
               : null,
           source: source,
         );
+      case 'database':
+      case 'dao':
+        final referenceById = {
+          for (final reference in references) reference.id: reference,
+        };
 
+        final tables = [
+          for (final tableId in json['tables'])
+            referenceById[DriftElementId.fromJson(tableId as Map)] as DriftTable
+        ];
+        final views = [
+          for (final tableId in json['views'])
+            referenceById[DriftElementId.fromJson(tableId as Map)] as DriftView
+        ];
+        final includes =
+            (json['includes'] as List).cast<String>().map(Uri.parse).toList();
+        final queries = (json['views'] as List)
+            .cast<Map>()
+            .map(QueryOnAccessor.fromJson)
+            .toList();
+
+        if (type == 'database') {
+          return DriftDatabase(
+            id: id,
+            declaration: declaration,
+            declaredTables: tables,
+            declaredViews: views,
+            declaredIncludes: includes,
+            declaredQueries: queries,
+            schemaVersion: json['schema_version'] as int,
+            accessorTypes: [
+              for (final dao in json['daos'])
+                AnnotatedDartCode.fromJson(dao as Map)
+            ],
+          );
+        } else {
+          assert(type == 'dao');
+
+          return DatabaseAccessor(
+            id: id,
+            declaration: declaration,
+            declaredTables: tables,
+            declaredViews: views,
+            declaredIncludes: includes,
+            declaredQueries: queries,
+            databaseClass: AnnotatedDartCode.fromJson(json['database'] as Map),
+          );
+        }
       default:
         throw UnimplementedError('Unsupported element type: $type');
     }
@@ -511,4 +569,13 @@ abstract class ElementDeserializer {
         throw UnimplementedError('Unsupported constraint: $type');
     }
   }
+}
+
+class CouldNotDeserializeException implements Exception {
+  final String message;
+
+  const CouldNotDeserializeException(this.message);
+
+  @override
+  String toString() => message;
 }

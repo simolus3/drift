@@ -5,7 +5,7 @@ import 'package:build/build.dart';
 import '../../analysis/driver/driver.dart';
 import '../../analysis/serializer.dart';
 import '../../analyzer/options.dart';
-import 'new_backend.dart';
+import 'backend.dart';
 
 class DriftAnalyzer extends Builder {
   final DriftOptions options;
@@ -24,13 +24,25 @@ class DriftAnalyzer extends Builder {
     final backend = DriftBuildBackend(buildStep);
     final driver = DriftAnalysisDriver(backend, options);
 
-    final results = await driver.fullyAnalyze(buildStep.inputId.uri);
+    final results = await driver.resolveElements(buildStep.inputId.uri);
 
-    final serializer = ElementSerializer();
-    final asJson = serializer.serializeElements(
-        results.analysis.values.map((e) => e.result).whereType());
-    final serialized = JsonUtf8Encoder(' ' * 2).convert(asJson);
+    for (final parseError in results.errorsDuringDiscovery) {
+      log.warning(parseError.toString());
+    }
 
-    await buildStep.writeAsBytes(buildStep.allowedOutputs.single, serialized);
+    if (results.analysis.isNotEmpty) {
+      for (final result in results.analysis.values) {
+        for (final error in result.errorsDuringAnalysis) {
+          log.warning(error.toString());
+        }
+      }
+
+      final serializer = ElementSerializer();
+      final asJson = serializer.serializeElements(
+          results.analysis.values.map((e) => e.result).whereType());
+      final serialized = JsonUtf8Encoder(' ' * 2).convert(asJson);
+
+      await buildStep.writeAsBytes(buildStep.allowedOutputs.single, serialized);
+    }
   }
 }

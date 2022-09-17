@@ -2,12 +2,18 @@ import '../results/element.dart';
 import 'state.dart';
 
 class DriftAnalysisCache {
+  final Map<Uri, Map<String, Object?>> serializedElements = {};
   final Map<Uri, FileState> knownFiles = {};
   final Map<DriftElementId, DiscoveredElement> discoveredElements = {};
+
+  FileState stateForUri(Uri uri) {
+    return knownFiles[uri] ?? notifyFileChanged(uri);
+  }
 
   FileState notifyFileChanged(Uri uri) {
     // todo: Mark references for files that import this one as stale.
     // todo: Mark elements that reference an element in this file as stale.
+    serializedElements.remove(uri);
 
     return knownFiles.putIfAbsent(uri, () => FileState(uri))
       ..errorsDuringDiscovery.clear()

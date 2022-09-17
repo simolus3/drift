@@ -7,10 +7,11 @@ Builder preparingBuilder(BuilderOptions options) => PreprocessBuilder();
 
 Builder analyzer(BuilderOptions options) => DriftAnalyzer(options);
 
-Builder driftBuilder(BuilderOptions options) => DriftSharedPartBuilder(options);
+Builder driftBuilder(BuilderOptions options) =>
+    DriftBuilder(DriftGenerationMode.monolithicSharedPart, options);
 
 Builder driftBuilderNotShared(BuilderOptions options) =>
-    DriftPartBuilder(options);
+    DriftBuilder(DriftGenerationMode.monolithicPart, options);
 
 PostProcessBuilder driftCleanup(BuilderOptions options) {
   return const FileDeletingBuilder(['.temp.dart']);

@@ -17,6 +17,12 @@ class FileState {
 
   String get extension => url.extension(ownUri.path);
 
+  bool get isFullyAnalyzed {
+    return discovery != null &&
+        discovery!.locallyDefinedElements
+            .every((e) => elementIsAnalyzed(e.ownId));
+  }
+
   bool elementIsAnalyzed(DriftElementId id) {
     return analysis[id]?.isUpToDate == true;
   }

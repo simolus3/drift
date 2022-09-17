@@ -1,14 +1,8 @@
 import 'package:build/build.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/analyzer/runner/task.dart';
-import 'package:drift_dev/src/analyzer/session.dart';
-import 'package:drift_dev/src/backends/build/build_backend.dart';
-import 'package:drift_dev/src/backends/build/generators/dao_generator.dart';
-import 'package:drift_dev/src/backends/build/generators/database_generator.dart';
-import 'package:drift_dev/writer.dart';
-import 'package:source_gen/source_gen.dart';
+
+import '../../analysis/driver/driver.dart';
+import '../../analyzer/options.dart';
+import 'backend.dart';
 
 class _BuilderFlags {
   bool didWarnAboutDeprecatedOptions = false;
@@ -16,68 +10,48 @@ class _BuilderFlags {
 
 final _flags = Resource(() => _BuilderFlags());
 
-mixin DriftBuilder on Builder {
-  DriftOptions get options;
+enum DriftGenerationMode {
+  /// Generate a shart part file which `source_gen:combining_builder` will then
+  /// pick up to generate a part for the input file.
+  ///
+  /// Drift will generate a single part file for the main database file and each
+  /// DAO-defining file.
+  monolithicSharedPart,
 
-  Writer createWriter() {
-    return Writer(options);
-  }
-
-  Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
-    Task? task;
-    FoundFile input;
-    try {
-      final backend = BuildBackend(options);
-      final backendTask = backend.createTask(step);
-      final session = MoorSession(backend, options: options);
-
-      input = session.registerFile(step.inputId.uri);
-      task = session.startTask(backendTask);
-      await task.runTask();
-    } finally {
-      task?.printErrors();
-    }
-
-    return input.currentResult as ParsedDartFile;
-  }
+  /// Like [monolithicSharedPart], except that drift will generate a single
+  /// part file on its own instead of generating a part file for `source_gen`
+  /// to process later.
+  monolithicPart,
 }
 
-T _createBuilder<T extends DriftBuilder>(
-  BuilderOptions options,
-  T Function(List<Generator> generators, DriftOptions parsedOptions) creator,
-) {
-  final parsedOptions = DriftOptions.fromJson(options.config);
-
-  final generators = <Generator>[
-    DriftDatabaseGenerator(),
-    DaoGenerator(),
-  ];
-
-  final builder = creator(generators, parsedOptions);
-
-  for (final generator in generators.cast<BaseGenerator>()) {
-    generator.builder = builder;
-  }
-
-  return builder;
-}
-
-class DriftSharedPartBuilder extends SharedPartBuilder with DriftBuilder {
-  @override
+class DriftBuilder extends Builder {
   final DriftOptions options;
+  final DriftGenerationMode generationMode;
 
-  DriftSharedPartBuilder._(
-      List<Generator> generators, String name, this.options)
-      : super(generators, name);
+  DriftBuilder._(this.options, this.generationMode);
 
-  factory DriftSharedPartBuilder(BuilderOptions options) {
-    return _createBuilder(options, (generators, parsedOptions) {
-      return DriftSharedPartBuilder._(generators, 'drift', parsedOptions);
-    });
+  factory DriftBuilder(
+      DriftGenerationMode generationMode, BuilderOptions options) {
+    final parsedOptions = DriftOptions.fromJson(options.config);
+    return DriftBuilder._(parsedOptions, generationMode);
   }
 
   @override
-  Future build(BuildStep buildStep) async {
+  Map<String, List<String>> get buildExtensions {
+    switch (generationMode) {
+      case DriftGenerationMode.monolithicSharedPart:
+        return {
+          '.dart': ['.drift.g.part']
+        };
+      case DriftGenerationMode.monolithicPart:
+        return {
+          '.dart': ['.drift.dart']
+        };
+    }
+  }
+
+  @override
+  Future<void> build(BuildStep buildStep) async {
     final flags = await buildStep.fetchResource(_flags);
     if (!flags.didWarnAboutDeprecatedOptions &&
         options.enabledDeprecatedOption) {
@@ -87,24 +61,26 @@ class DriftSharedPartBuilder extends SharedPartBuilder with DriftBuilder {
       flags.didWarnAboutDeprecatedOptions = true;
     }
 
-    return super.build(buildStep);
+    final driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
+      ..cacheReader = BuildCacheReader(buildStep);
+
+    final fromCache =
+        await driver.readStoredAnalysisResult(buildStep.inputId.uri);
+
+    if (fromCache == null) {
+      // Don't do anything! There are no analysis results for this file, so
+      // there's nothing for drift to generate code for.
+      return;
+    }
+
+    final result = await driver.resolveElements(buildStep.inputId.uri);
+
+    final buffer = StringBuffer();
+    for (final element in result.analysis.values) {
+      buffer.writeln('// ${element.ownId}');
+    }
+
+    await buildStep.writeAsString(
+        buildStep.allowedOutputs.single, buffer.toString());
   }
-}
-
-class DriftPartBuilder extends PartBuilder with DriftBuilder {
-  @override
-  final DriftOptions options;
-
-  DriftPartBuilder._(List<Generator> generators, String extension, this.options)
-      : super(generators, extension);
-
-  factory DriftPartBuilder(BuilderOptions options) {
-    return _createBuilder(options, (generators, parsedOptions) {
-      return DriftPartBuilder._(generators, '.drift.dart', parsedOptions);
-    });
-  }
-}
-
-abstract class BaseGenerator {
-  late DriftBuilder builder;
 }
