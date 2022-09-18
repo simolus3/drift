@@ -9,10 +9,12 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:build/build.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/backend.dart';
 import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
@@ -133,10 +135,29 @@ class TestBackend extends DriftBackend {
   Future<void> dispose() async {}
 }
 
-Matcher get hasNoErrors => isA<FileState>()
-    .having((e) => e.errorsDuringDiscovery, 'errorsDuringDiscovery', isEmpty)
-    .having((e) => e.analysis.values.expand((e) => e.errorsDuringAnalysis),
-        '(errors in analyzed elements)', isEmpty);
+Matcher get hasNoErrors =>
+    isA<FileState>().having((e) => e.allErrors, 'allErrors', isEmpty);
+
+Matcher returnsColumns(Map<String, DriftSqlType> columns) {
+  return _HasInferredColumnTypes(columns);
+}
+
+class _HasInferredColumnTypes extends CustomMatcher {
+  _HasInferredColumnTypes(dynamic expected)
+      : super('Select query with inferred columns', 'columns', expected);
+
+  @override
+  Object? featureValueOf(dynamic actual) {
+    if (actual is! SqlSelectQuery) {
+      return actual;
+    }
+
+    final resultSet = actual.resultSet;
+    return {
+      for (final column in resultSet.columns) column.name: column.sqlType
+    };
+  }
+}
 
 TypeMatcher<DriftAnalysisError> isDriftError(dynamic message) {
   return isA<DriftAnalysisError>().having((e) => e.message, 'message', message);

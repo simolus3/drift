@@ -19,6 +19,19 @@ class FileState {
 
   String get extension => url.extension(ownUri.path);
 
+  Iterable<DriftAnalysisError> get allErrors sync* {
+    yield* errorsDuringDiscovery;
+
+    for (final entry in analysis.values) {
+      yield* entry.errorsDuringAnalysis;
+    }
+
+    final fileResults = fileAnalysis;
+    if (fileResults != null) {
+      yield* fileResults.analysisErrors;
+    }
+  }
+
   bool get isFullyAnalyzed {
     return discovery != null &&
         discovery!.locallyDefinedElements

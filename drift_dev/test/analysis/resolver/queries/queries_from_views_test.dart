@@ -1,14 +1,12 @@
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
-  test('select from view test', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+  test('select from view', () async {
+    final backend = TestBackend.inTest({
+      'foo|lib/a.drift': '''
 CREATE TABLE artists (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name VARCHAR NOT NULL
@@ -37,20 +35,20 @@ CREATE VIEW total_duration_by_artist_view AS
 
 totalDurationByArtist:
 SELECT * FROM total_duration_by_artist_view;
-    '''
-    }, options: const DriftOptions.defaults());
+''',
+    });
 
-    final file = await state.analyze('package:foo/a.moor');
-    final result = file.currentResult as ParsedDriftFile;
-    final queries = result.resolvedQueries;
+    final file =
+        await backend.driver.fullyAnalyze(Uri.parse('package:foo/a.drift'));
 
-    expect(state.session.errorsInFileAndImports(file), isEmpty);
-    state.close();
+    expect(file.allErrors, isEmpty);
 
-    final totalDurationByArtist =
-        queries!.singleWhere((q) => q.name == 'totalDurationByArtist');
+    final results = file.fileAnalysis!;
+    final query = results.resolvedQueries.values
+        .singleWhere((q) => q.name == 'totalDurationByArtist');
+
     expect(
-      totalDurationByArtist,
+      query,
       returnsColumns({
         'id': DriftSqlType.int,
         'name': DriftSqlType.string,

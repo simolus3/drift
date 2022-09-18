@@ -44,7 +44,7 @@ class FileAnalyzer {
       final genericEngineForParsing = driver.newSqlEngine();
       final source = await driver.backend.readAsString(state.ownUri);
       final parsedFile =
-          genericEngineForParsing.parse(source).rootNode as DriftFile;
+          genericEngineForParsing.parseDriftFile(source).rootNode as DriftFile;
 
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;
@@ -52,12 +52,13 @@ class FileAnalyzer {
           final engine =
               driver.typeMapping.newEngineWithTables(element.references);
           final stmt = parsedFile.statements
-                  .firstWhere((e) => e.firstPosition == element.sqlOffset)
-              as DeclaredStatement;
+              .whereType<DeclaredStatement>()
+              .firstWhere(
+                  (e) => e.statement.firstPosition == element.sqlOffset);
           final options = _createOptionsAndVars(engine, stmt);
 
-          final analysisResult =
-              engine.analyzeNode(stmt, source, stmtOptions: options.options);
+          final analysisResult = engine.analyzeNode(stmt.statement, source,
+              stmtOptions: options.options);
 
           final analyzer = QueryAnalyzer(analysisResult, driver,
               references: element.references,
