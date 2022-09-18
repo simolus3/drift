@@ -12,12 +12,10 @@ class DriftQueryResolver
     final stmt = discovered.sqlNode.statement;
     final references = await resolveSqlReferences(stmt);
 
-    final engine = newEngineWithTables(references);
-
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
-    final context = engine.analyzeNode(stmt, source);
-    reportLints(context);
 
+    // Note: We don't analyze the query here, that happens in
+    // `file_analysis.dart` after elements have been resolved.
     return DefinedSqlQuery(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),

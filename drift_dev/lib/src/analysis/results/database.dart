@@ -91,7 +91,8 @@ class DatabaseAccessor extends BaseDriftAccessor {
 /// analysis happens during code generation because intermediate state is hard
 /// to serialize and there are little benefits of analyzing queries early.
 @JsonSerializable()
-class QueryOnAccessor {
+class QueryOnAccessor implements DriftQueryDeclaration {
+  @override
   final String name;
   final String sql;
 

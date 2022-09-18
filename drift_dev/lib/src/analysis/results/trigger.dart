@@ -1,7 +1,5 @@
-import 'package:drift/drift.dart';
-
 import 'element.dart';
-import 'table.dart';
+import 'query.dart';
 
 class DriftTrigger extends DriftElement {
   @override
@@ -11,7 +9,7 @@ class DriftTrigger extends DriftElement {
   final String createStmt;
 
   /// Writes performed in the body of this trigger.
-  final List<TriggerTableWrite> writes;
+  final List<WrittenDriftTable> writes;
 
   DriftTrigger(
     super.id,
@@ -20,17 +18,4 @@ class DriftTrigger extends DriftElement {
     required this.createStmt,
     required this.writes,
   });
-}
-
-/// Information about a write performed by an `INSERT`, `UPDATE` or `DELETE`
-/// statement inside a [DriftTrigger] on another [table].
-///
-/// This information is used to properly invalidate stream queries at runtime,
-/// as triggers can cause changes to additional tables after a direct write to
-/// another table.
-class TriggerTableWrite {
-  final DriftTable table;
-  final UpdateKind kind;
-
-  TriggerTableWrite(this.table, this.kind);
 }

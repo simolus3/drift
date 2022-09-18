@@ -1,0 +1,693 @@
+import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift.dart' as drift;
+import 'package:recase/recase.dart';
+import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
+import 'package:sqlparser/utils/find_referenced_tables.dart';
+
+import '../../driver/driver.dart';
+import '../drift/sqlparser/drift_lints.dart';
+import '../drift/sqlparser/mapping.dart';
+import '../../results/results.dart';
+import 'nested_queries.dart';
+import 'required_variables.dart';
+
+/// The context contains all data that is required to create an [SqlQuery]. This
+/// class is simply there to bundle the data.
+class _QueryHandlerContext {
+  final List<FoundElement> foundElements;
+  final AstNode root;
+  final NestedQueriesContainer? nestedScope;
+  final String queryName;
+  final String? requestedResultClass;
+
+  _QueryHandlerContext({
+    required List<FoundElement> foundElements,
+    required this.root,
+    required this.queryName,
+    required this.nestedScope,
+    this.requestedResultClass,
+  }) : foundElements = List.unmodifiable(foundElements);
+}
+
+/// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this
+/// generator package by determining its type, return columns, variables and so
+/// on.
+class QueryAnalyzer {
+  final AnalysisContext context;
+  final DriftAnalysisDriver driver;
+  final RequiredVariables requiredVariables;
+  final Map<String, DriftElement> referencesByName;
+
+  /// Found tables and views found need to be shared between the query and
+  /// all subqueries to not muss any updates when watching query.
+  late Set<Table> _foundTables;
+  late Set<View> _foundViews;
+
+  /// Used to create a unique name for every nested query. This needs to be
+  /// shared between queries, therefore this should not be part of the
+  /// context.
+  int nestedQueryCounter = 0;
+
+  final List<AnalysisError> lints = [];
+
+  QueryAnalyzer(
+    this.context,
+    this.driver, {
+    required List<DriftElement> references,
+    this.requiredVariables = RequiredVariables.empty,
+  }) : referencesByName = {
+          for (final reference in references)
+            reference.id.name.toLowerCase(): reference,
+        };
+
+  E _lookupReference<E extends DriftElement?>(String name) {
+    return referencesByName[name.toLowerCase()] as E;
+  }
+
+  SqlQuery analyze(DriftQueryDeclaration declaration) {
+    final nestedAnalyzer = NestedQueryAnalyzer();
+    NestedQueriesContainer? nestedScope;
+
+    if (context.root is SelectStatement) {
+      nestedScope = nestedAnalyzer.analyzeRoot(context.root as SelectStatement);
+    }
+
+    final foundElements = _extractElements(
+      ctx: context,
+      root: context.root,
+      required: requiredVariables,
+      nestedScope: nestedScope,
+    );
+    _verifyNoSkippedIndexes(foundElements);
+
+    final String? requestedResultClass;
+    if (declaration is DefinedSqlQuery) {
+      requestedResultClass = declaration.resultClassName;
+    } else {
+      requestedResultClass = null;
+    }
+
+    final query = _mapToDrift(_QueryHandlerContext(
+      foundElements: foundElements,
+      queryName: declaration.name,
+      requestedResultClass: requestedResultClass,
+      root: context.root,
+      nestedScope: nestedScope,
+    ));
+
+    final linter = DriftSqlLinter(context);
+    linter.collectLints();
+    lints
+      ..addAll(context.errors)
+      ..addAll(linter.sqlParserErrors)
+      ..addAll(nestedAnalyzer.errors);
+
+    return query;
+  }
+
+  SqlQuery _mapToDrift(_QueryHandlerContext queryContext) {
+    if (queryContext.root is BaseSelectStatement) {
+      return _handleSelect(queryContext);
+    } else if (queryContext.root is UpdateStatement ||
+        queryContext.root is DeleteStatement ||
+        queryContext.root is InsertStatement) {
+      return _handleUpdate(queryContext);
+    } else {
+      throw StateError(
+          'Unexpected sql: Got ${queryContext.root}, expected insert, select, '
+          'update or delete');
+    }
+  }
+
+  void _applyFoundTables(ReferencedTablesVisitor visitor) {
+    _foundTables = visitor.foundTables;
+    _foundViews = visitor.foundViews;
+  }
+
+  UpdatingQuery _handleUpdate(_QueryHandlerContext queryContext) {
+    final root = queryContext.root;
+
+    final updatedFinder = UpdatedTablesVisitor();
+    root.acceptWithoutArg(updatedFinder);
+    _applyFoundTables(updatedFinder);
+
+    final isInsert = root is InsertStatement;
+
+    InferredResultSet? resultSet;
+    if (root is StatementReturningColumns) {
+      final columns = root.returnedResultSet?.resolvedColumns;
+      if (columns != null) {
+        resultSet = _inferResultSet(queryContext, columns);
+      }
+    }
+
+    return UpdatingQuery(
+      queryContext.queryName,
+      context,
+      root,
+      queryContext.foundElements,
+      updatedFinder.writtenTables
+          .map((write) {
+            final table = _lookupReference<DriftTable?>(write.table.name);
+            drift.UpdateKind kind;
+
+            switch (write.kind) {
+              case UpdateKind.insert:
+                kind = drift.UpdateKind.insert;
+                break;
+              case UpdateKind.update:
+                kind = drift.UpdateKind.update;
+                break;
+              case UpdateKind.delete:
+                kind = drift.UpdateKind.delete;
+                break;
+            }
+
+            return table != null ? WrittenDriftTable(table, kind) : null;
+          })
+          .whereType<WrittenDriftTable>()
+          .toList(),
+      isInsert: isInsert,
+      hasMultipleTables: updatedFinder.foundTables.length > 1,
+      resultSet: resultSet,
+    );
+  }
+
+  SqlSelectQuery _handleSelect(_QueryHandlerContext queryContext) {
+    final tableFinder = ReferencedTablesVisitor();
+    queryContext.root.acceptWithoutArg(tableFinder);
+
+    _applyFoundTables(tableFinder);
+
+    final driftTables = _foundTables
+        .map((tbl) => _lookupReference<DriftTable?>(tbl.name))
+        .whereType<DriftTable>()
+        .toList();
+    final driftViews = _foundViews
+        .map((tbl) => _lookupReference<DriftView?>(tbl.name))
+        .whereType<DriftView>()
+        .toList();
+
+    final driftEntities = [...driftTables, ...driftViews];
+
+    return SqlSelectQuery(
+      queryContext.queryName,
+      context,
+      queryContext.root,
+      queryContext.foundElements,
+      driftEntities,
+      _inferResultSet(
+        queryContext,
+        (queryContext.root as BaseSelectStatement).resolvedColumns!,
+      ),
+      queryContext.requestedResultClass,
+      queryContext.nestedScope,
+    );
+  }
+
+  InferredResultSet _inferResultSet(
+    _QueryHandlerContext queryContext,
+    List<Column> rawColumns,
+  ) {
+    final candidatesForSingleTable = {..._foundTables, ..._foundViews};
+    final columns = <ResultColumn>[];
+
+    // First, go through regular result columns
+    for (final column in rawColumns) {
+      final type = context.typeOf(column).type;
+      final driftType = driver.typeMapping.sqlTypeToDrift(type);
+      AppliedTypeConverter? converter;
+      if (type?.hint is TypeConverterHint) {
+        converter = (type!.hint as TypeConverterHint).converter;
+      }
+
+      columns.add(ResultColumn(column.name, driftType, type?.nullable ?? true,
+          typeConverter: converter, sqlParserColumn: column));
+
+      final resultSet = _resultSetOfColumn(column);
+      candidatesForSingleTable.removeWhere((t) => t != resultSet);
+    }
+
+    final nestedResults = _findNestedResultTables(queryContext);
+    if (nestedResults.isNotEmpty) {
+      // The single table optimization doesn't make sense when nested result
+      // sets are present.
+      candidatesForSingleTable.clear();
+    }
+
+    // if all columns read from the same table, and all columns in that table
+    // are present in the result set, we can use the data class we generate for
+    // that table instead of generating another class just for this result set.
+    if (candidatesForSingleTable.length == 1) {
+      final table = candidatesForSingleTable.single;
+      final driftTable =
+          _lookupReference<DriftElementWithResultSet?>(table.name);
+
+      if (driftTable == null) {
+        // References a table not declared in any drift api (dart or drift file).
+        // This can happen for internal sqlite tables
+        return InferredResultSet(null, columns);
+      }
+
+      final resultEntryToColumn = <ResultColumn, String>{};
+      final resultColumnNameToDrift = <String, DriftColumn>{};
+      var matches = true;
+
+      // go trough all columns of the table in question
+      for (final column in driftTable.columns) {
+        // check if this column from the table is present in the result set
+        final tableColumn = table.findColumn(column.nameInSql);
+        final inResultSet =
+            rawColumns.where((t) => _toTableOrViewColumn(t) == tableColumn);
+
+        if (inResultSet.length == 1) {
+          // it is! Remember the correct getter name from the data class for
+          // later when we write the mapping code.
+          final columnIndex = rawColumns.indexOf(inResultSet.single);
+          final resultColumn = columns[columnIndex];
+
+          resultEntryToColumn[resultColumn] = column.nameInDart;
+          resultColumnNameToDrift[resultColumn.name] = column;
+        } else {
+          // it's not, so no match
+          matches = false;
+          break;
+        }
+      }
+
+      // we have established that all columns in resultEntryToColumn do appear
+      // in the drift table. Now check for set equality.
+      if (rawColumns.length != driftTable.columns.length) {
+        matches = false;
+      }
+
+      if (matches) {
+        final match = MatchingDriftTable(driftTable, resultColumnNameToDrift);
+        return InferredResultSet(match, columns)
+          ..forceDartNames(resultEntryToColumn);
+      }
+    }
+
+    return InferredResultSet(
+      null,
+      columns,
+      nestedResults: nestedResults,
+      resultClassName: queryContext.requestedResultClass,
+    );
+  }
+
+  List<NestedResult> _findNestedResultTables(
+      _QueryHandlerContext queryContext) {
+    // We don't currently support nested results for compound statements
+    if (queryContext.root is! SelectStatement) return const [];
+    final query = queryContext.root as SelectStatement;
+
+    final nestedTables = <NestedResult>[];
+    final analysis = JoinModel.of(query);
+
+    for (final column in query.columns) {
+      if (column is NestedStarResultColumn) {
+        final originalResult = column.resultSet;
+        final result = originalResult?.unalias();
+        if (result is! Table && result is! View) continue;
+
+        final driftTable = _lookupReference<DriftElementWithResultSet>(
+            (result as NamedResultSet).name);
+        final isNullable =
+            analysis == null || analysis.isNullableTable(originalResult!);
+        nestedTables.add(NestedResultTable(
+          column,
+          column.as ?? column.tableName,
+          driftTable,
+          isNullable: isNullable,
+        ));
+      } else if (column is NestedQueryColumn) {
+        final childScope = queryContext.nestedScope?.nestedQueries[column];
+
+        final foundElements = _extractElements(
+          ctx: context,
+          root: column.select,
+          required: requiredVariables,
+          nestedScope: childScope,
+        );
+        _verifyNoSkippedIndexes(foundElements);
+
+        final queryIndex = nestedQueryCounter++;
+
+        final name = 'nested_query_$queryIndex';
+        column.queryName = name;
+
+        var resultClassName = ReCase(queryContext.queryName).pascalCase;
+        if (column.as != null) {
+          resultClassName += ReCase(column.as!).pascalCase;
+        } else {
+          resultClassName += 'NestedQuery$queryIndex';
+        }
+
+        nestedTables.add(NestedResultQuery(
+          from: column,
+          query: _handleSelect(_QueryHandlerContext(
+            queryName: name,
+            requestedResultClass: resultClassName,
+            root: column.select,
+            foundElements: foundElements,
+            nestedScope: childScope,
+          )),
+        ));
+      }
+    }
+
+    return nestedTables;
+  }
+
+  Column? _toTableOrViewColumn(Column? c) {
+    // ignore: literal_only_boolean_expressions
+    while (true) {
+      if (c is TableColumn || c is ViewColumn) {
+        return c;
+      } else if (c is ExpressionColumn) {
+        final expression = c.expression;
+        if (expression is Reference) {
+          final resolved = expression.resolved;
+          if (resolved is Column) {
+            c = resolved;
+            continue;
+          }
+        }
+        // Not a reference to a column
+        return null;
+      } else if (c is DelegatedColumn) {
+        c = c.innerColumn;
+      } else {
+        return null;
+      }
+    }
+  }
+
+  ResultSet? _resultSetOfColumn(Column c) {
+    final mapped = _toTableOrViewColumn(c);
+    if (mapped == null) return null;
+
+    if (mapped is ViewColumn) {
+      return mapped.view;
+    } else {
+      return (mapped as TableColumn).table;
+    }
+  }
+
+  /// Extracts variables and Dart templates from the AST tree starting at
+  /// [root], but nested queries are excluded. Variables are sorted by their
+  /// ascending index. Placeholders are sorted by the position they have in the
+  /// query. When comparing variables and placeholders, the variable comes first
+  /// if the first variable with the same index appears before the placeholder.
+  ///
+  /// Additionally, the following assumptions can be made if this method returns
+  /// without throwing:
+  ///  - array variables don't have an explicit index
+  ///  - if an explicitly indexed variable appears AFTER an array variable or
+  ///    a Dart placeholder, its indexed is LOWER than that element. This means
+  ///    that elements can be expanded into multiple variables without breaking
+  ///    variables that appear after them.
+  List<FoundElement> _extractElements({
+    required AnalysisContext ctx,
+    required AstNode root,
+    NestedQueriesContainer? nestedScope,
+    RequiredVariables required = RequiredVariables.empty,
+  }) {
+    final collector = _FindElements()..visit(root, nestedScope);
+
+    // this contains variable references. For instance, SELECT :a = :a would
+    // contain two entries, both referring to the same variable. To do that,
+    // we use the fact that each variable has a unique index.
+    final variables = collector.variables;
+    final placeholders = collector.dartPlaceholders;
+
+    final merged = _mergeVarsAndPlaceholders(variables, placeholders);
+
+    final foundElements = <FoundElement>[];
+    // we don't allow variables with an explicit index after an array. For
+    // instance: SELECT * FROM t WHERE id IN ? OR id = ?2. The reason this is
+    // not allowed is that we expand the first arg into multiple vars at runtime
+    // which would break the index. The initial high values can be arbitrary.
+    // We've chosen 999 because most sqlite binaries don't allow more variables.
+    var maxIndex = 999;
+    var currentIndex = 0;
+
+    for (final used in merged) {
+      if (used is Variable) {
+        if (used.resolvedIndex == currentIndex) {
+          continue; // already handled, we only report a single variable / index
+        }
+
+        currentIndex = used.resolvedIndex!;
+        final name = (used is ColonNamedVariable) ? used.name : null;
+        final explicitIndex =
+            (used is NumberedVariable) ? used.explicitIndex : null;
+        final forCapture = used.meta<CapturedVariable>();
+
+        final internalType =
+            // If this variable was introduced to replace a reference from a
+            // `LIST` query to an outer query, use the type of the reference
+            // instead of the synthetic variable that we're replacing it with.
+            ctx.typeOf(forCapture != null ? forCapture.reference : used);
+        final type = driver.typeMapping.sqlTypeToDrift(internalType.type);
+
+        if (forCapture != null) {
+          foundElements.add(FoundVariable.nestedQuery(
+            index: currentIndex,
+            name: name,
+            sqlType: type,
+            variable: used,
+            forCaptured: forCapture,
+          ));
+
+          continue;
+        }
+
+        final isArray = internalType.type?.isArray ?? false;
+        final isRequired = required.requiredNamedVariables.contains(name) ||
+            required.requiredNumberedVariables.contains(used.resolvedIndex);
+
+        if (explicitIndex != null && currentIndex >= maxIndex) {
+          throw ArgumentError(
+              'Cannot have a variable with an index lower than that of an '
+              'array appearing after an array!');
+        }
+
+        AppliedTypeConverter? converter;
+
+        // Recognizing type converters on variables is opt-in since it would
+        // break existing code.
+        if (driver.options.applyConvertersOnVariables &&
+            internalType.type?.hint is TypeConverterHint) {
+          converter = (internalType.type!.hint as TypeConverterHint).converter;
+        }
+
+        foundElements.add(FoundVariable(
+          index: currentIndex,
+          name: name,
+          sqlType: type,
+          nullable: internalType.type?.nullable ?? false,
+          variable: used,
+          isArray: isArray,
+          typeConverter: converter,
+          isRequired: isRequired,
+        ));
+
+        // arrays cannot be indexed explicitly because they're expanded into
+        // multiple variables when executed
+        if (isArray && explicitIndex != null) {
+          throw ArgumentError(
+              'Cannot use an array variable with an explicit index');
+        }
+        if (isArray) {
+          maxIndex = used.resolvedIndex!;
+        }
+      } else if (used is DartPlaceholder) {
+        // we don't what index this placeholder has, so we can't allow _any_
+        // explicitly indexed variables coming after this
+        maxIndex = 0;
+        foundElements.add(_extractPlaceholder(ctx, used));
+      }
+    }
+    return foundElements;
+  }
+
+  FoundDartPlaceholder _extractPlaceholder(
+      AnalysisContext context, DartPlaceholder placeholder) {
+    final name = placeholder.name;
+
+    final type = placeholder.when(
+      isExpression: (e) {
+        final foundType = context.typeOf(e);
+        DriftSqlType? columnType;
+        if (foundType.type != null) {
+          columnType = driver.typeMapping.sqlTypeToDrift(foundType.type);
+        }
+
+        final defaultValue =
+            context.stmtOptions.defaultValuesForPlaceholder[name];
+
+        return ExpressionDartPlaceholderType(columnType, defaultValue);
+      },
+      isLimit: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.limit),
+      isOrderBy: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy),
+      isOrderingTerm: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderByTerm),
+      isInsertable: (_) {
+        final insert = placeholder.parents.whereType<InsertStatement>().first;
+        final table = insert.table.resultSet;
+
+        return InsertableDartPlaceholderType(
+            table is Table ? _lookupReference(table.name) as DriftTable : null);
+      },
+    );
+
+    final availableResults = placeholder.statementScope.allAvailableResultSets;
+    final availableDriftResults = <AvailableDriftResultSet>[];
+    for (final available in availableResults) {
+      final aliasedResultSet = available.resultSet.resultSet;
+      final resultSet = aliasedResultSet?.unalias();
+      String name;
+      if (aliasedResultSet is NamedResultSet) {
+        name = aliasedResultSet.name;
+      } else {
+        // If we don't have a name we can't include this result set.
+        continue;
+      }
+
+      DriftElementWithResultSet driftEntity;
+
+      if (resultSet is Table || resultSet is View) {
+        driftEntity = _lookupReference((resultSet as NamedResultSet).name)
+            as DriftElementWithResultSet;
+      } else {
+        // If this result set is an inner select statement or anything else we
+        // can't represent it in Dart.
+        continue;
+      }
+
+      availableDriftResults
+          .add(AvailableDriftResultSet(name, driftEntity, available));
+    }
+
+    return FoundDartPlaceholder(type!, name, availableDriftResults)
+      ..astNode = placeholder;
+  }
+
+  /// Merges [vars] and [placeholders] into a list that satisfies the order
+  /// described in [_extractElements].
+  List<dynamic /* Variable|DartPlaceholder */ > _mergeVarsAndPlaceholders(
+      List<Variable> vars, List<DartPlaceholder> placeholders) {
+    final groupVarsByIndex = <int, List<Variable>>{};
+    for (final variable in vars) {
+      groupVarsByIndex
+          .putIfAbsent(variable.resolvedIndex!, () => [])
+          .add(variable);
+    }
+    // sort each group by index
+    for (final group in groupVarsByIndex.values) {
+      group.sort((a, b) => a.resolvedIndex!.compareTo(b.resolvedIndex!));
+    }
+
+    late int Function(dynamic, dynamic) comparer;
+    comparer = (dynamic a, dynamic b) {
+      if (a is Variable && b is Variable) {
+        // variables are sorted by their index
+        return a.resolvedIndex!.compareTo(b.resolvedIndex!);
+      } else if (a is DartPlaceholder && b is DartPlaceholder) {
+        // placeholders by their position
+        return AnalysisContext.compareNodesByOrder(a, b);
+      } else {
+        // ok, one of them is a variable, the other one is a placeholder. Let's
+        // assume a is the variable. If not, we just switch results.
+        if (a is Variable) {
+          final placeholderB = b as DartPlaceholder;
+          final firstWithSameIndex = groupVarsByIndex[a.resolvedIndex]!.first;
+
+          return firstWithSameIndex.firstPosition
+              .compareTo(placeholderB.firstPosition);
+        } else {
+          return -comparer(b, a);
+        }
+      }
+    };
+
+    final list = vars.cast<dynamic>().followedBy(placeholders).toList();
+    return list..sort(comparer);
+  }
+
+  /// We verify that no variable numbers are skipped in the query. For instance,
+  /// `SELECT * FROM tbl WHERE a = ?2 AND b = ?` would fail this check because
+  /// the index 1 is never used.
+  void _verifyNoSkippedIndexes(List<FoundElement> foundElements) {
+    final variables = List.of(foundElements.whereType<FoundVariable>())
+      ..sort((a, b) => a.index.compareTo(b.index));
+
+    var currentExpectedIndex = 1;
+
+    for (var i = 0; i < variables.length; i++) {
+      final current = variables[i];
+      if (current.index > currentExpectedIndex) {
+        throw StateError('This query skips some variable indexes: '
+            'We found no variable is at position $currentExpectedIndex, '
+            'even though a variable at index ${current.index} exists.');
+      }
+
+      if (i < variables.length - 1) {
+        final next = variables[i + 1];
+        if (next.index > currentExpectedIndex) {
+          // if the next variable has a higher index, increment expected index
+          // by one because we expect that every index is present
+          currentExpectedIndex++;
+        }
+      }
+    }
+  }
+}
+
+/// Finds variables, Dart placeholders and outgoing references from nested
+/// queries (which are eventually turned into variables) inside a query.
+///
+/// Nested children of this query are ignored, see `nested_queries.dart` for
+/// details on nested queries and how they're implemented.
+class _FindElements extends RecursiveVisitor<NestedQueriesContainer?, void> {
+  final List<Variable> variables = [];
+  final List<DartPlaceholder> dartPlaceholders = [];
+
+  @override
+  void visitVariable(Variable e, NestedQueriesContainer? arg) {
+    variables.add(e);
+    super.visitVariable(e, arg);
+  }
+
+  @override
+  void visitDriftSpecificNode(
+      DriftSpecificNode e, NestedQueriesContainer? arg) {
+    if (e is NestedQueryColumn) {
+      // If the node ist a nested query, return to avoid collecting elements
+      // inside of it
+      return;
+    }
+
+    if (e is DartPlaceholder) {
+      dartPlaceholders.add(e);
+    }
+
+    super.visitDriftSpecificNode(e, arg);
+  }
+
+  @override
+  void visitReference(Reference e, NestedQueriesContainer? arg) {
+    if (arg is NestedQuery) {
+      final captured = arg.capturedVariables[e];
+      if (captured != null) {
+        variables.add(captured.introducedVariable);
+      }
+    }
+
+    super.visitReference(e, arg);
+  }
+}

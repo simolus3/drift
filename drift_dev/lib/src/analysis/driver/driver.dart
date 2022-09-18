@@ -8,6 +8,7 @@ import '../drift_native_functions.dart';
 import '../resolver/dart/helper.dart';
 import '../resolver/discover.dart';
 import '../resolver/drift/sqlparser/mapping.dart';
+import '../resolver/file_analysis.dart';
 import '../resolver/resolver.dart';
 import '../results/results.dart';
 import '../serializer.dart';
@@ -20,7 +21,7 @@ class DriftAnalysisDriver {
   final DriftAnalysisCache cache = DriftAnalysisCache();
   final DriftOptions options;
 
-  late final TypeMapping typeMapping = TypeMapping(options);
+  late final TypeMapping typeMapping = TypeMapping(this);
   late final ElementDeserializer deserializer = ElementDeserializer(this);
 
   AnalysisResultCacheReader? cacheReader;
@@ -156,6 +157,22 @@ class DriftAnalysisDriver {
     await prepareFileForAnalysis(uri, needsDiscovery: true);
     await _analyzePrepared(known);
     return known;
+  }
+
+  Future<FileState> fullyAnalyze(Uri uri) async {
+    // First, make sure that elements in this file and all imports are fully
+    // resolved.
+    final state = await resolveElements(uri);
+
+    // Then, run local analysis if needed
+    if (state.fileAnalysis == null) {
+      final analyzer = FileAnalyzer(this);
+      final result = await analyzer.runAnalysisOn(state);
+
+      state.fileAnalysis = result;
+    }
+
+    return state;
   }
 }
 

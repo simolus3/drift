@@ -1,16 +1,13 @@
 import 'package:sqlparser/sqlparser.dart';
 
-import '../../resolver.dart';
-
 /// Implements (mostly drift-specific) lints for SQL statements that aren't
 /// implementeed in `sqlparser`.
 class DriftSqlLinter {
   final AnalysisContext _context;
-  final LocalElementResolver _resolver;
 
   final List<AnalysisError> sqlParserErrors = [];
 
-  DriftSqlLinter(this._context, this._resolver);
+  DriftSqlLinter(this._context);
 
   void collectLints() {
     _context.root.acceptWithoutArg(_LintingVisitor(this));

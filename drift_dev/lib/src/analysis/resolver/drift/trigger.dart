@@ -22,7 +22,7 @@ class DriftTriggerResolver
     final context = engine.analyzeNode(stmt, source);
     reportLints(context);
 
-    TriggerTableWrite? mapWrite(TableWrite parserWrite) {
+    WrittenDriftTable? mapWrite(TableWrite parserWrite) {
       drift.UpdateKind kind;
       switch (parserWrite.kind) {
         case UpdateKind.insert:
@@ -40,7 +40,7 @@ class DriftTriggerResolver
           .whereType<DriftTable>()
           .firstWhereOrNull((e) => e.schemaName == parserWrite.table.name);
       if (table != null) {
-        return TriggerTableWrite(table, kind);
+        return WrittenDriftTable(table, kind);
       } else {
         return null;
       }
@@ -53,7 +53,7 @@ class DriftTriggerResolver
       createStmt: source.substring(stmt.firstPosition, stmt.lastPosition),
       writes: findWrittenTables(stmt)
           .map(mapWrite)
-          .whereType<TriggerTableWrite>()
+          .whereType<WrittenDriftTable>()
           .toList(),
     );
   }

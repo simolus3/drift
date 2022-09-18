@@ -1,15 +1,29 @@
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart';
 
-import '../../../../analyzer/options.dart';
+import '../../../driver/driver.dart';
 import '../../../results/results.dart';
 
 /// Converts tables and types between `drift_dev` internal reprensentation and
 /// the one used by the `sqlparser` package.
 class TypeMapping {
-  final DriftOptions options;
+  final DriftAnalysisDriver driver;
 
-  TypeMapping(this.options);
+  TypeMapping(this.driver);
+
+  SqlEngine newEngineWithTables(Iterable<DriftElement> references) {
+    final engine = driver.newSqlEngine();
+
+    for (final reference in references) {
+      if (reference is DriftTable) {
+        engine.registerTable(driver.typeMapping.asSqlParserTable(reference));
+      } else if (reference is DriftView) {
+        engine.registerView(driver.typeMapping.asSqlParserView(reference));
+      }
+    }
+
+    return engine;
+  }
 
   Table asSqlParserTable(DriftTable table) {
     return Table(
@@ -61,7 +75,7 @@ class TypeMapping {
             type: BasicType.int, hint: overrideHint ?? const IsBoolean());
       case DriftSqlType.dateTime:
         return ResolvedType(
-          type: options.storeDateTimeValuesAsText
+          type: driver.options.storeDateTimeValuesAsText
               ? BasicType.text
               : BasicType.int,
           hint: overrideHint ?? const IsDateTime(),
@@ -85,7 +99,7 @@ class TypeMapping {
       case BasicType.int:
         if (type.hint is IsBoolean) {
           return DriftSqlType.bool;
-        } else if (!options.storeDateTimeValuesAsText &&
+        } else if (!driver.options.storeDateTimeValuesAsText &&
             type.hint is IsDateTime) {
           return DriftSqlType.dateTime;
         } else if (type.hint is IsBigInt) {
@@ -95,7 +109,8 @@ class TypeMapping {
       case BasicType.real:
         return DriftSqlType.double;
       case BasicType.text:
-        if (options.storeDateTimeValuesAsText && type.hint is IsDateTime) {
+        if (driver.options.storeDateTimeValuesAsText &&
+            type.hint is IsDateTime) {
           return DriftSqlType.dateTime;
         }
 

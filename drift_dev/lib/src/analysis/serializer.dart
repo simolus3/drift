@@ -51,6 +51,7 @@ class ElementSerializer {
         'type': 'query',
         'sql': element.sql,
         'offset': element.sqlOffset,
+        'result_class': element.resultClassName,
       };
     } else if (element is DriftTrigger) {
       additionalInformation = {
@@ -404,6 +405,7 @@ class ElementDeserializer {
           references: references,
           sql: json['sql'] as String,
           sqlOffset: json['offset'] as int,
+          resultClassName: json['result_class'] as String?,
         );
       case 'trigger':
         return DriftTrigger(
@@ -413,7 +415,7 @@ class ElementDeserializer {
           createStmt: json['sql'] as String,
           writes: [
             for (final write in json['writes'])
-              TriggerTableWrite(
+              WrittenDriftTable(
                 await _readElementReference(write['table'] as Map)
                     as DriftTable,
                 UpdateKind.values.byName(write['kind'] as String),

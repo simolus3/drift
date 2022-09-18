@@ -3,15 +3,17 @@ import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
 import '../results/element.dart';
+import '../results/file_results.dart';
 import 'error.dart';
 
 class FileState {
   final Uri ownUri;
 
   DiscoveredFileState? discovery;
-  final Map<DriftElementId, ElementAnalysisState> analysis = {};
-
   final List<DriftAnalysisError> errorsDuringDiscovery = [];
+
+  final Map<DriftElementId, ElementAnalysisState> analysis = {};
+  FileAnalysisResult? fileAnalysis;
 
   FileState(this.ownUri);
 

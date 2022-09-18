@@ -20,7 +20,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     context.errors.forEach(reportLint);
 
     // Also run drift-specific lints on the query
-    final linter = DriftSqlLinter(context, this)..collectLints();
+    final linter = DriftSqlLinter(context)..collectLints();
     linter.sqlParserErrors.forEach(reportLint);
   }
 
@@ -51,18 +51,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   }
 
   SqlEngine newEngineWithTables(Iterable<DriftElement> references) {
-    final driver = resolver.driver;
-    final engine = driver.newSqlEngine();
-
-    for (final reference in references) {
-      if (reference is DriftTable) {
-        engine.registerTable(driver.typeMapping.asSqlParserTable(reference));
-      } else if (reference is DriftView) {
-        engine.registerView(driver.typeMapping.asSqlParserView(reference));
-      }
-    }
-
-    return engine;
+    return resolver.driver.typeMapping.newEngineWithTables(references);
   }
 
   Future<List<DriftElement>> resolveSqlReferences(AstNode stmt) async {
