@@ -12,6 +12,10 @@ abstract class TestExecutor {
   bool get supportsReturning => false;
   bool get supportsNestedTransactions => false;
 
+  /// Whether variables are replaced with strings by the database implementation,
+  /// causing all kinds of issues we can't avoid.
+  bool get hackyVariables => false;
+
   /// Delete the data that would be written by the executor.
   Future deleteData();
 

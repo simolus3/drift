@@ -7,6 +7,9 @@ class PgExecutor extends TestExecutor {
   bool get supportsReturning => true;
 
   @override
+  bool get hackyVariables => true;
+
+  @override
   DatabaseConnection createConnection() {
     final pgConnection = PostgreSQLConnection('localhost', 5432, 'postgres',
         username: 'postgres', password: 'postgres');
