@@ -111,4 +111,47 @@ void crudTests(TestExecutor executor) {
     expect(await db.friendsOf(1).get(), isNotEmpty);
     await executor.clearDatabaseAndClose(db);
   });
+
+  group('bind variable', () {
+    late Database database;
+
+    setUp(() => database = Database(executor.createConnection()));
+    tearDown(() => executor.clearDatabaseAndClose(database));
+
+    Future<T?> evaluate<T extends Object>(Expression<T> expr) async {
+      final query = database.selectOnly(database.users)
+        ..addColumns([expr])
+        ..limit(1);
+      final row = await query.getSingle();
+      return row.read(expr);
+    }
+
+    test('null', () {
+      expect(evaluate(Variable<String>(null)), completion(isNull));
+    });
+
+    test('string', () {
+      expect(evaluate(Variable<String>('foo bar')), completion('foo bar'));
+      expect(evaluate(Variable<String>('')), completion(''));
+    });
+
+    test('boolean', () {
+      expect(evaluate(Variable<bool>(true)), completion(isTrue));
+      expect(evaluate(Variable<bool>(false)), completion(isFalse));
+    });
+
+    test('int', () {
+      expect(evaluate(Variable<double>(42)), completion(42));
+    });
+
+    test('double', () {
+      expect(evaluate(Variable<double>(3.14)), completion(3.14));
+    });
+
+    test('Uint8List', () {
+      final list = Uint8List.fromList(List.generate(12, (index) => index));
+
+      expect(evaluate(Variable<Uint8List>(list)), completion(list));
+    });
+  });
 }

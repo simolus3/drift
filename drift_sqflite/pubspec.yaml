@@ -1,6 +1,6 @@
 name: drift_sqflite
 description: A Flutter-only implementation of a drift database, based on the `sqflite` package.
-version: 2.0.0
+version: 2.0.1
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
@@ -10,7 +10,7 @@ environment:
 
 dependencies:
   drift: ^2.0.0
-  sqflite: ^2.0.0+3
+  sqflite: ^2.1.0
   path: ^1.8.0
   flutter:
     sdk: flutter

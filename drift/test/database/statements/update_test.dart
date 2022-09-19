@@ -61,8 +61,8 @@ void main() {
 
       verify(executor.runUpdate(
           'UPDATE todos SET title = ?, content = ?, '
-          'target_date = NULL, category = NULL WHERE id = ?;',
-          ['Title', 'Updated content', 3]));
+          'target_date = ?, category = ? WHERE id = ?;',
+          ['Title', 'Updated content', null, null, 3]));
     });
 
     test('applies default values', () async {

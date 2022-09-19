@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -37,8 +37,8 @@ void main() {
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
         '(not_really_an_id, some_float, web_safe_int, custom) '
-        'VALUES (?, ?, NULL, ?)',
-        [42, 3.1415, anything]));
+        'VALUES (?, ?, ?, ?)',
+        [42, 3.1415, isNull, anything]));
   });
 
   test('can insert BigInt values', () async {
@@ -156,7 +156,8 @@ void main() {
           TodosTableCompanion.insert(content: 'content', title: Value(null)));
 
       verify(executor.runInsert(
-          'INSERT INTO todos (title, content) VALUES (NULL, ?)', ['content']));
+          'INSERT INTO todos (title, content) VALUES (?, ?)',
+          [null, 'content']));
     });
   });
 

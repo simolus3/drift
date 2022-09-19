@@ -16,6 +16,10 @@ void main() {
     expect(ctx.boundVariables, [1551297563]);
   });
 
+  test('maps null to null', () {
+    expect(Variable<Object>(null), generates('?', [null]));
+  });
+
   group('can write variables with wrong type parameter', () {
     test('true', () {
       expect(const Variable<Object>(true), generates('?', [1]));
@@ -50,16 +54,6 @@ void main() {
     test('double', () {
       expect(const Variable(12.3), generates('?', [12.3]));
     });
-  });
-
-  test('writes null directly for null values', () {
-    const variable = Variable<String>(null);
-    final ctx = GenerationContext.fromDb(TodoDb());
-
-    variable.writeInto(ctx);
-
-    expect(ctx.sql, 'NULL');
-    expect(ctx.boundVariables, isEmpty);
   });
 
   test('writes constants when variables are not supported', () {

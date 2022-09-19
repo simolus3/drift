@@ -74,7 +74,7 @@ class _SqfliteDelegate extends DatabaseDelegate {
       batch.execute(statements.statements[arg.statementIndex], arg.arguments);
     }
 
-    await batch.commit(noResult: true);
+    await batch.apply(noResult: true);
   }
 
   @override
