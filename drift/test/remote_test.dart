@@ -12,6 +12,8 @@ import 'test_utils/database_vm.dart';
 import 'test_utils/mocks.dart';
 
 void main() {
+  preferLocalSqlite3();
+
   test('closes channel in shutdown', () async {
     final controller = StreamChannelController();
     final server =

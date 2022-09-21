@@ -7,6 +7,8 @@ import 'package:path/path.dart' show join;
 import 'package:sqlite3/sqlite3.dart' hide Database;
 import 'package:test/test.dart';
 
+import '../test_utils/database_vm.dart';
+
 class DriftNativeExcecutor extends TestExecutor {
   static String fileName =
       'drift-native-tests-${DateTime.now().toIso8601String()}';
@@ -35,6 +37,8 @@ class DriftNativeExcecutor extends TestExecutor {
 }
 
 void main() {
+  preferLocalSqlite3();
+
   runAllTests(DriftNativeExcecutor());
 
   test('can save and restore a database', () async {

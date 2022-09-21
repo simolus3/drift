@@ -7,8 +7,11 @@ import 'package:test/test.dart';
 
 import '../generated/custom_tables.dart';
 import '../generated/todos.dart';
+import '../test_utils/database_vm.dart';
 
 void main() {
+  preferLocalSqlite3();
+
   test('change column types', () async {
     // Create todos table with category as text (it's an int? in Dart).
     final executor = NativeDatabase.memory(setup: (db) {

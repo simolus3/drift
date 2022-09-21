@@ -18,6 +18,7 @@ dependencies:
   sqlite3: ^1.7.1
 
 dev_dependencies:
+  archive: ^3.3.1
   build_test: ^2.0.0
   build_runner_core: ^7.0.0
   build_verify: ^3.0.0
