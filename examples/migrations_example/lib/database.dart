@@ -9,7 +9,7 @@ part 'database.g.dart';
 @DriftDatabase(include: {'tables.drift'})
 class Database extends _$Database {
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   Database(DatabaseConnection connection) : super.connect(connection);
 
@@ -57,6 +57,10 @@ class Database extends _$Database {
               break;
             case 7:
               await m.createTable(notes);
+              break;
+            case 8:
+              // Added a unique key to the users table
+              await m.alterTable(TableMigration(users));
               break;
           }
         }

@@ -117,7 +117,13 @@ class SchemaWriter {
       if (table.overrideTableConstraints != null)
         'constraints': table.overrideTableConstraints,
       if (table.primaryKey != null)
-        'explicit_pk': [...table.primaryKey!.map((c) => c.name.name)]
+        'explicit_pk': [...table.primaryKey!.map((c) => c.name.name)],
+      if (table.uniqueKeys != null && table.uniqueKeys!.isNotEmpty)
+        'unique_keys': [
+          for (final uniqueKey
+              in table.uniqueKeys ?? const <Set<DriftColumn>>[])
+            [for (final column in uniqueKey) column.name.name],
+        ]
     };
   }
 
@@ -305,12 +311,23 @@ class SchemaReader {
       };
     }
 
+    List<Set<DriftColumn>> uniqueKeys = [];
+    if (content.containsKey('unique_keys')) {
+      for (final key in content['unique_keys']) {
+        uniqueKeys.add({
+          for (final columnName in key)
+            columns.singleWhere((c) => c.name.name == columnName)
+        });
+      }
+    }
+
     return DriftTable(
       sqlName: sqlName,
       overriddenName: pascalCase,
       columns: columns,
       dartTypeName: '${pascalCase}Data',
       primaryKey: explicitPk,
+      uniqueKeys: uniqueKeys,
       overrideTableConstraints: tableConstraints,
       overrideDontWriteConstraints: content['was_declared_in_moor'] as bool?,
       overrideWithoutRowId: withoutRowId,

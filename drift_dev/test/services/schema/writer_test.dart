@@ -50,6 +50,9 @@ class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get settings => text().named('setting').map(const SettingsConverter())();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [{name, settings}];
 }
 
 class Settings {}
@@ -202,7 +205,8 @@ const expected = r'''
                         }
                     }
                 ],
-                "is_virtual": false
+                "is_virtual": false,
+                "unique_keys": [["name", "setting"]]
             }
         },
         {

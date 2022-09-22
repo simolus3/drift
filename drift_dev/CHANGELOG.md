@@ -1,3 +1,7 @@
+## 2.3.0-dev
+
+- Serialize `uniqueKeys` overrides into a database schema.
+
 ## 2.2.0-dev
 
 - Fix the nullability of columns generated for Dart-defined views.

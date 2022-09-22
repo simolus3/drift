@@ -10,4 +10,10 @@ class Users extends Table {
   DateTimeColumn get birthday => dateTime().nullable()();
 
   IntColumn get nextUser => integer().nullable().references(Users, #id)();
+
+  // This unique constraint was added in schema version 8
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {name, birthday}
+      ];
 }

@@ -8,6 +8,7 @@ import 'schema_v7.dart' as v7;
 import 'schema_v3.dart' as v3;
 import 'schema_v4.dart' as v4;
 import 'schema_v1.dart' as v1;
+import 'schema_v8.dart' as v8;
 import 'schema_v5.dart' as v5;
 
 class GeneratedHelper implements SchemaInstantiationHelper {
@@ -26,10 +27,12 @@ class GeneratedHelper implements SchemaInstantiationHelper {
         return v4.DatabaseAtV4(db);
       case 1:
         return v1.DatabaseAtV1(db);
+      case 8:
+        return v8.DatabaseAtV8(db);
       case 5:
         return v5.DatabaseAtV5(db);
       default:
-        throw MissingSchemaException(version, const {6, 2, 7, 3, 4, 1, 5});
+        throw MissingSchemaException(version, const {6, 2, 7, 3, 4, 1, 8, 5});
     }
   }
 }

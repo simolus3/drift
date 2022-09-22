@@ -1,6 +1,6 @@
 ## 2.2.0-dev
 
-- Always escape column names, avoiding the costs or using a regular expression
+- Always escape column names, avoiding the costs of using a regular expression
   to check whether they need to be escaped.
 
 ## 2.1.0
