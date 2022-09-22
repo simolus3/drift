@@ -1,4 +1,3 @@
-import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../model/model.dart';
@@ -32,8 +31,8 @@ String defaultConstraints(DriftColumn column) {
 
   for (final feature in column.features) {
     if (feature is ResolvedDartForeignKeyReference) {
-      final tableName = escapeIfNeeded(feature.otherTable.sqlName);
-      final columnName = escapeIfNeeded(feature.otherColumn.name.name);
+      final tableName = '"${feature.otherTable.sqlName}"';
+      final columnName = '"${feature.otherColumn.name.name}"';
 
       var constraint = 'REFERENCES $tableName ($columnName)';
 
@@ -55,7 +54,7 @@ String defaultConstraints(DriftColumn column) {
   }
 
   if (column.type == DriftSqlType.bool) {
-    final name = escapeIfNeeded(column.name.name);
+    final name = '"${column.name.name}"';
     defaultConstraints.add('CHECK ($name IN (0, 1))');
   }
 

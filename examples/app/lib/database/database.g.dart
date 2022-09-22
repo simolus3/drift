@@ -402,7 +402,7 @@ class $TodoEntriesTable extends TodoEntries
       'category', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES categories (id)');
+      defaultConstraints: 'REFERENCES "categories" ("id")');
   final VerificationMeta _dueDateMeta = const VerificationMeta('dueDate');
   @override
   late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(

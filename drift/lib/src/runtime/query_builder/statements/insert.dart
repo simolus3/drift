@@ -156,7 +156,7 @@ class InsertStatement<T extends Table, D> {
       ..write(_insertKeywords[
           ctx.dialect == SqlDialect.postgres ? InsertMode.insert : mode])
       ..write(' INTO ')
-      ..write(table.aliasedName)
+      ..write(ctx.identifier(table.aliasedName))
       ..write(' ');
 
     if (map.isEmpty) {
@@ -210,7 +210,7 @@ class InsertStatement<T extends Table, D> {
 
         first = true;
         for (final update in updateSet.entries) {
-          final column = escapeIfNeeded(update.key);
+          final column = ctx.identifier(update.key);
 
           if (!first) ctx.buffer.write(', ');
           ctx.buffer.write('$column = ');
@@ -260,7 +260,7 @@ class InsertStatement<T extends Table, D> {
   /// Writes column names and values from the [map].
   @internal
   void writeInsertable(GenerationContext ctx, Map<String, Expression> map) {
-    final columns = map.keys.map(escapeIfNeeded);
+    final columns = map.keys.map(ctx.identifier);
 
     ctx.buffer
       ..write('(')

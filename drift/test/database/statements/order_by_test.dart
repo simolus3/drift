@@ -19,7 +19,7 @@ void main() {
     query.orderBy([(tbl) => OrderingTerm(expression: tbl.name)]);
     await query.get();
     verify(executor.runSelect(
-      'SELECT * FROM users ORDER BY name ASC;',
+      'SELECT * FROM "users" ORDER BY "name" ASC;',
       argThat(isEmpty),
     ));
   });
@@ -34,7 +34,7 @@ void main() {
     ]);
     await query.get();
     verify(executor.runSelect(
-      'SELECT * FROM users ORDER BY name ASC NULLS LAST;',
+      'SELECT * FROM "users" ORDER BY "name" ASC NULLS LAST;',
       argThat(isEmpty),
     ));
   });
@@ -49,7 +49,7 @@ void main() {
     ]);
     await query.get();
     verify(executor.runSelect(
-      'SELECT * FROM users ORDER BY name ASC NULLS FIRST;',
+      'SELECT * FROM "users" ORDER BY "name" ASC NULLS FIRST;',
       argThat(isEmpty),
     ));
   });
@@ -71,7 +71,7 @@ void main() {
     ]);
     await query.get();
     verify(executor.runSelect(
-      'SELECT * FROM users ORDER BY name ASC NULLS FIRST, creation_time ASC, profile_picture ASC NULLS LAST;',
+      'SELECT * FROM "users" ORDER BY "name" ASC NULLS FIRST, "creation_time" ASC, "profile_picture" ASC NULLS LAST;',
       argThat(isEmpty),
     ));
   });
@@ -79,10 +79,10 @@ void main() {
   test('works with helper factories', () {
     final table = db.users;
 
-    expect(OrderingTerm.asc(table.id), generates('id ASC'));
+    expect(OrderingTerm.asc(table.id), generates('"id" ASC'));
     expect(OrderingTerm.asc(table.id, nulls: NullsOrder.last),
-        generates('id ASC NULLS LAST'));
+        generates('"id" ASC NULLS LAST'));
     expect(OrderingTerm.desc(table.id, nulls: NullsOrder.first),
-        generates('id DESC NULLS FIRST'));
+        generates('"id" DESC NULLS FIRST'));
   });
 }

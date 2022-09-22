@@ -23,12 +23,12 @@ void main() {
     ]).get();
 
     verify(executor.runSelect(
-        'SELECT t.id AS "t.id", t.title AS "t.title", '
-        't.content AS "t.content", t.target_date AS "t.target_date", '
-        't.category AS "t.category", c.id AS "c.id", c."desc" AS "c.desc", '
-        'c.priority AS "c.priority", '
-        'c.description_in_upper_case AS "c.description_in_upper_case" '
-        'FROM todos t LEFT OUTER JOIN categories c ON c.id = t.category;',
+        'SELECT "t"."id" AS "t.id", "t"."title" AS "t.title", '
+        '"t"."content" AS "t.content", "t"."target_date" AS "t.target_date", '
+        '"t"."category" AS "t.category", "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
+        '"c"."priority" AS "c.priority", '
+        '"c"."description_in_upper_case" AS "c.description_in_upper_case" '
+        'FROM "todos" "t" LEFT OUTER JOIN "categories" "c" ON "c"."id" = "t"."category";',
         argThat(isEmpty)));
   });
 
@@ -126,7 +126,7 @@ void main() {
         [innerJoin(categories, categories.id.equalsExp(todos.category))]).get();
 
     verify(executor.runSelect(
-        argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
+        argThat(contains('WHERE "t"."id" < ? ORDER BY "t"."title" ASC')), [3]));
   });
 
   test('limit clause is kept', () async {
@@ -189,8 +189,8 @@ void main() {
 
     await query.get();
 
-    verify(executor
-        .runSelect(argThat(contains('WHERE t.id < ? AND c.id >= ?')), [5, 10]));
+    verify(executor.runSelect(
+        argThat(contains('WHERE "t"."id" < ? AND "c"."id" >= ?')), [5, 10]));
   });
 
   test('supports custom columns and results', () async {
@@ -214,10 +214,10 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-      'SELECT c.id AS "c.id", c."desc" AS "c.desc", '
-      'c.priority AS "c.priority", c.description_in_upper_case AS '
-      '"c.description_in_upper_case", LENGTH(c."desc") AS "c4" '
-      'FROM categories c;',
+      'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
+      '"c"."priority" AS "c.priority", "c"."description_in_upper_case" AS '
+      '"c.description_in_upper_case", LENGTH("c"."desc") AS "c4" '
+      'FROM "categories" "c";',
       [],
     ));
 
@@ -263,11 +263,11 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-      'SELECT c.id AS "c.id", c."desc" AS "c.desc", c.priority AS "c.priority"'
-      ', c.description_in_upper_case AS "c.description_in_upper_case", '
-      'LENGTH(c."desc") AS "c4" '
-      'FROM categories c '
-      'INNER JOIN todos t ON c.id = t.category;',
+      'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", "c"."priority" AS "c.priority"'
+      ', "c"."description_in_upper_case" AS "c.description_in_upper_case", '
+      'LENGTH("c"."desc") AS "c4" '
+      'FROM "categories" "c" '
+      'INNER JOIN "todos" "t" ON "c"."id" = "t"."category";',
       [],
     ));
 
@@ -319,12 +319,12 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT c.id AS "c.id", c."desc" AS "c.desc", '
-        'c.priority AS "c.priority", '
-        'c.description_in_upper_case AS "c.description_in_upper_case", '
-        'COUNT(t.id) AS "c4" '
-        'FROM categories c INNER JOIN todos t ON t.category = c.id '
-        'GROUP BY c.id HAVING COUNT(t.id) >= ?;',
+        'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
+        '"c"."priority" AS "c.priority", '
+        '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
+        'COUNT("t"."id") AS "c4" '
+        'FROM "categories" "c" INNER JOIN "todos" "t" ON "t"."category" = "c"."id" '
+        'GROUP BY "c"."id" HAVING COUNT("t"."id") >= ?;',
         [10]));
 
     expect(result.readTableOrNull(todos), isNull);
@@ -356,8 +356,8 @@ void main() {
     final row = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT AVG(LENGTH(todos.content)) AS "c0", '
-        'MAX(LENGTH(todos.content)) AS "c1" FROM todos;',
+        'SELECT AVG(LENGTH("todos"."content")) AS "c0", '
+        'MAX(LENGTH("todos"."content")) AS "c1" FROM "todos";',
         []));
 
     expect(row.read(avgLength), 3.0);
@@ -392,9 +392,9 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT categories.id AS "categories.id", COUNT(todos.id) AS "c1" '
-        'FROM categories INNER JOIN todos ON todos.category = categories.id '
-        'GROUP BY categories.id;',
+        'SELECT "categories"."id" AS "categories.id", COUNT("todos"."id") AS "c1" '
+        'FROM "categories" INNER JOIN "todos" ON "todos"."category" = "categories"."id" '
+        'GROUP BY "categories"."id";',
         []));
 
     expect(result.read(categories.id), equals(2));
@@ -428,9 +428,9 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT categories.id AS "categories.id", COUNT(todos.id) AS "c1" '
-        'FROM categories INNER JOIN todos ON todos.category = categories.id '
-        'GROUP BY categories.id;',
+        'SELECT "categories"."id" AS "categories.id", COUNT("todos"."id") AS "c1" '
+        'FROM "categories" INNER JOIN "todos" ON "todos"."category" = "categories"."id" '
+        'GROUP BY "categories"."id";',
         []));
 
     expect(result.read(categories.id), equals(2));

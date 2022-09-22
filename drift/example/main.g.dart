@@ -386,7 +386,7 @@ class $TodoItemsTable extends TodoItems
       'category_id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
-      defaultConstraints: 'REFERENCES todo_categories (id)');
+      defaultConstraints: 'REFERENCES "todo_categories" ("id")');
   final VerificationMeta _generatedTextMeta =
       const VerificationMeta('generatedText');
   @override

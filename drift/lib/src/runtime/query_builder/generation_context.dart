@@ -77,4 +77,8 @@ class GenerationContext {
 
   /// Shortcut to add a single space to the buffer because it's used very often.
   void writeWhitespace() => buffer.write(' ');
+
+  /// Turns [columnName] into a safe SQL identifier by wrapping it in double
+  /// quotes.
+  String identifier(String columnName) => '"$columnName"';
 }

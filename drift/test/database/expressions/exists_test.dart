@@ -13,7 +13,8 @@ void main() {
 
     expect(
       existsExpression,
-      generates('EXISTS (SELECT * FROM users WHERE users.is_awesome = ?)', [1]),
+      generates(
+          'EXISTS (SELECT * FROM "users" WHERE "users"."is_awesome" = ?)', [1]),
     );
   });
 
@@ -23,7 +24,7 @@ void main() {
 
     expect(
       notExistsExpression,
-      generates('NOT EXISTS (SELECT * FROM users)'),
+      generates('NOT EXISTS (SELECT * FROM "users")'),
     );
   });
 }

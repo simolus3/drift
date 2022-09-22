@@ -28,7 +28,8 @@ void main() {
           ));
 
       verify(executor.runUpdate(
-          'UPDATE todos SET title = ?, category = ?;', ['Updated title', 3]));
+          'UPDATE "todos" SET "title" = ?, "category" = ?;',
+          ['Updated title', 3]));
     });
 
     test('with a WHERE clause', () async {
@@ -37,7 +38,8 @@ void main() {
           .write(const TodosTableCompanion(title: Value('Changed title')));
 
       verify(executor.runUpdate(
-          'UPDATE todos SET title = ? WHERE id < ?;', ['Changed title', 50]));
+          'UPDATE "todos" SET "title" = ? WHERE "id" < ?;',
+          ['Changed title', 50]));
     });
 
     test('with escaped column names', () async {
@@ -46,7 +48,7 @@ void main() {
           .write(PureDefaultsCompanion(txt: Value(MyCustomObject('foo'))));
 
       verify(executor
-          .runUpdate('UPDATE pure_defaults SET "insert" = ?;', ['foo']));
+          .runUpdate('UPDATE "pure_defaults" SET "insert" = ?;', ['foo']));
     });
   });
 
@@ -60,8 +62,8 @@ void main() {
           ));
 
       verify(executor.runUpdate(
-          'UPDATE todos SET title = ?, content = ?, '
-          'target_date = ?, category = ? WHERE id = ?;',
+          'UPDATE "todos" SET "title" = ?, "content" = ?, '
+          '"target_date" = ?, "category" = ? WHERE "id" = ?;',
           ['Title', 'Updated content', null, null, 3]));
     });
 
@@ -75,9 +77,9 @@ void main() {
           );
 
       verify(executor.runUpdate(
-          'UPDATE users SET name = ?, profile_picture = ?, is_awesome = 1, '
-          'creation_time = CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'
-          ' WHERE id = ?;',
+          'UPDATE "users" SET "name" = ?, "profile_picture" = ?, "is_awesome" = 1, '
+          '"creation_time" = CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'
+          ' WHERE "id" = ?;',
           ['Hummingbird', Uint8List(0), 3]));
     });
   });
@@ -121,22 +123,22 @@ void main() {
         ));
 
     verify(executor.runUpdate(
-      'UPDATE todos SET content = content, target_date = target_date + ? '
-      'WHERE id = ?;',
+      'UPDATE "todos" SET "content" = "content", "target_date" = "target_date" + ? '
+      'WHERE "id" = ?;',
       argThat(equals([86400, 4])),
     ));
   });
 
   group('custom updates', () {
     test('execute the correct sql', () async {
-      await db.customUpdate('DELETE FROM users');
+      await db.customUpdate('DELETE FROM "users"');
 
-      verify(executor.runUpdate('DELETE FROM users', []));
+      verify(executor.runUpdate('DELETE FROM "users"', []));
     });
 
     test('map the variables correctly', () async {
       await db.customUpdate(
-          'DELETE FROM users WHERE name = ? AND birthdate < ?',
+          'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
           variables: [
             Variable.withString('Name'),
             Variable.withDateTime(
@@ -144,7 +146,7 @@ void main() {
           ]);
 
       verify(executor.runUpdate(
-          'DELETE FROM users WHERE name = ? AND birthdate < ?',
+          'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
           ['Name', 1551297563]));
     });
 
@@ -166,7 +168,7 @@ void main() {
     test('update()', () async {
       await db.users.update().write(const UsersCompanion(id: Value(3)));
 
-      verify(executor.runUpdate('UPDATE users SET id = ?;', [3]));
+      verify(executor.runUpdate('UPDATE "users" SET "id" = ?;', [3]));
     });
 
     test('replace', () async {
@@ -174,7 +176,7 @@ void main() {
           id: Value(3), description: Value('new name')));
 
       verify(executor.runUpdate(
-          'UPDATE categories SET "desc" = ?, priority = 0 WHERE id = ?;',
+          'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
           ['new name', 3]));
     });
   });
@@ -195,8 +197,8 @@ void main() {
         .update()
         .writeReturning(const CategoriesCompanion(description: Value('test')));
 
-    verify(executor
-        .runSelect('UPDATE categories SET "desc" = ? RETURNING *;', ['test']));
+    verify(executor.runSelect(
+        'UPDATE "categories" SET "desc" = ? RETURNING *;', ['test']));
     verify(streamQueries.handleTableUpdates(
         {TableUpdate.onTable(db.categories, kind: UpdateKind.update)}));
 

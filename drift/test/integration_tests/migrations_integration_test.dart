@@ -53,7 +53,7 @@ void main() {
         .map((row) => row.read<String>('sql'))
         .getSingle();
 
-    expect(createStmt, contains('category INT'));
+    expect(createStmt, contains('"category" INT'));
 
     final item = await db.select(db.todosTable).getSingle();
     expect(item.category, 12);
@@ -102,7 +102,7 @@ void main() {
 
     expect(
       createStmt,
-      allOf(contains('category INT'), isNot(contains('category_old'))),
+      allOf(contains('"category" INT'), isNot(contains('category_old'))),
     );
 
     final item = await db.select(db.todosTable).getSingle();

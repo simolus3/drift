@@ -200,7 +200,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES users (id)');
+      defaultConstraints: 'REFERENCES "users" ("id")');
   @override
   List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override

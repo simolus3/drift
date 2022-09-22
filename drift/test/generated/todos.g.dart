@@ -495,7 +495,7 @@ class $TodosTableTable extends TodosTable
       'category', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES categories (id)');
+      defaultConstraints: 'REFERENCES "categories" ("id")');
   @override
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
@@ -777,7 +777,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'is_awesome', aliasedName, false,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: 'CHECK (is_awesome IN (0, 1))',
+      defaultConstraints: 'CHECK ("is_awesome" IN (0, 1))',
       defaultValue: const Constant(true));
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');

@@ -20,40 +20,40 @@ void main() {
 
       // should create todos, categories, users and shared_todos table
       verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS todos '
-          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title TEXT NULL, '
-          'content TEXT NOT NULL, target_date INTEGER NULL UNIQUE, '
-          'category INTEGER NULL REFERENCES categories (id), '
-          'UNIQUE (title, category), UNIQUE (title, target_date));',
+          'CREATE TABLE IF NOT EXISTS "todos" '
+          '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, '
+          '"content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, '
+          '"category" INTEGER NULL REFERENCES "categories" ("id"), '
+          'UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS categories '
-          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          'CREATE TABLE IF NOT EXISTS "categories" '
+          '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"desc" TEXT NOT NULL UNIQUE, '
-          'priority INTEGER NOT NULL DEFAULT 0, '
-          'description_in_upper_case TEXT NOT NULL GENERATED ALWAYS AS '
+          '"priority" INTEGER NOT NULL DEFAULT 0, '
+          '"description_in_upper_case" TEXT NOT NULL GENERATED ALWAYS AS '
           '(UPPER("desc")) VIRTUAL'
           ');',
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS users ('
-          'id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          'name TEXT NOT NULL UNIQUE, '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
-          'profile_picture BLOB NOT NULL, '
-          'creation_time INTEGER NOT NULL '
+          'CREATE TABLE IF NOT EXISTS "users" ('
+          '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          '"name" TEXT NOT NULL UNIQUE, '
+          '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)), '
+          '"profile_picture" BLOB NOT NULL, '
+          '"creation_time" INTEGER NOT NULL '
           "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
-          'CHECK(creation_time > -631152000)'
+          'CHECK("creation_time" > -631152000)'
           ');',
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS shared_todos ('
-          'todo INTEGER NOT NULL, '
-          'user INTEGER NOT NULL, '
-          'PRIMARY KEY (todo, user), '
+          'CREATE TABLE IF NOT EXISTS "shared_todos" ('
+          '"todo" INTEGER NOT NULL, '
+          '"user" INTEGER NOT NULL, '
+          'PRIMARY KEY ("todo", "user"), '
           'FOREIGN KEY (todo) REFERENCES todos(id), '
           'FOREIGN KEY (user) REFERENCES users(id)'
           ');',
@@ -61,33 +61,33 @@ void main() {
 
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS '
-          'table_without_p_k ('
-          'not_really_an_id INTEGER NOT NULL, '
-          'some_float REAL NOT NULL, '
-          'web_safe_int INTEGER NULL, '
-          'custom TEXT NOT NULL'
+          '"table_without_p_k" ('
+          '"not_really_an_id" INTEGER NOT NULL, '
+          '"some_float" REAL NOT NULL, '
+          '"web_safe_int" INTEGER NULL, '
+          '"custom" TEXT NOT NULL'
           ');',
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS category_todo_count_view '
-          '(description, item_count) AS SELECT '
-          't1."desc" || \'!\' AS "description", '
-          'COUNT(t0.id) AS "item_count" '
-          'FROM categories t1 '
-          'INNER JOIN todos t0 '
-          'ON t0.category = t1.id '
-          'GROUP BY t1.id',
+          'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
+          '("description", "item_count") AS SELECT '
+          '"t1"."desc" || \'!\' AS "description", '
+          'COUNT("t0"."id") AS "item_count" '
+          'FROM "categories" "t1" '
+          'INNER JOIN "todos" "t0" '
+          'ON "t0"."category" = "t1"."id" '
+          'GROUP BY "t1"."id"',
           []));
 
       verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS todo_with_category_view '
-          '(title, "desc") AS SELECT '
-          't0.title AS "title", '
-          't1."desc" AS "desc" '
-          'FROM todos t0 '
-          'INNER JOIN categories t1 '
-          'ON t1.id = t0.category',
+          'CREATE VIEW IF NOT EXISTS "todo_with_category_view" '
+          '("title", "desc") AS SELECT '
+          '"t0"."title" AS "title", '
+          '"t1"."desc" AS "desc" '
+          'FROM "todos" "t0" '
+          'INNER JOIN "categories" "t1" '
+          'ON "t1"."id" = "t0"."category"',
           []));
     });
 
@@ -95,14 +95,14 @@ void main() {
       await db.createMigrator().createTable(db.users);
 
       verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS users '
-          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          'name TEXT NOT NULL UNIQUE, '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
-          'profile_picture BLOB NOT NULL, '
-          'creation_time INTEGER NOT NULL '
+          'CREATE TABLE IF NOT EXISTS "users" '
+          '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          '"name" TEXT NOT NULL UNIQUE, '
+          '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)), '
+          '"profile_picture" BLOB NOT NULL, '
+          '"creation_time" INTEGER NOT NULL '
           "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
-          'CHECK(creation_time > -631152000)'
+          'CHECK("creation_time" > -631152000)'
           ');',
           []));
     });
@@ -111,21 +111,21 @@ void main() {
       await db.createMigrator().create(db.categoryTodoCountView);
 
       verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS category_todo_count_view '
-          '(description, item_count) AS SELECT '
-          't1."desc" || \'!\' AS "description", '
-          'COUNT(t0.id) AS "item_count" '
-          'FROM categories t1 '
-          'INNER JOIN todos t0 '
-          'ON t0.category = t1.id '
-          'GROUP BY t1.id',
+          'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
+          '("description", "item_count") AS SELECT '
+          '"t1"."desc" || \'!\' AS "description", '
+          'COUNT("t0"."id") AS "item_count" '
+          'FROM "categories" "t1" '
+          'INNER JOIN "todos" "t0" '
+          'ON "t0"."category" = "t1"."id" '
+          'GROUP BY "t1"."id"',
           []));
     });
 
     test('drops tables', () async {
       await db.createMigrator().deleteTable('users');
 
-      verify(mockExecutor.runCustom('DROP TABLE IF EXISTS users;'));
+      verify(mockExecutor.runCustom('DROP TABLE IF EXISTS "users";'));
     });
 
     test('drops indices', () async {
@@ -137,15 +137,15 @@ void main() {
     test('drops triggers', () async {
       await db.createMigrator().drop(Trigger('foo', 'my_trigger'));
 
-      verify(mockExecutor.runCustom('DROP TRIGGER IF EXISTS my_trigger;'));
+      verify(mockExecutor.runCustom('DROP TRIGGER IF EXISTS "my_trigger";'));
     });
 
     test('adds columns', () async {
       await db.createMigrator().addColumn(db.users, db.users.isAwesome);
 
-      verify(mockExecutor.runCustom('ALTER TABLE users ADD COLUMN '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 '
-          'CHECK (is_awesome IN (0, 1));'));
+      verify(mockExecutor.runCustom('ALTER TABLE "users" ADD COLUMN '
+          '"is_awesome" INTEGER NOT NULL DEFAULT 1 '
+          'CHECK ("is_awesome" IN (0, 1));'));
     });
 
     test('renames columns', () async {
@@ -154,7 +154,7 @@ void main() {
           .renameColumn(db.users, 'my name', db.users.name);
 
       verify(mockExecutor
-          .runCustom('ALTER TABLE users RENAME COLUMN "my name" TO name;'));
+          .runCustom('ALTER TABLE "users" RENAME COLUMN "my name" TO "name";'));
     });
   });
 
@@ -207,7 +207,7 @@ void main() {
 
     // This should not attempt to generate a parameter (`?`)
     // https://github.com/simolus3/drift/discussions/1936
-    verify(executor.runCustom(argThat(contains('CHECK(foo < 3)')), []));
+    verify(executor.runCustom(argThat(contains('CHECK("foo" < 3)')), []));
   });
 }
 

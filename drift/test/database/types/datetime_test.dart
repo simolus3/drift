@@ -15,8 +15,8 @@ void main() {
     nonNull.writeColumnDefinition(nonNullQuery);
     nullable.writeColumnDefinition(nullableQuery);
 
-    expect(nullableQuery.sql, equals('name INTEGER NULL'));
-    expect(nonNullQuery.sql, equals('name INTEGER NOT NULL'));
+    expect(nullableQuery.sql, equals('"name" INTEGER NULL'));
+    expect(nonNullQuery.sql, equals('"name" INTEGER NOT NULL'));
   });
 
   group('mapping datetime values', () {

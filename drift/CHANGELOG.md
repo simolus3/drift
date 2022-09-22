@@ -1,3 +1,8 @@
+## 2.2.0-dev
+
+- Always escape column names, avoiding the costs or using a regular expression
+  to check whether they need to be escaped.
+
 ## 2.1.0
 
 - Improve stack traces when using `watchSingle()` with a stream emitting a non-

@@ -24,7 +24,7 @@ void main() {
     test('without any constraints', () async {
       await db.delete(db.users).go();
 
-      verify(executor.runDelete('DELETE FROM users;', argThat(isEmpty)));
+      verify(executor.runDelete('DELETE FROM "users";', argThat(isEmpty)));
     });
 
     test('for complex components', () async {
@@ -33,7 +33,8 @@ void main() {
           .go();
 
       verify(executor.runDelete(
-          'DELETE FROM users WHERE NOT is_awesome OR id < ?;', const [100]));
+          'DELETE FROM "users" WHERE NOT "is_awesome" OR "id" < ?;',
+          const [100]));
     });
 
     test('to delete an entity via a dataclasss', () async {
@@ -42,7 +43,7 @@ void main() {
           .delete(const SharedTodo(todo: 3, user: 2));
 
       verify(executor.runDelete(
-        'DELETE FROM shared_todos WHERE todo = ? AND user = ?;',
+        'DELETE FROM "shared_todos" WHERE "todo" = ? AND "user" = ?;',
         const [3, 2],
       ));
     });
@@ -59,8 +60,8 @@ void main() {
             .delete(db.todosTable)
             .deleteReturning(const TodosTableCompanion(id: Value(10)));
 
-        verify(executor
-            .runSelect('DELETE FROM todos WHERE id = ? RETURNING *;', [10]));
+        verify(executor.runSelect(
+            'DELETE FROM "todos" WHERE "id" = ? RETURNING *;', [10]));
         verify(streamQueries.handleTableUpdates(
             {TableUpdate.onTable(db.todosTable, kind: UpdateKind.delete)}));
         expect(returnedValue, const TodoEntry(id: 10, content: 'Content'));
@@ -70,7 +71,7 @@ void main() {
         final rows = await db.delete(db.users).goAndReturn();
 
         expect(rows, isEmpty);
-        verify(executor.runSelect('DELETE FROM users RETURNING *;', []));
+        verify(executor.runSelect('DELETE FROM "users" RETURNING *;', []));
         verifyNever(streamQueries.handleTableUpdates(any));
       });
     });
@@ -107,19 +108,21 @@ void main() {
     test('delete()', () async {
       await db.users.delete().go();
 
-      verify(executor.runDelete('DELETE FROM users;', const []));
+      verify(executor.runDelete('DELETE FROM "users";', const []));
     });
 
     test('deleteOne()', () async {
       await db.users.deleteOne(const UsersCompanion(id: Value(3)));
 
-      verify(executor.runDelete('DELETE FROM users WHERE id = ?;', const [3]));
+      verify(
+          executor.runDelete('DELETE FROM "users" WHERE "id" = ?;', const [3]));
     });
 
     test('deleteWhere', () async {
       await db.users.deleteWhere((tbl) => tbl.id.isSmallerThanValue(3));
 
-      verify(executor.runDelete('DELETE FROM users WHERE id < ?;', const [3]));
+      verify(
+          executor.runDelete('DELETE FROM "users" WHERE "id" < ?;', const [3]));
     });
   });
 }

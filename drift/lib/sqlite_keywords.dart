@@ -1,4 +1,6 @@
 /// Provides utilities around sql keywords, like optional escaping etc.
+@Deprecated('Drift is no longer using this library and will remove it in the '
+    'next breaking release')
 library drift.sqlite_keywords;
 
 import 'package:drift/drift.dart';
