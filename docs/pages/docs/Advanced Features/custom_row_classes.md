@@ -83,6 +83,13 @@ CREATE TABLE users(
 ) WITH User;
 ```
 
+This feature is also supported for views. Simply add the `WITH ClassName` syntax
+after the name of the view in the `CREATE VIEW` statement:
+
+```sql
+CREATE VIEW my_view WITH ExistingClass AS SELECT ...
+```
+
 ## Inserts and updates with custom classes
 
 In most cases, generated companion classes are the right tool for updates and inserts.
