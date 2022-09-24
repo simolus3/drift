@@ -30,6 +30,7 @@ drift features:
 Additional examples from our awesome community are available as well:
 
 - [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an animated version of the todo app available [here](https://github.com/abdelrahmanelmarakby/todo_with_moor_and_animation).
+- [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an hotel booking app with GetX version with diffrent relationships available [here](https://github.com/abdelrahmanelmarakby/hotels_booking).
 - The [HackerNews reader app](https://github.com/filiph/hn_app) from the [Boring Flutter Show](https://www.youtube.com/playlist?list=PLjxrf2q8roU3ahJVrSgAnPjzkpGmL9Czl)
   also uses drift to keep a list of favorite articles.
 
