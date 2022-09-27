@@ -132,18 +132,17 @@ class _GeneratesConstDataClasses extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
-      if (expectedWithConstConstructor.contains(definedClass.name2.lexeme)) {
+      if (expectedWithConstConstructor.contains(definedClass.name.lexeme)) {
         final constructor = definedClass.members
             .whereType<ConstructorDeclaration>()
-            .firstWhereOrNull((e) => e.name2 == null);
+            .firstWhereOrNull((e) => e.name == null);
         if (constructor?.constKeyword == null) {
-          matchState['desc'] =
-              'Constructor ${definedClass.name2.lexeme} is not '
+          matchState['desc'] = 'Constructor ${definedClass.name.lexeme} is not '
               'const.';
           return false;
         }
 
-        remaining.remove(definedClass.name2.lexeme);
+        remaining.remove(definedClass.name.lexeme);
       }
     }
 
