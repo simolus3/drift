@@ -80,19 +80,19 @@ class _GeneratesWithoutFinalFields extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
-      final definedClassName = definedClass.name2.lexeme;
+      final definedClassName = definedClass.name.lexeme;
       if (expectedWithoutFinals.contains(definedClassName)) {
         for (final member in definedClass.members) {
           if (member is FieldDeclaration) {
             if (member.fields.isFinal) {
               matchState['desc'] =
-                  'Field ${member.fields.variables.first.name2.lexeme} in '
+                  'Field ${member.fields.variables.first.name.lexeme} in '
                   '$definedClassName is final.';
               return false;
             }
           } else if (member is ConstructorDeclaration) {
             if (member.constKeyword != null) {
-              matchState['desc'] = 'Constructor ${member.name2?.lexeme ?? ''} '
+              matchState['desc'] = 'Constructor ${member.name?.lexeme ?? ''} '
                   'in $definedClassName is constant.';
               return false;
             }

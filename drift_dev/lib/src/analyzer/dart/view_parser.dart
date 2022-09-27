@@ -235,7 +235,7 @@ class ViewParser {
           final type = tables.firstWhereOrNull(
               (tbl) => tbl.fromClass!.name == node.returnType.toString());
           if (type != null) {
-            final name = node.name2.lexeme;
+            final name = node.name.lexeme;
             return TableReferenceInDartView(type, name);
           }
         }
