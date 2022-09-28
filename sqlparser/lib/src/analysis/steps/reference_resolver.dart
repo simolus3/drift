@@ -123,7 +123,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     if (columns != null) {
       final columnNames =
           columns.map((c) => c.humanReadableDescription()).join(', ');
-      msg.write(' Thesecolumns are available: $columnNames');
+      msg.write(' These columns are available: $columnNames');
     }
 
     context.reportError(AnalysisError(
