@@ -28,7 +28,7 @@ void main() {
       expect(serializer.fromJson<double?>(3), 3.0);
       expect(serializer.fromJson<DateTime?>(0),
           DateTime.fromMillisecondsSinceEpoch(0));
-      expect(serializer.fromJson<Uint8List?>([0, 1]), [0, 1]);
+      expect(serializer.fromJson<Uint8List?>(const [0, 1]), const [0, 1]);
     });
 
     test('can be overridden globally', () {
@@ -44,7 +44,7 @@ void main() {
       );
       expect(
         entry.toJson(),
-        {
+        const {
           'id': 'foo',
           'title': 'foo',
           'content': 'foo',
@@ -61,7 +61,7 @@ void main() {
         id: 3,
         name: 'Username',
         isAwesome: true,
-        profilePicture: Uint8List.fromList([1, 2, 3, 4]),
+        profilePicture: Uint8List.fromList(const [1, 2, 3, 4]),
         creationTime: DateTime.now(),
       );
 
