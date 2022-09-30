@@ -164,6 +164,13 @@ void main() {
       expect(first, isNot(equals(different)));
     });
   });
+  test(
+    'Insertable should have a const constructor so a subclass can be a const',
+    () {
+      const insertable = _MyInsertable();
+      insertable.toColumns(false);
+    },
+  );
 }
 
 class _MySerializer extends ValueSerializer {
@@ -176,4 +183,11 @@ class _MySerializer extends ValueSerializer {
   dynamic toJson<T>(T value) {
     return 'foo';
   }
+}
+
+class _MyInsertable extends Insertable<void> {
+  const _MyInsertable();
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) => const {};
 }
