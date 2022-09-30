@@ -9,6 +9,9 @@ import 'package:meta/meta.dart';
 /// [D] is the associated data class.
 @optionalTypeArgs
 abstract class Insertable<D> {
+  /// Constant constructor so the classes that extend this can be const.
+  const Insertable();
+
   /// Converts this object into a map of column names to expressions to insert
   /// or update.
   ///
