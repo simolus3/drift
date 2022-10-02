@@ -1,7 +1,12 @@
 import 'package:build/build.dart';
+import 'package:dart_style/dart_style.dart';
 
 import '../../analysis/driver/driver.dart';
+import '../../analysis/results/results.dart';
 import '../../analyzer/options.dart';
+import '../../writer/database_writer.dart';
+import '../../writer/import_manager.dart';
+import '../../writer/writer.dart';
 import 'backend.dart';
 
 class _BuilderFlags {
@@ -75,12 +80,30 @@ class DriftBuilder extends Builder {
 
     final result = await driver.resolveElements(buildStep.inputId.uri);
 
-    final buffer = StringBuffer();
+    final generationOptions = GenerationOptions(
+      imports: ImportManagerForPartFiles(),
+    );
+    final writer = Writer(options, generationOptions: generationOptions);
+
     for (final element in result.analysis.values) {
-      buffer.writeln('// ${element.ownId}');
+      final result = element.result;
+
+      if (result is DriftDatabase) {
+        DatabaseWriter(result, writer.child()).write();
+      } else {
+        writer.leaf().writeln('// ${element.ownId}');
+      }
     }
 
-    await buildStep.writeAsString(
-        buildStep.allowedOutputs.single, buffer.toString());
+    var generated = writer.writeGenerated();
+
+    try {
+      generated = DartFormatter().format(generated);
+    } on FormatterException {
+      log.warning('Could not format generated source. The generated code is '
+          'probably invalid, and this is most likely a bug in drift_dev.');
+    }
+
+    await buildStep.writeAsString(buildStep.allowedOutputs.single, generated);
   }
 }

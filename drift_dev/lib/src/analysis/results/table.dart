@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:sqlparser/sqlparser.dart' as sql;
 
 import 'dart.dart';
 import 'element.dart';
@@ -10,8 +11,9 @@ class DriftTable extends DriftElementWithResultSet {
   @override
   final List<DriftColumn> columns;
 
+  final List<DriftTableConstraint> tableConstraints;
+
   final Set<DriftColumn>? primaryKeyFromTableConstraint;
-  final List<Set<DriftColumn>> uniqueKeysFromTableConstraint;
 
   @override
   final List<DriftElement> references;
@@ -48,12 +50,15 @@ class DriftTable extends DriftElementWithResultSet {
     this.withoutRowId = false,
     this.strict = false,
     this.primaryKeyFromTableConstraint,
-    this.uniqueKeysFromTableConstraint = const [],
+    this.tableConstraints = const [],
   }) {
     for (final column in columns) {
       column.owner = this;
     }
   }
+
+  @override
+  String get dbGetterName => DriftSchemaElement.dbFieldName(baseDartName);
 
   /// The primary key for this table, computed by looking at the
   /// [primaryKeyFromTableConstraint] and primary key constraints applied to
@@ -108,6 +113,32 @@ class DriftTable extends DriftElementWithResultSet {
     }
     return name;
   }
+
+  static String _tableInfoNameForTableClass(String className) =>
+      '\$${className}Table';
 }
 
-String _tableInfoNameForTableClass(String className) => '\$${className}Table';
+abstract class DriftTableConstraint {}
+
+class UniqueColumns extends DriftTableConstraint {
+  final Set<DriftColumn> uniqueSet;
+
+  UniqueColumns(this.uniqueSet);
+}
+
+class ForeignKeyTable extends DriftTableConstraint {
+  final List<DriftColumn> localColumns;
+  final DriftTable otherTable;
+  final List<DriftColumn> otherColumns;
+
+  final sql.ReferenceAction? onUpdate;
+  final sql.ReferenceAction? onDelete;
+
+  ForeignKeyTable({
+    required this.localColumns,
+    required this.otherTable,
+    required this.otherColumns,
+    this.onUpdate,
+    this.onDelete,
+  });
+}

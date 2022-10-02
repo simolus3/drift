@@ -30,9 +30,9 @@ class ElementSerializer {
         'primary_key_table_constraint': element.primaryKeyFromTableConstraint
             ?.map((e) => e.nameInSql)
             .toList(),
-        'unique_keys_table_constraint': [
-          for (final unique in element.uniqueKeysFromTableConstraint)
-            [for (final column in unique) column.nameInSql]
+        'table_constraints': [
+          for (final constraint in element.tableConstraints)
+            _serializeTableConstraint(constraint),
         ],
         'custom_parent_class': element.customParentClass?.toJson(),
         'fixed_entity_info_name': element.fixedEntityInfoName,
@@ -57,6 +57,8 @@ class ElementSerializer {
       additionalInformation = {
         'type': 'trigger',
         'sql': element.createStmt,
+        if (element.on != null) 'on': _serializeElementReference(element.on!),
+        'onWrite': element.onWrite.name,
         'writes': [
           for (final write in element.writes)
             {
@@ -164,8 +166,8 @@ class ElementSerializer {
       return {
         'type': 'foreign_key',
         'column': _serializeColumnReference(constraint.otherColumn),
-        'onUpdate': constraint.onUpdate?.name,
-        'onDelete': constraint.onDelete?.name,
+        'onUpdate': _serializeReferenceAction(constraint.onUpdate),
+        'onDelete': _serializeReferenceAction(constraint.onDelete),
       };
     } else if (constraint is ColumnGeneratedAs) {
       return {'type': 'generated_as', ...constraint.toJson()};
@@ -176,6 +178,36 @@ class ElementSerializer {
     } else {
       throw UnimplementedError('Unsupported column constraint: $constraint');
     }
+  }
+
+  Map<String, Object?> _serializeTableConstraint(
+      DriftTableConstraint constraint) {
+    if (constraint is UniqueColumns) {
+      return {
+        'type': 'unique',
+        'columns': [for (final column in constraint.uniqueSet) column.nameInSql]
+      };
+    } else if (constraint is ForeignKeyTable) {
+      return {
+        'type': 'foreign',
+        'local': [
+          for (final column in constraint.localColumns) column.nameInSql,
+        ],
+        'table': _serializeElementReference(constraint.otherTable),
+        'foreign': [
+          for (final column in constraint.otherColumns)
+            _serializeColumn(column),
+        ],
+        'onUpdate': _serializeReferenceAction(constraint.onUpdate),
+        'onDelete': _serializeReferenceAction(constraint.onDelete),
+      };
+    } else {
+      throw UnimplementedError('Unsupported table constraint: $constraint');
+    }
+  }
+
+  String? _serializeReferenceAction(ReferenceAction? action) {
+    return action?.name;
   }
 
   Map<String, Object?> _serializeTypeConverter(AppliedTypeConverter converter) {
@@ -363,15 +395,6 @@ class ElementDeserializer {
           };
         }
 
-        List<Set<DriftColumn>> uniqueKeysFromTableConstraint = const [];
-        final serializedUnique = json['unique_keys_table_constraint'];
-        if (serializedUnique != null) {
-          uniqueKeysFromTableConstraint = [
-            for (final entry in serializedUnique)
-              {for (final column in entry) columnByName[column]!},
-          ];
-        }
-
         return DriftTable(
           id,
           declaration,
@@ -381,7 +404,10 @@ class ElementDeserializer {
               ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
               : null,
           primaryKeyFromTableConstraint: primaryKeyFromTableConstraint,
-          uniqueKeysFromTableConstraint: uniqueKeysFromTableConstraint,
+          tableConstraints: [
+            for (final constraint in json['table_constraints'])
+              await _readTableConstraint(constraint as Map, columnByName),
+          ],
           customParentClass: json['custom_parent_class'] != null
               ? AnnotatedDartCode.fromJson(json['custom_parent_class'] as Map)
               : null,
@@ -408,11 +434,19 @@ class ElementDeserializer {
           resultClassName: json['result_class'] as String?,
         );
       case 'trigger':
+        DriftTable? on;
+
+        if (json['on'] != null) {
+          on = await _readElementReference(json['on'] as Map) as DriftTable;
+        }
+
         return DriftTrigger(
           id,
           declaration,
           references: references,
           createStmt: json['sql'] as String,
+          on: on,
+          onWrite: UpdateKind.values.byName(json['onWrite'] as String),
           writes: [
             for (final write in json['writes'])
               WrittenDriftTable(
@@ -543,6 +577,10 @@ class ElementDeserializer {
     );
   }
 
+  ReferenceAction? _readAction(String? value) {
+    return value == null ? null : ReferenceAction.values.byName(value);
+  }
+
   Future<DriftColumnConstraint> _readConstraint(Map json) async {
     final type = json['type'] as String;
 
@@ -552,14 +590,10 @@ class ElementDeserializer {
       case 'primary':
         return PrimaryKeyColumn.fromJson(json);
       case 'foreign_key':
-        ReferenceAction? readAction(String? value) {
-          return value == null ? null : ReferenceAction.values.byName(value);
-        }
-
         return ForeignKeyReference(
           await _readDriftColumnReference(json['column'] as Map),
-          readAction(json['onUpdate'] as String?),
-          readAction(json['onDelete'] as String?),
+          _readAction(json['onUpdate'] as String?),
+          _readAction(json['onDelete'] as String?),
         );
       case 'generated_as':
         return ColumnGeneratedAs.fromJson(json);
@@ -567,6 +601,34 @@ class ElementDeserializer {
         return DartCheckExpression.fromJson(json);
       case 'limit_text_length':
         return LimitingTextLength.fromJson(json);
+      default:
+        throw UnimplementedError('Unsupported constraint: $type');
+    }
+  }
+
+  Future<DriftTableConstraint> _readTableConstraint(
+      Map json, Map<String, DriftColumn> localColumns) async {
+    final type = json['type'] as String;
+
+    switch (type) {
+      case 'unique':
+        return UniqueColumns({
+          for (final ref in json['columns']) localColumns[ref]!,
+        });
+      case 'foreign':
+        return ForeignKeyTable(
+          localColumns: [
+            for (final ref in json['local']) localColumns[ref]!,
+          ],
+          otherTable:
+              await _readDriftElement(json['table'] as Map) as DriftTable,
+          otherColumns: [
+            for (final ref in json['foreign'])
+              await _readDriftColumnReference(ref as Map)
+          ],
+          onUpdate: _readAction(json['onUpdate'] as String?),
+          onDelete: _readAction(json['onDelete'] as String?),
+        );
       default:
         throw UnimplementedError('Unsupported constraint: $type');
     }

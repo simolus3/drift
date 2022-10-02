@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 part '../../generated/analysis/results/element.g.dart';
@@ -77,4 +78,13 @@ abstract class DriftSchemaElement extends DriftElement {
 
   /// The exact, unaliased name of this element in the database's schema.
   String get schemaName => id.name;
+
+  /// The getter in a generated database accessor referring to this model.
+  ///
+  /// Returns null for entities that shouldn't have a getter.
+  String? get dbGetterName;
+
+  static String dbFieldName(String baseName) {
+    return ReCase(baseName).camelCase;
+  }
 }

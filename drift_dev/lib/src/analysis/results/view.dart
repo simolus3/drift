@@ -39,6 +39,9 @@ class DriftView extends DriftElementWithResultSet {
     required this.references,
   });
 
+  @override
+  String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
+
   /// Obtains all tables transitively referenced by the declaration of this
   /// view.
   ///

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -52,6 +53,10 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
   SqlEngine newEngineWithTables(Iterable<DriftElement> references) {
     return resolver.driver.typeMapping.newEngineWithTables(references);
+  }
+
+  DriftElement? findInResolved(List<DriftElement> references, String name) {
+    return references.firstWhereOrNull((e) => e.id.sameName(name));
   }
 
   Future<List<DriftElement>> resolveSqlReferences(AstNode stmt) async {

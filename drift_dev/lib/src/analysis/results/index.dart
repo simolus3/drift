@@ -5,7 +5,7 @@ import 'table.dart';
 ///
 /// Currently, indices can only be created through a `CREATE INDEX` statement in
 /// a `.drift` file.
-class DriftIndex extends DriftElement {
+class DriftIndex extends DriftSchemaElement {
   /// The table on which this index is created.
   ///
   /// This may be null if the table couldn't be resolved.
@@ -24,6 +24,9 @@ class DriftIndex extends DriftElement {
     required this.table,
     required this.createStmt,
   });
+
+  @override
+  String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
 
   @override
   Iterable<DriftElement> get references => [if (table != null) table!];

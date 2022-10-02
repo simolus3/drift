@@ -38,6 +38,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     }
 
     final columns = <DriftColumn>[];
+    final tableConstraints = <DriftTableConstraint>[];
 
     for (final column in table.resultColumns) {
       String? overriddenDartName;
@@ -95,6 +96,41 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       ));
     }
 
+    if (stmt is CreateTableStatement) {
+      for (final constraint in stmt.tableConstraints) {
+        if (constraint is ForeignKeyTableConstraint) {
+          final otherTable = await resolveSqlReferenceOrReportError<DriftTable>(
+            constraint.clause.foreignTable.tableName,
+            (msg) => DriftAnalysisError.inDriftFile(
+              constraint.clause.foreignTable.tableNameToken ?? constraint,
+              msg,
+            ),
+          );
+
+          if (otherTable != null) {
+            final localColumns = [
+              for (final column in constraint.columns)
+                columns.firstWhere((e) => e.nameInSql == column.columnName)
+            ];
+
+            final foreignColumns = [
+              for (final column in constraint.clause.columnNames)
+                otherTable.columns
+                    .firstWhere((e) => e.nameInSql == column.columnName)
+            ];
+
+            tableConstraints.add(ForeignKeyTable(
+              localColumns: localColumns,
+              otherTable: otherTable,
+              otherColumns: foreignColumns,
+              onUpdate: constraint.clause.onUpdate,
+              onDelete: constraint.clause.onDelete,
+            ));
+          }
+        }
+      }
+    }
+
     String? dartTableName, dataClassName;
     ExistingRowClass? existingRowClass;
 
@@ -143,6 +179,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       existingRowClass: existingRowClass,
       withoutRowId: table.withoutRowId,
       strict: table.isStrict,
+      tableConstraints: tableConstraints,
     );
   }
 }

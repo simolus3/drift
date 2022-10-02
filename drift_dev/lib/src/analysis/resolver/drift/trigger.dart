@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 import '../../driver/state.dart';
@@ -46,9 +47,21 @@ class DriftTriggerResolver
       }
     }
 
+    drift.UpdateKind onWrite;
+
+    if (stmt.target is DeleteTarget) {
+      onWrite = drift.UpdateKind.delete;
+    } else if (stmt.target is UpdateTarget) {
+      onWrite = drift.UpdateKind.update;
+    } else {
+      onWrite = drift.UpdateKind.insert;
+    }
+
     return DriftTrigger(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
+      on: findInResolved(references, stmt.onTable.tableName) as DriftTable?,
+      onWrite: onWrite,
       references: references,
       createStmt: source.substring(stmt.firstPosition, stmt.lastPosition),
       writes: findWrittenTables(stmt)

@@ -53,8 +53,6 @@ class DiscoverStep {
   Future<void> discover() async {
     final extension = _file.extension;
 
-    debugger(when: _file.ownUri.path.endsWith('todos.dart'));
-
     switch (extension) {
       case '.dart':
         LibraryElement library;

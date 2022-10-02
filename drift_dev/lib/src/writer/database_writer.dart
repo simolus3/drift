@@ -1,19 +1,18 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' as drift;
 // ignore: implementation_imports
 import 'package:drift/src/runtime/executor/stream_queries.dart';
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/services/find_stream_update_rules.dart';
-import 'package:drift_dev/src/utils/string_escaper.dart';
-import 'package:drift_dev/src/utils/type_utils.dart';
-import 'package:drift_dev/writer.dart';
+import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';
 
-import 'tables/view_writer.dart';
+import '../analysis/results/results.dart';
+import '../services/find_stream_update_rules.dart';
+import '../utils/string_escaper.dart';
+import 'writer.dart';
 
 /// Generates the Dart code put into a `.g.dart` file when running the
 /// generator.
 class DatabaseWriter {
-  final Database db;
+  final DriftDatabase db;
   final Scope scope;
 
   DatabaseWriter(this.db, this.scope);
@@ -23,16 +22,17 @@ class DatabaseWriter {
       return 'DatabaseAtV${scope.generationOptions.forSchema}';
     }
 
-    return '_\$${db.fromClass!.name}';
+    return '_\$${db.id.name}';
   }
 
   void write() {
-    // Write referenced tables and views
-    for (final table in db.tables) {
-      TableWriter(table, scope.child()).writeInto();
-    }
-    for (final view in db.views) {
-      ViewWriter(view, scope.child(), this).write();
+    // Write data classes, companions and info classes
+    for (final reference in db.references) {
+      if (reference is DriftTable) {
+//        TableWriter(table, scope.child()).writeInto();
+      } else if (reference is DriftView) {
+//      ViewWriter(view, scope.child(), this).write();
+      }
     }
 
     // Write the database class
@@ -45,18 +45,21 @@ class DatabaseWriter {
       firstLeaf.write('abstract ');
     }
 
-    firstLeaf.write('class $className extends GeneratedDatabase {\n'
-        '$className(QueryExecutor e) : '
-        'super(e); \n');
+    firstLeaf
+      ..write('class $className extends ')
+      ..writeDriftRef('GeneratedDatabase')
+      ..writeln('{')
+      ..writeln(
+          '$className(${firstLeaf.refDrift('QueryExecutor e')}: super(e);');
 
     if (dbScope.options.generateConnectConstructor) {
-      firstLeaf.write(
-          '$className.connect(DatabaseConnection c): super.connect(c); \n');
+      final conn = firstLeaf.refDrift('DatabaseConnection');
+      firstLeaf.write('$className.connect($conn c): super.connect(c); \n');
     }
 
-    final entityGetters = <DriftSchemaEntity, String>{};
+    final entityGetters = <DriftSchemaElement, String>{};
 
-    for (final entity in db.entities) {
+    for (final entity in db.references.whereType<DriftSchemaElement>()) {
       final getterName = entity.dbGetterName;
       if (getterName != null) {
         entityGetters[entity] = getterName;
@@ -66,30 +69,31 @@ class DatabaseWriter {
         final tableClassName = entity.entityInfoName;
 
         writeMemoizedGetter(
-          buffer: dbScope.leaf(),
+          buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: tableClassName,
           code: '$tableClassName(this)',
         );
-      } else if (entity is MoorTrigger) {
+      } /* else if (entity is DriftTrigger) {
         writeMemoizedGetter(
-          buffer: dbScope.leaf(),
+          buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: 'Trigger',
           code: 'Trigger(${asDartLiteral(entity.createSql(scope.options))}, '
               '${asDartLiteral(entity.displayName)})',
         );
-      } else if (entity is MoorIndex) {
+      } else if (entity is DriftIndex) {
         writeMemoizedGetter(
-          buffer: dbScope.leaf(),
+          buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: 'Index',
           code: 'Index(${asDartLiteral(entity.displayName)}, '
               '${asDartLiteral(entity.createSql(scope.options))})',
         );
-      } else if (entity is MoorView) {
+      } */
+      else if (entity is DriftView) {
         writeMemoizedGetter(
-          buffer: dbScope.leaf(),
+          buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: entity.entityInfoName,
           code: '${entity.entityInfoName}(this)',
@@ -98,13 +102,13 @@ class DatabaseWriter {
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
-    for (final dao in db.daos) {
-      final typeName = dao.codeString();
+    for (final dao in db.accessorTypes) {
+      final typeName = firstLeaf.dartCode(dao);
       final getterName = ReCase(typeName).camelCase;
-      final databaseImplName = db.fromClass!.name;
+      final databaseImplName = db.id.name;
 
       writeMemoizedGetter(
-        buffer: dbScope.leaf(),
+        buffer: dbScope.leaf().buffer,
         getterName: getterName,
         returnType: typeName,
         code: '$typeName(this as $databaseImplName)',
@@ -112,10 +116,11 @@ class DatabaseWriter {
     }
 
     // Write implementation for query methods
-    db.queries?.forEach((query) => QueryWriter(dbScope.child()).write(query));
+//    db.queries?.forEach((query) => QueryWriter(dbScope.child()).write(query));
 
     // Write List of tables
     final schemaScope = dbScope.leaf();
+/*
     schemaScope
       ..write(
           '@override\nIterable<TableInfo<Table, dynamic>> get allTables => ')
@@ -134,6 +139,7 @@ class DatabaseWriter {
       }).join(', '))
       // close list literal and allSchemaEntities getter
       ..write('];\n');
+*/
 
     final updateRules = FindStreamUpdateRules(db).identifyRules();
     if (updateRules.rules.isNotEmpty) {
@@ -159,10 +165,12 @@ class DatabaseWriter {
 
     if (scope.options.storeDateTimeValuesAsText) {
       // Override database options to reflect that DateTimes are stored as text.
+      final options = schemaScope.refDrift('DriftDatabaseOptions');
+
       schemaScope
         ..writeln('@override')
-        ..writeln('DriftDatabaseOptions get options => '
-            'const DriftDatabaseOptions(storeDateTimeAsText: true);');
+        ..writeln('$options get options => '
+            'const $options(storeDateTimeAsText: true);');
     }
 
     // close the class
@@ -170,57 +178,74 @@ class DatabaseWriter {
   }
 }
 
-const _kindToDartExpr = {
-  UpdateKind.delete: 'UpdateKind.delete',
-  UpdateKind.insert: 'UpdateKind.insert',
-  UpdateKind.update: 'UpdateKind.update',
-  null: 'null',
-};
+extension on drift.UpdateRule {
+  void writeConstructor(TextEmitter emitter) {
+    if (this is drift.WritePropagation) {
+      final write = this as drift.WritePropagation;
 
-extension on UpdateRule {
-  void writeConstructor(StringBuffer buffer) {
-    if (this is WritePropagation) {
-      final write = this as WritePropagation;
-
-      buffer.write('WritePropagation(on: ');
-      write.on.writeConstructor(buffer);
-      buffer.write(', result: [');
+      emitter
+        ..writeDriftRef('WritePropagation')
+        ..write('(on: ');
+      write.on.writeConstructor(emitter);
+      emitter.write(', result: [');
 
       for (final update in write.result) {
-        update.writeConstructor(buffer);
-        buffer.write(', ');
+        update.writeConstructor(emitter);
+        emitter.write(', ');
       }
 
-      buffer.write('],)');
+      emitter.write('],)');
     }
   }
 }
 
-extension on TableUpdate {
-  void writeConstructor(StringBuffer buffer) {
-    buffer.write(
-        'TableUpdate(${asDartLiteral(table)}, kind: ${_kindToDartExpr[kind]})');
+extension on drift.TableUpdate {
+  void writeConstructor(TextEmitter emitter) {
+    emitter
+      ..writeDriftRef('TableUpdate')
+      ..write('(${asDartLiteral(table)})');
+
+    if (kind == null) {
+      emitter.write(')');
+    } else {
+      emitter.write(', kind: ');
+      kind!.write(emitter);
+    }
   }
 }
 
-extension on TableUpdateQuery {
-  void writeConstructor(StringBuffer buffer) {
+extension on drift.TableUpdateQuery {
+  void writeConstructor(TextEmitter emitter) {
+    emitter.writeDriftRef('TableUpdateQuery');
+
     if (this is AnyUpdateQuery) {
-      buffer.write('TableUpdateQuery.any()');
+      emitter.write('.any()');
     } else if (this is SpecificUpdateQuery) {
       final query = this as SpecificUpdateQuery;
-      buffer
-          .write('TableUpdateQuery.onTableName(${asDartLiteral(query.table)}, '
-              'limitUpdateKind: ${_kindToDartExpr[query.limitUpdateKind]})');
+      emitter.write('.onTableName(${asDartLiteral(query.table)} ');
+
+      if (query.limitUpdateKind != null) {
+        emitter.write(', ');
+        query.limitUpdateKind!.write(emitter);
+      }
+      emitter.write(')');
     } else if (this is MultipleUpdateQuery) {
       final queries = (this as MultipleUpdateQuery).queries;
 
-      buffer.write('TableUpdateQuery.allOf([');
+      emitter.write('.allOf([');
       for (final query in queries) {
-        query.writeConstructor(buffer);
-        buffer.write(', ');
+        query.writeConstructor(emitter);
+        emitter.write(', ');
       }
-      buffer.write('])');
+      emitter.write('])');
     }
+  }
+}
+
+extension on drift.UpdateKind {
+  void write(TextEmitter emitter) {
+    emitter
+      ..writeDriftRef('UpdateKind')
+      ..write('.$name');
   }
 }
