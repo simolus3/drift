@@ -42,6 +42,114 @@ class Writer {
     }
   }
 
+  AnnotatedDartCode companionType(DriftTable table) {
+    final baseName = options.useDataClassNameForCompanions
+        ? table.nameOfRowClass
+        : table.baseDartName;
+
+    return AnnotatedDartCode([
+      DartTopLevelSymbol('${baseName}Companion', table.id.libraryUri),
+    ]);
+  }
+
+  /// Returns a Dart expression evaluating to the [converter].
+  AnnotatedDartCode readConverter(AppliedTypeConverter converter,
+      {bool forNullable = false}) {
+    final fieldName =
+        forNullable ? converter.fieldName : converter.nullableFieldName;
+    final table = converter.owningColumn.owner as DriftElementWithResultSet;
+
+    return AnnotatedDartCode([
+      DartTopLevelSymbol(table.entityInfoName, table.id.libraryUri),
+      '.$fieldName',
+    ]);
+  }
+
+  /// A suitable typename to store an instance of the type converter used here.
+  AnnotatedDartCode converterType(AppliedTypeConverter converter,
+      {bool makeNullable = false}) {
+    var sqlDartType = dartTypeNames[converter.sqlType]!;
+    final className = converter.alsoAppliesToJsonConversion
+        ? 'JsonTypeConverter'
+        : 'TypeConverter';
+
+    // Write something like `TypeConverter<MyFancyObject, String>`
+    return AnnotatedDartCode([
+      DartTopLevelSymbol.drift(className),
+      '<',
+      ...AnnotatedDartCode.type(converter.dartType).elements,
+      if (makeNullable) '?',
+      ',',
+      sqlDartType,
+      '>',
+    ]);
+  }
+
+  AnnotatedDartCode dartType(HasType hasType) {
+    final converter = hasType.typeConverter;
+    if (converter != null) {
+      final nullable = converter.canBeSkippedForNulls && hasType.nullable;
+
+      return AnnotatedDartCode([
+        ...AnnotatedDartCode.type(converter.dartType).elements,
+        if (nullable) '?',
+      ]);
+    } else {
+      return AnnotatedDartCode([
+        dartTypeNames[hasType.sqlType],
+        if (hasType.nullableInDart) '?',
+      ]);
+    }
+  }
+
+  AnnotatedDartCode rowType(DriftElementWithResultSet element) {
+    final existing = element.existingRowClass;
+    if (existing != null) {
+      return existing.targetType;
+    } else {
+      return AnnotatedDartCode([element.nameOfRowClass]);
+    }
+  }
+
+  AnnotatedDartCode rowClass(DriftElementWithResultSet element) {
+    final existing = element.existingRowClass;
+    if (existing != null) {
+      return existing.targetClass;
+    } else {
+      return AnnotatedDartCode([element.nameOfRowClass]);
+    }
+  }
+
+  String refUri(Uri definition, String element) {
+    final prefix = generationOptions.imports.prefixFor(definition, element);
+
+    if (prefix == null) {
+      return element;
+    } else {
+      return '$prefix.$element';
+    }
+  }
+
+  String dartCode(AnnotatedDartCode code) {
+    final buffer = StringBuffer();
+
+    for (final lexeme in code.elements) {
+      if (lexeme is DartTopLevelSymbol) {
+        final uri = lexeme.importUri;
+
+        if (uri != null) {
+          buffer.write(refUri(uri, lexeme.lexeme));
+        } else {
+          buffer.write(lexeme.lexeme);
+        }
+      } else {
+        buffer.write(lexeme);
+      }
+    }
+
+    return buffer.toString();
+  }
+
   Scope child() => _root.child();
   TextEmitter leaf() => _root.leaf();
 }
@@ -112,37 +220,14 @@ class TextEmitter extends _Node {
   void writeDriftRef(String element) => write(refDrift(element));
 
   String refUri(Uri definition, String element) {
-    final prefix =
-        writer.generationOptions.imports.prefixFor(definition, element);
-
-    if (prefix == null) {
-      return element;
-    } else {
-      return '$prefix.$element';
-    }
+    return writer.refUri(definition, element);
   }
 
   String refDrift(String element) => refUri(_driftImport, element);
 
-  String dartCode(AnnotatedDartCode code) {
-    final buffer = StringBuffer();
+  void writeDart(AnnotatedDartCode code) => write(dartCode(code));
 
-    for (final lexeme in code.elements) {
-      if (lexeme is DartTopLevelSymbol) {
-        final uri = lexeme.importUri;
-
-        if (uri != null) {
-          buffer.write(refUri(uri, lexeme.lexeme));
-        } else {
-          buffer.write(lexeme.lexeme);
-        }
-      } else {
-        buffer.write(lexeme);
-      }
-    }
-
-    return buffer.toString();
-  }
+  String dartCode(AnnotatedDartCode code) => writer.dartCode(code);
 }
 
 /// Options that are specific to code-generation.
@@ -175,4 +260,13 @@ class GenerationOptions {
 
 extension WriterUtilsForOptions on DriftOptions {
   String get fieldModifier => generateMutableClasses ? '' : 'final';
+}
+
+/// Adds an `this.` prefix is the [dartGetterName] is in [locals].
+String thisIfNeeded(String getter, Set<String> locals) {
+  if (locals.contains(getter)) {
+    return 'this.$getter';
+  }
+
+  return getter;
 }

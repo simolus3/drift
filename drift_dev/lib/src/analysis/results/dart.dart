@@ -111,10 +111,16 @@ class AnnotatedDartCodeBuilder {
 
 @JsonSerializable()
 class DartTopLevelSymbol {
+  static final _driftUri = Uri.parse('package:drift/drift.dart');
+
   final String lexeme;
   final Uri? importUri;
 
   DartTopLevelSymbol(this.lexeme, this.importUri);
+
+  factory DartTopLevelSymbol.drift(String name) {
+    return DartTopLevelSymbol(name, _driftUri);
+  }
 
   factory DartTopLevelSymbol.topLevelElement(Element element) {
     assert(element.library?.topLevelElements.contains(element) == true);
@@ -151,7 +157,9 @@ class _AddFromDartType extends TypeVisitor<void> {
       case NullabilitySuffix.question:
         return _builder.addText('?');
       case NullabilitySuffix.star:
-        return _builder.addText('*');
+      // Really, the star suffix should never occur since we only support null-
+      // safe code. However, the analyzer seems to report this suffix for
+      // interface types in annotations.
       case NullabilitySuffix.none:
         return;
     }

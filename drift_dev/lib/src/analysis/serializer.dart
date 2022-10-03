@@ -40,6 +40,9 @@ class ElementSerializer {
         'row_class_name': element.nameOfRowClass,
         'without_rowid': element.withoutRowId,
         'strict': element.strict,
+        if (element.isVirtual) 'virtual': element.virtualTableData!.toJson(),
+        'write_default_constraints': element.writeDefaultConstraints,
+        'custom_constraints': element.overrideTableConstraints,
       };
     } else if (element is DriftIndex) {
       additionalInformation = {
@@ -416,6 +419,11 @@ class ElementDeserializer {
           nameOfRowClass: json['row_class_name'] as String,
           withoutRowId: json['without_rowid'] as bool,
           strict: json['strict'] as bool,
+          virtualTableData: json['virtual'] != null
+              ? VirtualTableData.fromJson(json['virtual'] as Map)
+              : null,
+          writeDefaultConstraints: json['write_default_constraints'] as bool,
+          overrideTableConstraints: (json['custom_constraints'] as List).cast(),
         );
       case 'index':
         return DriftIndex(

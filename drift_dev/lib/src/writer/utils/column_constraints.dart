@@ -1,17 +1,18 @@
+import 'package:drift/drift.dart';
 import 'package:drift/sqlite_keywords.dart';
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' as sql;
 
-import '../../model/model.dart';
+import '../../analysis/results/results.dart';
 
 String defaultConstraints(DriftColumn column) {
   final defaultConstraints = <String>[];
 
   var wrotePkConstraint = false;
 
-  for (final feature in column.features) {
-    if (feature is PrimaryKey) {
+  for (final feature in column.constraints) {
+    if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
-        defaultConstraints.add(feature is AutoIncrement
+        defaultConstraints.add(feature.isAutoIncrement
             ? 'PRIMARY KEY AUTOINCREMENT'
             : 'PRIMARY KEY');
 
@@ -22,18 +23,18 @@ String defaultConstraints(DriftColumn column) {
   }
 
   if (!wrotePkConstraint) {
-    for (final feature in column.features) {
-      if (feature is UniqueKey) {
+    for (final feature in column.constraints) {
+      if (feature is UniqueColumn) {
         defaultConstraints.add('UNIQUE');
         break;
       }
     }
   }
 
-  for (final feature in column.features) {
-    if (feature is ResolvedDartForeignKeyReference) {
-      final tableName = escapeIfNeeded(feature.otherTable.sqlName);
-      final columnName = escapeIfNeeded(feature.otherColumn.name.name);
+  for (final feature in column.constraints) {
+    if (feature is ForeignKeyReference) {
+      final tableName = escapeIfNeeded(feature.otherColumn.owner.id.name);
+      final columnName = escapeIfNeeded(feature.otherColumn.nameInSql);
 
       var constraint = 'REFERENCES $tableName ($columnName)';
 
@@ -49,31 +50,29 @@ String defaultConstraints(DriftColumn column) {
       }
 
       defaultConstraints.add(constraint);
-    } else if (feature is DefaultConstraintsFromSchemaFile) {
-      return feature.defaultConstraints;
     }
   }
 
-  if (column.type == DriftSqlType.bool) {
-    final name = escapeIfNeeded(column.name.name);
+  if (column.sqlType == DriftSqlType.bool) {
+    final name = escapeIfNeeded(column.nameInSql);
     defaultConstraints.add('CHECK ($name IN (0, 1))');
   }
 
   return defaultConstraints.join(' ');
 }
 
-extension on ReferenceAction {
+extension on sql.ReferenceAction {
   String get description {
     switch (this) {
-      case ReferenceAction.setNull:
+      case sql.ReferenceAction.setNull:
         return 'SET NULL';
-      case ReferenceAction.setDefault:
+      case sql.ReferenceAction.setDefault:
         return 'SET DEFAULT';
-      case ReferenceAction.cascade:
+      case sql.ReferenceAction.cascade:
         return 'CASCADE';
-      case ReferenceAction.restrict:
+      case sql.ReferenceAction.restrict:
         return 'RESTRICT';
-      case ReferenceAction.noAction:
+      case sql.ReferenceAction.noAction:
         return 'NO ACTION';
     }
   }

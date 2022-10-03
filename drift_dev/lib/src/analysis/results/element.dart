@@ -44,15 +44,17 @@ class DriftElementId {
 class DriftDeclaration {
   final Uri sourceUri;
   final int offset;
+  final String? name;
 
-  DriftDeclaration(this.sourceUri, this.offset);
+  DriftDeclaration(this.sourceUri, this.offset, this.name);
 
   factory DriftDeclaration.dartElement(Element element) {
-    return DriftDeclaration(element.source!.uri, element.nameOffset);
+    return DriftDeclaration(
+        element.source!.uri, element.nameOffset, element.name);
   }
 
   factory DriftDeclaration.driftFile(AstNode node, Uri uri) {
-    return DriftDeclaration(uri, node.firstPosition);
+    return DriftDeclaration(uri, node.firstPosition, null);
   }
 
   factory DriftDeclaration.fromJson(Map json) =>
@@ -69,6 +71,15 @@ abstract class DriftElement {
   final DriftDeclaration declaration;
 
   Iterable<DriftElement> get references => const Iterable.empty();
+
+  /// If this element was extracted from a defined Dart class, returns the name
+  /// of that class.
+  String? get definingDartClass {
+    if (id.isDefinedInDart) {
+      return declaration.name;
+    }
+    return null;
+  }
 
   DriftElement(this.id, this.declaration);
 }

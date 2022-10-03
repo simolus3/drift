@@ -79,7 +79,11 @@ class DriftColumn implements HasType {
     this.documentationComment,
     this.constraints = const [],
     this.customConstraints,
-  });
+  }) {
+    if (typeConverter != null) {
+      typeConverter!.owningColumn = this;
+    }
+  }
 
   /// Whether this column has a `GENERATED AS` column constraint.
   bool get isGenerated => constraints.any((e) => e is ColumnGeneratedAs);
@@ -115,6 +119,8 @@ class AppliedTypeConverter {
   final DartType dartType;
   final DriftSqlType sqlType;
 
+  late DriftColumn owningColumn;
+
   /// Whether the Dart-value output of this type converter is nullable.
   ///
   /// In other words, [dartType] is potentially nullable.
@@ -146,6 +152,16 @@ class AppliedTypeConverter {
   bool mapsToNullableDart(bool nullableInSql) {
     return dartTypeIsNullable || (canBeSkippedForNulls && nullableInSql);
   }
+
+  /// Type converters are stored as static fields in the table that created
+  /// them. This will be the field name for this converter.
+  String get fieldName => '\$converter${owningColumn.nameInDart}';
+
+  /// If this converter [canBeSkippedForNulls] and is applied to a nullable
+  /// column, drift generates a new wrapped type converter which will deal with
+  /// `null` values.
+  /// That converter is stored in this field.
+  String get nullableFieldName => '${fieldName}n';
 
   AppliedTypeConverter({
     required this.expression,

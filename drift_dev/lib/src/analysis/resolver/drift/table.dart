@@ -92,6 +92,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         declaration: DriftDeclaration(
           state.ownId.libraryUri,
           column.definition!.nameToken!.span.start.offset,
+          column.name,
         ),
       ));
     }
@@ -171,6 +172,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       DriftDeclaration(
         state.ownId.libraryUri,
         stmt.firstPosition,
+        stmt.createdName,
       ),
       columns: columns,
       references: references.toList(),

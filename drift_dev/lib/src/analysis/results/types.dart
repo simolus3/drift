@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show DriftSqlType;
 
 import 'column.dart';
+import 'dart.dart';
 
 /// Something that has a type.
 ///
@@ -24,6 +25,9 @@ abstract class HasType {
 }
 
 extension OperationOnTypes on HasType {
+  bool get isUint8ListInDart =>
+      sqlType == DriftSqlType.blob && typeConverter == null;
+
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
     if (isArray) return false; // Is a List<Something> in Dart, not nullable
@@ -35,10 +39,6 @@ extension OperationOnTypes on HasType {
 
     return nullable;
   }
-
-  /// the Dart type of this column that can be handled by moors type mapping.
-  /// Basically the same as [dartTypeCode], minus custom types and nullability.
-  String get variableTypeName => dartTypeNames[sqlType]!;
 
   /// The moor Dart type that matches the type of this column.
   ///
@@ -82,15 +82,15 @@ extension OperationOnTypes on HasType {
   }
 }
 
-const Map<DriftSqlType, String> dartTypeNames = {
-  DriftSqlType.bool: 'bool',
-  DriftSqlType.string: 'String',
-  DriftSqlType.int: 'int',
-  DriftSqlType.bigInt: 'BigInt',
-  DriftSqlType.dateTime: 'DateTime',
-  DriftSqlType.blob: 'Uint8List',
-  DriftSqlType.double: 'double',
-};
+Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
+  DriftSqlType.bool: DartTopLevelSymbol('bool', Uri.parse('dart:core')),
+  DriftSqlType.string: DartTopLevelSymbol('String', Uri.parse('dart:core')),
+  DriftSqlType.int: DartTopLevelSymbol('int', Uri.parse('dart:core')),
+  DriftSqlType.bigInt: DartTopLevelSymbol('BigInt', Uri.parse('dart:core')),
+  DriftSqlType.dateTime: DartTopLevelSymbol('DateTime', Uri.parse('dart:core')),
+  DriftSqlType.blob: DartTopLevelSymbol('Uint8List', Uri.parse('dart:convert')),
+  DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
+});
 
 /// Maps from a column type to code that can be used to create a variable of the
 /// respective type.

@@ -1,45 +1,54 @@
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/utils/string_escaper.dart';
-import 'package:drift_dev/writer.dart';
-import 'package:sqlparser/sqlparser.dart';
-
+import '../../analysis/results/results.dart';
+import '../../utils/string_escaper.dart';
 import '../utils/column_constraints.dart';
+import '../utils/memoized_getter.dart';
+import '../writer.dart';
+import 'data_class_writer.dart';
 
 /// Common writer for tables or views.
 ///
 /// Both classes need to generate column getters and a mapping function.
 abstract class TableOrViewWriter {
-  DriftEntityWithResultSet get tableOrView;
-  StringBuffer get buffer;
+  DriftElementWithResultSet get tableOrView;
+  TextEmitter get emitter;
 
-  void writeColumnGetter(
-      DriftColumn column, GenerationOptions options, bool isOverride) {
+  StringBuffer get buffer => emitter.buffer;
+
+  void writeColumnGetter(DriftColumn column, bool isOverride) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
     final constraints = defaultConstraints(column);
 
-    for (final feature in column.features) {
-      if (feature is LimitingTextLength) {
+    for (final constraint in column.constraints) {
+      if (constraint is LimitingTextLength) {
         final buffer = StringBuffer('GeneratedColumn.checkTextLength(');
 
-        if (feature.minLength != null) {
-          buffer.write('minTextLength: ${feature.minLength},');
+        if (constraint.minLength != null) {
+          buffer.write('minTextLength: ${constraint.minLength},');
         }
-        if (feature.maxLength != null) {
-          buffer.write('maxTextLength: ${feature.maxLength}');
+        if (constraint.maxLength != null) {
+          buffer.write('maxTextLength: ${constraint.maxLength}');
         }
         buffer.write(')');
 
         additionalParams['additionalChecks'] = buffer.toString();
       }
 
-      if (feature is DartCheckExpression) {
-        additionalParams['check'] = '() => ${feature.dartExpression}';
+      if (constraint is DartCheckExpression) {
+        final dartCheck = emitter.dartCode(constraint.dartExpression);
+        additionalParams['check'] = '() => $dartCheck';
+      }
+
+      if (constraint is ColumnGeneratedAs) {
+        final dartCode = emitter.dartCode(constraint.dartExpression);
+
+        additionalParams['generatedAs'] =
+            'GeneratedAs($dartCode, ${constraint.stored})';
       }
     }
 
-    additionalParams['type'] = column.type.toString();
+    additionalParams['type'] = column.sqlType.toString();
 
     if (tableOrView is DriftTable) {
       additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)
@@ -56,21 +65,13 @@ abstract class TableOrViewWriter {
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] = column.defaultArgument!;
+      additionalParams['defaultValue'] =
+          emitter.dartCode(column.defaultArgument!);
     }
 
     if (column.clientDefaultCode != null) {
-      additionalParams['clientDefault'] = column.clientDefaultCode!;
-    }
-
-    if (column.generatedAs != null) {
-      final generateAs = column.generatedAs!;
-      final code = generateAs.dartExpression;
-
-      if (code != null) {
-        additionalParams['generatedAs'] =
-            'GeneratedAs($code, ${generateAs.stored})';
-      }
+      additionalParams['clientDefault'] =
+          emitter.dartCode(column.clientDefaultCode!);
     }
 
     final innerType = column.innerColumnType();
@@ -78,7 +79,7 @@ abstract class TableOrViewWriter {
     expressionBuffer
       ..write(type)
       ..write(
-          '(${asDartLiteral(column.name.name)}, aliasedName, $isNullable, ');
+          '(${asDartLiteral(column.nameInSql)}, aliasedName, $isNullable, ');
 
     var first = true;
     additionalParams.forEach((name, value) {
@@ -100,10 +101,10 @@ abstract class TableOrViewWriter {
     if (converter != null) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
-      final mappedType = converter.dartTypeCode(column.nullable);
+      final mappedType = emitter.dartCode(emitter.writer.dartType(column));
 
-      final converterCode =
-          converter.tableAndField(forNullableColumn: column.nullable);
+      final converterCode = emitter.dartCode(emitter.writer
+          .readConverter(converter, forNullable: column.nullable));
 
       type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
       expressionBuffer
@@ -116,7 +117,7 @@ abstract class TableOrViewWriter {
 
     writeMemoizedGetter(
       buffer: buffer,
-      getterName: column.dartGetterName,
+      getterName: column.nameInDart,
       returnType: type,
       code: expressionBuffer.toString(),
       hasOverride: isOverride,
@@ -134,10 +135,10 @@ abstract class TableOrViewWriter {
       return;
     }
 
-    final dataClassName = tableOrView.dartTypeCode();
+    final dataClassType = emitter.dartCode(emitter.writer.rowType(tableOrView));
 
     final isAsync = tableOrView.existingRowClass?.isAsyncFactory == true;
-    final returnType = isAsync ? 'Future<$dataClassName>' : dataClassName;
+    final returnType = isAsync ? 'Future<$dataClassType>' : dataClassType;
     final asyncModifier = isAsync ? 'async' : '';
 
     buffer
@@ -148,42 +149,31 @@ abstract class TableOrViewWriter {
 
     if (tableOrView.hasExistingRowClass) {
       final info = tableOrView.existingRowClass!;
-      final positionalToIndex = <DriftColumn, int>{};
-      final named = <DriftColumn, String>{};
-
-      final parameters = info.constructor.parameters;
-      info.mapping.forEach((column, parameter) {
-        if (parameter.isNamed) {
-          named[column] = parameter.name;
-        } else {
-          positionalToIndex[column] = parameters.indexOf(parameter);
-        }
-      });
-
-      // Sort positional columns by the position of their respective parameter
-      // in the constructor.
-      final positional = positionalToIndex.keys.toList()
-        ..sort(
-            (a, b) => positionalToIndex[a]!.compareTo(positionalToIndex[b]!));
 
       final writer = RowMappingWriter(
-        positional: positional,
-        named: named,
+        positional: [
+          for (final positional in info.positionalColumns)
+            tableOrView.columnBySqlName[positional]!
+        ],
+        named: info.namedColumns.map((dartParameter, columnName) {
+          return MapEntry(
+              tableOrView.columnBySqlName[columnName]!, dartParameter);
+        }),
         table: tableOrView,
-        options: scope.generationOptions,
+        writer: scope.writer,
         databaseGetter: 'attachedDatabase',
       );
 
-      final classElement = info.targetClass;
       final ctor = info.constructor;
-      buffer
+      emitter
         ..write('return ')
         ..write(isAsync ? 'await ' : '')
-        ..write(classElement.name);
-      if (ctor.name.isNotEmpty) {
+        ..writeDart(info.targetType);
+
+      if (ctor.isNotEmpty) {
         buffer
           ..write('.')
-          ..write(ctor.name);
+          ..write(ctor);
       }
 
       writer.writeArguments(buffer);
@@ -193,13 +183,15 @@ abstract class TableOrViewWriter {
 
       final writer = RowMappingWriter(
         positional: const [],
-        named: {for (final column in columns) column: column.dartGetterName},
+        named: {for (final column in columns) column: column.nameInDart},
         table: tableOrView,
-        options: scope.generationOptions,
+        writer: scope.writer,
         databaseGetter: 'attachedDatabase',
       );
 
-      buffer.write('return ${tableOrView.dartTypeCode()}');
+      emitter
+        ..write('return ')
+        ..writeDart(emitter.writer.rowClass(tableOrView));
       writer.writeArguments(buffer);
       buffer.writeln(';');
     }
@@ -209,7 +201,7 @@ abstract class TableOrViewWriter {
 
   void writeGetColumnsOverride() {
     final columnsWithGetters =
-        tableOrView.columns.map((c) => c.dartGetterName).join(', ');
+        tableOrView.columns.map((c) => c.nameInDart).join(', ');
     buffer.write('@override\nList<GeneratedColumn> get \$columns => '
         '[$columnsWithGetters];\n');
   }
@@ -225,7 +217,7 @@ class TableWriter extends TableOrViewWriter {
   final Scope scope;
 
   @override
-  late StringBuffer buffer;
+  late TextEmitter emitter;
 
   @override
   DriftTable get tableOrView => table;
@@ -248,31 +240,31 @@ class TableWriter extends TableOrViewWriter {
     }
 
     if (scope.generationOptions.writeCompanions) {
-      UpdateCompanionWriter(table, scope.child()).write();
+      //UpdateCompanionWriter(table, scope.child()).write();
     }
   }
 
   void writeTableInfoClass() {
-    buffer = scope.leaf();
+    emitter = scope.leaf();
 
     if (!scope.generationOptions.writeDataClasses) {
       // Write a small table header without data class
       buffer.write('class ${table.entityInfoName} extends Table with '
           'TableInfo');
-      if (table.isVirtualTable) {
+      if (table.isVirtual) {
         buffer.write(', VirtualTableInfo');
       }
     } else {
       // Regular generation, write full table class
-      final dataClass = table.dartTypeCode(scope.generationOptions);
-      final tableDslName = table.fromClass?.name ?? 'Table';
+      final dataClass = emitter.dartCode(emitter.writer.rowClass(table));
+      final tableDslName = table.definingDartClass ?? 'Table';
 
       // class UsersTable extends Users implements TableInfo<Users, User> {
       final typeArgs = '<${table.entityInfoName}, $dataClass>';
       buffer.write('class ${table.entityInfoName} extends $tableDslName with '
           'TableInfo$typeArgs ');
 
-      if (table.isVirtualTable) {
+      if (table.isVirtual) {
         buffer.write(', VirtualTableInfo$typeArgs ');
       }
     }
@@ -290,16 +282,16 @@ class TableWriter extends TableOrViewWriter {
       _writeColumnVerificationMeta(column);
       // Only add an @override to a column getter if we're overriding the column
       // from a Dart DSL class.
-      writeColumnGetter(column, scope.generationOptions, !table.isFromSql);
+      writeColumnGetter(column, table.id.isDefinedInDart);
     }
 
     // Generate $columns, $tableName, asDslTable getters
     writeGetColumnsOverride();
     buffer
       ..write('@override\nString get aliasedName => '
-          '_alias ?? \'${table.sqlName}\';\n')
+          '_alias ?? \'${table.id.name}\';\n')
       ..write(
-          '@override\n String get actualTableName => \'${table.sqlName}\';\n');
+          '@override\n String get actualTableName => \'${table.id.name}\';\n');
 
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
@@ -318,22 +310,19 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writeConvertersAsStaticFields() {
-    for (final converter in table.converters) {
-      final typeName = converter.converterNameInCode();
+    for (final converter in table.appliedConverters) {
+      final typeName =
+          emitter.dartCode(emitter.writer.converterType(converter));
       final code = converter.expression;
 
       buffer.write('static $typeName ${converter.fieldName} = $code;');
-    }
 
-    // Generate wrappers for non-nullable type converters that are applied to
-    // nullable converters.
-    for (final column in table.columns) {
-      final converter = column.typeConverter;
-      if (converter != null &&
-          converter.canBeSkippedForNulls &&
-          column.nullable) {
-        final nullableTypeName =
-            converter.converterNameInCode(makeNullable: true);
+      // Generate wrappers for non-nullable type converters that are applied to
+      // nullable converters.
+      final column = converter.owningColumn;
+      if (converter.canBeSkippedForNulls && column.nullable) {
+        final nullableTypeName = emitter.dartCode(
+            emitter.writer.converterType(converter, makeNullable: true));
 
         final wrap = converter.alsoAppliesToJsonConversion
             ? 'JsonTypeConverter.asNullable'
@@ -352,14 +341,14 @@ class TableWriter extends TableOrViewWriter {
     if (!_skipVerification) {
       buffer
         ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
-        ..write("const VerificationMeta('${column.dartGetterName}');\n");
+        ..write("const VerificationMeta('${column.nameInDart}');\n");
     }
   }
 
   void _writeValidityCheckMethod() {
     if (_skipVerification) return;
 
-    final innerType = table.dartTypeCode(scope.generationOptions);
+    final innerType = emitter.dartCode(emitter.writer.rowType(table));
     buffer
       ..write('@override\nVerificationContext validateIntegrity'
           '(Insertable<$innerType> instance, '
@@ -370,7 +359,7 @@ class TableWriter extends TableOrViewWriter {
     const locals = {'instance', 'isInserting', 'context', 'data'};
 
     for (final column in table.columns) {
-      final getterName = column.thisIfNeeded(locals);
+      final getterName = thisIfNeeded(column.nameInDart, locals);
       final metaName = _fieldNameForColumnMeta(column);
 
       if (column.typeConverter != null) {
@@ -381,7 +370,7 @@ class TableWriter extends TableOrViewWriter {
         continue;
       }
 
-      final columnNameString = asDartLiteral(column.name.name);
+      final columnNameString = asDartLiteral(column.nameInSql);
       buffer
         ..write('if (data.containsKey($columnNameString)) {\n')
         ..write('context.handle('
@@ -401,7 +390,7 @@ class TableWriter extends TableOrViewWriter {
   }
 
   String _fieldNameForColumnMeta(DriftColumn column) {
-    return '_${column.dartGetterName}Meta';
+    return '_${column.nameInDart}Meta';
   }
 
   void _writePrimaryKeyOverride() {
@@ -409,7 +398,7 @@ class TableWriter extends TableOrViewWriter {
     final primaryKey = table.fullPrimaryKey;
 
     if (primaryKey.isEmpty) {
-      buffer.write('<GeneratedColumn>{};');
+      buffer.write('const <GeneratedColumn>{};');
       return;
     }
 
@@ -418,7 +407,7 @@ class TableWriter extends TableOrViewWriter {
     for (var i = 0; i < pkList.length; i++) {
       final pk = pkList[i];
 
-      buffer.write(pk.dartGetterName);
+      buffer.write(pk.nameInDart);
       if (i != pkList.length - 1) {
         buffer.write(', ');
       }
@@ -427,7 +416,9 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writeUniqueKeyOverride() {
-    final uniqueKeys = table.uniqueKeys ?? [];
+    final uniqueKeys =
+        table.tableConstraints.whereType<UniqueColumns>().toList();
+
     if (uniqueKeys.isEmpty) {
       // We inherit from `TableInfo` which defaults this getter to an empty
       // list.
@@ -438,11 +429,11 @@ class TableWriter extends TableOrViewWriter {
 
     for (final uniqueKey in uniqueKeys) {
       buffer.write('{');
-      final uqList = uniqueKey.toList();
+      final uqList = uniqueKey.uniqueSet.toList();
       for (var i = 0; i < uqList.length; i++) {
         final pk = uqList[i];
 
-        buffer.write(pk.dartGetterName);
+        buffer.write(pk.nameInDart);
         if (i != uqList.length - 1) {
           buffer.write(', ');
         }
@@ -463,14 +454,13 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _overrideFieldsIfNeeded() {
-    if (table.overrideWithoutRowId != null) {
-      final value = table.overrideWithoutRowId! ? 'true' : 'false';
+    if (table.withoutRowId) {
       buffer
-        ..write('@override\n')
-        ..write('bool get withoutRowId => $value;\n');
+        ..writeln('@override')
+        ..writeln('bool get withoutRowId => true;');
     }
 
-    if (table.isStrict) {
+    if (table.strict) {
       buffer
         ..write('@override\n')
         ..write('bool get isStrict => true;\n');
@@ -485,18 +475,16 @@ class TableWriter extends TableOrViewWriter {
         ..write('List<String> get customConstraints => const [$value];\n');
     }
 
-    if (table.overrideDontWriteConstraints != null) {
-      final value = table.overrideDontWriteConstraints! ? 'true' : 'false';
+    if (!table.writeDefaultConstraints) {
       buffer
         ..write('@override\n')
-        ..write('bool get dontWriteConstraints => $value;\n');
+        ..write('bool get dontWriteConstraints => true;\n');
     }
 
-    if (table.isVirtualTable) {
-      final declaration = table.declaration as TableDeclarationWithSql;
-      final stmt = declaration.creatingStatement as CreateVirtualTableStatement;
-      final moduleAndArgs = asDartLiteral(
-          '${stmt.moduleName}(${stmt.argumentContent.join(', ')})');
+    if (table.isVirtual) {
+      final stmt = table.virtualTableData!;
+      final moduleAndArgs =
+          asDartLiteral('${stmt.module}(${stmt.moduleArguments.join(', ')})');
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');

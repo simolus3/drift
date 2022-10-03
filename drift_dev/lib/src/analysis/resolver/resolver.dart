@@ -127,7 +127,7 @@ class DriftResolver {
     } else {
       return InvalidReferenceResult(
         InvalidReferenceError.noElementWichSuchName,
-        'The referenced element is not understood by drift.',
+        'The referenced element, ${element.name}, is not understood by drift.',
       );
     }
   }

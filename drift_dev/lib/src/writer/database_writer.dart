@@ -7,6 +7,7 @@ import 'package:recase/recase.dart';
 import '../analysis/results/results.dart';
 import '../services/find_stream_update_rules.dart';
 import '../utils/string_escaper.dart';
+import 'tables/table_writer.dart';
 import 'writer.dart';
 
 /// Generates the Dart code put into a `.g.dart` file when running the
@@ -29,7 +30,7 @@ class DatabaseWriter {
     // Write data classes, companions and info classes
     for (final reference in db.references) {
       if (reference is DriftTable) {
-//        TableWriter(table, scope.child()).writeInto();
+        TableWriter(reference, scope.child()).writeInto();
       } else if (reference is DriftView) {
 //      ViewWriter(view, scope.child(), this).write();
       }
@@ -50,7 +51,7 @@ class DatabaseWriter {
       ..writeDriftRef('GeneratedDatabase')
       ..writeln('{')
       ..writeln(
-          '$className(${firstLeaf.refDrift('QueryExecutor e')}: super(e);');
+          '$className(${firstLeaf.refDrift('QueryExecutor e')}): super(e);');
 
     if (dbScope.options.generateConnectConstructor) {
       final conn = firstLeaf.refDrift('DatabaseConnection');

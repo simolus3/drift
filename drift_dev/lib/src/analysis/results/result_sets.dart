@@ -28,6 +28,20 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
   /// The name for the data class associated with this table or view.
   String get nameOfRowClass;
 
+  /// All [columns] of this table, indexed by their name in SQL.
+  late final Map<String, DriftColumn> columnBySqlName = {
+    for (final column in columns) column.nameInSql: column,
+  };
+
+  /// All type converter applied to columns on this table.
+  Iterable<AppliedTypeConverter> get appliedConverters sync* {
+    for (final column in columns) {
+      if (column.typeConverter != null) {
+        yield column.typeConverter!;
+      }
+    }
+  }
+
   DriftElementWithResultSet(super.id, super.declaration);
 }
 
