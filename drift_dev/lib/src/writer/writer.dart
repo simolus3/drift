@@ -12,7 +12,7 @@ Uri _driftImport = Uri.parse('package:drift/drift.dart');
 /// realize we need to introduce another top-level class! When passing a single
 /// [StringBuffer] to the generators that will get ugly to manage, but when
 /// passing a [Scope] we will always be able to write code in a parent scope.
-class Writer {
+class Writer extends _NodeOrWriter {
   late final Scope _root;
   late final TextEmitter _header;
   late final TextEmitter _imports;
@@ -22,6 +22,9 @@ class Writer {
 
   TextEmitter get header => _header;
   TextEmitter get imports => _imports;
+
+  @override
+  Writer get writer => this;
 
   Writer(this.options, {required this.generationOptions}) {
     _root = Scope(parent: null, writer: this);
@@ -42,8 +45,15 @@ class Writer {
     }
   }
 
+  Scope child() => _root.child();
+  TextEmitter leaf() => _root.leaf();
+}
+
+abstract class _NodeOrWriter {
+  Writer get writer;
+
   AnnotatedDartCode companionType(DriftTable table) {
-    final baseName = options.useDataClassNameForCompanions
+    final baseName = writer.options.useDataClassNameForCompanions
         ? table.nameOfRowClass
         : table.baseDartName;
 
@@ -121,7 +131,8 @@ class Writer {
   }
 
   String refUri(Uri definition, String element) {
-    final prefix = generationOptions.imports.prefixFor(definition, element);
+    final prefix =
+        writer.generationOptions.imports.prefixFor(definition, element);
 
     if (prefix == null) {
       return element;
@@ -149,12 +160,9 @@ class Writer {
 
     return buffer.toString();
   }
-
-  Scope child() => _root.child();
-  TextEmitter leaf() => _root.leaf();
 }
 
-abstract class _Node {
+abstract class _Node extends _NodeOrWriter {
   final Scope? parent;
 
   _Node(this.parent);
@@ -168,6 +176,7 @@ abstract class _Node {
 /// we just pass a single [StringBuffer] around, this is annoying to manage.
 class Scope extends _Node {
   final List<_Node> _children = [];
+  @override
   final Writer writer;
 
   /// An arbitrary counter.
@@ -206,6 +215,7 @@ class Scope extends _Node {
 
 class TextEmitter extends _Node {
   final StringBuffer buffer = StringBuffer();
+  @override
   final Writer writer;
 
   TextEmitter(Scope super.parent) : writer = parent.writer;
@@ -219,15 +229,9 @@ class TextEmitter extends _Node {
 
   void writeDriftRef(String element) => write(refDrift(element));
 
-  String refUri(Uri definition, String element) {
-    return writer.refUri(definition, element);
-  }
-
   String refDrift(String element) => refUri(_driftImport, element);
 
   void writeDart(AnnotatedDartCode code) => write(dartCode(code));
-
-  String dartCode(AnnotatedDartCode code) => writer.dartCode(code);
 }
 
 /// Options that are specific to code-generation.

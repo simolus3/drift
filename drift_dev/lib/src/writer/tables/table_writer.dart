@@ -4,6 +4,7 @@ import '../utils/column_constraints.dart';
 import '../utils/memoized_getter.dart';
 import '../writer.dart';
 import 'data_class_writer.dart';
+import 'update_companion_writer.dart';
 
 /// Common writer for tables or views.
 ///
@@ -240,7 +241,7 @@ class TableWriter extends TableOrViewWriter {
     }
 
     if (scope.generationOptions.writeCompanions) {
-      //UpdateCompanionWriter(table, scope.child()).write();
+      UpdateCompanionWriter(table, scope.child()).write();
     }
   }
 
