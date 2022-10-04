@@ -8,12 +8,12 @@ extension BooleanExpressionOperators on Expression<bool> {
 
   /// Returns an expression that is true iff both `this` and [other] are true.
   Expression<bool> operator &(Expression<bool> other) {
-    return _BaseInfixOperator(this, 'AND', other, precedence: Precedence.and);
+    return BaseInfixOperator(this, 'AND', other, precedence: Precedence.and);
   }
 
   /// Returns an expression that is true if `this` or [other] are true.
   Expression<bool> operator |(Expression<bool> other) {
-    return _BaseInfixOperator(this, 'OR', other, precedence: Precedence.or);
+    return BaseInfixOperator(this, 'OR', other, precedence: Precedence.or);
   }
 }
 

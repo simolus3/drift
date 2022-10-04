@@ -264,56 +264,6 @@ class Precedence implements Comparable<Precedence> {
   static const Precedence primary = Precedence._(100);
 }
 
-/// An expression that looks like "$a operator $b", where $a and $b itself
-/// are expressions and the operator is any string.
-abstract class _InfixOperator<D extends Object> extends Expression<D> {
-  /// The left-hand side of this expression
-  Expression get left;
-
-  /// The right-hand side of this expresion
-  Expression get right;
-
-  /// The sql operator to write
-  String get operator;
-
-  @override
-  void writeInto(GenerationContext context) {
-    writeInner(context, left);
-    context.writeWhitespace();
-    context.buffer.write(operator);
-    context.writeWhitespace();
-    writeInner(context, right);
-  }
-
-  @override
-  int get hashCode => Object.hash(left, right, operator);
-
-  @override
-  bool operator ==(Object other) {
-    return other is _InfixOperator &&
-        other.left == left &&
-        other.right == right &&
-        other.operator == operator;
-  }
-}
-
-class _BaseInfixOperator<D extends Object> extends _InfixOperator<D> {
-  @override
-  final Expression left;
-
-  @override
-  final String operator;
-
-  @override
-  final Expression right;
-
-  @override
-  final Precedence precedence;
-
-  _BaseInfixOperator(this.left, this.operator, this.right,
-      {this.precedence = Precedence.unknown});
-}
-
 /// Defines the possible comparison operators that can appear in a
 /// [_Comparison].
 enum _ComparisonOperator {
@@ -334,7 +284,7 @@ enum _ComparisonOperator {
 }
 
 /// An expression that compares two child expressions.
-class _Comparison extends _InfixOperator<bool> {
+class _Comparison extends InfixOperator<bool> {
   static const Map<_ComparisonOperator, String> _operatorNames = {
     _ComparisonOperator.less: '<',
     _ComparisonOperator.lessOrEqual: '<=',

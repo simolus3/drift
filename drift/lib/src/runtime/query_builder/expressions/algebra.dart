@@ -4,13 +4,13 @@ part of '../query_builder.dart';
 extension ArithmeticExpr<DT extends num> on Expression<DT> {
   /// Performs an addition (`this` + [other]) in sql.
   Expression<DT> operator +(Expression<DT> other) {
-    return _BaseInfixOperator(this, '+', other,
+    return BaseInfixOperator(this, '+', other,
         precedence: Precedence.plusMinus);
   }
 
   /// Performs a subtraction (`this` - [other]) in sql.
   Expression<DT> operator -(Expression<DT> other) {
-    return _BaseInfixOperator(this, '-', other,
+    return BaseInfixOperator(this, '-', other,
         precedence: Precedence.plusMinus);
   }
 
@@ -21,13 +21,13 @@ extension ArithmeticExpr<DT extends num> on Expression<DT> {
 
   /// Performs a multiplication (`this` * [other]) in sql.
   Expression<DT> operator *(Expression<DT> other) {
-    return _BaseInfixOperator(this, '*', other,
+    return BaseInfixOperator(this, '*', other,
         precedence: Precedence.mulDivide);
   }
 
   /// Performs a division (`this` / [other]) in sql.
   Expression<DT> operator /(Expression<DT> other) {
-    return _BaseInfixOperator(this, '/', other,
+    return BaseInfixOperator(this, '/', other,
         precedence: Precedence.mulDivide);
   }
 

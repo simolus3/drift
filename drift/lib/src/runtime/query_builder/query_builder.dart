@@ -14,6 +14,7 @@ import '../../utils/async.dart';
 // New files should not be part of this mega library, which we're trying to
 // split up.
 import 'expressions/case_when.dart';
+import 'expressions/internal.dart';
 
 export 'on_table.dart';
 
