@@ -50,6 +50,7 @@ select(animals)..where((a) => a.isMammal | a.amountOfLegs.equals(2));
 ```
 
 ## Arithmetic
+
 For `int` and `double` expressions, you can use the `+`, `-`, `*` and `/` operators. To
 run calculations between a sql expression and a Dart value, wrap it in a `Variable`:
 ```dart
@@ -62,7 +63,12 @@ Future<List<Product>> canBeBought(int amount, int price) {
 ```
 
 String expressions define a `+` operator as well. Just like you would expect, it performs
-concatenation in sql.
+a concatenation in sql.
+
+For integer values, you can use `~`, `bitwiseAnd` and `bitwiseOr` to perform
+bitwise operations:
+
+{% include "blocks/snippet" snippets = snippets name = 'bitwise' %}
 
 ## Nullability
 To check whether an expression evaluates to `NULL` in sql, you can use the `isNull` extension:

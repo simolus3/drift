@@ -17,6 +17,7 @@ import 'expressions/case_when.dart';
 import 'expressions/internal.dart';
 
 export 'on_table.dart';
+export 'expressions/bitwise.dart';
 
 part 'components/group_by.dart';
 part 'components/join.dart';

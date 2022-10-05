@@ -354,7 +354,7 @@ class _UnaryMinus<DT extends Object> extends Expression<DT> {
   @override
   void writeInto(GenerationContext context) {
     context.buffer.write('-');
-    inner.writeInto(context);
+    writeInner(context, inner);
   }
 
   @override
