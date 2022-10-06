@@ -1,4 +1,4 @@
-## 2.2.0-dev
+## 2.2.0
 
 - Always escape column names, avoiding the costs of using a regular expression
   to check whether they need to be escaped.

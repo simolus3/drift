@@ -1,4 +1,4 @@
-## 2.2.0-dev
+## 2.2.0
 
 - __Potentially breaking bug-fix__: Fix the nullability of columns generated for
   Dart-defined views.
