@@ -98,7 +98,7 @@ jobs:
           restore-keys: |
             dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
             dart-dependencies-
-      - run: dart pub global activate melos && melos bootstrap --scope drift_docs
+      - run: dart pub global activate melos && melos bootstrap --scope drift_docs,drift
         working-directory: .
       - name: Run build
         env:
