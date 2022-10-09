@@ -79,6 +79,18 @@ class ElementSerializer {
           'kind': 'sql',
           'sql': source.createView,
         };
+      } else if (source is DartViewSource) {
+        serializedSource = {
+          'kind': 'dart',
+          'query': source.dartQuerySource.toJson(),
+          'primaryFrom': source.primaryFrom != null
+              ? _serializeTableReferenceInDartView(source.primaryFrom!)
+              : null,
+          'staticReferences': [
+            for (final reference in source.staticReferences)
+              _serializeTableReferenceInDartView(reference),
+          ]
+        };
       }
 
       additionalInformation = {
@@ -232,6 +244,14 @@ class ElementSerializer {
     return {
       'table': _serializeElementReference(column.owner),
       'name': column.nameInSql,
+    };
+  }
+
+  Map<String, Object?> _serializeTableReferenceInDartView(
+      TableReferenceInDartView ref) {
+    return {
+      'table': _serializeElementReference(ref.table),
+      'name': ref.name,
     };
   }
 }
@@ -471,10 +491,29 @@ class ElementDeserializer {
         ];
 
         final serializedSource = json['serializedSource'] as Map;
+        final sourceKind = serializedSource['kind'];
         DriftViewSource source;
 
-        if (serializedSource['kind'] == 'sql') {
+        if (sourceKind == 'sql') {
           source = SqlViewSource(serializedSource['sql'] as String);
+        } else if (sourceKind == 'dart') {
+          TableReferenceInDartView readReference(Map json) {
+            final id = DriftElementId.fromJson(json['table'] as Map);
+            final reference = references.singleWhere((e) => e.id == id);
+            return TableReferenceInDartView(
+                reference as DriftTable, json['name'] as String);
+          }
+
+          source = DartViewSource(
+            AnnotatedDartCode.fromJson(json['query'] as Map),
+            json['primaryFrom'] != null
+                ? readReference(json['primaryFrom'] as Map)
+                : null,
+            [
+              for (final element in json['staticReferences'])
+                readReference(element as Map)
+            ],
+          );
         } else {
           throw UnsupportedError('Unknown view source $serializedSource');
         }

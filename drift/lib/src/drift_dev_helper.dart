@@ -2,4 +2,4 @@
 export 'runtime/types/converters.dart' show TypeConverter, JsonTypeConverter;
 export 'runtime/query_builder/query_builder.dart' show TableInfo;
 
-export 'dsl/dsl.dart' show Table, DriftDatabase, DriftAccessor;
+export 'dsl/dsl.dart' show Table, View, DriftDatabase, DriftAccessor;

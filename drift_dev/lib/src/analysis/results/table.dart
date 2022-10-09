@@ -74,11 +74,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.virtualTableData,
     this.writeDefaultConstraints = true,
     this.overrideTableConstraints,
-  }) {
-    for (final column in columns) {
-      column.owner = this;
-    }
-  }
+  });
 
   /// Whether this is a virtual table, created with a `CREATE VIRTUAL TABLE`
   /// statement in SQL.

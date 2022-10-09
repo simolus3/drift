@@ -79,8 +79,9 @@ class DriftColumn implements HasType {
     this.documentationComment,
     this.constraints = const [],
     this.customConstraints,
+    bool foreignConverter = false,
   }) {
-    if (typeConverter != null) {
+    if (typeConverter != null && !foreignConverter) {
       typeConverter!.owningColumn = this;
     }
   }

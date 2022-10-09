@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:analyzer/dart/ast/ast.dart' as dart;
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:recase/recase.dart';
@@ -142,7 +141,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   final DiscoverStep _discoverStep;
   final LibraryElement _library;
 
-  final TypeChecker _isTable, _isTableInfo, _isDatabase, _isDao;
+  final TypeChecker _isTable, _isView, _isTableInfo, _isDatabase, _isDao;
 
   final List<Future<void>> _pendingWork = [];
 
@@ -152,6 +151,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   _FindDartElements(
       this._discoverStep, this._library, KnownDriftTypes knownTypes)
       : _isTable = TypeChecker.fromStatic(knownTypes.tableType),
+        _isView = TypeChecker.fromStatic(knownTypes.viewType),
         _isTableInfo = TypeChecker.fromStatic(knownTypes.tableInfoType),
         _isDatabase = TypeChecker.fromStatic(knownTypes.driftDatabase),
         _isDao = TypeChecker.fromStatic(knownTypes.driftAccessor);
@@ -172,6 +172,10 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
         !_isTableInfo.isAssignableFrom(element);
   }
 
+  bool _isDslView(ClassElement element) {
+    return _isView.isAssignableFrom(element) && !_isView.isExactly(element);
+  }
+
   @override
   void visitClassElement(ClassElement element) {
     if (_isDslTable(element)) {
@@ -181,6 +185,13 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
 
         found.add(DiscoveredDartTable(id, element));
       }));
+    } else if (_isDslView(element)) {
+      final annotation = _driftViewAnnotation(element);
+      final name = annotation?.getField('name')?.toStringValue() ??
+          _defaultNameForTableOrView(element);
+      final id = _discoverStep._id(name);
+
+      found.add(DiscoveredDartView(id, element, annotation));
     } else {
       // Check if this class declares a database or a database accessor.
 
@@ -198,6 +209,21 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     super.visitClassElement(element);
   }
 
+  String _defaultNameForTableOrView(ClassElement definingElement) {
+    return ReCase(definingElement.name).snakeCase;
+  }
+
+  DartObject? _driftViewAnnotation(ClassElement view) {
+    for (final annotation in view.metadata) {
+      final computed = annotation.computeConstantValue();
+      final annotationClass = computed!.type!.nameIfInterfaceType;
+
+      if (annotationClass == 'DriftView') {
+        return computed;
+      }
+    }
+  }
+
   /// Obtains the SQL schema name of a Dart-defined table.
   ///
   /// By default, we use the `snake_case` transformation of the classes' name.
@@ -206,7 +232,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   /// The default behavior can be overridden by declaring a getter named
   /// `tableName` returning a direct string literal.
   Future<String> _sqlNameOfTable(ClassElement table) async {
-    final defaultName = ReCase(table.name).snakeCase;
+    final defaultName = _defaultNameForTableOrView(table);
 
     final tableNameGetter = table.lookUpGetter('tableName', _library);
     if (tableNameGetter == null ||

@@ -66,3 +66,22 @@ class SqlViewSource extends DriftViewSource {
 
   SqlViewSource(this.createView);
 }
+
+/// A table added to a view via a getter.
+class TableReferenceInDartView {
+  /// The table referenced by the getter.
+  final DriftTable table;
+
+  /// Name of the getter adding the table.
+  final String name;
+
+  TableReferenceInDartView(this.table, this.name);
+}
+
+class DartViewSource extends DriftViewSource {
+  final AnnotatedDartCode dartQuerySource;
+  final TableReferenceInDartView? primaryFrom;
+  final List<TableReferenceInDartView> staticReferences;
+
+  DartViewSource(this.dartQuerySource, this.primaryFrom, this.staticReferences);
+}

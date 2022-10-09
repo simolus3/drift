@@ -42,7 +42,11 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
     }
   }
 
-  DriftElementWithResultSet(super.id, super.declaration);
+  DriftElementWithResultSet(super.id, super.declaration) {
+    for (final column in columns) {
+      column.owner = this;
+    }
+  }
 }
 
 /// An existing row data class to be used, replacing the default one generated

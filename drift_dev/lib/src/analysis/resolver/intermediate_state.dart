@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:drift/drift.dart' show DriftView;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../driver/state.dart';
@@ -25,6 +26,13 @@ abstract class DiscoveredDartElement<DE extends Element>
 
 class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
   DiscoveredDartTable(super.ownId, super.dartElement);
+}
+
+class DiscoveredDartView extends DiscoveredDartElement<ClassElement> {
+  /// The [DriftView] annotation on this class, if there is any.
+  DartObject? viewAnnotation;
+
+  DiscoveredDartView(super.ownId, super.dartElement, this.viewAnnotation);
 }
 
 class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {

@@ -5,11 +5,13 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import '../../driver/driver.dart';
+import '../../results/results.dart';
 
 class KnownDriftTypes {
   final LibraryElement helperLibrary;
   final ClassElement tableElement;
   final InterfaceType tableType;
+  final InterfaceType viewType;
   final InterfaceType tableInfoType;
   final InterfaceType driftDatabase;
   final InterfaceType driftAccessor;
@@ -20,6 +22,7 @@ class KnownDriftTypes {
     this.helperLibrary,
     this.tableElement,
     this.tableType,
+    this.viewType,
     this.tableInfoType,
     this.typeConverter,
     this.jsonTypeConverter,
@@ -28,7 +31,7 @@ class KnownDriftTypes {
   );
 
   /// Constructs the set of known drift types from a helper library, which is
-  /// resolved from `package:drift/drift_dev_helper.dart`.
+  /// resolved from `package:drift/src/drift_dev_helper.dart`.
   factory KnownDriftTypes._fromLibrary(LibraryElement helper) {
     final exportNamespace = helper.exportNamespace;
     final tableElement = exportNamespace.get('Table') as ClassElement;
@@ -39,6 +42,7 @@ class KnownDriftTypes {
       helper,
       tableElement,
       tableElement.defaultInstantiation,
+      (exportNamespace.get('View') as InterfaceElement).thisType,
       (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
       exportNamespace.get('TypeConverter') as InterfaceElement,
       exportNamespace.get('JsonTypeConverter') as InterfaceElement,
@@ -163,4 +167,16 @@ extension TypeUtils on DartType {
 
     return getDisplayString(withNullability: true);
   }
+}
+
+class DataClassInformation {
+  final String enforcedName;
+  final AnnotatedDartCode? extending;
+  final ExistingRowClass? existingClass;
+
+  DataClassInformation(
+    this.enforcedName,
+    this.extending,
+    this.existingClass,
+  );
 }

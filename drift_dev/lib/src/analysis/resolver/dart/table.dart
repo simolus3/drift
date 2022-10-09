@@ -106,7 +106,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return table;
   }
 
-  _DataClassInformation _readDataClassInformation(
+  DataClassInformation _readDataClassInformation(
       List<DriftColumn> columns, ClassElement element) {
     DartObject? dataClassName;
     DartObject? useRowClass;
@@ -165,7 +165,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
         ? null
         : validateExistingClass(columns, existingClass,
             constructorInExistingClass!, generateInsertable!, this);
-    return _DataClassInformation(name, customParentClass, verified);
+    return DataClassInformation(name, customParentClass, verified);
   }
 
   Future<Set<DriftColumn>?> _readPrimaryKey(
@@ -330,16 +330,4 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       MethodDeclaration declaration, Element element) async {
     return ColumnParser(this).parse(declaration, element);
   }
-}
-
-class _DataClassInformation {
-  final String enforcedName;
-  final AnnotatedDartCode? extending;
-  final ExistingRowClass? existingClass;
-
-  _DataClassInformation(
-    this.enforcedName,
-    this.extending,
-    this.existingClass,
-  );
 }

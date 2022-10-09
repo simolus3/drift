@@ -8,6 +8,7 @@ import '../results/element.dart';
 
 import 'dart/accessor.dart' as dart_accessor;
 import 'dart/table.dart' as dart_table;
+import 'dart/view.dart' as dart_view;
 import 'drift/index.dart' as drift_index;
 import 'drift/query.dart' as drift_query;
 import 'drift/table.dart' as drift_table;
@@ -49,6 +50,9 @@ class DriftResolver {
     } else if (discovered is DiscoveredDartTable) {
       resolver = dart_table.DartTableResolver(
           fileState, discovered, this, elementState);
+    } else if (discovered is DiscoveredDartView) {
+      resolver =
+          dart_view.DartViewResolver(fileState, discovered, this, elementState);
     } else if (discovered is DiscoveredBaseAccessor) {
       resolver = dart_accessor.DartAccessorResolver(
           fileState, discovered, this, elementState);
