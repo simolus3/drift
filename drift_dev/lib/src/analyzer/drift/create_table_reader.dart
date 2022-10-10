@@ -112,6 +112,9 @@ class CreateTableReader {
           final sqlDefault = constraint.expression.span!.text;
           defaultValue = '$expressionName(${asDartLiteral(sqlDefault)})';
         }
+        if (constraint is GeneratedAs) {
+          generatedAs = ColumnGeneratedAs(null, constraint.stored);
+        }
 
         if (constraint is MappedBy) {
           if (converter != null) {
