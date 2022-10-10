@@ -38,8 +38,12 @@ abstract class Column<T extends Object> extends Expression<T> {
   /// needed.
   String get name;
 
-  /// [name], but escaped if it's an sql keyword.
-  String get escapedName => escapeIfNeeded(name);
+  /// [name], but wrapped in double quotes to escape it as a a same identifier.
+  ///
+  /// In the past, this getter only used to add double-quotes when that is
+  /// really needed (for instance because [name] is also a reserved keyword).
+  /// For performance reasons, we unconditionally escape names now.
+  String get escapedName => '"$name"';
 }
 
 /// A column that stores int values.

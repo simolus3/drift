@@ -1,18 +1,13 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// GENERATED CODE, DO NOT EDIT BY HAND.
+//@dart=2.12
+import 'package:drift/drift.dart';
 
-part of 'database.dart';
-
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
-// ignore_for_file: type=lint
-class User extends DataClass implements Insertable<User> {
+class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
   final DateTime? birthday;
   final int? nextUser;
-  const User(
+  const UsersData(
       {required this.id, required this.name, this.birthday, this.nextUser});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -41,10 +36,10 @@ class User extends DataClass implements Insertable<User> {
     );
   }
 
-  factory User.fromJson(Map<String, dynamic> json,
+  factory UsersData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return User(
+    return UsersData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       birthday: serializer.fromJson<DateTime?>(json['birthday']),
@@ -62,12 +57,12 @@ class User extends DataClass implements Insertable<User> {
     };
   }
 
-  User copyWith(
+  UsersData copyWith(
           {int? id,
           String? name,
           Value<DateTime?> birthday = const Value.absent(),
           Value<int?> nextUser = const Value.absent()}) =>
-      User(
+      UsersData(
         id: id ?? this.id,
         name: name ?? this.name,
         birthday: birthday.present ? birthday.value : this.birthday,
@@ -75,7 +70,7 @@ class User extends DataClass implements Insertable<User> {
       );
   @override
   String toString() {
-    return (StringBuffer('User(')
+    return (StringBuffer('UsersData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('birthday: $birthday, ')
@@ -89,14 +84,14 @@ class User extends DataClass implements Insertable<User> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is User &&
+      (other is UsersData &&
           other.id == this.id &&
           other.name == this.name &&
           other.birthday == this.birthday &&
           other.nextUser == this.nextUser);
 }
 
-class UsersCompanion extends UpdateCompanion<User> {
+class UsersCompanion extends UpdateCompanion<UsersData> {
   final Value<int> id;
   final Value<String> name;
   final Value<DateTime?> birthday;
@@ -113,7 +108,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.birthday = const Value.absent(),
     this.nextUser = const Value.absent(),
   });
-  static Insertable<User> custom({
+  static Insertable<UsersData> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<DateTime>? birthday,
@@ -170,32 +165,24 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+class Users extends Table with TableInfo<Users, UsersData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
+  Users(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  final VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
-  final VerificationMeta _birthdayMeta = const VerificationMeta('birthday');
-  @override
   late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
       'birthday', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  final VerificationMeta _nextUserMeta = const VerificationMeta('nextUser');
-  @override
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
@@ -208,38 +195,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   String get actualTableName => 'users';
   @override
-  VerificationContext validateIntegrity(Insertable<User> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    }
-    if (data.containsKey('birthday')) {
-      context.handle(_birthdayMeta,
-          birthday.isAcceptableOrUnknown(data['birthday']!, _birthdayMeta));
-    }
-    if (data.containsKey('next_user')) {
-      context.handle(_nextUserMeta,
-          nextUser.isAcceptableOrUnknown(data['next_user']!, _nextUserMeta));
-    }
-    return context;
-  }
-
-  @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
         {name, birthday},
       ];
   @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+  UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
+    return UsersData(
       id: attachedDatabase.options.types
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.options.types
@@ -252,17 +216,20 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  Users createAlias(String alias) {
+    return Users(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => false;
 }
 
-class Group extends DataClass implements Insertable<Group> {
+class GroupsData extends DataClass implements Insertable<GroupsData> {
   final int id;
   final String title;
   final bool? deleted;
   final int owner;
-  const Group(
+  const GroupsData(
       {required this.id,
       required this.title,
       this.deleted,
@@ -290,10 +257,10 @@ class Group extends DataClass implements Insertable<Group> {
     );
   }
 
-  factory Group.fromJson(Map<String, dynamic> json,
+  factory GroupsData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Group(
+    return GroupsData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       deleted: serializer.fromJson<bool?>(json['deleted']),
@@ -311,12 +278,12 @@ class Group extends DataClass implements Insertable<Group> {
     };
   }
 
-  Group copyWith(
+  GroupsData copyWith(
           {int? id,
           String? title,
           Value<bool?> deleted = const Value.absent(),
           int? owner}) =>
-      Group(
+      GroupsData(
         id: id ?? this.id,
         title: title ?? this.title,
         deleted: deleted.present ? deleted.value : this.deleted,
@@ -324,7 +291,7 @@ class Group extends DataClass implements Insertable<Group> {
       );
   @override
   String toString() {
-    return (StringBuffer('Group(')
+    return (StringBuffer('GroupsData(')
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('deleted: $deleted, ')
@@ -338,14 +305,14 @@ class Group extends DataClass implements Insertable<Group> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Group &&
+      (other is GroupsData &&
           other.id == this.id &&
           other.title == this.title &&
           other.deleted == this.deleted &&
           other.owner == this.owner);
 }
 
-class GroupsCompanion extends UpdateCompanion<Group> {
+class GroupsCompanion extends UpdateCompanion<GroupsData> {
   final Value<int> id;
   final Value<String> title;
   final Value<bool?> deleted;
@@ -363,7 +330,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     required int owner,
   })  : title = Value(title),
         owner = Value(owner);
-  static Insertable<Group> custom({
+  static Insertable<GroupsData> custom({
     Expression<int>? id,
     Expression<String>? title,
     Expression<bool>? deleted,
@@ -420,31 +387,27 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   }
 }
 
-class Groups extends Table with TableInfo<Groups, Group> {
+class Groups extends Table with TableInfo<Groups, GroupsData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Groups(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
   late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
       'deleted', aliasedName, true,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
-  final VerificationMeta _ownerMeta = const VerificationMeta('owner');
   late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
       type: DriftSqlType.int,
@@ -457,38 +420,11 @@ class Groups extends Table with TableInfo<Groups, Group> {
   @override
   String get actualTableName => 'groups';
   @override
-  VerificationContext validateIntegrity(Insertable<Group> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
-    } else if (isInserting) {
-      context.missing(_titleMeta);
-    }
-    if (data.containsKey('deleted')) {
-      context.handle(_deletedMeta,
-          deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta));
-    }
-    if (data.containsKey('owner')) {
-      context.handle(
-          _ownerMeta, owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta));
-    } else if (isInserting) {
-      context.missing(_ownerMeta);
-    }
-    return context;
-  }
-
-  @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Group map(Map<String, dynamic> data, {String? tablePrefix}) {
+  GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Group(
+    return GroupsData(
       id: attachedDatabase.options.types
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       title: attachedDatabase.options.types
@@ -511,11 +447,11 @@ class Groups extends Table with TableInfo<Groups, Group> {
   bool get dontWriteConstraints => true;
 }
 
-class Note extends DataClass implements Insertable<Note> {
+class NotesData extends DataClass implements Insertable<NotesData> {
   final String title;
   final String content;
   final String searchTerms;
-  const Note(
+  const NotesData(
       {required this.title, required this.content, required this.searchTerms});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -534,13 +470,13 @@ class Note extends DataClass implements Insertable<Note> {
     );
   }
 
-  factory Note.fromJson(Map<String, dynamic> json,
+  factory NotesData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Note(
+    return NotesData(
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
-      searchTerms: serializer.fromJson<String>(json['search_terms']),
+      searchTerms: serializer.fromJson<String>(json['searchTerms']),
     );
   }
   @override
@@ -549,18 +485,19 @@ class Note extends DataClass implements Insertable<Note> {
     return <String, dynamic>{
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
-      'search_terms': serializer.toJson<String>(searchTerms),
+      'searchTerms': serializer.toJson<String>(searchTerms),
     };
   }
 
-  Note copyWith({String? title, String? content, String? searchTerms}) => Note(
+  NotesData copyWith({String? title, String? content, String? searchTerms}) =>
+      NotesData(
         title: title ?? this.title,
         content: content ?? this.content,
         searchTerms: searchTerms ?? this.searchTerms,
       );
   @override
   String toString() {
-    return (StringBuffer('Note(')
+    return (StringBuffer('NotesData(')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('searchTerms: $searchTerms')
@@ -573,13 +510,13 @@ class Note extends DataClass implements Insertable<Note> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Note &&
+      (other is NotesData &&
           other.title == this.title &&
           other.content == this.content &&
           other.searchTerms == this.searchTerms);
 }
 
-class NotesCompanion extends UpdateCompanion<Note> {
+class NotesCompanion extends UpdateCompanion<NotesData> {
   final Value<String> title;
   final Value<String> content;
   final Value<String> searchTerms;
@@ -595,7 +532,7 @@ class NotesCompanion extends UpdateCompanion<Note> {
   })  : title = Value(title),
         content = Value(content),
         searchTerms = Value(searchTerms);
-  static Insertable<Note> custom({
+  static Insertable<NotesData> custom({
     Expression<String>? title,
     Expression<String>? content,
     Expression<String>? searchTerms,
@@ -645,25 +582,21 @@ class NotesCompanion extends UpdateCompanion<Note> {
 }
 
 class Notes extends Table
-    with TableInfo<Notes, Note>, VirtualTableInfo<Notes, Note> {
+    with TableInfo<Notes, NotesData>, VirtualTableInfo<Notes, NotesData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Notes(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
-  final VerificationMeta _contentMeta = const VerificationMeta('content');
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
-  final VerificationMeta _searchTermsMeta =
-      const VerificationMeta('searchTerms');
   late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
       'search_terms', aliasedName, false,
       type: DriftSqlType.string,
@@ -676,39 +609,11 @@ class Notes extends Table
   @override
   String get actualTableName => 'notes';
   @override
-  VerificationContext validateIntegrity(Insertable<Note> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
-    } else if (isInserting) {
-      context.missing(_titleMeta);
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    } else if (isInserting) {
-      context.missing(_contentMeta);
-    }
-    if (data.containsKey('search_terms')) {
-      context.handle(
-          _searchTermsMeta,
-          searchTerms.isAcceptableOrUnknown(
-              data['search_terms']!, _searchTermsMeta));
-    } else if (isInserting) {
-      context.missing(_searchTermsMeta);
-    }
-    return context;
-  }
-
-  @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
-  Note map(Map<String, dynamic> data, {String? tablePrefix}) {
+  NotesData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Note(
+    return NotesData(
       title: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       content: attachedDatabase.options.types
@@ -807,7 +712,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
     implements HasResultSet {
   final String? _alias;
   @override
-  final _$Database attachedDatabase;
+  final DatabaseAtV8 attachedDatabase;
   GroupCount(this.attachedDatabase, [this._alias]);
   @override
   List<GeneratedColumn> get $columns =>
@@ -817,8 +722,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   @override
   String get entityName => 'group_count';
   @override
-  String get createViewStmt =>
-      'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users';
+  String? get createViewStmt => null;
   @override
   GroupCount get asDslTable => this;
   @override
@@ -860,13 +764,13 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   @override
   Query? get query => null;
   @override
-  Set<String> get readTables => const {'groups', 'users'};
+  Set<String> get readTables => const {};
 }
 
-abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(e);
-  _$Database.connect(DatabaseConnection c) : super.connect(c);
-  late final $UsersTable users = $UsersTable(this);
+class DatabaseAtV8 extends GeneratedDatabase {
+  DatabaseAtV8(QueryExecutor e) : super(e);
+  DatabaseAtV8.connect(DatabaseConnection c) : super.connect(c);
+  late final Users users = Users(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
   late final Notes notes = Notes(this);
@@ -876,6 +780,8 @@ abstract class _$Database extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [users, groups, groupCount, notes];
+  @override
+  int get schemaVersion => 8;
   @override
   DriftDatabaseOptions get options =>
       const DriftDatabaseOptions(storeDateTimeAsText: true);

@@ -140,9 +140,9 @@ extension NameWithAlias on ResultSetImplementation<dynamic, dynamic> {
   /// for a table called users that has been aliased as "u".
   String get tableWithAlias {
     if (aliasedName == entityName) {
-      return entityName;
+      return '"$entityName"';
     } else {
-      return '$entityName $aliasedName';
+      return '"$entityName" "$aliasedName"';
     }
   }
 }

@@ -5,7 +5,11 @@ import 'package:drift/src/sqlite3/native_functions.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
+import '../../test_utils/database_vm.dart';
+
 void main() {
+  preferLocalSqlite3();
+
   late Database db;
 
   setUp(() => db = sqlite3.openInMemory()..useNativeFunctions());

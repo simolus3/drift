@@ -1,7 +1,6 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show SqlDialect;
-import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
@@ -73,13 +72,6 @@ class SqlWriter extends NodeSqlBuilder {
   FoundVariable? _findMoorVar(Variable target) {
     return query!.variables.firstWhereOrNull(
         (f) => f.variable.resolvedIndex == target.resolvedIndex);
-  }
-
-  @override
-  void identifier(String identifier,
-      {bool spaceBefore = true, bool spaceAfter = true}) {
-    final escaped = escapeIfNeeded(identifier, options.effectiveDialect);
-    symbol(escaped, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
   }
 
   void _writeMoorVariable(FoundVariable variable) {

@@ -67,7 +67,7 @@ class ColumnParser {
 
     if (expr is! FunctionExpressionInvocation) {
       base.step.reportError(ErrorInDartCode(
-        affectedElement: getter.declaredElement2,
+        affectedElement: getter.declaredElement,
         message: _errorMessage,
         severity: Severity.criticalError,
       ));
@@ -106,7 +106,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
-                affectedElement: getter.declaredElement2,
+                affectedElement: getter.declaredElement,
                 message:
                     "You're setting more than one name here, the first will "
                     'be used',
@@ -119,7 +119,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.error,
-                affectedElement: getter.declaredElement2,
+                affectedElement: getter.declaredElement,
                 message:
                     'This table name is cannot be resolved! Please only use '
                     'a constant string as parameter for .named().',
@@ -134,7 +134,7 @@ class ColumnParser {
           if (first is! Identifier) {
             base.step.reportError(ErrorInDartCode(
               message: 'This parameter should be a simple class name',
-              affectedElement: getter.declaredElement2,
+              affectedElement: getter.declaredElement,
               affectedNode: first,
             ));
             break;
@@ -144,7 +144,7 @@ class ColumnParser {
           if (staticElement is! ClassElement) {
             base.step.reportError(ErrorInDartCode(
               message: '${first.name} is not a class!',
-              affectedElement: getter.declaredElement2,
+              affectedElement: getter.declaredElement,
               affectedNode: first,
             ));
             break;
@@ -154,7 +154,7 @@ class ColumnParser {
           if (columnNameNode is! SymbolLiteral) {
             base.step.reportError(ErrorInDartCode(
               message: 'This should be a symbol literal (`#columnName`)',
-              affectedElement: getter.declaredElement2,
+              affectedElement: getter.declaredElement,
               affectedNode: columnNameNode,
             ));
             break;
@@ -170,7 +170,7 @@ class ColumnParser {
               base.step.reportError(ErrorInDartCode(
                 message:
                     'Should be a direct enum reference (`KeyAction.cascade`)',
-                affectedElement: getter.declaredElement2,
+                affectedElement: getter.declaredElement,
                 affectedNode: expr,
               ));
               return null;
@@ -209,7 +209,7 @@ class ColumnParser {
             columnName,
             onUpdate,
             onDelete,
-            getter.declaredElement2,
+            getter.declaredElement,
             first,
             columnNameNode,
           ));
@@ -242,7 +242,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
-                affectedElement: getter.declaredElement2,
+                affectedElement: getter.declaredElement,
                 affectedNode: remainingExpr.methodName,
                 message:
                     "You've already set custom constraints on this column, "
@@ -256,7 +256,7 @@ class ColumnParser {
             base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
-                affectedElement: getter.declaredElement2,
+                affectedElement: getter.declaredElement,
                 message:
                     'This constraint is cannot be resolved! Please only use '
                     'a constant string as parameter for .customConstraint().',
@@ -339,7 +339,7 @@ class ColumnParser {
     if (foundExplicitName != null) {
       name = ColumnName.explicitly(foundExplicitName);
     } else {
-      name = ColumnName.implicitly(ReCase(getter.name2.lexeme).snakeCase);
+      name = ColumnName.implicitly(ReCase(getter.name.lexeme).snakeCase);
     }
 
     final columnType = _startMethodToColumnType(foundStartMethod);
@@ -368,7 +368,7 @@ class ColumnParser {
         base.step.reportError(ErrorInDartCode(
           message: 'Using $startEnum will apply a custom converter by default, '
               "so you can't add an additional converter",
-          affectedElement: getter.declaredElement2,
+          affectedElement: getter.declaredElement,
           severity: Severity.warning,
         ));
       }
@@ -380,7 +380,7 @@ class ColumnParser {
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
           message: e.errorDescription,
-          affectedElement: getter.declaredElement2,
+          affectedElement: getter.declaredElement,
           severity: Severity.error,
         ));
       }
@@ -390,7 +390,7 @@ class ColumnParser {
       base.step.reportError(
         ErrorInDartCode(
           severity: Severity.warning,
-          affectedElement: getter.declaredElement2,
+          affectedElement: getter.declaredElement,
           message: 'clientDefault() and withDefault() are mutually exclusive, '
               "they can't both be used. Use clientDefault() for values that "
               'are different for each row and withDefault() otherwise.',
@@ -403,7 +403,7 @@ class ColumnParser {
       base.step.reportError(
         ErrorInDartCode(
           severity: Severity.error,
-          affectedElement: getter.declaredElement2,
+          affectedElement: getter.declaredElement,
           message: 'Primary key column cannot have UNIQUE constraint',
         ),
       );
@@ -413,7 +413,7 @@ class ColumnParser {
       base.step.reportError(
         ErrorInDartCode(
           severity: Severity.warning,
-          affectedElement: getter.declaredElement2,
+          affectedElement: getter.declaredElement,
           message: 'This column definition is using both drift-defined '
               'constraints (like references, autoIncrement, ...) and a '
               'customConstraint(). Only the custom constraint will be added '
@@ -426,7 +426,7 @@ class ColumnParser {
         getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
     return DriftColumn(
       type: columnType,
-      dartGetterName: getter.name2.lexeme,
+      dartGetterName: getter.name.lexeme,
       name: name,
       overriddenJsonName: _readJsonKey(element),
       customConstraints: foundCustomConstraint,

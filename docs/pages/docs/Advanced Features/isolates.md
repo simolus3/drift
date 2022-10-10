@@ -13,6 +13,27 @@ With Drift's isolate setup, you only need to change how you _open_ your database
 Drift will apply its magic and send all database operations to an internal server running on
 a background isolate. Zero code changes are needed for queries!
 
+{% block "blocks/alert" title="Drift isolate - key points" color="success" %}
+
+- Drift isolates have two primary use cases: To reduce the workload on your main
+  isolate by running queries in the background; or to seamlessly share a stateful
+  drift database between two isolates.
+- You can see [this example](https://github.com/simolus3/drift/blob/develop/examples/app/lib/database/connection/native.dart)
+  (and the rest of that small project) for a working setup using drift isolates.
+- Internally, a drift isolate is an in-process database server receiving queries to
+  execute through [`ReceivePort`s](https://api.dart.dev/stable/2.18.2/dart-isolate/ReceivePort-class.html).
+  Drift hides the complexity of managing and talking to this server from you.
+- You can use isolates and drift together without using a `DriftIsolate`! Are
+  `DriftIsolate` just lets two isolates talk to the exact same drift database
+  connection. If your isolates can have separate database connections, simply open
+  your database on each isolate independently. There's no need for a `DriftIsolate`
+  in that case.
+- Drift's isolate implementation is generic enough to work over any reliable
+  communication channel: You can also share a drift database between web workers
+  or even over a TCP socket! For details, see the platform-independent [remote](https://pub.dev/documentation/drift/latest/drift.remote/drift.remote-library.html)
+  library.
+{% endblock %}
+
 {% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
 
 ## Preparations

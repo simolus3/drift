@@ -7,13 +7,17 @@ extension BooleanExpressionOperators on Expression<bool> {
   Expression<bool> not() => _NotExpression(this);
 
   /// Returns an expression that is true iff both `this` and [other] are true.
+  ///
+  /// For a bitwise-and on two numbers, see [BitwiseInt.bitwiseAnd].
   Expression<bool> operator &(Expression<bool> other) {
-    return _BaseInfixOperator(this, 'AND', other, precedence: Precedence.and);
+    return BaseInfixOperator(this, 'AND', other, precedence: Precedence.and);
   }
 
   /// Returns an expression that is true if `this` or [other] are true.
+  ///
+  /// For a bitwise-or on two numbers, see [BitwiseInt.bitwiseOr].
   Expression<bool> operator |(Expression<bool> other) {
-    return _BaseInfixOperator(this, 'OR', other, precedence: Precedence.or);
+    return BaseInfixOperator(this, 'OR', other, precedence: Precedence.or);
   }
 }
 

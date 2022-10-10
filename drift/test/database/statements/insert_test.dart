@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -24,7 +24,7 @@ void main() {
           title: Value.absent(),
         ));
 
-    verify(executor.runInsert('INSERT INTO todos (content) VALUES (?)',
+    verify(executor.runInsert('INSERT INTO "todos" ("content") VALUES (?)',
         ['Implement insert statements']));
   });
 
@@ -35,10 +35,10 @@ void main() {
             .toInsertable());
 
     verify(executor.runInsert(
-        'INSERT INTO table_without_p_k '
-        '(not_really_an_id, some_float, web_safe_int, custom) '
-        'VALUES (?, ?, NULL, ?)',
-        [42, 3.1415, anything]));
+        'INSERT INTO "table_without_p_k" '
+        '("not_really_an_id", "some_float", "web_safe_int", "custom") '
+        'VALUES (?, ?, ?, ?)',
+        [42, 3.1415, isNull, anything]));
   });
 
   test('can insert BigInt values', () async {
@@ -47,8 +47,8 @@ void main() {
         .toInsertable());
 
     verify(executor.runInsert(
-        'INSERT INTO table_without_p_k '
-        '(not_really_an_id, some_float, web_safe_int, custom) '
+        'INSERT INTO "table_without_p_k" '
+        '("not_really_an_id", "some_float", "web_safe_int", "custom") '
         'VALUES (?, ?, ?, ?)',
         [42, 0.0, BigInt.one, anything]));
   });
@@ -62,14 +62,15 @@ void main() {
         mode: InsertMode.insertOrReplace);
 
     verify(executor.runInsert(
-        'INSERT OR REPLACE INTO todos (id, content) VALUES (?, ?)',
+        'INSERT OR REPLACE INTO "todos" ("id", "content") VALUES (?, ?)',
         [113, 'Done']));
   });
 
   test('generates DEFAULT VALUES statement when otherwise empty', () async {
     await db.into(db.pureDefaults).insert(const PureDefaultsCompanion());
 
-    verify(executor.runInsert('INSERT INTO pure_defaults DEFAULT VALUES', []));
+    verify(
+        executor.runInsert('INSERT INTO "pure_defaults" DEFAULT VALUES', []));
   });
 
   test('notifies stream queries on inserts', () async {
@@ -156,7 +157,8 @@ void main() {
           TodosTableCompanion.insert(content: 'content', title: Value(null)));
 
       verify(executor.runInsert(
-          'INSERT INTO todos (title, content) VALUES (NULL, ?)', ['content']));
+          'INSERT INTO "todos" ("title", "content") VALUES (?, ?)',
+          [null, 'content']));
     });
   });
 
@@ -180,7 +182,7 @@ void main() {
         r'[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}');
 
     verify(executor.runInsert(
-      'INSERT INTO table_without_p_k (not_really_an_id, some_float, custom) '
+      'INSERT INTO "table_without_p_k" ("not_really_an_id", "some_float", "custom") '
       'VALUES (?, ?, ?)',
       [3, 3.14, matches(uuidRegex)],
     ));
@@ -190,8 +192,8 @@ void main() {
     await db.into(db.pureDefaults).insert(
         PureDefaultsCompanion.insert(txt: Value(MyCustomObject('foo'))));
 
-    verify(executor
-        .runInsert('INSERT INTO pure_defaults ("insert") VALUES (?)', ['foo']));
+    verify(executor.runInsert(
+        'INSERT INTO "pure_defaults" ("insert") VALUES (?)', ['foo']));
   });
 
   test('can insert custom companions', () async {
@@ -203,7 +205,7 @@ void main() {
 
     verify(
       executor.runInsert(
-        'INSERT INTO users (name, is_awesome, profile_picture, creation_time) '
+        'INSERT INTO "users" ("name", "is_awesome", "profile_picture", "creation_time") '
         'VALUES (?, 1, _custom_, '
         "CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER))",
         ['User name'],
@@ -221,8 +223,8 @@ void main() {
     );
 
     verify(executor.runInsert(
-      'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT(id) DO UPDATE SET content = ? || content',
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("id") DO UPDATE SET "content" = ? || "content"',
       argThat(equals(['my content', 'important: '])),
     ));
   });
@@ -237,9 +239,9 @@ void main() {
         );
 
     verify(executor.runInsert(
-      'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT(id) DO UPDATE SET content = ? || content '
-      'WHERE category = ?',
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("id") DO UPDATE SET "content" = ? || "content" '
+      'WHERE "category" = ?',
       argThat(equals(['my content', 'important: ', 1])),
     ));
   });
@@ -267,9 +269,9 @@ void main() {
               ]));
 
       verify(executor.runInsert(
-        'INSERT INTO todos (content) VALUES (?) '
-        'ON CONFLICT(id) DO UPDATE SET content = ? || content '
-        'ON CONFLICT(content) DO UPDATE SET content = ? || content',
+        'INSERT INTO "todos" ("content") VALUES (?) '
+        'ON CONFLICT("id") DO UPDATE SET "content" = ? || "content" '
+        'ON CONFLICT("content") DO UPDATE SET "content" = ? || "content"',
         argThat(equals(['my content', 'important: ', 'second: '])),
       ));
     },
@@ -295,11 +297,11 @@ void main() {
               ]));
 
       verify(executor.runInsert(
-        'INSERT INTO todos (content) VALUES (?) '
-        'ON CONFLICT(id) DO UPDATE SET content = ? || content '
-        'WHERE category = ? '
-        'ON CONFLICT(content) DO UPDATE SET content = ? || content '
-        'WHERE category = ?',
+        'INSERT INTO "todos" ("content") VALUES (?) '
+        'ON CONFLICT("id") DO UPDATE SET "content" = ? || "content" '
+        'WHERE "category" = ? '
+        'ON CONFLICT("content") DO UPDATE SET "content" = ? || "content" '
+        'WHERE "category" = ?',
         argThat(equals(['my content', 'important: ', 1, 'second: ', 1])),
       ));
     },
@@ -315,8 +317,8 @@ void main() {
         );
 
     verify(executor.runInsert(
-      'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT(content) DO UPDATE SET content = ?',
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("content") DO UPDATE SET "content" = ?',
       argThat(equals(['my content', 'changed'])),
     ));
   });
@@ -331,9 +333,9 @@ void main() {
         );
 
     verify(executor.runInsert(
-      'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT(content) DO UPDATE SET content = ? '
-      'WHERE content = title',
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("content") DO UPDATE SET "content" = ? '
+      'WHERE "content" = "title"',
       argThat(equals(['my content', 'changed'])),
     ));
   });
@@ -345,8 +347,8 @@ void main() {
         TodosTableCompanion.insert(content: 'content', id: const Value(3)));
 
     verify(executor.runInsert(
-      'INSERT INTO todos (id, content) VALUES (?, ?) '
-      'ON CONFLICT(id) DO UPDATE SET id = ?, content = ?',
+      'INSERT INTO "todos" ("id", "content") VALUES (?, ?) '
+      'ON CONFLICT("id") DO UPDATE SET "id" = ?, "content" = ?',
       [3, 'content', 3, 'content'],
     ));
     expect(id, 3);
@@ -363,9 +365,9 @@ void main() {
         );
 
     verify(executor.runInsert(
-      'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT(id) DO UPDATE '
-      'SET content = todos.content || excluded.content',
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("id") DO UPDATE '
+      'SET "content" = "todos"."content" || "excluded"."content"',
       ['content'],
     ));
   });
@@ -381,10 +383,10 @@ void main() {
         );
 
     verify(executor.runInsert(
-      'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT(id) DO UPDATE '
-      'SET content = todos.content || excluded.content '
-      'WHERE todos.title = excluded.title',
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("id") DO UPDATE '
+      'SET "content" = "todos"."content" || "excluded"."content" '
+      'WHERE "todos"."title" = "excluded"."title"',
       ['content'],
     ));
   });
@@ -396,7 +398,7 @@ void main() {
         ));
 
     verify(executor.runInsert(
-      'INSERT INTO categories ("desc", priority) VALUES (?, ?)',
+      'INSERT INTO "categories" ("desc", "priority") VALUES (?, ?)',
       ['description', 1],
     ));
   });
@@ -419,7 +421,7 @@ void main() {
         ));
 
     verify(executor.runSelect(
-      'INSERT INTO categories ("desc", priority) VALUES (?, ?) RETURNING *',
+      'INSERT INTO "categories" ("desc", "priority") VALUES (?, ?) RETURNING *',
       ['description', 1],
     ));
   });
@@ -431,7 +433,7 @@ void main() {
           .insert(CategoriesCompanion.insert(description: 'description'));
 
       verify(executor.runInsert(
-          'INSERT INTO categories ("desc") VALUES (?)', ['description']));
+          'INSERT INTO "categories" ("desc") VALUES (?)', ['description']));
     });
 
     test('insertOne', () async {
@@ -440,7 +442,7 @@ void main() {
           mode: InsertMode.insertOrReplace);
 
       verify(executor.runInsert(
-          'INSERT OR REPLACE INTO categories ("desc") VALUES (?)',
+          'INSERT OR REPLACE INTO "categories" ("desc") VALUES (?)',
           ['description']));
     });
 
@@ -469,7 +471,7 @@ void main() {
       );
 
       verify(executor.runSelect(
-        'INSERT INTO categories ("desc") VALUES (?) RETURNING *',
+        'INSERT INTO "categories" ("desc") VALUES (?) RETURNING *',
         ['description'],
       ));
     });

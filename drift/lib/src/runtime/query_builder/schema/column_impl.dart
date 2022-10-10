@@ -175,7 +175,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
     } else {
       if (context.hasMultipleTables) {
         context.buffer
-          ..write(tableName)
+          ..write(context.identifier(tableName))
           ..write('.');
       }
       context.buffer.write(ignoreEscape ? $name : escapedName);

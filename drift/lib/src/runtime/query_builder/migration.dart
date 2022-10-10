@@ -227,15 +227,16 @@ class Migrator {
         expr.writeInto(context);
         first = false;
       }
-      context.buffer.write(' FROM ${escapeIfNeeded(tableName)};');
+      context.buffer.write(' FROM ${context.identifier(tableName)};');
       await _issueCustomQuery(context.sql, context.introducedVariables);
 
       // Step 6: Drop the old table
-      await _issueCustomQuery('DROP TABLE ${escapeIfNeeded(tableName)}');
+      await _issueCustomQuery('DROP TABLE ${context.identifier(tableName)}');
 
       // Step 7: Rename the new table to the old name
-      await _issueCustomQuery('ALTER TABLE ${escapeIfNeeded(temporaryName)} '
-          'RENAME TO ${escapeIfNeeded(tableName)}');
+      await _issueCustomQuery(
+          'ALTER TABLE ${context.identifier(temporaryName)} '
+          'RENAME TO ${context.identifier(tableName)}');
 
       // Step 8: Re-create associated indexes, triggers and views
       for (final stmt in createAffected) {
@@ -253,7 +254,7 @@ class Migrator {
 
   void _writeCreateTable(TableInfo table, GenerationContext context) {
     context.buffer.write('CREATE TABLE IF NOT EXISTS '
-        '${escapeIfNeeded(table.aliasedName, context.dialect)} (');
+        '${context.identifier(table.aliasedName)} (');
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
@@ -281,7 +282,7 @@ class Migrator {
       for (var i = 0; i < pkList.length; i++) {
         final column = pkList[i];
 
-        context.buffer.write(escapeIfNeeded(column.$name));
+        context.buffer.write(column.escapedName);
 
         if (i != pkList.length - 1) context.buffer.write(', ');
       }
@@ -295,7 +296,7 @@ class Migrator {
         for (var i = 0; i < uqList.length; i++) {
           final column = uqList[i];
 
-          context.buffer.write(escapeIfNeeded(column.name));
+          context.buffer.write(column.escapedName);
 
           if (i != uqList.length - 1) context.buffer.write(', ');
         }
@@ -327,7 +328,7 @@ class Migrator {
   void _writeCreateVirtual(VirtualTableInfo table, GenerationContext context) {
     context.buffer
       ..write('CREATE VIRTUAL TABLE IF NOT EXISTS ')
-      ..write(escapeIfNeeded(table.aliasedName))
+      ..write(context.identifier(table.aliasedName))
       ..write(' USING ')
       ..write(table.moduleAndArgs)
       ..write(';');
@@ -353,8 +354,8 @@ class Migrator {
       final columnNames = view.$columns.map((e) => e.escapedName).join(', ');
 
       context.generatingForView = view.entityName;
-      context.buffer.write(
-          'CREATE VIEW IF NOT EXISTS ${view.entityName} ($columnNames) AS ');
+      context.buffer.write('CREATE VIEW IF NOT EXISTS '
+          '${context.identifier(view.entityName)} ($columnNames) AS ');
       view.query!.writeInto(context);
       await _issueCustomQuery(context.sql, const []);
     }
@@ -362,7 +363,8 @@ class Migrator {
 
   /// Drops a table, trigger or index.
   Future<void> drop(DatabaseSchemaEntity entity) async {
-    final escapedName = escapeIfNeeded(entity.entityName);
+    final context = _createContext();
+    final escapedName = context.identifier(entity.entityName);
 
     String kind;
 
@@ -385,15 +387,17 @@ class Migrator {
   /// Deletes the table with the given name. Note that this function does not
   /// escape the [name] parameter.
   Future<void> deleteTable(String name) async {
-    return _issueCustomQuery('DROP TABLE IF EXISTS $name;');
+    final context = _createContext();
+    return _issueCustomQuery(
+        'DROP TABLE IF EXISTS ${context.identifier(name)};');
   }
 
   /// Adds the given column to the specified table.
   Future<void> addColumn(TableInfo table, GeneratedColumn column) async {
     final context = _createContext();
 
-    context.buffer
-        .write('ALTER TABLE ${escapeIfNeeded(table.aliasedName)} ADD COLUMN ');
+    context.buffer.write(
+        'ALTER TABLE ${context.identifier(table.aliasedName)} ADD COLUMN ');
     column.writeColumnDefinition(context);
     context.buffer.write(';');
 
@@ -421,8 +425,8 @@ class Migrator {
       TableInfo table, String oldName, GeneratedColumn column) async {
     final context = _createContext();
     context.buffer
-      ..write('ALTER TABLE ${escapeIfNeeded(table.aliasedName)} ')
-      ..write('RENAME COLUMN ${escapeIfNeeded(oldName)} ')
+      ..write('ALTER TABLE ${context.identifier(table.aliasedName)} ')
+      ..write('RENAME COLUMN ${context.identifier(oldName)} ')
       ..write('TO ${column.escapedName};');
 
     return _issueCustomQuery(context.sql);
@@ -436,8 +440,8 @@ class Migrator {
   /// databases.
   Future<void> renameTable(TableInfo table, String oldName) async {
     final context = _createContext();
-    context.buffer.write('ALTER TABLE ${escapeIfNeeded(oldName)} '
-        'RENAME TO ${escapeIfNeeded(table.actualTableName)};');
+    context.buffer.write('ALTER TABLE ${context.identifier(oldName)} '
+        'RENAME TO ${context.identifier(table.actualTableName)};');
     return _issueCustomQuery(context.sql);
   }
 

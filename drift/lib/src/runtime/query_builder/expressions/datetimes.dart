@@ -220,7 +220,7 @@ extension DateTimeExpressions on Expression<DateTime> {
     return _DependingOnDateTimeExpression(
       // Date times are integers (unix timestamps), so we can do arithmetic on
       // them directly.
-      forTimestamps: _BaseInfixOperator(
+      forTimestamps: BaseInfixOperator(
           this, '+', Variable<int>(duration.inSeconds),
           precedence: Precedence.plusMinus),
       forIsoString:
@@ -238,7 +238,7 @@ extension DateTimeExpressions on Expression<DateTime> {
     return _DependingOnDateTimeExpression(
       // Date times are integers (unix timestamps), so we can do arithmetic on
       // them directly.
-      forTimestamps: _BaseInfixOperator(
+      forTimestamps: BaseInfixOperator(
           this, '-', Variable<int>(duration.inSeconds),
           precedence: Precedence.plusMinus),
       forIsoString:

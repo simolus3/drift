@@ -4,7 +4,11 @@ import 'package:drift/native.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
+import '../../test_utils/database_vm.dart';
+
 void main() {
+  preferLocalSqlite3();
+
   group('NativeDatabase.opened', () {
     test('disposes the underlying database by default', () async {
       final underlying = sqlite3.openInMemory();

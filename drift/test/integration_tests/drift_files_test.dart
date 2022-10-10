@@ -7,32 +7,32 @@ import '../generated/custom_tables.dart';
 import '../test_utils/test_utils.dart';
 
 const _createNoIds =
-    'CREATE TABLE IF NOT EXISTS no_ids (payload BLOB NOT NULL PRIMARY KEY) '
+    'CREATE TABLE IF NOT EXISTS "no_ids" ("payload" BLOB NOT NULL PRIMARY KEY) '
     'WITHOUT ROWID;';
 
-const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS with_defaults ('
-    "a TEXT DEFAULT 'something', b INTEGER UNIQUE);";
+const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS "with_defaults" ('
+    "\"a\" TEXT DEFAULT 'something', \"b\" INTEGER UNIQUE);";
 
-const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS with_constraints ('
-    'a TEXT, b INTEGER NOT NULL, c REAL, '
+const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS "with_constraints" ('
+    '"a" TEXT, "b" INTEGER NOT NULL, "c" REAL, '
     'FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'
     ');';
 
-const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
-    'config_key TEXT not null primary key, '
-    'config_value TEXT, '
-    'sync_state INTEGER, '
-    'sync_state_implicit INTEGER) STRICT;';
+const _createConfig = 'CREATE TABLE IF NOT EXISTS "config" ('
+    '"config_key" TEXT not null primary key, '
+    '"config_value" TEXT, '
+    '"sync_state" INTEGER, '
+    '"sync_state_implicit" INTEGER) STRICT;';
 
-const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
-    'someid INTEGER NOT NULL, '
-    'sometext TEXT, '
-    'is_inserting INTEGER, '
-    'somedate TEXT, '
+const _createMyTable = 'CREATE TABLE IF NOT EXISTS "mytable" ('
+    '"someid" INTEGER NOT NULL, '
+    '"sometext" TEXT, '
+    '"is_inserting" INTEGER, '
+    '"somedate" TEXT, '
     'PRIMARY KEY (someid DESC)'
     ');';
 
-const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '
+const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS "email" USING '
     'fts5(sender, title, body);';
 
 const _createMyTrigger =
@@ -98,7 +98,7 @@ void main() {
     // regression test for #112: https://github.com/simolus3/drift/issues/112
 
     await db.into(db.mytable).insert(const MytableCompanion());
-    verify(mock.runInsert('INSERT INTO mytable DEFAULT VALUES', []));
+    verify(mock.runInsert('INSERT INTO "mytable" DEFAULT VALUES', []));
   });
 
   test('runs queries with arrays and Dart templates', () async {
@@ -108,7 +108,7 @@ void main() {
 
     verify(mock.runSelect(
       'SELECT * FROM config WHERE config_key IN (?1, ?2) '
-      'ORDER BY config_key ASC',
+      'ORDER BY "config_key" ASC',
       ['a', 'b'],
     ));
   });
@@ -122,8 +122,8 @@ void main() {
         .readDynamic(predicate: (config) => config.configKey.equals('key'))
         .getSingle();
 
-    verify(
-        mock.runSelect('SELECT * FROM config WHERE config_key = ?1', ['key']));
+    verify(mock
+        .runSelect('SELECT * FROM config WHERE "config_key" = ?1', ['key']));
     expect(parsed, const Config(configKey: 'key', configValue: 'value'));
   });
 
@@ -136,7 +136,7 @@ void main() {
   test('columns use table names in queries with multiple tables', () async {
     await db.multiple(predicate: (d, c) => d.a.equals('foo')).get();
 
-    verify(mock.runSelect(argThat(contains('d.a = ?1')), any));
+    verify(mock.runSelect(argThat(contains('"d"."a" = ?1')), any));
   });
 
   test('order by-params are ignored by default', () async {
@@ -241,7 +241,7 @@ void main() {
           ..where((tbl) => tbl.syncState.equalsValue(SyncType.synchronized)))
         .getSingleOrNull();
 
-    verify(mock.runSelect('SELECT * FROM config WHERE sync_state = ?;',
+    verify(mock.runSelect('SELECT * FROM "config" WHERE "sync_state" = ?;',
         [ConfigTable.$converter0.toSql(SyncType.synchronized)]));
   });
 }

@@ -1,3 +1,10 @@
+## 2.2.0
+
+- Always escape column names, avoiding the costs of using a regular expression
+  to check whether they need to be escaped.
+- Add extensions for binary methods on integer expressions: `operator ~`,
+  `bitwiseAnd` and `bitwiseOr`.
+
 ## 2.1.0
 
 - Improve stack traces when using `watchSingle()` with a stream emitting a non-

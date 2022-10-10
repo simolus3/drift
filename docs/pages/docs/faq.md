@@ -37,6 +37,16 @@ void main() {
 }
 ```
 Your widgets would then have access to the database using `Provider.of<MyDatabase>(context)`.
+### GetX
+If you're using the [GetX](https://pub.dev/packages/get) package, you can add it as a service that manages the database instance:.
+
+```dart
+void main() {
+  Get.put(MyDatabase());
+  runApp(MyFlutterApp());
+}
+```
+Your widgets would then have access to the database using `Get.find<MyDatabase>().your_method`.
 
 ### A more complex architecture
 If you're strict on keeping your business logic out of the widget layer, you probably use some dependency injection 

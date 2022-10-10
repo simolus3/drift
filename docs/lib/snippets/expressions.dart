@@ -10,4 +10,12 @@ extension Expressions on MyDatabase {
     return (select(categories)..where((row) => hasNoTodo)).get();
   }
   // #enddocregion emptyCategories
+
 }
+
+// #docregion bitwise
+Expression<int> bitwiseMagic(Expression<int> a, Expression<int> b) {
+  // Generates `~(a | b)` in SQL.
+  return ~(a.bitwiseAnd(b));
+}
+// #enddocregion bitwise

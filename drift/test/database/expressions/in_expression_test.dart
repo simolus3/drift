@@ -28,8 +28,10 @@ void main() {
       final isInExpression = innerExpression
           .isInQuery(db.selectOnly(db.users)..addColumns([db.users.name]));
 
-      expect(isInExpression,
-          generates('name IN (SELECT users.name AS "users.name" FROM users)'));
+      expect(
+          isInExpression,
+          generates(
+              'name IN (SELECT "users"."name" AS "users.name" FROM "users")'));
 
       final ctx = stubContext();
       isInExpression.writeInto(ctx);
@@ -43,7 +45,7 @@ void main() {
       expect(
           isInExpression,
           generates(
-              'name NOT IN (SELECT users.name AS "users.name" FROM users)'));
+              'name NOT IN (SELECT "users"."name" AS "users.name" FROM "users")'));
     });
   });
 }

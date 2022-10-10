@@ -9,9 +9,11 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'generated/todos.dart';
+import 'test_utils/database_vm.dart';
 import 'test_utils/test_utils.dart';
 
 void main() {
+  preferLocalSqlite3();
   // Using the DriftIsolate apis without actually running on a background
   // isolate is pointless, but we can't collect coverage for background
   // isolates: https://github.com/dart-lang/test/issues/1108

@@ -52,12 +52,12 @@ void main() {
       transaction.runBatched(
         BatchedStatements(
           [
-            'INSERT INTO todos (content) VALUES (?)',
-            'UPDATE users SET name = ?;',
-            'UPDATE users SET name = ? WHERE name = ?;',
-            'UPDATE categories SET "desc" = ?, priority = 0 WHERE id = ?;',
-            'DELETE FROM categories WHERE 1;',
-            'DELETE FROM todos WHERE id = ?;',
+            'INSERT INTO "todos" ("content") VALUES (?)',
+            'UPDATE "users" SET "name" = ?;',
+            'UPDATE "users" SET "name" = ? WHERE "name" = ?;',
+            'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
+            'DELETE FROM "categories" WHERE 1;',
+            'DELETE FROM "todos" WHERE "id" = ?;',
             'some custom statement',
           ],
           [
@@ -90,8 +90,8 @@ void main() {
 
     verify(executor.transactions.runBatched(BatchedStatements(
       [
-        ('INSERT INTO categories ("desc") VALUES (?) '
-            'ON CONFLICT(id) DO UPDATE SET id = ?')
+        ('INSERT INTO "categories" ("desc") VALUES (?) '
+            'ON CONFLICT("id") DO UPDATE SET "id" = ?')
       ],
       [
         ArgumentsForBatchedStatement(0, ['description', 42])
@@ -111,8 +111,8 @@ void main() {
 
     verify(executor.transactions.runBatched(BatchedStatements(
       [
-        ('INSERT INTO categories ("desc") VALUES (?) '
-            'ON CONFLICT(id) DO UPDATE SET "desc" = ?')
+        ('INSERT INTO "categories" ("desc") VALUES (?) '
+            'ON CONFLICT("id") DO UPDATE SET "desc" = ?')
       ],
       [
         ArgumentsForBatchedStatement(0, ['first', 'first']),
@@ -145,9 +145,9 @@ void main() {
 
     verify(executor.transactions.runBatched(BatchedStatements(
       [
-        ('INSERT INTO categories ("desc") VALUES (?) ON CONFLICT(id) '
-            'DO UPDATE SET "desc" = categories."desc", '
-            'priority = excluded.priority WHERE categories.id >= excluded.id')
+        ('INSERT INTO "categories" ("desc") VALUES (?) ON CONFLICT("id") '
+            'DO UPDATE SET "desc" = "categories"."desc", '
+            '"priority" = "excluded"."priority" WHERE "categories"."id" >= "excluded"."id"')
       ],
       [
         ArgumentsForBatchedStatement(0, ['first']),
@@ -179,7 +179,7 @@ void main() {
     });
 
     verify(executor.transactions.runBatched(BatchedStatements(
-      ['INSERT INTO categories ("desc") VALUES (?)'],
+      ['INSERT INTO "categories" ("desc") VALUES (?)'],
       [
         ArgumentsForBatchedStatement(0, ['first']),
         ArgumentsForBatchedStatement(0, ['second']),

@@ -4,9 +4,12 @@ import 'package:drift/isolate.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
 
+import '../test_utils/database_vm.dart';
 import 'cancellation_test_support.dart';
 
 void main() {
+  preferLocalSqlite3();
+
   test('together with switchMap', () async {
     String slowQuery(int i) => '''
       with recursive slow(x) as (values(log_value($i)) union all select x+1 from slow where x < 1000000)

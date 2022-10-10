@@ -75,7 +75,7 @@ extension StringExpressionOperators on Expression<String> {
 
   /// Performs a string concatenation in sql by appending [other] to `this`.
   Expression<String> operator +(Expression<String> other) {
-    return _BaseInfixOperator(this, '||', other,
+    return BaseInfixOperator(this, '||', other,
         precedence: Precedence.stringConcatenation);
   }
 

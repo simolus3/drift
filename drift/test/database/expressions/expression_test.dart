@@ -27,8 +27,7 @@ void main() {
   });
 
   test('generates parentheses for OR in AND', () {
-    final c =
-        GeneratedColumn<String>('c', 't', false, type: DriftSqlType.string);
+    final c = CustomExpression<String>('c', precedence: Precedence.primary);
     final expr =
         (c.equals('A') | c.equals('B')) & (c.equals('C') | c.equals(''));
     expect(
@@ -54,7 +53,7 @@ void main() {
     expect(
         subqueryExpression<String>(
             db.selectOnly(db.users)..addColumns([db.users.name])),
-        generates('(SELECT users.name AS "users.name" FROM users)'));
+        generates('(SELECT "users"."name" AS "users.name" FROM "users")'));
   });
 
   test('does not allow subqueries with more than one column', () {
@@ -77,8 +76,8 @@ void main() {
           innerJoin(db.categories, db.categories.id.equalsExp(db.users.id),
               useColumns: false)
         ])),
-      generates('(SELECT users.name AS "users.name" FROM users '
-          'INNER JOIN categories ON categories.id = users.id)'),
+      generates('(SELECT "users"."name" AS "users.name" FROM "users" '
+          'INNER JOIN "categories" ON "categories"."id" = "users"."id")'),
     );
   });
 
@@ -94,7 +93,7 @@ void main() {
     });
 
     test('generates a rowid expression', () {
-      expect(TodoDb().categories.rowId, generates('_rowid_'));
+      expect(TodoDb().categories.rowId, generates('"_rowid_"'));
     });
 
     test('generates an aliased rowid expression when needed', () async {
@@ -108,7 +107,7 @@ void main() {
       await query.get();
 
       verify(executor
-          .runSelect(argThat(contains('ON categories._rowid_ = ?')), [3]));
+          .runSelect(argThat(contains('ON "categories"."_rowid_" = ?')), [3]));
     });
   });
 

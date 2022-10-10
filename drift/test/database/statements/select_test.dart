@@ -34,26 +34,26 @@ void main() {
     test('for simple statements', () async {
       await db.select(db.users, distinct: true).get();
       verify(executor.runSelect(
-          'SELECT DISTINCT * FROM users;', argThat(isEmpty)));
+          'SELECT DISTINCT * FROM "users";', argThat(isEmpty)));
     });
 
     test('with limit statements', () async {
       await (db.select(db.users)..limit(10, offset: 0)).get();
       verify(executor.runSelect(
-          'SELECT * FROM users LIMIT 10 OFFSET 0;', argThat(isEmpty)));
+          'SELECT * FROM "users" LIMIT 10 OFFSET 0;', argThat(isEmpty)));
     });
 
     test('with simple limits', () async {
       await (db.select(db.users)..limit(10)).get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users LIMIT 10;', argThat(isEmpty)));
+          'SELECT * FROM "users" LIMIT 10;', argThat(isEmpty)));
     });
 
     test('with like expressions', () async {
       await (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
       verify(executor
-          .runSelect('SELECT * FROM users WHERE name LIKE ?;', ['Dash%']));
+          .runSelect('SELECT * FROM "users" WHERE "name" LIKE ?;', ['Dash%']));
     });
 
     test('with order-by clauses', () async {
@@ -65,8 +65,8 @@ void main() {
           .get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users ORDER BY '
-          'is_awesome DESC, id ASC;',
+          'SELECT * FROM "users" ORDER BY '
+          '"is_awesome" DESC, "id" ASC;',
           argThat(isEmpty)));
     });
 
@@ -75,7 +75,7 @@ void main() {
           .get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users ORDER BY random() ASC;', argThat(isEmpty)));
+          'SELECT * FROM "users" ORDER BY random() ASC;', argThat(isEmpty)));
     });
 
     test('with complex predicates', () async {
@@ -85,7 +85,7 @@ void main() {
           .get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users WHERE NOT (name = ?) AND id > ?;',
+          'SELECT * FROM "users" WHERE NOT ("name" = ?) AND "id" > ?;',
           ['Dash', 12]));
     });
 
@@ -93,7 +93,7 @@ void main() {
       await (db.select(db.users)..where((u) => u.isAwesome)).get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users WHERE is_awesome;', argThat(isEmpty)));
+          'SELECT * FROM "users" WHERE "is_awesome";', argThat(isEmpty)));
     });
 
     test('with aliased tables', () async {
@@ -102,13 +102,14 @@ void main() {
             ..where((u) => u.id.isSmallerThan(const Constant(5))))
           .get();
 
-      verify(executor.runSelect('SELECT * FROM users u WHERE id < 5;', []));
+      verify(
+          executor.runSelect('SELECT * FROM "users" "u" WHERE "id" < 5;', []));
     });
   });
 
   group('SELECT results are parsed', () {
     test('when all fields are non-null', () {
-      when(executor.runSelect('SELECT * FROM todos;', any))
+      when(executor.runSelect('SELECT * FROM "todos";', any))
           .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
 
       expect(db.select(db.todosTable).get(), completion([_todoEntry]));
@@ -130,7 +131,7 @@ void main() {
         category: null,
       );
 
-      when(executor.runSelect('SELECT * FROM todos;', any))
+      when(executor.runSelect('SELECT * FROM "todos";', any))
           .thenAnswer((_) => Future.value(data));
 
       expect(db.select(db.todosTable).get(), completion([resolved]));
@@ -139,13 +140,13 @@ void main() {
 
   group('queries for a single row', () {
     test('get once', () {
-      when(executor.runSelect('SELECT * FROM todos;', any))
+      when(executor.runSelect('SELECT * FROM "todos";', any))
           .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
       expect(db.select(db.todosTable).getSingle(), completion(_todoEntry));
     });
 
     test('get once without rows', () {
-      when(executor.runSelect('SELECT * FROM todos;', any))
+      when(executor.runSelect('SELECT * FROM "todos";', any))
           .thenAnswer((_) => Future.value([]));
 
       expect(db.select(db.todosTable).getSingle(), throwsA(anything));
@@ -160,7 +161,7 @@ void main() {
       ];
       var currentRow = 0;
 
-      when(executor.runSelect('SELECT * FROM todos;', any)).thenAnswer((_) {
+      when(executor.runSelect('SELECT * FROM "todos";', any)).thenAnswer((_) {
         return Future.value(resultRows[currentRow++]);
       });
 

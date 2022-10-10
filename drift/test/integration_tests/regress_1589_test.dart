@@ -3,7 +3,11 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
+import '../test_utils/database_vm.dart';
+
 void main() {
+  preferLocalSqlite3();
+
   test('a failing commit does not block the whole database', () async {
     final db = _Database(NativeDatabase.memory());
     addTearDown(db.close);

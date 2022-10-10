@@ -16,8 +16,8 @@ void main() {
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);
 
-    expect(
-        context.sql, equals('foo INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT'));
+    expect(context.sql,
+        equals('"foo" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT'));
   });
 
   test('int column writes PRIMARY KEY constraint', () {
@@ -27,6 +27,6 @@ void main() {
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);
 
-    expect(context.sql, equals('foo INTEGER NOT NULL PRIMARY KEY'));
+    expect(context.sql, equals('"foo" INTEGER NOT NULL PRIMARY KEY'));
   });
 }

@@ -84,11 +84,9 @@ class Variable<T extends Object> extends Expression<T> {
         ..write(mark)
         ..write(explicitStart + context.amountOfVariables);
       context.introduceVariable(this, mapToSimpleValue(context));
-    } else if (value != null) {
+    } else {
       context.buffer.write(mark);
       context.introduceVariable(this, mapToSimpleValue(context));
-    } else {
-      context.buffer.write('NULL');
     }
   }
 

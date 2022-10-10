@@ -7,8 +7,11 @@ import 'package:test/test.dart';
 
 import '../generated/custom_tables.dart';
 import '../generated/todos.dart';
+import '../test_utils/database_vm.dart';
 
 void main() {
+  preferLocalSqlite3();
+
   test('change column types', () async {
     // Create todos table with category as text (it's an int? in Dart).
     final executor = NativeDatabase.memory(setup: (db) {
@@ -50,7 +53,7 @@ void main() {
         .map((row) => row.read<String>('sql'))
         .getSingle();
 
-    expect(createStmt, contains('category INT'));
+    expect(createStmt, contains('"category" INT'));
 
     final item = await db.select(db.todosTable).getSingle();
     expect(item.category, 12);
@@ -99,7 +102,7 @@ void main() {
 
     expect(
       createStmt,
-      allOf(contains('category INT'), isNot(contains('category_old'))),
+      allOf(contains('"category" INT'), isNot(contains('category_old'))),
     );
 
     final item = await db.select(db.todosTable).getSingle();

@@ -5,7 +5,6 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/sqlite_keywords.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
@@ -15,8 +14,10 @@ import '../../utils/async.dart';
 // New files should not be part of this mega library, which we're trying to
 // split up.
 import 'expressions/case_when.dart';
+import 'expressions/internal.dart';
 
 export 'on_table.dart';
+export 'expressions/bitwise.dart';
 
 part 'components/group_by.dart';
 part 'components/join.dart';

@@ -1,6 +1,6 @@
 name: sqlparser
 description: Parses sqlite statements and performs static analysis on them
-version: 0.23.2
+version: 0.23.3
 homepage: https://github.com/simolus3/drift/tree/develop/sqlparser
 #homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues

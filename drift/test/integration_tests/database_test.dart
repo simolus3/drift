@@ -6,8 +6,11 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
+import '../test_utils/database_vm.dart';
 
 void main() {
+  preferLocalSqlite3();
+
   test('transaction handles BEGIN throwing', () async {
     final rawDb = sqlite3.open('file:transaction_test?mode=memory&cache=shared',
         uri: true);
