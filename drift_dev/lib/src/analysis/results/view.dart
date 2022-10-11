@@ -1,6 +1,7 @@
 import 'package:drift_dev/src/analysis/results/dart.dart';
 
 import 'package:drift_dev/src/analysis/results/column.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 import 'element.dart';
 import 'result_sets.dart';
@@ -63,6 +64,12 @@ abstract class DriftViewSource {}
 class SqlViewSource extends DriftViewSource {
   /// The `CREATE VIEW` statement as it appears in the `.drift` file.
   final String createView;
+
+  /// The parsed `CREATE VIEW` statement from [createView].
+  ///
+  /// This node is not serialized and only set in the late-state, local file
+  /// analysis.
+  CreateViewStatement? parsedStatement;
 
   SqlViewSource(this.createView);
 }

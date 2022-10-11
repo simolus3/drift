@@ -71,6 +71,15 @@ class FileAnalyzer {
             result.analysisErrors
                 .add(DriftAnalysisError(error.span, error.message ?? ''));
           }
+        } else if (element is DriftView) {
+          final source = element.source;
+          if (source is SqlViewSource) {
+            final stmt = parsedFile.statements
+                .whereType<CreateViewStatement>()
+                .firstWhere(
+                    (e) => e.firstPosition == element.declaration.offset);
+            source.parsedStatement = stmt;
+          }
         }
       }
     }

@@ -8,6 +8,7 @@ import '../analysis/results/results.dart';
 import '../services/find_stream_update_rules.dart';
 import '../utils/string_escaper.dart';
 import 'tables/table_writer.dart';
+import 'tables/view_writer.dart';
 import 'writer.dart';
 
 /// Generates the Dart code put into a `.g.dart` file when running the
@@ -32,7 +33,7 @@ class DatabaseWriter {
       if (reference is DriftTable) {
         TableWriter(reference, scope.child()).writeInto();
       } else if (reference is DriftView) {
-//      ViewWriter(view, scope.child(), this).write();
+        ViewWriter(reference, scope.child(), this).write();
       }
     }
 

@@ -1,11 +1,12 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show SqlDialect;
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
+
+import '../../analysis/results/results.dart';
+import '../../analyzer/options.dart';
+import '../../utils/string_escaper.dart';
 
 /// The expanded sql that we insert into queries whenever an array variable
 /// appears. For the query "SELECT * FROM t WHERE x IN ?", we generate
@@ -36,8 +37,12 @@ class SqlWriter extends NodeSqlBuilder {
       : _out = out,
         super(escapeForDart ? _DartEscapingSink(out) : out);
 
-  factory SqlWriter(DriftOptions options,
-      {SqlQuery? query, bool escapeForDart = true}) {
+  factory SqlWriter(
+    DriftOptions options, {
+    SqlQuery? query,
+    bool escapeForDart = true,
+    StringBuffer? buffer,
+  }) {
     // Index nested results by their syntactic origin for faster lookups later
     var doubleStarColumnToResolvedTable =
         const <NestedStarResultColumn, NestedResultTable>{};
@@ -49,7 +54,7 @@ class SqlWriter extends NodeSqlBuilder {
       };
     }
     return SqlWriter._(query, options, doubleStarColumnToResolvedTable,
-        StringBuffer(), escapeForDart);
+        buffer ?? StringBuffer(), escapeForDart);
   }
 
   String write() {
@@ -131,7 +136,7 @@ class SqlWriter extends NodeSqlBuilder {
           _out.write(', ');
         }
 
-        final columnName = column.name.name;
+        final columnName = column.nameInSql;
         _out.write('"$table"."$columnName" AS "$prefix.$columnName"');
       }
     } else if (e is DartPlaceholder) {

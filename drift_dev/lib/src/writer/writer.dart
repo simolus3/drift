@@ -1,6 +1,9 @@
+import 'package:sqlparser/sqlparser.dart' as sql;
+
 import '../analysis/results/results.dart';
 import '../analyzer/options.dart';
 import 'import_manager.dart';
+import 'queries/sql_writer.dart';
 
 Uri _driftImport = Uri.parse('package:drift/drift.dart');
 
@@ -232,6 +235,18 @@ class TextEmitter extends _Node {
   String refDrift(String element) => refUri(_driftImport, element);
 
   void writeDart(AnnotatedDartCode code) => write(dartCode(code));
+
+  void writeSql(sql.AstNode node, {bool escapeForDartString = true}) {
+    SqlWriter(writer.options,
+            escapeForDart: escapeForDartString, buffer: buffer)
+        .writeSql(node);
+  }
+
+  void writeSqlAsDartLiteral(sql.AstNode node) {
+    buffer.write("'");
+    writeSql(node);
+    buffer.write("'");
+  }
 }
 
 /// Options that are specific to code-generation.

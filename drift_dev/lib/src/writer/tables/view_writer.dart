@@ -1,21 +1,20 @@
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/utils/string_escaper.dart';
-
+import '../../analysis/results/results.dart';
+import '../../utils/string_escaper.dart';
 import '../database_writer.dart';
 import '../writer.dart';
 import 'data_class_writer.dart';
 import 'table_writer.dart';
 
 class ViewWriter extends TableOrViewWriter {
-  final MoorView view;
+  final DriftView view;
   final Scope scope;
   final DatabaseWriter databaseWriter;
 
   @override
-  late StringBuffer buffer;
+  late TextEmitter emitter;
 
   @override
-  MoorView get tableOrView => view;
+  DriftView get tableOrView => view;
 
   ViewWriter(this.view, this.scope, this.databaseWriter);
 
@@ -29,12 +28,14 @@ class ViewWriter extends TableOrViewWriter {
   }
 
   void _writeViewInfoClass() {
-    buffer = scope.leaf();
+    emitter = scope.leaf();
 
     buffer.write('class ${view.entityInfoName} extends ViewInfo');
     if (scope.generationOptions.writeDataClasses) {
-      buffer.write('<${view.entityInfoName}, '
-          '${view.dartTypeCode(scope.generationOptions)}>');
+      emitter
+        ..write('<${view.entityInfoName}, ')
+        ..writeDart(emitter.rowType(view))
+        ..write('>');
     } else {
       buffer.write('<${view.entityInfoName}, Never>');
     }
@@ -47,13 +48,13 @@ class ViewWriter extends TableOrViewWriter {
       ..writeln('${view.entityInfoName}(this.attachedDatabase, '
           '[this._alias]);');
 
-    final declaration = view.declaration;
-    if (declaration is DartViewDeclaration) {
+    final source = view.source;
+    if (source is DartViewSource) {
       // A view may read from the same table more than once, so we implicitly
       // introduce aliases for tables.
       var tableCounter = 0;
 
-      for (final ref in declaration.staticReferences) {
+      for (final ref in source.staticReferences) {
         final table = ref.table;
         final alias = asDartLiteral('t${tableCounter++}');
 
@@ -69,11 +70,17 @@ class ViewWriter extends TableOrViewWriter {
       ..write('@override\nString get aliasedName => '
           '_alias ?? entityName;\n')
       ..write('@override\n String get entityName=>'
-          ' ${asDartLiteral(view.name)};\n');
+          ' ${asDartLiteral(view.schemaName)};\n');
 
-    if (view.declaration is DriftViewDeclaration) {
-      buffer.write('@override\n String get createViewStmt =>'
-          ' ${asDartLiteral(view.createSql(scope.options))};\n');
+    if (source is SqlViewSource) {
+      final astNode = source.parsedStatement;
+
+      emitter.write('@override\nString get createViewStmt =>');
+      if (astNode != null) {
+        emitter.writeSqlAsDartLiteral(astNode);
+      } else {
+        emitter.write(asDartLiteral(source.createView));
+      }
     } else {
       buffer.write('@override\n String? get createViewStmt => null;\n');
     }
@@ -82,14 +89,14 @@ class ViewWriter extends TableOrViewWriter {
     writeMappingMethod(scope);
 
     for (final column in view.columns) {
-      writeColumnGetter(column, scope.generationOptions, false);
+      writeColumnGetter(column, false);
     }
 
     _writeAliasGenerator();
     _writeQuery();
 
     final readTables = view.transitiveTableReferences
-        .map((e) => asDartLiteral(e.sqlName))
+        .map((e) => asDartLiteral(e.schemaName))
         .join(', ');
     buffer.writeln('''
       @override
@@ -112,13 +119,13 @@ class ViewWriter extends TableOrViewWriter {
   void _writeQuery() {
     buffer.write('@override\nQuery? get query => ');
 
-    if (view.isDeclaredInDart) {
-      final definition = view.declaration as DartViewDeclaration;
-
-      buffer
-        ..write('(attachedDatabase.selectOnly(${definition.primaryFrom?.name})'
+    final source = view.source;
+    if (source is DartViewSource) {
+      emitter
+        ..write('(attachedDatabase.selectOnly(${source.primaryFrom?.name})'
             '..addColumns(\$columns))')
-        ..writeln('${definition.dartQuerySource};');
+        ..writeDart(source.dartQuerySource)
+        ..writeln(';');
     } else {
       buffer.writeln('null;');
     }
