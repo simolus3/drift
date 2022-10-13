@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
@@ -98,8 +100,8 @@ class AnnotatedDartCodeBuilder {
     type.accept(visitor);
   }
 
-  void addAstNode(AstNode node) {
-    final visitor = _AddFromAst(this);
+  void addAstNode(AstNode node, {Set<AstNode> exclude = const {}}) {
+    final visitor = _AddFromAst(this, exclude);
     node.accept(visitor);
   }
 
@@ -288,11 +290,14 @@ class _AddFromDartType extends TypeVisitor<void> {
 
 class _AddFromAst extends GeneralizingAstVisitor<void> {
   final AnnotatedDartCodeBuilder _builder;
+  final Set<AstNode> _excluding;
 
-  _AddFromAst(this._builder);
+  _AddFromAst(this._builder, this._excluding);
 
   @override
   void visitNode(AstNode node) {
+    if (_excluding.contains(node)) return;
+
     int? offset;
 
     for (final childEntity in node.childEntities) {
@@ -307,6 +312,22 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
         (childEntity as AstNode).accept(this);
       }
     }
+  }
+
+  @override
+  void visitArgumentList(ArgumentList node) {
+    // Workaround to the analyzer not including commas: https://github.com/dart-lang/sdk/blob/20ad5db3ab3f2ae49f9668b75331e51c84267011/pkg/analyzer/lib/src/dart/ast/ast.dart#L389
+    _builder.addText('(');
+
+    var first = true;
+    for (final arg in node.arguments) {
+      if (!first) _builder.addText(',');
+
+      visitNode(arg);
+      first = false;
+    }
+
+    _builder.addText(')');
   }
 
   @override

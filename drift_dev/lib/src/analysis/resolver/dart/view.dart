@@ -191,7 +191,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       );
     }
 
-    final query = AnnotatedDartCode.ast(body.expression);
+    final query = AnnotatedDartCode.build(
+        (builder) => builder.addAstNode(body.expression, exclude: {target!}));
     return _ParsedDartViewSelect(
         resolvedFrom, innerJoins, outerJoins, columnExpressions, query);
   }
