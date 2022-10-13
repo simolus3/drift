@@ -37,6 +37,17 @@ class FileAnalyzer {
                   error.span, 'Error in ${query.name}: ${error.message}'));
             }
           }
+
+          final imports = <FileState>[];
+          for (final include in element.declaredIncludes) {
+            final imported = driver.cache.knownFiles[include];
+            if (imported != null) {
+              imports.add(imported);
+            }
+          }
+
+          result.resolvedDatabases[element.id] =
+              ResolvedDatabaseAccessor(queries, imports);
         }
       }
     } else if (state.extension == '.drift' || state.extension == '.moor') {

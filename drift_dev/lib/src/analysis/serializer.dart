@@ -443,7 +443,9 @@ class ElementDeserializer {
               ? VirtualTableData.fromJson(json['virtual'] as Map)
               : null,
           writeDefaultConstraints: json['write_default_constraints'] as bool,
-          overrideTableConstraints: (json['custom_constraints'] as List).cast(),
+          overrideTableConstraints: json['custom_constraints'] != null
+              ? (json['custom_constraints'] as List).cast()
+              : null,
         );
       case 'index':
         return DriftIndex(
@@ -490,7 +492,7 @@ class ElementDeserializer {
             await _readColumn(rawColumn as Map),
         ];
 
-        final serializedSource = json['serializedSource'] as Map;
+        final serializedSource = json['source'] as Map;
         final sourceKind = serializedSource['kind'];
         DriftViewSource source;
 
@@ -505,12 +507,12 @@ class ElementDeserializer {
           }
 
           source = DartViewSource(
-            AnnotatedDartCode.fromJson(json['query'] as Map),
-            json['primaryFrom'] != null
-                ? readReference(json['primaryFrom'] as Map)
+            AnnotatedDartCode.fromJson(serializedSource['query'] as Map),
+            serializedSource['primaryFrom'] != null
+                ? readReference(serializedSource['primaryFrom'] as Map)
                 : null,
             [
-              for (final element in json['staticReferences'])
+              for (final element in serializedSource['staticReferences'])
                 readReference(element as Map)
             ],
           );
@@ -549,7 +551,7 @@ class ElementDeserializer {
         ];
         final includes =
             (json['includes'] as List).cast<String>().map(Uri.parse).toList();
-        final queries = (json['views'] as List)
+        final queries = (json['queries'] as List)
             .cast<Map>()
             .map(QueryOnAccessor.fromJson)
             .toList();

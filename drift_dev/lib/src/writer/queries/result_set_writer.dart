@@ -1,7 +1,8 @@
-import 'package:drift_dev/src/model/sql_query.dart';
-import 'package:drift_dev/src/model/types.dart';
-import 'package:drift_dev/src/writer/utils/override_toString.dart';
-import 'package:drift_dev/writer.dart';
+import '../../analysis/results/results.dart';
+import '../utils/hash_and_equals.dart';
+import '../utils/override_toString.dart';
+import '../writer.dart';
+import 'utils.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
 class ResultSetWriter {
@@ -30,7 +31,7 @@ class ResultSetWriter {
     // write fields
     for (final column in resultSet.columns) {
       final name = resultSet.dartNameFor(column);
-      final runtimeType = column.dartTypeCode();
+      final runtimeType = into.dartCode(into.dartType(column));
 
       into.write('$modifier $runtimeType $name\n;');
 
@@ -40,26 +41,27 @@ class ResultSetWriter {
 
     for (final nested in resultSet.nestedResults) {
       if (nested is NestedResultTable) {
-        var typeName = nested.table.dartTypeCode();
         final fieldName = nested.dartFieldName;
 
-        if (nested.isNullable) {
-          typeName += '?';
-        }
-
-        into.write('$modifier $typeName $fieldName;\n');
+        into
+          ..write('$modifier ')
+          ..writeDart(nested.resultRowType(scope))
+          ..write(nested.isNullable ? '? ' : ' ')
+          ..writeln('$fieldName;');
 
         fields.add(EqualityField(fieldName));
         if (!nested.isNullable) nonNullableFields.add(fieldName);
       } else if (nested is NestedResultQuery) {
         final fieldName = nested.filedName();
-        final typeName = nested.resultTypeCode();
 
         if (nested.query.resultSet.needsOwnClass) {
           ResultSetWriter(nested.query, scope).write();
         }
 
-        into.write('$modifier List<$typeName> $fieldName;\n');
+        into
+          ..write(modifier)
+          ..writeDart(nested.resultRowType(scope))
+          ..writeln('$fieldName;');
 
         fields.add(EqualityField(fieldName));
         nonNullableFields.add(fieldName);
@@ -89,11 +91,12 @@ class ResultSetWriter {
     // if requested, override hashCode and equals
     if (scope.writer.options.overrideHashAndEqualsInResultSets) {
       into.write('@override int get hashCode => ');
-      writeHashCode(fields, into);
+      writeHashCode(fields, into.buffer);
       into.write(';\n');
 
-      overrideEquals(fields, className, into);
-      overrideToString(className, fields.map((f) => f.lexeme).toList(), into);
+      overrideEquals(fields, className, into.buffer);
+      overrideToString(
+          className, fields.map((f) => f.lexeme).toList(), into.buffer);
     }
 
     into.write('}\n');

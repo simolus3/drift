@@ -78,18 +78,32 @@ class DriftBuilder extends Builder {
       return;
     }
 
-    final result = await driver.resolveElements(buildStep.inputId.uri);
+    final fileResult = await driver.fullyAnalyze(buildStep.inputId.uri);
 
     final generationOptions = GenerationOptions(
       imports: ImportManagerForPartFiles(),
     );
     final writer = Writer(options, generationOptions: generationOptions);
 
-    for (final element in result.analysis.values) {
+    for (final element in fileResult.analysis.values) {
       final result = element.result;
 
       if (result is DriftDatabase) {
-        DatabaseWriter(result, writer.child()).write();
+        final importedQueries = <String, SqlQuery>{};
+        final resolved = fileResult.fileAnalysis!.resolvedDatabases[result.id]!;
+
+        // Crawl queries
+        for (final imported in driver.cache.crawlMulti(resolved.knownImports)) {
+          final resolved = await driver.fullyAnalyze(imported.ownUri);
+          importedQueries.addAll({
+            for (final entry in resolved.fileAnalysis!.resolvedQueries.entries)
+              entry.key.name: entry.value,
+          });
+        }
+
+        final input = DatabaseGenerationInput(
+            result, resolved, importedQueries.values.toList());
+        DatabaseWriter(input, writer.child()).write();
       } else {
         writer.leaf().writeln('// ${element.ownId}');
       }

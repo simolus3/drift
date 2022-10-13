@@ -4,9 +4,11 @@ import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';
 
+import '../analysis/results/file_results.dart';
 import '../analysis/results/results.dart';
 import '../services/find_stream_update_rules.dart';
 import '../utils/string_escaper.dart';
+import 'queries/query_writer.dart';
 import 'tables/table_writer.dart';
 import 'tables/view_writer.dart';
 import 'writer.dart';
@@ -14,10 +16,12 @@ import 'writer.dart';
 /// Generates the Dart code put into a `.g.dart` file when running the
 /// generator.
 class DatabaseWriter {
-  final DriftDatabase db;
+  DatabaseGenerationInput input;
   final Scope scope;
 
-  DatabaseWriter(this.db, this.scope);
+  DriftDatabase get db => input.db;
+
+  DatabaseWriter(this.input, this.scope);
 
   String get dbClassName {
     if (scope.generationOptions.isGeneratingForSchema) {
@@ -118,7 +122,11 @@ class DatabaseWriter {
     }
 
     // Write implementation for query methods
-//    db.queries?.forEach((query) => QueryWriter(dbScope.child()).write(query));
+    final queries = input.resolvedAccessor.definedQueries.values
+        .followedBy(input.importedQueries);
+    for (final query in queries) {
+      QueryWriter(dbScope.child()).write(query);
+    }
 
     // Write List of tables
     final schemaScope = dbScope.leaf();
@@ -178,6 +186,15 @@ class DatabaseWriter {
     // close the class
     schemaScope.write('}\n');
   }
+}
+
+class DatabaseGenerationInput {
+  final DriftDatabase db;
+  final ResolvedDatabaseAccessor resolvedAccessor;
+
+  final List<SqlQuery> importedQueries;
+
+  DatabaseGenerationInput(this.db, this.resolvedAccessor, this.importedQueries);
 }
 
 extension on drift.UpdateRule {

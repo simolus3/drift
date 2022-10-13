@@ -40,9 +40,20 @@ class DriftAnalysisCache {
   ///
   /// This assumes that pre-analysis has already happened for all transitive
   /// imports, meaning that [knownFiles] contains an entry for every import URI.
-  Iterable<FileState> crawl(FileState entrypoint) sync* {
-    final seenUris = <Uri>{entrypoint.ownUri};
-    final pending = [entrypoint];
+  Iterable<FileState> crawl(FileState entrypoint) {
+    return crawlMulti([entrypoint]);
+  }
+
+  /// Crawls all dependencies from a set of [entrypoints].
+  Iterable<FileState> crawlMulti(Iterable<FileState> entrypoints) sync* {
+    final seenUris = <Uri>{};
+    final pending = <FileState>[];
+
+    for (final initial in entrypoints) {
+      if (seenUris.add(initial.ownUri)) {
+        pending.add(initial);
+      }
+    }
 
     while (pending.isNotEmpty) {
       final found = pending.removeLast();

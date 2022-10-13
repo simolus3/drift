@@ -1,13 +1,15 @@
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.dart';
-import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
-import 'package:drift_dev/src/utils/string_escaper.dart';
-import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
+import '../../analysis/resolver/queries/nested_queries.dart';
+import '../../analysis/results/results.dart';
+import '../../analyzer/options.dart';
+import '../../analyzer/sql_queries/explicit_alias_transformer.dart';
+import '../../utils/string_escaper.dart';
+import '../writer.dart';
+import 'result_set_writer.dart';
 import 'sql_writer.dart';
+import 'utils.dart';
 
 const highestAssignedIndexVar = '\$arrayStartIndex';
 
@@ -17,18 +19,19 @@ class QueryWriter {
   final Scope scope;
 
   late final ExplicitAliasTransformer _transformer;
-  final StringBuffer _buffer;
+  final TextEmitter _emitter;
+  StringBuffer get _buffer => _emitter.buffer;
 
   DriftOptions get options => scope.writer.options;
 
-  QueryWriter(this.scope) : _buffer = scope.leaf();
+  QueryWriter(this.scope) : _emitter = scope.leaf();
 
   void write(SqlQuery query) {
     // Note that writing queries can have a result set if they use a RETURNING
     // clause.
     final resultSet = query.resultSet;
     if (resultSet?.needsOwnClass == true) {
-      final resultSetScope = scope.findScopeOfLevel(DartScope.library);
+      final resultSetScope = scope.root.child();
       ResultSetWriter(query, resultSetScope).write();
     }
 
@@ -96,7 +99,7 @@ class QueryWriter {
           _buffer
             ..write(asDartLiteral(alias.key))
             ..write(': ')
-            ..write(asDartLiteral(alias.value.name.name))
+            ..write(asDartLiteral(alias.value.nameInSql))
             ..write(', ');
         }
 
@@ -153,7 +156,7 @@ class QueryWriter {
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
     final method = column.nullable ? 'readNullable' : 'read';
-    final rawDartType = dartTypeNames[column.type];
+    final rawDartType = dartTypeNames[column.sqlType];
     var code = 'row.$method<$rawDartType>($dartLiteral)';
 
     final converter = column.typeConverter;
@@ -163,10 +166,10 @@ class QueryWriter {
         // nullable in SQL => just map null to null and only invoke the type
         // converter for non-null values.
         code = 'NullAwareTypeConverter.wrapFromSql'
-            '(${_converter(converter)}, $code)';
+            '(${_converter(_emitter, converter)}, $code)';
       } else {
         // Just apply the type converter directly.
-        code = '${_converter(converter)}.fromSql($code)';
+        code = '${_converter(_emitter, converter)}.fromSql($code)';
       }
     }
     return code;
@@ -175,11 +178,19 @@ class QueryWriter {
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
   /// of the custom query.
   void _writeSelectStatementCreator(SqlSelectQuery select) {
-    final returnType =
-        'Selectable<${select.resultTypeCode(scope.generationOptions)}>';
+    final returnType = AnnotatedDartCode.build((builder) {
+      builder
+        ..addSymbol('Selectable', AnnotatedDartCode.drift)
+        ..addText('<')
+        ..addCode(select.resultRowType(scope))
+        ..addText('>');
+    });
+
     final methodName = _nameOfCreationMethod(select);
 
-    _buffer.write('$returnType $methodName(');
+    _emitter
+      ..writeDart(returnType)
+      ..write(' $methodName(');
     _writeParameters(select);
     _buffer.write(') {\n');
 
@@ -205,8 +216,19 @@ class QueryWriter {
   }
 
   void _writeUpdatingQueryWithReturning(UpdatingQuery update) {
-    final type = update.resultTypeCode(scope.generationOptions);
-    _buffer.write('Future<List<$type>> ${update.name}(');
+    final type = AnnotatedDartCode.build((builder) {
+      builder
+        ..addSymbol('Future', AnnotatedDartCode.dartAsync)
+        ..addText('<')
+        ..addSymbol('List', AnnotatedDartCode.dartCore)
+        ..addText('<')
+        ..addCode(update.resultRowType(scope))
+        ..addText('>>');
+    });
+
+    _emitter
+      ..writeDart(type)
+      ..write(' ${update.name}(');
     _writeParameters(update);
     _buffer.write(') {\n');
 
@@ -260,7 +282,7 @@ class QueryWriter {
     }
 
     String typeFor(FoundElement element) {
-      return element.dartTypeCode();
+      return _emitter.dartCode(element.dartType(scope));
     }
 
     String writeScopedTypeFor(FoundDartPlaceholder element) {
@@ -362,7 +384,7 @@ class QueryWriter {
   }
 
   void _writeVariables(SqlQuery query) {
-    _ExpandedVariableWriter(query, scope, _buffer).writeVariables();
+    _ExpandedVariableWriter(query, _emitter).writeVariables();
   }
 
   /// Returns a Dart string literal representing the query after variables have
@@ -406,11 +428,8 @@ class QueryWriter {
 }
 
 /// Returns code to load an instance of the [converter] at runtime.
-String _converter(UsedTypeConverter converter) {
-  final infoName = converter.table!.entityInfoName;
-  final field = '$infoName.${converter.fieldName}';
-
-  return field;
+String _converter(TextEmitter emitter, AppliedTypeConverter converter) {
+  return emitter.dartCode(emitter.readConverter(converter));
 }
 
 class _ExpandedDeclarationWriter {
@@ -501,7 +520,7 @@ class _ExpandedDeclarationWriter {
         // The parameter is a function type that needs to be evaluated first
         final args = element.availableResultSets.map((e) {
           final table = 'this.${e.entity.dbGetterName}';
-          final needsAlias = e.name != e.entity.displayName;
+          final needsAlias = e.name != e.entity.schemaName;
 
           if (needsAlias) {
             return 'alias($table, ${asDartLiteral(e.name)})';
@@ -585,10 +604,10 @@ class _ExpandedDeclarationWriter {
 
 class _ExpandedVariableWriter {
   final SqlQuery query;
-  final Scope scope;
-  final StringBuffer _buffer;
+  final TextEmitter _emitter;
+  StringBuffer get _buffer => _emitter.buffer;
 
-  _ExpandedVariableWriter(this.query, this.scope, this._buffer);
+  _ExpandedVariableWriter(this.query, this._emitter);
 
   void writeVariables() {
     _buffer.write('variables: [');
@@ -652,10 +671,10 @@ class _ExpandedVariableWriter {
         // Apply the converter.
         if (element.nullable && converter.canBeSkippedForNulls) {
           buffer.write('NullAwareTypeConverter.wrapToSql('
-              '${_converter(element.typeConverter!)}, $dartExpr)');
+              '${_converter(_emitter, element.typeConverter!)}, $dartExpr)');
         } else {
-          buffer
-              .write('${_converter(element.typeConverter!)}.toSql($dartExpr)');
+          buffer.write(
+              '${_converter(_emitter, element.typeConverter!)}.toSql($dartExpr)');
         }
       } else if (capture != null) {
         buffer.write('row.read(${asDartLiteral(capture.helperColumn)})');

@@ -13,6 +13,8 @@ import 'package:json_annotation/json_annotation.dart';
 part '../../generated/analysis/results/dart.g.dart';
 
 class AnnotatedDartCode {
+  static final Uri dartAsync = Uri.parse('dart:async');
+  static final Uri dartCore = Uri.parse('dart:core');
   static final Uri drift = Uri.parse('package:drift/drift.dart');
 
   final List<dynamic /* String|DartTopLevelSymbol */ > elements;
@@ -85,9 +87,19 @@ class AnnotatedDartCodeBuilder {
 
   void addText(String lexeme) => _pendingText.write(lexeme);
 
+  void addCode(AnnotatedDartCode code) {
+    _addPendingText();
+    _elements.addAll(code.elements);
+  }
+
   void addSymbol(String lexeme, Uri? importUri) {
     _addPendingText();
     _elements.add(DartTopLevelSymbol(lexeme, importUri));
+  }
+
+  void addTopLevel(DartTopLevelSymbol symbol) {
+    _addPendingText();
+    _elements.add(symbol);
   }
 
   void addTopLevelElement(Element element) {
