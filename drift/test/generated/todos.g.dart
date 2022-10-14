@@ -1252,7 +1252,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
       txt: $PureDefaultsTable.$converter0n
-          .fromJson(serializer.fromJson<String?>(json['txt'])),
+          .fromJson(serializer.fromJson<String>(json['txt'])),
     );
   }
   factory PureDefault.fromJsonString(String encodedJson,
@@ -1373,9 +1373,9 @@ class $PureDefaultsTable extends PureDefaults
     return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter<MyCustomObject, String> $converter0 =
+  static JsonTypeConverter<MyCustomObject, String, String> $converter0 =
       const CustomJsonConverter();
-  static JsonTypeConverter<MyCustomObject?, String?> $converter0n =
+  static JsonTypeConverter<MyCustomObject?, String?, String?> $converter0n =
       JsonTypeConverter.asNullable($converter0);
 }
 

@@ -15,7 +15,7 @@ void main() {
 import 'package:drift/drift.dart';
 
 TypeConverter<String, String> withoutJson() => throw 'stub';
-JsonTypeConverter<String, String> withJson() => throw 'stub';
+JsonTypeConverter<String, String, String> withJson() => throw 'stub';
 
 class Users extends Table {
   TextColumn get foo => text().map(withoutJson())();

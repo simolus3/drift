@@ -107,7 +107,7 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        final type = column.innerColumnType(nullable: column.nullable);
+        final type = typeConverter.jsonType;
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
@@ -151,7 +151,7 @@ class DataClassWriter {
         final converterField =
             typeConverter.tableAndField(forNullableColumn: column.nullable);
         value = '$converterField.toJson($value)';
-        dartType = column.innerColumnType(nullable: true);
+        dartType = column.jsonTypeCode();
       }
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");

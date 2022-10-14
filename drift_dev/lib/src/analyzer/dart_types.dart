@@ -152,6 +152,8 @@ UsedTypeConverter? readTypeConverter(
   final staticType = dartExpression.staticType;
   final asTypeConverter =
       staticType != null ? helper.asTypeConverter(staticType) : null;
+  final asJsonTypeConverter =
+      staticType != null ? helper.asJsonTypeConverter(staticType) : null;
 
   if (asTypeConverter == null) {
     reportError('Not a type converter');
@@ -160,6 +162,7 @@ UsedTypeConverter? readTypeConverter(
 
   final dartType = asTypeConverter.typeArguments[0];
   final sqlType = asTypeConverter.typeArguments[1];
+  final jsonType = asJsonTypeConverter?.typeArguments[2] ?? sqlType;
 
   final typeSystem = library.typeSystem;
   final dartTypeNullable = typeSystem.isNullable(dartType);
@@ -195,6 +198,7 @@ UsedTypeConverter? readTypeConverter(
     expression: dartExpression.toSource(),
     dartType: resolvedDartType ?? DriftDartType.of(dartType),
     sqlType: sqlType,
+    jsonType: jsonType,
     dartTypeIsNullable: dartTypeNullable,
     sqlTypeIsNullable: sqlTypeNullable,
     alsoAppliesToJsonConversion: appliesToJsonToo,

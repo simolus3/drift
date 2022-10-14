@@ -35,16 +35,20 @@ abstract class TypeConverter<D, S> {
 /// `.drift` files) refers to a type converter that inherits from
 /// [JsonTypeConverter], it will also be used for the conversion from and to
 /// JSON.
-mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
+abstract class JsonTypeConverter<D, S, J> extends TypeConverter<D, S> {
+  /// Empty constant constructor so that subclasses can have a constant
+  /// constructor.
+  const JsonTypeConverter();
+
   /// Map a value from the Data class to json.
   ///
   /// Defaults to doing the same conversion as for Dart -> SQL, [toSql].
-  S toJson(D value) => toSql(value);
+  J toJson(D value);
 
   /// Map a value from json to something understood by the data class.
   ///
   /// Defaults to doing the same conversion as for SQL -> Dart, [toSql].
-  D fromJson(S json) => fromSql(json);
+  D fromJson(J json);
 
   /// Wraps an [inner] type converter that only considers non-nullable values
   /// as a type converter that handles null values too.
@@ -52,8 +56,9 @@ mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
   /// The returned type converter will use the [inner] type converter for non-
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
-  static JsonTypeConverter<D?, S?> asNullable<D, S extends Object>(
-      TypeConverter<D, S> inner) {
+  static JsonTypeConverter<D?, S?, J?>
+      asNullable<D, S extends Object, J extends Object>(
+          JsonTypeConverter<D, S, J> inner) {
     return _NullWrappingTypeConverterWithJson(inner);
   }
 }
@@ -150,9 +155,10 @@ class _NullWrappingTypeConverter<D, S extends Object>
   S requireToSql(D value) => _inner.toSql(value);
 }
 
-class _NullWrappingTypeConverterWithJson<D, S extends Object>
-    extends NullAwareTypeConverter<D, S> with JsonTypeConverter<D?, S?> {
-  final TypeConverter<D, S> _inner;
+class _NullWrappingTypeConverterWithJson<D, S extends Object, J extends Object>
+    extends NullAwareTypeConverter<D, S>
+    implements JsonTypeConverter<D?, S?, J?> {
+  final JsonTypeConverter<D, S, J> _inner;
 
   const _NullWrappingTypeConverterWithJson(this._inner);
 
@@ -161,4 +167,18 @@ class _NullWrappingTypeConverterWithJson<D, S extends Object>
 
   @override
   S requireToSql(D value) => _inner.toSql(value);
+
+  D requireFromJson(J json) => _inner.fromJson(json);
+
+  @override
+  D? fromJson(J? json) {
+    return json == null ? null : requireFromJson(json);
+  }
+
+  J? requireToJson(D? value) => _inner.toJson(value as D);
+
+  @override
+  J? toJson(D? value) {
+    return value == null ? null : requireToJson(value);
+  }
 }

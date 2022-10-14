@@ -136,6 +136,20 @@ extension OperationOnTypes on HasType {
 
     return variableTypeCode();
   }
+
+  /// The dart type that matches the values of this column. For instance, if a
+  /// table has declared an `IntColumn`, the matching dart type name would be
+  /// [int].
+  String jsonTypeCode() {
+    final converter = typeConverter;
+    if (converter != null) {
+      var inner = converter.jsonType.codeString();
+      if (converter.canBeSkippedForNulls && nullable) inner += '?';
+      return isArray ? 'List<$inner>' : inner;
+    }
+
+    return variableTypeCode();
+  }
 }
 
 const Map<DriftSqlType, String> dartTypeNames = {
