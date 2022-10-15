@@ -33,13 +33,9 @@ abstract class TypeConverter<D, S> {
 /// to SQL (and vice-versa).
 /// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
 /// `.drift` files) refers to a type converter that inherits from
-/// [JsonTypeConverter], it will also be used for the conversion from and to
+/// [JsonTypeConverterWithDifferentTypes], it will also be used for the conversion from and to
 /// JSON.
-abstract class JsonTypeConverter<D, S, J> extends TypeConverter<D, S> {
-  /// Empty constant constructor so that subclasses can have a constant
-  /// constructor.
-  const JsonTypeConverter();
-
+mixin JsonTypeConverterWithDifferentTypes<D, S, J> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
   /// Defaults to doing the same conversion as for Dart -> SQL, [toSql].
@@ -56,9 +52,39 @@ abstract class JsonTypeConverter<D, S, J> extends TypeConverter<D, S> {
   /// The returned type converter will use the [inner] type converter for non-
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
-  static JsonTypeConverter<D?, S?, J?>
+  static JsonTypeConverterWithDifferentTypes<D?, S?, J?>
       asNullable<D, S extends Object, J extends Object>(
-          JsonTypeConverter<D, S, J> inner) {
+          JsonTypeConverterWithDifferentTypes<D, S, J> inner) {
+    return _NullWrappingTypeConverterWithJson(inner);
+  }
+}
+
+/// A mixin for [TypeConverter]s that should also apply to drift's builtin
+/// JSON serialization of data classes.
+///
+/// By default, a [TypeConverter] only applies to the serialization from Dart
+/// to SQL (and vice-versa).
+/// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
+/// `.drift` files) refers to a type converter that inherits from
+/// [JsonTypeConverter], it will also be used for the conversion from and to
+/// JSON.
+mixin JsonTypeConverter<D, S>
+    implements JsonTypeConverterWithDifferentTypes<D, S, S> {
+  @override
+  S toJson(D value) => toSql(value);
+
+  @override
+  D fromJson(S json) => fromSql(json);
+
+  /// Wraps an [inner] type converter that only considers non-nullable values
+  /// as a type converter that handles null values too.
+  ///
+  /// The returned type converter will use the [inner] type converter for non-
+  /// null values. Further, `null` is mapped to `null` in both directions (from
+  /// Dart to SQL and vice-versa).
+  static JsonTypeConverterWithDifferentTypes<D?, S?, J?>
+      asNullable<D, S extends Object, J extends Object>(
+          JsonTypeConverterWithDifferentTypes<D, S, J> inner) {
     return _NullWrappingTypeConverterWithJson(inner);
   }
 }
@@ -157,8 +183,8 @@ class _NullWrappingTypeConverter<D, S extends Object>
 
 class _NullWrappingTypeConverterWithJson<D, S extends Object, J extends Object>
     extends NullAwareTypeConverter<D, S>
-    implements JsonTypeConverter<D?, S?, J?> {
-  final JsonTypeConverter<D, S, J> _inner;
+    implements JsonTypeConverterWithDifferentTypes<D?, S?, J?> {
+  final JsonTypeConverterWithDifferentTypes<D, S, J> _inner;
 
   const _NullWrappingTypeConverterWithJson(this._inner);
 

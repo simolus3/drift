@@ -1373,10 +1373,11 @@ class $PureDefaultsTable extends PureDefaults
     return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter<MyCustomObject, String, String> $converter0 =
-      const CustomJsonConverter();
-  static JsonTypeConverter<MyCustomObject?, String?, String?> $converter0n =
-      JsonTypeConverter.asNullable($converter0);
+  static JsonTypeConverterWithDifferentTypes<MyCustomObject, String, String>
+      $converter0 = const CustomJsonConverter();
+  static JsonTypeConverterWithDifferentTypes<MyCustomObject?, String?, String?>
+      $converter0n =
+      JsonTypeConverterWithDifferentTypes.asNullable($converter0);
 }
 
 class CategoryTodoCountViewData extends DataClass {

@@ -135,14 +135,8 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
 }
 
 class CustomJsonConverter extends CustomConverter
-    implements JsonTypeConverter<MyCustomObject, String, String> {
+    with JsonTypeConverter<MyCustomObject, String> {
   const CustomJsonConverter();
-
-  @override
-  MyCustomObject fromJson(String json) => fromSql(json);
-
-  @override
-  String toJson(MyCustomObject value) => toSql(value);
 }
 
 abstract class CategoryTodoCountView extends View {

@@ -27,18 +27,18 @@ class HelperLibrary {
   }
 
   /// Converts the given Dart [type] into an instantiation of the
-  /// `TypeConverter` class from drift.
+  /// `JsonTypeConverter` class from drift.
   ///
   /// Returns `null` if [type] is not a subtype of `TypeConverter`.
   InterfaceType? asJsonTypeConverter(DartType type) {
-    final converter = helperLibrary.exportNamespace.get('JsonTypeConverter')
-        as InterfaceElement;
+    final converter = helperLibrary.exportNamespace
+        .get('JsonTypeConverterWithDifferentTypes') as InterfaceElement;
     return type.asInstanceOf(converter);
   }
 
   bool isJsonAwareTypeConverter(DartType? type, LibraryElement context) {
-    final jsonMixin = helperLibrary.exportNamespace.get('JsonTypeConverter')
-        as InterfaceElement;
+    final jsonMixin = helperLibrary.exportNamespace
+        .get('JsonTypeConverterWithDifferentTypes') as InterfaceElement;
     final jsonConverterType = jsonMixin.instantiate(
       typeArguments: [
         context.typeProvider.dynamicType,

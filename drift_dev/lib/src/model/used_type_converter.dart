@@ -143,7 +143,7 @@ class UsedTypeConverter {
     if (makeNullable) jsonDartType += '?';
 
     if (alsoAppliesToJsonConversion) {
-      return 'JsonTypeConverter<${dartTypeCode(makeNullable)}, $sqlDartType, $jsonDartType>';
+      return 'JsonTypeConverterWithDifferentTypes<${dartTypeCode(makeNullable)}, $sqlDartType, $jsonDartType>';
     }
     return 'TypeConverter<${dartTypeCode(makeNullable)}, $sqlDartType>';
   }
