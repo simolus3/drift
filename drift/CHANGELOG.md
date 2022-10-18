@@ -1,3 +1,8 @@
+## 2.3.0-dev
+
+- Add the `JsonTypeConverter2` mixin. It behaves similar to the existing json
+  type converters, but can use a different SQL and JSON type.
+
 ## 2.2.0
 
 - Always escape column names, avoiding the costs of using a regular expression

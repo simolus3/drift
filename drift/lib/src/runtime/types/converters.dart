@@ -29,12 +29,11 @@ abstract class TypeConverter<D, S> {
 /// A mixin for [TypeConverter]s that should also apply to drift's builtin
 /// JSON serialization of data classes.
 ///
-/// By default, a [TypeConverter] only applies to the serialization from Dart
-/// to SQL (and vice-versa).
-/// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
-/// `.drift` files) refers to a type converter that inherits from
-/// [JsonTypeConverter2], it will also be used for the conversion from and to
-/// JSON.
+/// Unlike the old [JsonTypeConverter] mixin, this more general mixin allows
+/// using a different type when serializing to JSON ([J]) than the type used in
+/// SQL ([S]).
+/// For the cases where the JSON serialization and the mapping to SQL use the
+/// same types, it may be more convenient to mix-in [JsonTypeConverter] instead.
 mixin JsonTypeConverter2<D, S, J> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
@@ -68,24 +67,17 @@ mixin JsonTypeConverter2<D, S, J> on TypeConverter<D, S> {
 /// `.drift` files) refers to a type converter that inherits from
 /// [JsonTypeConverter], it will also be used for the conversion from and to
 /// JSON.
+///
+/// If the serialized JSON has a different type than the type in SQL ([S]), use
+/// a [JsonTypeConverter2]. For instance, this could be useful if your type
+/// converter between Dart and SQL maps to a string in SQL, but to a `Map` in
+/// JSON.
 mixin JsonTypeConverter<D, S> implements JsonTypeConverter2<D, S, S> {
   @override
   S toJson(D value) => toSql(value);
 
   @override
   D fromJson(S json) => fromSql(json);
-
-  /// Wraps an [inner] type converter that only considers non-nullable values
-  /// as a type converter that handles null values too.
-  ///
-  /// The returned type converter will use the [inner] type converter for non-
-  /// null values. Further, `null` is mapped to `null` in both directions (from
-  /// Dart to SQL and vice-versa).
-  static JsonTypeConverter2<D?, S?, J?>
-      asNullable<D, S extends Object, J extends Object>(
-          JsonTypeConverter2<D, S, J> inner) {
-    return _NullWrappingTypeConverterWithJson(inner);
-  }
 }
 
 /// Implementation for an enum to int converter that uses the index of the enum

@@ -137,9 +137,8 @@ extension OperationOnTypes on HasType {
     return variableTypeCode();
   }
 
-  /// The dart type that matches the values of this column. For instance, if a
-  /// table has declared an `IntColumn`, the matching dart type name would be
-  /// [int].
+  /// The Dart type that matches the values of this column when serialized to
+  /// JSON.
   String jsonTypeCode() {
     final converter = typeConverter;
     if (converter != null) {
