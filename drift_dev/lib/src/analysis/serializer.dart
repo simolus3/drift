@@ -229,10 +229,10 @@ class ElementSerializer {
     return {
       'expression': converter.expression.toJson(),
       'dart_type': converter.dartType.accept(const _DartTypeSerializer()),
+      'json_type': converter.jsonType?.accept(const _DartTypeSerializer()),
       'sql_type': converter.sqlType.name,
       'dart_type_is_nullable': converter.dartTypeIsNullable,
       'sql_type_is_nullable': converter.sqlTypeIsNullable,
-      'also_applies_to_json_conversion': converter.alsoAppliesToJsonConversion,
     };
   }
 
@@ -618,11 +618,12 @@ class ElementDeserializer {
     return AppliedTypeConverter(
       expression: AnnotatedDartCode.fromJson(json['expression'] as Map),
       dartType: await _readDartType(json['dart_type'] as Map),
+      jsonType: json['json_type'] != null
+          ? await _readDartType(json['json_type'] as Map)
+          : null,
       sqlType: DriftSqlType.values.byName(json['sql_type'] as String),
       dartTypeIsNullable: json['dart_type_is_nullable'] as bool,
       sqlTypeIsNullable: json['sql_type_is_nullable'] as bool,
-      alsoAppliesToJsonConversion:
-          json['also_applies_to_json_conversion'] as bool,
     );
   }
 

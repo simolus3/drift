@@ -31,6 +31,10 @@ class UsedTypeConverter {
   /// mapped values in the database.
   final DartType sqlType;
 
+  /// The "JSON" type of this type converter. This is the type used to represent
+  /// mapped values in the database.
+  final DartType jsonType;
+
   /// Whether the Dart-value output of this type converter is nullable.
   ///
   /// In other words, [dartType] is potentially nullable.
@@ -80,6 +84,7 @@ class UsedTypeConverter {
     required this.expression,
     required this.dartType,
     required this.sqlType,
+    required this.jsonType,
     required this.dartTypeIsNullable,
     required this.sqlTypeIsNullable,
     this.alsoAppliesToJsonConversion = false,
@@ -115,6 +120,7 @@ class UsedTypeConverter {
       sqlTypeIsNullable: false,
       dartTypeIsNullable: false,
       sqlType: typeProvider.intType,
+      jsonType: typeProvider.intType,
     );
   }
 
@@ -133,11 +139,13 @@ class UsedTypeConverter {
   String converterNameInCode({bool makeNullable = false}) {
     var sqlDartType = sqlType.getDisplayString(withNullability: true);
     if (makeNullable) sqlDartType += '?';
+    var jsonDartType = jsonType.getDisplayString(withNullability: true);
+    if (makeNullable) jsonDartType += '?';
 
-    final className =
-        alsoAppliesToJsonConversion ? 'JsonTypeConverter' : 'TypeConverter';
-
-    return '$className<${dartTypeCode(makeNullable)}, $sqlDartType>';
+    if (alsoAppliesToJsonConversion) {
+      return 'JsonTypeConverter2<${dartTypeCode(makeNullable)}, $sqlDartType, $jsonDartType>';
+    }
+    return 'TypeConverter<${dartTypeCode(makeNullable)}, $sqlDartType>';
   }
 }
 

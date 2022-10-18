@@ -184,7 +184,8 @@ AppliedTypeConverter? readTypeConverter(
   final dartTypeNullable = typeSystem.isNullable(dartType);
   final sqlTypeNullable = typeSystem.isNullable(sqlType);
 
-  final appliesToJsonToo = helper.isJsonAwareTypeConverter(staticType, library);
+  final asJsonConverter = helper.asJsonTypeConverter(staticType);
+  final appliesToJsonToo = asJsonConverter != null;
 
   // Make the type converter support nulls by just mapping null to null if this
   // converter is otherwise non-nullable in both directions.
@@ -213,10 +214,10 @@ AppliedTypeConverter? readTypeConverter(
   return AppliedTypeConverter(
     expression: AnnotatedDartCode.ast(dartExpression),
     dartType: dartType,
+    jsonType: appliesToJsonToo ? asJsonConverter.typeArguments[2] : null,
     sqlType: columnType,
     dartTypeIsNullable: dartTypeNullable,
     sqlTypeIsNullable: sqlTypeNullable,
-    alsoAppliesToJsonConversion: appliesToJsonToo,
   );
 }
 
@@ -248,6 +249,7 @@ AppliedTypeConverter readEnumConverter(
   return AppliedTypeConverter(
     expression: expression,
     dartType: enumType,
+    jsonType: null,
     sqlType: DriftSqlType.int,
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,

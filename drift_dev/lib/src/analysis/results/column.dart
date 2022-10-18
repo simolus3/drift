@@ -118,6 +118,10 @@ class AppliedTypeConverter {
   final AnnotatedDartCode expression;
 
   final DartType dartType;
+
+  /// The JSON type representation of this column, if this type converter
+  /// applies to the JSON serialization as well.
+  final DartType? jsonType;
   final DriftSqlType sqlType;
 
   late DriftColumn owningColumn;
@@ -134,7 +138,7 @@ class AppliedTypeConverter {
 
   /// Whether this type converter should also be used in the generated JSON
   /// serialization.
-  final bool alsoAppliesToJsonConversion;
+  bool get alsoAppliesToJsonConversion => jsonType != null;
 
   /// Whether this type converter can be skipped for `null` values.
   ///
@@ -170,7 +174,7 @@ class AppliedTypeConverter {
     required this.sqlType,
     required this.dartTypeIsNullable,
     required this.sqlTypeIsNullable,
-    this.alsoAppliesToJsonConversion = false,
+    required this.jsonType,
   });
 }
 

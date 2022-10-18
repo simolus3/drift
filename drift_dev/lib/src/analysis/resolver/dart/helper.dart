@@ -45,7 +45,7 @@ class KnownDriftTypes {
       (exportNamespace.get('View') as InterfaceElement).thisType,
       (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
       exportNamespace.get('TypeConverter') as InterfaceElement,
-      exportNamespace.get('JsonTypeConverter') as InterfaceElement,
+      exportNamespace.get('JsonTypeConverter2') as InterfaceElement,
       dbElement.defaultInstantiation,
       daoElement.defaultInstantiation,
     );
@@ -59,17 +59,14 @@ class KnownDriftTypes {
     return type.asInstanceOf(typeConverter);
   }
 
-  bool isJsonAwareTypeConverter(DartType? type, LibraryElement context) {
-    final jsonConverterType = jsonTypeConverter.instantiate(
-      typeArguments: [
-        context.typeProvider.dynamicType,
-        context.typeProvider.dynamicType
-      ],
-      nullabilitySuffix: NullabilitySuffix.none,
-    );
-
-    return type != null &&
-        context.typeSystem.isSubtypeOf(type, jsonConverterType);
+  /// Converts the given Dart [type] into an instantiation of the
+  /// `JsonTypeConverter` class from drift.
+  ///
+  /// Returns `null` if [type] is not a subtype of `TypeConverter`.
+  InterfaceType? asJsonTypeConverter(DartType? type) {
+    final converter = helperLibrary.exportNamespace.get('JsonTypeConverter2')
+        as InterfaceElement;
+    return type?.asInstanceOf(converter);
   }
 
   static Future<KnownDriftTypes> resolve(DriftAnalysisDriver driver) async {

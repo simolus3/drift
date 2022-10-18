@@ -20,7 +20,22 @@ class DataClassWriter {
   String get serializerType => 'ValueSerializer?';
 
   String _columnType(DriftColumn column) {
-    return _emitter.dartCode(_emitter.writer.dartType(column));
+    return _emitter.dartCode(_emitter.dartType(column));
+  }
+
+  String _jsonType(DriftColumn column) {
+    final converter = column.typeConverter;
+    if (converter != null && converter.alsoAppliesToJsonConversion) {
+      final nullable = converter.canBeSkippedForNulls && column.nullable;
+      final code = AnnotatedDartCode([
+        ...AnnotatedDartCode.type(converter.jsonType!).elements,
+        if (nullable) '?',
+      ]);
+
+      return _emitter.dartCode(code);
+    } else {
+      return _columnType(column);
+    }
   }
 
   String _converter(DriftColumn column) {
@@ -116,7 +131,7 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        final type = column.innerColumnType(nullable: column.nullable);
+        final type = typeConverter.jsonType;
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final converterField = _converter(column);
         deserialized = '$converterField.fromJson($fromConverter)';
@@ -158,7 +173,7 @@ class DataClassWriter {
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
         final converterField = _converter(column);
         value = '$converterField.toJson($value)';
-        dartType = column.innerColumnType(nullable: true);
+        dartType = _jsonType(column);
       }
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");

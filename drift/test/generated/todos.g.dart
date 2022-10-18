@@ -470,11 +470,11 @@ return PureDefaultsCompanion(txt: txt == null && nullToAbsent ? const Value.abse
 }
 factory PureDefault.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
 serializer ??= driftRuntimeOptions.defaultSerializer;
-return PureDefault(txt: $PureDefaultsTable.$convertertxt.fromJson(serializer.fromJson<String?>(json['txt'])),);}
+return PureDefault(txt: $PureDefaultsTable.$convertertxt.fromJson(serializer.fromJson<Map<dynamic, dynamic>>(json['txt'])),);}
 factory PureDefault.fromJsonString(String encodedJson, {ValueSerializer? serializer}) => PureDefault.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>, serializer: serializer);@override Map<String, dynamic> toJson({ValueSerializer? serializer}) {
 serializer ??= driftRuntimeOptions.defaultSerializer;
 return <String, dynamic>{
-'txt': serializer.toJson<String?>($PureDefaultsTable.$convertertxt.toJson(txt)),};}PureDefault copyWith({Value<MyCustomObject?> txt = const Value.absent()}) => PureDefault(txt: txt.present ? txt.value : this.txt,);@override
+'txt': serializer.toJson<Map<dynamic, dynamic>?>($PureDefaultsTable.$convertertxt.toJson(txt)),};}PureDefault copyWith({Value<MyCustomObject?> txt = const Value.absent()}) => PureDefault(txt: txt.present ? txt.value : this.txt,);@override
 String toString() {return (StringBuffer('PureDefault(')..write('txt: $txt')..write(')')).toString();}
 @override
  int get hashCode => txt.hashCode;@override
@@ -523,7 +523,7 @@ final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';return PureDe
 }
 @override
 $PureDefaultsTable createAlias(String alias) {
-return $PureDefaultsTable(attachedDatabase, alias);}static JsonTypeConverter<MyCustomObject,String> $convertertxt = const CustomJsonConverter();static JsonTypeConverter<MyCustomObject?,String> $convertertxtn = JsonTypeConverter.asNullable($convertertxt);}class CategoryTodoCountViewData extends DataClass {
+return $PureDefaultsTable(attachedDatabase, alias);}static JsonTypeConverter<MyCustomObject,String> $convertertxt = const CustomJsonConverter();static JsonTypeConverter<MyCustomObject?,String> $convertertxtn = JsonTypeConverter2.asNullable($convertertxt);}class CategoryTodoCountViewData extends DataClass {
 final String? description;
 final int? itemCount;
 const CategoryTodoCountViewData({this.description, this.itemCount});factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
