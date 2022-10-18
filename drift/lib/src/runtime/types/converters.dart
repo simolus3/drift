@@ -33,9 +33,9 @@ abstract class TypeConverter<D, S> {
 /// to SQL (and vice-versa).
 /// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
 /// `.drift` files) refers to a type converter that inherits from
-/// [JsonTypeConverterWithDifferentTypes], it will also be used for the conversion from and to
+/// [JsonTypeConverter2], it will also be used for the conversion from and to
 /// JSON.
-mixin JsonTypeConverterWithDifferentTypes<D, S, J> on TypeConverter<D, S> {
+mixin JsonTypeConverter2<D, S, J> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
   /// Defaults to doing the same conversion as for Dart -> SQL, [toSql].
@@ -52,9 +52,9 @@ mixin JsonTypeConverterWithDifferentTypes<D, S, J> on TypeConverter<D, S> {
   /// The returned type converter will use the [inner] type converter for non-
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
-  static JsonTypeConverterWithDifferentTypes<D?, S?, J?>
+  static JsonTypeConverter2<D?, S?, J?>
       asNullable<D, S extends Object, J extends Object>(
-          JsonTypeConverterWithDifferentTypes<D, S, J> inner) {
+          JsonTypeConverter2<D, S, J> inner) {
     return _NullWrappingTypeConverterWithJson(inner);
   }
 }
@@ -68,8 +68,7 @@ mixin JsonTypeConverterWithDifferentTypes<D, S, J> on TypeConverter<D, S> {
 /// `.drift` files) refers to a type converter that inherits from
 /// [JsonTypeConverter], it will also be used for the conversion from and to
 /// JSON.
-mixin JsonTypeConverter<D, S>
-    implements JsonTypeConverterWithDifferentTypes<D, S, S> {
+mixin JsonTypeConverter<D, S> implements JsonTypeConverter2<D, S, S> {
   @override
   S toJson(D value) => toSql(value);
 
@@ -82,9 +81,9 @@ mixin JsonTypeConverter<D, S>
   /// The returned type converter will use the [inner] type converter for non-
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
-  static JsonTypeConverterWithDifferentTypes<D?, S?, J?>
+  static JsonTypeConverter2<D?, S?, J?>
       asNullable<D, S extends Object, J extends Object>(
-          JsonTypeConverterWithDifferentTypes<D, S, J> inner) {
+          JsonTypeConverter2<D, S, J> inner) {
     return _NullWrappingTypeConverterWithJson(inner);
   }
 }
@@ -183,8 +182,8 @@ class _NullWrappingTypeConverter<D, S extends Object>
 
 class _NullWrappingTypeConverterWithJson<D, S extends Object, J extends Object>
     extends NullAwareTypeConverter<D, S>
-    implements JsonTypeConverterWithDifferentTypes<D?, S?, J?> {
-  final JsonTypeConverterWithDifferentTypes<D, S, J> _inner;
+    implements JsonTypeConverter2<D?, S?, J?> {
+  final JsonTypeConverter2<D, S, J> _inner;
 
   const _NullWrappingTypeConverterWithJson(this._inner);
 
