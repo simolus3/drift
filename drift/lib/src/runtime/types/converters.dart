@@ -29,22 +29,21 @@ abstract class TypeConverter<D, S> {
 /// A mixin for [TypeConverter]s that should also apply to drift's builtin
 /// JSON serialization of data classes.
 ///
-/// By default, a [TypeConverter] only applies to the serialization from Dart
-/// to SQL (and vice-versa).
-/// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
-/// `.drift` files) refers to a type converter that inherits from
-/// [JsonTypeConverter], it will also be used for the conversion from and to
-/// JSON.
-mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
+/// Unlike the old [JsonTypeConverter] mixin, this more general mixin allows
+/// using a different type when serializing to JSON ([J]) than the type used in
+/// SQL ([S]).
+/// For the cases where the JSON serialization and the mapping to SQL use the
+/// same types, it may be more convenient to mix-in [JsonTypeConverter] instead.
+mixin JsonTypeConverter2<D, S, J> on TypeConverter<D, S> {
   /// Map a value from the Data class to json.
   ///
   /// Defaults to doing the same conversion as for Dart -> SQL, [toSql].
-  S toJson(D value) => toSql(value);
+  J toJson(D value);
 
   /// Map a value from json to something understood by the data class.
   ///
   /// Defaults to doing the same conversion as for SQL -> Dart, [toSql].
-  D fromJson(S json) => fromSql(json);
+  D fromJson(J json);
 
   /// Wraps an [inner] type converter that only considers non-nullable values
   /// as a type converter that handles null values too.
@@ -52,10 +51,33 @@ mixin JsonTypeConverter<D, S> on TypeConverter<D, S> {
   /// The returned type converter will use the [inner] type converter for non-
   /// null values. Further, `null` is mapped to `null` in both directions (from
   /// Dart to SQL and vice-versa).
-  static JsonTypeConverter<D?, S?> asNullable<D, S extends Object>(
-      TypeConverter<D, S> inner) {
+  static JsonTypeConverter2<D?, S?, J?>
+      asNullable<D, S extends Object, J extends Object>(
+          JsonTypeConverter2<D, S, J> inner) {
     return _NullWrappingTypeConverterWithJson(inner);
   }
+}
+
+/// A mixin for [TypeConverter]s that should also apply to drift's builtin
+/// JSON serialization of data classes.
+///
+/// By default, a [TypeConverter] only applies to the serialization from Dart
+/// to SQL (and vice-versa).
+/// When a [BuildGeneralColumn.map] column (or a `MAPPED BY` constraint in
+/// `.drift` files) refers to a type converter that inherits from
+/// [JsonTypeConverter], it will also be used for the conversion from and to
+/// JSON.
+///
+/// If the serialized JSON has a different type than the type in SQL ([S]), use
+/// a [JsonTypeConverter2]. For instance, this could be useful if your type
+/// converter between Dart and SQL maps to a string in SQL, but to a `Map` in
+/// JSON.
+mixin JsonTypeConverter<D, S> implements JsonTypeConverter2<D, S, S> {
+  @override
+  S toJson(D value) => toSql(value);
+
+  @override
+  D fromJson(S json) => fromSql(json);
 }
 
 /// Implementation for an enum to int converter that uses the index of the enum
@@ -150,9 +172,10 @@ class _NullWrappingTypeConverter<D, S extends Object>
   S requireToSql(D value) => _inner.toSql(value);
 }
 
-class _NullWrappingTypeConverterWithJson<D, S extends Object>
-    extends NullAwareTypeConverter<D, S> with JsonTypeConverter<D?, S?> {
-  final TypeConverter<D, S> _inner;
+class _NullWrappingTypeConverterWithJson<D, S extends Object, J extends Object>
+    extends NullAwareTypeConverter<D, S>
+    implements JsonTypeConverter2<D?, S?, J?> {
+  final JsonTypeConverter2<D, S, J> _inner;
 
   const _NullWrappingTypeConverterWithJson(this._inner);
 
@@ -161,4 +184,18 @@ class _NullWrappingTypeConverterWithJson<D, S extends Object>
 
   @override
   S requireToSql(D value) => _inner.toSql(value);
+
+  D requireFromJson(J json) => _inner.fromJson(json);
+
+  @override
+  D? fromJson(J? json) {
+    return json == null ? null : requireFromJson(json);
+  }
+
+  J? requireToJson(D? value) => _inner.toJson(value as D);
+
+  @override
+  J? toJson(D? value) {
+    return value == null ? null : requireToJson(value);
+  }
 }

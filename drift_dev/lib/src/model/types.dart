@@ -136,6 +136,19 @@ extension OperationOnTypes on HasType {
 
     return variableTypeCode();
   }
+
+  /// The Dart type that matches the values of this column when serialized to
+  /// JSON.
+  String jsonTypeCode() {
+    final converter = typeConverter;
+    if (converter != null) {
+      var inner = converter.jsonType.codeString();
+      if (converter.canBeSkippedForNulls && nullable) inner += '?';
+      return isArray ? 'List<$inner>' : inner;
+    }
+
+    return variableTypeCode();
+  }
 }
 
 const Map<DriftSqlType, String> dartTypeNames = {

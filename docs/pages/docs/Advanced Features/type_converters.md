@@ -123,6 +123,13 @@ If you want to apply the same conversion to JSON as well, make your type convert
 You can also override the `toJson` and `fromJson` methods to customize serialization as long as the types
 stay the compatible.
 
-If you want to serialize to a different JSON type (e.g. you have a type converter `<MyObject, int>` in SQL but
-want to map to a string in JSON), you'll have to write a custom [`ValueSerializer`](https://drift.simonbinder.eu/api/drift/valueserializer-class)
+If the JSON type you want to serialize to is different to the SQL type you're
+mapping to, you can mix-in `JsonTypeConverter2` instead.
+For instance, say you have a type converter mapping to a complex Dart type
+`MyObject`. In SQL, you might want to store this as an `String`. But when
+serializing to JSON, you may want to use a `Map<String, Object?>`. Here, simply
+add the `JsonTypeConverter2<MyObject, String, Map<String, Object?>>` mixin to
+your type converter.
+
+As an alternative to using JSON type converters, you can use a custom [`ValueSerializer`](https://drift.simonbinder.eu/api/drift/valueserializer-class)
 and pass it to the serialization methods.

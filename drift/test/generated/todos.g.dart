@@ -1252,7 +1252,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
       txt: $PureDefaultsTable.$converter0n
-          .fromJson(serializer.fromJson<String?>(json['txt'])),
+          .fromJson(serializer.fromJson<Map<dynamic, dynamic>>(json['txt'])),
     );
   }
   factory PureDefault.fromJsonString(String encodedJson,
@@ -1264,8 +1264,8 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'txt': serializer
-          .toJson<String?>($PureDefaultsTable.$converter0n.toJson(txt)),
+      'txt': serializer.toJson<Map<dynamic, dynamic>?>(
+          $PureDefaultsTable.$converter0n.toJson(txt)),
     };
   }
 
@@ -1373,10 +1373,10 @@ class $PureDefaultsTable extends PureDefaults
     return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter<MyCustomObject, String> $converter0 =
-      const CustomJsonConverter();
-  static JsonTypeConverter<MyCustomObject?, String?> $converter0n =
-      JsonTypeConverter.asNullable($converter0);
+  static JsonTypeConverter2<MyCustomObject, String, Map<dynamic, dynamic>>
+      $converter0 = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<dynamic, dynamic>?>
+      $converter0n = JsonTypeConverter2.asNullable($converter0);
 }
 
 class CategoryTodoCountViewData extends DataClass {

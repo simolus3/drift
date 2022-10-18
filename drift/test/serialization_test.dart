@@ -82,8 +82,12 @@ void main() {
     });
 
     test('applies json type converter', () {
-      expect(PureDefault(txt: MyCustomObject('foo')).toJson(), {'txt': 'foo'});
-      expect(PureDefault.fromJson({'txt': 'foo'}),
+      const serialized = {
+        'txt': {'data': 'foo'}
+      };
+
+      expect(PureDefault(txt: MyCustomObject('foo')).toJson(), serialized);
+      expect(PureDefault.fromJson(serialized),
           PureDefault(txt: MyCustomObject('foo')));
     });
 

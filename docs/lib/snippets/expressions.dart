@@ -10,7 +10,6 @@ extension Expressions on MyDatabase {
     return (select(categories)..where((row) => hasNoTodo)).get();
   }
   // #enddocregion emptyCategories
-
 }
 
 // #docregion bitwise

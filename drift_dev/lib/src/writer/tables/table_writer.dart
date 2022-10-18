@@ -336,7 +336,7 @@ class TableWriter extends TableOrViewWriter {
             converter.converterNameInCode(makeNullable: true);
 
         final wrap = converter.alsoAppliesToJsonConversion
-            ? 'JsonTypeConverter.asNullable'
+            ? 'JsonTypeConverter2.asNullable'
             : 'NullAwareTypeConverter.wrap';
 
         final code = '$wrap(${converter.fieldName})';

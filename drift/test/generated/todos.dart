@@ -135,8 +135,18 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
 }
 
 class CustomJsonConverter extends CustomConverter
-    with JsonTypeConverter<MyCustomObject, String> {
+    with JsonTypeConverter2<MyCustomObject, String, Map> {
   const CustomJsonConverter();
+
+  @override
+  MyCustomObject fromJson(Map json) {
+    return MyCustomObject(json['data'] as String);
+  }
+
+  @override
+  Map toJson(MyCustomObject value) {
+    return {'data': value.data};
+  }
 }
 
 abstract class CategoryTodoCountView extends View {
