@@ -53,7 +53,7 @@ class DriftDeclaration {
         element.source!.uri, element.nameOffset, element.name);
   }
 
-  factory DriftDeclaration.driftFile(AstNode node, Uri uri) {
+  factory DriftDeclaration.driftFile(SyntacticEntity node, Uri uri) {
     return DriftDeclaration(uri, node.firstPosition, null);
   }
 

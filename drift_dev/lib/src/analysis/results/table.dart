@@ -173,14 +173,11 @@ class VirtualTableData {
   /// In `CREATE VIRTUAL TABLE foo USING fts5`, the [module] would be `fts5`.
   final String module;
 
-  /// The `CREATE VIRTUAL TABLE` statement used to create this table.
-  final String createTable;
-
   /// The argument content immmediately following the [module] in the creating
   /// statement.
   final List<String> moduleArguments;
 
-  VirtualTableData(this.module, this.createTable, this.moduleArguments);
+  VirtualTableData(this.module, this.moduleArguments);
 
   factory VirtualTableData.fromJson(Map json) =>
       _$VirtualTableDataFromJson(json);

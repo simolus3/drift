@@ -45,7 +45,11 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       final type = resolver.driver.typeMapping.sqlTypeToDrift(column.type);
       final constraints = <DriftColumnConstraint>[];
 
-      for (final constraint in column.constraints) {
+      // columns from virtual tables don't necessarily have a definition, so we
+      // can't read the constraints.
+      final sqlConstraints =
+          column.hasDefinition ? column.constraints : const <Never>[];
+      for (final constraint in sqlConstraints) {
         if (constraint is DriftDartName) {
           overriddenDartName = constraint.dartName;
         } else if (constraint is ForeignKeyColumnConstraint) {
@@ -89,13 +93,14 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         nameInSql: column.name,
         nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
         constraints: constraints,
-        declaration: DriftDeclaration(
+        declaration: DriftDeclaration.driftFile(
+          column.definition?.nameToken ?? stmt,
           state.ownId.libraryUri,
-          column.definition!.nameToken!.span.start.offset,
-          column.name,
         ),
       ));
     }
+
+    VirtualTableData? virtualTableData;
 
     if (stmt is CreateTableStatement) {
       for (final constraint in stmt.tableConstraints) {
@@ -130,6 +135,11 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           }
         }
       }
+    } else if (stmt is CreateVirtualTableStatement) {
+      virtualTableData = VirtualTableData(
+        stmt.moduleName,
+        stmt.argumentContent,
+      );
     }
 
     String? dartTableName, dataClassName;
@@ -182,6 +192,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       withoutRowId: table.withoutRowId,
       strict: table.isStrict,
       tableConstraints: tableConstraints,
+      virtualTableData: virtualTableData,
     );
   }
 }
