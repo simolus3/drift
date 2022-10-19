@@ -85,12 +85,15 @@ class FileAnalyzer {
         } else if (element is DriftView) {
           final source = element.source;
           if (source is SqlViewSource) {
-            final stmt = parsedFile.statements
-                .whereType<CreateViewStatement>()
-                .firstWhere(
-                    (e) => e.firstPosition == element.declaration.offset);
-            source.parsedStatement = stmt;
+            source.parsedStatement =
+                parsedFile.findStatement(element.declaration);
           }
+        } else if (element is DriftTrigger) {
+          element.parsedStatement =
+              parsedFile.findStatement(element.declaration);
+        } else if (element is DriftIndex) {
+          element.parsedStatement =
+              parsedFile.findStatement(element.declaration);
         }
       }
     }
@@ -151,4 +154,12 @@ class _OptionsAndRequiredVariables {
   final RequiredVariables variables;
 
   _OptionsAndRequiredVariables(this.options, this.variables);
+}
+
+extension on DriftFile {
+  Node findStatement<Node extends AstNode>(DriftDeclaration declaration) {
+    return statements
+        .whereType<Node>()
+        .firstWhere((e) => e.firstPosition == declaration.offset);
+  }
 }

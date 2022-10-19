@@ -1,3 +1,5 @@
+import 'package:sqlparser/sqlparser.dart';
+
 import 'element.dart';
 import 'table.dart';
 
@@ -30,4 +32,10 @@ class DriftIndex extends DriftSchemaElement {
 
   @override
   Iterable<DriftElement> get references => [if (table != null) table!];
+
+  /// The parsed `CREATE VIEW` statement from [createView].
+  ///
+  /// This node is not serialized and only set in the late-state, local file
+  /// analysis.
+  CreateIndexStatement? parsedStatement;
 }

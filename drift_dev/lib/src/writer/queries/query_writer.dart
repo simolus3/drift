@@ -156,7 +156,8 @@ class QueryWriter {
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
     final method = column.nullable ? 'readNullable' : 'read';
-    final rawDartType = dartTypeNames[column.sqlType];
+    final rawDartType =
+        _emitter.dartCode(AnnotatedDartCode([dartTypeNames[column.sqlType]!]));
     var code = 'row.$method<$rawDartType>($dartLiteral)';
 
     final converter = column.typeConverter;

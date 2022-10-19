@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 import 'element.dart';
 import 'query.dart';
@@ -32,4 +33,10 @@ class DriftTrigger extends DriftSchemaElement {
 
   @override
   String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
+
+  /// The parsed `CREATE VIEW` statement from [createView].
+  ///
+  /// This node is not serialized and only set in the late-state, local file
+  /// analysis.
+  CreateTriggerStatement? parsedStatement;
 }

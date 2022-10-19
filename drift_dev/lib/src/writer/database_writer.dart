@@ -80,24 +80,27 @@ class DatabaseWriter {
           returnType: tableClassName,
           code: '$tableClassName(this)',
         );
-      } /* else if (entity is DriftTrigger) {
+      } else if (entity is DriftTrigger) {
+        final sql = scope.sqlCode(entity.parsedStatement!);
+
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: 'Trigger',
-          code: 'Trigger(${asDartLiteral(entity.createSql(scope.options))}, '
-              '${asDartLiteral(entity.displayName)})',
+          code: 'Trigger(${asDartLiteral(sql)}, '
+              '${asDartLiteral(entity.schemaName)})',
         );
       } else if (entity is DriftIndex) {
+        final sql = scope.sqlCode(entity.parsedStatement!);
+
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: 'Index',
-          code: 'Index(${asDartLiteral(entity.displayName)}, '
-              '${asDartLiteral(entity.createSql(scope.options))})',
+          code: 'Index(${asDartLiteral(entity.schemaName)}, '
+              '${asDartLiteral(sql)})',
         );
-      } */
-      else if (entity is DriftView) {
+      } else if (entity is DriftView) {
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
@@ -130,7 +133,7 @@ class DatabaseWriter {
 
     // Write List of tables
     final schemaScope = dbScope.leaf();
-/*
+
     schemaScope
       ..write(
           '@override\nIterable<TableInfo<Table, dynamic>> get allTables => ')
@@ -139,17 +142,16 @@ class DatabaseWriter {
       ..write('=> [');
 
     schemaScope
-      ..write(db.entities.map((e) {
-        if (e is SpecialQuery) {
-          final sql = e.formattedSql(scope.options);
-          return 'OnCreateQuery(${asDartLiteral(sql)})';
-        }
+      ..write(db.references.map((e) {
+//        if (e is SpecialQuery) {
+//          final sql = e.formattedSql(scope.options);
+//          return 'OnCreateQuery(${asDartLiteral(sql)})';
+//        }
 
         return entityGetters[e];
       }).join(', '))
       // close list literal and allSchemaEntities getter
       ..write('];\n');
-*/
 
     final updateRules = FindStreamUpdateRules(db).identifyRules();
     if (updateRules.rules.isNotEmpty) {

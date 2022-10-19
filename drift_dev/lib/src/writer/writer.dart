@@ -163,6 +163,10 @@ abstract class _NodeOrWriter {
 
     return buffer.toString();
   }
+
+  String sqlCode(sql.AstNode node) {
+    return SqlWriter(writer.options, escapeForDart: false).writeSql(node);
+  }
 }
 
 abstract class _Node extends _NodeOrWriter {

@@ -686,4 +686,10 @@ abstract class _$Database extends GeneratedDatabase {
       $TodoCategoryItemCountView(this);
   late final $TodoItemWithCategoryNameViewView customViewName =
       $TodoItemWithCategoryNameViewView(this);
+  @override
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [todoItems, todoCategories, todoCategoryItemCount, customViewName];
 }
