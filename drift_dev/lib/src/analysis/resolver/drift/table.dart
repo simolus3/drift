@@ -114,6 +114,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           );
 
           if (otherTable != null) {
+            references.add(otherTable);
             final localColumns = [
               for (final column in constraint.columns)
                 columns.firstWhere((e) => e.nameInSql == column.columnName)

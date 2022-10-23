@@ -415,9 +415,8 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     required String description,
-    required CategoryPriority priority,
-  })  : description = Value(description),
-        priority = Value(priority);
+    this.priority = const Value.absent(),
+  }) : description = Value(description);
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<String>? description,
@@ -493,7 +492,9 @@ class $CategoriesTable extends Categories
   @override
   late final GeneratedColumnWithTypeConverter<CategoryPriority, int> priority =
       GeneratedColumn<int>('priority', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: const Constant(0))
           .withConverter<CategoryPriority>(
               $CategoriesTable.$converterpriorityn);
   final VerificationMeta _descriptionInUpperCaseMeta =
@@ -679,13 +680,11 @@ class UsersCompanion extends UpdateCompanion<User> {
   UsersCompanion.insert({
     this.id = const Value.absent(),
     required String name,
-    required bool isAwesome,
+    this.isAwesome = const Value.absent(),
     required Uint8List profilePicture,
-    required DateTime creationTime,
+    this.creationTime = const Value.absent(),
   })  : name = Value(name),
-        isAwesome = Value(isAwesome),
-        profilePicture = Value(profilePicture),
-        creationTime = Value(creationTime);
+        profilePicture = Value(profilePicture);
   static Insertable<User> custom({
     Expression<int>? id,
     Expression<String>? name,
@@ -777,8 +776,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<bool> isAwesome = GeneratedColumn<bool>(
       'is_awesome', aliasedName, false,
       type: DriftSqlType.bool,
-      requiredDuringInsert: true,
-      defaultConstraints: 'CHECK (is_awesome IN (0, 1))');
+      requiredDuringInsert: false,
+      defaultConstraints: 'CHECK (is_awesome IN (0, 1))',
+      defaultValue: const Constant(true));
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
@@ -792,7 +792,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'creation_time', aliasedName, false,
       check: () => creationTime.isBiggerThan(Constant(DateTime.utc(1950))),
       type: DriftSqlType.dateTime,
-      requiredDuringInsert: true);
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, isAwesome, profilePicture, creationTime];
@@ -817,8 +818,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     if (data.containsKey('is_awesome')) {
       context.handle(_isAwesomeMeta,
           isAwesome.isAcceptableOrUnknown(data['is_awesome']!, _isAwesomeMeta));
-    } else if (isInserting) {
-      context.missing(_isAwesomeMeta);
     }
     if (data.containsKey('profile_picture')) {
       context.handle(
@@ -833,8 +832,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           _creationTimeMeta,
           creationTime.isAcceptableOrUnknown(
               data['creation_time']!, _creationTimeMeta));
-    } else if (isInserting) {
-      context.missing(_creationTimeMeta);
     }
     return context;
   }
@@ -1164,7 +1161,6 @@ class $TableWithoutPKTable extends TableWithoutPK
       GeneratedColumn<String>('custom', aliasedName, false,
               type: DriftSqlType.string,
               requiredDuringInsert: false,
-              defaultValue: _uuid.v4,
               clientDefault: _uuid.v4)
           .withConverter<MyCustomObject>(
               $TableWithoutPKTable.$convertercustomn);
@@ -1635,7 +1631,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<TodoEntry> withIn(String var1, String var2, int var3) {
+  Selectable<TodoEntry> withIn(String var1, String var2, List<int> var3) {
     var $arrayStartIndex = 3;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;

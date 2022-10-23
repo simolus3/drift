@@ -32,8 +32,10 @@ class DatabaseWriter {
   }
 
   void write() {
+    final elements = input.resolvedAccessor.availableElements;
+
     // Write data classes, companions and info classes
-    for (final reference in db.references) {
+    for (final reference in elements) {
       if (reference is DriftTable) {
         TableWriter(reference, scope.child()).writeInto();
       } else if (reference is DriftView) {
@@ -65,7 +67,7 @@ class DatabaseWriter {
 
     final entityGetters = <DriftSchemaElement, String>{};
 
-    for (final entity in db.references.whereType<DriftSchemaElement>()) {
+    for (final entity in elements.whereType<DriftSchemaElement>()) {
       final getterName = entity.dbGetterName;
       if (getterName != null) {
         entityGetters[entity] = getterName;

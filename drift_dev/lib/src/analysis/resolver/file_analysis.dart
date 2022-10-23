@@ -22,10 +22,30 @@ class FileAnalyzer {
 
         final queries = <String, SqlQuery>{};
 
+        final imports = <FileState>[];
+
         if (element is BaseDriftAccessor) {
+          for (final include in element.declaredIncludes) {
+            final imported = await driver.resolveElements(driver.backend
+                .resolveUri(element.declaration.sourceUri, include.toString()));
+
+            imports.add(imported);
+          }
+
+          final availableElements = driver.cache
+              .crawlMulti(imports)
+              .expand((reachable) {
+                final elementAnalysis = reachable.analysis.values;
+                return elementAnalysis.map((e) => e.result);
+              })
+              .whereType<DriftElement>()
+              .followedBy(element.references)
+              .toSet() // filter duplicates
+              .toList();
+
           for (final query in element.declaredQueries) {
             final engine =
-                driver.typeMapping.newEngineWithTables(element.references);
+                driver.typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
 
             final analyzer = QueryAnalyzer(context, driver,
@@ -38,16 +58,8 @@ class FileAnalyzer {
             }
           }
 
-          final imports = <FileState>[];
-          for (final include in element.declaredIncludes) {
-            final imported = driver.cache.knownFiles[include];
-            if (imported != null) {
-              imports.add(imported);
-            }
-          }
-
           result.resolvedDatabases[element.id] =
-              ResolvedDatabaseAccessor(queries, imports);
+              ResolvedDatabaseAccessor(queries, imports, availableElements);
         }
       }
     } else if (state.extension == '.drift' || state.extension == '.moor') {

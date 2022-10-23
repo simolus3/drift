@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
@@ -127,10 +125,12 @@ class AnnotatedDartCodeBuilder {
 class DartTopLevelSymbol {
   static final _driftUri = Uri.parse('package:drift/drift.dart');
 
+  static final list = DartTopLevelSymbol('List', AnnotatedDartCode.dartCore);
+
   final String lexeme;
   final Uri? importUri;
 
-  DartTopLevelSymbol(this.lexeme, this.importUri);
+  const DartTopLevelSymbol(this.lexeme, this.importUri);
 
   factory DartTopLevelSymbol.drift(String name) {
     return DartTopLevelSymbol(name, _driftUri);

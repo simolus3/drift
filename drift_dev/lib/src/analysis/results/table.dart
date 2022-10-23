@@ -152,6 +152,8 @@ class UniqueColumns extends DriftTableConstraint {
 class ForeignKeyTable extends DriftTableConstraint {
   final List<DriftColumn> localColumns;
   final DriftTable otherTable;
+
+  /// The columns matching [localColumns] in the [otherTable].
   final List<DriftColumn> otherColumns;
 
   final sql.ReferenceAction? onUpdate;

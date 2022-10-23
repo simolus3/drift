@@ -13,6 +13,8 @@ class FileAnalysisResult {
 class ResolvedDatabaseAccessor {
   final Map<String, SqlQuery> definedQueries;
   final List<FileState> knownImports;
+  final List<DriftElement> availableElements;
 
-  ResolvedDatabaseAccessor(this.definedQueries, this.knownImports);
+  ResolvedDatabaseAccessor(
+      this.definedQueries, this.knownImports, this.availableElements);
 }

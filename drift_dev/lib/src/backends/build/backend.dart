@@ -33,8 +33,19 @@ class DriftBuildBackend extends DriftBackend {
   }
 
   @override
-  Future<LibraryElement> readDart(Uri uri) {
-    return _buildStep.resolver.libraryFor(AssetId.resolve(uri));
+  Future<LibraryElement> readDart(Uri uri) async {
+    if (uri.scheme == 'dart') {
+      final name = 'dart.${uri.path}';
+      final library = await _buildStep.resolver.findLibraryByName(name);
+
+      if (library == null) {
+        throw NonLibraryAssetException(AssetId('sdk', name));
+      } else {
+        return library;
+      }
+    }
+
+    return await _buildStep.resolver.libraryFor(AssetId.resolve(uri));
   }
 
   @override

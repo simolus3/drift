@@ -99,19 +99,32 @@ abstract class _NodeOrWriter {
   }
 
   AnnotatedDartCode dartType(HasType hasType) {
-    final converter = hasType.typeConverter;
-    if (converter != null) {
-      final nullable = converter.canBeSkippedForNulls && hasType.nullable;
+    AnnotatedDartCode nonListType() {
+      final converter = hasType.typeConverter;
+      if (converter != null) {
+        final nullable = converter.canBeSkippedForNulls && hasType.nullable;
 
+        return AnnotatedDartCode([
+          ...AnnotatedDartCode.type(converter.dartType).elements,
+          if (nullable) '?',
+        ]);
+      } else {
+        return AnnotatedDartCode([
+          dartTypeNames[hasType.sqlType],
+          if (hasType.nullableInDart) '?',
+        ]);
+      }
+    }
+
+    if (hasType.isArray) {
       return AnnotatedDartCode([
-        ...AnnotatedDartCode.type(converter.dartType).elements,
-        if (nullable) '?',
+        DartTopLevelSymbol.list,
+        '<',
+        ...nonListType().elements,
+        '>',
       ]);
     } else {
-      return AnnotatedDartCode([
-        dartTypeNames[hasType.sqlType],
-        if (hasType.nullableInDart) '?',
-      ]);
+      return nonListType();
     }
   }
 

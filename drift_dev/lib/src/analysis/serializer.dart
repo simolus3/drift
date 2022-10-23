@@ -160,7 +160,7 @@ class ElementSerializer {
           ? _serializeTypeConverter(column.typeConverter!)
           : null,
       'clientDefaultCode': column.clientDefaultCode?.toJson(),
-      'defaultArgument': column.clientDefaultCode?.toJson(),
+      'defaultArgument': column.defaultArgument?.toJson(),
       'overriddenJsonName': column.overriddenJsonName,
       'documentationComment': column.documentationComment,
       'constraints': [
@@ -211,7 +211,7 @@ class ElementSerializer {
         'table': _serializeElementReference(constraint.otherTable),
         'foreign': [
           for (final column in constraint.otherColumns)
-            _serializeColumn(column),
+            _serializeColumnReference(column),
         ],
         'onUpdate': _serializeReferenceAction(constraint.onUpdate),
         'onDelete': _serializeReferenceAction(constraint.onDelete),
@@ -671,7 +671,7 @@ class ElementDeserializer {
             for (final ref in json['local']) localColumns[ref]!,
           ],
           otherTable:
-              await _readDriftElement(json['table'] as Map) as DriftTable,
+              await _readElementReference(json['table'] as Map) as DriftTable,
           otherColumns: [
             for (final ref in json['foreign'])
               await _readDriftColumnReference(ref as Map)
