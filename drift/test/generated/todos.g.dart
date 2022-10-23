@@ -1612,10 +1612,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
       return AllTodosWithCategoryResult(
         row: row,
         id: row.read<int>('id'),
-        title: row.read<String>('title'),
+        title: row.readNullable<String>('title'),
         content: row.read<String>('content'),
-        targetDate: row.read<DateTime>('target_date'),
-        category: row.read<int>('category'),
+        targetDate: row.readNullable<DateTime>('target_date'),
+        category: row.readNullable<int>('category'),
         catId: row.read<int>('catId'),
         catDesc: row.read<String>('catDesc'),
       );
@@ -1631,7 +1631,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<TodoEntry> withIn(String var1, String var2, List<int> var3) {
+  Selectable<TodoEntry> withIn(String? var1, String? var2, List<int> var3) {
     var $arrayStartIndex = 3;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
@@ -1686,19 +1686,19 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
 class AllTodosWithCategoryResult extends CustomResultSet {
   final int id;
-  final String title;
+  final String? title;
   final String content;
-  final DateTime targetDate;
-  final int category;
+  final DateTime? targetDate;
+  final int? category;
   final int catId;
   final String catDesc;
   AllTodosWithCategoryResult({
     required QueryRow row,
     required this.id,
-    required this.title,
+    this.title,
     required this.content,
-    required this.targetDate,
-    required this.category,
+    this.targetDate,
+    this.category,
     required this.catId,
     required this.catDesc,
   }) : super(row);

@@ -1381,23 +1381,23 @@ class $WeirdTableTable extends Table
 
 class MyViewData extends DataClass {
   final String configKey;
-  final String configValue;
-  final SyncType syncState;
-  final SyncType syncStateImplicit;
+  final String? configValue;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
   const MyViewData(
       {required this.configKey,
-      required this.configValue,
-      required this.syncState,
-      required this.syncStateImplicit});
+      this.configValue,
+      this.syncState,
+      this.syncStateImplicit});
   factory MyViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MyViewData(
       configKey: serializer.fromJson<String>(json['config_key']),
-      configValue: serializer.fromJson<String>(json['config_value']),
-      syncState: serializer.fromJson<SyncType>(json['sync_state']),
+      configValue: serializer.fromJson<String?>(json['config_value']),
+      syncState: serializer.fromJson<SyncType?>(json['sync_state']),
       syncStateImplicit:
-          serializer.fromJson<SyncType>(json['sync_state_implicit']),
+          serializer.fromJson<SyncType?>(json['sync_state_implicit']),
     );
   }
   factory MyViewData.fromJsonString(String encodedJson,
@@ -1410,22 +1410,24 @@ class MyViewData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'config_key': serializer.toJson<String>(configKey),
-      'config_value': serializer.toJson<String>(configValue),
-      'sync_state': serializer.toJson<SyncType>(syncState),
-      'sync_state_implicit': serializer.toJson<SyncType>(syncStateImplicit),
+      'config_value': serializer.toJson<String?>(configValue),
+      'sync_state': serializer.toJson<SyncType?>(syncState),
+      'sync_state_implicit': serializer.toJson<SyncType?>(syncStateImplicit),
     };
   }
 
   MyViewData copyWith(
           {String? configKey,
-          String? configValue,
-          SyncType? syncState,
-          SyncType? syncStateImplicit}) =>
+          Value<String?> configValue = const Value.absent(),
+          Value<SyncType?> syncState = const Value.absent(),
+          Value<SyncType?> syncStateImplicit = const Value.absent()}) =>
       MyViewData(
         configKey: configKey ?? this.configKey,
-        configValue: configValue ?? this.configValue,
-        syncState: syncState ?? this.syncState,
-        syncStateImplicit: syncStateImplicit ?? this.syncStateImplicit,
+        configValue: configValue.present ? configValue.value : this.configValue,
+        syncState: syncState.present ? syncState.value : this.syncState,
+        syncStateImplicit: syncStateImplicit.present
+            ? syncStateImplicit.value
+            : this.syncStateImplicit,
       );
   @override
   String toString() {
@@ -1475,13 +1477,13 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
       configKey: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}config_value'])!,
-      syncState: MyView.$convertersyncStaten.fromSql(attachedDatabase
+          .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
+      syncState: MyView.$convertersyncState.fromSql(attachedDatabase
           .options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])!),
-      syncStateImplicit: MyView.$convertersyncStateImplicitn.fromSql(
-          attachedDatabase.options.types.read(DriftSqlType.int,
-              data['${effectivePrefix}sync_state_implicit'])!),
+          .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
+      syncStateImplicit: MyView.$convertersyncStateImplicit.fromSql(
+          attachedDatabase.options.types.read(
+              DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
   }
 
@@ -1489,16 +1491,17 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
       'config_key', aliasedName, false,
       type: DriftSqlType.string);
   late final GeneratedColumn<String> configValue = GeneratedColumn<String>(
-      'config_value', aliasedName, false,
+      'config_value', aliasedName, true,
       type: DriftSqlType.string);
-  late final GeneratedColumnWithTypeConverter<SyncType, int> syncState =
-      GeneratedColumn<int>('sync_state', aliasedName, false,
+  late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
+      GeneratedColumn<int>('sync_state', aliasedName, true,
               type: DriftSqlType.int)
-          .withConverter<SyncType>(MyView.$convertersyncStaten);
-  late final GeneratedColumnWithTypeConverter<SyncType, int> syncStateImplicit =
-      GeneratedColumn<int>('sync_state_implicit', aliasedName, false,
+          .withConverter<SyncType?>(MyView.$convertersyncState);
+  late final GeneratedColumnWithTypeConverter<SyncType?, int>
+      syncStateImplicit = GeneratedColumn<int>(
+              'sync_state_implicit', aliasedName, true,
               type: DriftSqlType.int)
-          .withConverter<SyncType>(MyView.$convertersyncStateImplicitn);
+          .withConverter<SyncType?>(MyView.$convertersyncStateImplicit);
   @override
   MyView createAlias(String alias) {
     return MyView(attachedDatabase, alias);
@@ -1527,7 +1530,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
   late final MyView myView = MyView(this);
-  Future<int> writeConfig({required String key, required String value}) {
+  Future<int> writeConfig({required String key, String? value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
       variables: [Variable<String>(key), Variable<String>(value)],
@@ -1588,7 +1591,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap(config.mapFromRow);
   }
 
-  Selectable<String> typeConverterVar(SyncType var1, List<SyncType> var2,
+  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
       {TypeConverterVar$pred? pred}) {
     var $arrayStartIndex = 2;
     final generatedpred = $write(
@@ -1600,10 +1603,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
-          Variable<int>($ConfigTable.$convertersyncStaten.toSql(var1)),
+          Variable<int>(NullAwareTypeConverter.wrapToSql(
+              $ConfigTable.$convertersyncStaten, var1)),
           ...generatedpred.introducedVariables,
           for (var $ in var2)
-            Variable<int>($ConfigTable.$convertersyncStateImplicitn.toSql($))
+            Variable<int>(NullAwareTypeConverter.wrapToSql(
+                $ConfigTable.$convertersyncStateImplicitn, $))
         ],
         readsFrom: {
           config,
@@ -1659,8 +1664,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).asyncMap((QueryRow row) async {
       return MultipleResult(
         row: row,
-        a: row.read<String>('a'),
-        b: row.read<int>('b'),
+        a: row.readNullable<String>('a'),
+        b: row.readNullable<int>('b'),
         c: await withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
       );
     });
@@ -1695,11 +1700,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         row: row,
         rowid: row.read<int>('rowid'),
         configKey: row.read<String>('config_key'),
-        configValue: row.read<String>('config_value'),
-        syncState: $ConfigTable.$convertersyncStaten
-            .fromSql(row.read<int>('sync_state')),
-        syncStateImplicit: $ConfigTable.$convertersyncStateImplicitn
-            .fromSql(row.read<int>('sync_state_implicit')),
+        configValue: row.readNullable<String>('config_value'),
+        syncState: NullAwareTypeConverter.wrapFromSql(
+            $ConfigTable.$convertersyncStaten,
+            row.readNullable<int>('sync_state')),
+        syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
+            $ConfigTable.$convertersyncStateImplicitn,
+            row.readNullable<int>('sync_state_implicit')),
       );
     });
   }
@@ -1711,11 +1718,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       return ReadViewResult(
         row: row,
         configKey: row.read<String>('config_key'),
-        configValue: row.read<String>('config_value'),
-        syncState:
-            MyView.$convertersyncStaten.fromSql(row.read<int>('sync_state')),
-        syncStateImplicit: MyView.$convertersyncStateImplicitn
-            .fromSql(row.read<int>('sync_state_implicit')),
+        configValue: row.readNullable<String>('config_value'),
+        syncState: NullAwareTypeConverter.wrapFromSql(
+            MyView.$convertersyncStaten, row.readNullable<int>('sync_state')),
+        syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
+            MyView.$convertersyncStateImplicitn,
+            row.readNullable<int>('sync_state_implicit')),
       );
     });
   }
@@ -1747,7 +1755,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         .then((rows) => Future.wait(rows.map(config.mapFromRow)));
   }
 
-  Selectable<NestedResult> nested(String var1) {
+  Selectable<NestedResult> nested(String? var1) {
     return customSelect(
         'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
         variables: [
@@ -1866,13 +1874,13 @@ class AnotherResult extends CustomResultSet {
 }
 
 class MultipleResult extends CustomResultSet {
-  final String a;
-  final int b;
+  final String? a;
+  final int? b;
   final WithConstraint? c;
   MultipleResult({
     required QueryRow row,
-    required this.a,
-    required this.b,
+    this.a,
+    this.b,
     this.c,
   }) : super(row);
   @override
@@ -1901,16 +1909,16 @@ typedef Multiple$predicate = Expression<bool> Function(
 class ReadRowIdResult extends CustomResultSet {
   final int rowid;
   final String configKey;
-  final String configValue;
-  final SyncType syncState;
-  final SyncType syncStateImplicit;
+  final String? configValue;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
   ReadRowIdResult({
     required QueryRow row,
     required this.rowid,
     required this.configKey,
-    required this.configValue,
-    required this.syncState,
-    required this.syncStateImplicit,
+    this.configValue,
+    this.syncState,
+    this.syncStateImplicit,
   }) : super(row);
   @override
   int get hashCode =>
@@ -1941,15 +1949,15 @@ typedef ReadRowId$expr = Expression<int> Function($ConfigTable config);
 
 class ReadViewResult extends CustomResultSet {
   final String configKey;
-  final String configValue;
-  final SyncType syncState;
-  final SyncType syncStateImplicit;
+  final String? configValue;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
   ReadViewResult({
     required QueryRow row,
     required this.configKey,
-    required this.configValue,
-    required this.syncState,
-    required this.syncStateImplicit,
+    this.configValue,
+    this.syncState,
+    this.syncStateImplicit,
   }) : super(row);
   @override
   int get hashCode =>

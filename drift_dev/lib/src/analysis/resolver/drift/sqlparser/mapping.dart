@@ -56,9 +56,10 @@ class TypeMapping {
 
   ResolvedType _columnType(DriftColumn column) {
     return _driftTypeToParser(column.sqlType,
-        overrideHint: column.typeConverter != null
-            ? TypeConverterHint(column.typeConverter!)
-            : null);
+            overrideHint: column.typeConverter != null
+                ? TypeConverterHint(column.typeConverter!)
+                : null)
+        .withNullable(column.nullable);
   }
 
   ResolvedType _driftTypeToParser(DriftSqlType type, {TypeHint? overrideHint}) {
