@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
@@ -6,6 +8,7 @@ import 'package:build/build.dart' as build;
 
 import '../../analysis/backend.dart';
 import '../../analysis/driver/driver.dart';
+import '../../analysis/preprocess_drift.dart';
 
 class DriftBuildBackend extends DriftBackend {
   final BuildStep _buildStep;
@@ -51,6 +54,42 @@ class DriftBuildBackend extends DriftBackend {
   @override
   Future<AstNode?> loadElementDeclaration(Element element) {
     return _buildStep.resolver.astNodeFor(element, resolve: true);
+  }
+
+  @override
+  Future<Expression> resolveExpression(
+      Uri context, String dartExpression, Iterable<String> imports) async {
+    final original = AssetId.resolve(context);
+    final tempDart = original.changeExtension('.temp.dart');
+    final prepJson = original.changeExtension('.drift_prep.json');
+
+    DriftPreprocessorResult prepResult;
+    try {
+      prepResult = DriftPreprocessorResult.fromJson(
+          json.decode(await _buildStep.readAsString(prepJson))
+              as Map<String, Object?>);
+    } on Exception catch (e, s) {
+      log.warning('Could not read Dart expression $dartExpression', e, s);
+      throw CannotReadExpressionException('Could not load helpers');
+    }
+
+    final getter =
+        prepResult.inlineDartExpressionsToHelperField[dartExpression];
+    if (getter == null) {
+      throw CannotReadExpressionException('No field for $dartExpression');
+    }
+
+    final library = await _buildStep.resolver.libraryFor(tempDart);
+    final field = library.units.first.topLevelVariables
+        .firstWhere((element) => element.name == getter);
+    final fieldAst = await _buildStep.resolver.astNodeFor(field, resolve: true);
+
+    final initializer = (fieldAst as VariableDeclaration).initializer;
+    if (initializer == null) {
+      throw CannotReadExpressionException(
+          'Malformed helper file, this should never happen');
+    }
+    return initializer;
   }
 }
 

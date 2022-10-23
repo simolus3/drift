@@ -81,6 +81,7 @@ class ViewWriter extends TableOrViewWriter {
       } else {
         emitter.write(asDartLiteral(source.createView));
       }
+      buffer.writeln(';');
     } else {
       buffer.write('@override\n String? get createViewStmt => null;\n');
     }

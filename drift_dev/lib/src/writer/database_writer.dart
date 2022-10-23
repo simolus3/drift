@@ -19,7 +19,7 @@ class DatabaseWriter {
   DatabaseGenerationInput input;
   final Scope scope;
 
-  DriftDatabase get db => input.db;
+  DriftDatabase get db => input.accessor;
 
   DatabaseWriter(this.input, this.scope);
 
@@ -127,9 +127,7 @@ class DatabaseWriter {
     }
 
     // Write implementation for query methods
-    final queries = input.resolvedAccessor.definedQueries.values
-        .followedBy(input.importedQueries);
-    for (final query in queries) {
+    for (final query in input.availableRegularQueries) {
       QueryWriter(dbScope.child()).write(query);
     }
 
@@ -144,11 +142,13 @@ class DatabaseWriter {
       ..write('=> [');
 
     schemaScope
-      ..write(db.references.map((e) {
-//        if (e is SpecialQuery) {
-//          final sql = e.formattedSql(scope.options);
-//          return 'OnCreateQuery(${asDartLiteral(sql)})';
-//        }
+      ..write(elements.map((e) {
+        if (e is DefinedSqlQuery && e.mode == QueryMode.atCreate) {
+          final resolved = input.importedQueries[e]!;
+          final sql = schemaScope.sqlCode(resolved.root!);
+
+          return 'OnCreateQuery(${asDartLiteral(sql)})';
+        }
 
         return entityGetters[e];
       }).join(', '))
@@ -192,14 +192,25 @@ class DatabaseWriter {
   }
 }
 
-class DatabaseGenerationInput {
-  final DriftDatabase db;
+class GenerationInput<T extends BaseDriftAccessor> {
+  final T accessor;
   final ResolvedDatabaseAccessor resolvedAccessor;
+  final Map<DefinedSqlQuery, SqlQuery> importedQueries;
 
-  final List<SqlQuery> importedQueries;
+  GenerationInput(this.accessor, this.resolvedAccessor, this.importedQueries);
 
-  DatabaseGenerationInput(this.db, this.resolvedAccessor, this.importedQueries);
+  /// All locally-defined and imported [SqlQuery] elements that are regular
+  /// queries (so no query with [QueryMode.atCreate]).
+  Iterable<SqlQuery> get availableRegularQueries {
+    final imported = importedQueries.entries
+        .where((entry) => entry.key.mode == QueryMode.regular)
+        .map((e) => e.value);
+    return resolvedAccessor.definedQueries.values.followedBy(imported);
+  }
 }
+
+typedef DatabaseGenerationInput = GenerationInput<DriftDatabase>;
+typedef AccessorGenerationInput = GenerationInput<DatabaseAccessor>;
 
 extension on drift.UpdateRule {
   void writeConstructor(TextEmitter emitter) {

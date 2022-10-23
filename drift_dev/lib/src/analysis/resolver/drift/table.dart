@@ -1,7 +1,10 @@
+import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../../backend.dart';
 import '../../driver/error.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
@@ -11,6 +14,9 @@ import '../shared/data_class.dart';
 import 'find_dart_class.dart';
 
 class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
+  static final RegExp _enumRegex =
+      RegExp(r'^enum\((\w+)\)$', caseSensitive: false);
+
   DriftTableResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
@@ -43,7 +49,32 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     for (final column in table.resultColumns) {
       String? overriddenDartName;
       final type = resolver.driver.typeMapping.sqlTypeToDrift(column.type);
+      final nullable = column.type.nullable != false;
       final constraints = <DriftColumnConstraint>[];
+      AppliedTypeConverter? converter;
+
+      final typeName = column.definition?.typeName;
+      final enumMatch =
+          typeName != null ? _enumRegex.firstMatch(typeName) : null;
+      if (enumMatch != null) {
+        final dartTypeName = enumMatch.group(1)!;
+        final imports = file.discovery!.importDependencies.toList();
+        final dartClass = await findDartClass(imports, dartTypeName);
+
+        if (dartClass == null) {
+          reportError(DriftAnalysisError.inDriftFile(
+            column.definition!.typeNames!.toSingleEntity,
+            'Type $dartTypeName could not be found. Are you missing '
+            'an import?',
+          ));
+        } else {
+          converter = readEnumConverter(
+            (msg) =>
+                DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg),
+            dartClass.classElement.thisType,
+          );
+        }
+      }
 
       // columns from virtual tables don't necessarily have a definition, so we
       // can't read the constraints.
@@ -52,6 +83,16 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       for (final constraint in sqlConstraints) {
         if (constraint is DriftDartName) {
           overriddenDartName = constraint.dartName;
+        } else if (constraint is MappedBy) {
+          if (converter != null) {
+            reportError(DriftAnalysisError.inDriftFile(
+                constraint,
+                'Multiple type converters applied to this converter, ignoring '
+                'this one.'));
+            continue;
+          }
+
+          converter = await _readTypeConverter(type, nullable, constraint);
         } else if (constraint is ForeignKeyColumnConstraint) {
           // Note: Warnings about whether the referenced column exists or not
           // are reported later, we just need to know dependencies before the
@@ -89,10 +130,11 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
 
       columns.add(DriftColumn(
         sqlType: type,
-        nullable: column.type.nullable != false,
+        nullable: nullable,
         nameInSql: column.name,
         nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
         constraints: constraints,
+        typeConverter: converter,
         declaration: DriftDeclaration.driftFile(
           column.definition?.nameToken ?? stmt,
           state.ownId.libraryUri,
@@ -194,6 +236,35 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       strict: table.isStrict,
       tableConstraints: tableConstraints,
       virtualTableData: virtualTableData,
+    );
+  }
+
+  Future<AppliedTypeConverter?> _readTypeConverter(
+      DriftSqlType sqlType, bool nullable, MappedBy mapper) async {
+    final code = mapper.mapper.dartCode;
+
+    dart.Expression expression;
+    try {
+      expression = await resolver.driver.backend.resolveExpression(
+        file.ownUri,
+        code,
+        file.discovery!.importDependencies
+            .map((e) => e.toString())
+            .where((e) => e.endsWith('.dart')),
+      );
+    } on CannotReadExpressionException catch (e) {
+      reportError(DriftAnalysisError.inDriftFile(mapper, e.msg));
+      return null;
+    }
+
+    final knownTypes = await resolver.driver.loadKnownTypes();
+    return readTypeConverter(
+      knownTypes.helperLibrary,
+      expression,
+      sqlType,
+      nullable,
+      (msg) => reportError(DriftAnalysisError.inDriftFile(mapper, msg)),
+      knownTypes,
     );
   }
 }

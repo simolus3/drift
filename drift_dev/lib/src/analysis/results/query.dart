@@ -32,6 +32,7 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
   final String sql;
 
   final String? resultClassName;
+  final QueryMode mode;
 
   /// The offset of [sql] in the source file, used to properly report errors
   /// later.
@@ -50,7 +51,13 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
     required this.sql,
     required this.sqlOffset,
     this.resultClassName,
+    this.mode = QueryMode.regular,
   });
+}
+
+enum QueryMode {
+  regular,
+  atCreate,
 }
 
 /// A fully-resolved and analyzed SQL query.

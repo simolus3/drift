@@ -1,3 +1,5 @@
+import 'package:sqlparser/sqlparser.dart';
+
 import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
@@ -14,6 +16,9 @@ class DriftQueryResolver
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
 
+    final isCreate =
+        discovered.sqlNode.identifier is SpecialStatementIdentifier;
+
     // Note: We don't analyze the query here, that happens in
     // `file_analysis.dart` after elements have been resolved.
     return DefinedSqlQuery(
@@ -22,6 +27,7 @@ class DriftQueryResolver
       references: references,
       sql: source.substring(stmt.firstPosition, stmt.lastPosition),
       sqlOffset: stmt.firstPosition,
+      mode: isCreate ? QueryMode.atCreate : QueryMode.regular,
     );
   }
 }

@@ -5,6 +5,7 @@ import '../../analysis/driver/driver.dart';
 import '../../analysis/results/results.dart';
 import '../../analyzer/options.dart';
 import '../../writer/database_writer.dart';
+import '../../writer/drift_accessor_writer.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
@@ -88,22 +89,30 @@ class DriftBuilder extends Builder {
     for (final element in fileResult.analysis.values) {
       final result = element.result;
 
-      if (result is DriftDatabase) {
-        final importedQueries = <String, SqlQuery>{};
+      if (result is BaseDriftAccessor) {
         final resolved = fileResult.fileAnalysis!.resolvedDatabases[result.id]!;
+        final importedQueries = <DefinedSqlQuery, SqlQuery>{};
 
-        // Crawl queries
-        for (final imported in driver.cache.crawlMulti(resolved.knownImports)) {
-          final resolved = await driver.fullyAnalyze(imported.ownUri);
-          importedQueries.addAll({
-            for (final entry in resolved.fileAnalysis!.resolvedQueries.entries)
-              entry.key.name: entry.value,
-          });
+        for (final query
+            in resolved.availableElements.whereType<DefinedSqlQuery>()) {
+          final resolvedFile = await driver.fullyAnalyze(query.id.libraryUri);
+          final resolvedQuery =
+              resolvedFile.fileAnalysis?.resolvedQueries[query.id];
+
+          if (resolvedQuery != null) {
+            importedQueries[query] = resolvedQuery;
+          }
         }
 
-        final input = DatabaseGenerationInput(
-            result, resolved, importedQueries.values.toList());
-        DatabaseWriter(input, writer.child()).write();
+        if (result is DriftDatabase) {
+          final input =
+              DatabaseGenerationInput(result, resolved, importedQueries);
+          DatabaseWriter(input, writer.child()).write();
+        } else if (result is DatabaseAccessor) {
+          final input =
+              AccessorGenerationInput(result, resolved, importedQueries);
+          AccessorWriter(input, writer.child()).write();
+        }
       } else {
         writer.leaf().writeln('// ${element.ownId}');
       }

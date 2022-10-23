@@ -1730,8 +1730,27 @@ class AllTodosWithCategoryResult extends CustomResultSet {
         .toString();
   }
 }
+
 // DriftElementId(asset:drift/test/generated/todos.dart, users)
 // DriftElementId(asset:drift/test/generated/todos.dart, shared_todos)
 // DriftElementId(asset:drift/test/generated/todos.dart, table_without_p_k)
 // DriftElementId(asset:drift/test/generated/todos.dart, pure_defaults)
-// DriftElementId(asset:drift/test/generated/todos.dart, SomeDao)
+mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
+  $UsersTable get users => attachedDatabase.users;
+  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
+  $TodosTableTable get todosTable => attachedDatabase.todosTable;
+  $TodoWithCategoryViewView get todoWithCategoryView =>
+      attachedDatabase.todoWithCategoryView;
+  Selectable<TodoEntry> todosForUser({required int user}) {
+    return customSelect(
+        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+        variables: [
+          Variable<int>(user)
+        ],
+        readsFrom: {
+          todosTable,
+          sharedTodos,
+          users,
+        }).asyncMap(todosTable.mapFromRow);
+  }
+}

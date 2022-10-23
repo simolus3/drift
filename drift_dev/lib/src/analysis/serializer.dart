@@ -55,6 +55,7 @@ class ElementSerializer {
         'sql': element.sql,
         'offset': element.sqlOffset,
         'result_class': element.resultClassName,
+        'mode': element.mode.name,
       };
     } else if (element is DriftTrigger) {
       additionalInformation = {
@@ -462,6 +463,7 @@ class ElementDeserializer {
           sql: json['sql'] as String,
           sqlOffset: json['offset'] as int,
           resultClassName: json['result_class'] as String?,
+          mode: QueryMode.values.byName(json['mode'] as String),
         );
       case 'trigger':
         DriftTable? on;
