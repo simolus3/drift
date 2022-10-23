@@ -56,8 +56,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       baseDartName: element.name,
-      primaryKeyFromTableConstraint: primaryKey,
       tableConstraints: [
+        if (primaryKey != null) PrimaryKeyColumns(primaryKey),
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
           UniqueColumns(uniqueKey),
       ],

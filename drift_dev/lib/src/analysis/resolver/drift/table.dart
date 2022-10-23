@@ -176,6 +176,22 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
               onDelete: constraint.clause.onDelete,
             ));
           }
+        } else if (constraint is KeyClause) {
+          final keyColumns = <DriftColumn>{};
+
+          for (final keyColumn in constraint.columns) {
+            final expression = keyColumn.expression;
+            if (expression is Reference) {
+              keyColumns.add(columns
+                  .firstWhere((e) => e.nameInSql == expression.columnName));
+            }
+          }
+
+          if (constraint.isPrimaryKey) {
+            tableConstraints.add(PrimaryKeyColumns(keyColumns));
+          } else {
+            tableConstraints.add(UniqueColumns(keyColumns));
+          }
         }
       }
     } else if (stmt is CreateVirtualTableStatement) {

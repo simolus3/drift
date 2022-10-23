@@ -27,9 +27,6 @@ class ElementSerializer {
           for (final column in element.columns) _serializeColumn(column),
         ],
         'existing_data_class': element.existingRowClass?.toJson(),
-        'primary_key_table_constraint': element.primaryKeyFromTableConstraint
-            ?.map((e) => e.nameInSql)
-            .toList(),
         'table_constraints': [
           for (final constraint in element.tableConstraints)
             _serializeTableConstraint(constraint),
@@ -202,6 +199,13 @@ class ElementSerializer {
       return {
         'type': 'unique',
         'columns': [for (final column in constraint.uniqueSet) column.nameInSql]
+      };
+    } else if (constraint is PrimaryKeyColumns) {
+      return {
+        'type': 'primary_key',
+        'columns': [
+          for (final column in constraint.primaryKey) column.nameInSql,
+        ],
       };
     } else if (constraint is ForeignKeyTable) {
       return {
@@ -411,14 +415,6 @@ class ElementDeserializer {
           for (final column in columns) column.nameInSql: column,
         };
 
-        Set<DriftColumn>? primaryKeyFromTableConstraint;
-        final serializedPk = json['primary_key_table_constraint'];
-        if (serializedPk != null) {
-          primaryKeyFromTableConstraint = {
-            for (final entry in serializedPk) columnByName[entry]!,
-          };
-        }
-
         return DriftTable(
           id,
           declaration,
@@ -427,7 +423,6 @@ class ElementDeserializer {
           existingRowClass: json['existing_data_class'] != null
               ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
               : null,
-          primaryKeyFromTableConstraint: primaryKeyFromTableConstraint,
           tableConstraints: [
             for (final constraint in json['table_constraints'])
               await _readTableConstraint(constraint as Map, columnByName),
@@ -667,6 +662,10 @@ class ElementDeserializer {
         return UniqueColumns({
           for (final ref in json['columns']) localColumns[ref]!,
         });
+      case 'primary_key':
+        return PrimaryKeyColumns(
+          {for (final ref in json['columns']) localColumns[ref]!},
+        );
       case 'foreign':
         return ForeignKeyTable(
           localColumns: [

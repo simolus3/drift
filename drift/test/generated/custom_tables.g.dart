@@ -853,11 +853,11 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
     this.somedate = const Value.absent(),
   });
   MytableCompanion.insert({
-    required int someid,
+    this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
     this.isInserting = const Value.absent(),
     this.somedate = const Value.absent(),
-  }) : someid = Value(someid);
+  });
   static Insertable<MytableData> custom({
     Expression<int>? someid,
     Expression<String>? sometext,
@@ -923,7 +923,7 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedColumn<int> someid = GeneratedColumn<int>(
       'someid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int, requiredDuringInsert: false);
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
   late final GeneratedColumn<String> sometext = GeneratedColumn<String>(
       'sometext', aliasedName, true,
@@ -954,8 +954,6 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
     if (data.containsKey('someid')) {
       context.handle(_someidMeta,
           someid.isAcceptableOrUnknown(data['someid']!, _someidMeta));
-    } else if (isInserting) {
-      context.missing(_someidMeta);
     }
     if (data.containsKey('sometext')) {
       context.handle(_sometextMeta,
@@ -976,7 +974,7 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {someid};
   @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -15,8 +16,6 @@ class DriftTable extends DriftElementWithResultSet {
   final List<DriftColumn> columns;
 
   final List<DriftTableConstraint> tableConstraints;
-
-  final Set<DriftColumn>? primaryKeyFromTableConstraint;
 
   @override
   final List<DriftElement> references;
@@ -69,7 +68,6 @@ class DriftTable extends DriftElementWithResultSet {
     this.fixedEntityInfoName,
     this.withoutRowId = false,
     this.strict = false,
-    this.primaryKeyFromTableConstraint,
     this.tableConstraints = const [],
     this.virtualTableData,
     this.writeDefaultConstraints = true,
@@ -83,12 +81,14 @@ class DriftTable extends DriftElementWithResultSet {
   @override
   String get dbGetterName => DriftSchemaElement.dbFieldName(baseDartName);
 
-  /// The primary key for this table, computed by looking at the
-  /// [primaryKeyFromTableConstraint] and primary key constraints applied to
-  /// individiual columns.
+  /// The primary key for this table, computed by looking at the primary key
+  /// defined as a table constraint or as a column constraint.
   Set<DriftColumn> get fullPrimaryKey {
-    if (primaryKeyFromTableConstraint != null) {
-      return primaryKeyFromTableConstraint!;
+    final fromTable =
+        tableConstraints.whereType<PrimaryKeyColumns>().firstOrNull;
+
+    if (fromTable != null) {
+      return fromTable.primaryKey;
     }
 
     return columns
@@ -147,6 +147,12 @@ class UniqueColumns extends DriftTableConstraint {
   final Set<DriftColumn> uniqueSet;
 
   UniqueColumns(this.uniqueSet);
+}
+
+class PrimaryKeyColumns extends DriftTableConstraint {
+  final Set<DriftColumn> primaryKey;
+
+  PrimaryKeyColumns(this.primaryKey);
 }
 
 class ForeignKeyTable extends DriftTableConstraint {
