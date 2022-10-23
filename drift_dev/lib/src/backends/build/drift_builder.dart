@@ -2,6 +2,7 @@ import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
 
 import '../../analysis/driver/driver.dart';
+import '../../analysis/driver/state.dart';
 import '../../analysis/results/results.dart';
 import '../../analyzer/options.dart';
 import '../../writer/database_writer.dart';
@@ -27,7 +28,9 @@ enum DriftGenerationMode {
   /// Like [monolithicSharedPart], except that drift will generate a single
   /// part file on its own instead of generating a part file for `source_gen`
   /// to process later.
-  monolithicPart,
+  monolithicPart;
+
+  bool get isMonolithic => true;
 }
 
 class DriftBuilder extends Builder {
@@ -79,7 +82,20 @@ class DriftBuilder extends Builder {
       return;
     }
 
-    final fileResult = await driver.fullyAnalyze(buildStep.inputId.uri);
+    Set<Uri> analyzedUris = {};
+    Future<FileState> analyze(Uri uri) async {
+      final fileResult = await driver.fullyAnalyze(uri);
+      if (analyzedUris.add(fileResult.ownUri)) {
+        for (final error
+            in fileResult.fileAnalysis?.analysisErrors ?? const []) {
+          log.warning(error);
+        }
+      }
+
+      return fileResult;
+    }
+
+    final fileResult = await analyze(buildStep.inputId.uri);
 
     final generationOptions = GenerationOptions(
       imports: ImportManagerForPartFiles(),
@@ -95,7 +111,7 @@ class DriftBuilder extends Builder {
 
         for (final query
             in resolved.availableElements.whereType<DefinedSqlQuery>()) {
-          final resolvedFile = await driver.fullyAnalyze(query.id.libraryUri);
+          final resolvedFile = await analyze(query.id.libraryUri);
           final resolvedQuery =
               resolvedFile.fileAnalysis?.resolvedQueries[query.id];
 

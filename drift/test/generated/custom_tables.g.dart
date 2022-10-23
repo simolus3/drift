@@ -1555,24 +1555,25 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }));
   }
 
-  Selectable<ReadMultipleResult> readMultiple(String var1,
-      {OrderBy clause = const OrderBy.nothing()}) {
-    var $arrayStartIndex = 2;
-    final generatedclause = $write(clause, startIndex: $arrayStartIndex);
+  Selectable<Config> readMultiple(List<String> var1,
+      {ReadMultiple$clause? clause}) {
+    var $arrayStartIndex = 1;
+    final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
+    $arrayStartIndex += var1.length;
+    final generatedclause = $write(
+        clause?.call(this.config) ?? const OrderBy.nothing(),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
-        'SELECT * FROM config WHERE config_key IN ?1 ${generatedclause.sql}',
+        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
         variables: [
-          Variable<String>(var1),
+          for (var $ in var1) Variable<String>($),
           ...generatedclause.introducedVariables
         ],
         readsFrom: {
+          config,
           ...generatedclause.watchedTables,
-        }).map((QueryRow row) {
-      return ReadMultipleResult(
-        row: row,
-      );
-    });
+        }).asyncMap(config.mapFromRow);
   }
 
   Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
@@ -1818,6 +1819,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
+typedef ReadMultiple$clause = OrderBy Function($ConfigTable config);
 typedef ReadDynamic$predicate = Expression<bool> Function($ConfigTable config);
 typedef TypeConverterVar$pred = Expression<bool> Function($ConfigTable config);
 

@@ -416,6 +416,14 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is DartPlaceholder) {
+      e.when(
+        isLimit: (_) => _keyword(TokenType.limit),
+        isOrderBy: (_) {
+          _keyword(TokenType.order);
+          _keyword(TokenType.by);
+        },
+      );
+
       symbol(r'$', spaceBefore: true);
       symbol(e.name, spaceAfter: true);
     } else if (e is DeclaredStatement) {

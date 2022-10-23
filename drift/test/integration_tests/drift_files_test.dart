@@ -242,6 +242,6 @@ void main() {
         .getSingleOrNull();
 
     verify(mock.runSelect('SELECT * FROM "config" WHERE "sync_state" = ?;',
-        [ConfigTable.$converter0.toSql(SyncType.synchronized)]));
+        [$ConfigTable.$convertersyncState.toSql(SyncType.synchronized)]));
   });
 }

@@ -495,8 +495,26 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
   });
 
   group('drift', () {
-    test('dart placeholders', () {
-      testFormat(r'SELECT $placeholder FROM foo');
+    group('dart placeholders', () {
+      test('expression', () {
+        testFormat(r'SELECT $placeholder FROM foo');
+      });
+
+      test('limit', () {
+        testFormat(r'SELECT * FROM foo LIMIT $limit');
+      });
+
+      test('ordering term', () {
+        testFormat(r'SELECT * FROM foo ORDER BY $term DESC');
+      });
+
+      test('order by clause', () {
+        testFormat(r'SELECT * FROM foo ORDER BY $clause');
+      });
+
+      test('insertable', () {
+        testFormat(r'INSERT INTO foo $companion');
+      });
     });
 
     test('imports', () {
