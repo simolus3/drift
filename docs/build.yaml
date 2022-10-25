@@ -102,3 +102,6 @@ global_options:
   ":api_index":
     options:
       packages: ['drift', 'drift_dev', 'sqlite3']
+
+additional_public_assets:
+  - "pages/**"
