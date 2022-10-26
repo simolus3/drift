@@ -95,7 +95,11 @@ class QueryAnalyzer {
       nestedScope: nestedScope,
     ));
 
-    final linter = DriftSqlLinter(context);
+    final linter = DriftSqlLinter(
+      context,
+      references: referencesByName.values,
+      contextRootIsQuery: true,
+    );
     linter.collectLints();
     lints
       ..addAll(context.errors)

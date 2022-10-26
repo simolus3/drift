@@ -21,7 +21,7 @@ class DriftTriggerResolver
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
     final context = engine.analyzeNode(stmt, source);
-    reportLints(context);
+    reportLints(context, references);
 
     WrittenDriftTable? mapWrite(TableWrite parserWrite) {
       drift.UpdateKind kind;

@@ -17,11 +17,12 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   DriftElementResolver(
       super.file, super.discovered, super.resolver, super.state);
 
-  void reportLints(AnalysisContext context) {
+  void reportLints(AnalysisContext context, Iterable<DriftElement> references) {
     context.errors.forEach(reportLint);
 
     // Also run drift-specific lints on the query
-    final linter = DriftSqlLinter(context)..collectLints();
+    final linter = DriftSqlLinter(context, references: references)
+      ..collectLints();
     linter.sqlParserErrors.forEach(reportLint);
   }
 

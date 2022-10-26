@@ -21,7 +21,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
     final context = engine.analyzeNode(stmt, source);
-    reportLints(context);
+    reportLints(context, references);
 
     final parserView = engine.schemaReader.readView(context, stmt);
 

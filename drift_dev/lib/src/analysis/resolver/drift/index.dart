@@ -16,7 +16,7 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
     final context = engine.analyzeNode(stmt, source);
-    reportLints(context);
+    reportLints(context, references);
 
     final onTable = stmt.on.resolved;
     DriftTable? target;
