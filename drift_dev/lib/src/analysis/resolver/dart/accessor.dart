@@ -23,8 +23,16 @@ class DartAccessorResolver
     final annotation = discovered.annotation;
     final element = discovered.dartElement;
 
-    final rawTables = annotation.getField('tables')!.toListValue()!;
-    for (final tableType in rawTables) {
+    final rawTablesOrNull = annotation.getField('tables')?.toListValue();
+    if (rawTablesOrNull == null) {
+      reportError(DriftAnalysisError.forDartElement(
+        element,
+        'Could not read tables from @DriftDatabase annotation! \n'
+        'Please make sure that all table classes exist.',
+      ));
+    }
+
+    for (final tableType in rawTablesOrNull ?? const []) {
       final dartType = tableType.toTypeValue();
 
       if (dartType is! InterfaceType) {

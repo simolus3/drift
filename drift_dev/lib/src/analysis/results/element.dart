@@ -70,6 +70,13 @@ abstract class DriftElement {
   final DriftElementId id;
   final DriftDeclaration declaration;
 
+  /// All elements referenced by this element.
+  ///
+  /// References include the following:
+  ///  - other tables referenced in a foreign key constraint.
+  ///  - tables referenced in a SQL query.
+  ///  - tables referenced in the body of a view, index, or trigger declaration.
+  ///  - tables included in the `@DriftDatabase` annotation.
   Iterable<DriftElement> get references => const Iterable.empty();
 
   /// If this element was extracted from a defined Dart class, returns the name
@@ -97,5 +104,26 @@ abstract class DriftSchemaElement extends DriftElement {
 
   static String dbFieldName(String baseName) {
     return ReCase(baseName).camelCase;
+  }
+}
+
+extension TransitiveClosure on Iterable<DriftElement> {
+  /// Returns a set containing all elements in this iterable, all their
+  /// references, all references of their references and so on.
+  Set<DriftElement> transitiveClosureUnderReferences() {
+    final pending = toList();
+    final found = toSet();
+
+    while (pending.isNotEmpty) {
+      final current = pending.removeLast();
+
+      for (final reference in current.references) {
+        if (found.add(reference)) {
+          pending.add(reference);
+        }
+      }
+    }
+
+    return found;
   }
 }

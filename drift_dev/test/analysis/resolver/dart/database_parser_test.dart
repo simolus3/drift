@@ -1,11 +1,13 @@
-import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
+  final mainUri = Uri.parse('package:a/main.dart');
+
   test('parses schema version getter', () async {
-    final state = TestState.withContent({
+    final backend = TestBackend.inTest({
       'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -16,19 +18,16 @@ class MyDatabase extends _$MyDatabase {
 }
 ''',
     });
-    addTearDown(state.close);
 
-    final fileState = await state.analyze('package:a/main.dart');
-    expect(fileState.errors.errors, isEmpty);
+    final fileState = await backend.driver.fullyAnalyze(mainUri);
+    backend.expectNoErrors();
 
-    final file = fileState.currentResult!;
-    final db = (file as ParsedDartFile).declaredDatabases.single;
-
+    final db = fileState.analyzedElements.single as DriftDatabase;
     expect(db.schemaVersion, 13);
   });
 
   test('parses schema version field', () async {
-    final state = TestState.withContent({
+    final backend = TestBackend.inTest({
       'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -39,19 +38,16 @@ class MyDatabase extends _$MyDatabase {
 }
 ''',
     });
-    addTearDown(state.close);
 
-    final fileState = await state.analyze('package:a/main.dart');
-    expect(fileState.errors.errors, isEmpty);
+    final fileState = await backend.driver.fullyAnalyze(mainUri);
+    backend.expectNoErrors();
 
-    final file = fileState.currentResult!;
-    final db = (file as ParsedDartFile).declaredDatabases.single;
-
+    final db = fileState.analyzedElements.single as DriftDatabase;
     expect(db.schemaVersion, 23);
   });
 
   test('does not warn about missing tables parameter', () async {
-    final state = TestState.withContent({
+    final backend = TestBackend.inTest({
       'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -65,11 +61,9 @@ class MyDatabase2 extends _$MyDatabase {
 
 }
 ''',
-      'a|lib/foo.drift': '',
     });
-    addTearDown(state.close);
 
-    final fileState = await state.analyze('package:a/main.dart');
-    expect(fileState.errors.errors, isEmpty);
+    await backend.driver.fullyAnalyze(mainUri);
+    backend.expectNoErrors();
   });
 }

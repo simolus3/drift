@@ -50,6 +50,12 @@ class TestBackend extends DriftBackend {
     return backend;
   }
 
+  void expectNoErrors() {
+    for (final file in driver.cache.knownFiles.values) {
+      expect(file.allErrors, isEmpty, reason: 'Error in ${file.ownUri}');
+    }
+  }
+
   Future<void> _setupDartAnalyzer() async {
     final provider = OverlayResourceProvider(PhysicalResourceProvider.INSTANCE);
 
@@ -111,6 +117,12 @@ class TestBackend extends DriftBackend {
   }
 
   @override
+  Future<Never> resolveExpression(
+      Uri context, String dartExpression, Iterable<String> imports) async {
+    throw UnsupportedError('Not currently supported in tests');
+  }
+
+  @override
   Future<LibraryElement> readDart(Uri uri) async {
     await ensureHasDartAnalyzer();
     final result =
@@ -133,6 +145,10 @@ class TestBackend extends DriftBackend {
   }
 
   Future<void> dispose() async {}
+
+  Future<FileState> analyze(String uriString) {
+    return driver.fullyAnalyze(Uri.parse(uriString));
+  }
 }
 
 Matcher get hasNoErrors =>

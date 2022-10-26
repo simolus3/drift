@@ -217,7 +217,9 @@ class InvalidConstraints extends Table {
   test('parses custom primary keys', () async {
     final table = (await findTable('CustomPrimaryKey'))!.result as DriftTable;
 
-    expect(table.primaryKeyFromTableConstraint, containsAll(table.columns));
+    final pkFromTable =
+        table.tableConstraints.whereType<PrimaryKeyColumns>().first;
+    expect(pkFromTable, containsAll(table.columns));
     expect(
       table.columns.any(
           (column) => column.constraints.any((c) => c is PrimaryKeyColumn)),
@@ -262,9 +264,10 @@ class InvalidConstraints extends Table {
       expect(archivedSocks.columns, hasLength(4));
       expect(archivedSocks.columns.map((c) => c.nameInSql),
           ['name', 'id', 'archived_by', 'archived_on']);
-      expect(
-          archivedSocks.primaryKeyFromTableConstraint!.map((e) => e.nameInSql),
-          ['id']);
+
+      final pkFromTable =
+          archivedSocks.tableConstraints.whereType<PrimaryKeyColumns>().first;
+      expect(pkFromTable.primaryKey.map((e) => e.nameInSql), ['id']);
     });
   });
 

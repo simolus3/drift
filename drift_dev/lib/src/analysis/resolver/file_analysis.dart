@@ -40,7 +40,7 @@ class FileAnalyzer {
               })
               .whereType<DriftElement>()
               .followedBy(element.references)
-              .toSet() // filter duplicates
+              .transitiveClosureUnderReferences()
               .toList();
 
           for (final query in element.declaredQueries) {

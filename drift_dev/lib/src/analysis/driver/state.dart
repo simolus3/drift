@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
@@ -18,6 +19,11 @@ class FileState {
   FileState(this.ownUri);
 
   String get extension => url.extension(ownUri.path);
+
+  @visibleForTesting
+  Iterable<DriftElement> get analyzedElements {
+    return analysis.values.map((e) => e.result).whereType();
+  }
 
   Iterable<DriftAnalysisError> get allErrors sync* {
     yield* errorsDuringDiscovery;

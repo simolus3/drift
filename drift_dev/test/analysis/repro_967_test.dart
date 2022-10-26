@@ -1,12 +1,12 @@
-import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import 'utils.dart';
+import 'test_utils.dart';
 
 void main() {
   test('gracefully handles daos with invalid types', () async {
-    final state = TestState.withContent({
-      'foo|lib/bar.dart': '''
+    final state = TestBackend.inTest({
+      'a|lib/bar.dart': '''
 import 'package:drift/drift.dart';
 
 class Foos extends Table {
@@ -20,11 +20,12 @@ class Dao extends DatabaseAccessor<Db> {}
       ''',
     });
 
-    final file = await state.analyze('package:foo/bar.dart');
-    final content = file.currentResult as ParsedDartFile;
-    final dao = content.declaredDaos.single;
+    final file =
+        await state.driver.fullyAnalyze(Uri.parse('package:a/bar.dart'));
 
-    expect(file.errors.errors, isNotEmpty);
+    expect(file.allErrors, isNotEmpty);
+
+    final dao = file.analyzedElements.whereType<DatabaseAccessor>().single;
     expect(dao.declaredTables, hasLength(1));
   });
 }

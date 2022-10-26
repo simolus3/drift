@@ -1,25 +1,19 @@
 @Tags(['analyzer'])
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:build/build.dart';
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/dart/parser.dart';
-import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/runner/steps.dart';
-import 'package:drift_dev/src/analyzer/session.dart';
+import 'package:collection/collection.dart';
+import 'package:drift_dev/src/analysis/driver/state.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import '../../utils/test_backend.dart';
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
   late TestBackend backend;
-  late ParseDartStep dartStep;
-  late DriftDartParser parser;
+  late FileState state;
 
   setUpAll(() {
     backend = TestBackend({
-      AssetId.parse('test_lib|lib/main.dart'): r'''
+      'a|lib/main.dart': r'''
       import 'package:drift/drift.dart';
 
       TypeConverter<Dart, SQL> typeConverter<Dart, SQL>() {
@@ -108,7 +102,7 @@ void main() {
         TextColumn get c => text().map<Map<String, dynamic>>(typeConverter<Map<String, dynamic>, String>())();
       }
       ''',
-      AssetId.parse('test_lib|lib/invalid_reference.dart'): '''
+      'a|lib/invalid_reference.dart': '''
       import 'package:drift/drift.dart';
 
       class Foo extends Table {
@@ -118,7 +112,7 @@ void main() {
       @DriftDatabase(tables: [Foo, DoesNotExist])
       class Database {}
       ''',
-      AssetId.parse('test_lib|lib/invalid_constraints.dart'): '''
+      'a|lib/invalid_constraints.dart': '''
       import 'package:drift/drift.dart';
 
       class InvalidConstraints extends Table {
@@ -128,42 +122,31 @@ void main() {
       ''',
     });
   });
-  tearDownAll(() {
-    backend.finish();
-  });
-
-  setUp(() async {
-    final uri = Uri.parse('package:test_lib/main.dart');
-    final task = backend.startTask(uri);
-    final session = MoorSession(backend);
-
-    final moorTask = session.startTask(task);
-    final file = session.registerFile(uri);
-
-    dartStep = ParseDartStep(
-        moorTask, file, await task.resolveDart(uri), await moorTask.helper);
-    parser = DriftDartParser(dartStep);
-  });
+  tearDownAll(() => backend.dispose());
 
   Future<DriftTable?> parse(String name) async {
-    return parser.parseTable(dartStep.library.getClass(name)!);
+    final result = state = await backend.analyze('package:a/main.dart');
+
+    return result.analyzedElements
+        .whereType<DriftTable>()
+        .firstWhereOrNull((e) => e.baseDartName == name);
   }
 
   group('table names', () {
     test('use overridden name', () async {
       final parsed = await parse('TableWithCustomName');
-      expect(parsed!.sqlName, equals('my-fancy-table'));
-      expect(parsed.overrideWithoutRowId, isTrue);
+      expect(parsed!.schemaName, equals('my-fancy-table'));
+      expect(parsed.withoutRowId, isTrue);
     });
 
     test('use re-cased class name', () async {
       final parsed = await parse('Users');
-      expect(parsed!.sqlName, equals('users'));
+      expect(parsed!.schemaName, equals('users'));
     });
 
     test('should not parse for complex methods', () async {
       await parse('WrongName');
-      expect(dartStep.errors.errors, isNotEmpty);
+      expect(state.allErrors, isNotEmpty);
     });
   });
 
@@ -171,51 +154,42 @@ void main() {
     test('should use field name if no name has been set explicitly', () async {
       final table = await parse('Users');
       final idColumn =
-          table!.columns.singleWhere((col) => col.name.name == 'id');
+          table!.columns.singleWhere((col) => col.nameInSql == 'id');
 
-      expect(idColumn.name, equals(ColumnName.implicitly('id')));
       expect(
         idColumn.declaration,
-        const TypeMatcher<DartColumnDeclaration>().having(
-          (c) => c.element,
-          'element',
-          const TypeMatcher<PropertyAccessorElement>(),
-        ),
+        isA<DriftDeclaration>().having((c) => c.name, 'name', 'id'),
       );
     });
 
     test('should use explicit name, if it exists', () async {
       final table = await parse('Users');
-      final idColumn =
-          table!.columns.singleWhere((col) => col.name.name == 'user_name');
-
-      expect(idColumn.name, equals(ColumnName.explicitly('user_name')));
+      table!.columns.singleWhere((col) => col.nameInSql == 'user_name');
     });
 
     test('should parse min and max length for text columns', () async {
       final table = await parse('Users');
       final idColumn =
-          table!.columns.singleWhere((col) => col.name.name == 'user_name');
+          table!.columns.singleWhere((col) => col.nameInSql == 'user_name');
 
-      expect(idColumn.features,
+      expect(idColumn.constraints,
           contains(LimitingTextLength(minLength: 6, maxLength: 32)));
     });
 
     test('should only parse max length when relevant', () async {
       final table = await parse('Users');
       final idColumn =
-          table!.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
+          table!.columns.singleWhere((col) => col.nameInDart == 'onlyMax');
 
-      expect(idColumn.features, contains(LimitingTextLength(maxLength: 100)));
+      expect(
+          idColumn.constraints, contains(LimitingTextLength(maxLength: 100)));
     });
 
     test('parses custom constraints', () async {
       final table = await parse('CustomPrimaryKey');
 
-      final partA =
-          table!.columns.singleWhere((c) => c.dartGetterName == 'partA');
-      final partB =
-          table.columns.singleWhere((c) => c.dartGetterName == 'partB');
+      final partA = table!.columns.singleWhere((c) => c.nameInDart == 'partA');
+      final partB = table.columns.singleWhere((c) => c.nameInDart == 'partB');
 
       expect(partB.customConstraints, 'custom');
       expect(partA.customConstraints, isNull);
@@ -224,7 +198,7 @@ void main() {
     test('parsed default values', () async {
       final table = await parse('Users');
       final defaultsColumn =
-          table!.columns.singleWhere((c) => c.name.name == 'defaults');
+          table!.columns.singleWhere((c) => c.nameInSql == 'defaults');
 
       expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
     });
@@ -232,10 +206,10 @@ void main() {
     test('parses documentation comments', () async {
       final table = await parse('Users');
       final idColumn =
-          table!.columns.singleWhere((col) => col.name.name == 'id');
+          table!.columns.singleWhere((col) => col.nameInSql == 'id');
 
       final usernameColumn =
-          table.columns.singleWhere((col) => col.name.name == 'user_name');
+          table.columns.singleWhere((col) => col.nameInSql == 'user_name');
 
       expect(idColumn.documentationComment, '/// The user id');
       expect(
@@ -248,61 +222,29 @@ void main() {
   test('parses custom primary keys', () async {
     final table = await parse('CustomPrimaryKey');
 
-    expect(table!.primaryKey, containsAll(table.columns));
-    expect(table.columns.any((column) => column.hasAI), isFalse);
+    expect(table!.fullPrimaryKey, containsAll(table.columns));
+    expect(
+      table.columns.any(
+          (column) => column.constraints.any((e) => e is PrimaryKeyColumn)),
+      isFalse,
+    );
   });
 
   test('warns when using primaryKey and autoIncrement()', () async {
     await parse('PrimaryKeyAndAutoIncrement');
 
     expect(
-      dartStep.errors.errors,
-      contains(
-        isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            contains('override primaryKey and use autoIncrement()')),
-      ),
+      state.allErrors,
+      contains(isDriftError(
+          contains('override primaryKey and use autoIncrement()'))),
     );
   });
 
   test('recognizes aliases for rowid', () async {
     final table = await parse('WithAliasForRowId');
-    final idColumn = table!.columns.singleWhere((c) => c.name.name == 'id');
+    final idColumn = table!.columns.singleWhere((c) => c.nameInSql == 'id');
 
     expect(table.isColumnRequiredForInsert(idColumn), isFalse);
-  });
-
-  test('parses type converters using dynamic', () async {
-    final table = (await parse('DynamicConverter'))!;
-
-    final a1 = table.columns.singleWhere((c) => c.name.name == 'a1');
-    final a2 = table.columns.singleWhere((c) => c.name.name == 'a2');
-    final b1 = table.columns.singleWhere((c) => c.name.name == 'b1');
-    final b2 = table.columns.singleWhere((c) => c.name.name == 'b2');
-    final c = table.columns.singleWhere((c) => c.name.name == 'c');
-
-    void expectType(
-        DriftColumn column, bool hasOverriddenSource, String toString) {
-      expect(
-        column.typeConverter,
-        isA<UsedTypeConverter>()
-            .having(
-              (e) => e.dartType.overiddenSource,
-              'mappedType.overriddenSource',
-              hasOverriddenSource ? isNotNull : isNull,
-            )
-            .having(
-              (e) => e.dartType.codeString(),
-              'mappedType.codeString',
-              toString,
-            ),
-      );
-    }
-
-    expectType(a1, false, 'dynamic');
-    expectType(a2, true, 'DoesNotExist');
-    expectType(b1, false, 'List<dynamic>');
-    expectType(b2, true, 'List<DoesNotExist>');
-    expectType(c, false, 'Map<String, dynamic>');
   });
 
   group('inheritance', () {
@@ -311,7 +253,7 @@ void main() {
 
       expect(table!.columns, hasLength(2));
       expect(
-          table.columns.map((c) => c.name.name), containsAll(['id', 'name']));
+          table.columns.map((c) => c.nameInSql), containsAll(['id', 'name']));
     });
 
     test('from regular classes', () async {
@@ -319,81 +261,61 @@ void main() {
       final archivedSocks = await parse('ArchivedSocks');
 
       expect(socks!.columns, hasLength(2));
-      expect(socks.columns.map((c) => c.name.name), ['name', 'id']);
+      expect(socks.columns.map((c) => c.nameInSql), ['name', 'id']);
 
       expect(archivedSocks!.columns, hasLength(4));
-      expect(archivedSocks.columns.map((c) => c.name.name),
+      expect(archivedSocks.columns.map((c) => c.nameInSql),
           ['name', 'id', 'archived_by', 'archived_on']);
-      expect(archivedSocks.primaryKey!.map((e) => e.name.name), ['id']);
+      expect(archivedSocks.fullPrimaryKey.map((e) => e.nameInSql), ['id']);
     });
   });
 
   test('reports error when using autoIncrement and primaryKey', () async {
-    final session = MoorSession(backend);
-    final uri = Uri.parse('package:test_lib/main.dart');
-    final backendTask = backend.startTask(uri);
-    final task = session.startTask(backendTask);
-    await task.runTask();
-
-    final file = session.registerFile(uri);
+    final uri = Uri.parse('package:a/main.dart');
+    final file = await backend.driver.fullyAnalyze(uri);
 
     expect(
-      file.errors.errors,
+      file.allErrors,
       contains(
-        isA<ErrorInDartCode>().having(
-          (e) => e.message,
-          'message',
-          allOf(
-            contains('use autoIncrement()'),
-            contains('and also override primaryKey'),
-          ),
-        ),
+        isDriftError(
+            "Tables can't override primaryKey and use autoIncrement()"),
       ),
     );
   });
 
   test('reports errors for unknown classes in UseMoor', () async {
-    final session = MoorSession(backend);
-    final uri = Uri.parse('package:test_lib/invalid_reference.dart');
-    final backendTask = backend.startTask(uri);
-    final task = session.startTask(backendTask);
-    await task.runTask();
+    final uri = Uri.parse('package:a/invalid_reference.dart');
+    final file = await backend.driver.fullyAnalyze(uri);
 
-    final file = session.registerFile(uri);
     expect(
-      file.errors.errors,
+      file.allErrors,
       contains(
-        isA<ErrorInDartCode>().having(
-          (e) => e.message,
-          'message',
-          allOf(
-            contains('Could not read tables from @DriftDatabase annotation!'),
-            contains('Please make sure that all table classes exist.'),
-          ),
-        ),
+        isDriftError(allOf(
+          contains('Could not read tables from @DriftDatabase annotation!'),
+          contains('Please make sure that all table classes exist.'),
+        )),
       ),
     );
   });
 
   test('reports errors around suspicous customConstraint uses', () async {
-    final session = MoorSession(backend);
-    final uri = Uri.parse('package:test_lib/invalid_constraints.dart');
-    final backendTask = backend.startTask(uri);
-    final task = session.startTask(backendTask);
-    await task.runTask();
+    final uri = Uri.parse('package:a/invalid_constraints.dart');
+    final file = await backend.driver.fullyAnalyze(uri);
 
-    final file = session.registerFile(uri);
-    file.expectDartError(
-      allOf(
-        contains(
-            'This column definition is using both drift-defined constraints'),
-        contains('and a customConstraint()'),
-      ),
-      'a',
-    );
-    file.expectDartError(
-      contains("You've already set custom constraints on this column"),
-      'customConstraint',
+    expect(
+      file.allErrors,
+      containsAll([
+        isDriftError(
+          allOf(
+            contains(
+                'This column definition is using both drift-defined constraints'),
+            contains('and a customConstraint()'),
+          ),
+        ).withSpan('a'),
+        isDriftError(
+          contains("You've already set custom constraints on this column"),
+        ).withSpan('customConstraint'),
+      ]),
     );
   });
 }

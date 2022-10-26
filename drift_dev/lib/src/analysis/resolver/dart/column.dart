@@ -225,7 +225,7 @@ class ColumnParser {
               if (column == null) {
                 _resolver.reportError(DriftAnalysisError.inDartAst(
                   element,
-                  first,
+                  columnNameNode,
                   'The referenced table `${driftElement.schemaName}` has no '
                   'column named `$columnName` in Dart.',
                 ));
@@ -360,8 +360,8 @@ class ColumnParser {
 
       final enumType = remainingExpr.typeArgumentTypes![0];
       converter = readEnumConverter(
-        (msg) => DriftAnalysisError.inDartAst(element,
-            remainingExpr.typeArguments ?? remainingExpr.methodName, msg),
+        (msg) => _resolver.reportError(DriftAnalysisError.inDartAst(element,
+            remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
         enumType,
       );
     }

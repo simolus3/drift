@@ -1,17 +1,15 @@
 @Tags(['analyzer'])
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/model/base_entity.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
-  late TestState state;
+  late TestBackend state;
 
   setUpAll(() {
-    state = TestState.withContent(const {
+    state = TestBackend(const {
       'a|lib/invalid_no_unnamed_constructor.dart': '''
 import 'package:drift/drift.dart';
 
@@ -284,7 +282,7 @@ class Companies extends Table {
     });
   });
 
-  tearDownAll(() => state.close());
+  tearDownAll(() => state.dispose);
 
   group('warns about misuse', () {
     test('when the desired row class does not have an unnamed constructor',
@@ -292,9 +290,8 @@ class Companies extends Table {
       final file =
           await state.analyze('package:a/invalid_no_unnamed_constructor.dart');
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            contains('must have an unnamed constructor'))),
+        file.allErrors,
+        [isDriftError(contains('must have an unnamed constructor'))],
       );
     });
 
@@ -302,18 +299,16 @@ class Companies extends Table {
       final file =
           await state.analyze('package:a/invalid_no_named_constructor.dart');
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            contains('does not have a constructor named create2'))),
+        file.allErrors,
+        [isDriftError(contains('does not have a constructor named create2'))],
       );
     });
 
     test('when a parameter has a mismatching type', () async {
       final file = await state.analyze('package:a/mismatching_type.dart');
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            contains('Parameter must accept String'))),
+        file.allErrors,
+        [isDriftError(contains('Parameter must accept String'))],
       );
     });
 
@@ -321,9 +316,8 @@ class Companies extends Table {
       final file =
           await state.analyze('package:a/mismatching_nullability.dart');
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            'Expected this parameter to be nullable')),
+        file.allErrors,
+        [isDriftError('Expected this parameter to be nullable')],
       );
     });
 
@@ -331,9 +325,8 @@ class Companies extends Table {
       final file =
           await state.analyze('package:a/mismatching_type_converter.dart');
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>()
-            .having((e) => e.message, 'message', 'Parameter must accept int')),
+        file.allErrors,
+        [isDriftError('Parameter must accept int')],
       );
     });
 
@@ -341,9 +334,8 @@ class Companies extends Table {
       final file = await state.analyze('package:a/insertable_missing.dart');
 
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            contains('but some are missing: bar'))),
+        file.allErrors,
+        [isDriftError(contains('but some are missing: bar'))],
       );
     });
 
@@ -351,90 +343,63 @@ class Companies extends Table {
       final file = await state.analyze('package:a/invalid_static_factory.dart');
 
       expect(
-          file.errors.errors,
-          allOf(
-            contains(
-              isA<ErrorInDartCode>()
-                  .having(
-                    (e) => e.message,
-                    'message',
-                    contains('it needs to be static'),
-                  )
-                  .having((e) => e.affectedElement?.name,
-                      'affectedElement.name', 'notStatic'),
-            ),
-            contains(
-              isA<ErrorInDartCode>()
-                  .having(
-                    (e) => e.message,
-                    'message',
-                    contains('needs to return an instance of it'),
-                  )
-                  .having((e) => e.affectedElement?.name,
-                      'affectedElement.name', 'invalidReturn'),
-            ),
-          ));
+        file.allErrors,
+        containsAll([
+          isDriftError(contains('it needs to be static')).withSpan('notStatic'),
+          isDriftError(contains('needs to return an instance of it'))
+              .withSpan('invalidReturn'),
+        ]),
+      );
     });
   });
 
   test('supports generic row classes', () async {
     final file = await state.analyze('package:a/generic.dart');
-    expect(file.errors.errors, isEmpty);
+    expect(file.allErrors, isEmpty);
 
-    final tables = (file.currentResult as ParsedDartFile).declaredTables;
-    final stringTable = tables.firstWhere((e) => e.dslName == 'StringTable');
-    final intTable = tables.firstWhere((e) => e.dslName == 'IntTable');
+    final stringTable = file.analyzedElements
+        .singleWhere((e) => e.id.name == 'string_table') as DriftTable;
+    final intTable = file.analyzedElements
+        .singleWhere((e) => e.id.name == 'int_table') as DriftTable;
 
     expect(
       stringTable.existingRowClass,
       isA<ExistingRowClass>()
-          .having((e) => e.targetClass.name, 'targetClass.name', 'GenericRow')
+          .having((e) => e.targetClass.toString(), 'targetClass', 'GenericRow')
           .having(
-            (e) => e.typeInstantiation,
-            'typeInstantiation',
-            allOf(
-              hasLength(1),
-              anyElement(
-                isA<DartType>().having(
-                    (e) => e.isDartCoreString, 'isDartCoreString', isTrue),
-              ),
-            ),
+            (e) => e.targetType.toString(),
+            'targetType',
+            'GenericRow<String>',
           ),
     );
 
     expect(
       intTable.existingRowClass,
       isA<ExistingRowClass>()
-          .having((e) => e.targetClass.name, 'targetClass.name', 'GenericRow')
+          .having((e) => e.targetClass.toString(), 'targetClass', 'GenericRow')
           .having(
-            (e) => e.typeInstantiation,
-            'typeInstantiation',
-            allOf(
-              hasLength(1),
-              anyElement(
-                isA<DartType>()
-                    .having((e) => e.isDartCoreInt, 'isDartCoreInt', isTrue),
-              ),
-            ),
+            (e) => e.targetType.toString(),
+            'targetType',
+            'GenericRow<int>',
           ),
     );
   });
 
   test('handles blob columns', () async {
     final file = await state.analyze('package:a/blob.dart');
-    expect(file.errors.errors, isEmpty);
+    expect(file.allErrors, isEmpty);
   });
 
   test('considers inheritance when checking expected getters', () async {
     final file = await state.analyze('package:a/insertable_valid.dart');
-    expect(file.errors.errors, isEmpty);
+    expect(file.allErrors, isEmpty);
   });
 
   test('supports async factories for existing row classes', () async {
     final file = await state.analyze('package:a/async_factory.dart');
-    expect(file.errors.errors, isEmpty);
+    expect(file.allErrors, isEmpty);
 
-    final table = file.currentResult!.declaredTables.single;
+    final table = file.analyzedElements.whereType<DriftTable>().single;
     expect(
         table.existingRowClass,
         isA<ExistingRowClass>()
@@ -445,13 +410,13 @@ class Companies extends Table {
     test('check valid', () async {
       final file =
           await state.analyze('package:a/custom_parent_class_no_error.dart');
-      expect(file.errors.errors, isEmpty);
+      expect(file.allErrors, isEmpty);
     });
 
     test('check valid with type argument', () async {
       final file = await state
           .analyze('package:a/custom_parent_class_typed_no_error.dart');
-      expect(file.errors.errors, isEmpty);
+      expect(file.allErrors, isEmpty);
     });
 
     test('check extends DataClass (no super)', () async {
@@ -459,12 +424,11 @@ class Companies extends Table {
           await state.analyze('package:a/custom_parent_class_no_super.dart');
 
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having(
-            (e) => e.message,
-            'message',
-            contains('Parameter `extending` in '
-                '@DataClassName must be subtype of DataClass'))),
+        file.allErrors,
+        [
+          isDriftError(contains('Parameter `extending` in '
+              '@DataClassName must be subtype of DataClass'))
+        ],
       );
     });
 
@@ -473,12 +437,11 @@ class Companies extends Table {
           await state.analyze('package:a/custom_parent_class_wrong_super.dart');
 
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having(
-            (e) => e.message,
-            'message',
-            contains('Parameter `extending` in '
-                '@DataClassName must be subtype of DataClass'))),
+        file.allErrors,
+        [
+          isDriftError(contains('Parameter `extending` in '
+              '@DataClassName must be subtype of DataClass'))
+        ],
       );
     });
 
@@ -487,12 +450,12 @@ class Companies extends Table {
           .analyze('package:a/custom_parent_class_typed_wrong_type_arg.dart');
 
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having(
-            (e) => e.message,
-            'message',
-            contains('Parameter `extending` in @DataClassName can only be '
-                'provided as'))),
+        file.allErrors,
+        [
+          isDriftError(
+              contains('Parameter `extending` in @DataClassName can only be '
+                  'provided as'))
+        ],
       );
     });
 
@@ -501,12 +464,12 @@ class Companies extends Table {
           .analyze('package:a/custom_parent_class_two_type_argument.dart');
 
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having(
-            (e) => e.message,
-            'message',
-            contains('Parameter `extending` in @DataClassName must have zero '
-                'or one type parameter'))),
+        file.allErrors,
+        [
+          isDriftError(
+              contains('Parameter `extending` in @DataClassName must have zero '
+                  'or one type parameter'))
+        ],
       );
     });
 
@@ -515,12 +478,12 @@ class Companies extends Table {
           await state.analyze('package:a/custom_parent_class_not_class.dart');
 
       expect(
-        file.errors.errors,
-        contains(isA<ErrorInDartCode>().having(
-            (e) => e.message,
-            'message',
-            contains('Parameter `extending` in @DataClassName must be used '
-                'with a class'))),
+        file.allErrors,
+        [
+          isDriftError(
+              contains('Parameter `extending` in @DataClassName must be used '
+                  'with a class'))
+        ],
       );
     });
   });

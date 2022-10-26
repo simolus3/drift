@@ -6,6 +6,7 @@ import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 import '../../analyzer/options.dart';
 import 'dart.dart';
 import 'element.dart';
+import 'result_sets.dart';
 import 'types.dart';
 
 part '../../generated/analysis/results/column.g.dart';
@@ -64,7 +65,7 @@ class DriftColumn implements HasType {
 
   /// The table or view owning this column.
   @JsonKey(ignore: true)
-  late DriftElement owner;
+  late DriftElementWithResultSet owner;
 
   DriftColumn({
     required this.sqlType,

@@ -1,10 +1,10 @@
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
   test('can define abstract tables', () async {
-    final test = TestState.withContent({
+    final test = TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -38,9 +38,8 @@ class SocietiesCategoriesTable extends CategoriesTable {
 class Database {}
 ''',
     });
-    addTearDown(test.close);
 
-    final file = await test.analyze('package:a/main.dart');
-    expect(file.errors.errors, isEmpty);
+    await test.driver.fullyAnalyze(Uri.parse('package:a/main.dart'));
+    test.expectNoErrors();
   });
 }

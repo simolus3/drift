@@ -1,16 +1,13 @@
-import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/model/table.dart';
-import 'package:drift_dev/src/model/used_type_converter.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
-  late TestState state;
+  late TestBackend state;
 
   setUp(() {
-    state = TestState.withContent({
+    state = TestBackend({
       'a|lib/json.dart': '''
 import 'package:drift/drift.dart';
 
@@ -45,24 +42,27 @@ CREATE TABLE users (
     });
   });
 
+  tearDown(() => state.dispose());
+
   Future<void> testWith(String fileName) async {
-    final result = await state.analyze(fileName);
-    final table = result.currentResult!.declaredEntities.single as DriftTable;
+    final result = await state.driver.fullyAnalyze(Uri.parse(fileName));
+    expect(result.allErrors, isEmpty);
+    final table = result.analyzedElements.whereType<DriftTable>().single;
 
     final foo = table.columns[0];
     final bar = table.columns[1];
 
-    expect(foo.name.name, 'foo');
+    expect(foo.nameInSql, 'foo');
     expect(
       foo.typeConverter,
-      isA<UsedTypeConverter>().having((e) => e.alsoAppliesToJsonConversion,
+      isA<AppliedTypeConverter>().having((e) => e.alsoAppliesToJsonConversion,
           'alsoAppliesToJsonConversion', isFalse),
     );
 
-    expect(bar.name.name, 'bar');
+    expect(bar.nameInSql, 'bar');
     expect(
       bar.typeConverter,
-      isA<UsedTypeConverter>().having((e) => e.alsoAppliesToJsonConversion,
+      isA<AppliedTypeConverter>().having((e) => e.alsoAppliesToJsonConversion,
           'alsoAppliesToJsonConversion', isTrue),
     );
   }
@@ -72,24 +72,18 @@ CREATE TABLE users (
   });
 
   test('warns about type issues around converters', () async {
-    final result = await state.analyze('package:a/nullability.dart');
-    final table =
-        (result.currentResult as ParsedDartFile).declaredTables.single;
+    final result = await state.driver
+        .fullyAnalyze(Uri.parse('package:a/nullability.dart'));
+    final table = result.analyzedElements.whereType<DriftTable>().single;
 
     expect(
-      result.errors.errors,
+      result.allErrors,
       [
-        isA<ErrorInDartCode>()
-            .having((e) => e.message, 'message', contains('must accept String'))
-            .having((e) => e.span?.text, 'span', 'tc<int, int>()'),
-        isA<ErrorInDartCode>()
-            .having((e) => e.message, 'message',
-                contains('has a type converter with a nullable SQL type'))
-            .having((e) => e.span?.text, 'span', 'tc<String, String?>()'),
-        isA<ErrorInDartCode>()
-            .having((e) => e.message, 'message',
-                contains('This column is nullable'))
-            .having((e) => e.span?.text, 'span', 'tc<String?, String>()'),
+        isDriftError(contains('must accept String')).withSpan('tc<int, int>()'),
+        isDriftError(contains('has a type converter with a nullable SQL type'))
+            .withSpan('tc<String, String?>()'),
+        isDriftError(contains('This column is nullable'))
+            .withSpan('tc<String?, String>()'),
       ],
     );
 
