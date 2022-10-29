@@ -462,7 +462,7 @@ class ColumnParser {
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element2.name == 'JsonKey';
+          valueType.element.name == 'JsonKey';
     });
 
     if (object == null) return null;

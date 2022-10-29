@@ -9,7 +9,7 @@ class UseDaoParser {
   /// declared by that class and the referenced tables.
   Future<Dao?> parseDao(ClassElement element, ConstantReader annotation) async {
     final dbType = element.allSupertypes
-        .firstWhereOrNull((i) => i.element2.name == 'DatabaseAccessor');
+        .firstWhereOrNull((i) => i.element.name == 'DatabaseAccessor');
 
     if (dbType == null) {
       step.reportError(ErrorInDartCode(

@@ -28,8 +28,8 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
-      final superType = extendingType.allSupertypes.any(
-          (type) => isFromDrift(type) && type.element2.name == 'DataClass');
+      final superType = extendingType.allSupertypes
+          .any((type) => isFromDrift(type) && type.element.name == 'DataClass');
       if (!superType) {
         base.step.reportError(
           ErrorInDartCode(

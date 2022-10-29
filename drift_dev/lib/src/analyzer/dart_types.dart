@@ -267,8 +267,8 @@ void _checkType(
   final isAllowedUint8List = typeConverter == null &&
       columnType == DriftSqlType.blob &&
       typeToCheck is InterfaceType &&
-      typeToCheck.element2.name == 'Uint8List' &&
-      typeToCheck.element2.library.name == 'dart.typed_data';
+      typeToCheck.element.name == 'Uint8List' &&
+      typeToCheck.element.library.name == 'dart.typed_data';
 
   if (!typeSystem.isAssignableTo(expectedDartType.type, typeToCheck) &&
       !isAllowedUint8List) {

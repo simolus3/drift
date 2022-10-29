@@ -99,7 +99,7 @@ class UsedTypeConverter {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
     }
 
-    final creatingClass = enumType.element2;
+    final creatingClass = enumType.element;
     if (creatingClass is! EnumElement) {
       throw InvalidTypeForEnumConverterException('Not an enum', enumType);
     }

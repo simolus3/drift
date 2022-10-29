@@ -28,7 +28,7 @@ Future<FoundDartClass?> findDartClass(
     } else if (foundElement is TypeAliasElement) {
       final innerType = foundElement.aliasedType;
       if (innerType is InterfaceType) {
-        return FoundDartClass(innerType.element2, innerType.typeArguments);
+        return FoundDartClass(innerType.element, innerType.typeArguments);
       }
     }
   }

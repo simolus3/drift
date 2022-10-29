@@ -124,8 +124,8 @@ class TableParser {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element2, type.typeArguments);
-        name = type.element2.name;
+        existingClass = FoundDartClass(type.element, type.typeArguments);
+        name = type.element.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -309,7 +309,7 @@ class TableParser {
 
   Future<Iterable<DriftColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
-        .map((t) => t.element2)
+        .map((t) => t.element)
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
@@ -350,7 +350,7 @@ class _DataClassInformation {
 
 extension on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement3;
+    final parent = enclosingElement;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&

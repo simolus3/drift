@@ -122,7 +122,7 @@ class ParseDartStep extends Step {
   Future<List<DriftTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
-      final element = type is InterfaceType ? type.element2 : null;
+      final element = type is InterfaceType ? type.element : null;
 
       if (!_tableTypeChecker.isAssignableFromType(type) ||
           element is! ClassElement) {
@@ -148,7 +148,7 @@ class ParseDartStep extends Step {
   Future<List<MoorView>> parseViews(Iterable<DartType> types,
       Element initializedBy, List<DriftTable> tables) {
     return Future.wait(types.map((type) {
-      final element = type is InterfaceType ? type.element2 : null;
+      final element = type is InterfaceType ? type.element : null;
 
       if (!_viewTypeChecker.isAssignableFromType(type) ||
           element is! ClassElement) {

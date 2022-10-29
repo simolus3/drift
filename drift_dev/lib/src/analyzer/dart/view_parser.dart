@@ -84,8 +84,8 @@ class ViewParser {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element2, type.typeArguments);
-        name = type.element2.name;
+        existingClass = FoundDartClass(type.element, type.typeArguments);
+        name = type.element.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -218,7 +218,7 @@ class ViewParser {
   Future<List<TableReferenceInDartView>> _parseStaticReferences(
       ClassElement element, List<DriftTable> tables) async {
     return await Stream.fromIterable(element.allSupertypes
-            .map((t) => t.element2)
+            .map((t) => t.element)
             .followedBy([element]).expand((e) => e.fields))
         .asyncMap((field) => _getStaticReference(field, tables))
         .where((ref) => ref != null)
