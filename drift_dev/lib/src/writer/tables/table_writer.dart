@@ -50,7 +50,7 @@ abstract class TableOrViewWriter {
     if (column.customConstraints != null) {
       additionalParams['\$customConstraints'] =
           asDartLiteral(column.customConstraints!);
-    } else {
+    } else if (constraints.values.any((constraint) => constraint.isNotEmpty)) {
       // Use the default constraints supported by drift
 
       final literalEntries = [
