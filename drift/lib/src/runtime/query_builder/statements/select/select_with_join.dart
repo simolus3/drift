@@ -253,7 +253,11 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         final expr = aliasedColumn.key;
         final value = row[aliasedColumn.value];
 
-        readColumns[expr] = ctx.options.types.read(expr.driftSqlType, value);
+        readColumns[expr] = ctx.options.types.read(
+          expr.driftSqlType,
+          value,
+          ctx.dialect,
+        );
       }
 
       return TypedResult(readTables, QueryRow(row, database), readColumns);

@@ -81,7 +81,11 @@ class QueryRow {
   /// support non-nullable types.
   T read<T>(String key) {
     final type = DriftSqlType.forNullableType<T>();
-    return _db.options.types.read(type, data[key]) as T;
+    return _db.options.types.read(
+      type,
+      data[key],
+      _db.executor.dialect,
+    ) as T;
   }
 
   /// Reads a nullable value from this row.
@@ -90,7 +94,11 @@ class QueryRow {
   /// drift (e.g. booleans, strings, numbers, dates, `Uint8List`s).
   T? readNullable<T extends Object>(String key) {
     final type = DriftSqlType.forType<T>();
-    return _db.options.types.read(type, data[key]);
+    return _db.options.types.read(
+      type,
+      data[key],
+      _db.executor.dialect,
+    );
   }
 
   /// Reads a bool from the column named [key].

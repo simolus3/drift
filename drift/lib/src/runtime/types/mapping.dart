@@ -34,7 +34,10 @@ class SqlTypes {
 
   /// Maps a Dart object to a (possibly simpler) object that can be used as a
   /// parameter in raw sql queries.
-  Object? mapToSqlVariable(Object? dartValue) {
+  Object? mapToSqlVariable(
+    Object? dartValue, [
+    SqlDialect dialect = SqlDialect.sqlite,
+  ]) {
     if (dartValue == null) return null;
 
     // These need special handling, all other types are a direct mapping
@@ -80,7 +83,10 @@ class SqlTypes {
 
   /// Maps the [dart] value into a SQL literal that can be embedded in SQL
   /// queries.
-  String mapToSqlLiteral(Object? dart) {
+  String mapToSqlLiteral(
+    Object? dart, [
+    SqlDialect dialect = SqlDialect.sqlite,
+  ]) {
     if (dart == null) return 'NULL';
 
     // todo: Inline and remove types in the next major drift version
@@ -99,7 +105,7 @@ class SqlTypes {
       return dart.toString();
     } else if (dart is DateTime) {
       if (storeDateTimesAsText) {
-        final encoded = mapToSqlVariable(dart).toString();
+        final encoded = mapToSqlVariable(dart, dialect).toString();
         return "'$encoded'";
       } else {
         return (dart.millisecondsSinceEpoch ~/ 1000).toString();
@@ -115,7 +121,11 @@ class SqlTypes {
   }
 
   /// Maps a raw [sqlValue] to Dart given its sql [type].
-  T? read<T extends Object>(DriftSqlType<T> type, Object? sqlValue) {
+  T? read<T extends Object>(
+    DriftSqlType<T> type,
+    Object? sqlValue, [
+    SqlDialect dialect = SqlDialect.sqlite,
+  ]) {
     if (sqlValue == null) return null;
 
     // ignore: unnecessary_cast
