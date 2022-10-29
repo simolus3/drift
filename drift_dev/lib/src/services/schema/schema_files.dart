@@ -137,7 +137,8 @@ class SchemaWriter {
       'moor_type': column.type.toSerializedString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
-      if (constraints.isNotEmpty && column.customConstraints == null)
+      if (constraints[SqlDialect.sqlite]!.isNotEmpty &&
+          column.customConstraints == null)
         // TODO: Dialect-specific constraints in schema file
         'defaultConstraints': constraints[SqlDialect.sqlite]!,
       'default_dart': column.defaultArgument,
