@@ -63,7 +63,8 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
 
   if (column.type == DriftSqlType.bool) {
     final name = '"${column.name.name}"';
-    defaultConstraints.add('CHECK ($name IN (0, 1))');
+    dialectSpecificConstraints[SqlDialect.sqlite]!
+        .add('CHECK ($name IN (0, 1))');
   }
 
   for (final constraints in dialectSpecificConstraints.values) {
