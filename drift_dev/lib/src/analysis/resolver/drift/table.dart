@@ -197,24 +197,29 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     } else if (stmt is CreateVirtualTableStatement) {
       RecognizedVirtualTableModule? recognized;
       if (table is Fts5Table) {
-        final errorLocation = stmt.tableNameToken ?? stmt;
+        final errorLocation = stmt.arguments
+                .firstWhereOrNull((e) => e.text.contains('content')) ??
+            stmt.span;
 
         final contentTable = table.contentTable != null
             ? await resolveSqlReferenceOrReportError<DriftTable>(
                 table.contentTable!,
-                (msg) => DriftAnalysisError.inDriftFile(errorLocation,
+                (msg) => DriftAnalysisError(errorLocation,
                     'Could not find referenced content table: $msg'))
             : null;
         DriftColumn? contentRowId;
 
         if (contentTable != null) {
+          references.add(contentTable);
           final parserContentTable =
               resolver.driver.typeMapping.asSqlParserTable(contentTable);
           final rowId = parserContentTable.findColumn(table.contentRowId!);
 
           if (rowId == null) {
-            reportError(DriftAnalysisError.inDriftFile(
-                errorLocation,
+            var location = stmt.arguments
+                .firstWhereOrNull((e) => e.text.contains('content_rowid'));
+            reportError(DriftAnalysisError(
+                location ?? errorLocation,
                 'Invalid content rowid, `${table.contentRowId}` not found '
                 'in `${contentTable.schemaName}`'));
           } else if (rowId is! RowId) {
@@ -226,8 +231,11 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           // Also, check that all columns referenced in the fts5 table exist in
           // the content table.
           for (final column in columns) {
+            var location = stmt.arguments
+                .firstWhereOrNull((e) => e.text == column.nameInSql);
+
             if (parserContentTable.findColumn(column.nameInSql) == null) {
-              reportError(DriftAnalysisError.inDriftFile(errorLocation,
+              reportError(DriftAnalysisError(location ?? errorLocation,
                   'The content table has no column `${column.nameInSql}`.'));
             }
           }

@@ -157,7 +157,7 @@ class DriftResolver {
     if (candidates.isEmpty) {
       return InvalidReferenceResult(
         InvalidReferenceError.noElementWichSuchName,
-        'This reference could not be found in any import.',
+        '`$reference` could not be found in any import.',
       );
     } else if (candidates.length > 1) {
       final description =

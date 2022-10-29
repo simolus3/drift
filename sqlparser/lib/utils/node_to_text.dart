@@ -251,7 +251,20 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     identifier(e.cteTableName);
     if (e.columnNames != null) {
-      symbol('(${e.columnNames!.join(', ')})', spaceAfter: true);
+      symbol('(', spaceBefore: true);
+
+      var first = true;
+      for (final columnName in e.columnNames!) {
+        if (!first) {
+          symbol(',', spaceAfter: true);
+        }
+
+        identifier(columnName, spaceBefore: !first, spaceAfter: false);
+
+        first = false;
+      }
+
+      symbol(')', spaceAfter: true);
     }
 
     _keyword(TokenType.as);

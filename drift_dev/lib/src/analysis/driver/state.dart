@@ -44,6 +44,8 @@ class FileState {
             .every((e) => elementIsAnalyzed(e.ownId));
   }
 
+  DriftElementId id(String name) => DriftElementId(ownUri, name);
+
   bool elementIsAnalyzed(DriftElementId id) {
     return analysis[id]?.isUpToDate == true;
   }

@@ -194,6 +194,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
+      test('escapes CTEs', () {
+        testFormat('WITH alias("first", second) AS (SELECT * FROM foo) '
+            'SELECT * FROM alias');
+      });
+
       test('with materialized CTEs', () {
         testFormat('''
           WITH
