@@ -106,8 +106,22 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
@@ -241,8 +255,22 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   @override
   List<GeneratedColumn> get $columns => [id];
   @override

@@ -130,8 +130,22 @@ class $TodoCategoriesTable extends TodoCategories
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -368,8 +382,22 @@ class $TodoItemsTable extends TodoItems
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -385,8 +413,22 @@ class $TodoItemsTable extends TodoItems
   late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
       'category_id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints: 'REFERENCES "todo_categories" ("id")');
+      requiredDuringInsert: true, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'REFERENCES "todo_categories" ("id")',
+      SqlDialect.mysql: 'REFERENCES "todo_categories" ("id")',
+      SqlDialect.postgres: 'REFERENCES "todo_categories" ("id")',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  });
   final VerificationMeta _generatedTextMeta =
       const VerificationMeta('generatedText');
   @override

@@ -176,8 +176,22 @@ class $CategoriesTable extends Categories
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
@@ -467,8 +481,22 @@ class $TodosTableTable extends TodosTable
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -487,15 +515,43 @@ class $TodosTableTable extends TodosTable
   late final GeneratedColumn<DateTime> targetDate = GeneratedColumn<DateTime>(
       'target_date', aliasedName, true,
       type: DriftSqlType.dateTime,
-      requiredDuringInsert: false,
-      defaultConstraints: 'UNIQUE');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'UNIQUE',
+      SqlDialect.mysql: 'UNIQUE',
+      SqlDialect.postgres: 'UNIQUE',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  });
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES "categories" ("id")');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'REFERENCES "categories" ("id")',
+      SqlDialect.mysql: 'REFERENCES "categories" ("id")',
+      SqlDialect.postgres: 'REFERENCES "categories" ("id")',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  });
   @override
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
@@ -760,8 +816,22 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -769,16 +839,43 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
       type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: 'UNIQUE');
+      requiredDuringInsert: true, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'UNIQUE',
+      SqlDialect.mysql: 'UNIQUE',
+      SqlDialect.postgres: 'UNIQUE',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  });
   final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
   @override
   late final GeneratedColumn<bool> isAwesome = GeneratedColumn<bool>(
       'is_awesome', aliasedName, false,
       type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints: 'CHECK ("is_awesome" IN (0, 1))',
-      defaultValue: const Constant(true));
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
+      SqlDialect.mysql: 'CHECK ("is_awesome" IN (0, 1))',
+      SqlDialect.postgres: 'CHECK ("is_awesome" IN (0, 1))',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, defaultValue: const Constant(true));
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override

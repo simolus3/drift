@@ -124,8 +124,22 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(

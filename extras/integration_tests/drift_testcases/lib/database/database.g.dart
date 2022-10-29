@@ -219,8 +219,22 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
+      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -473,9 +487,22 @@ class $FriendshipsTable extends Friendships
   late final GeneratedColumn<bool> reallyGoodFriends = GeneratedColumn<bool>(
       'really_good_friends', aliasedName, false,
       type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints: 'CHECK ("really_good_friends" IN (0, 1))',
-      defaultValue: const Constant(false));
+      requiredDuringInsert: false, defaultConstraints: (context) {
+    const dialectConstraints = {
+      SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
+      SqlDialect.mysql: 'CHECK ("really_good_friends" IN (0, 1))',
+      SqlDialect.postgres: 'CHECK ("really_good_friends" IN (0, 1))',
+    };
+
+    final constraints = dialectConstraints[context.dialect]!;
+    if (constraints.isEmpty) {
+      return;
+    }
+
+    context.buffer
+      ..write(' ')
+      ..write(constraints);
+  }, defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
       [firstUser, secondUser, reallyGoodFriends];
