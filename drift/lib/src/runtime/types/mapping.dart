@@ -74,7 +74,7 @@ class SqlTypes {
       }
     }
 
-    if (dartValue is bool) {
+    if (dartValue is bool && dialect == SqlDialect.sqlite) {
       return dartValue ? 1 : 0;
     }
 
@@ -91,7 +91,11 @@ class SqlTypes {
 
     // todo: Inline and remove types in the next major drift version
     if (dart is bool) {
-      return dart ? '1' : '0';
+      if (dialect == SqlDialect.sqlite) {
+        return dart ? '1' : '0';
+      } else {
+        return dart ? 'true' : 'false';
+      }
     } else if (dart is String) {
       // From the sqlite docs: (https://www.sqlite.org/lang_expr.html)
       // A string constant is formed by enclosing the string in single quotes
@@ -131,7 +135,11 @@ class SqlTypes {
     // ignore: unnecessary_cast
     switch (type as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return (sqlValue != 0) as T;
+        if (dialect == SqlDialect.sqlite) {
+          return (sqlValue != 0) as T;
+        } else {
+          return sqlValue as T;
+        }
       case DriftSqlType.string:
         return sqlValue.toString() as T;
       case DriftSqlType.bigInt:
