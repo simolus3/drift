@@ -158,9 +158,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
 
       // these custom constraints refer to builtin constraints from drift
       if (!isSerial && _defaultConstraints != null) {
-        into.buffer
-          ..write(' ')
-          ..write(_defaultConstraints);
+        _defaultConstraints!(into);
       }
     } else if ($customConstraints?.isNotEmpty == true) {
       into.buffer
