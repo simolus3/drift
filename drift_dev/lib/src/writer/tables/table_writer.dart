@@ -50,9 +50,26 @@ abstract class TableOrViewWriter {
     if (column.customConstraints != null) {
       additionalParams['\$customConstraints'] =
           asDartLiteral(column.customConstraints!);
-    } else if (constraints.isNotEmpty) {
+    } else {
       // Use the default constraints supported by drift
-      additionalParams['defaultConstraints'] = asDartLiteral(constraints);
+
+      final literalEntries = [
+        for (final entry in constraints.entries)
+          'SqlDialect.${entry.key.name}: ${asDartLiteral(entry.value)},',
+      ];
+
+      additionalParams['defaultConstraints'] = '''(context) {
+        const dialectConstraints = {
+          ${literalEntries.join('\n')}
+        };
+
+        final constraints = dialectConstraints[context.dialect]!;
+        if (constraints.isEmpty) {
+          return;
+        }
+
+        context.buffer..write(' ')..write(constraints);
+      }''';
     }
 
     if (column.defaultArgument != null) {
@@ -71,6 +88,10 @@ abstract class TableOrViewWriter {
         additionalParams['generatedAs'] =
             'GeneratedAs($code, ${generateAs.stored})';
       }
+    }
+
+    if (column.features.any((feature) => feature is AutoIncrement)) {
+      additionalParams['hasAutoIncrement'] = 'true';
     }
 
     final innerType = column.innerColumnType();

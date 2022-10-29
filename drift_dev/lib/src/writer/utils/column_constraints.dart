@@ -1,9 +1,13 @@
+import 'package:drift/drift.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../model/model.dart';
 
-String defaultConstraints(DriftColumn column) {
+Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
   final defaultConstraints = <String>[];
+  final dialectSpecificConstraints = <SqlDialect, List<String>>{
+    for (final dialect in SqlDialect.values) dialect: [],
+  };
 
   var wrotePkConstraint = false;
 
@@ -49,7 +53,11 @@ String defaultConstraints(DriftColumn column) {
 
       defaultConstraints.add(constraint);
     } else if (feature is DefaultConstraintsFromSchemaFile) {
-      return feature.defaultConstraints;
+      // TODO: Dialect-specific constraints in schema file
+      return {
+        for (final dialect in SqlDialect.values)
+          dialect: feature.defaultConstraints,
+      };
     }
   }
 
@@ -58,7 +66,13 @@ String defaultConstraints(DriftColumn column) {
     defaultConstraints.add('CHECK ($name IN (0, 1))');
   }
 
-  return defaultConstraints.join(' ');
+  for (final constraints in dialectSpecificConstraints.values) {
+    constraints.addAll(defaultConstraints);
+  }
+
+  return dialectSpecificConstraints.map(
+    (dialect, constraints) => MapEntry(dialect, constraints.join(' ')),
+  );
 }
 
 extension on ReferenceAction {
