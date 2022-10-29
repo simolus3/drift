@@ -59,11 +59,8 @@ class Variable<T extends Object> extends Expression<T> {
   /// Maps [value] to something that should be understood by the underlying
   /// database engine. For instance, a [DateTime] will me mapped to its unix
   /// timestamp.
-  dynamic mapToSimpleValue(
-    GenerationContext context, [
-    SqlDialect dialect = SqlDialect.sqlite,
-  ]) {
-    return context.options.types.mapToSqlVariable(value, dialect);
+  dynamic mapToSimpleValue(GenerationContext context) {
+    return context.options.types.mapToSqlVariable(value, context.dialect);
   }
 
   @override
@@ -88,16 +85,11 @@ class Variable<T extends Object> extends Expression<T> {
         ..write(explicitStart + context.amountOfVariables);
       context.introduceVariable(
         this,
-        mapToSimpleValue(context, context.dialect),
+        mapToSimpleValue(context),
       );
     } else {
       context.buffer.write(mark);
-      context.introduceVariable(
-          this,
-          mapToSimpleValue(
-            context,
-            context.dialect,
-          ));
+      context.introduceVariable(this, mapToSimpleValue(context));
     }
   }
 
