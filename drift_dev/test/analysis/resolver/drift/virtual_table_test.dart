@@ -1,13 +1,13 @@
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
-  test('supports virtual tables across moor files', () async {
-    final state = TestState.withContent(
+  test('supports virtual tables across drift files', () async {
+    final state = TestBackend.inTest(
       {
-        'a|lib/table.moor': '''
+        'a|lib/table.drift': '''
 CREATE TABLE example_table (
     json_column TEXT,
     name TEXT,
@@ -19,8 +19,8 @@ CREATE VIRTUAL TABLE example_table_search
         name, content, content='example_table', content_rowid='rowid'
     );
 ''',
-        'a|lib/queries.moor': '''
-import 'table.moor';
+        'a|lib/queries.drift': '''
+import 'table.drift';
 
 exampleSearch: SELECT example_table.**, s.* FROM example_table
     INNER JOIN (
@@ -35,16 +35,15 @@ exampleSearch: SELECT example_table.**, s.* FROM example_table
       },
       options: const DriftOptions.defaults(modules: [SqlModule.fts5]),
     );
-    addTearDown(state.close);
 
-    final result = await state.analyze('package:a/queries.moor');
-    expect(result.errors.errors, isEmpty);
+    final result = await state.analyze('package:a/queries.drift');
+    expect(result.allErrors, isEmpty);
   });
 
   test('query virtual tables with unknown function', () async {
-    final state = TestState.withContent(
+    final state = TestBackend.inTest(
       {
-        'a|lib/table.moor': '''
+        'a|lib/table.drift': '''
 CREATE TABLE example_table (
     json_column TEXT,
     name TEXT,
@@ -56,7 +55,7 @@ CREATE VIRTUAL TABLE example_table_search
         name, content, content='example_table', content_rowid='rowid'
     );
 
-exampleSearch: 
+exampleSearch:
 SELECT rowid, highlight(example_table_search, 0, '[match]', '[match]') name,
             snippet(example_table_search, 1, '[match]', '[match]', '...', 10) content,
             bm25(example_table_search) AS rank
@@ -65,10 +64,8 @@ SELECT rowid, highlight(example_table_search, 0, '[match]', '[match]') name,
       },
       options: const DriftOptions.defaults(modules: [SqlModule.fts5]),
     );
-    addTearDown(state.close);
-    final result = await state.analyze('package:a/table.moor');
-    expect(result.errors.errors, hasLength(1));
-    expect(result.errors.errors.single.message,
-        contains('Function simple_query could not be found'));
+    final result = await state.analyze('package:a/table.drift');
+    expect(result.allErrors,
+        [isDriftError(contains('Function simple_query could not be found'))]);
   });
 }

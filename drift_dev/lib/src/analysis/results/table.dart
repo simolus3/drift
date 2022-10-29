@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
-import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import 'dart.dart';
@@ -8,8 +7,6 @@ import 'element.dart';
 
 import 'column.dart';
 import 'result_sets.dart';
-
-part '../../generated/analysis/results/table.g.dart';
 
 class DriftTable extends DriftElementWithResultSet {
   @override
@@ -174,7 +171,6 @@ class ForeignKeyTable extends DriftTableConstraint {
   });
 }
 
-@JsonSerializable()
 class VirtualTableData {
   /// The module used to create this table.
   ///
@@ -185,10 +181,23 @@ class VirtualTableData {
   /// statement.
   final List<String> moduleArguments;
 
-  VirtualTableData(this.module, this.moduleArguments);
+  final RecognizedVirtualTableModule? recognized;
 
-  factory VirtualTableData.fromJson(Map json) =>
-      _$VirtualTableDataFromJson(json);
+  VirtualTableData(this.module, this.moduleArguments, this.recognized);
+}
 
-  Map<String, Object?> toJson() => _$VirtualTableDataToJson(this);
+abstract class RecognizedVirtualTableModule {}
+
+class DriftFts5Table extends RecognizedVirtualTableModule {
+  /// For fts5 tables with external content (https://www.sqlite.org/fts5.html#external_content_tables),
+  /// references the drift table providing the content.
+  final DriftTable? externalContentTable;
+
+  /// If this fts5 table has an [externalContentTable] and uses an explicit
+  /// column as a rowid, this is a reference to that column.
+  final DriftColumn? externalContentRowId;
+
+  DriftFts5Table(this.externalContentTable, this.externalContentRowId)
+      : assert(externalContentRowId == null ||
+            externalContentRowId.owner == externalContentTable);
 }

@@ -43,7 +43,7 @@ class _Fts5Module extends Module {
     //Fallback to "rowid" when option is not set
     final contentRowId = options['content_rowid'] ?? 'rowid';
 
-    return Fts5Table._(
+    return Fts5Table(
       name: stmt.tableName,
       contentTable: contentTable,
       contentRowId: (contentTable != null) ? contentRowId : null,
@@ -113,7 +113,7 @@ class Fts5Table extends Table {
   final String? contentTable;
   final String? contentRowId;
 
-  Fts5Table._({
+  Fts5Table({
     required String name,
     required List<TableColumn> columns,
     this.contentTable,

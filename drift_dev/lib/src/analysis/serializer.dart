@@ -37,7 +37,8 @@ class ElementSerializer {
         'row_class_name': element.nameOfRowClass,
         'without_rowid': element.withoutRowId,
         'strict': element.strict,
-        if (element.isVirtual) 'virtual': element.virtualTableData!.toJson(),
+        if (element.isVirtual)
+          'virtual': _serializeVirtualTableData(element.virtualTableData!),
         'write_default_constraints': element.writeDefaultConstraints,
         'custom_constraints': element.overrideTableConstraints,
       };
@@ -224,6 +225,29 @@ class ElementSerializer {
     } else {
       throw UnimplementedError('Unsupported table constraint: $constraint');
     }
+  }
+
+  Map<String, Object?> _serializeVirtualTableData(VirtualTableData data) {
+    final recognized = data.recognized;
+    Object? serializedRecognized;
+
+    if (recognized is DriftFts5Table) {
+      serializedRecognized = {
+        'type': 'fts5',
+        'content_table': (recognized.externalContentTable != null)
+            ? _serializeElementReference(recognized.externalContentTable!)
+            : null,
+        'content_rowid': (recognized.externalContentRowId != null)
+            ? _serializeColumnReference(recognized.externalContentRowId!)
+            : null,
+      };
+    }
+
+    return {
+      'module': data.module,
+      'arguments': data.moduleArguments,
+      'recognized': serializedRecognized,
+    };
   }
 
   String? _serializeReferenceAction(ReferenceAction? action) {
@@ -415,6 +439,33 @@ class ElementDeserializer {
           for (final column in columns) column.nameInSql: column,
         };
 
+        VirtualTableData? virtualTableData;
+        if (json['virtual'] != null) {
+          final data = json['virtual'] as Map;
+
+          RecognizedVirtualTableModule? recognizedModule;
+          final rawRecognized = data['recognized'];
+          if (rawRecognized != null) {
+            final rawTable = (rawRecognized as Map)['content_table'];
+            final rawRowid = rawRecognized['content_rowid'];
+
+            recognizedModule = DriftFts5Table(
+              rawTable != null
+                  ? await _readElementReference(rawTable as Map) as DriftTable
+                  : null,
+              rawRowid != null
+                  ? await _readDriftColumnReference(rawRowid as Map)
+                  : null,
+            );
+          }
+
+          virtualTableData = VirtualTableData(
+            json['module'] as String,
+            (json['arguments'] as List).cast(),
+            recognizedModule,
+          );
+        }
+
         return DriftTable(
           id,
           declaration,
@@ -435,9 +486,7 @@ class ElementDeserializer {
           nameOfRowClass: json['row_class_name'] as String,
           withoutRowId: json['without_rowid'] as bool,
           strict: json['strict'] as bool,
-          virtualTableData: json['virtual'] != null
-              ? VirtualTableData.fromJson(json['virtual'] as Map)
-              : null,
+          virtualTableData: virtualTableData,
           writeDefaultConstraints: json['write_default_constraints'] as bool,
           overrideTableConstraints: json['custom_constraints'] != null
               ? (json['custom_constraints'] as List).cast()

@@ -195,10 +195,49 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         }
       }
     } else if (stmt is CreateVirtualTableStatement) {
-      virtualTableData = VirtualTableData(
-        stmt.moduleName,
-        stmt.argumentContent,
-      );
+      RecognizedVirtualTableModule? recognized;
+      if (table is Fts5Table) {
+        final errorLocation = stmt.tableNameToken ?? stmt;
+
+        final contentTable = table.contentTable != null
+            ? await resolveSqlReferenceOrReportError<DriftTable>(
+                table.contentTable!,
+                (msg) => DriftAnalysisError.inDriftFile(errorLocation,
+                    'Could not find referenced content table: $msg'))
+            : null;
+        DriftColumn? contentRowId;
+
+        if (contentTable != null) {
+          final parserContentTable =
+              resolver.driver.typeMapping.asSqlParserTable(contentTable);
+          final rowId = parserContentTable.findColumn(table.contentRowId!);
+
+          if (rowId == null) {
+            reportError(DriftAnalysisError.inDriftFile(
+                errorLocation,
+                'Invalid content rowid, `${table.contentRowId}` not found '
+                'in `${contentTable.schemaName}`'));
+          } else if (rowId is! RowId) {
+            // The referenced rowid of this table is an actual column
+            contentRowId = contentTable.columns
+                .firstWhereOrNull((c) => c.nameInSql == rowId.name);
+          }
+
+          // Also, check that all columns referenced in the fts5 table exist in
+          // the content table.
+          for (final column in columns) {
+            if (parserContentTable.findColumn(column.nameInSql) == null) {
+              reportError(DriftAnalysisError.inDriftFile(errorLocation,
+                  'The content table has no column `${column.nameInSql}`.'));
+            }
+          }
+        }
+
+        recognized = DriftFts5Table(contentTable, contentRowId);
+      }
+
+      virtualTableData =
+          VirtualTableData(stmt.moduleName, stmt.argumentContent, recognized);
     }
 
     String? dartTableName, dataClassName;

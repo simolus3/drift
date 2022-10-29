@@ -1,3 +1,7 @@
+## 0.24.0-dev
+
+- Make `Fts5Table` constructor public.
+
 ## 0.23.3
 
 - Analysis support for the spellfix extension.

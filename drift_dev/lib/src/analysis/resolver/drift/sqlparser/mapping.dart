@@ -26,19 +26,32 @@ class TypeMapping {
   }
 
   Table asSqlParserTable(DriftTable table) {
-    return Table(
-      name: table.schemaName,
-      isStrict: table.strict,
-      withoutRowId: table.withoutRowId,
-      resolvedColumns: [
-        for (final column in table.columns)
-          TableColumn(
-            column.nameInSql,
-            _columnType(column),
-            isGenerated: column.isGenerated,
-          ),
-      ],
-    );
+    final columns = [
+      for (final column in table.columns)
+        TableColumn(
+          column.nameInSql,
+          _columnType(column),
+          isGenerated: column.isGenerated,
+        ),
+    ];
+
+    final recognizedVirtualTable = table.virtualTableData?.recognized;
+    if (recognizedVirtualTable is DriftFts5Table) {
+      return Fts5Table(
+        name: table.schemaName,
+        columns: columns,
+        contentTable: recognizedVirtualTable.externalContentTable?.schemaName,
+        contentRowId:
+            recognizedVirtualTable.externalContentRowId?.nameInSql ?? 'rowid',
+      );
+    } else {
+      return Table(
+        name: table.schemaName,
+        isStrict: table.strict,
+        withoutRowId: table.withoutRowId,
+        resolvedColumns: columns,
+      );
+    }
   }
 
   View asSqlParserView(DriftView view) {
