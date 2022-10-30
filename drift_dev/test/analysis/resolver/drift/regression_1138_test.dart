@@ -1,11 +1,11 @@
-import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
-  test('moor files can import original dart source', () async {
-    final state = TestState.withContent({
+  test('drift files can import original dart source', () async {
+    final state = TestBackend.inTest({
       'a|lib/base.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -29,25 +29,23 @@ class Units extends Table {
   IntColumn get id => integer().autoIncrement()();
 }
 
-@DriftDatabase(include: {'customizedSQL.moor'})
+@DriftDatabase(include: {'customizedSQL.drift'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(FlutterQueryExecutor.inDatabaseFolder(
             path: "db.sqlite", logStatements: true));
 }
       ''',
-      'a|lib/customizedSQL.moor': '''
+      'a|lib/customizedSQL.drift': '''
 import 'base.dart';
 
 create trigger addVal after insert on records when id = NEW.event_id BEGIN update events set sum_val = sum_val + NEW.value; END;
       ''',
     });
-    addTearDown(state.close);
 
     final file = await state.analyze('package:a/base.dart');
-    final result = file.currentResult as ParsedDartFile;
-    final db = result.declaredDatabases.single;
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-    expect(db.tables, hasLength(3));
+    expect(db.availableElements.whereType<DriftTable>(), hasLength(3));
   });
 }

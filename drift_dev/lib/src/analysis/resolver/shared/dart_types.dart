@@ -229,7 +229,7 @@ AppliedTypeConverter readEnumConverter(
     reportError('Not a class: `$enumType`');
   }
 
-  final creatingClass = enumType.element2;
+  final creatingClass = enumType.element;
   if (creatingClass is! EnumElement) {
     reportError('Not an enum: `${creatingClass!.displayName}`');
   }

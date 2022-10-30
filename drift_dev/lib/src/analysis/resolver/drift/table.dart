@@ -2,8 +2,11 @@ import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
+import 'package:sqlparser/sqlparser.dart' as sql;
+import 'package:sqlparser/utils/node_to_text.dart';
 
+import '../../../utils/string_escaper.dart';
 import '../../backend.dart';
 import '../../driver/error.dart';
 import '../../results/results.dart';
@@ -52,6 +55,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       final nullable = column.type.nullable != false;
       final constraints = <DriftColumnConstraint>[];
       AppliedTypeConverter? converter;
+      AnnotatedDartCode? defaultArgument;
 
       final typeName = column.definition?.typeName;
       final enumMatch =
@@ -69,8 +73,8 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           ));
         } else {
           converter = readEnumConverter(
-            (msg) =>
-                DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg),
+            (msg) => reportError(
+                DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg)),
             dartClass.classElement.thisType,
           );
         }
@@ -87,7 +91,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           if (converter != null) {
             reportError(DriftAnalysisError.inDriftFile(
                 constraint,
-                'Multiple type converters applied to this converter, ignoring '
+                'Multiple type converters applied to this column, ignoring '
                 'this one.'));
             continue;
           }
@@ -125,6 +129,26 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
               }
             }
           }
+        } else if (constraint is GeneratedAs) {
+          constraints.add(ColumnGeneratedAs(
+              AnnotatedDartCode.build((b) => b
+                ..addText('const ')
+                ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
+                ..addText('(')
+                ..addText(asDartLiteral(constraint.expression.toSql()))
+                ..addText(')')),
+              constraint.stored));
+        } else if (constraint is Default) {
+          defaultArgument = AnnotatedDartCode.build((b) => b
+            ..addText('const ')
+            ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
+            ..addText('(')
+            ..addText(asDartLiteral(constraint.expression.toSql()))
+            ..addText(')'));
+        } else if (constraint is sql.PrimaryKeyColumn) {
+          constraints.add(PrimaryKeyColumn(constraint.autoIncrement));
+        } else if (constraint is sql.UniqueColumn) {
+          constraints.add(UniqueColumn());
         }
       }
 
@@ -135,6 +159,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
         constraints: constraints,
         typeConverter: converter,
+        defaultArgument: defaultArgument,
         declaration: DriftDeclaration.driftFile(
           column.definition?.nameToken ?? stmt,
           state.ownId.libraryUri,

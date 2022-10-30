@@ -33,6 +33,17 @@ class DriftAnalysisError {
     return DriftAnalysisError(sql.span, message);
   }
 
+  factory DriftAnalysisError.fromSqlError(sql.AnalysisError error) {
+    var message = error.message ?? '';
+    if (error.type == sql.AnalysisErrorType.notSupportedInDesiredVersion) {
+      message =
+          '$message\nNote: You can change the assumed sqlite version with build '
+          'options. See https://drift.simonbinder.eu/options/#assumed-sql-environment for details!';
+    }
+
+    return DriftAnalysisError(error.span, message);
+  }
+
   @override
   String toString() {
     final span = this.span;

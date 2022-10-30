@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/results/table.dart';
 import 'package:test/test.dart';
 
@@ -91,23 +93,82 @@ CREATE TABLE b (
       expect(a.references, [b]);
     });
 
-    test('non-existing', () async {
+    test('for triggers', () async {
       final backend = TestBackend.inTest({
         'a|lib/a.drift': '''
+import 'b.drift';
+
+CREATE TRIGGER my_trigger AFTER DELETE ON b BEGIN
+  INSERT INTO deleted_b VALUES (old.bar);
+END;
+''',
+        'a|lib/b.drift': '''
+CREATE TABLE b (
+  bar INTEGER NOT NULL
+);
+
+CREATE TABLE deleted_b (
+  bar INTEGER NOT NULL
+);
+''',
+      });
+
+      final file = await backend.analyze('package:a/a.drift');
+      backend.expectNoErrors();
+
+      final trigger = file.analyzedElements.single as DriftTrigger;
+      expect(trigger.references, [
+        isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'b'),
+        isA<DriftTable>()
+            .having((e) => e.schemaName, 'schemaName', 'deleted_b'),
+      ]);
+
+      expect(trigger.writes, [
+        isA<WrittenDriftTable>()
+            .having((e) => e.table.schemaName, 'table.schemaName', 'deleted_b')
+            .having((e) => e.kind, 'kind', UpdateKind.insert),
+      ]);
+    });
+
+    test('for indices', () async {});
+
+    group('non-existing', () {
+      test('from table', () async {
+        final backend = TestBackend.inTest({
+          'a|lib/a.drift': '''
 CREATE TABLE a (
   foo INTEGER PRIMARY KEY,
   bar INTEGER REFERENCES b (bar)
 );
 ''',
+        });
+
+        final state = await backend.driver
+            .resolveElements(Uri.parse('package:a/a.drift'));
+        expect(state.errorsDuringDiscovery, isEmpty);
+
+        final resultA = state.analysis.values.single;
+        expect(resultA.errorsDuringAnalysis,
+            [isDriftError('`b` could not be found in any import.')]);
       });
+      test('in a trigger', () async {
+        final backend = TestBackend.inTest(const {
+          'foo|lib/a.drift': '''
+CREATE TRIGGER IF NOT EXISTS foo BEFORE DELETE ON bar BEGIN
+END;
+        ''',
+        });
 
-      final state =
-          await backend.driver.resolveElements(Uri.parse('package:a/a.drift'));
-      expect(state.errorsDuringDiscovery, isEmpty);
+        final file = await backend.analyze('package:foo/a.drift');
 
-      final resultA = state.analysis.values.single;
-      expect(resultA.errorsDuringAnalysis,
-          [isDriftError('This reference could not be found in any import.')]);
+        expect(
+          file.allErrors,
+          contains(
+            isDriftError(contains('`bar` could not be found in any import'))
+                .withSpan('bar'),
+          ),
+        );
+      });
     });
   });
 }

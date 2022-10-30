@@ -1,13 +1,14 @@
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
   // https://github.com/simolus3/drift/issues/2097#issuecomment-1273008383
-  test('supports fts5 tables with external content', () async {
-    final state = TestState.withContent(
+  test('virtual columns are not required for inserts', () async {
+    final state = TestBackend.inTest(
       {
         'foo|lib/a.drift': r'''
 CREATE TABLE IF NOT EXISTS nodes (
@@ -25,12 +26,13 @@ insertNode: INSERT INTO nodes VALUES(json(?));
 
     final result = await state.analyze('package:foo/a.drift');
 
-    expect(result.errors.errors, isEmpty);
+    final table = result.analysis[result.id('nodes')]!.result as DriftTable;
 
-    final table = result.currentResult!.declaredTables.single;
-    expect(table.sqlName, 'nodes');
+    expect(table.schemaName, 'nodes');
     expect(table.columns, hasLength(2));
     expect(table.isColumnRequiredForInsert(table.columns[0]), isFalse);
     expect(table.isColumnRequiredForInsert(table.columns[1]), isFalse);
+
+    state.expectNoErrors();
   });
 }

@@ -53,8 +53,7 @@ class FileAnalyzer {
             queries[query.name] = analyzer.analyze(query);
 
             for (final error in analyzer.lints) {
-              result.analysisErrors.add(DriftAnalysisError(
-                  error.span, 'Error in ${query.name}: ${error.message}'));
+              result.analysisErrors.add(DriftAnalysisError.fromSqlError(error));
             }
           }
 
@@ -91,8 +90,7 @@ class FileAnalyzer {
             ..declaredInDriftFile = true;
 
           for (final error in analyzer.lints) {
-            result.analysisErrors
-                .add(DriftAnalysisError(error.span, error.message ?? ''));
+            result.analysisErrors.add(DriftAnalysisError.fromSqlError(error));
           }
         } else if (element is DriftView) {
           final source = element.source;

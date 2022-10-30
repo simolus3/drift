@@ -1,12 +1,11 @@
-import 'package:drift_dev/moor_generator.dart';
+import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analyzer/drift/moor_ffi_extension.dart';
-import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
   late SqlEngine engine;
@@ -83,41 +82,38 @@ void main() {
     );
   });
 
-  test('integration tests with moor files and experimental inference',
+  test('integration tests with drift files and experimental inference',
       () async {
-    final state = TestState.withContent(
+    final state = TestBackend.inTest(
       const {
-        'foo|lib/a.moor': '''
+        'foo|lib/a.drift': '''
 CREATE TABLE numbers (foo REAL NOT NULL);
 
 query: SELECT pow(oid, foo) FROM numbers;
         ''',
-        'foo|lib/b.moor': '''
-import 'a.moor';
+        'foo|lib/b.drift': '''
+import 'a.drift';
 
 wrongArgs: SELECT sin(oid, foo) FROM numbers;
         '''
       },
       options: const DriftOptions.defaults(modules: [SqlModule.moor_ffi]),
     );
-    addTearDown(state.close);
 
-    final fileA = await state.analyze('package:foo/a.moor');
+    final fileA = await state.analyze('package:foo/a.drift');
+    expect(fileA.allErrors, isEmpty);
 
-    expect(fileA.errors.errors, isEmpty);
-    final resultA = fileA.currentResult as ParsedDriftFile;
-
-    final queryInA = resultA.resolvedQueries!.single as SqlSelectQuery;
+    final queryInA =
+        fileA.fileAnalysis!.resolvedQueries.values.single as SqlSelectQuery;
     expect(
       queryInA.resultSet.columns.single,
       const TypeMatcher<ResultColumn>()
-          .having((e) => e.type, 'type', DriftSqlType.double),
+          .having((e) => e.sqlType, 'type', DriftSqlType.double),
     );
 
-    final fileB = await state.analyze('package:foo/b.moor');
-    expect(fileB.errors.errors, [
-      const TypeMatcher<ErrorInDriftFile>()
-          .having((e) => e.span?.text, 'span.text', 'sin(oid, foo)')
+    final fileB = await state.analyze('package:foo/b.drift');
+    expect(fileB.allErrors, [
+      isDriftError('sin expects 1 arguments, got 2.').withSpan('sin(oid, foo)')
     ]);
   });
 }

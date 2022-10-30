@@ -35,7 +35,7 @@ CREATE TABLE b (
 
     expect(aFoo.sqlType, DriftSqlType.int);
     expect(aFoo.nullable, isFalse);
-    expect(aFoo.constraints, isEmpty);
+    expect(aFoo.constraints, [isA<PrimaryKeyColumn>()]);
     expect(aFoo.customConstraints, isNull);
 
     expect(aBar.sqlType, DriftSqlType.int);
@@ -52,5 +52,129 @@ CREATE TABLE b (
     expect(bBar.nullable, isFalse);
     expect(bBar.constraints, isEmpty);
     expect(bBar.customConstraints, isNull);
+  });
+
+  test('recognizes aliases to rowid', () async {
+    final state = TestBackend.inTest({
+      'foo|lib/a.drift': '''
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+      );
+
+      CREATE TABLE users2 (
+        id INTEGER,
+        name TEXT NOT NULL,
+        PRIMARY KEY (id)
+      );
+      '''
+    });
+
+    final result = await state.analyze('package:foo/a.drift');
+
+    final users1 = result.analysis[result.id('users')]!.result as DriftTable;
+    final users2 = result.analysis[result.id('users2')]!.result as DriftTable;
+
+    expect(users1.isColumnRequiredForInsert(users1.columns[0]), isFalse);
+    expect(users1.isColumnRequiredForInsert(users1.columns[1]), isTrue);
+
+    expect(users2.isColumnRequiredForInsert(users2.columns[0]), isFalse);
+    expect(users2.isColumnRequiredForInsert(users2.columns[1]), isTrue);
+  });
+
+  test('parses enum columns', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+         import 'enum.dart';
+
+         CREATE TABLE foo (
+           fruit ENUM(Fruits) NOT NULL,
+           another ENUM(DoesNotExist) NOT NULL
+         );
+      ''',
+      'a|lib/enum.dart': '''
+        enum Fruits {
+          apple, orange, banana
+        }
+      ''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    final table = file.analyzedElements.single as DriftTable;
+    final column = table.columns.singleWhere((c) => c.nameInSql == 'fruit');
+
+    expect(column.sqlType, DriftSqlType.int);
+    expect(
+      column.typeConverter,
+      isA<AppliedTypeConverter>()
+          .having(
+            (e) => e.expression.toString(),
+            'expression',
+            contains('EnumIndexConverter<Fruits>'),
+          )
+          .having((e) => e.dartType.getDisplayString(withNullability: true),
+              'dartType', 'Fruits'),
+    );
+
+    expect(
+      file.allErrors,
+      contains(isDriftError(contains('Type DoesNotExist could not be found'))
+          .withSpan('ENUM(DoesNotExist)')),
+    );
+  });
+
+  test('does not allow converters for enum columns', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+         import 'enum.dart';
+
+         CREATE TABLE foo (
+           fruit ENUM(Fruits) NOT NULL MAPPED BY `MyConverter()`
+         );
+      ''',
+      'a|lib/enum.dart': '''
+        import 'package:drift/drift.dart';
+
+        enum Fruits {
+          apple, orange, banana
+        }
+
+        class MyConverter extends TypeConverter<String, String> {}
+      ''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+
+    expect(
+      file.allErrors,
+      [
+        isDriftError(
+                'Multiple type converters applied to this column, ignoring this one.')
+            .withSpan('MAPPED BY `MyConverter()`')
+      ],
+    );
+  });
+
+  test('does not allow enum types for non-enums', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+         import 'enum.dart';
+
+         CREATE TABLE foo (
+           fruit ENUM(NotAnEnum) NOT NULL
+         );
+      ''',
+      'a|lib/enum.dart': '''
+        class NotAnEnum {}
+      ''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    expect(file.analyzedElements, hasLength(1));
+
+    expect(
+      file.allErrors,
+      contains(isDriftError('Not an enum: `NotAnEnum`')),
+    );
   });
 }
