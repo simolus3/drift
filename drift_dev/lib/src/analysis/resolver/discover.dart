@@ -70,6 +70,7 @@ class DiscoverStep {
             DiscoveredDartLibrary(library, _checkForDuplicates(finder.found));
         break;
       case '.drift':
+      case '.moor':
         final engine = _driver.newSqlEngine();
         final pendingElements = <DiscoveredDriftElement>[];
 

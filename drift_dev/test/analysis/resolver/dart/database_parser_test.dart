@@ -66,4 +66,78 @@ class MyDatabase2 extends _$MyDatabase {
     await backend.driver.fullyAnalyze(mainUri);
     backend.expectNoErrors();
   });
+
+  test('supports inheritance for daos', () async {
+    final state = TestBackend.inTest({
+      'a|lib/database.dart': r'''
+import 'package:drift/drift.dart';
+
+class Products extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
+@DriftDatabase(tables: [Products], daos: [ProductsDao])
+class MyDatabase {}
+
+abstract class BaseDao<T extends Table, D >
+  extends DatabaseAccessor<MyDatabase> {
+
+  final TableInfo<T, D> _table;
+
+  BaseDao(MyDatabase db, this._table): super(db);
+
+  Future<void> insertOne(Insertable<T> value) => into(_table).insert(value);
+
+  Future<List<T>> selectAll() => select(_table).get();
+}
+
+abstract class BaseProductsDao extends BaseDao<Products, Product> {
+  BaseProductsDao(MyDatabase db): super(db, db.products);
+}
+
+@DriftAccessor(tables: [Products])
+class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
+  ProductsDao(MyDatabase db): super(db);
+}
+      ''',
+    });
+
+    final file = await state.analyze('package:a/database.dart');
+
+    expect(file.isFullyAnalyzed, isTrue);
+    state.expectNoErrors();
+
+    final dao =
+        file.analysis[file.id('ProductsDao')]!.result as DatabaseAccessor;
+    expect(dao.databaseClass.toString(), 'MyDatabase');
+  });
+
+  test('only includes duplicate elements once', () async {
+    final state = TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+import 'table.dart';
+
+@DriftDatabase(tables: [Users], include: {'file.drift'})
+class MyDatabase {}
+      ''',
+      'a|lib/file.drift': '''
+import 'table.dart';
+      ''',
+      'a|lib/table.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+      '''
+    });
+
+    final dbFile = await state.analyze('package:a/main.dart');
+    final db = dbFile.fileAnalysis!.resolvedDatabases.values.single;
+
+    expect(db.availableElements, hasLength(1));
+  });
 }

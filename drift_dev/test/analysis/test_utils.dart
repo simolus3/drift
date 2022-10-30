@@ -50,6 +50,14 @@ class TestBackend extends DriftBackend {
     return backend;
   }
 
+  static Future<FileState> analyzeSingle(String content,
+      {String asset = 'a|lib/a.drift',
+      DriftOptions options = const DriftOptions.defaults()}) {
+    final assetId = AssetId.parse(asset);
+    final backend = TestBackend.inTest({asset: content}, options: options);
+    return backend.driver.fullyAnalyze(assetId.uri);
+  }
+
   void expectNoErrors() {
     for (final file in driver.cache.knownFiles.values) {
       expect(file.allErrors, isEmpty, reason: 'Error in ${file.ownUri}');

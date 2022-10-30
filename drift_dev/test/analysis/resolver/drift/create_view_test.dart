@@ -1,7 +1,6 @@
 @Tags(['analyzer'])
 import 'package:drift/drift.dart' as drift;
 import 'package:drift_dev/src/analysis/results/results.dart';
-import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -96,6 +95,54 @@ void main() {
       isDriftError(
           contains('Nested star columns may only appear in a top-level select '
               'query.'))
+    ]);
+  });
+
+  test('imported views are analyzed', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/1639
+
+    final testState = TestBackend.inTest({
+      'a|lib/imported.drift': '''
+CREATE TABLE a (
+  b TEXT NOT NULL
+);
+
+CREATE VIEW my_view AS SELECT * FROM a;
+''',
+      'a|lib/main.drift': '''
+import 'imported.drift';
+
+query: SELECT * FROM my_view;
+''',
+    });
+
+    final file = await testState.analyze('package:a/main.drift');
+    testState.expectNoErrors();
+
+    expect(file.analysis, hasLength(1));
+  });
+
+  test('picks valid Dart names for columns', () async {
+    final testState = TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE VIEW IF NOT EXISTS repro AS
+  SELECT 1,
+         2 AS "1",
+         3 AS "a + b",
+         4 AS foo_bar_baz
+;
+''',
+    });
+
+    final file = await testState.analyze('package:a/a.drift');
+    expect(file.allErrors, isEmpty);
+
+    final view = file.analyzedElements.single as DriftView;
+    expect(view.columns.map((e) => e.nameInDart), [
+      'empty', // 1
+      'empty1', // 2 AS "1"
+      'ab', // AS "a + b"
+      'fooBarBaz', // fooBarBaz
     ]);
   });
 }

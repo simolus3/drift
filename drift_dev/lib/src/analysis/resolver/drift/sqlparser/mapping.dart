@@ -59,9 +59,10 @@ class TypeMapping {
       name: view.schemaName,
       resolvedColumns: [
         for (final column in view.columns)
-          _MappedViewColumn(
-            column.nameInSql,
+          ViewColumn(
+            _SimpleColumn(column.nameInSql, _columnType(column)),
             _columnType(column),
+            column.nameInSql,
           ),
       ],
     );
@@ -141,11 +142,11 @@ class TypeConverterHint extends TypeHint {
   TypeConverterHint(this.converter);
 }
 
-class _MappedViewColumn extends Column with ColumnWithType {
+class _SimpleColumn extends Column with ColumnWithType {
   @override
   final String name;
   @override
   final ResolvedType type;
 
-  _MappedViewColumn(this.name, this.type);
+  _SimpleColumn(this.name, this.type);
 }

@@ -20,6 +20,8 @@ const Map<String, ResolvedType?> _types = {
       ResolvedType(type: BasicType.text),
   'SELECT * FROM demo WHERE content IN ?':
       ResolvedType(type: BasicType.text, isArray: true),
+  'SELECT * FROM demo WHERE content IN ? OR content = ?2':
+      ResolvedType(type: BasicType.text, isArray: true),
   'SELECT * FROM demo WHERE content IN (?)':
       ResolvedType(type: BasicType.text, isArray: false),
   'SELECT * FROM demo JOIN tbl ON demo.id = tbl.id WHERE date = ?':

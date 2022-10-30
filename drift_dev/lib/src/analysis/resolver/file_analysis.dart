@@ -32,8 +32,12 @@ class FileAnalyzer {
             imports.add(imported);
           }
 
-          final availableElements = driver.cache
-              .crawlMulti(imports)
+          final imported = driver.cache.crawlMulti(imports).toSet();
+          for (final import in imported) {
+            await driver.resolveElements(import.ownUri);
+          }
+
+          final availableElements = imported
               .expand((reachable) {
                 final elementAnalysis = reachable.analysis.values;
                 return elementAnalysis.map((e) => e.result);
@@ -48,8 +52,8 @@ class FileAnalyzer {
                 driver.typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
 
-            final analyzer = QueryAnalyzer(context, driver,
-                references: element.references.toList());
+            final analyzer =
+                QueryAnalyzer(context, driver, references: availableElements);
             queries[query.name] = analyzer.analyze(query);
 
             for (final error in analyzer.lints) {

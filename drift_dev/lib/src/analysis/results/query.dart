@@ -597,6 +597,14 @@ abstract class FoundElement {
 
   /// If the element should be hidden from the parameter list
   bool get hidden => false;
+
+  /// Returns a syntactic origin for this element in the query.
+  ///
+  /// Some elements may have more than one origin. For instance, the query
+  /// `SELECT ?, ?1` only contains one logical [FoundVariable], but two
+  /// syntactic origins. This getter will return one of them, but the exact
+  /// source is undefined in that case.
+  AstNode get syntacticOrigin;
 }
 
 /// A semantic interpretation of a [Variable] in a sql statement.
@@ -677,6 +685,9 @@ class FoundVariable extends FoundElement implements HasType {
       return 'var${variable.resolvedIndex}';
     }
   }
+
+  @override
+  AstNode get syntacticOrigin => variable;
 }
 
 abstract class DartPlaceholderType {}
@@ -809,6 +820,9 @@ class FoundDartPlaceholder extends FoundElement {
         // already defines which fields are available
         type is! InsertableDartPlaceholderType;
   }
+
+  @override
+  AstNode get syntacticOrigin => astNode!;
 }
 
 /// A table or view that is available in the position of a

@@ -473,9 +473,12 @@ class QueryAnalyzer {
             required.requiredNumberedVariables.contains(used.resolvedIndex);
 
         if (explicitIndex != null && currentIndex >= maxIndex) {
-          throw ArgumentError(
-              'Cannot have a variable with an index lower than that of an '
-              'array appearing after an array!');
+          lints.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            relevantNode: used,
+            message: 'Cannot have have a variable with an index lower than '
+                'that of an array appearing after an array!',
+          ));
         }
 
         AppliedTypeConverter? converter;
@@ -501,8 +504,11 @@ class QueryAnalyzer {
         // arrays cannot be indexed explicitly because they're expanded into
         // multiple variables when executed
         if (isArray && explicitIndex != null) {
-          throw ArgumentError(
-              'Cannot use an array variable with an explicit index');
+          lints.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: 'Cannot use an array variable with an explicit index',
+            relevantNode: used,
+          ));
         }
         if (isArray) {
           maxIndex = used.resolvedIndex!;
@@ -635,9 +641,15 @@ class QueryAnalyzer {
     for (var i = 0; i < variables.length; i++) {
       final current = variables[i];
       if (current.index > currentExpectedIndex) {
-        throw StateError('This query skips some variable indexes: '
-            'We found no variable is at position $currentExpectedIndex, '
-            'even though a variable at index ${current.index} exists.');
+        lints.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            message:
+                'Illegal variable index ${current.index} because no variable '
+                'at index $currentExpectedIndex exists.',
+            relevantNode: current.syntacticOrigin,
+          ),
+        );
       }
 
       if (i < variables.length - 1) {

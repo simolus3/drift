@@ -48,7 +48,7 @@ class DartAccessorResolver
       }
 
       final table = await resolveDartReferenceOrReportError<DriftTable>(
-          dartType.element2,
+          dartType.element,
           (msg) => DriftAnalysisError.forDartElement(element, msg));
       if (table != null) {
         tables.add(table);
@@ -72,7 +72,7 @@ class DartAccessorResolver
       }
 
       final view = await resolveDartReferenceOrReportError<DriftView>(
-          dartType.element2,
+          dartType.element,
           (msg) => DriftAnalysisError.forDartElement(element, msg));
       if (view != null) {
         views.add(view);
@@ -135,7 +135,7 @@ class DartAccessorResolver
       );
     } else {
       final dbType = element.allSupertypes
-          .firstWhereOrNull((i) => i.element2.name == 'DatabaseAccessor');
+          .firstWhereOrNull((i) => i.element.name == 'DatabaseAccessor');
 
       // inherits from DatabaseAccessor<T>, we want to know which T
 

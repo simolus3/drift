@@ -137,17 +137,6 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
           relevantNode: expression,
         ));
       }
-
-      final dependsOnPlaceholder = e.as == null &&
-          expression.allDescendants.whereType<DartPlaceholder>().isNotEmpty;
-      if (dependsOnPlaceholder) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'The name of this column depends on a Dart template, which '
-              'breaks generated code. Try adding an `AS` alias to fix this.',
-          relevantNode: e,
-        ));
-      }
     }
 
     if (e is NestedStarResultColumn) {

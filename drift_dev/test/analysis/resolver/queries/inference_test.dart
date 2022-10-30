@@ -1,14 +1,13 @@
-import 'package:drift_dev/moor_generator.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
   test('experimental inference - integration test', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+    final state = TestBackend.inTest({
+      'foo|lib/a.drift': '''
 CREATE TABLE artists (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name VARCHAR NOT NULL
@@ -37,15 +36,12 @@ totalDurationByArtist:
     '''
     }, options: const DriftOptions.defaults());
 
-    final file = await state.analyze('package:foo/a.moor');
-    final result = file.currentResult as ParsedDriftFile;
-    final queries = result.resolvedQueries;
-
-    expect(state.session.errorsInFileAndImports(file), isEmpty);
-    state.close();
+    final file = await state.analyze('package:foo/a.drift');
+    state.expectNoErrors();
 
     final totalDurationByArtist =
-        queries!.singleWhere((q) => q.name == 'totalDurationByArtist');
+        file.fileAnalysis!.resolvedQueries[file.id('totalDurationByArtist')];
+
     expect(
       totalDurationByArtist,
       returnsColumns({
