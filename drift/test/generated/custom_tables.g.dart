@@ -50,7 +50,9 @@ class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
   late final GeneratedColumn<Uint8List> payload = GeneratedColumn<Uint8List>(
       'payload', aliasedName, false,
-      type: DriftSqlType.blob, requiredDuringInsert: true);
+      type: DriftSqlType.blob,
+      requiredDuringInsert: true,
+      defaultConstraints: 'PRIMARY KEY');
   @override
   List<GeneratedColumn> get $columns => [payload];
   @override
@@ -72,7 +74,7 @@ class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {payload};
   @override
   NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -89,6 +91,8 @@ class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
 
   @override
   bool get withoutRowId => true;
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class WithDefault extends DataClass implements Insertable<WithDefault> {
@@ -219,11 +223,15 @@ class $WithDefaultsTable extends Table
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const CustomExpression('\'something\''));
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int> b = GeneratedColumn<int>(
       'b', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: 'UNIQUE');
   @override
   List<GeneratedColumn> get $columns => [a, b];
   @override
@@ -261,6 +269,9 @@ class $WithDefaultsTable extends Table
   $WithDefaultsTable createAlias(String alias) {
     return $WithDefaultsTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class WithConstraint extends DataClass implements Insertable<WithConstraint> {
@@ -466,6 +477,9 @@ class $WithConstraintsTable extends Table
   $WithConstraintsTable createAlias(String alias) {
     return $WithConstraintsTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class Config extends DataClass implements Insertable<Config> {
@@ -486,11 +500,11 @@ class Config extends DataClass implements Insertable<Config> {
       map['config_value'] = Variable<String>(configValue);
     }
     if (!nullToAbsent || syncState != null) {
-      final converter = $ConfigTable.$convertersyncState;
+      final converter = $ConfigTable.$convertersyncStaten;
       map['sync_state'] = Variable<int>(converter.toSql(syncState));
     }
     if (!nullToAbsent || syncStateImplicit != null) {
-      final converter = $ConfigTable.$convertersyncStateImplicit;
+      final converter = $ConfigTable.$convertersyncStateImplicitn;
       map['sync_state_implicit'] =
           Variable<int>(converter.toSql(syncStateImplicit));
     }
@@ -629,11 +643,11 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['config_value'] = Variable<String>(configValue.value);
     }
     if (syncState.present) {
-      final converter = $ConfigTable.$convertersyncState;
+      final converter = $ConfigTable.$convertersyncStaten;
       map['sync_state'] = Variable<int>(converter.toSql(syncState.value));
     }
     if (syncStateImplicit.present) {
-      final converter = $ConfigTable.$convertersyncStateImplicit;
+      final converter = $ConfigTable.$convertersyncStateImplicitn;
       map['sync_state_implicit'] =
           Variable<int>(converter.toSql(syncStateImplicit.value));
     }
@@ -660,7 +674,9 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   late final GeneratedColumn<String> configKey = GeneratedColumn<String>(
       'config_key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: 'PRIMARY KEY');
   final VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
   late final GeneratedColumn<String> configValue = GeneratedColumn<String>(
@@ -670,14 +686,14 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
   late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
       GeneratedColumn<int>('sync_state', aliasedName, true,
               type: DriftSqlType.int, requiredDuringInsert: false)
-          .withConverter<SyncType?>($ConfigTable.$convertersyncState);
+          .withConverter<SyncType?>($ConfigTable.$convertersyncStaten);
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
   late final GeneratedColumnWithTypeConverter<SyncType?, int>
       syncStateImplicit = GeneratedColumn<int>(
               'sync_state_implicit', aliasedName, true,
               type: DriftSqlType.int, requiredDuringInsert: false)
-          .withConverter<SyncType?>($ConfigTable.$convertersyncStateImplicit);
+          .withConverter<SyncType?>($ConfigTable.$convertersyncStateImplicitn);
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
@@ -708,7 +724,7 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -717,10 +733,10 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
-      syncState: $ConfigTable.$convertersyncState.fromSql(attachedDatabase
+      syncState: $ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: $ConfigTable.$convertersyncStateImplicit.fromSql(
+      syncStateImplicit: $ConfigTable.$convertersyncStateImplicitn.fromSql(
           attachedDatabase.options.types.read(
               DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
@@ -733,14 +749,16 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
 
   static TypeConverter<SyncType, int> $convertersyncState =
       const SyncTypeConverter();
-  static TypeConverter<SyncType?, int> $convertersyncStaten =
+  static TypeConverter<SyncType?, int?> $convertersyncStaten =
       NullAwareTypeConverter.wrap($convertersyncState);
   static TypeConverter<SyncType, int> $convertersyncStateImplicit =
       const EnumIndexConverter<SyncType>(SyncType.values);
-  static TypeConverter<SyncType?, int> $convertersyncStateImplicitn =
+  static TypeConverter<SyncType?, int?> $convertersyncStateImplicitn =
       NullAwareTypeConverter.wrap($convertersyncStateImplicit);
   @override
   bool get isStrict => true;
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class MytableData extends DataClass implements Insertable<MytableData> {
@@ -994,6 +1012,9 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
   $MytableTable createAlias(String alias) {
     return $MytableTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class EMail extends DataClass implements Insertable<EMail> {
@@ -1201,6 +1222,8 @@ class $EmailTable extends Table
   }
 
   @override
+  bool get dontWriteConstraints => true;
+  @override
   String get moduleAndArgs => 'fts5(sender, title, body)';
 }
 
@@ -1377,6 +1400,9 @@ class $WeirdTableTable extends Table
   $WeirdTableTable createAlias(String alias) {
     return $WeirdTableTable(attachedDatabase, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class MyViewData extends DataClass {
@@ -1478,10 +1504,10 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
-      syncState: MyView.$convertersyncState.fromSql(attachedDatabase
+      syncState: $ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: MyView.$convertersyncStateImplicit.fromSql(
+      syncStateImplicit: $ConfigTable.$convertersyncStateImplicitn.fromSql(
           attachedDatabase.options.types.read(
               DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
@@ -1496,12 +1522,12 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
       GeneratedColumn<int>('sync_state', aliasedName, true,
               type: DriftSqlType.int)
-          .withConverter<SyncType?>(MyView.$convertersyncState);
+          .withConverter<SyncType?>($ConfigTable.$convertersyncStaten);
   late final GeneratedColumnWithTypeConverter<SyncType?, int>
       syncStateImplicit = GeneratedColumn<int>(
               'sync_state_implicit', aliasedName, true,
               type: DriftSqlType.int)
-          .withConverter<SyncType?>(MyView.$convertersyncStateImplicit);
+          .withConverter<SyncType?>($ConfigTable.$convertersyncStateImplicitn);
   @override
   MyView createAlias(String alias) {
     return MyView(attachedDatabase, alias);
@@ -1534,8 +1560,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
       variables: [Variable<String>(key), Variable<String>(value)],
-      updates: {},
-      updateKind: UpdateKind.delete,
+      updates: {config},
     );
   }
 
@@ -1605,11 +1630,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
           Variable<int>(NullAwareTypeConverter.wrapToSql(
-              $ConfigTable.$convertersyncStaten, var1)),
+              $ConfigTable.$convertersyncState, var1)),
           ...generatedpred.introducedVariables,
           for (var $ in var2)
             Variable<int>(NullAwareTypeConverter.wrapToSql(
-                $ConfigTable.$convertersyncStateImplicitn, $))
+                $ConfigTable.$convertersyncStateImplicit, $))
         ],
         readsFrom: {
           config,
@@ -1703,35 +1728,24 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         configKey: row.read<String>('config_key'),
         configValue: row.readNullable<String>('config_value'),
         syncState: NullAwareTypeConverter.wrapFromSql(
-            $ConfigTable.$convertersyncStaten,
+            $ConfigTable.$convertersyncState,
             row.readNullable<int>('sync_state')),
         syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
-            $ConfigTable.$convertersyncStateImplicitn,
+            $ConfigTable.$convertersyncStateImplicit,
             row.readNullable<int>('sync_state_implicit')),
       );
     });
   }
 
-  Selectable<ReadViewResult> readView() {
+  Selectable<MyViewData> readView() {
     return customSelect('SELECT * FROM my_view', variables: [], readsFrom: {
       config,
-    }).map((QueryRow row) {
-      return ReadViewResult(
-        row: row,
-        configKey: row.read<String>('config_key'),
-        configValue: row.readNullable<String>('config_value'),
-        syncState: NullAwareTypeConverter.wrapFromSql(
-            MyView.$convertersyncStaten, row.readNullable<int>('sync_state')),
-        syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
-            MyView.$convertersyncStateImplicitn,
-            row.readNullable<int>('sync_state_implicit')),
-      );
-    });
+    }).asyncMap(myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
     return customSelect(
-        'WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
+        'WITH RECURSIVE cnt (x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
         variables: [],
         readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
   }
@@ -1797,22 +1811,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         weirdTable,
         myTrigger,
         myView,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
         OnCreateQuery(
-            'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')'),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+            'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')')
       ];
   @override
   DriftDatabaseOptions get options =>
@@ -1949,44 +1949,9 @@ class ReadRowIdResult extends CustomResultSet {
 
 typedef ReadRowId$expr = Expression<int> Function($ConfigTable config);
 
-class ReadViewResult extends CustomResultSet {
-  final String configKey;
-  final String? configValue;
-  final SyncType? syncState;
-  final SyncType? syncStateImplicit;
-  ReadViewResult({
-    required QueryRow row,
-    required this.configKey,
-    this.configValue,
-    this.syncState,
-    this.syncStateImplicit,
-  }) : super(row);
-  @override
-  int get hashCode =>
-      Object.hash(configKey, configValue, syncState, syncStateImplicit);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ReadViewResult &&
-          other.configKey == this.configKey &&
-          other.configValue == this.configValue &&
-          other.syncState == this.syncState &&
-          other.syncStateImplicit == this.syncStateImplicit);
-  @override
-  String toString() {
-    return (StringBuffer('ReadViewResult(')
-          ..write('configKey: $configKey, ')
-          ..write('configValue: $configValue, ')
-          ..write('syncState: $syncState, ')
-          ..write('syncStateImplicit: $syncStateImplicit')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;
-  finalList<WithConstraint> nestedQuery0;
+  final List<WithConstraint> nestedQuery0;
   NestedResult({
     required QueryRow row,
     required this.defaults,

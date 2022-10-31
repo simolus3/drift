@@ -156,7 +156,7 @@ class ElementSerializer {
       'nameInDart': column.nameInDart,
       'declaration': column.declaration.toJson(),
       'typeConverter': column.typeConverter != null
-          ? _serializeTypeConverter(column.typeConverter!)
+          ? _serializeTypeConverter(column, column.typeConverter!)
           : null,
       'clientDefaultCode': column.clientDefaultCode?.toJson(),
       'defaultArgument': column.defaultArgument?.toJson(),
@@ -254,7 +254,8 @@ class ElementSerializer {
     return action?.name;
   }
 
-  Map<String, Object?> _serializeTypeConverter(AppliedTypeConverter converter) {
+  Map<String, Object?> _serializeTypeConverter(
+      DriftColumn appliedTo, AppliedTypeConverter converter) {
     return {
       'expression': converter.expression.toJson(),
       'dart_type': converter.dartType.accept(const _DartTypeSerializer()),
@@ -262,6 +263,8 @@ class ElementSerializer {
       'sql_type': converter.sqlType.name,
       'dart_type_is_nullable': converter.dartTypeIsNullable,
       'sql_type_is_nullable': converter.sqlTypeIsNullable,
+      if (converter.owningColumn != appliedTo)
+        'owner': _serializeColumnReference(converter.owningColumn),
     };
   }
 
@@ -345,6 +348,7 @@ class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
 
 class ElementDeserializer {
   final Map<Uri, LibraryElement> _loadedLibraries = {};
+  final List<DriftElementId> _currentlyReading = [];
 
   final DriftAnalysisDriver driver;
 
@@ -400,15 +404,23 @@ class ElementDeserializer {
           'Analysis data for ${id..libraryUri} not found');
     }
 
+    assert(!_currentlyReading.contains(id));
     try {
+      _currentlyReading.add(id);
+
       final result = await _readDriftElement(data[id.name] as Map);
       state
         ..result = result
         ..isUpToDate = true;
       return result;
     } catch (e, s) {
+      if (e is CouldNotDeserializeException) rethrow;
+
       throw CouldNotDeserializeException(
           'Internal error while deserializing $id: $e at \n$s');
+    } finally {
+      final lastId = _currentlyReading.removeLast();
+      assert(lastId == id);
     }
   }
 
@@ -460,8 +472,8 @@ class ElementDeserializer {
           }
 
           virtualTableData = VirtualTableData(
-            json['module'] as String,
-            (json['arguments'] as List).cast(),
+            data['module'] as String,
+            (data['arguments'] as List).cast(),
             recognizedModule,
           );
         }
@@ -635,15 +647,17 @@ class ElementDeserializer {
   }
 
   Future<DriftColumn> _readColumn(Map json) async {
+    final rawConverter = json['typeConverter'] as Map?;
+
     return DriftColumn(
       sqlType: DriftSqlType.values.byName(json['sqlType'] as String),
       nullable: json['nullable'] as bool,
       nameInSql: json['nameInSql'] as String,
       nameInDart: json['nameInDart'] as String,
       declaration: DriftDeclaration.fromJson(json['declaration'] as Map),
-      typeConverter: json['typeConverter'] != null
-          ? await _readTypeConverter(json['typeConverter'] as Map)
-          : null,
+      typeConverter:
+          rawConverter != null ? await _readTypeConverter(rawConverter) : null,
+      foreignConverter: rawConverter != null && rawConverter['owner'] != null,
       clientDefaultCode: json['clientDefaultCode'] != null
           ? AnnotatedDartCode.fromJson(json['clientDefaultCode'] as Map)
           : null,
@@ -661,7 +675,13 @@ class ElementDeserializer {
   }
 
   Future<AppliedTypeConverter> _readTypeConverter(Map json) async {
-    return AppliedTypeConverter(
+    final owner = json['owner'];
+    DriftColumn? readOwner;
+    if (owner != null) {
+      readOwner = await _readDriftColumnReference(owner as Map);
+    }
+
+    final converter = AppliedTypeConverter(
       expression: AnnotatedDartCode.fromJson(json['expression'] as Map),
       dartType: await _readDartType(json['dart_type'] as Map),
       jsonType: json['json_type'] != null
@@ -671,6 +691,10 @@ class ElementDeserializer {
       dartTypeIsNullable: json['dart_type_is_nullable'] as bool,
       sqlTypeIsNullable: json['sql_type_is_nullable'] as bool,
     );
+
+    if (readOwner != null) converter.owningColumn = readOwner;
+
+    return converter;
   }
 
   ReferenceAction? _readAction(String? value) {

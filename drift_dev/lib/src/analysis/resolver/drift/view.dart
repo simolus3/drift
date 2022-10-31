@@ -42,6 +42,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
         declaration: DriftDeclaration.driftFile(stmt, file.ownUri),
         nullable: type?.nullable == true,
         typeConverter: converter,
+        foreignConverter: true,
       );
 
       columns.add(driftColumn);

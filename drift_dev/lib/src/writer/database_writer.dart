@@ -142,16 +142,19 @@ class DatabaseWriter {
       ..write('=> [');
 
     schemaScope
-      ..write(elements.map((e) {
-        if (e is DefinedSqlQuery && e.mode == QueryMode.atCreate) {
-          final resolved = input.importedQueries[e]!;
-          final sql = schemaScope.sqlCode(resolved.root!);
+      ..write(elements
+          .map((e) {
+            if (e is DefinedSqlQuery && e.mode == QueryMode.atCreate) {
+              final resolved = input.importedQueries[e]!;
+              final sql = schemaScope.sqlCode(resolved.root!);
 
-          return 'OnCreateQuery(${asDartLiteral(sql)})';
-        }
+              return 'OnCreateQuery(${asDartLiteral(sql)})';
+            }
 
-        return entityGetters[e];
-      }).join(', '))
+            return entityGetters[e];
+          })
+          .whereType<String>()
+          .join(', '))
       // close list literal and allSchemaEntities getter
       ..write('];\n');
 

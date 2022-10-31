@@ -69,8 +69,8 @@ abstract class _NodeOrWriter {
   AnnotatedDartCode readConverter(AppliedTypeConverter converter,
       {bool forNullable = false}) {
     final fieldName =
-        forNullable ? converter.fieldName : converter.nullableFieldName;
-    final table = converter.owningColumn.owner as DriftElementWithResultSet;
+        forNullable ? converter.nullableFieldName : converter.fieldName;
+    final table = converter.owningColumn.owner;
 
     return AnnotatedDartCode([
       DartTopLevelSymbol(table.entityInfoName, table.id.libraryUri),
@@ -81,21 +81,31 @@ abstract class _NodeOrWriter {
   /// A suitable typename to store an instance of the type converter used here.
   AnnotatedDartCode converterType(AppliedTypeConverter converter,
       {bool makeNullable = false}) {
-    var sqlDartType = dartTypeNames[converter.sqlType]!;
-    final className = converter.alsoAppliesToJsonConversion
-        ? 'JsonTypeConverter'
-        : 'TypeConverter';
-
     // Write something like `TypeConverter<MyFancyObject, String>`
-    return AnnotatedDartCode([
-      DartTopLevelSymbol.drift(className),
-      '<',
-      ...AnnotatedDartCode.type(converter.dartType).elements,
-      if (makeNullable) '?',
-      ',',
-      sqlDartType,
-      '>',
-    ]);
+    return AnnotatedDartCode.build((b) {
+      var sqlDartType = dartTypeNames[converter.sqlType]!;
+      final className = converter.alsoAppliesToJsonConversion
+          ? 'JsonTypeConverter2'
+          : 'TypeConverter';
+
+      b
+        ..addSymbol(className, AnnotatedDartCode.drift)
+        ..addText('<')
+        ..addDartType(converter.dartType)
+        ..questionMarkIfNullable(makeNullable)
+        ..addText(',')
+        ..addTopLevel(sqlDartType)
+        ..questionMarkIfNullable(makeNullable);
+
+      if (converter.alsoAppliesToJsonConversion) {
+        b
+          ..addText(',')
+          ..addDartType(converter.jsonType!)
+          ..questionMarkIfNullable(makeNullable);
+      }
+
+      b.addText('>');
+    });
   }
 
   AnnotatedDartCode dartType(HasType hasType) {
@@ -305,4 +315,10 @@ String thisIfNeeded(String getter, Set<String> locals) {
   }
 
   return getter;
+}
+
+extension on AnnotatedDartCodeBuilder {
+  void questionMarkIfNullable(bool nullable) {
+    if (nullable) addText('?');
+  }
 }

@@ -324,6 +324,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       strict: table.isStrict,
       tableConstraints: tableConstraints,
       virtualTableData: virtualTableData,
+      writeDefaultConstraints: false,
     );
   }
 

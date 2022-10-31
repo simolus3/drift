@@ -239,10 +239,10 @@ class UpdateCompanionWriter {
         'Map<String, Expression> toColumns(bool nullToAbsent) {\n'
         'return $_companionClass(\n');
 
-    final fields = info.positionalColumns.followedBy(info.namedColumns.keys);
-    for (final field in fields) {
+    final columns = info.positionalColumns.followedBy(info.namedColumns.values);
+    for (final columnName in columns) {
       final column =
-          table.columns.firstWhereOrNull((e) => e.nameInDart == field);
+          table.columns.firstWhereOrNull((e) => e.nameInSql == columnName);
 
       if (column != null && !column.isGenerated) {
         final dartName = column.nameInDart;

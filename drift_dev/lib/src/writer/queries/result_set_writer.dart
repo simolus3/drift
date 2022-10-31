@@ -59,7 +59,7 @@ class ResultSetWriter {
         }
 
         into
-          ..write(modifier)
+          ..write('$modifier ')
           ..writeDart(nested.resultRowType(scope))
           ..writeln('$fieldName;');
 

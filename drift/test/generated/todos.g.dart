@@ -325,7 +325,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['id'] = Variable<int>(id);
     map['desc'] = Variable<String>(description);
     {
-      final converter = $CategoriesTable.$converterpriorityn;
+      final converter = $CategoriesTable.$converterpriority;
       map['priority'] = Variable<int>(converter.toSql(priority));
     }
     return map;
@@ -450,7 +450,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       map['desc'] = Variable<String>(description.value);
     }
     if (priority.present) {
-      final converter = $CategoriesTable.$converterpriorityn;
+      final converter = $CategoriesTable.$converterpriority;
       map['priority'] = Variable<int>(converter.toSql(priority.value));
     }
     return map;
@@ -495,8 +495,7 @@ class $CategoriesTable extends Categories
               type: DriftSqlType.int,
               requiredDuringInsert: false,
               defaultValue: const Constant(0))
-          .withConverter<CategoryPriority>(
-              $CategoriesTable.$converterpriorityn);
+          .withConverter<CategoryPriority>($CategoriesTable.$converterpriority);
   final VerificationMeta _descriptionInUpperCaseMeta =
       const VerificationMeta('descriptionInUpperCase');
   @override
@@ -546,7 +545,7 @@ class $CategoriesTable extends Categories
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       description: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converterpriorityn.fromSql(attachedDatabase
+      priority: $CategoriesTable.$converterpriority.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
       descriptionInUpperCase: attachedDatabase.options.types.read(
@@ -1095,7 +1094,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
       map['web_safe_int'] = Variable<BigInt>(webSafeInt.value);
     }
     if (custom.present) {
-      final converter = $TableWithoutPKTable.$convertercustomn;
+      final converter = $TableWithoutPKTable.$convertercustom;
       map['custom'] = Variable<String>(converter.toSql(custom.value));
     }
     return map;
@@ -1121,6 +1120,8 @@ class _$CustomRowClassInsertable implements Insertable<CustomRowClass> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     return TableWithoutPKCompanion(
+      notReallyAnId: Value(_object.notReallyAnId),
+      someFloat: Value(_object.someFloat),
       custom: Value(_object.custom),
       webSafeInt: Value(_object.webSafeInt),
     ).toColumns(false);
@@ -1162,8 +1163,7 @@ class $TableWithoutPKTable extends TableWithoutPK
               type: DriftSqlType.string,
               requiredDuringInsert: false,
               clientDefault: _uuid.v4)
-          .withConverter<MyCustomObject>(
-              $TableWithoutPKTable.$convertercustomn);
+          .withConverter<MyCustomObject>($TableWithoutPKTable.$convertercustom);
   @override
   List<GeneratedColumn> get $columns =>
       [notReallyAnId, someFloat, webSafeInt, custom];
@@ -1210,7 +1210,7 @@ class $TableWithoutPKTable extends TableWithoutPK
           .read(DriftSqlType.int, data['${effectivePrefix}not_really_an_id'])!,
       attachedDatabase.options.types
           .read(DriftSqlType.double, data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$convertercustomn.fromSql(attachedDatabase
+      custom: $TableWithoutPKTable.$convertercustom.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.string, data['${effectivePrefix}custom'])!),
       webSafeInt: attachedDatabase.options.types
@@ -1234,7 +1234,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || txt != null) {
-      final converter = $PureDefaultsTable.$convertertxt;
+      final converter = $PureDefaultsTable.$convertertxtn;
       map['insert'] = Variable<String>(converter.toSql(txt));
     }
     return map;
@@ -1250,7 +1250,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
-      txt: $PureDefaultsTable.$convertertxt
+      txt: $PureDefaultsTable.$convertertxtn
           .fromJson(serializer.fromJson<Map<dynamic, dynamic>>(json['txt'])),
     );
   }
@@ -1264,7 +1264,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'txt': serializer.toJson<Map<dynamic, dynamic>?>(
-          $PureDefaultsTable.$convertertxt.toJson(txt)),
+          $PureDefaultsTable.$convertertxtn.toJson(txt)),
     };
   }
 
@@ -1313,7 +1313,7 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (txt.present) {
-      final converter = $PureDefaultsTable.$convertertxt;
+      final converter = $PureDefaultsTable.$convertertxtn;
       map['insert'] = Variable<String>(converter.toSql(txt.value));
     }
     return map;
@@ -1339,7 +1339,7 @@ class $PureDefaultsTable extends PureDefaults
   late final GeneratedColumnWithTypeConverter<MyCustomObject?, String> txt =
       GeneratedColumn<String>('insert', aliasedName, true,
               type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<MyCustomObject?>($PureDefaultsTable.$convertertxt);
+          .withConverter<MyCustomObject?>($PureDefaultsTable.$convertertxtn);
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override
@@ -1361,7 +1361,7 @@ class $PureDefaultsTable extends PureDefaults
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PureDefault(
-      txt: $PureDefaultsTable.$convertertxt.fromSql(attachedDatabase
+      txt: $PureDefaultsTable.$convertertxtn.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
     );
@@ -1372,10 +1372,10 @@ class $PureDefaultsTable extends PureDefaults
     return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter<MyCustomObject, String> $convertertxt =
-      const CustomJsonConverter();
-  static JsonTypeConverter<MyCustomObject?, String> $convertertxtn =
-      JsonTypeConverter2.asNullable($convertertxt);
+  static JsonTypeConverter2<MyCustomObject, String, Map<dynamic, dynamic>>
+      $convertertxt = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<dynamic, dynamic>?>
+      $convertertxtn = JsonTypeConverter2.asNullable($convertertxt);
 }
 
 class CategoryTodoCountViewData extends DataClass {
@@ -1664,7 +1664,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           tableWithoutPK,
-        }).map((QueryRow row) => $TableWithoutPKTable.$convertercustomn
+        }).map((QueryRow row) => $TableWithoutPKTable.$convertercustom
         .fromSql(row.read<String>('custom')));
   }
 
@@ -1741,6 +1741,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
   $TodoWithCategoryViewView get todoWithCategoryView =>
       attachedDatabase.todoWithCategoryView;
+  $CategoriesTable get categories => attachedDatabase.categories;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
         'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
