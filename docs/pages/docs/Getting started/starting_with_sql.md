@@ -51,34 +51,10 @@ You can put `CREATE TABLE` statements for your queries in there.
 The following example creates two tables to model a todo-app. If you're
 migrating an existing project to drift, you can just copy the `CREATE TABLE`
 statements you've already written into this file.
-```sql
--- this is the tables.drift file
-CREATE TABLE todos (
-    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    body TEXT,
-    category INT REFERENCES categories (id)
-);
 
-CREATE TABLE categories (
-    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
-    description TEXT
-) AS Category; -- see the explanation on "AS Category" below
+{% assign drift_snippets = 'package:drift_docs/snippets/drift_files/getting_started/tables.drift.excerpt.json' | readString | json_decode %}
 
-/* after declaring your tables, you can put queries in here. Just
-   write the name of the query, a colon (:) and the SQL: */
-todosInCategory: SELECT * FROM todos WHERE category = ?;
-
-/* Here's a more complex query: It counts the amount of entries per 
-category, including those entries which aren't in any category at all. */
-countEntries:     
-  SELECT
-    c.description,
-    (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount
-  FROM categories c
-  UNION ALL
-  SELECT null, (SELECT COUNT(*) FROM todos WHERE category IS NULL)
-```
+{% include "blocks/snippet" snippets = drift_snippets name = '(full)' %}
 
 {% block "blocks/alert" title="On that AS Category" %}
 Drift will generate Dart classes for your tables, and the name of those
@@ -97,40 +73,9 @@ have to write a small Dart class that drift will then read. Lets create
 a file called `database.dart` next to the `tables.drift` file you wrote
 in the previous step.
 
-```dart
-import 'dart:io';
+{% assign dart_snippets = 'package:drift_docs/snippets/drift_files/getting_started/database.dart.excerpt.json' | readString | json_decode %}
 
-import 'package:drift/drift.dart';
-// These imports are only needed to open the database
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-
-part 'database.g.dart';
-
-@DriftDatabase(
-  // relative import for the drift file. Drift also supports `package:`
-  // imports
-  include: {'tables.drift'},
-)
-class AppDb extends _$AppDb {
-  AppDb() : super(_openConnection());
-
-  @override
-  int get schemaVersion => 1;
-}
-
-LazyDatabase _openConnection() {
-  // the LazyDatabase util lets us find the right location for the file async.
-  return LazyDatabase(() async {
-    // put the database file, called db.sqlite here, into the documents folder
-    // for your app.
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'db.sqlite'));
-    return NativeDatabase(file);
-  });
-}
-```
+{% include "blocks/snippet" snippets = dart_snippets name = '(full)' %}
 
 To generate the `database.g.dart` file which contains the `_$AppDb`
 superclass, run `flutter pub run build_runner build` on the command 

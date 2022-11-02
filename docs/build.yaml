@@ -51,7 +51,7 @@ targets:
         generate_for:
           include:
             - "lib/snippets/**/*.dart"
-            - "lib/snippets/*/*.drift"
+            - "lib/snippets/**/*.drift"
             - "lib/snippets/*.dart"
           exclude:
             - "**/*.g.dart"
