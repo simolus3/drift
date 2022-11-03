@@ -287,10 +287,7 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
           check: check,
         );
 
-  /// Compares this column against the mapped [dartValue].
-  ///
-  /// The value will be mapped using the [converter] applied to this column.
-  Expression<bool> equalsValue(D? dartValue) {
+  S? _mapDartValue(D? dartValue) {
     S? mappedValue;
 
     if ($nullable) {
@@ -311,7 +308,31 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
           "This non-nullable column can't be equal to `null`.", 'dartValue');
     }
 
+    return mappedValue;
+  }
+
+  /// Compares this column against the mapped [dartValue].
+  ///
+  /// The value will be mapped using the [converter] applied to this column.
+  Expression<bool> equalsValue(D? dartValue) {
+    final mappedValue = _mapDartValue(dartValue);
     return mappedValue == null ? this.isNull() : equals(mappedValue);
+  }
+
+  /// An expression that is true if `this` resolves to any of the values in
+  /// [values].
+  ///
+  /// The values will be mapped using the [converter] applied to this column.
+  Expression<bool> isInValues(Iterable<D> values) {
+    return isIn(values.map(_mapDartValue).whereNotNull());
+  }
+
+  /// An expression that is true if `this` does not resolve to any of the values
+  /// in [values].
+  ///
+  /// The values will be mapped using the [converter] applied to this column.
+  Expression<bool> isNotInValues(Iterable<D> values) {
+    return isNotIn(values.map(_mapDartValue).whereNotNull());
   }
 }
 
