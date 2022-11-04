@@ -323,16 +323,28 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
   /// [values].
   ///
   /// The values will be mapped using the [converter] applied to this column.
-  Expression<bool> isInValues(Iterable<D> values) {
-    return isIn(values.map(_mapDartValue).whereNotNull());
+  Expression<bool> isInValues(Iterable<D> values, {bool ignoreNulls = false}) {
+    final mappedValues = values.map(_mapDartValue);
+    final result = isIn(mappedValues.whereNotNull());
+
+    final hasNulls = mappedValues.any((e) => e == null);
+    if (hasNulls && !ignoreNulls) return result | this.isNull();
+
+    return result & this.isNotNull();
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
   ///
   /// The values will be mapped using the [converter] applied to this column.
-  Expression<bool> isNotInValues(Iterable<D> values) {
-    return isNotIn(values.map(_mapDartValue).whereNotNull());
+  Expression<bool> isNotInValues(Iterable<D> values, {bool ignoreNulls = false}) {
+    final mappedValues = values.map(_mapDartValue);
+    final result = isNotIn(mappedValues.whereNotNull());
+
+    final hasNulls = mappedValues.any((e) => e == null);
+    if (hasNulls && !ignoreNulls) return result & this.isNotNull();
+
+    return result | this.isNull();
   }
 }
 
