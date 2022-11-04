@@ -36,10 +36,12 @@ void main() {
               SyncType.synchronized,
               SyncType.locallyCreated,
             ])),
-      generates('SELECT * FROM "config" WHERE "sync_state" IN (?, ?) AND "sync_state" IS NOT NULL', [
-        ConfigTable.$converter0.toSql(SyncType.synchronized),
-        ConfigTable.$converter0.toSql(SyncType.locallyCreated),
-      ]),
+      generates(
+          'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) AND "sync_state" IS NOT NULL',
+          [
+            ConfigTable.$converter0.toSql(SyncType.synchronized),
+            ConfigTable.$converter0.toSql(SyncType.locallyCreated),
+          ]),
     );
     expect(
       db.select(db.config)
@@ -48,10 +50,12 @@ void main() {
               SyncType.locallyCreated,
               null,
             ])),
-      generates('SELECT * FROM "config" WHERE "sync_state" IN (?, ?) OR "sync_state" IS NULL', [
-        ConfigTable.$converter0.toSql(SyncType.synchronized),
-        ConfigTable.$converter0.toSql(SyncType.locallyCreated),
-      ]),
+      generates(
+          'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) OR "sync_state" IS NULL',
+          [
+            ConfigTable.$converter0.toSql(SyncType.synchronized),
+            ConfigTable.$converter0.toSql(SyncType.locallyCreated),
+          ]),
     );
   });
 
@@ -62,10 +66,12 @@ void main() {
               SyncType.synchronized,
               SyncType.locallyCreated,
             ])),
-      generates('SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) OR "sync_state" IS NULL', [
-        ConfigTable.$converter0.toSql(SyncType.synchronized),
-        ConfigTable.$converter0.toSql(SyncType.locallyCreated),
-      ]),
+      generates(
+          'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) OR "sync_state" IS NULL',
+          [
+            ConfigTable.$converter0.toSql(SyncType.synchronized),
+            ConfigTable.$converter0.toSql(SyncType.locallyCreated),
+          ]),
     );
 
     expect(
@@ -75,10 +81,12 @@ void main() {
               SyncType.locallyCreated,
               null,
             ])),
-      generates('SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) AND "sync_state" IS NOT NULL', [
-        ConfigTable.$converter0.toSql(SyncType.synchronized),
-        ConfigTable.$converter0.toSql(SyncType.locallyCreated),
-      ]),
+      generates(
+          'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) AND "sync_state" IS NOT NULL',
+          [
+            ConfigTable.$converter0.toSql(SyncType.synchronized),
+            ConfigTable.$converter0.toSql(SyncType.locallyCreated),
+          ]),
     );
   });
 }
