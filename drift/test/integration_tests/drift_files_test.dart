@@ -15,11 +15,11 @@ const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS "with_defaults" ('
 
 const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS "with_constraints" ('
     '"a" TEXT, "b" INTEGER NOT NULL, "c" REAL, '
-    'FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'
+    'FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)'
     ');';
 
 const _createConfig = 'CREATE TABLE IF NOT EXISTS "config" ('
-    '"config_key" TEXT not null primary key, '
+    '"config_key" TEXT NOT NULL PRIMARY KEY, '
     '"config_value" TEXT, '
     '"sync_state" INTEGER, '
     '"sync_state_implicit" INTEGER) STRICT;';
@@ -29,7 +29,7 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS "mytable" ('
     '"sometext" TEXT, '
     '"is_inserting" INTEGER, '
     '"somedate" TEXT, '
-    'PRIMARY KEY (someid DESC)'
+    'PRIMARY KEY(someid DESC)'
     ');';
 
 const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS "email" USING '

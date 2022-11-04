@@ -52,7 +52,7 @@ class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
       'payload', aliasedName, false,
       type: DriftSqlType.blob,
       requiredDuringInsert: true,
-      defaultConstraints: 'PRIMARY KEY');
+      $customConstraints: 'NOT NULL PRIMARY KEY');
   @override
   List<GeneratedColumn> get $columns => [payload];
   @override
@@ -91,6 +91,8 @@ class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
 
   @override
   bool get withoutRowId => true;
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -225,13 +227,14 @@ class $WithDefaultsTable extends Table
       'a', aliasedName, true,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
+      $customConstraints: 'DEFAULT \'something\'',
       defaultValue: const CustomExpression('\'something\''));
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int> b = GeneratedColumn<int>(
       'b', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'UNIQUE');
+      $customConstraints: 'UNIQUE');
   @override
   List<GeneratedColumn> get $columns => [a, b];
   @override
@@ -270,6 +273,8 @@ class $WithDefaultsTable extends Table
     return $WithDefaultsTable(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -424,15 +429,21 @@ class $WithConstraintsTable extends Table
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int> b = GeneratedColumn<int>(
       'b', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _cMeta = const VerificationMeta('c');
   late final GeneratedColumn<double> c = GeneratedColumn<double>(
       'c', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [a, b, c];
   @override
@@ -478,6 +489,9 @@ class $WithConstraintsTable extends Table
     return $WithConstraintsTable(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints =>
+      const ['FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)'];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -676,23 +690,29 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
       'config_key', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      defaultConstraints: 'PRIMARY KEY');
+      $customConstraints: 'NOT NULL PRIMARY KEY');
   final VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
   late final GeneratedColumn<String> configValue = GeneratedColumn<String>(
       'config_value', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
   late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
       GeneratedColumn<int>('sync_state', aliasedName, true,
-              type: DriftSqlType.int, requiredDuringInsert: false)
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              $customConstraints: '')
           .withConverter<SyncType?>($ConfigTable.$convertersyncStaten);
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
   late final GeneratedColumnWithTypeConverter<SyncType?, int>
       syncStateImplicit = GeneratedColumn<int>(
               'sync_state_implicit', aliasedName, true,
-              type: DriftSqlType.int, requiredDuringInsert: false)
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              $customConstraints: '')
           .withConverter<SyncType?>($ConfigTable.$convertersyncStateImplicitn);
   @override
   List<GeneratedColumn> get $columns =>
@@ -757,6 +777,8 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
       NullAwareTypeConverter.wrap($convertersyncStateImplicit);
   @override
   bool get isStrict => true;
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -941,22 +963,28 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedColumn<int> someid = GeneratedColumn<int>(
       'someid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
   late final GeneratedColumn<String> sometext = GeneratedColumn<String>(
       'sometext', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _isInsertingMeta =
       const VerificationMeta('isInserting');
   late final GeneratedColumn<bool> isInserting = GeneratedColumn<bool>(
       'is_inserting', aliasedName, true,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: 'CHECK (is_inserting IN (0, 1))');
+      $customConstraints: '');
   final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
   late final GeneratedColumn<DateTime> somedate = GeneratedColumn<DateTime>(
       'somedate', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns =>
       [someid, sometext, isInserting, somedate];
@@ -1013,6 +1041,8 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
     return $MytableTable(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY(someid DESC)'];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -1160,15 +1190,21 @@ class $EmailTable extends Table
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedColumn<String> sender = GeneratedColumn<String>(
       'sender', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
   final VerificationMeta _bodyMeta = const VerificationMeta('body');
   late final GeneratedColumn<String> body = GeneratedColumn<String>(
       'body', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [sender, title, body];
   @override
@@ -1221,6 +1257,8 @@ class $EmailTable extends Table
     return $EmailTable(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
   @override
@@ -1352,11 +1390,15 @@ class $WeirdTableTable extends Table
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
   late final GeneratedColumn<int> sqlClass = GeneratedColumn<int>(
       'class', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
   late final GeneratedColumn<String> textColumn = GeneratedColumn<String>(
       'text', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [sqlClass, textColumn];
   @override
@@ -1401,6 +1443,8 @@ class $WeirdTableTable extends Table
     return $WeirdTableTable(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -1814,6 +1858,18 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         OnCreateQuery(
             'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')')
       ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('config',
+                limitUpdateKind: UpdateKind.insert),
+            result: [
+              TableUpdate('with_defaults', kind: UpdateKind.insert),
+            ],
+          ),
+        ],
+      );
   @override
   DriftDatabaseOptions get options =>
       const DriftDatabaseOptions(storeDateTimeAsText: true);

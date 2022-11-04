@@ -6,6 +6,260 @@ part of 'todos.dart';
 // DriftElementId(asset:drift/test/generated/todos.dart, todos)
 // DriftElementId(asset:drift/test/generated/todos.dart, categories)
 // DriftElementId(asset:drift/test/generated/todos.dart, todo_with_category_view)
+class Category extends DataClass implements Insertable<Category> {
+  final int id;
+  final String description;
+  final CategoryPriority priority;
+  final String descriptionInUpperCase;
+  const Category(
+      {required this.id,
+      required this.description,
+      required this.priority,
+      required this.descriptionInUpperCase});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['desc'] = Variable<String>(description);
+    {
+      final converter = $CategoriesTable.$converterpriority;
+      map['priority'] = Variable<int>(converter.toSql(priority));
+    }
+    return map;
+  }
+
+  CategoriesCompanion toCompanion(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: Value(id),
+      description: Value(description),
+      priority: Value(priority),
+    );
+  }
+
+  factory Category.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Category(
+      id: serializer.fromJson<int>(json['id']),
+      description: serializer.fromJson<String>(json['description']),
+      priority: serializer.fromJson<CategoryPriority>(json['priority']),
+      descriptionInUpperCase:
+          serializer.fromJson<String>(json['descriptionInUpperCase']),
+    );
+  }
+  factory Category.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      Category.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'description': serializer.toJson<String>(description),
+      'priority': serializer.toJson<CategoryPriority>(priority),
+      'descriptionInUpperCase':
+          serializer.toJson<String>(descriptionInUpperCase),
+    };
+  }
+
+  Category copyWith(
+          {int? id,
+          String? description,
+          CategoryPriority? priority,
+          String? descriptionInUpperCase}) =>
+      Category(
+        id: id ?? this.id,
+        description: description ?? this.description,
+        priority: priority ?? this.priority,
+        descriptionInUpperCase:
+            descriptionInUpperCase ?? this.descriptionInUpperCase,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Category(')
+          ..write('id: $id, ')
+          ..write('description: $description, ')
+          ..write('priority: $priority, ')
+          ..write('descriptionInUpperCase: $descriptionInUpperCase')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, description, priority, descriptionInUpperCase);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Category &&
+          other.id == this.id &&
+          other.description == this.description &&
+          other.priority == this.priority &&
+          other.descriptionInUpperCase == this.descriptionInUpperCase);
+}
+
+class CategoriesCompanion extends UpdateCompanion<Category> {
+  final Value<int> id;
+  final Value<String> description;
+  final Value<CategoryPriority> priority;
+  const CategoriesCompanion({
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
+    this.priority = const Value.absent(),
+  });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String description,
+    this.priority = const Value.absent(),
+  }) : description = Value(description);
+  static Insertable<Category> custom({
+    Expression<int>? id,
+    Expression<String>? description,
+    Expression<int>? priority,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (description != null) 'desc': description,
+      if (priority != null) 'priority': priority,
+    });
+  }
+
+  CategoriesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? description,
+      Value<CategoryPriority>? priority}) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      description: description ?? this.description,
+      priority: priority ?? this.priority,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (description.present) {
+      map['desc'] = Variable<String>(description.value);
+    }
+    if (priority.present) {
+      final converter = $CategoriesTable.$converterpriority;
+      map['priority'] = Variable<int>(converter.toSql(priority.value));
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('description: $description, ')
+          ..write('priority: $priority')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CategoriesTable extends Categories
+    with TableInfo<$CategoriesTable, Category> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CategoriesTable(this.attachedDatabase, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+  final VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'desc', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
+  final VerificationMeta _priorityMeta = const VerificationMeta('priority');
+  @override
+  late final GeneratedColumnWithTypeConverter<CategoryPriority, int> priority =
+      GeneratedColumn<int>('priority', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: const Constant(0))
+          .withConverter<CategoryPriority>($CategoriesTable.$converterpriority);
+  final VerificationMeta _descriptionInUpperCaseMeta =
+      const VerificationMeta('descriptionInUpperCase');
+  @override
+  late final GeneratedColumn<String> descriptionInUpperCase =
+      GeneratedColumn<String>('description_in_upper_case', aliasedName, false,
+          generatedAs: GeneratedAs(description.upper(), false),
+          type: DriftSqlType.string,
+          requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, description, priority, descriptionInUpperCase];
+  @override
+  String get aliasedName => _alias ?? 'categories';
+  @override
+  String get actualTableName => 'categories';
+  @override
+  VerificationContext validateIntegrity(Insertable<Category> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('desc')) {
+      context.handle(_descriptionMeta,
+          description.isAcceptableOrUnknown(data['desc']!, _descriptionMeta));
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    context.handle(_priorityMeta, const VerificationResult.success());
+    if (data.containsKey('description_in_upper_case')) {
+      context.handle(
+          _descriptionInUpperCaseMeta,
+          descriptionInUpperCase.isAcceptableOrUnknown(
+              data['description_in_upper_case']!, _descriptionInUpperCaseMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Category map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Category(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      description: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
+      priority: $CategoriesTable.$converterpriority.fromSql(attachedDatabase
+          .options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
+      descriptionInUpperCase: attachedDatabase.options.types.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}description_in_upper_case'])!,
+    );
+  }
+
+  @override
+  $CategoriesTable createAlias(String alias) {
+    return $CategoriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<CategoryPriority, int> $converterpriority =
+      const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
+}
+
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String? title;
@@ -307,260 +561,6 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable createAlias(String alias) {
     return $TodosTableTable(attachedDatabase, alias);
   }
-}
-
-class Category extends DataClass implements Insertable<Category> {
-  final int id;
-  final String description;
-  final CategoryPriority priority;
-  final String descriptionInUpperCase;
-  const Category(
-      {required this.id,
-      required this.description,
-      required this.priority,
-      required this.descriptionInUpperCase});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['desc'] = Variable<String>(description);
-    {
-      final converter = $CategoriesTable.$converterpriority;
-      map['priority'] = Variable<int>(converter.toSql(priority));
-    }
-    return map;
-  }
-
-  CategoriesCompanion toCompanion(bool nullToAbsent) {
-    return CategoriesCompanion(
-      id: Value(id),
-      description: Value(description),
-      priority: Value(priority),
-    );
-  }
-
-  factory Category.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Category(
-      id: serializer.fromJson<int>(json['id']),
-      description: serializer.fromJson<String>(json['description']),
-      priority: serializer.fromJson<CategoryPriority>(json['priority']),
-      descriptionInUpperCase:
-          serializer.fromJson<String>(json['descriptionInUpperCase']),
-    );
-  }
-  factory Category.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      Category.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'description': serializer.toJson<String>(description),
-      'priority': serializer.toJson<CategoryPriority>(priority),
-      'descriptionInUpperCase':
-          serializer.toJson<String>(descriptionInUpperCase),
-    };
-  }
-
-  Category copyWith(
-          {int? id,
-          String? description,
-          CategoryPriority? priority,
-          String? descriptionInUpperCase}) =>
-      Category(
-        id: id ?? this.id,
-        description: description ?? this.description,
-        priority: priority ?? this.priority,
-        descriptionInUpperCase:
-            descriptionInUpperCase ?? this.descriptionInUpperCase,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Category(')
-          ..write('id: $id, ')
-          ..write('description: $description, ')
-          ..write('priority: $priority, ')
-          ..write('descriptionInUpperCase: $descriptionInUpperCase')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(id, description, priority, descriptionInUpperCase);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Category &&
-          other.id == this.id &&
-          other.description == this.description &&
-          other.priority == this.priority &&
-          other.descriptionInUpperCase == this.descriptionInUpperCase);
-}
-
-class CategoriesCompanion extends UpdateCompanion<Category> {
-  final Value<int> id;
-  final Value<String> description;
-  final Value<CategoryPriority> priority;
-  const CategoriesCompanion({
-    this.id = const Value.absent(),
-    this.description = const Value.absent(),
-    this.priority = const Value.absent(),
-  });
-  CategoriesCompanion.insert({
-    this.id = const Value.absent(),
-    required String description,
-    this.priority = const Value.absent(),
-  }) : description = Value(description);
-  static Insertable<Category> custom({
-    Expression<int>? id,
-    Expression<String>? description,
-    Expression<int>? priority,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (description != null) 'desc': description,
-      if (priority != null) 'priority': priority,
-    });
-  }
-
-  CategoriesCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? description,
-      Value<CategoryPriority>? priority}) {
-    return CategoriesCompanion(
-      id: id ?? this.id,
-      description: description ?? this.description,
-      priority: priority ?? this.priority,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (description.present) {
-      map['desc'] = Variable<String>(description.value);
-    }
-    if (priority.present) {
-      final converter = $CategoriesTable.$converterpriority;
-      map['priority'] = Variable<int>(converter.toSql(priority.value));
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('CategoriesCompanion(')
-          ..write('id: $id, ')
-          ..write('description: $description, ')
-          ..write('priority: $priority')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $CategoriesTable extends Categories
-    with TableInfo<$CategoriesTable, Category> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $CategoriesTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  final VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
-  @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'desc', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL UNIQUE');
-  final VerificationMeta _priorityMeta = const VerificationMeta('priority');
-  @override
-  late final GeneratedColumnWithTypeConverter<CategoryPriority, int> priority =
-      GeneratedColumn<int>('priority', aliasedName, false,
-              type: DriftSqlType.int,
-              requiredDuringInsert: false,
-              defaultValue: const Constant(0))
-          .withConverter<CategoryPriority>($CategoriesTable.$converterpriority);
-  final VerificationMeta _descriptionInUpperCaseMeta =
-      const VerificationMeta('descriptionInUpperCase');
-  @override
-  late final GeneratedColumn<String> descriptionInUpperCase =
-      GeneratedColumn<String>('description_in_upper_case', aliasedName, false,
-          generatedAs: GeneratedAs(description.upper(), false),
-          type: DriftSqlType.string,
-          requiredDuringInsert: false);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, description, priority, descriptionInUpperCase];
-  @override
-  String get aliasedName => _alias ?? 'categories';
-  @override
-  String get actualTableName => 'categories';
-  @override
-  VerificationContext validateIntegrity(Insertable<Category> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('desc')) {
-      context.handle(_descriptionMeta,
-          description.isAcceptableOrUnknown(data['desc']!, _descriptionMeta));
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    context.handle(_priorityMeta, const VerificationResult.success());
-    if (data.containsKey('description_in_upper_case')) {
-      context.handle(
-          _descriptionInUpperCaseMeta,
-          descriptionInUpperCase.isAcceptableOrUnknown(
-              data['description_in_upper_case']!, _descriptionInUpperCaseMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Category(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      description: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converterpriority.fromSql(attachedDatabase
-          .options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
-      descriptionInUpperCase: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}description_in_upper_case'])!,
-    );
-  }
-
-  @override
-  $CategoriesTable createAlias(String alias) {
-    return $CategoriesTable(attachedDatabase, alias);
-  }
-
-  static TypeConverter<CategoryPriority, int> $converterpriority =
-      const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
 }
 
 class User extends DataClass implements Insertable<User> {
@@ -1590,8 +1590,8 @@ class $TodoWithCategoryViewView
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(e);
   _$TodoDb.connect(DatabaseConnection c) : super.connect(c);
-  late final $TodosTableTable todosTable = $TodosTableTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
+  late final $TodosTableTable todosTable = $TodosTableTable(this);
   late final $UsersTable users = $UsersTable(this);
   late final $SharedTodosTable sharedTodos = $SharedTodosTable(this);
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable(this);
@@ -1673,8 +1673,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-        todosTable,
         categories,
+        todosTable,
         users,
         sharedTodos,
         tableWithoutPK,
@@ -1738,10 +1738,10 @@ class AllTodosWithCategoryResult extends CustomResultSet {
 mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $UsersTable get users => attachedDatabase.users;
   $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
+  $CategoriesTable get categories => attachedDatabase.categories;
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
   $TodoWithCategoryViewView get todoWithCategoryView =>
       attachedDatabase.todoWithCategoryView;
-  $CategoriesTable get categories => attachedDatabase.categories;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
         'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',

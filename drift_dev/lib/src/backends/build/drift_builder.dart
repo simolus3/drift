@@ -1,7 +1,9 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
 
+import '../../analysis/custom_result_class.dart';
 import '../../analysis/driver/driver.dart';
+import '../../analysis/driver/error.dart';
 import '../../analysis/driver/state.dart';
 import '../../analysis/results/results.dart';
 import '../../analyzer/options.dart';
@@ -107,7 +109,7 @@ class DriftBuilder extends Builder {
 
       if (result is BaseDriftAccessor) {
         final resolved = fileResult.fileAnalysis!.resolvedDatabases[result.id]!;
-        final importedQueries = <DefinedSqlQuery, SqlQuery>{};
+        var importedQueries = <DefinedSqlQuery, SqlQuery>{};
 
         for (final query
             in resolved.availableElements.whereType<DefinedSqlQuery>()) {
@@ -119,6 +121,16 @@ class DriftBuilder extends Builder {
             importedQueries[query] = resolvedQuery;
           }
         }
+
+        // Apply custom result classes
+        final mappedQueries = transformCustomResultClasses(
+          resolved.definedQueries.values.followedBy(importedQueries.values),
+          (message) => log.warning('For accessor ${result.id.name}: $message'),
+        );
+        importedQueries =
+            importedQueries.map((k, v) => MapEntry(k, mappedQueries[v] ?? v));
+        resolved.definedQueries = resolved.definedQueries
+            .map((k, v) => MapEntry(k, mappedQueries[v] ?? v));
 
         if (result is DriftDatabase) {
           final input =

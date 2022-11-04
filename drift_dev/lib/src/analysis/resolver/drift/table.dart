@@ -84,10 +84,16 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       // can't read the constraints.
       final sqlConstraints =
           column.hasDefinition ? column.constraints : const <Never>[];
+      final customConstraintsForDrift = StringBuffer();
+
       for (final constraint in sqlConstraints) {
+        var writeIntoTable = true;
+
         if (constraint is DriftDartName) {
           overriddenDartName = constraint.dartName;
+          writeIntoTable = false;
         } else if (constraint is MappedBy) {
+          writeIntoTable = false;
           if (converter != null) {
             reportError(DriftAnalysisError.inDriftFile(
                 constraint,
@@ -150,6 +156,13 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         } else if (constraint is sql.UniqueColumn) {
           constraints.add(UniqueColumn());
         }
+
+        if (writeIntoTable) {
+          if (customConstraintsForDrift.isNotEmpty) {
+            customConstraintsForDrift.write(' ');
+          }
+          customConstraintsForDrift.write(constraint.toSql());
+        }
       }
 
       columns.add(DriftColumn(
@@ -160,6 +173,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         constraints: constraints,
         typeConverter: converter,
         defaultArgument: defaultArgument,
+        customConstraints: customConstraintsForDrift.toString(),
         declaration: DriftDeclaration.driftFile(
           column.definition?.nameToken ?? stmt,
           state.ownId.libraryUri,
@@ -168,9 +182,12 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     }
 
     VirtualTableData? virtualTableData;
+    final sqlTableConstraints = <String>[];
 
     if (stmt is CreateTableStatement) {
       for (final constraint in stmt.tableConstraints) {
+        sqlTableConstraints.add(constraint.toSql());
+
         if (constraint is ForeignKeyTableConstraint) {
           final otherTable = await resolveSqlReferenceOrReportError<DriftTable>(
             constraint.clause.foreignTable.tableName,
@@ -325,6 +342,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       tableConstraints: tableConstraints,
       virtualTableData: virtualTableData,
       writeDefaultConstraints: false,
+      overrideTableConstraints: sqlTableConstraints,
     );
   }
 

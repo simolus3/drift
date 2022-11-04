@@ -1,5 +1,6 @@
 import 'package:sqlparser/sqlparser.dart';
 
+import '../../utils/entity_reference_sorter.dart';
 import '../driver/driver.dart';
 import '../driver/error.dart';
 import '../driver/state.dart';
@@ -45,7 +46,7 @@ class FileAnalyzer {
               .whereType<DriftElement>()
               .followedBy(element.references)
               .transitiveClosureUnderReferences()
-              .toList();
+              .sortTopologicallyOrElse(driver.backend.log.severe);
 
           for (final query in element.declaredQueries) {
             final engine =

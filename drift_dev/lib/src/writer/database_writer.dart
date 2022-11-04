@@ -158,7 +158,8 @@ class DatabaseWriter {
       // close list literal and allSchemaEntities getter
       ..write('];\n');
 
-    final updateRules = FindStreamUpdateRules(db).identifyRules();
+    final updateRules =
+        FindStreamUpdateRules(input.resolvedAccessor).identifyRules();
     if (updateRules.rules.isNotEmpty) {
       schemaScope
         ..write('@override\nStreamQueryUpdateRules get streamUpdateRules => ')
@@ -240,13 +241,14 @@ extension on drift.TableUpdate {
   void writeConstructor(TextEmitter emitter) {
     emitter
       ..writeDriftRef('TableUpdate')
-      ..write('(${asDartLiteral(table)})');
+      ..write('(${asDartLiteral(table)}');
 
     if (kind == null) {
       emitter.write(')');
     } else {
       emitter.write(', kind: ');
       kind!.write(emitter);
+      emitter.write(')');
     }
   }
 }
@@ -262,7 +264,7 @@ extension on drift.TableUpdateQuery {
       emitter.write('.onTableName(${asDartLiteral(query.table)} ');
 
       if (query.limitUpdateKind != null) {
-        emitter.write(', ');
+        emitter.write(', limitUpdateKind: ');
         query.limitUpdateKind!.write(emitter);
       }
       emitter.write(')');

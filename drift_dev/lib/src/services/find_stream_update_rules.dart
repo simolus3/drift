@@ -1,17 +1,18 @@
 import 'package:drift/drift.dart' hide DriftDatabase;
 import 'package:sqlparser/sqlparser.dart';
 
+import '../analysis/results/file_results.dart';
 import '../analysis/results/results.dart';
 
 class FindStreamUpdateRules {
-  final DriftDatabase db;
+  final ResolvedDatabaseAccessor db;
 
   FindStreamUpdateRules(this.db);
 
   StreamQueryUpdateRules identifyRules() {
     final rules = <UpdateRule>[];
 
-    for (final entity in db.references) {
+    for (final entity in db.availableElements) {
       if (entity is DriftTrigger) {
         _writeRulesForTrigger(entity, rules);
       } else if (entity is DriftTable) {

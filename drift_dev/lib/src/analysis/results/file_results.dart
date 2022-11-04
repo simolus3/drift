@@ -11,7 +11,7 @@ class FileAnalysisResult {
 }
 
 class ResolvedDatabaseAccessor {
-  final Map<String, SqlQuery> definedQueries;
+  Map<String, SqlQuery> definedQueries;
   final List<FileState> knownImports;
   final List<DriftElement> availableElements;
 

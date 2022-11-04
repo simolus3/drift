@@ -6,6 +6,178 @@ part of 'main.dart';
 // DriftElementId(asset:drift/example/main.dart, todo_items)
 // DriftElementId(asset:drift/example/main.dart, todo_categories)
 // DriftElementId(asset:drift/example/main.dart, customViewName)
+class TodoCategory extends DataClass implements Insertable<TodoCategory> {
+  final int id;
+  final String name;
+  const TodoCategory({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  TodoCategoriesCompanion toCompanion(bool nullToAbsent) {
+    return TodoCategoriesCompanion(
+      id: Value(id),
+      name: Value(name),
+    );
+  }
+
+  factory TodoCategory.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoCategory(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  factory TodoCategory.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TodoCategory.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  TodoCategory copyWith({int? id, String? name}) => TodoCategory(
+        id: id ?? this.id,
+        name: name ?? this.name,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TodoCategory(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoCategory && other.id == this.id && other.name == this.name);
+}
+
+class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
+  final Value<int> id;
+  final Value<String> name;
+  const TodoCategoriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  TodoCategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<TodoCategory> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  TodoCategoriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return TodoCategoriesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoCategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TodoCategoriesTable extends TodoCategories
+    with TableInfo<$TodoCategoriesTable, TodoCategory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodoCategoriesTable(this.attachedDatabase, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? 'todo_categories';
+  @override
+  String get actualTableName => 'todo_categories';
+  @override
+  VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoCategory(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
+  }
+
+  @override
+  $TodoCategoriesTable createAlias(String alias) {
+    return $TodoCategoriesTable(attachedDatabase, alias);
+  }
+}
+
 class TodoItem extends DataClass implements Insertable<TodoItem> {
   final int id;
   final String title;
@@ -290,178 +462,6 @@ class $TodoItemsTable extends TodoItems
   }
 }
 
-class TodoCategory extends DataClass implements Insertable<TodoCategory> {
-  final int id;
-  final String name;
-  const TodoCategory({required this.id, required this.name});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    return map;
-  }
-
-  TodoCategoriesCompanion toCompanion(bool nullToAbsent) {
-    return TodoCategoriesCompanion(
-      id: Value(id),
-      name: Value(name),
-    );
-  }
-
-  factory TodoCategory.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TodoCategory(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-    );
-  }
-  factory TodoCategory.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TodoCategory.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-    };
-  }
-
-  TodoCategory copyWith({int? id, String? name}) => TodoCategory(
-        id: id ?? this.id,
-        name: name ?? this.name,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('TodoCategory(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TodoCategory && other.id == this.id && other.name == this.name);
-}
-
-class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
-  final Value<int> id;
-  final Value<String> name;
-  const TodoCategoriesCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-  });
-  TodoCategoriesCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-  }) : name = Value(name);
-  static Insertable<TodoCategory> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-    });
-  }
-
-  TodoCategoriesCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return TodoCategoriesCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TodoCategoriesCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $TodoCategoriesTable extends TodoCategories
-    with TableInfo<$TodoCategoriesTable, TodoCategory> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TodoCategoriesTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
-  final VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? 'todo_categories';
-  @override
-  String get actualTableName => 'todo_categories';
-  @override
-  VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TodoCategory(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-    );
-  }
-
-  @override
-  $TodoCategoriesTable createAlias(String alias) {
-    return $TodoCategoriesTable(attachedDatabase, alias);
-  }
-}
-
 class TodoCategoryItemCountData extends DataClass {
   final String name;
   final int? itemCount;
@@ -680,8 +680,8 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
-  late final $TodoItemsTable todoItems = $TodoItemsTable(this);
   late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable(this);
+  late final $TodoItemsTable todoItems = $TodoItemsTable(this);
   late final $TodoCategoryItemCountView todoCategoryItemCount =
       $TodoCategoryItemCountView(this);
   late final $TodoItemWithCategoryNameViewView customViewName =
@@ -691,5 +691,5 @@ abstract class _$Database extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [todoItems, todoCategories, todoCategoryItemCount, customViewName];
+      [todoCategories, todoItems, todoCategoryItemCount, customViewName];
 }
