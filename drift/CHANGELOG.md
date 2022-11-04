@@ -2,6 +2,7 @@
 
 - Add the `JsonTypeConverter2` mixin. It behaves similar to the existing json
   type converters, but can use a different SQL and JSON type.
+- Add `TableStatements.insertAll` to atomically insert multiple rows.
 
 ## 2.2.0
 
