@@ -5,6 +5,7 @@
 - Add `isInValues` and `isNotInValues` methods to columns with type converters.
   They can be used to compare the column against a list of Dart expressions that
   will be mapped through a type converter.
+- Add `TableStatements.insertAll` to atomically insert multiple rows.
 
 ## 2.2.0
 
