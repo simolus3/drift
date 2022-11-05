@@ -176,22 +176,10 @@ class $CategoriesTable extends Categories
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
@@ -253,16 +241,19 @@ class $CategoriesTable extends Categories
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Category(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      description: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converter0.fromSql(attachedDatabase
-          .options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      description: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}desc'], attachedDatabase.executor.dialect)!,
+      priority: $CategoriesTable.$converter0.fromSql(
+          attachedDatabase.options.types.read(
+              DriftSqlType.int,
+              data['${effectivePrefix}priority'],
+              attachedDatabase.executor.dialect)!),
       descriptionInUpperCase: attachedDatabase.options.types.read(
           DriftSqlType.string,
-          data['${effectivePrefix}description_in_upper_case'])!,
+          data['${effectivePrefix}description_in_upper_case'],
+          attachedDatabase.executor.dialect)!,
     );
   }
 
@@ -481,22 +472,10 @@ class $TodosTableTable extends TodosTable
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -515,43 +494,16 @@ class $TodosTableTable extends TodosTable
   late final GeneratedColumn<DateTime> targetDate = GeneratedColumn<DateTime>(
       'target_date', aliasedName, true,
       type: DriftSqlType.dateTime,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'UNIQUE',
-      SqlDialect.mysql: 'UNIQUE',
-      SqlDialect.postgres: 'UNIQUE',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  });
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'REFERENCES "categories" ("id")',
-      SqlDialect.mysql: 'REFERENCES "categories" ("id")',
-      SqlDialect.postgres: 'REFERENCES "categories" ("id")',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  });
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES "categories" ("id")'));
   @override
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
@@ -601,16 +553,22 @@ class $TodosTableTable extends TodosTable
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoEntry(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}title']),
-      content: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
-      targetDate: attachedDatabase.options.types
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
-      category: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      title: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}title'], attachedDatabase.executor.dialect),
+      content: attachedDatabase.options.types.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}content'],
+          attachedDatabase.executor.dialect)!,
+      targetDate: attachedDatabase.options.types.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}target_date'],
+          attachedDatabase.executor.dialect),
+      category: attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}category'],
+          attachedDatabase.executor.dialect),
     );
   }
 
@@ -816,22 +774,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -839,43 +785,20 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
       type: DriftSqlType.string,
-      requiredDuringInsert: true, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'UNIQUE',
-      SqlDialect.mysql: 'UNIQUE',
-      SqlDialect.postgres: 'UNIQUE',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  });
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
   @override
-  late final GeneratedColumn<bool> isAwesome = GeneratedColumn<bool>(
-      'is_awesome', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
-      SqlDialect.mysql: 'CHECK ("is_awesome" IN (0, 1))',
-      SqlDialect.postgres: 'CHECK ("is_awesome" IN (0, 1))',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, defaultValue: const Constant(true));
+  late final GeneratedColumn<bool> isAwesome =
+      GeneratedColumn<bool>('is_awesome', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(true));
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
@@ -939,16 +862,22 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      isAwesome: attachedDatabase.options.types
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_awesome'])!,
-      profilePicture: attachedDatabase.options.types
-          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture'])!,
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      name: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
+      isAwesome: attachedDatabase.options.types.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}is_awesome'],
+          attachedDatabase.executor.dialect)!,
+      profilePicture: attachedDatabase.options.types.read(
+          DriftSqlType.blob,
+          data['${effectivePrefix}profile_picture'],
+          attachedDatabase.executor.dialect)!,
       creationTime: attachedDatabase.options.types.read(
-          DriftSqlType.dateTime, data['${effectivePrefix}creation_time'])!,
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}creation_time'],
+          attachedDatabase.executor.dialect)!,
     );
   }
 
@@ -1121,10 +1050,10 @@ class $SharedTodosTable extends SharedTodos
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SharedTodo(
-      todo: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}todo'])!,
-      user: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}user'])!,
+      todo: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}todo'], attachedDatabase.executor.dialect)!,
+      user: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}user'], attachedDatabase.executor.dialect)!,
     );
   }
 
@@ -1304,15 +1233,23 @@ class $TableWithoutPKTable extends TableWithoutPK
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CustomRowClass.map(
-      attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}not_really_an_id'])!,
-      attachedDatabase.options.types
-          .read(DriftSqlType.double, data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$converter0.fromSql(attachedDatabase
-          .options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}custom'])!),
-      webSafeInt: attachedDatabase.options.types
-          .read(DriftSqlType.bigInt, data['${effectivePrefix}web_safe_int']),
+      attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}not_really_an_id'],
+          attachedDatabase.executor.dialect)!,
+      attachedDatabase.options.types.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}some_float'],
+          attachedDatabase.executor.dialect)!,
+      custom: $TableWithoutPKTable.$converter0.fromSql(
+          attachedDatabase.options.types.read(
+              DriftSqlType.string,
+              data['${effectivePrefix}custom'],
+              attachedDatabase.executor.dialect)!),
+      webSafeInt: attachedDatabase.options.types.read(
+          DriftSqlType.bigInt,
+          data['${effectivePrefix}web_safe_int'],
+          attachedDatabase.executor.dialect),
     );
   }
 
@@ -1459,9 +1396,11 @@ class $PureDefaultsTable extends PureDefaults
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PureDefault(
-      txt: $PureDefaultsTable.$converter0n.fromSql(attachedDatabase
-          .options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
+      txt: $PureDefaultsTable.$converter0n.fromSql(
+          attachedDatabase.options.types.read(
+              DriftSqlType.string,
+              data['${effectivePrefix}insert'],
+              attachedDatabase.executor.dialect)),
     );
   }
 
@@ -1553,10 +1492,14 @@ class $CategoryTodoCountViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CategoryTodoCountViewData(
-      description: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}description']),
-      itemCount: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
+      description: attachedDatabase.options.types.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}description'],
+          attachedDatabase.executor.dialect),
+      itemCount: attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}item_count'],
+          attachedDatabase.executor.dialect),
     );
   }
 
@@ -1659,10 +1602,10 @@ class $TodoWithCategoryViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoWithCategoryViewData(
-      title: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}title']),
-      description: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
+      title: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}title'], attachedDatabase.executor.dialect),
+      description: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}desc'], attachedDatabase.executor.dialect)!,
     );
   }
 

@@ -130,22 +130,10 @@ class $TodoCategoriesTable extends TodoCategories
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -180,10 +168,10 @@ class $TodoCategoriesTable extends TodoCategories
   TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoCategory(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      name: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
     );
   }
 
@@ -382,22 +370,10 @@ class $TodoItemsTable extends TodoItems
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -413,22 +389,9 @@ class $TodoItemsTable extends TodoItems
   late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
       'category_id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: true, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'REFERENCES "todo_categories" ("id")',
-      SqlDialect.mysql: 'REFERENCES "todo_categories" ("id")',
-      SqlDialect.postgres: 'REFERENCES "todo_categories" ("id")',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  });
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES "todo_categories" ("id")'));
   final VerificationMeta _generatedTextMeta =
       const VerificationMeta('generatedText');
   @override
@@ -486,16 +449,20 @@ class $TodoItemsTable extends TodoItems
   TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoItem(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}content']),
-      categoryId: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
-      generatedText: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      title: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}title'], attachedDatabase.executor.dialect)!,
+      content: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}content'], attachedDatabase.executor.dialect),
+      categoryId: attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}category_id'],
+          attachedDatabase.executor.dialect)!,
+      generatedText: attachedDatabase.options.types.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}generated_text'],
+          attachedDatabase.executor.dialect),
     );
   }
 
@@ -581,10 +548,12 @@ class $TodoCategoryItemCountView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoCategoryItemCountData(
-      name: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      itemCount: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
+      name: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
+      itemCount: attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}item_count'],
+          attachedDatabase.executor.dialect),
     );
   }
 
@@ -686,10 +655,10 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoItemWithCategoryNameViewData(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      title: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}title'], attachedDatabase.executor.dialect),
     );
   }
 

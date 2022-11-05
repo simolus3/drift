@@ -219,22 +219,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -301,17 +289,23 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthDate: attachedDatabase.options.types
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
-      profilePicture: attachedDatabase.options.types
-          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converter0.fromSql(attachedDatabase
-          .options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      name: attachedDatabase.options.types.read(DriftSqlType.string,
+          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
+      birthDate: attachedDatabase.options.types.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}birth_date'],
+          attachedDatabase.executor.dialect)!,
+      profilePicture: attachedDatabase.options.types.read(
+          DriftSqlType.blob,
+          data['${effectivePrefix}profile_picture'],
+          attachedDatabase.executor.dialect),
+      preferences: $UsersTable.$converter0.fromSql(
+          attachedDatabase.options.types.read(
+              DriftSqlType.string,
+              data['${effectivePrefix}preferences'],
+              attachedDatabase.executor.dialect)),
     );
   }
 
@@ -484,25 +478,16 @@ class $FriendshipsTable extends Friendships
   final VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
   @override
-  late final GeneratedColumn<bool> reallyGoodFriends = GeneratedColumn<bool>(
-      'really_good_friends', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
-      SqlDialect.mysql: 'CHECK ("really_good_friends" IN (0, 1))',
-      SqlDialect.postgres: 'CHECK ("really_good_friends" IN (0, 1))',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, defaultValue: const Constant(false));
+  late final GeneratedColumn<bool> reallyGoodFriends =
+      GeneratedColumn<bool>('really_good_friends', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
       [firstUser, secondUser, reallyGoodFriends];
@@ -544,12 +529,18 @@ class $FriendshipsTable extends Friendships
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Friendship(
-      firstUser: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
-      secondUser: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
+      firstUser: attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}first_user'],
+          attachedDatabase.executor.dialect)!,
+      secondUser: attachedDatabase.options.types.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}second_user'],
+          attachedDatabase.executor.dialect)!,
       reallyGoodFriends: attachedDatabase.options.types.read(
-          DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
+          DriftSqlType.bool,
+          data['${effectivePrefix}really_good_friends'],
+          attachedDatabase.executor.dialect)!,
     );
   }
 

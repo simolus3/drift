@@ -124,22 +124,10 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false, defaultConstraints: (context) {
-    const dialectConstraints = {
-      SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.mysql: 'PRIMARY KEY AUTOINCREMENT',
-      SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-    };
-
-    final constraints = dialectConstraints[context.dialect]!;
-    if (constraints.isEmpty) {
-      return;
-    }
-
-    context.buffer
-      ..write(' ')
-      ..write(constraints);
-  }, hasAutoIncrement: true);
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
@@ -174,10 +162,12 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Note(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      content: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      id: attachedDatabase.options.types.read(DriftSqlType.int,
+          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
+      content: attachedDatabase.options.types.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}content'],
+          attachedDatabase.executor.dialect)!,
     );
   }
 
