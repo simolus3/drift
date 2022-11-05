@@ -78,12 +78,12 @@ class Database extends _$Database {}
   @override
   Future<MyCustomClass> map(Map<String, dynamic> data,
       {String? tablePrefix}) async {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    final effectivePrefix = tablePrefix != null ? \'$tablePrefix.\' : \'\';
     return await MyCustomClass.load(
-      attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}foo'])!,
-      attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}bar'])!,
+      attachedDatabase.options.types.read(DriftSqlType.string,
+          data[\'${effectivePrefix}foo\'], attachedDatabase.executor.dialect)!,
+      attachedDatabase.options.types.read(DriftSqlType.int,
+          data[\'${effectivePrefix}bar\'], attachedDatabase.executor.dialect)!,
     );
   }
 ''')),
