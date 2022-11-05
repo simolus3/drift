@@ -104,6 +104,10 @@ class NoSuchFile extends DiscoveredFileState {
   NoSuchFile() : super(const []);
 }
 
+class UnknownFile extends DiscoveredFileState {
+  UnknownFile() : super(const []);
+}
+
 abstract class DiscoveredElement {
   final DriftElementId ownId;
 

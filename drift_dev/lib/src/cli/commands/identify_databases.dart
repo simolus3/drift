@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:path/path.dart' as p;
 
+import '../../analysis/results/results.dart';
 import '../cli.dart';
 
 class IdentifyDatabases extends MoorCommand {
@@ -11,7 +11,7 @@ class IdentifyDatabases extends MoorCommand {
 
   @override
   String get description =>
-      'Test for the analyzer - list all moor databases in a project';
+      'Test for the analyzer - list all drift databases in a project';
 
   @override
   String get name => 'identify-databases';
@@ -28,20 +28,24 @@ class IdentifyDatabases extends MoorCommand {
 
       cli.logger.fine('Scanning $file');
 
-      final parsed = (await driver.waitFileParsed(file.path))!;
-      final result = parsed.currentResult;
+      final result = await driver.analyzeElementsForPath(file.path);
+      for (final analyzedElement in result.analysis.values) {
+        final element = analyzedElement.result;
 
-      // might be a `part of` file...
-      if (result is! ParsedDartFile) continue;
+        if (element is BaseDriftAccessor) {
+          final message = StringBuffer(
+              'Found ${element.id.name} in ${element.id.libraryUri}!');
 
-      if (result.dbAccessors.isNotEmpty) {
-        final displayName = p.relative(file.path, from: directory.path);
+          if (element is DriftDatabase) {
+            final daos =
+                element.accessorTypes.map((e) => e.toString()).join(', ');
+            message
+              ..writeln()
+              ..write('Schema version: ${element.schemaVersion}, daos: $daos');
+          }
 
-        final names = result.dbAccessors
-            .map((t) => t.declaration!.fromClass.name)
-            .join(', ');
-
-        cli.logger.info('$displayName has moor databases or daos: $names');
+          cli.logger.info(message);
+        }
       }
     }
   }

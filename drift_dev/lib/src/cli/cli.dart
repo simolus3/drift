@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:args/command_runner.dart';
-import 'package:drift_dev/src/backends/common/driver.dart';
 import 'package:drift_dev/src/cli/project.dart';
 import 'package:logging/logging.dart';
 
+import '../backends/analyzer_context_backend.dart';
 import 'commands/analyze.dart';
 import 'commands/identify_databases.dart';
-import 'commands/migrate.dart';
-import 'commands/schema.dart';
+//import 'commands/migrate.dart';
+//import 'commands/schema.dart';
 import 'logging.dart';
 
 Future run(List<String> args) async {
@@ -31,14 +30,14 @@ class MoorCli {
 
   MoorCli() {
     _runner = CommandRunner(
-      'pub run moor_generator',
-      'CLI utilities for the moor package, currently in an experimental state.',
+      'dart run drift_dev',
+      'CLI utilities for the drift package, currently in an experimental state.',
       usageLineLength: 80,
     )
       ..addCommand(AnalyzeCommand(this))
-      ..addCommand(IdentifyDatabases(this))
-      ..addCommand(SchemaCommand(this))
-      ..addCommand(MigrateCommand(this));
+      ..addCommand(IdentifyDatabases(this));
+//      ..addCommand(SchemaCommand(this))
+//      ..addCommand(MigrateCommand(this));
 
     _runner.argParser
         .addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false);
@@ -50,9 +49,11 @@ class MoorCli {
     );
   }
 
-  Future<MoorDriver> createMoorDriver() async {
-    return MoorDriver(PhysicalResourceProvider.INSTANCE,
-        options: project.moorOptions, contextRoot: project.directory.path);
+  Future<PhysicalDriftDriver> createMoorDriver() async {
+    return AnalysisContextBackend.createDriver(
+      options: project.moorOptions,
+      projectDirectory: project.directory.path,
+    );
   }
 
   Future<void> run(Iterable<String> args) async {

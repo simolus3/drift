@@ -1,14 +1,12 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-
 import '../cli.dart';
 
 class AnalyzeCommand extends MoorCommand {
   AnalyzeCommand(MoorCli cli) : super(cli);
 
   @override
-  String get description => 'Analyze and lint moor files';
+  String get description => 'Analyze and lint drift database code';
 
   @override
   String get name => 'analyze';
@@ -20,18 +18,14 @@ class AnalyzeCommand extends MoorCommand {
     var errorCount = 0;
 
     await for (final file in cli.project.sourceFiles) {
-      if (p.extension(file.path) != '.moor') continue;
-
       cli.logger.fine('Analyzing $file');
 
-      final parsed = (await driver.waitFileParsed(file.path))!;
+      final results =
+          await driver.driver.fullyAnalyze(driver.uriFromPath(file.path));
 
-      if (parsed.errors.errors.isNotEmpty) {
-        cli.logger.warning('For file ${p.relative(file.path)}:');
-        for (final error in parsed.errors.errors) {
-          error.writeDescription(cli.logger.warning);
-          errorCount++;
-        }
+      for (final error in results.allErrors) {
+        cli.logger.warning(error.toString());
+        errorCount++;
       }
     }
 

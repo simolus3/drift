@@ -45,7 +45,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
 
   Future<List<TableReferenceInDartView>> _parseStaticReferences() async {
     return await Stream.fromIterable(discovered.dartElement.allSupertypes
-            .map((t) => t.element2)
+            .map((t) => t.element)
             .followedBy([discovered.dartElement]).expand((e) => e.fields))
         .asyncMap((field) => _getStaticReference(field))
         .where((ref) => ref != null)
@@ -68,13 +68,13 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
             await resolver.driver.backend.loadElementDeclaration(field.getter!);
         if (node is MethodDeclaration && node.body is EmptyFunctionBody) {
           final table = await resolveDartReferenceOrReportError<DriftTable>(
-              type.element2, (msg) {
+              type.element, (msg) {
             return DriftAnalysisError.inDartAst(
                 field, node.returnType ?? node.name, msg);
           });
 
           if (table != null) {
-            final name = node.name2.lexeme;
+            final name = node.name.lexeme;
             return TableReferenceInDartView(table, name);
           }
         }

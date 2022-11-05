@@ -38,16 +38,14 @@ class DumpSchemaCommand extends Command {
     final driver = await cli.createMoorDriver();
 
     final absolute = File(rest[0]).absolute.path;
-    final input = await driver.waitFileParsed(absolute);
+    final input =
+        await driver.driver.fullyAnalyze(driver.uriFromPath(absolute));
 
-    if (input == null || !input.isAnalyzed) {
+    if (!input.isFullyAnalyzed) {
       cli.exit('Unexpected error: The input file could not be analyzed');
     }
 
-    final result = input.currentResult;
-    if (result is! ParsedDartFile) {
-      cli.exit('Input file is not a Dart file');
-    }
+    final result = input.fileAnalysis;
 
     final db = result.declaredDatabases.single;
     final writer = SchemaWriter(db, options: cli.project.moorOptions);

@@ -300,7 +300,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   Future<Iterable<PendingColumnInformation>> _parseColumns(
       ClassElement element) async {
     final columnNames = element.allSupertypes
-        .map((t) => t.element2)
+        .map((t) => t.element)
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>

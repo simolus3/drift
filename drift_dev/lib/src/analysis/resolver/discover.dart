@@ -51,6 +51,7 @@ class DiscoverStep {
 
   Future<void> discover() async {
     final extension = _file.extension;
+    _file.discovery = UnknownFile();
 
     switch (extension) {
       case '.dart':
@@ -170,7 +171,10 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     // implementations as tables.
     return _isTable.isAssignableFrom(element) &&
         !_isTable.isExactly(element) &&
-        !_isTableInfo.isAssignableFrom(element);
+        !_isTableInfo.isAssignableFrom(element) &&
+        // Temporary workaround until https://github.com/dart-lang/source_gen/pull/628
+        // gets merged.
+        !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo');
   }
 
   bool _isDslView(ClassElement element) {
