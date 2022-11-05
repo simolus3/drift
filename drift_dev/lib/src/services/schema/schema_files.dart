@@ -1,25 +1,25 @@
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:collection/collection.dart';
+import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
 
+import '../../analysis/results/results.dart';
+import '../../analyzer/options.dart';
 import '../../writer/utils/column_constraints.dart';
 
 const _infoVersion = '1.0.0';
 
 /// Utilities to transform moor schema entities to json.
 class SchemaWriter {
-  /// The parsed and resolved database for which the schema should be written.
-  final Database db;
-
   final DriftOptions options;
+  final List<DriftElement> elements;
 
-  final Map<DriftSchemaEntity, int> _entityIds = {};
+  final Map<DriftElement, int> _entityIds = {};
   int _maxId = 0;
 
-  SchemaWriter(this.db, {this.options = const DriftOptions.defaults()});
+  SchemaWriter(this.elements, {this.options = const DriftOptions.defaults()});
 
-  int _idOf(DriftSchemaEntity entity) {
+  int _idOf(DriftElement entity) {
     return _entityIds.putIfAbsent(entity, () => _maxId++);
   }
 
@@ -32,7 +32,7 @@ class SchemaWriter {
       },
       'options': _serializeOptions(),
       'entities': [
-        for (final entity in db.entities) _entityToJson(entity),
+        for (final entity in elements) _entityToJson(entity),
       ],
     };
   }
@@ -45,32 +45,34 @@ class SchemaWriter {
     return asJson;
   }
 
-  Map _entityToJson(DriftSchemaEntity entity) {
+  Map _entityToJson(DriftElement entity) {
     String type;
     Map data;
 
     if (entity is DriftTable) {
       type = 'table';
       data = _tableData(entity);
-    } else if (entity is MoorTrigger) {
+    } else if (entity is DriftTrigger) {
       type = 'trigger';
       data = {
         'on': _idOf(entity.on!),
         'refences_in_body': [
-          for (final ref in entity.bodyReferences) _idOf(ref),
+          for (final ref in entity.references.whereType<DriftSchemaElement>())
+            _idOf(ref),
         ],
-        'name': entity.displayName,
-        'sql': entity.createSql(options),
+        'name': entity.schemaName,
+        'sql': entity.createStmt,
       };
-    } else if (entity is MoorIndex) {
+    } else if (entity is DriftIndex) {
       type = 'index';
       data = {
         'on': _idOf(entity.table!),
-        'name': entity.name,
+        'name': entity.schemaName,
         'sql': entity.createStmt,
       };
-    } else if (entity is MoorView) {
-      if (entity.declaration is! DriftViewDeclaration) {
+    } else if (entity is DriftView) {
+      final source = entity.source;
+      if (source is! SqlViewSource) {
         throw UnsupportedError(
             'Exporting Dart-defined views into a schema is not '
             'currently supported');
@@ -78,13 +80,13 @@ class SchemaWriter {
 
       type = 'view';
       data = {
-        'name': entity.name,
-        'sql': entity.createSql(const DriftOptions.defaults()),
-        'dart_data_name': entity.dartTypeName,
+        'name': entity.schemaName,
+        'sql': source.createView,
+        'dart_data_name': entity.nameOfRowClass,
         'dart_info_name': entity.entityInfoName,
         'columns': [for (final column in entity.columns) _columnData(column)],
       };
-    } else if (entity is SpecialQuery) {
+    } else if (entity is DefinedSqlQuery && entity.mode == QueryMode.atCreate) {
       type = 'special-query';
       data = {
         'scenario': 'create',
@@ -106,23 +108,30 @@ class SchemaWriter {
   }
 
   Map _tableData(DriftTable table) {
+    final primaryKeyFromTableConstraint =
+        table.tableConstraints.whereType<PrimaryKeyColumns>().firstOrNull;
+    final uniqueKeys = table.tableConstraints.whereType<UniqueColumns>();
+
     return {
-      'name': table.sqlName,
-      'was_declared_in_moor': table.isFromSql,
+      'name': table.schemaName,
+      'was_declared_in_moor': table.declaration.isDriftDeclaration,
       'columns': [for (final column in table.columns) _columnData(column)],
-      'is_virtual': table.isVirtualTable,
-      if (table.isVirtualTable) 'create_virtual_stmt': table.createVirtual,
-      if (table.overrideWithoutRowId != null)
-        'without_rowid': table.overrideWithoutRowId,
+      'is_virtual': table.isVirtual,
+      if (table.isVirtual)
+        'create_virtual_stmt': 'CREATE VIRTUAL TABLE "${table.schemaName}" '
+            'USING ${table.virtualTableData!.module}'
+            '(${table.virtualTableData!.moduleArguments.join(', ')})',
+      'without_rowid': table.withoutRowId,
       if (table.overrideTableConstraints != null)
         'constraints': table.overrideTableConstraints,
-      if (table.primaryKey != null)
-        'explicit_pk': [...table.primaryKey!.map((c) => c.name.name)],
-      if (table.uniqueKeys != null && table.uniqueKeys!.isNotEmpty)
+      if (primaryKeyFromTableConstraint != null)
+        'explicit_pk': [
+          ...primaryKeyFromTableConstraint.primaryKey.map((c) => c.nameInSql)
+        ],
+      if (uniqueKeys.isNotEmpty)
         'unique_keys': [
-          for (final uniqueKey
-              in table.uniqueKeys ?? const <Set<DriftColumn>>[])
-            [for (final column in uniqueKey) column.name.name],
+          for (final uniqueKey in uniqueKeys)
+            [for (final column in uniqueKey.uniqueSet) column.nameInSql],
         ]
     };
   }
@@ -131,16 +140,16 @@ class SchemaWriter {
     final constraints = defaultConstraints(column);
 
     return {
-      'name': column.name.name,
-      'getter_name': column.dartGetterName,
-      'moor_type': column.type.toSerializedString(),
+      'name': column.nameInSql,
+      'getter_name': column.nameInDart,
+      'moor_type': column.sqlType.toSerializedString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
       if (constraints.isNotEmpty && column.customConstraints == null)
         'defaultConstraints': defaultConstraints(column),
       'default_dart': column.defaultArgument,
       'default_client_dart': column.clientDefaultCode,
-      'dsl_features': [...column.features.map(_dslFeatureData)],
+      'dsl_features': [...column.constraints.map(_dslFeatureData)],
       if (column.typeConverter != null)
         'type_converter': {
           'dart_expr': column.typeConverter!.expression,
@@ -150,11 +159,9 @@ class SchemaWriter {
     };
   }
 
-  dynamic _dslFeatureData(ColumnFeature feature) {
-    if (feature is AutoIncrement) {
-      return 'auto-increment';
-    } else if (feature is PrimaryKey) {
-      return 'primary-key';
+  dynamic _dslFeatureData(DriftColumnConstraint feature) {
+    if (feature is PrimaryKeyColumn) {
+      return feature.isAutoIncrement ? 'auto-increment' : 'primary-key';
     } else if (feature is LimitingTextLength) {
       return {
         'allowed-lengths': {
@@ -169,7 +176,9 @@ class SchemaWriter {
 
 /// Reads files generated by [SchemaWriter].
 class SchemaReader {
-  final Map<int, DriftSchemaEntity> _entitiesById = {};
+  static final Uri _elementUri = Uri.parse('drift:hidden');
+
+  final Map<int, DriftElement> _entitiesById = {};
   final Map<int, Map<String, dynamic>> _rawById = {};
 
   final Set<int> _currentlyProcessing = {};
@@ -183,7 +192,7 @@ class SchemaReader {
     return SchemaReader._().._read(json);
   }
 
-  Iterable<DriftSchemaEntity> get entities => _entitiesById.values;
+  Iterable<DriftElement> get entities => _entitiesById.values;
 
   void _read(Map<String, dynamic> json) {
     // Read drift options if they are part of the schema file.
@@ -205,9 +214,14 @@ class SchemaReader {
     _rawById.keys.forEach(_processById);
   }
 
-  T _existingEntity<T extends DriftSchemaEntity>(dynamic id) {
+  T _existingEntity<T extends DriftElement>(dynamic id) {
     return _entitiesById[id as int] as T;
   }
+
+  DriftElementId _id(String name) => DriftElementId(_elementUri, name);
+
+  DriftDeclaration get _declaration =>
+      DriftDeclaration(_elementUri, -1, '<unknown>');
 
   void _processById(int id) {
     if (_entitiesById.containsKey(id)) return;
@@ -227,7 +241,7 @@ class SchemaReader {
     final content = rawData?['data'] as Map<String, dynamic>;
     final type = rawData?['type'] as String;
 
-    DriftSchemaEntity entity;
+    DriftElement entity;
     switch (type) {
       case 'index':
         entity = _readIndex(content);
@@ -252,30 +266,37 @@ class SchemaReader {
     _entitiesById[id] = entity;
   }
 
-  MoorIndex _readIndex(Map<String, dynamic> content) {
+  DriftIndex _readIndex(Map<String, dynamic> content) {
     final on = _existingEntity<DriftTable>(content['on']);
     final name = content['name'] as String;
     final sql = content['sql'] as String;
 
-    return MoorIndex(name, const CustomIndexDeclaration(), sql, on);
+    return DriftIndex(_id(name), _declaration, table: on, createStmt: sql);
   }
 
-  MoorTrigger _readTrigger(Map<String, dynamic> content) {
+  DriftTrigger _readTrigger(Map<String, dynamic> content) {
     final on = _existingEntity<DriftTable>(content['on']);
     final name = content['name'] as String;
     final sql = content['sql'] as String;
 
-    final trigger = MoorTrigger(name, CustomTriggerDeclaration(sql), on);
-    for (final bodyRef in content['refences_in_body'] as List) {
-      trigger.bodyReferences.add(_existingEntity(bodyRef));
-    }
-    return trigger;
+    return DriftTrigger(
+      _id(name),
+      _declaration,
+      on: on,
+      onWrite: UpdateKind.delete,
+      references: [
+        for (final bodyRef in content['references_in_body'] as List)
+          _existingEntity(bodyRef)
+      ],
+      createStmt: sql,
+      writes: const [],
+    );
   }
 
   DriftTable _readTable(Map<String, dynamic> content) {
     final sqlName = content['name'] as String;
     final isVirtual = content['is_virtual'] as bool;
-    final withoutRowId = content['without_rowid'] as bool?;
+    final withoutRowId = content['without_rowid'] as bool? ?? false;
     final pascalCase = ReCase(sqlName).pascalCase;
     final columns = [
       for (final rawColumn in content['columns'] as List)
@@ -288,13 +309,15 @@ class SchemaReader {
           _engine.parse(create).rootNode as CreateVirtualTableStatement;
 
       return DriftTable(
-        sqlName: sqlName,
-        dartTypeName: '${pascalCase}Data',
-        overriddenName: pascalCase,
-        declaration: CustomVirtualTableDeclaration(parsed),
-        overrideWithoutRowId: withoutRowId,
-        overrideDontWriteConstraints: true,
+        _id(sqlName),
+        _declaration,
         columns: columns,
+        baseDartName: pascalCase,
+        nameOfRowClass: '${pascalCase}Data',
+        writeDefaultConstraints: true,
+        withoutRowId: withoutRowId,
+        virtualTableData:
+            VirtualTableData(parsed.moduleName, parsed.argumentContent, null),
       );
     }
 
@@ -307,7 +330,7 @@ class SchemaReader {
     if (content.containsKey('explicit_pk')) {
       explicitPk = {
         for (final columnName in content['explicit_pk'] as List<dynamic>)
-          columns.singleWhere((c) => c.name.name == columnName)
+          columns.singleWhere((c) => c.nameInSql == columnName)
       };
     }
 
@@ -316,35 +339,44 @@ class SchemaReader {
       for (final key in content['unique_keys']) {
         uniqueKeys.add({
           for (final columnName in key)
-            columns.singleWhere((c) => c.name.name == columnName)
+            columns.singleWhere((c) => c.nameInSql == columnName)
         });
       }
     }
 
     return DriftTable(
-      sqlName: sqlName,
-      overriddenName: pascalCase,
+      _id(sqlName),
+      _declaration,
       columns: columns,
-      dartTypeName: '${pascalCase}Data',
-      primaryKey: explicitPk,
-      uniqueKeys: uniqueKeys,
+      baseDartName: pascalCase,
+      nameOfRowClass: '${pascalCase}Data',
+      writeDefaultConstraints: content['was_declared_in_moor'] != true,
+      withoutRowId: withoutRowId,
       overrideTableConstraints: tableConstraints,
-      overrideDontWriteConstraints: content['was_declared_in_moor'] as bool?,
-      overrideWithoutRowId: withoutRowId,
-      declaration: const CustomTableDeclaration(),
+      tableConstraints: [
+        if (explicitPk != null) PrimaryKeyColumns(explicitPk),
+        for (final unique in uniqueKeys) UniqueColumns(unique)
+      ],
     );
   }
 
-  MoorView _readView(Map<String, dynamic> content) {
-    return MoorView(
-      declaration: null,
-      name: content['name'] as String,
-      dartTypeName: content['dart_data_name'] as String,
-      entityInfoName: content['dart_info_name'] as String,
-    )..columns = [
+  DriftView _readView(Map<String, dynamic> content) {
+    final name = content['name'] as String;
+
+    return DriftView(
+      _id(name),
+      _declaration,
+      columns: [
         for (final column in content['columns'])
           _readColumn(column as Map<String, dynamic>)
-      ];
+      ],
+      source: SqlViewSource(content['sql'] as String),
+      customParentClass: null,
+      entityInfoName: content['dart_info_name'] as String,
+      existingRowClass: null,
+      nameOfRowClass: content['dart_data_name'] as String,
+      references: const [],
+    );
   }
 
   DriftColumn _readColumn(Map<String, dynamic> data) {
@@ -354,30 +386,30 @@ class SchemaReader {
     final nullable = data['nullable'] as bool;
     final customConstraints = data['customConstraints'] as String?;
     final defaultConstraints = data['defaultConstraints'] as String?;
-    final dslFeatures = [
+    final dslFeatures = <DriftColumnConstraint?>[
       for (final feature in data['dsl_features'] as List<dynamic>)
         _columnFeature(feature),
       if (defaultConstraints != null)
         DefaultConstraintsFromSchemaFile(defaultConstraints),
-    ];
+    ].whereType<DriftColumnConstraint>().toList();
     final getterName = data['getter_name'] as String?;
 
     // Note: Not including client default code because that usually depends on
     // imports from the database.
     return DriftColumn(
-      name: ColumnName.explicitly(name),
-      dartGetterName: getterName ?? ReCase(name).camelCase,
-      type: columnType,
+      sqlType: columnType,
       nullable: nullable,
-      defaultArgument: data['default_dart'] as String?,
+      nameInSql: name,
+      nameInDart: getterName ?? ReCase(name).camelCase,
+      declaration: _declaration,
       customConstraints: customConstraints,
-      features: dslFeatures.whereType<ColumnFeature>().toList(),
+      constraints: dslFeatures,
     );
   }
 
-  ColumnFeature? _columnFeature(dynamic data) {
-    if (data == 'auto-increment') return AutoIncrement();
-    if (data == 'primary-key') return const PrimaryKey();
+  DriftColumnConstraint? _columnFeature(dynamic data) {
+    if (data == 'auto-increment') return PrimaryKeyColumn(true);
+    if (data == 'primary-key') return PrimaryKeyColumn(false);
 
     if (data is Map<String, dynamic>) {
       final allowedLengths = data['allowed-lengths'] as Map<String, dynamic>;
