@@ -1,15 +1,8 @@
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import '../../generated/converter.dart';
 import '../../generated/custom_tables.dart';
 import '../../test_utils/test_utils.dart';
-
-const _createConfig = 'CREATE TABLE IF NOT EXISTS "config" ('
-    '"config_key" TEXT not null primary key, '
-    '"config_value" TEXT, '
-    '"sync_state" INTEGER, '
-    '"sync_state_implicit" INTEGER) STRICT;';
 
 void main() {
   // see ../data/tables/tables.drift
@@ -22,12 +15,6 @@ void main() {
   });
 
   tearDown(() => db.close());
-
-  test('creates everything as specified in .drift files', () async {
-    await db.createMigrator().createAll();
-
-    verify(mock.runCustom(_createConfig, []));
-  });
 
   test('isInValues', () async {
     expect(

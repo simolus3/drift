@@ -314,23 +314,34 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
   /// Compares this column against the mapped [dartValue].
   ///
   /// The value will be mapped using the [converter] applied to this column.
+  /// Unlike [Expression.equals], this handles nullability with semantics one
+  /// might expect in Dart: `null` is equal to `null`.
   Expression<bool> equalsValue(D? dartValue) {
     final mappedValue = _mapDartValue(dartValue);
-    return mappedValue == null ? this.isNull() : equals(mappedValue);
+    if (mappedValue == null) {
+      return this.isNull();
+    } else {
+      return this.isNotNull() & equals(mappedValue);
+    }
   }
 
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
   ///
   /// The values will be mapped using the [converter] applied to this column.
+  /// Unlike [Expression.isIn], this method will also handle nullability with
+  /// semantics on might expect in Dart. If [values] contains `null` and this
+  /// column is nullable, [isInValues] evaluates to `true`.
   Expression<bool> isInValues(Iterable<D> values) {
     final mappedValues = values.map(_mapDartValue);
     final result = isIn(mappedValues.whereNotNull());
 
     final hasNulls = mappedValues.any((e) => e == null);
-    if (hasNulls) return result | this.isNull();
-
-    return result & this.isNotNull();
+    if (hasNulls) {
+      return result | this.isNull();
+    } else {
+      return result & this.isNotNull();
+    }
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
@@ -342,9 +353,11 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
     final result = isNotIn(mappedValues.whereNotNull());
 
     final hasNulls = mappedValues.any((e) => e == null);
-    if (hasNulls) return result & this.isNotNull();
-
-    return result | this.isNull();
+    if (hasNulls) {
+      return result & this.isNotNull();
+    } else {
+      return result | this.isNull();
+    }
   }
 }
 
