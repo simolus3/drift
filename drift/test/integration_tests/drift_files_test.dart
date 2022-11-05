@@ -241,7 +241,9 @@ void main() {
           ..where((tbl) => tbl.syncState.equalsValue(SyncType.synchronized)))
         .getSingleOrNull();
 
-    verify(mock.runSelect('SELECT * FROM "config" WHERE "sync_state" = ?;',
+    verify(mock.runSelect(
+        'SELECT * FROM "config" WHERE '
+        '"sync_state" IS NOT NULL AND "sync_state" = ?;',
         [ConfigTable.$converter0.toSql(SyncType.synchronized)]));
   });
 }

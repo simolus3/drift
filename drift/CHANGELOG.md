@@ -2,6 +2,9 @@
 
 - Add the `JsonTypeConverter2` mixin. It behaves similar to the existing json
   type converters, but can use a different SQL and JSON type.
+- Add `isInValues` and `isNotInValues` methods to columns with type converters.
+  They can be used to compare the column against a list of Dart expressions that
+  will be mapped through a type converter.
 
 ## 2.2.0
 
