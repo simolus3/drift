@@ -246,6 +246,34 @@ class GeneratedColumn<T extends Object> extends Column<T> {
       return const VerificationResult.success();
     };
   }
+
+  /// A helper method to make creating [defaultConstraints] simpler. Used when
+  /// the constraint does not depend on the dialect.
+  ///
+  /// Used by generated code.
+  static Function(GenerationContext) constraintIsAlways(String constraint) =>
+      (context) => context.buffer
+        ..write(' ')
+        ..write(constraint);
+
+  /// A helper method to make creating [defaultConstraints] simpler. Used when
+  /// the constraint depends on the dialect.
+  ///
+  /// Used by generated code.
+  static Function(GenerationContext) constraintsDependsOnDialect(
+    Map<SqlDialect, String> constraints,
+  ) =>
+      (context) {
+        final constraint = constraints[context.dialect];
+
+        if (constraint == null || constraint.isEmpty) {
+          return;
+        }
+
+        context.buffer
+          ..write(' ')
+          ..write(constraint);
+      };
 }
 
 /// A [GeneratedColumn] with a type converter attached to it.
