@@ -196,13 +196,12 @@ class $CategoriesTable extends Categories
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Category(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      name: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
-      color: $CategoriesTable.$converter0.fromSql(attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}color'],
-              attachedDatabase.executor.dialect)!),
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      color: $CategoriesTable.$converter0.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}color'])!),
     );
   }
 
@@ -453,20 +452,14 @@ class $TodoEntriesTable extends TodoEntries
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoEntry(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      description: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}description'],
-          attachedDatabase.executor.dialect)!,
-      category: attachedDatabase.options.types.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}category'],
-          attachedDatabase.executor.dialect),
-      dueDate: attachedDatabase.options.types.read(
-          DriftSqlType.dateTime,
-          data['${effectivePrefix}due_date'],
-          attachedDatabase.executor.dialect),
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      dueDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}due_date']),
     );
   }
 
@@ -609,10 +602,8 @@ class TextEntries extends Table
   TextEntrie map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TextEntrie(
-      description: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}description'],
-          attachedDatabase.executor.dialect)!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
     );
   }
 

@@ -2,39 +2,40 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final typeSystem = DriftDatabaseOptions().types;
+  final sqliteTypes =
+      DriftDatabaseOptions().createTypeMapping(SqlDialect.sqlite);
+  final postgresTypes =
+      DriftDatabaseOptions().createTypeMapping(SqlDialect.postgres);
 
   group('bool type', () {
     test('Can read booleans from sqlite', () {
-      expect(typeSystem.read(DriftSqlType.bool, 1, SqlDialect.sqlite), true);
-      expect(typeSystem.read(DriftSqlType.bool, 0, SqlDialect.sqlite), false);
+      expect(sqliteTypes.read(DriftSqlType.bool, 1), true);
+      expect(sqliteTypes.read(DriftSqlType.bool, 0), false);
     });
 
     test('Can read booleans from postgres', () {
-      expect(
-          typeSystem.read(DriftSqlType.bool, true, SqlDialect.postgres), true);
-      expect(typeSystem.read(DriftSqlType.bool, false, SqlDialect.postgres),
-          false);
+      expect(postgresTypes.read(DriftSqlType.bool, true), true);
+      expect(postgresTypes.read(DriftSqlType.bool, false), false);
     });
 
     test('Can be mapped to sqlite constant', () {
-      expect(typeSystem.mapToSqlLiteral(true, SqlDialect.sqlite), '1');
-      expect(typeSystem.mapToSqlLiteral(false, SqlDialect.sqlite), '0');
+      expect(sqliteTypes.mapToSqlLiteral(true), '1');
+      expect(sqliteTypes.mapToSqlLiteral(false), '0');
     });
 
     test('Can be mapped to postgres constant', () {
-      expect(typeSystem.mapToSqlLiteral(true, SqlDialect.postgres), 'true');
-      expect(typeSystem.mapToSqlLiteral(false, SqlDialect.postgres), 'false');
+      expect(postgresTypes.mapToSqlLiteral(true), 'true');
+      expect(postgresTypes.mapToSqlLiteral(false), 'false');
     });
 
     test('Can be mapped to sqlite variable', () {
-      expect(typeSystem.mapToSqlVariable(true, SqlDialect.sqlite), 1);
-      expect(typeSystem.mapToSqlVariable(false, SqlDialect.sqlite), 0);
+      expect(sqliteTypes.mapToSqlVariable(true), 1);
+      expect(sqliteTypes.mapToSqlVariable(false), 0);
     });
 
     test('Can be mapped to postgres variable', () {
-      expect(typeSystem.mapToSqlVariable(true, SqlDialect.postgres), true);
-      expect(typeSystem.mapToSqlVariable(false, SqlDialect.postgres), false);
+      expect(postgresTypes.mapToSqlVariable(true), true);
+      expect(postgresTypes.mapToSqlVariable(false), false);
     });
   });
 }

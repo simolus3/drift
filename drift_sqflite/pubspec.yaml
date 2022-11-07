@@ -27,3 +27,7 @@ dev_dependencies:
 flutter:
   assets:
     - test_asset.db
+
+dependency_overrides:
+  # Flutter's test packages don't support the latest analyzer yet.
+  test_api: ^0.4.16

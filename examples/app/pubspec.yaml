@@ -38,3 +38,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+dependency_overrides:
+  # Flutter's test packages don't support the latest analyzer yet.
+  test_api: ^0.4.16

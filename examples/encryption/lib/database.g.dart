@@ -162,12 +162,10 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Note(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      content: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}content'],
-          attachedDatabase.executor.dialect)!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
     );
   }
 

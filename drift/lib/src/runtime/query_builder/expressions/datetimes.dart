@@ -260,7 +260,7 @@ class _StrftimeSingleFieldExpression extends Expression<int> {
     context.buffer.write("CAST(strftime('$format', ");
     date.writeInto(context);
 
-    if (!context.options.types.storeDateTimesAsText) {
+    if (!context.typeMapping.storeDateTimesAsText) {
       context.buffer.write(", 'unixepoch'");
     }
     context.buffer.write(') AS INTEGER)');
@@ -300,7 +300,7 @@ class _DependingOnDateTimeExpression<D extends Object> extends Expression<D> {
       Object.hash(_DependingOnDateTimeExpression, forTimestamps, forIsoString);
 
   Expression<D> _expressionForContext(GenerationContext context) {
-    if (context.options.types.storeDateTimesAsText) {
+    if (context.typeMapping.storeDateTimesAsText) {
       return forIsoString;
     } else {
       return forTimestamps;

@@ -260,22 +260,15 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Config(
-      configKey: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}config_key'],
-          attachedDatabase.executor.dialect)!,
-      configValue: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}config_value'],
-          attachedDatabase.executor.dialect),
-      syncState: ConfigTable.$converter0n.fromSql(attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}sync_state'],
-              attachedDatabase.executor.dialect)),
+      configKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
+      configValue: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
+      syncState: ConfigTable.$converter0n.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
       syncStateImplicit: ConfigTable.$converter1n.fromSql(
-          attachedDatabase.options.types.read(
-              DriftSqlType.int,
-              data['${effectivePrefix}sync_state_implicit'],
-              attachedDatabase.executor.dialect)),
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
   }
 
@@ -460,10 +453,10 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WithDefault(
-      a: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}a'], attachedDatabase.executor.dialect),
-      b: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}b'], attachedDatabase.executor.dialect),
+      a: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}a']),
+      b: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}b']),
     );
   }
 
@@ -553,10 +546,8 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return NoIdRow(
-      attachedDatabase.options.types.read(
-          DriftSqlType.blob,
-          data['${effectivePrefix}payload'],
-          attachedDatabase.executor.dialect)!,
+      attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}payload'])!,
     );
   }
 
@@ -767,12 +758,12 @@ class WithConstraints extends Table
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WithConstraint(
-      a: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}a'], attachedDatabase.executor.dialect),
-      b: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}b'], attachedDatabase.executor.dialect)!,
-      c: attachedDatabase.options.types.read(DriftSqlType.double,
-          data['${effectivePrefix}c'], attachedDatabase.executor.dialect),
+      a: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}a']),
+      b: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}b'])!,
+      c: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}c']),
     );
   }
 
@@ -1030,20 +1021,14 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MytableData(
-      someid: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}someid'], attachedDatabase.executor.dialect)!,
-      sometext: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}sometext'],
-          attachedDatabase.executor.dialect),
-      isInserting: attachedDatabase.options.types.read(
-          DriftSqlType.bool,
-          data['${effectivePrefix}is_inserting'],
-          attachedDatabase.executor.dialect),
-      somedate: attachedDatabase.options.types.read(
-          DriftSqlType.dateTime,
-          data['${effectivePrefix}somedate'],
-          attachedDatabase.executor.dialect),
+      someid: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}someid'])!,
+      sometext: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sometext']),
+      isInserting: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_inserting']),
+      somedate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}somedate']),
     );
   }
 
@@ -1254,12 +1239,12 @@ class Email extends Table
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return EMail(
-      sender: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}sender'], attachedDatabase.executor.dialect)!,
-      title: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}title'], attachedDatabase.executor.dialect)!,
-      body: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}body'], attachedDatabase.executor.dialect)!,
+      sender: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sender'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      body: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
     );
   }
 
@@ -1439,10 +1424,10 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WeirdData(
-      sqlClass: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}class'], attachedDatabase.executor.dialect)!,
-      textColumn: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}text'], attachedDatabase.executor.dialect)!,
+      sqlClass: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}class'])!,
+      textColumn: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}text'])!,
     );
   }
 
@@ -1550,22 +1535,15 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   MyViewData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MyViewData(
-      configKey: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}config_key'],
-          attachedDatabase.executor.dialect)!,
-      configValue: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}config_value'],
-          attachedDatabase.executor.dialect),
-      syncState: ConfigTable.$converter0n.fromSql(attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}sync_state'],
-              attachedDatabase.executor.dialect)),
+      configKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
+      configValue: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
+      syncState: ConfigTable.$converter0n.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
       syncStateImplicit: ConfigTable.$converter1n.fromSql(
-          attachedDatabase.options.types.read(
-              DriftSqlType.int,
-              data['${effectivePrefix}sync_state_implicit'],
-              attachedDatabase.executor.dialect)),
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
   }
 

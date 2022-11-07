@@ -163,10 +163,10 @@ class $KeyValuesTable extends KeyValues
   KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return KeyValue(
-      key: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}key'], attachedDatabase.executor.dialect)!,
-      value: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}value'], attachedDatabase.executor.dialect)!,
+      key: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
     );
   }
 

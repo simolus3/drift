@@ -289,23 +289,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      name: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
-      birthDate: attachedDatabase.options.types.read(
-          DriftSqlType.dateTime,
-          data['${effectivePrefix}birth_date'],
-          attachedDatabase.executor.dialect)!,
-      profilePicture: attachedDatabase.options.types.read(
-          DriftSqlType.blob,
-          data['${effectivePrefix}profile_picture'],
-          attachedDatabase.executor.dialect),
-      preferences: $UsersTable.$converter0.fromSql(
-          attachedDatabase.options.types.read(
-              DriftSqlType.string,
-              data['${effectivePrefix}preferences'],
-              attachedDatabase.executor.dialect)),
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
+      profilePicture: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
+      preferences: $UsersTable.$converter0.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
     );
   }
 
@@ -529,18 +522,12 @@ class $FriendshipsTable extends Friendships
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Friendship(
-      firstUser: attachedDatabase.options.types.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}first_user'],
-          attachedDatabase.executor.dialect)!,
-      secondUser: attachedDatabase.options.types.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}second_user'],
-          attachedDatabase.executor.dialect)!,
-      reallyGoodFriends: attachedDatabase.options.types.read(
-          DriftSqlType.bool,
-          data['${effectivePrefix}really_good_friends'],
-          attachedDatabase.executor.dialect)!,
+      firstUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
+      secondUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
+      reallyGoodFriends: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
     );
   }
 

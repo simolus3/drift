@@ -28,16 +28,16 @@ class SqlTypes {
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   final bool storeDateTimesAsText;
 
+  final SqlDialect _dialect;
+
   /// Creates an [SqlTypes] mapper from the provided options.
   @internal
-  const SqlTypes(this.storeDateTimesAsText);
+  const SqlTypes(this.storeDateTimesAsText,
+      [this._dialect = SqlDialect.sqlite]);
 
   /// Maps a Dart object to a (possibly simpler) object that can be used as a
   /// parameter in raw sql queries.
-  Object? mapToSqlVariable(
-    Object? dartValue, [
-    SqlDialect dialect = SqlDialect.sqlite,
-  ]) {
+  Object? mapToSqlVariable(Object? dartValue) {
     if (dartValue == null) return null;
 
     // These need special handling, all other types are a direct mapping
@@ -74,7 +74,7 @@ class SqlTypes {
       }
     }
 
-    if (dartValue is bool && dialect == SqlDialect.sqlite) {
+    if (dartValue is bool && _dialect == SqlDialect.sqlite) {
       return dartValue ? 1 : 0;
     }
 
@@ -83,15 +83,12 @@ class SqlTypes {
 
   /// Maps the [dart] value into a SQL literal that can be embedded in SQL
   /// queries.
-  String mapToSqlLiteral(
-    Object? dart, [
-    SqlDialect dialect = SqlDialect.sqlite,
-  ]) {
+  String mapToSqlLiteral(Object? dart) {
     if (dart == null) return 'NULL';
 
     // todo: Inline and remove types in the next major drift version
     if (dart is bool) {
-      if (dialect == SqlDialect.sqlite) {
+      if (_dialect == SqlDialect.sqlite) {
         return dart ? '1' : '0';
       } else {
         return dart ? 'true' : 'false';
@@ -109,7 +106,7 @@ class SqlTypes {
       return dart.toString();
     } else if (dart is DateTime) {
       if (storeDateTimesAsText) {
-        final encoded = mapToSqlVariable(dart, dialect).toString();
+        final encoded = mapToSqlVariable(dart).toString();
         return "'$encoded'";
       } else {
         return (dart.millisecondsSinceEpoch ~/ 1000).toString();
@@ -125,17 +122,13 @@ class SqlTypes {
   }
 
   /// Maps a raw [sqlValue] to Dart given its sql [type].
-  T? read<T extends Object>(
-    DriftSqlType<T> type,
-    Object? sqlValue, [
-    SqlDialect dialect = SqlDialect.sqlite,
-  ]) {
+  T? read<T extends Object>(DriftSqlType<T> type, Object? sqlValue) {
     if (sqlValue == null) return null;
 
     // ignore: unnecessary_cast
     switch (type as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        if (dialect == SqlDialect.sqlite) {
+        if (_dialect == SqlDialect.sqlite) {
           return (sqlValue != 0) as T;
         } else {
           return sqlValue as T;
@@ -258,7 +251,7 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
       case DriftSqlType.int:
         return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
       case DriftSqlType.dateTime:
-        if (context.options.types.storeDateTimesAsText) {
+        if (context.typeMapping.storeDateTimesAsText) {
           return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
         } else {
           return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';

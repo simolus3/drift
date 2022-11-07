@@ -241,19 +241,16 @@ class $CategoriesTable extends Categories
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Category(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      description: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}desc'], attachedDatabase.executor.dialect)!,
-      priority: $CategoriesTable.$converter0.fromSql(
-          attachedDatabase.options.types.read(
-              DriftSqlType.int,
-              data['${effectivePrefix}priority'],
-              attachedDatabase.executor.dialect)!),
-      descriptionInUpperCase: attachedDatabase.options.types.read(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
+      priority: $CategoriesTable.$converter0.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
+      descriptionInUpperCase: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
-          data['${effectivePrefix}description_in_upper_case'],
-          attachedDatabase.executor.dialect)!,
+          data['${effectivePrefix}description_in_upper_case'])!,
     );
   }
 
@@ -553,22 +550,16 @@ class $TodosTableTable extends TodosTable
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoEntry(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      title: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}title'], attachedDatabase.executor.dialect),
-      content: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}content'],
-          attachedDatabase.executor.dialect)!,
-      targetDate: attachedDatabase.options.types.read(
-          DriftSqlType.dateTime,
-          data['${effectivePrefix}target_date'],
-          attachedDatabase.executor.dialect),
-      category: attachedDatabase.options.types.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}category'],
-          attachedDatabase.executor.dialect),
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      targetDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category']),
     );
   }
 
@@ -862,22 +853,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}id'], attachedDatabase.executor.dialect)!,
-      name: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}name'], attachedDatabase.executor.dialect)!,
-      isAwesome: attachedDatabase.options.types.read(
-          DriftSqlType.bool,
-          data['${effectivePrefix}is_awesome'],
-          attachedDatabase.executor.dialect)!,
-      profilePicture: attachedDatabase.options.types.read(
-          DriftSqlType.blob,
-          data['${effectivePrefix}profile_picture'],
-          attachedDatabase.executor.dialect)!,
-      creationTime: attachedDatabase.options.types.read(
-          DriftSqlType.dateTime,
-          data['${effectivePrefix}creation_time'],
-          attachedDatabase.executor.dialect)!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      isAwesome: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_awesome'])!,
+      profilePicture: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture'])!,
+      creationTime: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}creation_time'])!,
     );
   }
 
@@ -1050,10 +1035,10 @@ class $SharedTodosTable extends SharedTodos
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SharedTodo(
-      todo: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}todo'], attachedDatabase.executor.dialect)!,
-      user: attachedDatabase.options.types.read(DriftSqlType.int,
-          data['${effectivePrefix}user'], attachedDatabase.executor.dialect)!,
+      todo: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}todo'])!,
+      user: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}user'])!,
     );
   }
 
@@ -1233,23 +1218,15 @@ class $TableWithoutPKTable extends TableWithoutPK
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CustomRowClass.map(
-      attachedDatabase.options.types.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}not_really_an_id'],
-          attachedDatabase.executor.dialect)!,
-      attachedDatabase.options.types.read(
-          DriftSqlType.double,
-          data['${effectivePrefix}some_float'],
-          attachedDatabase.executor.dialect)!,
-      custom: $TableWithoutPKTable.$converter0.fromSql(
-          attachedDatabase.options.types.read(
-              DriftSqlType.string,
-              data['${effectivePrefix}custom'],
-              attachedDatabase.executor.dialect)!),
-      webSafeInt: attachedDatabase.options.types.read(
-          DriftSqlType.bigInt,
-          data['${effectivePrefix}web_safe_int'],
-          attachedDatabase.executor.dialect),
+      attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}not_really_an_id'])!,
+      attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}some_float'])!,
+      custom: $TableWithoutPKTable.$converter0.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}custom'])!),
+      webSafeInt: attachedDatabase.typeMapping
+          .read(DriftSqlType.bigInt, data['${effectivePrefix}web_safe_int']),
     );
   }
 
@@ -1396,11 +1373,8 @@ class $PureDefaultsTable extends PureDefaults
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PureDefault(
-      txt: $PureDefaultsTable.$converter0n.fromSql(
-          attachedDatabase.options.types.read(
-              DriftSqlType.string,
-              data['${effectivePrefix}insert'],
-              attachedDatabase.executor.dialect)),
+      txt: $PureDefaultsTable.$converter0n.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
     );
   }
 
@@ -1492,14 +1466,10 @@ class $CategoryTodoCountViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CategoryTodoCountViewData(
-      description: attachedDatabase.options.types.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}description'],
-          attachedDatabase.executor.dialect),
-      itemCount: attachedDatabase.options.types.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}item_count'],
-          attachedDatabase.executor.dialect),
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      itemCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
     );
   }
 
@@ -1602,10 +1572,10 @@ class $TodoWithCategoryViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoWithCategoryViewData(
-      title: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}title'], attachedDatabase.executor.dialect),
-      description: attachedDatabase.options.types.read(DriftSqlType.string,
-          data['${effectivePrefix}desc'], attachedDatabase.executor.dialect)!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
     );
   }
 

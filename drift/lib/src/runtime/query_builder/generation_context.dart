@@ -20,7 +20,11 @@ class GenerationContext {
   final List<ResultSetImplementation> watchedTables = [];
 
   /// The options to use when mapping values from and to the database.
+  @Deprecated('Use typeMapping instead')
   final DriftDatabaseOptions options;
+
+  /// The [SqlTypes] configuration used for mapping values to the database.
+  final SqlTypes typeMapping;
 
   /// The [SqlDialect] that should be respected when generating the query.
   SqlDialect get dialect => executor?.executor.dialect ?? SqlDialect.sqlite;
@@ -58,12 +62,16 @@ class GenerationContext {
   /// database.
   GenerationContext.fromDb(DatabaseConnectionUser this.executor,
       {this.supportsVariables = true})
-      : options = executor.options;
+      // ignore: deprecated_member_use_from_same_package
+      : options = executor.options,
+        typeMapping = executor.typeMapping;
 
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.
   GenerationContext(this.options, this.executor,
-      {this.supportsVariables = true});
+      {this.supportsVariables = true})
+      : typeMapping = options
+            .createTypeMapping(executor?.executor.dialect ?? SqlDialect.sqlite);
 
   /// Introduces a variable that will be sent to the database engine. Whenever
   /// this method is called, a question mark should be added to the [buffer] so

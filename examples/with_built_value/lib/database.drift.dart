@@ -124,7 +124,8 @@ class Users extends Table with TableInfo<Users, User> {
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
@@ -160,9 +161,9 @@ class Users extends Table with TableInfo<Users, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
     );
   }

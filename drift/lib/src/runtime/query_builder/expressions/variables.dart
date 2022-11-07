@@ -60,7 +60,7 @@ class Variable<T extends Object> extends Expression<T> {
   /// database engine. For instance, a [DateTime] will me mapped to its unix
   /// timestamp.
   dynamic mapToSimpleValue(GenerationContext context) {
-    return context.options.types.mapToSqlVariable(value, context.dialect);
+    return context.typeMapping.mapToSqlVariable(value);
   }
 
   @override
@@ -120,10 +120,7 @@ class Constant<T extends Object> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write(context.options.types.mapToSqlLiteral(
-      value,
-      context.dialect,
-    ));
+    context.buffer.write(context.typeMapping.mapToSqlLiteral(value));
   }
 
   @override
