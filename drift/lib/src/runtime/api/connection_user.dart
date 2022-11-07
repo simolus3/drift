@@ -19,7 +19,7 @@ abstract class DatabaseConnectionUser {
 
   /// A [SqlTypes] mapping configuration to use when mapping values between Dart
   /// and SQL.
-  late final SqlTypes typeMapping = options.createTypeMapping(executor.dialect);
+  SqlTypes get typeMapping => options.createTypeMapping(executor.dialect);
 
   /// The database class that this user is attached to.
   @visibleForOverriding
