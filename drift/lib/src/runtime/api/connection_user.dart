@@ -17,6 +17,10 @@ abstract class DatabaseConnectionUser {
   /// values. In the future, they could be expanded to dialect-specific options.
   DriftDatabaseOptions get options => attachedDatabase.options;
 
+  /// A [SqlTypes] mapping configuration to use when mapping values between Dart
+  /// and SQL.
+  SqlTypes get typeMapping => options.createTypeMapping(executor.dialect);
+
   /// The database class that this user is attached to.
   @visibleForOverriding
   GeneratedDatabase get attachedDatabase;

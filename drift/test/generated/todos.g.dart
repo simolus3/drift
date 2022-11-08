@@ -177,7 +177,9 @@ class $CategoriesTable extends Categories
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
@@ -239,14 +241,14 @@ class $CategoriesTable extends Categories
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Category(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      description: attachedDatabase.options.types
+      description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
       priority: $CategoriesTable.$converter0.fromSql(attachedDatabase
-          .options.types
+          .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
-      descriptionInUpperCase: attachedDatabase.options.types.read(
+      descriptionInUpperCase: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}description_in_upper_case'])!,
     );
@@ -468,7 +470,9 @@ class $TodosTableTable extends TodosTable
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -488,14 +492,15 @@ class $TodosTableTable extends TodosTable
       'target_date', aliasedName, true,
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
-      defaultConstraints: 'UNIQUE');
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES "categories" ("id")');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES "categories" ("id")'));
   @override
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
@@ -545,15 +550,15 @@ class $TodosTableTable extends TodosTable
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoEntry(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title']),
-      content: attachedDatabase.options.types
+      content: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
-      targetDate: attachedDatabase.options.types
+      targetDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
-      category: attachedDatabase.options.types
+      category: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category']),
     );
   }
@@ -761,7 +766,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -770,15 +777,19 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      defaultConstraints: 'UNIQUE');
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
   @override
-  late final GeneratedColumn<bool> isAwesome = GeneratedColumn<bool>(
-      'is_awesome', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints: 'CHECK ("is_awesome" IN (0, 1))',
-      defaultValue: const Constant(true));
+  late final GeneratedColumn<bool> isAwesome =
+      GeneratedColumn<bool>('is_awesome', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(true));
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
@@ -842,15 +853,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      isAwesome: attachedDatabase.options.types
+      isAwesome: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_awesome'])!,
-      profilePicture: attachedDatabase.options.types
+      profilePicture: attachedDatabase.typeMapping
           .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture'])!,
-      creationTime: attachedDatabase.options.types.read(
+      creationTime: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}creation_time'])!,
     );
   }
@@ -1024,9 +1035,9 @@ class $SharedTodosTable extends SharedTodos
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SharedTodo(
-      todo: attachedDatabase.options.types
+      todo: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}todo'])!,
-      user: attachedDatabase.options.types
+      user: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}user'])!,
     );
   }
@@ -1207,14 +1218,14 @@ class $TableWithoutPKTable extends TableWithoutPK
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CustomRowClass.map(
-      attachedDatabase.options.types
+      attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}not_really_an_id'])!,
-      attachedDatabase.options.types
+      attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}some_float'])!,
       custom: $TableWithoutPKTable.$converter0.fromSql(attachedDatabase
-          .options.types
+          .typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}custom'])!),
-      webSafeInt: attachedDatabase.options.types
+      webSafeInt: attachedDatabase.typeMapping
           .read(DriftSqlType.bigInt, data['${effectivePrefix}web_safe_int']),
     );
   }
@@ -1362,8 +1373,7 @@ class $PureDefaultsTable extends PureDefaults
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PureDefault(
-      txt: $PureDefaultsTable.$converter0n.fromSql(attachedDatabase
-          .options.types
+      txt: $PureDefaultsTable.$converter0n.fromSql(attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
     );
   }
@@ -1456,9 +1466,9 @@ class $CategoryTodoCountViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CategoryTodoCountViewData(
-      description: attachedDatabase.options.types
+      description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
-      itemCount: attachedDatabase.options.types
+      itemCount: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
     );
   }
@@ -1562,9 +1572,9 @@ class $TodoWithCategoryViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoWithCategoryViewData(
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title']),
-      description: attachedDatabase.options.types
+      description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
     );
   }

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:recase/recase.dart';
@@ -136,8 +137,10 @@ class SchemaWriter {
       'moor_type': column.type.toSerializedString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
-      if (constraints.isNotEmpty && column.customConstraints == null)
-        'defaultConstraints': defaultConstraints(column),
+      if (constraints[SqlDialect.sqlite]!.isNotEmpty &&
+          column.customConstraints == null)
+        // TODO: Dialect-specific constraints in schema file
+        'defaultConstraints': constraints[SqlDialect.sqlite]!,
       'default_dart': column.defaultArgument,
       'default_client_dart': column.clientDefaultCode,
       'dsl_features': [...column.features.map(_dslFeatureData)],

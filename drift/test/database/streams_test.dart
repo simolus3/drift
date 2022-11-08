@@ -63,6 +63,7 @@ void main() {
     final second = db.select(db.users).watch();
     expect(second, emits(isEmpty));
 
+    verify(executor.dialect);
     verifyNoMoreInteractions(executor);
   });
 

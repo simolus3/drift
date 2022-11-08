@@ -101,7 +101,7 @@ class _BetweenExpression extends Expression<bool> {
 
     // We don't want to compare datetime values lexicographically, so we convert
     // them to a comparable unit
-    if (context.options.types.storeDateTimesAsText) {
+    if (context.typeMapping.storeDateTimesAsText) {
       if (target is Expression<DateTime>) target = target.julianday;
       if (lower is Expression<DateTime>) lower = lower.julianday;
       if (higher is Expression<DateTime>) higher = higher.julianday;

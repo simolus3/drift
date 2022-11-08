@@ -131,7 +131,9 @@ class $TodoCategoriesTable extends TodoCategories
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -166,9 +168,9 @@ class $TodoCategoriesTable extends TodoCategories
   TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoCategory(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
     );
   }
@@ -369,7 +371,9 @@ class $TodoItemsTable extends TodoItems
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -386,7 +390,8 @@ class $TodoItemsTable extends TodoItems
       'category_id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
-      defaultConstraints: 'REFERENCES "todo_categories" ("id")');
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES "todo_categories" ("id")'));
   final VerificationMeta _generatedTextMeta =
       const VerificationMeta('generatedText');
   @override
@@ -444,15 +449,15 @@ class $TodoItemsTable extends TodoItems
   TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoItem(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.options.types
+      content: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}content']),
-      categoryId: attachedDatabase.options.types
+      categoryId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
-      generatedText: attachedDatabase.options.types
+      generatedText: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
     );
   }
@@ -539,9 +544,9 @@ class $TodoCategoryItemCountView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoCategoryItemCountData(
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      itemCount: attachedDatabase.options.types
+      itemCount: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}item_count']),
     );
   }
@@ -644,9 +649,9 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoItemWithCategoryNameViewData(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title']),
     );
   }

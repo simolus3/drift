@@ -220,7 +220,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+      hasAutoIncrement: true);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -287,16 +289,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthDate: attachedDatabase.options.types
+      birthDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
-      profilePicture: attachedDatabase.options.types
+      profilePicture: attachedDatabase.typeMapping
           .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converter0.fromSql(attachedDatabase
-          .options.types
+      preferences: $UsersTable.$converter0.fromSql(attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
     );
   }
@@ -470,12 +471,16 @@ class $FriendshipsTable extends Friendships
   final VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
   @override
-  late final GeneratedColumn<bool> reallyGoodFriends = GeneratedColumn<bool>(
-      'really_good_friends', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints: 'CHECK ("really_good_friends" IN (0, 1))',
-      defaultValue: const Constant(false));
+  late final GeneratedColumn<bool> reallyGoodFriends =
+      GeneratedColumn<bool>('really_good_friends', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
       [firstUser, secondUser, reallyGoodFriends];
@@ -517,11 +522,11 @@ class $FriendshipsTable extends Friendships
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Friendship(
-      firstUser: attachedDatabase.options.types
+      firstUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
-      secondUser: attachedDatabase.options.types
+      secondUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
-      reallyGoodFriends: attachedDatabase.options.types.read(
+      reallyGoodFriends: attachedDatabase.typeMapping.read(
           DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
     );
   }
