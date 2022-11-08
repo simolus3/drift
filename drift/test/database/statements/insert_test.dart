@@ -446,6 +446,31 @@ void main() {
           ['description']));
     });
 
+    test('insertAll', () async {
+      await db.categories.insertAll(
+        [
+          CategoriesCompanion.insert(description: 'first description'),
+          CategoriesCompanion.insert(description: 'another description'),
+        ],
+        mode: InsertMode.insertOrAbort,
+        onConflict: DoUpdate((row) =>
+            CategoriesCompanion.custom(priority: row.priority + Constant(1))),
+      );
+
+      verify(executor.transactions.runBatched(BatchedStatements(
+        [
+          'pragma defer_foreign_keys = on;',
+          'INSERT OR ABORT INTO "categories" ("desc") VALUES (?) '
+              'ON CONFLICT("id") DO UPDATE SET "priority" = "priority" + 1'
+        ],
+        [
+          ArgumentsForBatchedStatement(0, []),
+          ArgumentsForBatchedStatement(1, ['first description']),
+          ArgumentsForBatchedStatement(1, ['another description']),
+        ],
+      )));
+    });
+
     test('insertOnConflictUpdate', () async {
       when(executor.runSelect(any, any)).thenAnswer(
         (_) => Future.value([

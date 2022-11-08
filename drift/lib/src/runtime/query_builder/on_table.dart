@@ -40,6 +40,21 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
     return insert().insert(row, mode: mode, onConflict: onConflict);
   }
 
+  /// Atomically inserts all [rows] into the table.
+  ///
+  /// The [mode] and [onConflict] clause can optionally control the behavior of
+  /// an insert if an existing row conflicts with a new one.
+  /// Unlike calling [Batch.insertAll] in a [Batch] directly, foreign keys are
+  /// checked only _after_ all inserts ran. In other words, the order in which
+  /// the [rows] are in doesn't matter if there are foreign keys between them.
+  Future<void> insertAll(Iterable<Insertable<Row>> rows,
+      {InsertMode? mode, UpsertClause<Tbl, Row>? onConflict}) {
+    return attachedDatabase.batch((b) {
+      b.customStatement('pragma defer_foreign_keys = on;');
+      b.insertAll(this, rows, mode: mode, onConflict: onConflict);
+    });
+  }
+
   /// Inserts one row into this table table, replacing an existing row if it
   /// exists already.
   ///
