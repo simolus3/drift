@@ -153,9 +153,13 @@ void main() {
     setUp(() async {
       table = CustomTable('tbl', db, [
         GeneratedColumn('id', 'tbl', false,
-            type: DriftSqlType.int, defaultConstraints: 'PRIMARY KEY'),
+            type: DriftSqlType.int,
+            defaultConstraints:
+                GeneratedColumn.constraintIsAlways('PRIMARY KEY')),
         GeneratedColumn('parent', 'tbl', true,
-            type: DriftSqlType.int, defaultConstraints: 'REFERENCES tbl (id)'),
+            type: DriftSqlType.int,
+            defaultConstraints:
+                GeneratedColumn.constraintIsAlways('REFERENCES tbl (id)')),
       ]);
 
       await db.customStatement('pragma foreign_keys = on;');
