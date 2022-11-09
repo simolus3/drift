@@ -265,3 +265,9 @@ class LimitingTextLength extends DriftColumnConstraint {
         typedOther.maxLength == maxLength;
   }
 }
+
+class DefaultConstraintsFromSchemaFile extends DriftColumnConstraint {
+  final String constraints;
+
+  DefaultConstraintsFromSchemaFile(this.constraints);
+}

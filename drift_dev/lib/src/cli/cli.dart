@@ -8,8 +8,8 @@ import 'package:logging/logging.dart';
 import '../backends/analyzer_context_backend.dart';
 import 'commands/analyze.dart';
 import 'commands/identify_databases.dart';
-//import 'commands/migrate.dart';
-//import 'commands/schema.dart';
+import 'commands/migrate.dart';
+import 'commands/schema.dart';
 import 'logging.dart';
 
 Future run(List<String> args) async {
@@ -35,9 +35,9 @@ class MoorCli {
       usageLineLength: 80,
     )
       ..addCommand(AnalyzeCommand(this))
-      ..addCommand(IdentifyDatabases(this));
-//      ..addCommand(SchemaCommand(this))
-//      ..addCommand(MigrateCommand(this));
+      ..addCommand(IdentifyDatabases(this))
+      ..addCommand(SchemaCommand(this))
+      ..addCommand(MigrateCommand(this));
 
     _runner.argParser
         .addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false);

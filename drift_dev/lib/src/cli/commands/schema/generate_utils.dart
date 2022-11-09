@@ -3,13 +3,16 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/cli/cli.dart';
-import 'package:drift_dev/src/services/schema/schema_files.dart';
-import 'package:drift_dev/writer.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../analysis/results/file_results.dart';
+import '../../../analysis/results/results.dart';
 import '../../../analyzer/options.dart';
+import '../../../services/schema/schema_files.dart';
+import '../../../writer/database_writer.dart';
+import '../../../writer/import_manager.dart';
+import '../../../writer/writer.dart';
+import '../../cli.dart';
 
 class GenerateUtilsCommand extends Command {
   final MoorCli cli;
@@ -117,6 +120,7 @@ class GenerateUtilsCommand extends Command {
         forSchema: version,
         writeCompanions: companions,
         writeDataClasses: dataClasses,
+        imports: ImportManagerForPartFiles(),
       ),
     );
     final file = File(p.join(output.path, _filenameForVersion(version)));
@@ -126,12 +130,19 @@ class GenerateUtilsCommand extends Command {
       ..writeln('//@dart=2.12')
       ..writeln("import 'package:drift/drift.dart';");
 
-    final db = Database(
-      declaredQueries: const [],
+    final database = DriftDatabase(
+      id: DriftElementId(SchemaReader.elementUri, 'database'),
+      declaration: DriftDeclaration(SchemaReader.elementUri, 0, 'database'),
       declaredIncludes: const [],
+      declaredQueries: const [],
       declaredTables: const [],
-    )..entities = schema.schema;
-    DatabaseWriter(db, writer.child()).write();
+      declaredViews: const [],
+    );
+    final resolved =
+        ResolvedDatabaseAccessor(const {}, const [], schema.schema);
+    final input = DatabaseGenerationInput(database, resolved, const {});
+
+    DatabaseWriter(input, writer.child()).write();
 
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
   }
@@ -178,7 +189,7 @@ class GenerateUtilsCommand extends Command {
 }
 
 class _ExportedSchema {
-  final List<DriftSchemaEntity> schema;
+  final List<DriftElement> schema;
   final Map<String, Object?> options;
 
   _ExportedSchema(this.schema, this.options);

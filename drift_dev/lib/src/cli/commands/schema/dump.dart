@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:path/path.dart';
 
+import '../../../analysis/results/results.dart';
+import '../../../services/schema/schema_files.dart';
 import '../../cli.dart';
 
 class DumpSchemaCommand extends Command {
@@ -45,10 +45,19 @@ class DumpSchemaCommand extends Command {
       cli.exit('Unexpected error: The input file could not be analyzed');
     }
 
-    final result = input.fileAnalysis;
+    final databases =
+        input.analysis.values.map((e) => e.result).whereType<DriftDatabase>();
 
-    final db = result.declaredDatabases.single;
-    final writer = SchemaWriter(db, options: cli.project.moorOptions);
+    if (databases.length != 1) {
+      cli.exit('Expected the input file to contain exactly one database.');
+    }
+
+    final result = input.fileAnalysis!;
+    final databaseElement = databases.single;
+    final db = result.resolvedDatabases[databaseElement]!;
+
+    final writer =
+        SchemaWriter(db.availableElements, options: cli.project.moorOptions);
 
     var target = rest[1];
     // This command is most commonly used to write into
@@ -56,7 +65,7 @@ class DumpSchemaCommand extends Command {
     // try to infer the file name.
     if (await FileSystemEntity.isDirectory(target) ||
         !target.endsWith('.json')) {
-      final version = db.schemaVersion;
+      final version = databaseElement.schemaVersion;
 
       if (version == null) {
         // Couldn't read schema from database, so fail.
