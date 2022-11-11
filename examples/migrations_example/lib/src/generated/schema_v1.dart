@@ -29,9 +29,6 @@ class Users extends Table with TableInfo {
   Users createAlias(String alias) {
     return Users(attachedDatabase, alias);
   }
-
-  @override
-  bool get dontWriteConstraints => false;
 }
 
 class DatabaseAtV1 extends GeneratedDatabase {

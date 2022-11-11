@@ -219,9 +219,6 @@ class Users extends Table with TableInfo<Users, UsersData> {
   Users createAlias(String alias) {
     return Users(attachedDatabase, alias);
   }
-
-  @override
-  bool get dontWriteConstraints => false;
 }
 
 class GroupsData extends DataClass implements Insertable<GroupsData> {
@@ -447,6 +444,139 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   bool get dontWriteConstraints => true;
 }
 
+class GroupCountData extends DataClass {
+  final int id;
+  final String name;
+  final DateTime? birthday;
+  final int? nextUser;
+  final int groupCount;
+  const GroupCountData(
+      {required this.id,
+      required this.name,
+      this.birthday,
+      this.nextUser,
+      required this.groupCount});
+  factory GroupCountData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroupCountData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      birthday: serializer.fromJson<DateTime?>(json['birthday']),
+      nextUser: serializer.fromJson<int?>(json['nextUser']),
+      groupCount: serializer.fromJson<int>(json['groupCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'birthday': serializer.toJson<DateTime?>(birthday),
+      'nextUser': serializer.toJson<int?>(nextUser),
+      'groupCount': serializer.toJson<int>(groupCount),
+    };
+  }
+
+  GroupCountData copyWith(
+          {int? id,
+          String? name,
+          Value<DateTime?> birthday = const Value.absent(),
+          Value<int?> nextUser = const Value.absent(),
+          int? groupCount}) =>
+      GroupCountData(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        birthday: birthday.present ? birthday.value : this.birthday,
+        nextUser: nextUser.present ? nextUser.value : this.nextUser,
+        groupCount: groupCount ?? this.groupCount,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('GroupCountData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('birthday: $birthday, ')
+          ..write('nextUser: $nextUser, ')
+          ..write('groupCount: $groupCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, birthday, nextUser, groupCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroupCountData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.birthday == this.birthday &&
+          other.nextUser == this.nextUser &&
+          other.groupCount == this.groupCount);
+}
+
+class GroupCount extends ViewInfo<GroupCount, GroupCountData>
+    implements HasResultSet {
+  final String? _alias;
+  @override
+  final DatabaseAtV8 attachedDatabase;
+  GroupCount(this.attachedDatabase, [this._alias]);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, birthday, nextUser, groupCount];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'group_count';
+  @override
+  String get createViewStmt =>
+      'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users';
+  @override
+  GroupCount get asDslTable => this;
+  @override
+  GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupCountData(
+      id: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.options.types
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthday: attachedDatabase.options.types
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
+      nextUser: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+      groupCount: attachedDatabase.options.types
+          .read(DriftSqlType.int, data['${effectivePrefix}group_count'])!,
+    );
+  }
+
+  late final GeneratedColumn<int> id =
+      GeneratedColumn<int>('id', aliasedName, false, type: DriftSqlType.int);
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string);
+  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+      'birthday', aliasedName, true,
+      type: DriftSqlType.dateTime);
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
+      'next_user', aliasedName, true,
+      type: DriftSqlType.int);
+  late final GeneratedColumn<int> groupCount = GeneratedColumn<int>(
+      'group_count', aliasedName, false,
+      type: DriftSqlType.int);
+  @override
+  GroupCount createAlias(String alias) {
+    return GroupCount(attachedDatabase, alias);
+  }
+
+  @override
+  Query? get query => null;
+  @override
+  Set<String> get readTables => const {};
+}
+
 class NotesData extends DataClass implements Insertable<NotesData> {
   final String title;
   final String content;
@@ -609,7 +739,7 @@ class Notes extends Table
   @override
   String get actualTableName => 'notes';
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
   @override
   NotesData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -629,142 +759,8 @@ class Notes extends Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
-  @override
   String get moduleAndArgs =>
       'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
-}
-
-class GroupCountData extends DataClass {
-  final int id;
-  final String name;
-  final DateTime? birthday;
-  final int? nextUser;
-  final int groupCount;
-  const GroupCountData(
-      {required this.id,
-      required this.name,
-      this.birthday,
-      this.nextUser,
-      required this.groupCount});
-  factory GroupCountData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return GroupCountData(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      birthday: serializer.fromJson<DateTime?>(json['birthday']),
-      nextUser: serializer.fromJson<int?>(json['nextUser']),
-      groupCount: serializer.fromJson<int>(json['groupCount']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'birthday': serializer.toJson<DateTime?>(birthday),
-      'nextUser': serializer.toJson<int?>(nextUser),
-      'groupCount': serializer.toJson<int>(groupCount),
-    };
-  }
-
-  GroupCountData copyWith(
-          {int? id,
-          String? name,
-          Value<DateTime?> birthday = const Value.absent(),
-          Value<int?> nextUser = const Value.absent(),
-          int? groupCount}) =>
-      GroupCountData(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        birthday: birthday.present ? birthday.value : this.birthday,
-        nextUser: nextUser.present ? nextUser.value : this.nextUser,
-        groupCount: groupCount ?? this.groupCount,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('GroupCountData(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('birthday: $birthday, ')
-          ..write('nextUser: $nextUser, ')
-          ..write('groupCount: $groupCount')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, birthday, nextUser, groupCount);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is GroupCountData &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.birthday == this.birthday &&
-          other.nextUser == this.nextUser &&
-          other.groupCount == this.groupCount);
-}
-
-class GroupCount extends ViewInfo<GroupCount, GroupCountData>
-    implements HasResultSet {
-  final String? _alias;
-  @override
-  final DatabaseAtV8 attachedDatabase;
-  GroupCount(this.attachedDatabase, [this._alias]);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, birthday, nextUser, groupCount];
-  @override
-  String get aliasedName => _alias ?? entityName;
-  @override
-  String get entityName => 'group_count';
-  @override
-  String? get createViewStmt => null;
-  @override
-  GroupCount get asDslTable => this;
-  @override
-  GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return GroupCountData(
-      id: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthday: attachedDatabase.options.types
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
-      nextUser: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
-      groupCount: attachedDatabase.options.types
-          .read(DriftSqlType.int, data['${effectivePrefix}group_count'])!,
-    );
-  }
-
-  late final GeneratedColumn<int> id =
-      GeneratedColumn<int>('id', aliasedName, false, type: DriftSqlType.int);
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string);
-  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
-      'birthday', aliasedName, true,
-      type: DriftSqlType.dateTime);
-  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
-      'next_user', aliasedName, true,
-      type: DriftSqlType.int);
-  late final GeneratedColumn<int> groupCount = GeneratedColumn<int>(
-      'group_count', aliasedName, false,
-      type: DriftSqlType.int);
-  @override
-  GroupCount createAlias(String alias) {
-    return GroupCount(attachedDatabase, alias);
-  }
-
-  @override
-  Query? get query => null;
-  @override
-  Set<String> get readTables => const {};
 }
 
 class DatabaseAtV8 extends GeneratedDatabase {

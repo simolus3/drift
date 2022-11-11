@@ -42,9 +42,6 @@ class Users extends Table with TableInfo {
   Users createAlias(String alias) {
     return Users(attachedDatabase, alias);
   }
-
-  @override
-  bool get dontWriteConstraints => false;
 }
 
 class Groups extends Table with TableInfo {
@@ -110,7 +107,8 @@ class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
   @override
   String get entityName => 'group_count';
   @override
-  String? get createViewStmt => null;
+  String get createViewStmt =>
+      'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users';
   @override
   GroupCount get asDslTable => this;
   @override

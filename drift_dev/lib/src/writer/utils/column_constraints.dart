@@ -50,6 +50,8 @@ String defaultConstraints(DriftColumn column) {
       }
 
       defaultConstraints.add(constraint);
+    } else if (feature is DefaultConstraintsFromSchemaFile) {
+      return feature.constraints;
     }
   }
 

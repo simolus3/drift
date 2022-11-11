@@ -42,9 +42,6 @@ class Users extends Table with TableInfo {
   Users createAlias(String alias) {
     return Users(attachedDatabase, alias);
   }
-
-  @override
-  bool get dontWriteConstraints => false;
 }
 
 class Groups extends Table with TableInfo {
@@ -97,51 +94,6 @@ class Groups extends Table with TableInfo {
   bool get dontWriteConstraints => true;
 }
 
-class Notes extends Table with TableInfo, VirtualTableInfo {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Notes(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
-      'search_terms', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  @override
-  List<GeneratedColumn> get $columns => [title, content, searchTerms];
-  @override
-  String get aliasedName => _alias ?? 'notes';
-  @override
-  String get actualTableName => 'notes';
-  @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
-  @override
-  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
-    throw UnsupportedError('TableInfo.map in schema verification code');
-  }
-
-  @override
-  Notes createAlias(String alias) {
-    return Notes(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-  @override
-  String get moduleAndArgs =>
-      'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
-}
-
 class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
   final String? _alias;
   @override
@@ -155,7 +107,8 @@ class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
   @override
   String get entityName => 'group_count';
   @override
-  String? get createViewStmt => null;
+  String get createViewStmt =>
+      'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users';
   @override
   GroupCount get asDslTable => this;
   @override
@@ -186,6 +139,49 @@ class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
   Query? get query => null;
   @override
   Set<String> get readTables => const {};
+}
+
+class Notes extends Table with TableInfo, VirtualTableInfo {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Notes(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
+      'search_terms', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  @override
+  List<GeneratedColumn> get $columns => [title, content, searchTerms];
+  @override
+  String get aliasedName => _alias ?? 'notes';
+  @override
+  String get actualTableName => 'notes';
+  @override
+  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  @override
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
+  }
+
+  @override
+  Notes createAlias(String alias) {
+    return Notes(attachedDatabase, alias);
+  }
+
+  @override
+  String get moduleAndArgs =>
+      'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
 }
 
 class DatabaseAtV7 extends GeneratedDatabase {

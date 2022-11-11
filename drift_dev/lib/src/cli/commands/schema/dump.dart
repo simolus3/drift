@@ -54,7 +54,7 @@ class DumpSchemaCommand extends Command {
 
     final result = input.fileAnalysis!;
     final databaseElement = databases.single;
-    final db = result.resolvedDatabases[databaseElement]!;
+    final db = result.resolvedDatabases[databaseElement.id]!;
 
     final writer =
         SchemaWriter(db.availableElements, options: cli.project.moorOptions);

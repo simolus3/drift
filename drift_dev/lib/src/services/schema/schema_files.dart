@@ -147,8 +147,8 @@ class SchemaWriter {
       'customConstraints': column.customConstraints,
       if (constraints.isNotEmpty && column.customConstraints == null)
         'defaultConstraints': defaultConstraints(column),
-      'default_dart': column.defaultArgument,
-      'default_client_dart': column.clientDefaultCode,
+      'default_dart': column.defaultArgument?.toString(),
+      'default_client_dart': column.clientDefaultCode?.toString(),
       'dsl_features': [...column.constraints.map(_dslFeatureData)],
       if (column.typeConverter != null)
         'type_converter': {
@@ -313,6 +313,7 @@ class SchemaReader {
         _declaration,
         columns: columns,
         baseDartName: pascalCase,
+        fixedEntityInfoName: pascalCase,
         nameOfRowClass: '${pascalCase}Data',
         writeDefaultConstraints: true,
         withoutRowId: withoutRowId,
@@ -349,6 +350,7 @@ class SchemaReader {
       _declaration,
       columns: columns,
       baseDartName: pascalCase,
+      fixedEntityInfoName: pascalCase,
       nameOfRowClass: '${pascalCase}Data',
       writeDefaultConstraints: content['was_declared_in_moor'] != true,
       withoutRowId: withoutRowId,
@@ -394,6 +396,9 @@ class SchemaReader {
     ].whereType<DriftColumnConstraint>().toList();
     final getterName = data['getter_name'] as String?;
 
+    final defaultDart = data['default_dart'] as String?;
+    final defaultClientDart = data['default_client_dart'] as String?;
+
     // Note: Not including client default code because that usually depends on
     // imports from the database.
     return DriftColumn(
@@ -401,6 +406,11 @@ class SchemaReader {
       nullable: nullable,
       nameInSql: name,
       nameInDart: getterName ?? ReCase(name).camelCase,
+      defaultArgument:
+          defaultDart != null ? AnnotatedDartCode([defaultDart]) : null,
+      clientDefaultCode: defaultClientDart != null
+          ? AnnotatedDartCode([defaultClientDart])
+          : null,
       declaration: _declaration,
       customConstraints: customConstraints,
       constraints: dslFeatures,
