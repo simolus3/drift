@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:drift_dev/src/writer/database_writer.dart';

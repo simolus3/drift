@@ -1,7 +1,8 @@
-import 'package:drift_dev/src/analyzer/drift/moor_ffi_extension.dart';
 import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/utils/ast_equality.dart';
+
+import '../../analysis/drift_native_functions.dart';
 
 class Input {
   final String name;
@@ -26,7 +27,7 @@ class FindSchemaDifferences {
 
   final SqlEngine _engine = SqlEngine(
     EngineOptions(enabledExtensions: const [
-      MoorFfiExtension(),
+      DriftNativeExtension(),
       Json1Extension(),
       Fts5Extension(),
     ]),

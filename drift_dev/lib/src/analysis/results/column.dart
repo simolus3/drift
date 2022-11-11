@@ -3,7 +3,7 @@ import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
-import '../../analyzer/options.dart';
+import '../options.dart';
 import 'dart.dart';
 import 'element.dart';
 import 'result_sets.dart';

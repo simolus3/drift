@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift_dev/src/analysis/drift_native_functions.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
-import 'package:drift_dev/src/analyzer/drift/moor_ffi_extension.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:test/test.dart';
 
@@ -12,7 +12,7 @@ void main() {
 
   setUp(() {
     engine = SqlEngine(
-      EngineOptions(enabledExtensions: const [MoorFfiExtension()]),
+      EngineOptions(enabledExtensions: const [DriftNativeExtension()]),
     );
   });
 

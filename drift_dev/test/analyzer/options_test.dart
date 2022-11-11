@@ -1,5 +1,5 @@
 import 'package:checked_yaml/checked_yaml.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 

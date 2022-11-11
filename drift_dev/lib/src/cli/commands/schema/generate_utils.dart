@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 
 import '../../../analysis/results/file_results.dart';
 import '../../../analysis/results/results.dart';
-import '../../../analyzer/options.dart';
+import '../../../analysis/options.dart';
 import '../../../services/schema/schema_files.dart';
 import '../../../writer/database_writer.dart';
 import '../../../writer/import_manager.dart';

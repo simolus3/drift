@@ -5,7 +5,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../analysis/results/results.dart';
-import '../../analyzer/options.dart';
+import '../../analysis/options.dart';
 import '../../utils/string_escaper.dart';
 
 /// The expanded sql that we insert into queries whenever an array variable

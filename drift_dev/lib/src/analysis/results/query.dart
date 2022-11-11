@@ -3,7 +3,7 @@ import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import '../../analyzer/options.dart';
+import '../options.dart';
 import '../resolver/shared/column_name.dart';
 import 'column.dart';
 import 'element.dart';

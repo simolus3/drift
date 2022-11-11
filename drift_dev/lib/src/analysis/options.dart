@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart' show SqliteVersion;
 
-part '../generated/analyzer/options.g.dart';
+part '../generated/analysis/options.g.dart';
 
 /// Controllable options to define the behavior of the analyzer and the
 /// generator.

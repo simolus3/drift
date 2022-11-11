@@ -1,6 +1,6 @@
 import 'package:build_config/build_config.dart';
 import 'package:collection/collection.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 
 Future<DriftOptions> fromRootDir(String path) async {
   final options = await BuildConfig.fromPackageDir(path);

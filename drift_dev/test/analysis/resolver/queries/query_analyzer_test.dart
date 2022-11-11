@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/results.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 

@@ -4,7 +4,7 @@ import 'package:build/build.dart';
 
 import '../../analysis/driver/driver.dart';
 import '../../analysis/serializer.dart';
-import '../../analyzer/options.dart';
+import '../../analysis/options.dart';
 import 'backend.dart';
 
 class DriftAnalyzer extends Builder {

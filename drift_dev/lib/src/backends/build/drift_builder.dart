@@ -6,7 +6,7 @@ import '../../analysis/driver/driver.dart';
 import '../../analysis/driver/error.dart';
 import '../../analysis/driver/state.dart';
 import '../../analysis/results/results.dart';
-import '../../analyzer/options.dart';
+import '../../analysis/options.dart';
 import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
 import '../../writer/import_manager.dart';

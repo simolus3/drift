@@ -1,5 +1,5 @@
 import 'package:drift_dev/src/analysis/driver/state.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:build_config/build_config.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/utils/options_reader.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_transform/stream_transform.dart';

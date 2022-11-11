@@ -4,7 +4,7 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
 
 import '../../analysis/results/results.dart';
-import '../../analyzer/options.dart';
+import '../../analysis/options.dart';
 import '../../writer/utils/column_constraints.dart';
 
 const _infoVersion = '1.0.0';

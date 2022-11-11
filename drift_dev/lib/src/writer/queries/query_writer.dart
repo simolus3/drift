@@ -3,8 +3,8 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import '../../analysis/resolver/queries/nested_queries.dart';
 import '../../analysis/results/results.dart';
-import '../../analyzer/options.dart';
-import '../../analyzer/sql_queries/explicit_alias_transformer.dart';
+import '../../analysis/options.dart';
+import '../../analysis/resolver/queries/explicit_alias_transformer.dart';
 import '../../utils/string_escaper.dart';
 import '../writer.dart';
 import 'result_set_writer.dart';

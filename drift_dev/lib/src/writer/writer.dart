@@ -1,7 +1,7 @@
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../analysis/results/results.dart';
-import '../analyzer/options.dart';
+import '../analysis/options.dart';
 import 'import_manager.dart';
 import 'queries/sql_writer.dart';
 

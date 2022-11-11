@@ -11,7 +11,7 @@ import 'package:logging/logging.dart';
 import '../analysis/backend.dart';
 import '../analysis/driver/driver.dart';
 import '../analysis/driver/state.dart';
-import '../analyzer/options.dart';
+import '../analysis/options.dart';
 
 class PhysicalDriftDriver {
   final DriftAnalysisDriver driver;

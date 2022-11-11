@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:sqlparser/sqlparser.dart';
 
-import '../../analyzer/options.dart';
+import '../options.dart';
 import '../backend.dart';
 import '../drift_native_functions.dart';
 import '../resolver/dart/helper.dart';

@@ -1,4 +1,4 @@
-import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.dart';
+import 'package:drift_dev/src/analysis/resolver/queries/explicit_alias_transformer.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
