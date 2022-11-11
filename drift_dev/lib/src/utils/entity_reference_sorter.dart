@@ -37,10 +37,10 @@ extension SortTopologically on Iterable<DriftElement> {
       return sortTopologically();
     } on CircularReferenceException catch (e) {
       final joined = e.affected.map((e) => e.id.name).join('->');
-      final last = e.affected.last.id.name;
+      final first = e.affected.first.id.name;
       final message =
           'Illegal circular reference. This is likely a bug in drift, '
-          'generated code may be invalid. Invalid cycle from $joined->$last.';
+          'generated code may be invalid. Invalid cycle from $joined->$first.';
       reportError(message);
 
       return toList();
