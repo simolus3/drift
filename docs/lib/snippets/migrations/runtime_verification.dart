@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations.dart';
 // #enddocregion
 
-const kDebugBuild = true;
+const kDebugMode = true;
 
 abstract class _$MyDatabase extends GeneratedDatabase {
   _$MyDatabase(QueryExecutor executor) : super(executor);
@@ -32,7 +32,7 @@ class MyDatabase extends _$MyDatabase {
         beforeOpen: (details) async {
           // your existing beforeOpen callback, enable foreign keys, etc.
 
-          if (kDebugBuild) {
+          if (kDebugMode) {
             // This check pulls in a fair amount of code that's not needed
             // anywhere else, so we recommend only doing it in debug builds.
             await validateDatabaseSchema();
