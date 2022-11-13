@@ -41,7 +41,8 @@ class FileAnalyzer {
           final availableElements = imported
               .expand((reachable) {
                 final elementAnalysis = reachable.analysis.values;
-                return elementAnalysis.map((e) => e.result);
+                return elementAnalysis.map((e) => e.result).where(
+                    (e) => e is DefinedSqlQuery || e is DriftSchemaElement);
               })
               .whereType<DriftElement>()
               .followedBy(element.references)

@@ -1,15 +1,14 @@
 @Tags(['analyzer'])
 import 'package:drift/drift.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/services/find_stream_update_rules.dart';
 import 'package:test/test.dart';
 
-import '../analyzer/utils.dart';
+import '../analysis/test_utils.dart';
 
 void main() {
   test('finds update rules for triggers', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
 CREATE TABLE users (
   id INTEGER NOT NULL PRIMARY KEY,
   name VARCHAR NOT NULL
@@ -22,17 +21,18 @@ BEGIN
   INSERT INTO users (name) VALUES (UPPER(new.name));
 END;
       ''',
-      'foo|lib/main.dart': '''
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
-@DriftDatabase(include: {'a.moor'})
+@DriftDatabase(include: {'a.drift'})
 class MyDatabase {}
       '''
     });
 
-    final file = await state.analyze('package:foo/main.dart');
-    state.close();
-    final db = (file.currentResult as ParsedDartFile).declaredDatabases.single;
+    final file = await state.analyze('package:a/main.dart');
+    state.expectNoErrors();
+
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
     final rules = FindStreamUpdateRules(db).identifyRules();
 
@@ -51,8 +51,8 @@ class MyDatabase {}
   });
 
   test('finds update rules for foreign key constraint', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
 CREATE TABLE a (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   bar TEXT
@@ -78,21 +78,18 @@ CREATE TABLE unaffected_on_update (
   col INTEGER NOT NULL REFERENCES a(id) ON UPDATE NO ACTION
 );
       ''',
-      'foo|lib/main.dart': '''
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
-@DriftDatabase(include: {'a.moor'})
+@DriftDatabase(include: {'a.drift'})
 class MyDatabase {}
       '''
     });
 
-    final file = await state.analyze('package:foo/main.dart');
-    state.close();
+    final file = await state.analyze('package:a/main.dart');
+    state.expectNoErrors();
 
-    final db = (file.currentResult as ParsedDartFile).declaredDatabases.single;
-
-    expect(state.file('package:foo/a.moor').errors.errors, isEmpty);
-
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
     final rules = FindStreamUpdateRules(db).identifyRules();
 
     const updateA =

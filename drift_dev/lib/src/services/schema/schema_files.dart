@@ -56,7 +56,7 @@ class SchemaWriter {
       type = 'trigger';
       data = {
         'on': _idOf(entity.on!),
-        'refences_in_body': [
+        'references_in_body': [
           for (final ref in entity.references.whereType<DriftSchemaElement>())
             _idOf(ref),
         ],
@@ -152,7 +152,7 @@ class SchemaWriter {
       'dsl_features': [...column.constraints.map(_dslFeatureData)],
       if (column.typeConverter != null)
         'type_converter': {
-          'dart_expr': column.typeConverter!.expression,
+          'dart_expr': column.typeConverter!.expression.toString(),
           'dart_type_name': column.typeConverter!.dartType
               .getDisplayString(withNullability: false),
         }
@@ -271,7 +271,8 @@ class SchemaReader {
     final name = content['name'] as String;
     final sql = content['sql'] as String;
 
-    return DriftIndex(_id(name), _declaration, table: on, createStmt: sql);
+    return DriftIndex(_id(name), _declaration, table: on, createStmt: sql)
+      ..parsedStatement = _engine.parse(sql).rootNode as CreateIndexStatement;
   }
 
   DriftTrigger _readTrigger(Map<String, dynamic> content) {
@@ -290,7 +291,7 @@ class SchemaReader {
       ],
       createStmt: sql,
       writes: const [],
-    );
+    )..parsedStatement = _engine.parse(sql).rootNode as CreateTriggerStatement;
   }
 
   DriftTable _readTable(Map<String, dynamic> content) {

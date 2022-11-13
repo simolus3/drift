@@ -1,21 +1,19 @@
 @Tags(['analyzer'])
 import 'package:build_test/build_test.dart';
-import 'package:drift_dev/src/backends/backend.dart';
-import 'package:drift_dev/src/backends/build/build_backend.dart';
+import 'package:drift_dev/src/analysis/backend.dart';
+import 'package:drift_dev/src/backends/build/backend.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final backend = BuildBackend();
-
   test('throws NotALibraryException when resolving a part file', () {
     testBuilder(
       TestBuilder(
         build: (step, _) async {
-          final task = backend.createTask(step);
+          final backend = DriftBuildBackend(step);
           final partOfUri = Uri.parse('package:foo/helper.dart');
 
           await expectLater(
-            () => task.resolveDart(partOfUri),
+            () => backend.readDart(partOfUri),
             throwsA(const TypeMatcher<NotALibraryException>()
                 .having((e) => e.uri, 'uri', partOfUri)),
           );

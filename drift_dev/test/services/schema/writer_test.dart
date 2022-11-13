@@ -1,20 +1,23 @@
 @Tags(['analyzer'])
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/analysis/results/database.dart';
+import 'package:drift_dev/src/analysis/results/file_results.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:drift_dev/src/writer/database_writer.dart';
+import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:test/test.dart';
 
-import '../../analyzer/utils.dart';
+import '../../analysis/test_utils.dart';
 
 void main() {
   test('writer integration test', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
 import 'main.dart';
 
 CREATE TABLE "groups" (
@@ -43,7 +46,7 @@ CREATE INDEX groups_name ON "groups"(name);
 
 CREATE VIEW my_view AS SELECT id FROM "groups";
       ''',
-      'foo|lib/main.dart': '''
+      'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Users extends Table {
@@ -64,22 +67,22 @@ class SettingsConverter extends TypeConverter<Settings, String> {
   Settings fromSql(String db) => Settings();
 }
 
-@DriftDatabase(include: {'a.moor'}, tables: [Users])
+@DriftDatabase(include: {'a.drift'}, tables: [Users])
 class Database {}
       ''',
     }, options: const DriftOptions.defaults(modules: [SqlModule.fts5]));
 
-    final file = await state.analyze('package:foo/main.dart');
-    expect(state.session.errorsInFileAndImports(file), isEmpty);
+    final file = await state.analyze('package:a/main.dart');
+    state.expectNoErrors();
 
-    final result = file.currentResult as ParsedDartFile;
-    final db = result.declaredDatabases.single;
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-    final schemaJson = SchemaWriter(db).createSchemaJson();
+    final schemaJson = SchemaWriter(db.availableElements).createSchemaJson();
+
     expect(schemaJson, json.decode(expected));
 
     final schemaWithOptions = SchemaWriter(
-      db,
+      db.availableElements,
       options: const DriftOptions.defaults(storeDateTimeValuesAsText: true),
     ).createSchemaJson();
     expect(
@@ -88,15 +91,33 @@ class Database {}
 
   test('can generate code from schema json', () {
     final serializedSchema = json.decode(expected) as Map<String, dynamic>;
-
     final reader = SchemaReader.readJson(serializedSchema);
-    final fakeDb = Database()..entities = [...reader.entities];
+
+    final writer = Writer(
+      const DriftOptions.defaults(),
+      generationOptions: GenerationOptions(
+        forSchema: 1,
+        writeCompanions: true,
+        writeDataClasses: true,
+        imports: ImportManagerForPartFiles(),
+      ),
+    );
+
+    final database = DriftDatabase(
+      id: DriftElementId(SchemaReader.elementUri, 'database'),
+      declaration: DriftDeclaration(SchemaReader.elementUri, 0, 'database'),
+      declaredIncludes: const [],
+      declaredQueries: const [],
+      declaredTables: const [],
+      declaredViews: const [],
+    );
+    final resolved =
+        ResolvedDatabaseAccessor(const {}, const [], reader.entities.toList());
+    final input = DatabaseGenerationInput(database, resolved, const {});
 
     // Write the database. Not crashing is good enough for us here, we have
     // separate tests for verification
-    final writer = Writer(const DriftOptions.defaults(),
-        generationOptions: const GenerationOptions(forSchema: 1));
-    DatabaseWriter(fakeDb, writer.child()).write();
+    DatabaseWriter(input, writer.child()).write();
   });
 }
 
@@ -107,14 +128,12 @@ const expected = r'''
         "version": "1.0.0"
     },
     "options": {
-      "store_date_time_values_as_text": false
+        "store_date_time_values_as_text": false
     },
     "entities": [
         {
             "id": 0,
-            "references": [
-
-            ],
+            "references": [],
             "type": "table",
             "data": {
                 "name": "groups",
@@ -129,7 +148,6 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-                            "primary-key",
                             "auto-increment"
                         ]
                     },
@@ -141,22 +159,69 @@ const expected = r'''
                         "customConstraints": "NOT NULL",
                         "default_dart": null,
                         "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
+                        "dsl_features": []
                     }
                 ],
                 "is_virtual": false,
+                "without_rowid": false,
                 "constraints": [
                     "UNIQUE(name)"
+                ],
+                "unique_keys": [
+                    [
+                        "name"
+                    ]
                 ]
             }
         },
         {
             "id": 1,
-            "references": [
-
-            ],
+            "references": [],
+            "type": "table",
+            "data": {
+                "name": "email",
+                "was_declared_in_moor": true,
+                "columns": [
+                    {
+                        "name": "sender",
+                        "getter_name": "sender",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "title",
+                        "getter_name": "title",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    },
+                    {
+                        "name": "body",
+                        "getter_name": "body",
+                        "moor_type": "ColumnType.text",
+                        "nullable": false,
+                        "customConstraints": "",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": []
+                    }
+                ],
+                "is_virtual": true,
+                "create_virtual_stmt": "CREATE VIRTUAL TABLE \"email\" USING fts5(sender, title, body)",
+                "without_rowid": false,
+                "constraints": []
+            }
+        },
+        {
+            "id": 2,
+            "references": [],
             "type": "table",
             "data": {
                 "name": "users",
@@ -172,8 +237,7 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-                            "auto-increment",
-                            "primary-key"
+                            "auto-increment"
                         ]
                     },
                     {
@@ -184,9 +248,7 @@ const expected = r'''
                         "customConstraints": null,
                         "default_dart": null,
                         "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
+                        "dsl_features": []
                     },
                     {
                         "name": "setting",
@@ -196,9 +258,7 @@ const expected = r'''
                         "customConstraints": null,
                         "default_dart": null,
                         "default_client_dart": null,
-                        "dsl_features": [
-
-                        ],
+                        "dsl_features": [],
                         "type_converter": {
                             "dart_expr": "const SettingsConverter()",
                             "dart_type_name": "Settings"
@@ -206,14 +266,20 @@ const expected = r'''
                     }
                 ],
                 "is_virtual": false,
-                "unique_keys": [["name", "setting"]]
+                "without_rowid": false,
+                "unique_keys": [
+                    [
+                        "name",
+                        "setting"
+                    ]
+                ]
             }
         },
         {
-            "id": 2,
+            "id": 3,
             "references": [
                 0,
-                1
+                2
             ],
             "type": "table",
             "data": {
@@ -229,7 +295,7 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-
+                            "unknown"
                         ]
                     },
                     {
@@ -241,7 +307,7 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-
+                            "unknown"
                         ]
                     },
                     {
@@ -250,16 +316,15 @@ const expected = r'''
                         "moor_type": "ColumnType.boolean",
                         "nullable": false,
                         "customConstraints": "NOT NULL DEFAULT FALSE",
-                        "default_dart": "const CustomExpression<bool>('FALSE')",
+                        "default_dart": "const CustomExpression('FALSE')",
                         "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
+                        "dsl_features": []
                     }
                 ],
                 "is_virtual": false,
+                "without_rowid": false,
                 "constraints": [
-                    "PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE"
+                    "PRIMARY KEY(\"group\", user)ON CONFLICT REPLACE"
                 ],
                 "explicit_pk": [
                     "group",
@@ -268,24 +333,24 @@ const expected = r'''
             }
         },
         {
-            "id": 3,
+            "id": 4,
             "references": [
-                2,
+                3,
                 0
             ],
             "type": "trigger",
             "data": {
-                "on": 2,
-                "refences_in_body": [
-                    0,
-                    2
+                "on": 3,
+                "references_in_body": [
+                    3,
+                    0
                 ],
                 "name": "delete_empty_groups",
-                "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN DELETE FROM \"groups\" WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);END"
+                "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN\n  DELETE FROM \"groups\"\n    WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);\nEND;"
             }
         },
         {
-            "id": 4,
+            "id": 5,
             "references": [
                 0
             ],
@@ -297,14 +362,14 @@ const expected = r'''
             }
         },
         {
-            "id": 5,
+            "id": 6,
             "references": [
                 0
             ],
             "type": "view",
             "data": {
                 "name": "my_view",
-                "sql": "CREATE VIEW my_view AS SELECT id FROM \"groups\"",
+                "sql": "CREATE VIEW my_view AS SELECT id FROM \"groups\";",
                 "dart_data_name": "MyViewData",
                 "dart_info_name": "MyView",
                 "columns": [
@@ -316,62 +381,9 @@ const expected = r'''
                         "customConstraints": null,
                         "default_dart": null,
                         "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
+                        "dsl_features": []
                     }
                 ]
-            }
-        },
-        {
-            "id": 6,
-            "references": [
-
-            ],
-            "type": "table",
-            "data": {
-                "name": "email",
-                "was_declared_in_moor": true,
-                "columns": [
-                    {
-                        "name": "sender",
-                        "getter_name": "sender",
-                        "moor_type": "ColumnType.text",
-                        "nullable": false,
-                        "customConstraints": "",
-                        "default_dart": null,
-                        "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
-                    },
-                    {
-                        "name": "title",
-                        "getter_name": "title",
-                        "moor_type": "ColumnType.text",
-                        "nullable": false,
-                        "customConstraints": "",
-                        "default_dart": null,
-                        "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
-                    },
-                    {
-                        "name": "body",
-                        "getter_name": "body",
-                        "moor_type": "ColumnType.text",
-                        "nullable": false,
-                        "customConstraints": "",
-                        "default_dart": null,
-                        "default_client_dart": null,
-                        "dsl_features": [
-
-                        ]
-                    }
-                ],
-                "is_virtual": true,
-                "create_virtual_stmt": "CREATE VIRTUAL TABLE email USING fts5(sender, title, body);"
             }
         }
     ]

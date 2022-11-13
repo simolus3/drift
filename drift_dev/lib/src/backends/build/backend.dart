@@ -42,13 +42,17 @@ class DriftBuildBackend extends DriftBackend {
       final library = await _buildStep.resolver.findLibraryByName(name);
 
       if (library == null) {
-        throw NonLibraryAssetException(AssetId('sdk', name));
+        throw NotALibraryException(uri);
       } else {
         return library;
       }
     }
 
-    return await _buildStep.resolver.libraryFor(AssetId.resolve(uri));
+    try {
+      return await _buildStep.resolver.libraryFor(AssetId.resolve(uri));
+    } on NonLibraryAssetException {
+      throw NotALibraryException(uri);
+    }
   }
 
   @override
