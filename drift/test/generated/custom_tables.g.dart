@@ -1761,10 +1761,20 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<MyViewData> readView() {
-    return customSelect('SELECT * FROM my_view', variables: [], readsFrom: {
-      config,
-    }).asyncMap(myView.mapFromRow);
+  Selectable<MyViewData> readView({ReadView$where? where}) {
+    var $arrayStartIndex = 1;
+    final generatedwhere = $write(
+        where?.call(this.myView) ?? const CustomExpression('(TRUE)'),
+        startIndex: $arrayStartIndex);
+    $arrayStartIndex += generatedwhere.amountOfVariables;
+    return customSelect('SELECT * FROM my_view WHERE ${generatedwhere.sql}',
+        variables: [
+          ...generatedwhere.introducedVariables
+        ],
+        readsFrom: {
+          config,
+          ...generatedwhere.watchedTables,
+        }).asyncMap(myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
@@ -1966,6 +1976,7 @@ class ReadRowIdResult extends CustomResultSet {
 }
 
 typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
+typedef ReadView$where = Expression<bool> Function(MyView my_view);
 
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;

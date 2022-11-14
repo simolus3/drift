@@ -56,6 +56,28 @@ void main() {
       return expectLater(db.readView().get(), completion(isEmpty));
     });
 
+    test('can be selected from with predicates', () async {
+      await db.update(db.config).write(
+            const ConfigCompanion(
+              configKey: Value('k'),
+              syncState: Value(SyncType.synchronized),
+            ),
+          );
+
+      var rows = await db
+          .readView(where: (v) => v.configKey.length.isBiggerOrEqualValue(3))
+          .get();
+      expect(rows, isEmpty);
+
+      await db
+          .update(db.config)
+          .write(const ConfigCompanion(configKey: Value('key')));
+      rows = await db
+          .readView(where: (v) => v.configKey.length.isBiggerOrEqualValue(3))
+          .get();
+      expect(rows, isNotEmpty);
+    });
+
     test('can be selected from dart', () async {
       await db.update(db.config).write(
           const ConfigCompanion(syncState: Value(SyncType.synchronized)));

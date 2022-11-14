@@ -71,7 +71,7 @@ abstract class DatabaseConnectionUser {
   ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
   /// ]);
   /// ```
-  T alias<T extends Table, D>(TableInfo<T, D> table, String alias) {
+  T alias<T, D>(ResultSetImplementation<T, D> table, String alias) {
     return table.createAlias(alias).asDslTable;
   }
 
