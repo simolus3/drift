@@ -54,6 +54,14 @@ Next, re-run the build. You can now add another constructor to the generated dat
 
 {% include "blocks/snippet" snippets = snippets name = 'database' %}
 
+This setup is unfortunately necessary for backwards compatibility. A
+`DatabaseConnection` and the `connect` constructor make it possible to share
+query streams between isolates, the default constructor can't do this. In a
+future drift reelase, this option will no longer be necessary.
+
+After adding the `connect` constructor, you can launch a drift isolate to
+connect to:
+
 ## Using drift in a background isolate {#using-moor-in-a-background-isolate}
 
 With the database class ready, let's open it on a background isolate
@@ -100,10 +108,19 @@ isolate.
 
 ### Shutting down the isolate
 
-Since multiple `DatabaseConnection`s across isolates can connect to a single `DriftIsolate`,
-simply calling `Database.close` on one of them won't stop the isolate.
-You can use the `DriftIsolate.shutdownAll()` for that.
-It will disconnect all databases and then close the background isolate, releasing all resources.
+Multiple clients can connect to a single `DriftIsolate` multiple times. So, by
+default, the isolate must outlive individual connections. Simply calling
+`Database.close` on one of the clients won't stop the isolate (which could
+interrupt other databases).
+Instead, use `DriftIsolate.shutdownAll()` to close the isolate and all clients.
+This call will release all resources used by the drift isolate.
+
+In many cases, you know that only a single client will connect to the
+`DriftIsolate` (for instance because you're spawning a new `DriftIsolate` when
+opening a database). In this case, you can set the `shutdownOnClose: true`
+parameter on `connect()`.
+With this parameter, closing the single connection will also fully dispose the
+drift isolate.
 
 ## Common operation modes
 

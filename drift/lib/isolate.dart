@@ -24,9 +24,10 @@ typedef DatabaseOpener = DatabaseConnection Function();
 /// isolates, and the user facing api is exactly the same.
 ///
 /// Please note that, while running drift in a background isolate can reduce
-/// latency in foreground isolates (thus reducing UI lags), the overall
-/// performance is going to be much worse as data has to be serialized and
-/// deserialized to be sent over isolates.
+/// lags in foreground isolates (thus removing UI jank), the overall database
+/// performance will be worse. This is because result data is not available
+/// directly and instead needs to be copied from the database isolate.
+///
 /// Also, be aware that this api is not available on the web.
 ///
 /// See also:
@@ -85,11 +86,26 @@ class DriftIsolate {
   /// Connects to this [DriftIsolate] from another isolate.
   ///
   /// All operations on the returned [DatabaseConnection] will be executed on a
-  /// background isolate. Setting the [isolateDebugLog] is only helpful when
-  /// debugging drift itself.
+  /// background isolate.
+  ///
+  /// When [shutdownOnClose] is enabled (it defaults to `false`), the drift
+  /// server on the remote isolate will be shut down when this database
+  /// connection is closed. This option can be enabled when it is known that the
+  /// drift isolate will only ever serve one client.
+  ///
+  /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
+  /// It will print messages exchanged between the two isolates.
   // todo: breaking: Make synchronous in drift 2
-  Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
-    return remote(_open(), debugLog: isolateDebugLog, serialize: serialize);
+  Future<DatabaseConnection> connect({
+    bool isolateDebugLog = false,
+    bool shutdownOnClose = false,
+  }) async {
+    return remote(
+      _open(),
+      debugLog: isolateDebugLog,
+      serialize: serialize,
+      shutdownOnClose: shutdownOnClose,
+    );
   }
 
   /// Stops the background isolate and disconnects all [DatabaseConnection]s

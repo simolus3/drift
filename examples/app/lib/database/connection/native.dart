@@ -26,7 +26,10 @@ DatabaseConnection connect() {
         _IsolateStartRequest(receiveDriftIsolate.sendPort, dbPath));
 
     final driftIsolate = await receiveDriftIsolate.first as DriftIsolate;
-    return driftIsolate.connect();
+
+    // Each connect() spawns a new isolate which is only used for one
+    // connection, so we shutdown the isolate when the database is closed.
+    return driftIsolate.connect(shutdownOnClose: true);
   }));
 }
 

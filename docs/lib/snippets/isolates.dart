@@ -47,9 +47,11 @@ void main() async {
   final isolate = await DriftIsolate.spawn(_backgroundConnection);
 
   // we can now create a database connection that will use the isolate
-  // internally. This is NOT what's returned from _backgroundConnection, drift
+  // internally. This is NOT what we returned from _backgroundConnection, drift
   // uses an internal proxy class for isolate communication.
-  final connection = await isolate.connect();
+  // As long as the isolate is used by only one database (it is here), we can
+  // use `shutdownOnClose` to dispose the isolate after closing the connection.
+  final connection = await isolate.connect(shutdownOnClose: true);
 
   final db = TodoDb.connect(connection);
 
@@ -67,7 +69,7 @@ void connectSynchronously() {
   TodoDb.connect(
     DatabaseConnection.delayed(Future.sync(() async {
       final isolate = await DriftIsolate.spawn(_backgroundConnection);
-      return isolate.connect();
+      return isolate.connect(shutdownOnClose: true);
     })),
   );
   // #enddocregion delayed
@@ -121,7 +123,7 @@ class _IsolateStartRequest {
 DatabaseConnection createDriftIsolateAndConnect() {
   return DatabaseConnection.delayed(Future.sync(() async {
     final isolate = await _createDriftIsolate();
-    return await isolate.connect();
+    return await isolate.connect(shutdownOnClose: true);
   }));
 }
 // #enddocregion init_connect

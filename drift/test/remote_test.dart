@@ -20,13 +20,23 @@ void main() {
         DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
     server.serve(controller.foreign);
 
-    final transformed = controller.local.transformSink(
-      StreamSinkTransformer.fromHandlers(
-        handleDone: expectAsync1((inner) => inner.close()),
-      ),
-    );
+    await shutdown(controller.local.expectedToClose);
+  });
 
-    await shutdown(transformed);
+  test('can shutdown server on close', () async {
+    final controller = StreamChannelController();
+    final server =
+        DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+    server.serve(controller.foreign);
+
+    final client =
+        remote(controller.local.expectedToClose, shutdownOnClose: true);
+    final db = TodoDb.connect(client);
+
+    await db.todosTable.select().get();
+    await db.close();
+
+    expect(server.done, completes);
   });
 
   test('Uint8Lists are mapped from and to Uint8Lists', () async {
@@ -83,7 +93,9 @@ void main() {
         serialize: true);
 
     final connection = remote(
-        channelController.local.changeStream(_checkStreamOfSimple),
+        channelController.local
+            .changeStream(_checkStreamOfSimple)
+            .expectedToClose,
         serialize: true);
     final db = TodoDb.connect(connection);
 
@@ -99,6 +111,8 @@ void main() {
       1.2,
       Uint8List(12),
     ]));
+
+    await db.close();
   });
 
   test('nested transactions', () async {
@@ -168,5 +182,15 @@ void _checkSimple(Object? object) {
     object.forEach(_checkSimple);
   } else {
     fail('Invalid message over wire: $object');
+  }
+}
+
+extension<T> on StreamChannel<T> {
+  StreamChannel<T> get expectedToClose {
+    return transformSink(
+      StreamSinkTransformer.fromHandlers(
+        handleDone: expectAsync1((inner) => inner.close()),
+      ),
+    );
   }
 }
