@@ -95,4 +95,17 @@ void main() {
       });
     });
   });
+
+  test('concurrent batches cause no problems', () async {
+    // https://github.com/simolus3/drift/issues/1882#issuecomment-1312756672
+    final db = TodoDb(NativeDatabase.memory());
+
+    db.batch((batch) => batch.insert(
+        db.categories, CategoriesCompanion.insert(description: 'a')));
+    db.batch((batch) => batch.insert(
+        db.categories, CategoriesCompanion.insert(description: 'b')));
+
+    await db.customSelect('Select 1').get();
+    await db.close();
+  });
 }

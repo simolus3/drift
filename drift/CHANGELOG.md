@@ -8,6 +8,7 @@
 - Add `TableStatements.insertAll` to atomically insert multiple rows.
 - Add `shutdownOnClose` to `remote()` and `DriftIsolate` connections to shutdown
   a drift server or isolate after closing a database connection.
+- Fix a concurrency issues around transactions.
 
 ## 2.2.0
 
