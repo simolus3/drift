@@ -65,7 +65,8 @@ class Variable<T extends Object> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    if (!context.supportsVariables) {
+    if (!context.supportsVariables ||
+        (value == null && context.dialect.supportsNullVariables)) {
       // Write as constant instead.
       Constant<T>(value).writeInto(context);
       return;
@@ -76,7 +77,7 @@ class Variable<T extends Object> extends Expression<T> {
     var mark = '?';
     if (context.dialect == SqlDialect.postgres) {
       explicitStart = 1;
-      mark = '@';
+      mark = r'$';
     }
 
     if (explicitStart != null) {

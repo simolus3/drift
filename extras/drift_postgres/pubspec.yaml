@@ -18,5 +18,5 @@ dev_dependencies:
     path: ../integration_tests/drift_testcases
 
 dependency_overrides:
-  drift:
-    path: ../../drift
+  postgres:
+    path: /home/simon/programming/postgresql-dart

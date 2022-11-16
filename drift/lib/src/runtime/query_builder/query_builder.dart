@@ -85,11 +85,16 @@ void _writeCommaSeparated(
 enum SqlDialect {
   /// Use sqlite's sql dialect. This is the default option and the only
   /// officially supported dialect at the moment.
-  sqlite,
+  sqlite._(),
 
   /// (currently unsupported)
-  mysql,
+  mysql._(),
 
   /// PostgreSQL (currently supported in an experimental state)
-  postgres,
+  postgres._(supportsNullVariables: false);
+
+  /// Whether variables (or parameters) can be bound to `NULL`.
+  final bool supportsNullVariables;
+
+  const SqlDialect._({this.supportsNullVariables = true});
 }

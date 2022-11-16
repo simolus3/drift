@@ -560,7 +560,7 @@ abstract class DatabaseConnectionUser {
   /// Used by generated code to expand array variables.
   String $expandVar(int start, int amount) {
     final buffer = StringBuffer();
-    final mark = executor.dialect == SqlDialect.postgres ? '@' : '?';
+    final mark = executor.dialect == SqlDialect.postgres ? r'$' : '?';
 
     for (var x = 0; x < amount; x++) {
       buffer.write('$mark${start + x}');

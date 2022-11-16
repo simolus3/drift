@@ -100,7 +100,7 @@ void crudTests(TestExecutor executor) {
     // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
     if (db.executor.dialect == SqlDialect.postgres) {
       await db.customStatement(
-          'INSERT INTO friendships (first_user, second_user) VALUES (@1, @2)',
+          r'INSERT INTO friendships (first_user, second_user) VALUES ($1, $2)',
           <int>[1, 2]);
     } else {
       await db.customStatement(

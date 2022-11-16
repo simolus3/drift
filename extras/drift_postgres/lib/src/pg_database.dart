@@ -50,6 +50,48 @@ class _PgDelegate extends DatabaseDelegate {
     }
   }
 
+  Future<PostgreSQLResult> _run(String sql, List<Object?> args,
+      {bool affectedRowsOnly = false}) async {
+    final parameters = <ParameterValue>[];
+    for (final argument in args) {
+      PostgreSQLDataType type;
+
+      if (argument is BigInt || argument is int) {
+        type = PostgreSQLDataType.bigInteger; // 64 bit int in postgres
+      } else if (argument is bool) {
+        type = PostgreSQLDataType.boolean;
+      } else if (argument is double) {
+        type = PostgreSQLDataType.double;
+      } else if (argument is String) {
+        type = PostgreSQLDataType.text;
+      } else if (argument is List<int>) {
+        type = PostgreSQLDataType.byteArray;
+      } else {
+        throw ArgumentError.value(
+            argument, 'argument', 'Unsupported type for postgres');
+      }
+
+      parameters.add(ParameterValue.binary(argument, type));
+    }
+
+    return await _ec.queryDirect(
+      sql: sql,
+      parameters: parameters,
+      affectedRowsOnly: affectedRowsOnly,
+    );
+  }
+
+  Future<int> _runAndGetAffected(String statement, List<Object?> args) async {
+    await _ensureOpen();
+
+    if (args.isEmpty) {
+      return _ec.execute(statement);
+    } else {
+      final result = await _run(statement, args, affectedRowsOnly: true);
+      return result.affectedRowCount;
+    }
+  }
+
   @override
   Future<void> runBatched(BatchedStatements statements) async {
     await _ensureOpen();
@@ -58,56 +100,34 @@ class _PgDelegate extends DatabaseDelegate {
       final stmt = statements.statements[row.statementIndex];
       final args = row.arguments;
 
-      await _ec.execute(stmt,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
+      await _run(stmt, args, affectedRowsOnly: true);
     }
 
     return Future.value();
   }
 
-  Future<int> _runWithArgs(String statement, List<Object?> args) async {
-    await _ensureOpen();
-
-    if (args.isEmpty) {
-      return _ec.execute(statement);
-    } else {
-      return _ec.execute(statement,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
-    }
-  }
-
   @override
   Future<void> runCustom(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
+    await _runAndGetAffected(statement, args);
   }
 
   @override
   Future<int> runInsert(String statement, List<Object?> args) async {
     await _ensureOpen();
-    PostgreSQLResult result;
-    if (args.isEmpty) {
-      result = await _ec.query(statement);
-    } else {
-      result = await _ec.query(statement,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
-    }
+    final result = await _run(statement, args);
+
     return result.firstOrNull?[0] as int? ?? 0;
   }
 
   @override
   Future<int> runUpdate(String statement, List<Object?> args) async {
-    return _runWithArgs(statement, args);
+    return _runAndGetAffected(statement, args);
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     await _ensureOpen();
-    final result = await _ec.query(statement,
-        substitutionValues: args.asMap().map((key, value) =>
-            MapEntry((key + 1).toString(), _convertValue(value))));
+    final result = await _run(statement, args);
 
     return Future.value(QueryResult.fromRows(
         result.map((e) => e.toColumnMap()).toList(growable: false)));
@@ -118,13 +138,6 @@ class _PgDelegate extends DatabaseDelegate {
     if (closeUnderlyingWhenClosed) {
       await _db.close();
     }
-  }
-
-  Object? _convertValue(Object? value) {
-    if (value is BigInt) {
-      return value.toInt();
-    }
-    return value;
   }
 }
 
