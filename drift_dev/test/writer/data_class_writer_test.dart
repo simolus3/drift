@@ -79,9 +79,9 @@ class Database extends _$Database {}
       {String? tablePrefix}) async {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return await MyCustomClass.load(
-      attachedDatabase.options.types
+      attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}foo'])!,
-      attachedDatabase.options.types
+      attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}bar'])!,
     );
   }

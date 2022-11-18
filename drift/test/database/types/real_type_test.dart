@@ -2,7 +2,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
 void main() {
-  final typeSystem = const drift.DriftDatabaseOptions().types;
+  final typeSystem = const drift.DriftDatabaseOptions()
+      .createTypeMapping(drift.SqlDialect.sqlite);
 
   group('RealType', () {
     test('can be read from floating point values returned by sql', () {

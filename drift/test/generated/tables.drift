@@ -80,7 +80,7 @@ searchEmails(REQUIRED :term AS TEXT OR NULL): SELECT * FROM email WHERE email MA
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
 
-readView: SELECT * FROM my_view;
+readView($where = TRUE): SELECT * FROM my_view WHERE $where;
 
 cfeTest: WITH RECURSIVE
   cnt(x) AS (

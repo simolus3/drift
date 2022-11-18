@@ -28,9 +28,12 @@ class SqlTypes {
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   final bool storeDateTimesAsText;
 
+  final SqlDialect _dialect;
+
   /// Creates an [SqlTypes] mapper from the provided options.
   @internal
-  const SqlTypes(this.storeDateTimesAsText);
+  const SqlTypes(this.storeDateTimesAsText,
+      [this._dialect = SqlDialect.sqlite]);
 
   /// Maps a Dart object to a (possibly simpler) object that can be used as a
   /// parameter in raw sql queries.
@@ -71,7 +74,7 @@ class SqlTypes {
       }
     }
 
-    if (dartValue is bool) {
+    if (dartValue is bool && _dialect == SqlDialect.sqlite) {
       return dartValue ? 1 : 0;
     }
 
@@ -85,7 +88,11 @@ class SqlTypes {
 
     // todo: Inline and remove types in the next major drift version
     if (dart is bool) {
-      return dart ? '1' : '0';
+      if (_dialect == SqlDialect.sqlite) {
+        return dart ? '1' : '0';
+      } else {
+        return dart ? 'true' : 'false';
+      }
     } else if (dart is String) {
       // From the sqlite docs: (https://www.sqlite.org/lang_expr.html)
       // A string constant is formed by enclosing the string in single quotes
@@ -121,7 +128,11 @@ class SqlTypes {
     // ignore: unnecessary_cast
     switch (type as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return (sqlValue != 0) as T;
+        if (_dialect == SqlDialect.sqlite) {
+          return (sqlValue != 0) as T;
+        } else {
+          return sqlValue as T;
+        }
       case DriftSqlType.string:
         return sqlValue.toString() as T;
       case DriftSqlType.bigInt:
@@ -233,14 +244,14 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
     // ignore: unnecessary_cast
     switch (this as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return dialect == SqlDialect.sqlite ? 'INTEGER' : 'integer';
+        return dialect == SqlDialect.sqlite ? 'INTEGER' : 'boolean';
       case DriftSqlType.string:
         return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
       case DriftSqlType.bigInt:
       case DriftSqlType.int:
         return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
       case DriftSqlType.dateTime:
-        if (context.options.types.storeDateTimesAsText) {
+        if (context.typeMapping.storeDateTimesAsText) {
           return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
         } else {
           return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';

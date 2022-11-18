@@ -330,7 +330,7 @@ Note that this snippet uses the `unixepoch` sqlite3 function, which has been
 added in sqlite 3.38. To support older sqlite3 versions, you can use `strftime`
 and cast to an integer instead:
 
-{% include "blocks/snippet" snippets = snippets name = "text-to-unix-old" %}
+{% include "blocks/snippet" snippets = conversion name = "text-to-unix-old" %}
 
 When using a `NativeDatabase` with a recent dependency on the
 `sqlite3_flutter_libs` package, you can safely assume that you are on a recent

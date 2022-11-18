@@ -156,9 +156,9 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   Entrie map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Entrie(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      value: attachedDatabase.options.types
+      value: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}text'])!,
     );
   }

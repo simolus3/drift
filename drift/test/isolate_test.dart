@@ -117,6 +117,20 @@ void main() {
     await drift.shutdownAll();
   }, tags: 'background_isolate');
 
+  test('kills isolate after close if desired', () async {
+    final spawned = ReceivePort();
+    final done = ReceivePort();
+
+    await Isolate.spawn(_createBackground, spawned.sendPort,
+        onExit: done.sendPort);
+    // The isolate shold eventually exit!
+    expect(done.first, completion(anything));
+
+    final drift = await spawned.first as DriftIsolate;
+    final db = TodoDb.connect(await drift.connect(shutdownOnClose: true));
+    await db.close();
+  }, tags: 'background_isolate');
+
   test('shutting down will close the underlying executor', () async {
     final mockExecutor = MockExecutor();
     final isolate =

@@ -111,6 +111,9 @@ Also, you may have to
 
 - Format your sources again: Run `dart format .` or `flutter format .`
 - Re-run the build: Run `dart run build_runner build` or `flutter pub run build_runner build --delete-conflicting-outputs`, respectively.
+  - If you have been using generated [migration test files]({{ 'Advanced Features/migrations.md#exporting-the-schema' | pageUrl }}),
+    re-generate them as well with `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`
+    (you may have to adapt the command to the directories you use for schemas).
 - Manually fix the changed order of imports caused by the migration.
 
 Congratulations, your project is now using drift!

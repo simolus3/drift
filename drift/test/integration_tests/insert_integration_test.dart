@@ -146,4 +146,49 @@ void main() {
     final row = await db.select(db.tableWithoutPK).getSingle();
     expect(row.webSafeInt, BigInt.parse('9223372036854775807'));
   });
+
+  group('insertAll', () {
+    late CustomTable table;
+
+    setUp(() async {
+      table = CustomTable('tbl', db, [
+        GeneratedColumn('id', 'tbl', false,
+            type: DriftSqlType.int,
+            defaultConstraints:
+                GeneratedColumn.constraintIsAlways('PRIMARY KEY')),
+        GeneratedColumn('parent', 'tbl', true,
+            type: DriftSqlType.int,
+            defaultConstraints:
+                GeneratedColumn.constraintIsAlways('REFERENCES tbl (id)')),
+      ]);
+
+      await db.customStatement('pragma foreign_keys = on;');
+      await db.createMigrator().create(table);
+    });
+
+    test('does not require foreign keys to be ordered', () async {
+      await table.insertAll([
+        RawValuesInsertable({'id': Variable(3), 'parent': Variable(4)}),
+        RawValuesInsertable({'id': Variable(4), 'parent': Variable(null)}),
+      ]);
+
+      final stillEnabled =
+          (await db.customSelect('PRAGMA defer_foreign_keys').getSingle())
+              .read<bool>('defer_foreign_keys');
+      expect(stillEnabled, isFalse);
+
+      final rows = await table.select().get();
+      expect(rows, hasLength(2));
+    });
+
+    test('throws an exception if foreign keys are not met', () async {
+      await expectLater(
+        table.insertAll([
+          RawValuesInsertable({'id': Variable(3), 'parent': Variable(4)}),
+          RawValuesInsertable({'id': Variable(44), 'parent': Variable(null)}),
+        ]),
+        throwsA(isException),
+      );
+    });
+  });
 }

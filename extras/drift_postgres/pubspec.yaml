@@ -7,7 +7,7 @@ environment:
 
 dependencies:
   collection: ^1.16.0
-  drift: ^1.6.0
+  drift: ^2.0.0
   postgres: ^2.4.3
   meta: ^1.8.0
 

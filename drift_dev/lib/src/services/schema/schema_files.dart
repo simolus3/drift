@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
+import 'package:drift/drift.dart' show DriftSqlType, SqlDialect, UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
 
@@ -145,8 +145,10 @@ class SchemaWriter {
       'moor_type': column.sqlType.toSerializedString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
-      if (constraints.isNotEmpty && column.customConstraints == null)
-        'defaultConstraints': defaultConstraints(column),
+      if (constraints[SqlDialect.sqlite]!.isNotEmpty &&
+          column.customConstraints == null)
+        // TODO: Dialect-specific constraints in schema file
+        'defaultConstraints': constraints[SqlDialect.sqlite]!,
       'default_dart': column.defaultArgument?.toString(),
       'default_client_dart': column.clientDefaultCode?.toString(),
       'dsl_features': [...column.constraints.map(_dslFeatureData)],

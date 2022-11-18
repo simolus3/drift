@@ -30,7 +30,7 @@ dev_dependencies:
   lints: ^2.0.0
   build: ^2.1.0
   build_runner: ^2.0.5
-  build_runner_core: ^7.2.3
+  build_runner_core: ^7.2.7
   build_web_compilers: ^3.2.0
   built_site:
     hosted: https://simonbinder.eu

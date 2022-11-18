@@ -9,6 +9,12 @@ import 'delegates.dart';
 abstract class _BaseExecutor extends QueryExecutor {
   final Lock _lock = Lock();
 
+  /// When a transaction is active in this executor and we're using statement
+  /// based transactions (`BEGIN` and `COMMIT`), statements _not_ targetting the
+  /// transaction need to wait for the transaction to be completed before being
+  /// sent. This is also true for databases which otherwise aren't sequential.
+  int _waitingTransactions = 0;
+
   QueryDelegate get impl;
 
   bool get isSequential => false;
@@ -45,7 +51,7 @@ without awaiting every statement in it.''');
   }
 
   Future<T> _synchronized<T>(Future<T> Function() action) {
-    if (isSequential) {
+    if (isSequential || _waitingTransactions > 0) {
       return _lock.synchronized(() {
         checkIfCancelled();
         return action();
@@ -195,7 +201,10 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
       opened = _opened = Completer();
       // Block the main database or the parent transaction while this
       // transaction is active.
-      unawaited((_parent ?? _db)._synchronized(() async {
+      final parent = _parent ?? _db;
+      parent._waitingTransactions++;
+
+      unawaited(parent._synchronized(() async {
         try {
           await runCustom(_startCommand);
           _db.delegate.isInTransaction = true;
@@ -206,7 +215,7 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
 
         // release the database lock after the transaction completes
         await _done.future;
-      }));
+      }).whenComplete(() => parent._waitingTransactions--));
     }
 
     return opened.future;

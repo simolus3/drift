@@ -175,9 +175,11 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
+      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -196,7 +198,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES users (id)');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
   @override
   List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
@@ -236,13 +239,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthday: attachedDatabase.options.types
+      birthday: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
-      nextUser: attachedDatabase.options.types
+      nextUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
     );
   }
@@ -485,13 +488,13 @@ class Groups extends Table with TableInfo<Groups, Group> {
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Group(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      deleted: attachedDatabase.options.types
+      deleted: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
-      owner: attachedDatabase.options.types
+      owner: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
     );
   }
@@ -705,11 +708,11 @@ class Notes extends Table
   Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Note(
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.options.types
+      content: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
-      searchTerms: attachedDatabase.options.types
+      searchTerms: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}search_terms'])!,
     );
   }
@@ -823,15 +826,15 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GroupCountData(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthday: attachedDatabase.options.types
+      birthday: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
-      nextUser: attachedDatabase.options.types
+      nextUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
-      groupCount: attachedDatabase.options.types
+      groupCount: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}group_count'])!,
     );
   }

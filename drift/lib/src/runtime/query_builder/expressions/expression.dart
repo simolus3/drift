@@ -330,7 +330,7 @@ class _Comparison extends InfixOperator<bool> {
 
     if (left is Expression<DateTime> &&
         right is Expression<DateTime> &&
-        context.options.types.storeDateTimesAsText) {
+        context.typeMapping.storeDateTimesAsText) {
       // Compare julianday values instead of texts
       writeInner(context, left.julianday);
       context.writeWhitespace();

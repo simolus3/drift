@@ -54,7 +54,7 @@ import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'drift.dart';
-import 'remote.dart' as self;
+import 'remote.dart' as global;
 import 'src/remote/client_impl.dart';
 import 'src/remote/communication.dart';
 import 'src/remote/protocol.dart';
@@ -82,7 +82,7 @@ abstract class DriftServer {
   /// A future that completes when this server has been shut down.
   ///
   /// This future completes after [shutdown] is called directly on this
-  /// instance, or if a remote client uses [self.shutdown] on a connection
+  /// instance, or if a remote client uses [global.shutdown] on a connection
   /// handled by this server.
   Future<void> get done;
 
@@ -95,6 +95,9 @@ abstract class DriftServer {
   /// If [serialize] is true, drift will only send [bool], [int], [double],
   /// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
   /// the message may be any Dart object.
+  ///
+  /// After calling [serve], you can obtain a [DatabaseConnection] on the other
+  /// end of the [channel] by calling [remote].
   ///
   /// __Warning__: As long as this library is marked experimental, the protocol
   /// might change with every drift version. For this reason, make sure that
@@ -113,20 +116,30 @@ abstract class DriftServer {
 
 /// Connects to a remote server over a two-way communication channel.
 ///
-/// On the remote side, the corresponding [channel] must have been passed to
+/// The other end of the [channel] must be attached to a drift server with
 /// [DriftServer.serve] for this setup to work.
+///
+/// The [shutdownOnClose] parameter controls whether [shutdown] is called
+/// after closing the returned database connection. By default, only this
+/// connection will be closed and the server will continue to run. When enabled,
+/// the server will shutdown when this connection is closed. This is useful when
+/// it is known that the server will only serve a single connection.
 ///
 /// If [serialize] is true, drift will only send [bool], [int], [double],
 /// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
 /// the message may be any Dart object.
-/// The value of [serialize] for [remote] should be the same value passed to
+/// The value of [serialize] for [remote] must be the same value passed to
 /// [DriftServer.serve].
 ///
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
-DatabaseConnection remote(StreamChannel<Object?> channel,
-    {bool debugLog = false, bool serialize = true}) {
-  final client = DriftClient(channel, debugLog, serialize);
+DatabaseConnection remote(
+  StreamChannel<Object?> channel, {
+  bool debugLog = false,
+  bool serialize = true,
+  bool shutdownOnClose = false,
+}) {
+  final client = DriftClient(channel, debugLog, serialize, shutdownOnClose);
   return client.connection;
 }
 

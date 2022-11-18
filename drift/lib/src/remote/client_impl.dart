@@ -13,6 +13,7 @@ import 'protocol.dart';
 /// The client part of a remote drift communication scheme.
 class DriftClient {
   final DriftCommunication _channel;
+  final bool _shutdownOnClose;
 
   late final _RemoteStreamQueryStore _streamStore =
       _RemoteStreamQueryStore(this);
@@ -27,8 +28,12 @@ class DriftClient {
   late QueryExecutorUser _connectedDb;
 
   /// Starts relaying database operations over the request channel.
-  DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize)
-      : _channel = DriftCommunication(channel,
+  DriftClient(
+    StreamChannel<Object?> channel,
+    bool debugLog,
+    bool serialize,
+    this._shutdownOnClose,
+  ) : _channel = DriftCommunication(channel,
             debugLog: debugLog, serialize: serialize) {
     _channel.setRequestHandler(_handleRequest);
   }
@@ -139,8 +144,16 @@ class _RemoteQueryExecutor extends _BaseExecutor {
 
   @override
   Future<void> close() {
-    if (!client._channel.isClosed) {
-      client._channel.close();
+    final channel = client._channel;
+
+    if (!channel.isClosed) {
+      if (client._shutdownOnClose) {
+        return channel
+            .request(NoArgsRequest.terminateAll)
+            .whenComplete(channel.close);
+      } else {
+        channel.close();
+      }
     }
 
     return Future.value();

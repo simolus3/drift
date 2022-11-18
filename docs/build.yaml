@@ -51,7 +51,7 @@ targets:
         generate_for:
           include:
             - "lib/snippets/**/*.dart"
-            - "lib/snippets/*/*.drift"
+            - "lib/snippets/**/*.drift"
             - "lib/snippets/*.dart"
           exclude:
             - "**/*.g.dart"
@@ -102,3 +102,6 @@ global_options:
   ":api_index":
     options:
       packages: ['drift', 'drift_dev', 'sqlite3']
+
+additional_public_assets:
+  - "pages/**"

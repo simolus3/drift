@@ -47,6 +47,10 @@ abstract class TableOrViewWriter {
         additionalParams['generatedAs'] =
             'GeneratedAs($dartCode, ${constraint.stored})';
       }
+
+      if (constraint is PrimaryKeyColumn && constraint.isAutoIncrement) {
+        additionalParams['hasAutoIncrement'] = 'true';
+      }
     }
 
     additionalParams['type'] = column.sqlType.toString();
@@ -60,9 +64,31 @@ abstract class TableOrViewWriter {
     if (column.customConstraints != null) {
       additionalParams['\$customConstraints'] =
           asDartLiteral(column.customConstraints!);
-    } else if (constraints.isNotEmpty) {
+    } else if (constraints.values.any((constraint) => constraint.isNotEmpty)) {
       // Use the default constraints supported by drift
-      additionalParams['defaultConstraints'] = asDartLiteral(constraints);
+
+      if (constraints.values.any(
+        (value) => value != constraints.values.first,
+      )) {
+        // One or more constraints are different depending on dialect, generate
+        // per-dialect constraints
+
+        final literalEntries = [
+          for (final entry in constraints.entries)
+            'SqlDialect.${entry.key.name}: ${asDartLiteral(entry.value)},',
+        ];
+
+        additionalParams['defaultConstraints'] =
+            'GeneratedColumn.constraintsDependsOnDialect({${literalEntries.join('\n')}})';
+      } else {
+        // Constraints are the same regardless of dialect, only generate one set
+        // of them
+
+        final constraint = asDartLiteral(constraints.values.first);
+
+        additionalParams['defaultConstraints'] =
+            'GeneratedColumn.constraintIsAlways($constraint)';
+      }
     }
 
     if (column.defaultArgument != null) {

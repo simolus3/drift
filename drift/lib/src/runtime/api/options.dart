@@ -1,4 +1,4 @@
-import '../types/mapping.dart';
+import 'package:drift/drift.dart';
 
 /// Database-specific options used by drift.
 ///
@@ -7,7 +7,10 @@ import '../types/mapping.dart';
 class DriftDatabaseOptions {
   /// Configuration for [SqlTypes] describing how to map Dart values from and to
   /// SQL values.
+  @Deprecated('UsecreateTypeMapping instead')
   final SqlTypes types;
+
+  final bool _storeDateTimeAsText;
 
   /// Creates database-specific database options.
   ///
@@ -20,6 +23,13 @@ class DriftDatabaseOptions {
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   const DriftDatabaseOptions({
     bool storeDateTimeAsText = false,
-  }) : types =
+  })  : _storeDateTimeAsText = storeDateTimeAsText,
+        // ignore: deprecated_member_use_from_same_package
+        types =
             storeDateTimeAsText ? const SqlTypes(true) : const SqlTypes(false);
+
+  /// Creates a type mapping suitable for these options and the given [dialect].
+  SqlTypes createTypeMapping(SqlDialect dialect) {
+    return SqlTypes(_storeDateTimeAsText, dialect);
+  }
 }
