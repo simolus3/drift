@@ -90,6 +90,15 @@ class DartAccessorResolver
         );
       } else {
         includes.add(import);
+
+        final resolved = await resolver.driver.prepareFileForAnalysis(
+            discovered.ownId.libraryUri.resolveUri(import));
+        if (resolved.discovery?.isValidImport != true) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+                element, '`$value` could not be imported'),
+          );
+        }
       }
     }
 

@@ -1,20 +1,15 @@
-import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/analyzer/sql_queries/custom_result_class.dart';
+import 'package:drift_dev/src/analysis/custom_result_class.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import 'test_utils.dart';
 
 void main() {
-  Future<BaseDriftAccessor> analyzeQueries(String moorFile) async {
-    final state = TestState.withContent({'foo|lib/a.moor': moorFile});
+  Future<Iterable<SqlQuery>> analyzeQueries(String driftFile) async {
+    final state = TestBackend.inTest({'a|lib/a.drift': driftFile});
 
-    final result = await state.analyze('package:foo/a.moor');
-    state.close();
-    final queries = (result.currentResult as ParsedDriftFile).resolvedQueries;
-
-    return Database()..queries = queries;
+    final result = await state.analyze('package:a/a.drift');
+    return result.fileAnalysis!.resolvedQueries.values;
   }
 
   group('does not allow custom classes for queries', () {
@@ -23,11 +18,11 @@ void main() {
         myQuery AS MyResult: SELECT 1;
       ''');
 
-      final errors = ErrorSink();
-      CustomResultClassTransformer(queries).transform(errors);
+      final errors = <String>[];
+      transformCustomResultClasses(queries, errors.add);
 
       expect(
-        errors.errors.map((e) => e.message),
+        errors,
         contains(
           allOf(contains('myQuery'), contains('only returns one column')),
         ),
@@ -41,11 +36,11 @@ void main() {
         myQuery AS MyResult: SELECT id FROM demo;
       ''');
 
-      final errors = ErrorSink();
-      CustomResultClassTransformer(queries).transform(errors);
+      final errors = <String>[];
+      transformCustomResultClasses(queries, errors.add);
 
       expect(
-        errors.errors.map((e) => e.message),
+        errors,
         contains(
           allOf(
             contains('myQuery'),
@@ -79,11 +74,11 @@ void main() {
         "end".** FROM routes INNER JOIN points "end" ON "end".id = routes."end";
     ''');
 
-    final errors = ErrorSink();
-    CustomResultClassTransformer(queries).transform(errors);
+    final errors = <String>[];
+    transformCustomResultClasses(queries, errors.add);
 
     expect(
-      errors.errors.map((e) => e.message),
+      errors,
       [
         contains('DifferentColumns'),
         contains('DifferentNested'),

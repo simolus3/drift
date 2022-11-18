@@ -28,6 +28,7 @@ class DriftQueryResolver
       sql: source.substring(stmt.firstPosition, stmt.lastPosition),
       sqlOffset: stmt.firstPosition,
       mode: isCreate ? QueryMode.atCreate : QueryMode.regular,
+      resultClassName: discovered.sqlNode.as,
     );
   }
 }

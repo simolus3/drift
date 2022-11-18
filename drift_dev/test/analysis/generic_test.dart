@@ -39,6 +39,40 @@ CREATE TABLE bars (
         containsAll(['foos', 'bars']));
   });
 
+  group("reports error when an import can't be found", () {
+    for (final extension in const ['drift', 'moor']) {
+      test('in $extension files', () async {
+        final backend = TestBackend.inTest({
+          'a|lib/a.$extension': '''
+import 'b.$extension';
+''',
+        });
+
+        final result = await backend.analyze('package:a/a.$extension');
+
+        expect(
+            result.allErrors, [isDriftError(contains("can't be imported."))]);
+      });
+    }
+
+    test('in a dart file', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'b.drift'})
+class Database {
+
+}
+''',
+      });
+
+      final result = await backend.analyze('package:a/a.dart');
+      expect(
+          result.allErrors, [isDriftError(contains('could not be imported'))]);
+    });
+  });
+
   test('resolves tables and queries', () async {
     final backend = TestBackend.inTest({
       'a|lib/database.dart': r'''
