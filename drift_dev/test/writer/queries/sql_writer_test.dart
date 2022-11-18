@@ -1,5 +1,5 @@
-import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/queries/sql_writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';

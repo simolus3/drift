@@ -2,20 +2,19 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
-import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:collection/collection.dart';
-import 'package:drift_dev/src/backends/build/drift_builder.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
+
+import '../utils.dart';
 
 void main() {
   test(
     'generates const constructor for data classes can companion classes',
     () async {
-      await testBuilder(
-        DriftPartBuilder(const BuilderOptions({})),
-        const {
+      final writer = await emulateDriftBuild(
+        inputs: const {
           'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -32,13 +31,13 @@ class Users extends Table {
 class Database extends _$Database {}
 '''
         },
-        reader: await PackageAssetReader.currentIsolate(),
-        outputs: const {
-          'a|lib/main.drift.dart': _GeneratesConstDataClasses(
-            {'User', 'UsersCompanion'},
-          ),
-        },
       );
+
+      checkOutputs(const {
+        'a|lib/main.drift.dart': _GeneratesConstDataClasses(
+          {'User', 'UsersCompanion'},
+        ),
+      }, writer.dartOutputs, writer);
     },
     tags: 'analyzer',
   );
@@ -46,9 +45,8 @@ class Database extends _$Database {}
   test(
     'generates async mapping code for existing row class with async factory',
     () async {
-      await testBuilder(
-        DriftPartBuilder(const BuilderOptions({})),
-        const {
+      final writer = await emulateDriftBuild(
+        inputs: const {
           'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -72,9 +70,10 @@ class MyCustomClass {
 class Database extends _$Database {}
 '''
         },
-        reader: await PackageAssetReader.currentIsolate(),
-        outputs: {
-          'a|lib/main.drift.dart': decodedMatches(contains(r'''
+      );
+
+      checkOutputs({
+        'a|lib/main.drift.dart': decodedMatches(contains(r'''
   @override
   Future<MyCustomClass> map(Map<String, dynamic> data,
       {String? tablePrefix}) async {
@@ -87,8 +86,7 @@ class Database extends _$Database {}
     );
   }
 ''')),
-        },
-      );
+      }, writer.dartOutputs, writer);
     },
     tags: 'analyzer',
   );

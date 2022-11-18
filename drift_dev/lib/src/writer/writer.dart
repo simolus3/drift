@@ -121,7 +121,7 @@ abstract class _NodeOrWriter {
       } else {
         return AnnotatedDartCode([
           dartTypeNames[hasType.sqlType],
-          if (hasType.nullableInDart) '?',
+          if (hasType.nullable) '?',
         ]);
       }
     }

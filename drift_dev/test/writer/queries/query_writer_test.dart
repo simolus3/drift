@@ -1,53 +1,51 @@
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/writer.dart';
+import 'package:drift_dev/src/writer/import_manager.dart';
+import 'package:drift_dev/src/writer/queries/query_writer.dart';
+import 'package:drift_dev/src/writer/writer.dart';
 import 'package:test/test.dart';
 
-import '../../analyzer/utils.dart';
+import '../../analysis/test_utils.dart';
 
 void main() {
+  Future<String> generateForQueryInDriftFile(String driftFile,
+      {DriftOptions options = const DriftOptions.defaults()}) async {
+    final state =
+        TestBackend.inTest({'a|lib/main.drift': driftFile}, options: options);
+    final file = await state.analyze('package:a/main.drift');
+
+    final writer = Writer(
+      const DriftOptions.defaults(generateNamedParameters: true),
+      generationOptions: GenerationOptions(
+        imports: ImportManagerForPartFiles(),
+      ),
+    );
+    QueryWriter(writer.child())
+        .write(file.fileAnalysis!.resolvedQueries.values.single);
+
+    return writer.writeGenerated();
+  }
+
   test('generates correct parameter for nullable arrays', () async {
-    final state = TestState.withContent({
-      'a|lib/main.moor': '''
+    final generated = await generateForQueryInDriftFile('''
         CREATE TABLE tbl (
           id INTEGER NULL
         );
 
         query: SELECT * FROM tbl WHERE id IN :idList;
-      ''',
-    });
-    addTearDown(state.close);
-
-    final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedDriftFile;
-
-    final writer =
-        Writer(const DriftOptions.defaults(generateNamedParameters: true));
-    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
-
-    expect(writer.writeGenerated(), contains('required List<int?> idList'));
+      ''');
+    expect(generated, contains('required List<int?> idList'));
   });
 
   test('generates correct variable order', () async {
-    final state = TestState.withContent({
-      'a|lib/main.moor': '''
+    final generated = await generateForQueryInDriftFile('''
         CREATE TABLE tbl (
           id INTEGER NULL
         );
 
         query: SELECT * FROM tbl LIMIT :offset, :limit;
-      ''',
-    });
-    addTearDown(state.close);
-
-    final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedDriftFile;
-
-    final writer = Writer(const DriftOptions.defaults());
-    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
-
+      ''');
     expect(
-      writer.writeGenerated(),
+      generated,
       allOf(
         contains('SELECT * FROM tbl LIMIT ?2 OFFSET ?1'),
         contains('variables: [Variable<int>(offset), Variable<int>(limit)]'),
@@ -56,25 +54,15 @@ void main() {
   });
 
   test('generates correct name for renamed nested star columns', () async {
-    final state = TestState.withContent({
-      'a|lib/main.moor': '''
+    final generated = await generateForQueryInDriftFile('''
         CREATE TABLE tbl (
           id INTEGER NULL
         );
 
         query: SELECT t.** AS tableName FROM tbl AS t;
-      ''',
-    });
-    addTearDown(state.close);
-
-    final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedDriftFile;
-
-    final writer = Writer(const DriftOptions.defaults());
-    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
-
+      ''');
     expect(
-      writer.writeGenerated(),
+      generated,
       allOf(
         contains('SELECT"t"."id" AS "nested_0.id"'),
         contains('final TblData tableName;'),
@@ -83,56 +71,29 @@ void main() {
   });
 
   test('generates correct returning mapping', () async {
-    final state = TestState.withContent({
-      'a|lib/main.moor': '''
+    final generated = await generateForQueryInDriftFile('''
         CREATE TABLE tbl (
           id INTEGER,
           text TEXT
         );
 
-        query: INSERT INTO tbl (id, text) VALUES(10, "test") RETURNING id;
-      ''',
-    });
-    addTearDown(state.close);
-
-    final file = await state.analyze('package:a/main.moor');
-    final fileState = file.currentResult as ParsedDriftFile;
-
-    final writer = Writer(const DriftOptions.defaults());
-    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
-
-    expect(writer.writeGenerated(), contains('.toList()'));
+        query: INSERT INTO tbl (id, text) VALUES(10, 'test') RETURNING id;
+      ''');
+    expect(generated, contains('.toList()'));
   });
 
   group('generates correct code for expanded arrays', () {
-    late TestState state;
-
-    setUp(() {
-      state = TestState.withContent({
-        'a|lib/main.moor': '''
-          CREATE TABLE tbl (
-            a TEXT,
-            b TEXT,
-            c TEXT
-          );
-
-          query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
-        ''',
-      });
-    });
-
-    tearDown(() => state.close());
-
     Future<void> runTest(DriftOptions options, Matcher expectation) async {
-      final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedDriftFile;
+      final result = await generateForQueryInDriftFile('''
+CREATE TABLE tbl (
+  a TEXT,
+  b TEXT,
+  c TEXT
+);
 
-      expect(file.errors.errors, isEmpty);
-
-      final writer = Writer(options);
-      QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
-
-      expect(writer.writeGenerated(), expectation);
+query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
+''', options: options);
+      expect(result, expectation);
     }
 
     test('with the new query generator', () {
@@ -150,39 +111,25 @@ void main() {
   });
 
   group('generates correct code for nested queries', () {
-    late TestState state;
-
-    setUp(() {
-      state = TestState.withContent({
-        'a|lib/main.moor': '''
-          CREATE TABLE tbl (
-            a TEXT,
-            b TEXT,
-            c TEXT
-          );
-
-          query:
-          SELECT
-            parent.a,
-            LIST(SELECT b, c FROM tbl WHERE a = :a OR a = parent.a AND b = :b)
-          FROM tbl AS parent WHERE parent.a = :a;
-        ''',
-      });
-    });
-
-    tearDown(() => state.close());
-
     Future<void> runTest(
         DriftOptions options, List<Matcher> expectation) async {
-      final file = await state.analyze('package:a/main.moor');
-      final fileState = file.currentResult as ParsedDriftFile;
+      final result = await generateForQueryInDriftFile(
+        '''
+CREATE TABLE tbl (
+  a TEXT,
+  b TEXT,
+  c TEXT
+);
 
-      expect(file.errors.errors, isEmpty);
+query:
+SELECT
+  parent.a,
+  LIST(SELECT b, c FROM tbl WHERE a = :a OR a = parent.a AND b = :b)
+FROM tbl AS parent WHERE parent.a = :a;
+''',
+        options: options,
+      );
 
-      final writer = Writer(options);
-      QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
-
-      final result = writer.writeGenerated();
       for (final e in expectation) {
         expect(result, e);
       }
