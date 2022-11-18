@@ -20,14 +20,14 @@ abstract class DriftBackend {
   }
 
   /// Resolves a Dart library by its uri.
-  /// 
+  ///
   /// This should also be able to resolve SDK libraries.
   /// If no Dart library can be found under that uri, throws a
   /// [NotALibraryException].
   Future<LibraryElement> readDart(Uri uri);
 
   /// Loads the resolved AST node defining the given [element].
-  /// 
+  ///
   /// Depending on how the analyzer is accessed, this may throw an exception if
   /// the resolved AST is not available.
   /// When the [element] does not have a syntactic representation in the AST,

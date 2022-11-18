@@ -161,7 +161,7 @@ class DriftAnalysisDriver {
   }
 
   /// Runs the second analysis step (element analysis) on a file.
-  /// 
+  ///
   /// The file, as well as all imports, should have undergone the first analysis
   /// step (discovery) at this point, so that the resolver is able to
   /// recognize dependencies between different elements.
