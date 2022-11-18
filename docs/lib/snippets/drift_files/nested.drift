@@ -23,12 +23,12 @@ CREATE TABLE route_points (
 /* #enddocregion route_points */
 
 /* #docregion overview */
-routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
+routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM saved_routes r
   INNER JOIN coordinates f ON f.id = r."from"
   INNER JOIN coordinates t ON t.id = r."to";
 /* #enddocregion overview */
 /* #docregion nested */
-routesWithNestedPoints: SELECT r.id, r.name, f.** AS "from", t.** AS "to" FROM routes r
+routesWithNestedPoints: SELECT r.id, r.name, f.** AS "from", t.** AS "to" FROM saved_routes r
   INNER JOIN coordinates f ON f.id = r."from"
   INNER JOIN coordinates t ON t.id = r."to";
 /* #enddocregion nested */
