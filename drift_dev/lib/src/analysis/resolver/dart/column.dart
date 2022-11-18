@@ -333,7 +333,7 @@ class ColumnParser {
       remainingExpr = inner;
     }
 
-    final sqlName = foundExplicitName ?? ReCase(getter.name2.lexeme).snakeCase;
+    final sqlName = foundExplicitName ?? ReCase(getter.name.lexeme).snakeCase;
     final sqlType = _startMethodToColumnType(foundStartMethod);
 
     AppliedTypeConverter? converter;
@@ -442,7 +442,7 @@ class ColumnParser {
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element2.name == 'JsonKey';
+          valueType.element.name == 'JsonKey';
     });
 
     if (object == null) return null;

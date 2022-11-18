@@ -1,9 +1,7 @@
 @Tags(['analyzer'])
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/analysis/results/database.dart';
 import 'package:drift_dev/src/analysis/results/file_results.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';

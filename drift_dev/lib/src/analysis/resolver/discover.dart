@@ -227,6 +227,8 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
         return computed;
       }
     }
+
+    return null;
   }
 
   /// Obtains the SQL schema name of a Dart-defined table.

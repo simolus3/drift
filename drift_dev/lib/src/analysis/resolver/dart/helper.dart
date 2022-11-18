@@ -126,7 +126,7 @@ bool isColumn(DartType type) {
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
-  final firstComponent = type.element2.library.location?.components.first;
+  final firstComponent = type.element.library.location?.components.first;
   if (firstComponent == null) return false;
 
   return firstComponent.contains('drift');
@@ -134,7 +134,7 @@ bool isFromDrift(DartType type) {
 
 extension IsFromDrift on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement3;
+    final parent = enclosingElement;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&
@@ -150,7 +150,7 @@ extension on InterfaceElement {
 extension TypeUtils on DartType {
   String? get nameIfInterfaceType {
     final $this = this;
-    return $this is InterfaceType ? $this.element2.name : null;
+    return $this is InterfaceType ? $this.element.name : null;
   }
 
   String get userVisibleName => getDisplayString(withNullability: true);

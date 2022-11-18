@@ -261,7 +261,7 @@ class _AddFromDartType extends TypeVisitor<void> {
     if (alias != null) {
       _builder.addTopLevelElement(alias.element);
     } else {
-      _builder.addTopLevelElement(type.element2);
+      _builder.addTopLevelElement(type.element);
     }
 
     if (type.typeArguments.isNotEmpty) {
@@ -289,7 +289,7 @@ class _AddFromDartType extends TypeVisitor<void> {
 
   @override
   void visitTypeParameterType(TypeParameterType type) {
-    _builder.addText(type.element2.name);
+    _builder.addText(type.element.name);
     _writeSuffix(type.nullabilitySuffix);
   }
 

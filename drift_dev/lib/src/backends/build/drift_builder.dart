@@ -3,7 +3,6 @@ import 'package:dart_style/dart_style.dart';
 
 import '../../analysis/custom_result_class.dart';
 import '../../analysis/driver/driver.dart';
-import '../../analysis/driver/error.dart';
 import '../../analysis/driver/state.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';

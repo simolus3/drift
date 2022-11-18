@@ -1,5 +1,4 @@
 @Tags(['analyzer'])
-import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 

@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
-import 'package:drift_dev/src/analysis/results/table.dart';
 import 'package:test/test.dart';
 
 import '../test_utils.dart';

@@ -413,8 +413,7 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
 
         if (type is! InterfaceType) continue;
 
-        if (type.element2.library.isDartCore &&
-            type.element2.name == 'pragma') {
+        if (type.element.library.isDartCore && type.element.name == 'pragma') {
           final name = value.getField('name')!.toStringValue()!;
 
           if (name == 'moor2drift') {
@@ -453,8 +452,8 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     if (type is! InterfaceType ||
         // note that even old moor code uses these names since UseMoor/UseDao
         // are type aliases to the new interfaces.
-        (type.element2.name != 'DriftDatabase' &&
-            type.element2.name != 'DriftAccessor')) {
+        (type.element.name != 'DriftDatabase' &&
+            type.element.name != 'DriftAccessor')) {
       return;
     }
 

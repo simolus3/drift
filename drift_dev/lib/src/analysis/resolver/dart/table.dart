@@ -151,8 +151,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element2, type.typeArguments);
-        name = type.element2.name;
+        existingClass = FoundDartClass(type.element, type.typeArguments);
+        name = type.element.name;
       } else {
         reportError(DriftAnalysisError.forDartElement(
           element,

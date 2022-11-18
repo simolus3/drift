@@ -314,8 +314,8 @@ class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
     return {
       'kind': 'interface',
       'suffix': type.nullabilitySuffix.name,
-      'library': type.element2.library.source.uri.toString(),
-      'element': type.element2.name,
+      'library': type.element.library.source.uri.toString(),
+      'element': type.element.name,
       'instantiation': [
         for (final instantiation in type.typeArguments)
           instantiation.accept(this),
