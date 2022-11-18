@@ -2,10 +2,6 @@
 
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class Category extends DataClass implements Insertable<Category> {
   final int id;
@@ -18,7 +14,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     {
-      final converter = $CategoriesTable.$converter0;
+      final converter = $CategoriesTable.$convertercolor;
       map['color'] = Variable<int>(converter.toSql(color));
     }
     return map;
@@ -123,7 +119,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       map['name'] = Variable<String>(name.value);
     }
     if (color.present) {
-      final converter = $CategoriesTable.$converter0;
+      final converter = $CategoriesTable.$convertercolor;
       map['color'] = Variable<int>(converter.toSql(color.value));
     }
     return map;
@@ -163,7 +159,7 @@ class $CategoriesTable extends Categories
   late final GeneratedColumnWithTypeConverter<Color, int> color =
       GeneratedColumn<int>('color', aliasedName, false,
               type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<Color>($CategoriesTable.$converter0);
+          .withConverter<Color>($CategoriesTable.$convertercolor);
   @override
   List<GeneratedColumn> get $columns => [id, name, color];
   @override
@@ -198,7 +194,8 @@ class $CategoriesTable extends Categories
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      color: $CategoriesTable.$converter0.fromSql(attachedDatabase.options.types
+      color: $CategoriesTable.$convertercolor.fromSql(attachedDatabase
+          .options.types
           .read(DriftSqlType.int, data['${effectivePrefix}color'])!),
     );
   }
@@ -208,7 +205,7 @@ class $CategoriesTable extends Categories
     return $CategoriesTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<Color, int> $converter0 = const ColorConverter();
+  static TypeConverter<Color, int> $convertercolor = const ColorConverter();
 }
 
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
@@ -402,7 +399,7 @@ class $TodoEntriesTable extends TodoEntries
       'category', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES "categories" ("id")');
+      defaultConstraints: 'REFERENCES categories (id)');
   final VerificationMeta _dueDateMeta = const VerificationMeta('dueDate');
   @override
   late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
@@ -592,7 +589,7 @@ class TextEntries extends Table
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
   @override
   TextEntrie map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -607,6 +604,8 @@ class TextEntries extends Table
     return TextEntries(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
   @override
@@ -641,7 +640,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         id: row.readNullable<int>('id'),
         name: row.readNullable<String>('name'),
         color: NullAwareTypeConverter.wrapFromSql(
-            $CategoriesTable.$converter0, row.readNullable<int>('color')),
+            $CategoriesTable.$convertercolor, row.readNullable<int>('color')),
         amount: row.read<int>('amount'),
       );
     });

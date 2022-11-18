@@ -2,10 +2,6 @@
 
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class Note extends DataClass implements Insertable<Note> {
   final int id;

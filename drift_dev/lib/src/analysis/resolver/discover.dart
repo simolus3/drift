@@ -13,6 +13,8 @@ import '../results/element.dart';
 import 'dart/helper.dart';
 import 'intermediate_state.dart';
 
+/// Finds the name and kind (e.g. table, view, database, index, ...) of entries
+/// defined in a given file.
 class DiscoverStep {
   final DriftAnalysisDriver _driver;
   final FileState _file;

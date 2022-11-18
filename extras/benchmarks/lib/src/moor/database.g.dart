@@ -2,10 +2,6 @@
 
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;

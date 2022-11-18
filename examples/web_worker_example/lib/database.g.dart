@@ -2,10 +2,6 @@
 
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class Entrie extends DataClass implements Insertable<Entrie> {
   final int id;
@@ -172,6 +168,8 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
     return Entries(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }

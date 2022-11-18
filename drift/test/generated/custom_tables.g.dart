@@ -2,6 +2,7 @@
 
 part of 'custom_tables.dart';
 
+// ignore_for_file: type=lint
 class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
   final Value<Uint8List> payload;
   const NoIdsCompanion({
@@ -42,11 +43,11 @@ class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
   }
 }
 
-class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
+class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $NoIdsTable(this.attachedDatabase, [this._alias]);
+  NoIds(this.attachedDatabase, [this._alias]);
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
   late final GeneratedColumn<Uint8List> payload = GeneratedColumn<Uint8List>(
       'payload', aliasedName, false,
@@ -85,8 +86,8 @@ class $NoIdsTable extends Table with TableInfo<$NoIdsTable, NoIdRow> {
   }
 
   @override
-  $NoIdsTable createAlias(String alias) {
-    return $NoIdsTable(attachedDatabase, alias);
+  NoIds createAlias(String alias) {
+    return NoIds(attachedDatabase, alias);
   }
 
   @override
@@ -216,12 +217,11 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   }
 }
 
-class $WithDefaultsTable extends Table
-    with TableInfo<$WithDefaultsTable, WithDefault> {
+class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $WithDefaultsTable(this.attachedDatabase, [this._alias]);
+  WithDefaults(this.attachedDatabase, [this._alias]);
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
@@ -269,8 +269,8 @@ class $WithDefaultsTable extends Table
   }
 
   @override
-  $WithDefaultsTable createAlias(String alias) {
-    return $WithDefaultsTable(attachedDatabase, alias);
+  WithDefaults createAlias(String alias) {
+    return WithDefaults(attachedDatabase, alias);
   }
 
   @override
@@ -420,12 +420,12 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
   }
 }
 
-class $WithConstraintsTable extends Table
-    with TableInfo<$WithConstraintsTable, WithConstraint> {
+class WithConstraints extends Table
+    with TableInfo<WithConstraints, WithConstraint> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $WithConstraintsTable(this.attachedDatabase, [this._alias]);
+  WithConstraints(this.attachedDatabase, [this._alias]);
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
@@ -485,8 +485,8 @@ class $WithConstraintsTable extends Table
   }
 
   @override
-  $WithConstraintsTable createAlias(String alias) {
-    return $WithConstraintsTable(attachedDatabase, alias);
+  WithConstraints createAlias(String alias) {
+    return WithConstraints(attachedDatabase, alias);
   }
 
   @override
@@ -514,11 +514,11 @@ class Config extends DataClass implements Insertable<Config> {
       map['config_value'] = Variable<String>(configValue);
     }
     if (!nullToAbsent || syncState != null) {
-      final converter = $ConfigTable.$convertersyncStaten;
+      final converter = ConfigTable.$convertersyncStaten;
       map['sync_state'] = Variable<int>(converter.toSql(syncState));
     }
     if (!nullToAbsent || syncStateImplicit != null) {
-      final converter = $ConfigTable.$convertersyncStateImplicitn;
+      final converter = ConfigTable.$convertersyncStateImplicitn;
       map['sync_state_implicit'] =
           Variable<int>(converter.toSql(syncStateImplicit));
     }
@@ -657,11 +657,11 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['config_value'] = Variable<String>(configValue.value);
     }
     if (syncState.present) {
-      final converter = $ConfigTable.$convertersyncStaten;
+      final converter = ConfigTable.$convertersyncStaten;
       map['sync_state'] = Variable<int>(converter.toSql(syncState.value));
     }
     if (syncStateImplicit.present) {
-      final converter = $ConfigTable.$convertersyncStateImplicitn;
+      final converter = ConfigTable.$convertersyncStateImplicitn;
       map['sync_state_implicit'] =
           Variable<int>(converter.toSql(syncStateImplicit.value));
     }
@@ -680,11 +680,11 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   }
 }
 
-class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
+class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ConfigTable(this.attachedDatabase, [this._alias]);
+  ConfigTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   late final GeneratedColumn<String> configKey = GeneratedColumn<String>(
       'config_key', aliasedName, false,
@@ -704,7 +704,7 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
               type: DriftSqlType.int,
               requiredDuringInsert: false,
               $customConstraints: '')
-          .withConverter<SyncType?>($ConfigTable.$convertersyncStaten);
+          .withConverter<SyncType?>(ConfigTable.$convertersyncStaten);
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
   late final GeneratedColumnWithTypeConverter<SyncType?, int>
@@ -713,7 +713,7 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
               type: DriftSqlType.int,
               requiredDuringInsert: false,
               $customConstraints: '')
-          .withConverter<SyncType?>($ConfigTable.$convertersyncStateImplicitn);
+          .withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn);
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
@@ -753,18 +753,18 @@ class $ConfigTable extends Table with TableInfo<$ConfigTable, Config> {
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
-      syncState: $ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
+      syncState: ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: $ConfigTable.$convertersyncStateImplicitn.fromSql(
+      syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromSql(
           attachedDatabase.options.types.read(
               DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
   }
 
   @override
-  $ConfigTable createAlias(String alias) {
-    return $ConfigTable(attachedDatabase, alias);
+  ConfigTable createAlias(String alias) {
+    return ConfigTable(attachedDatabase, alias);
   }
 
   static TypeConverter<SyncType, int> $convertersyncState =
@@ -955,11 +955,11 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
   }
 }
 
-class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
+class Mytable extends Table with TableInfo<Mytable, MytableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $MytableTable(this.attachedDatabase, [this._alias]);
+  Mytable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedColumn<int> someid = GeneratedColumn<int>(
       'someid', aliasedName, false,
@@ -1037,8 +1037,8 @@ class $MytableTable extends Table with TableInfo<$MytableTable, MytableData> {
   }
 
   @override
-  $MytableTable createAlias(String alias) {
-    return $MytableTable(attachedDatabase, alias);
+  Mytable createAlias(String alias) {
+    return Mytable(attachedDatabase, alias);
   }
 
   @override
@@ -1181,12 +1181,12 @@ class EmailCompanion extends UpdateCompanion<EMail> {
   }
 }
 
-class $EmailTable extends Table
-    with TableInfo<$EmailTable, EMail>, VirtualTableInfo<$EmailTable, EMail> {
+class Email extends Table
+    with TableInfo<Email, EMail>, VirtualTableInfo<Email, EMail> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EmailTable(this.attachedDatabase, [this._alias]);
+  Email(this.attachedDatabase, [this._alias]);
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedColumn<String> sender = GeneratedColumn<String>(
       'sender', aliasedName, false,
@@ -1253,8 +1253,8 @@ class $EmailTable extends Table
   }
 
   @override
-  $EmailTable createAlias(String alias) {
-    return $EmailTable(attachedDatabase, alias);
+  Email createAlias(String alias) {
+    return Email(attachedDatabase, alias);
   }
 
   @override
@@ -1381,12 +1381,11 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   }
 }
 
-class $WeirdTableTable extends Table
-    with TableInfo<$WeirdTableTable, WeirdData> {
+class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $WeirdTableTable(this.attachedDatabase, [this._alias]);
+  WeirdTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
   late final GeneratedColumn<int> sqlClass = GeneratedColumn<int>(
       'class', aliasedName, false,
@@ -1439,8 +1438,8 @@ class $WeirdTableTable extends Table
   }
 
   @override
-  $WeirdTableTable createAlias(String alias) {
-    return $WeirdTableTable(attachedDatabase, alias);
+  WeirdTable createAlias(String alias) {
+    return WeirdTable(attachedDatabase, alias);
   }
 
   @override
@@ -1548,10 +1547,10 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.options.types
           .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
-      syncState: $ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
+      syncState: ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: $ConfigTable.$convertersyncStateImplicitn.fromSql(
+      syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromSql(
           attachedDatabase.options.types.read(
               DriftSqlType.int, data['${effectivePrefix}sync_state_implicit'])),
     );
@@ -1566,12 +1565,12 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
       GeneratedColumn<int>('sync_state', aliasedName, true,
               type: DriftSqlType.int)
-          .withConverter<SyncType?>($ConfigTable.$convertersyncStaten);
+          .withConverter<SyncType?>(ConfigTable.$convertersyncStaten);
   late final GeneratedColumnWithTypeConverter<SyncType?, int>
       syncStateImplicit = GeneratedColumn<int>(
               'sync_state_implicit', aliasedName, true,
               type: DriftSqlType.int)
-          .withConverter<SyncType?>($ConfigTable.$convertersyncStateImplicitn);
+          .withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn);
   @override
   MyView createAlias(String alias) {
     return MyView(attachedDatabase, alias);
@@ -1586,16 +1585,15 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(e);
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
-  late final $NoIdsTable noIds = $NoIdsTable(this);
-  late final $WithDefaultsTable withDefaults = $WithDefaultsTable(this);
-  late final $WithConstraintsTable withConstraints =
-      $WithConstraintsTable(this);
-  late final $ConfigTable config = $ConfigTable(this);
+  late final NoIds noIds = NoIds(this);
+  late final WithDefaults withDefaults = WithDefaults(this);
+  late final WithConstraints withConstraints = WithConstraints(this);
+  late final ConfigTable config = ConfigTable(this);
   late final Index valueIdx = Index('value_idx',
       'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)');
-  late final $MytableTable mytable = $MytableTable(this);
-  late final $EmailTable email = $EmailTable(this);
-  late final $WeirdTableTable weirdTable = $WeirdTableTable(this);
+  late final Mytable mytable = Mytable(this);
+  late final Email email = Email(this);
+  late final WeirdTable weirdTable = WeirdTable(this);
   late final Trigger myTrigger = Trigger(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
@@ -1674,11 +1672,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
           Variable<int>(NullAwareTypeConverter.wrapToSql(
-              $ConfigTable.$convertersyncState, var1)),
+              ConfigTable.$convertersyncState, var1)),
           ...generatedpred.introducedVariables,
           for (var $ in var2)
             Variable<int>(NullAwareTypeConverter.wrapToSql(
-                $ConfigTable.$convertersyncStateImplicit, $))
+                ConfigTable.$convertersyncStateImplicit, $))
         ],
         readsFrom: {
           config,
@@ -1686,14 +1684,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map((QueryRow row) => row.read<String>('config_key'));
   }
 
-  Selectable<TableValuedResult> tableValued() {
+  Selectable<JsonResult> tableValued() {
     return customSelect(
         'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {
           config,
         }).map((QueryRow row) {
-      return TableValuedResult(
+      return JsonResult(
         row: row,
         key: row.read<String>('key'),
         value: row.readNullable<String>('value'),
@@ -1701,12 +1699,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<AnotherResult> another() {
+  Selectable<JsonResult> another() {
     return customSelect(
         'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
         variables: [],
         readsFrom: {}).map((QueryRow row) {
-      return AnotherResult(
+      return JsonResult(
         row: row,
         key: row.read<String>('key'),
         value: row.readNullable<String>('value'),
@@ -1772,10 +1770,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         configKey: row.read<String>('config_key'),
         configValue: row.readNullable<String>('config_value'),
         syncState: NullAwareTypeConverter.wrapFromSql(
-            $ConfigTable.$convertersyncState,
+            ConfigTable.$convertersyncState,
             row.readNullable<int>('sync_state')),
         syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
-            $ConfigTable.$convertersyncStateImplicit,
+            ConfigTable.$convertersyncStateImplicit,
             row.readNullable<int>('sync_state_implicit')),
       );
     });
@@ -1875,14 +1873,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-typedef ReadMultiple$clause = OrderBy Function($ConfigTable config);
-typedef ReadDynamic$predicate = Expression<bool> Function($ConfigTable config);
-typedef TypeConverterVar$pred = Expression<bool> Function($ConfigTable config);
+typedef ReadMultiple$clause = OrderBy Function(ConfigTable config);
+typedef ReadDynamic$predicate = Expression<bool> Function(ConfigTable config);
+typedef TypeConverterVar$pred = Expression<bool> Function(ConfigTable config);
 
-class TableValuedResult extends CustomResultSet {
+class JsonResult extends CustomResultSet {
   final String key;
   final String? value;
-  TableValuedResult({
+  JsonResult({
     required QueryRow row,
     required this.key,
     this.value,
@@ -1892,38 +1890,12 @@ class TableValuedResult extends CustomResultSet {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is TableValuedResult &&
+      (other is JsonResult &&
           other.key == this.key &&
           other.value == this.value);
   @override
   String toString() {
-    return (StringBuffer('TableValuedResult(')
-          ..write('key: $key, ')
-          ..write('value: $value')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class AnotherResult extends CustomResultSet {
-  final String key;
-  final String? value;
-  AnotherResult({
-    required QueryRow row,
-    required this.key,
-    this.value,
-  }) : super(row);
-  @override
-  int get hashCode => Object.hash(key, value);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AnotherResult &&
-          other.key == this.key &&
-          other.value == this.value);
-  @override
-  String toString() {
-    return (StringBuffer('AnotherResult(')
+    return (StringBuffer('JsonResult(')
           ..write('key: $key, ')
           ..write('value: $value')
           ..write(')'))
@@ -1962,7 +1934,7 @@ class MultipleResult extends CustomResultSet {
 }
 
 typedef Multiple$predicate = Expression<bool> Function(
-    $WithDefaultsTable d, $WithConstraintsTable c);
+    WithDefaults d, WithConstraints c);
 
 class ReadRowIdResult extends CustomResultSet {
   final int rowid;
@@ -2003,7 +1975,7 @@ class ReadRowIdResult extends CustomResultSet {
   }
 }
 
-typedef ReadRowId$expr = Expression<int> Function($ConfigTable config);
+typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
 
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;

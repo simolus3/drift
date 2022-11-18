@@ -2,10 +2,6 @@
 
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   /// The user id
@@ -34,7 +30,7 @@ class User extends DataClass implements Insertable<User> {
       map['profile_picture'] = Variable<Uint8List>(profilePicture);
     }
     if (!nullToAbsent || preferences != null) {
-      final converter = $UsersTable.$converter0;
+      final converter = $UsersTable.$converterpreferences;
       map['preferences'] = Variable<String>(converter.toSql(preferences));
     }
     return map;
@@ -190,7 +186,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       map['profile_picture'] = Variable<Uint8List>(profilePicture.value);
     }
     if (preferences.present) {
-      final converter = $UsersTable.$converter0;
+      final converter = $UsersTable.$converterpreferences;
       map['preferences'] = Variable<String>(converter.toSql(preferences.value));
     }
     return map;
@@ -243,7 +239,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumnWithTypeConverter<Preferences?, String>
       preferences = GeneratedColumn<String>('preferences', aliasedName, true,
               type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<Preferences?>($UsersTable.$converter0);
+          .withConverter<Preferences?>($UsersTable.$converterpreferences);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
@@ -295,7 +291,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
       profilePicture: attachedDatabase.options.types
           .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converter0.fromSql(attachedDatabase
+      preferences: $UsersTable.$converterpreferences.fromSql(attachedDatabase
           .options.types
           .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
     );
@@ -306,7 +302,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     return $UsersTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<Preferences?, String?> $converter0 =
+  static TypeConverter<Preferences?, String?> $converterpreferences =
       const PreferenceConverter();
 }
 
@@ -474,7 +470,7 @@ class $FriendshipsTable extends Friendships
       'really_good_friends', aliasedName, false,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: 'CHECK ("really_good_friends" IN (0, 1))',
+      defaultConstraints: 'CHECK (really_good_friends IN (0, 1))',
       defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
@@ -592,7 +588,7 @@ abstract class _$Database extends GeneratedDatabase {
         ],
         readsFrom: {
           users,
-        }).map((QueryRow row) => $UsersTable.$converter0
+        }).map((QueryRow row) => $UsersTable.$converterpreferences
         .fromSql(row.readNullable<String>('preferences')));
   }
 

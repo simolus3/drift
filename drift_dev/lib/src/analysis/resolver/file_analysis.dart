@@ -9,6 +9,7 @@ import '../results/results.dart';
 import 'queries/query_analyzer.dart';
 import 'queries/required_variables.dart';
 
+/// Fully resolves databases and queries after elements have been resolved.
 class FileAnalyzer {
   final DriftAnalysisDriver driver;
 

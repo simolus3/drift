@@ -2,10 +2,6 @@
 
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   final int id;
@@ -200,7 +196,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES "users" ("id")');
+      defaultConstraints: 'REFERENCES users (id)');
   @override
   List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
@@ -443,13 +439,13 @@ class Groups extends Table with TableInfo<Groups, Group> {
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
-      defaultValue: const CustomExpression<bool>('FALSE'));
+      defaultValue: const CustomExpression('FALSE'));
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
   late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users (id)');
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
   @override
   List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
@@ -506,7 +502,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
   }
 
   @override
-  List<String> get customConstraints => const ['PRIMARY KEY (id)'];
+  List<String> get customConstraints => const ['PRIMARY KEY(id)'];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -704,7 +700,7 @@ class Notes extends Table
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
   @override
   Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -723,6 +719,8 @@ class Notes extends Table
     return Notes(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
   @override
@@ -749,8 +747,8 @@ class GroupCountData extends DataClass {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       birthday: serializer.fromJson<DateTime?>(json['birthday']),
-      nextUser: serializer.fromJson<int?>(json['nextUser']),
-      groupCount: serializer.fromJson<int>(json['groupCount']),
+      nextUser: serializer.fromJson<int?>(json['next_user']),
+      groupCount: serializer.fromJson<int>(json['group_count']),
     );
   }
   @override
@@ -760,8 +758,8 @@ class GroupCountData extends DataClass {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'birthday': serializer.toJson<DateTime?>(birthday),
-      'nextUser': serializer.toJson<int?>(nextUser),
-      'groupCount': serializer.toJson<int>(groupCount),
+      'next_user': serializer.toJson<int?>(nextUser),
+      'group_count': serializer.toJson<int>(groupCount),
     };
   }
 
@@ -818,7 +816,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   String get entityName => 'group_count';
   @override
   String get createViewStmt =>
-      'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users';
+      'CREATE VIEW group_count AS SELECT\n    users.*,\n    (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count\n  FROM users;';
   @override
   GroupCount get asDslTable => this;
   @override
@@ -868,14 +866,14 @@ abstract class _$Database extends GeneratedDatabase {
   _$Database.connect(DatabaseConnection c) : super.connect(c);
   late final $UsersTable users = $UsersTable(this);
   late final Groups groups = Groups(this);
-  late final GroupCount groupCount = GroupCount(this);
   late final Notes notes = Notes(this);
+  late final GroupCount groupCount = GroupCount(this);
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, groups, groupCount, notes];
+      [users, groups, notes, groupCount];
   @override
   DriftDatabaseOptions get options =>
       const DriftDatabaseOptions(storeDateTimeAsText: true);

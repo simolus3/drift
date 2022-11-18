@@ -2,10 +2,7 @@
 
 part of 'todos.dart';
 
-// DriftElementId(asset:drift/test/generated/todos.dart, category_todo_count_view)
-// DriftElementId(asset:drift/test/generated/todos.dart, todos)
-// DriftElementId(asset:drift/test/generated/todos.dart, categories)
-// DriftElementId(asset:drift/test/generated/todos.dart, todo_with_category_view)
+// ignore_for_file: type=lint
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
@@ -1731,10 +1728,6 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   }
 }
 
-// DriftElementId(asset:drift/test/generated/todos.dart, users)
-// DriftElementId(asset:drift/test/generated/todos.dart, shared_todos)
-// DriftElementId(asset:drift/test/generated/todos.dart, table_without_p_k)
-// DriftElementId(asset:drift/test/generated/todos.dart, pure_defaults)
 mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $UsersTable get users => attachedDatabase.users;
   $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;

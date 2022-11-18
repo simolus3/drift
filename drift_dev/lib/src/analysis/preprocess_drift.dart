@@ -48,6 +48,11 @@ class DriftPreprocessorResult {
   Map<String, Object?> toJson() => _$DriftPreprocessorResultToJson(this);
 }
 
+/// Processes `.drift` files to extract all embedded Dart snippets.
+/// 
+/// To analyze drift files in the build system, we extract these snippets into
+/// a standalone Dart file so that we're able to analyze them with the resolvers
+/// provided by the build system.
 class DriftPreprocessor {
   final DriftPreprocessorResult result;
   final String temporaryDartFile;

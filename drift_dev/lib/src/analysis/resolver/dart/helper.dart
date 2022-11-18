@@ -7,6 +7,10 @@ import 'package:collection/collection.dart';
 import '../../driver/driver.dart';
 import '../../results/results.dart';
 
+/// A collection of elements and Dart types important to Drift.
+///
+/// These types are used to determine whether a given Dart class has drift-
+/// specific annotations or whether it defines a table.
 class KnownDriftTypes {
   final LibraryElement helperLibrary;
   final ClassElement tableElement;

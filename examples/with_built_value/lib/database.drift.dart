@@ -1,12 +1,6 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
+// ignore_for_file: type=lint
 part of 'database.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
-// ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
@@ -172,6 +166,8 @@ class Users extends Table with TableInfo<Users, User> {
     return Users(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }

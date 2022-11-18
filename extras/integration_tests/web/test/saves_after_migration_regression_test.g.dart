@@ -2,10 +2,6 @@
 
 part of 'saves_after_migration_regression_test.dart';
 
-// **************************************************************************
-// DriftDatabaseGenerator
-// **************************************************************************
-
 // ignore_for_file: type=lint
 class Foo extends DataClass implements Insertable<Foo> {
   final int id;

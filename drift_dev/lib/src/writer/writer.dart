@@ -68,8 +68,9 @@ abstract class _NodeOrWriter {
   /// Returns a Dart expression evaluating to the [converter].
   AnnotatedDartCode readConverter(AppliedTypeConverter converter,
       {bool forNullable = false}) {
-    final fieldName =
-        forNullable ? converter.nullableFieldName : converter.fieldName;
+    final fieldName = forNullable && converter.canBeSkippedForNulls
+        ? converter.nullableFieldName
+        : converter.fieldName;
     final table = converter.owningColumn.owner;
 
     return AnnotatedDartCode([
@@ -95,7 +96,7 @@ abstract class _NodeOrWriter {
         ..questionMarkIfNullable(makeNullable)
         ..addText(',')
         ..addTopLevel(sqlDartType)
-        ..questionMarkIfNullable(makeNullable);
+        ..questionMarkIfNullable(makeNullable || converter.sqlTypeIsNullable);
 
       if (converter.alsoAppliesToJsonConversion) {
         b

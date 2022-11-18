@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
+import '../results/database.dart';
 import '../results/element.dart';
 import '../results/file_results.dart';
 import 'error.dart';
@@ -20,6 +21,12 @@ class FileState {
 
   String get extension => url.extension(ownUri.path);
 
+  /// Whether this file contains a drift database or a drift accessor / DAO.
+  bool get containsDatabaseAccessor {
+    return analyzedElements.any((e) => e is BaseDriftAccessor);
+  }
+
+  /// All analyzed [DriftElement]s found in this library.
   @visibleForTesting
   Iterable<DriftElement> get analyzedElements {
     return analysis.values.map((e) => e.result).whereType();

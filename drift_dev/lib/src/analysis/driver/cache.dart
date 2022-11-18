@@ -1,7 +1,11 @@
 import '../results/element.dart';
 import 'state.dart';
 
+/// An in-memory cache of analysis results for drift elements.
+/// 
+/// At the moment, the cache is not set up to handle changing files.
 class DriftAnalysisCache {
+
   final Map<Uri, Map<String, Object?>> serializedElements = {};
   final Map<Uri, FileState> knownFiles = {};
   final Map<DriftElementId, DiscoveredElement> discoveredElements = {};

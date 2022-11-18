@@ -10,6 +10,12 @@ import 'driver/driver.dart';
 import 'driver/state.dart';
 import 'results/results.dart';
 
+/// Serializes [DriftElement]s to JSON.
+///
+/// By first analyzing elements and later generating code, drift's build setup
+/// is more efficient and incremental (as not everything is analyzed again if
+/// a single file changes). However, it means that we have to serialize analysis
+/// results to read them back in in a later build step.
 class ElementSerializer {
   Map<String, Object?> serializeElements(Iterable<DriftElement> elements) {
     return {
@@ -346,6 +352,7 @@ class _DartTypeSerializer extends TypeVisitor<Map<String, Object?>> {
   }
 }
 
+/// Deserializes the element structure emitted by [ElementSerializer].
 class ElementDeserializer {
   final Map<Uri, LibraryElement> _loadedLibraries = {};
   final List<DriftElementId> _currentlyReading = [];
@@ -404,7 +411,12 @@ class ElementDeserializer {
           'Analysis data for ${id..libraryUri} not found');
     }
 
-    assert(!_currentlyReading.contains(id));
+    if (_currentlyReading.contains(id)) {
+      throw StateError(
+          'Circular error when deserializing drift modules. This is a '
+          'bug in drift_dev!');
+    }
+
     try {
       _currentlyReading.add(id);
 
@@ -445,7 +457,7 @@ class ElementDeserializer {
       case 'table':
         final columns = [
           for (final rawColumn in json['columns'] as List)
-            await _readColumn(rawColumn as Map),
+            await _readColumn(rawColumn as Map, id),
         ];
         final columnByName = {
           for (final column in columns) column.nameInSql: column,
@@ -478,7 +490,7 @@ class ElementDeserializer {
           );
         }
 
-        return DriftTable(
+        final table = DriftTable(
           id,
           declaration,
           references: references,
@@ -504,6 +516,23 @@ class ElementDeserializer {
               ? (json['custom_constraints'] as List).cast()
               : null,
         );
+
+        for (final column in columns) {
+          for (var i = 0; i < column.constraints.length; i++) {
+            final constraint = column.constraints[i];
+
+            if (constraint is _PendingReferenceToOwnTable) {
+              column.constraints[i] = ForeignKeyReference(
+                columns.singleWhere(
+                    (e) => e.nameInSql == constraint.referencedColumn),
+                constraint.onUpdate,
+                constraint.onDelete,
+              );
+            }
+          }
+        }
+
+        return table;
       case 'index':
         return DriftIndex(
           id,
@@ -547,7 +576,7 @@ class ElementDeserializer {
       case 'view':
         final columns = [
           for (final rawColumn in json['columns'] as List)
-            await _readColumn(rawColumn as Map),
+            await _readColumn(rawColumn as Map, id),
         ];
 
         final serializedSource = json['source'] as Map;
@@ -622,7 +651,7 @@ class ElementDeserializer {
             declaredViews: views,
             declaredIncludes: includes,
             declaredQueries: queries,
-            schemaVersion: json['schema_version'] as int,
+            schemaVersion: json['schema_version'] as int?,
             accessorTypes: [
               for (final dao in json['daos'])
                 AnnotatedDartCode.fromJson(dao as Map)
@@ -646,7 +675,7 @@ class ElementDeserializer {
     }
   }
 
-  Future<DriftColumn> _readColumn(Map json) async {
+  Future<DriftColumn> _readColumn(Map json, DriftElementId ownTable) async {
     final rawConverter = json['typeConverter'] as Map?;
 
     return DriftColumn(
@@ -668,7 +697,7 @@ class ElementDeserializer {
       documentationComment: json['documentationComment'] as String?,
       constraints: [
         for (final rawConstraint in json['constraints'] as List)
-          await _readConstraint(rawConstraint as Map)
+          await _readConstraint(rawConstraint as Map, ownTable)
       ],
       customConstraints: json['customConstraints'] as String?,
     );
@@ -701,7 +730,8 @@ class ElementDeserializer {
     return value == null ? null : ReferenceAction.values.byName(value);
   }
 
-  Future<DriftColumnConstraint> _readConstraint(Map json) async {
+  Future<DriftColumnConstraint> _readConstraint(
+      Map json, DriftElementId ownTable) async {
     final type = json['type'] as String;
 
     switch (type) {
@@ -710,11 +740,20 @@ class ElementDeserializer {
       case 'primary':
         return PrimaryKeyColumn.fromJson(json);
       case 'foreign_key':
-        return ForeignKeyReference(
-          await _readDriftColumnReference(json['column'] as Map),
-          _readAction(json['onUpdate'] as String?),
-          _readAction(json['onDelete'] as String?),
-        );
+        final table = DriftElementId.fromJson(json['column']['table'] as Map);
+        if (table == ownTable) {
+          return _PendingReferenceToOwnTable(
+            json['column']['name'] as String,
+            _readAction(json['onUpdate'] as String?),
+            _readAction(json['onDelete'] as String?),
+          );
+        } else {
+          return ForeignKeyReference(
+            await _readDriftColumnReference(json['column'] as Map),
+            _readAction(json['onUpdate'] as String?),
+            _readAction(json['onDelete'] as String?),
+          );
+        }
       case 'generated_as':
         return ColumnGeneratedAs.fromJson(json);
       case 'check':
@@ -766,4 +805,12 @@ class CouldNotDeserializeException implements Exception {
 
   @override
   String toString() => message;
+}
+
+class _PendingReferenceToOwnTable extends DriftColumnConstraint {
+  final String referencedColumn;
+  final ReferenceAction? onUpdate, onDelete;
+
+  _PendingReferenceToOwnTable(
+      this.referencedColumn, this.onUpdate, this.onDelete);
 }

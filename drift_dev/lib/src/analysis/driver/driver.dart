@@ -16,6 +16,40 @@ import 'cache.dart';
 import 'error.dart';
 import 'state.dart';
 
+/// The main entrypoint for drift element analysis.
+///
+/// The purpose of this analyzer is to extract tables, views, databases and
+/// other elements of interest to drift from source files. Where possible, the
+/// analysis steps should be modular, meaning that they don't require a central
+/// entrypoint like a database class. Instead, every element can be analyzed in
+/// isolation (except for its dependencies).
+///
+/// Analysis currently happens in three stages:
+///
+///  1. __Discovery__: In this first step, the names and types of drift elements
+///  is detected in each file. After this step, we might know that there's a
+///  table named "users" in a file named "tables.drift", but we don't know its
+///  columns yet. This enables the analysis stage to efficiently resolve
+///  references. The step is mainly implemented in [DiscoverStep] and
+///  [prepareFileForAnalysis].
+///  2. __Element analysis__: In this step, discovered entries from the first
+///  step are fully resolved.
+///  Resolving elements happens in a depth-first approach, where dependencies
+///  are analyzed before dependants. It is forbidden to have circular references
+///  between elements (which is detected and handled gracefully). This step is
+///  coordinated by a [DriftResolver], with the classes in `resolver/dart` and
+///  `resolver/drift` being responsible for the individual analysis work for
+///  different element types.
+///  3. __File analysis__: In this final step, some elements are analyzed again
+///  to fully resolve them. This includes drift databases, drift accessors and
+///  queries defined in `.drift` files. They require all other elements to be
+///  fully analyzed.
+///  The main motivation for this being a third step is that the results of
+///  resolving queries are very difficult to serialize. At the moment, modular
+///  analysis is implemented by serializing the results of the second step
+///  (element analysis). By running file analysis later and only for entrypoints
+///  where that is required, we obtain a reasonable degree of modularity without
+///  having to serialize the complex model of serialized queries.
 class DriftAnalysisDriver {
   final DriftBackend backend;
   final DriftAnalysisCache cache = DriftAnalysisCache();
@@ -47,10 +81,15 @@ class DriftAnalysisDriver {
     );
   }
 
+  /// Loads types important for Drift analysis.
   Future<KnownDriftTypes> loadKnownTypes() async {
     return _knownTypes ??= await KnownDriftTypes.resolve(this);
   }
 
+  /// For a given file under [uri], attempts to restore serialized analysis
+  /// results that have been stored before.
+  ///
+  /// Returns non-null if analysis results were found and successfully restored.
   Future<Map<String, Object?>?> readStoredAnalysisResult(Uri uri) async {
     final cached = cache.serializedElements[uri];
     if (cached != null) return cached;
@@ -85,6 +124,7 @@ class DriftAnalysisDriver {
     return allRecovered;
   }
 
+  /// Runs the first step (element discovery) on a file with the given [uri].
   Future<FileState> prepareFileForAnalysis(Uri uri,
       {bool needsDiscovery = true}) async {
     var known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
@@ -120,6 +160,11 @@ class DriftAnalysisDriver {
     return known;
   }
 
+  /// Runs the second analysis step (element analysis) on a file.
+  /// 
+  /// The file, as well as all imports, should have undergone the first analysis
+  /// step (discovery) at this point, so that the resolver is able to
+  /// recognize dependencies between different elements.
   Future<void> _analyzePrepared(FileState state) async {
     assert(state.discovery != null);
 
@@ -136,6 +181,8 @@ class DriftAnalysisDriver {
     }
   }
 
+  /// Resolves elements in a file under the given [uri] by doing all the
+  /// necessary work up until that point.
   Future<FileState> resolveElements(Uri uri) async {
     var known = cache.stateForUri(uri);
     await prepareFileForAnalysis(uri, needsDiscovery: false);
@@ -159,6 +206,7 @@ class DriftAnalysisDriver {
     return known;
   }
 
+  /// Fully analyzes a file under the [uri] by running all analysis steps.
   Future<FileState> fullyAnalyze(Uri uri) async {
     // First, make sure that elements in this file and all imports are fully
     // resolved.

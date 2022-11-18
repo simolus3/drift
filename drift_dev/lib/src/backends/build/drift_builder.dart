@@ -6,6 +6,7 @@ import '../../analysis/driver/driver.dart';
 import '../../analysis/driver/state.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
+import '../../utils/string_escaper.dart';
 import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
 import '../../writer/import_manager.dart';
@@ -32,6 +33,14 @@ enum DriftGenerationMode {
   monolithicPart;
 
   bool get isMonolithic => true;
+
+  /// Whether the analysis happens in the generating build step.
+  ///
+  /// For most generation modes, we run analysis work in a previous build step.
+  /// For backwards compatibility and since the result of the analysis work
+  /// should not be user-visible, the non-shared part builder runs its analysis
+  /// work in the generation build step.
+  bool get embeddedAnalyzer => this == DriftGenerationMode.monolithicPart;
 }
 
 class DriftBuilder extends Builder {
@@ -74,13 +83,17 @@ class DriftBuilder extends Builder {
     final driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
       ..cacheReader = BuildCacheReader(buildStep);
 
-    final fromCache =
-        await driver.readStoredAnalysisResult(buildStep.inputId.uri);
+    if (!generationMode.embeddedAnalyzer) {
+      // An analysis step should have already run for this asset. If we can't
+      // pick up results from that, there is no code for drift to generate.
+      final fromCache =
+          await driver.readStoredAnalysisResult(buildStep.inputId.uri);
 
-    if (fromCache == null) {
-      // Don't do anything! There are no analysis results for this file, so
-      // there's nothing for drift to generate code for.
-      return;
+      if (fromCache == null) {
+        // Don't do anything! There are no analysis results for this file, so
+        // there's nothing for drift to generate code for.
+        return;
+      }
     }
 
     Set<Uri> analyzedUris = {};
@@ -97,6 +110,12 @@ class DriftBuilder extends Builder {
     }
 
     final fileResult = await analyze(buildStep.inputId.uri);
+
+    // For the monolithic build modes, we only generate code for databases and
+    // crawl the tables from there.
+    if (generationMode.isMonolithic && !fileResult.containsDatabaseAccessor) {
+      return;
+    }
 
     final generationOptions = GenerationOptions(
       imports: ImportManagerForPartFiles(),
@@ -140,13 +159,19 @@ class DriftBuilder extends Builder {
               AccessorGenerationInput(result, resolved, importedQueries);
           AccessorWriter(input, writer.child()).write();
         }
-      } else {
-        writer.leaf().writeln('// ${element.ownId}');
       }
     }
 
-    var generated = writer.writeGenerated();
+    final output = StringBuffer();
+    output.writeln('// ignore_for_file: type=lint');
 
+    if (generationMode == DriftGenerationMode.monolithicPart) {
+      final originalFile = buildStep.inputId.pathSegments.last;
+      output.writeln('part of ${asDartLiteral(originalFile)};');
+    }
+    output.write(writer.writeGenerated());
+
+    var generated = output.toString();
     try {
       generated = DartFormatter().format(generated);
     } on FormatterException {

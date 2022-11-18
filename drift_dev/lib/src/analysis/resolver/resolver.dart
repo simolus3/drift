@@ -16,13 +16,18 @@ import 'drift/trigger.dart' as drift_trigger;
 import 'drift/view.dart' as drift_view;
 import 'intermediate_state.dart';
 
+/// Analyzes and resolves drift elements.
 class DriftResolver {
   final DriftAnalysisDriver driver;
 
+  /// The current depth-first path of drift elements being analyzed.
+  ///
+  /// This path is used to detect and prevent circular references.
   final List<DriftElementId> _currentDependencyPath = [];
 
   DriftResolver(this.driver);
 
+  /// Resolves a discovered element by analyzing it and its dependencies.
   Future<DriftElement> resolveDiscovered(DiscoveredElement discovered) async {
     LocalElementResolver resolver;
 
@@ -68,6 +73,13 @@ class DriftResolver {
     return resolved;
   }
 
+  /// Attempts to resolve a dependency for an element if that is allowed.
+  ///
+  /// It usually _is_ allowed, but there could be a forbidden circular reference
+  /// in which case the reference is reported to be unavailable.
+  /// Further, an internal bug in the analyzer could cause a crash analyzing
+  /// the element. To not cause the entire analysis run to fail, this reports
+  /// an error message and otherwise continues analysis of other elements.
   Future<ResolveReferencedElementResult> resolveReferencedElement(
       DriftElementId owner, DriftElementId reference) async {
     if (owner == reference) {
@@ -117,6 +129,8 @@ class DriftResolver {
         'Unknown pending element $reference, this is a bug in drift_dev');
   }
 
+  /// Resolves a Dart element reference, if the referenced Dart [element]
+  /// defines an element understood by drift.
   Future<ResolveReferencedElementResult> resolveDartReference(
       DriftElementId owner, Element element) async {
     final uri = await driver.backend.uriOfDart(element.library!);
@@ -136,6 +150,12 @@ class DriftResolver {
     }
   }
 
+  /// Resolves a reference in SQL.
+  ///
+  /// This works by looking at known imports of the file defining the [owner]
+  /// and using the results of the discovery step to find a known element with
+  /// the same name. If one exists, it is resolved and returned. Otherwise, an
+  /// error result is returned.
   Future<ResolveReferencedElementResult> resolveReference(
       DriftElementId owner, String reference) async {
     final candidates = <DriftElementId>[];

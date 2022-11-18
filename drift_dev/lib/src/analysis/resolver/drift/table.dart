@@ -336,6 +336,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       references: references.toList(),
       nameOfRowClass: dataClassName,
       baseDartName: dartTableName,
+      fixedEntityInfoName: dartTableName,
       existingRowClass: existingRowClass,
       withoutRowId: table.withoutRowId,
       strict: table.isStrict,

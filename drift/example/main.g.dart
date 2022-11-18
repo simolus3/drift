@@ -2,10 +2,7 @@
 
 part of 'main.dart';
 
-// DriftElementId(asset:drift/example/main.dart, todo_category_item_count)
-// DriftElementId(asset:drift/example/main.dart, todo_items)
-// DriftElementId(asset:drift/example/main.dart, todo_categories)
-// DriftElementId(asset:drift/example/main.dart, customViewName)
+// ignore_for_file: type=lint
 class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
