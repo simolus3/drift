@@ -2,12 +2,14 @@ import 'package:build/build.dart';
 import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/integrations/build.dart';
+import 'package:logging/logging.dart';
 
 final _resolvers = AnalyzerResolvers();
 
 Future<RecordingAssetWriter> emulateDriftBuild({
   required Map<String, String> inputs,
   BuilderOptions options = const BuilderOptions({}),
+  Logger? logger,
 }) async {
   _resolvers.reset();
 
@@ -31,9 +33,16 @@ Future<RecordingAssetWriter> emulateDriftBuild({
 
   for (final stage in stages) {
     await runBuilder(
-        stage, inputs.keys.map(makeAssetId), reader, writer, _resolvers);
+      stage,
+      inputs.keys.map(makeAssetId),
+      reader,
+      writer,
+      _resolvers,
+      logger: logger,
+    );
   }
 
+  logger?.clearListeners();
   return writer;
 }
 

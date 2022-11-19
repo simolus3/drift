@@ -61,6 +61,7 @@ class MyDatabase2 extends _$MyDatabase {
 
 }
 ''',
+      'a|lib/foo.drift': '',
     });
 
     await backend.driver.fullyAnalyze(mainUri);

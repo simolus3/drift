@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import '../../analysis/custom_result_class.dart';
 import '../../analysis/driver/driver.dart';
@@ -34,6 +35,8 @@ enum DriftGenerationMode {
 
   bool get isMonolithic => true;
 
+  bool get isPartFile => true;
+
   /// Whether the analysis happens in the generating build step.
   ///
   /// For most generation modes, we run analysis work in a previous build step.
@@ -44,6 +47,8 @@ enum DriftGenerationMode {
 }
 
 class DriftBuilder extends Builder {
+  static final Version _minimalDartLanguageVersion = Version(2, 12, 0);
+
   final DriftOptions options;
   final DriftGenerationMode generationMode;
 
@@ -93,6 +98,29 @@ class DriftBuilder extends Builder {
         // Don't do anything! There are no analysis results for this file, so
         // there's nothing for drift to generate code for.
         return;
+      }
+    }
+
+    // Ok, we actually have something to generate. We're generating code
+    // needing version 2.12 (or later) of the Dart _language_. This property is
+    // inherited from the main file, so let's check that.
+    Version? overriddenLanguageVersion;
+    if (generationMode.isPartFile) {
+      final library = await buildStep.inputLibrary;
+      overriddenLanguageVersion = library.languageVersion.override;
+
+      final effectiveVersion = library.languageVersion.effective;
+      if (effectiveVersion < _minimalDartLanguageVersion) {
+        final effective = effectiveVersion.majorMinor;
+        final minimum = _minimalDartLanguageVersion.majorMinor;
+
+        log.warning(
+          'The language version of this file is Dart $effective. '
+          'Drift generates code for Dart $minimum or later. Please consider '
+          'raising the minimum SDK version in your pubspec.yaml to at least '
+          '$minimum, or add a `// @dart=$minimum` comment at the top of this '
+          'file.',
+        );
       }
     }
 
@@ -167,6 +195,12 @@ class DriftBuilder extends Builder {
 
     if (generationMode == DriftGenerationMode.monolithicPart) {
       final originalFile = buildStep.inputId.pathSegments.last;
+
+      if (overriddenLanguageVersion != null) {
+        // Part files need to have the same version as the main library.
+        output.writeln('// @dart=${overriddenLanguageVersion.majorMinor}');
+      }
+
       output.writeln('part of ${asDartLiteral(originalFile)};');
     }
     output.write(writer.writeGenerated());
@@ -181,4 +215,8 @@ class DriftBuilder extends Builder {
 
     await buildStep.writeAsString(buildStep.allowedOutputs.single, generated);
   }
+}
+
+extension on Version {
+  String get majorMinor => '$major.$minor';
 }

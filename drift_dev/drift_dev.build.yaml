@@ -7,7 +7,10 @@ targets:
     # the checks the default serialization builder runs on.
     auto_apply_builders: false
     sources:
-      - "lib/src/analysis/**"
+      include:
+        - "lib/src/analysis/**"
+      exclude:
+        - "lib/src/analysis/options.dart"
     builders:
       json_serializable:
         enabled: true
@@ -32,8 +35,7 @@ targets:
           field_rename: snake
           explicit_to_json: true
         generate_for:
-          exclude:
-            - "lib/src/analysis/**" # using different options for those files
+          include: ["lib/src/analysis/options.dart"]
       # https://simonbinder.eu/posts/build_directory_moves/#generating-into-a-directory-with-source_gen
       source_gen:combining_builder:
         options:

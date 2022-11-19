@@ -69,7 +69,7 @@ void main() {
      foo(x) AS (SELECT 2 * 3 UNION ALL SELECT 3)
     SELECT x FROM foo;
     ''',
-      'WITH foo(x) AS (SELECT 2 * 3 UNION ALL SELECT 3) '
+      'WITH foo (x) AS (SELECT 2 * 3 UNION ALL SELECT 3) '
           'SELECT x FROM foo',
     );
   });

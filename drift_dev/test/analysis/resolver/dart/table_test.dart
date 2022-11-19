@@ -219,7 +219,7 @@ class InvalidConstraints extends Table {
 
     final pkFromTable =
         table.tableConstraints.whereType<PrimaryKeyColumns>().first;
-    expect(pkFromTable, containsAll(table.columns));
+    expect(pkFromTable.primaryKey, containsAll(table.columns));
     expect(
       table.columns.any(
           (column) => column.constraints.any((c) => c is PrimaryKeyColumn)),

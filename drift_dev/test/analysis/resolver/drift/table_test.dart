@@ -36,7 +36,7 @@ CREATE TABLE b (
     expect(aFoo.sqlType, DriftSqlType.int);
     expect(aFoo.nullable, isFalse);
     expect(aFoo.constraints, [isA<PrimaryKeyColumn>()]);
-    expect(aFoo.customConstraints, isNull);
+    expect(aFoo.customConstraints, 'PRIMARY KEY');
 
     expect(aBar.sqlType, DriftSqlType.int);
     expect(aBar.nullable, isTrue);
@@ -46,12 +46,12 @@ CREATE TABLE b (
           .having((e) => e.onUpdate, 'onUpdate', isNull)
           .having((e) => e.onDelete, 'onDelete', isNull)
     ]);
-    expect(aBar.customConstraints, isNull);
+    expect(aBar.customConstraints, 'REFERENCES b(bar)');
 
     expect(bBar.sqlType, DriftSqlType.int);
     expect(bBar.nullable, isFalse);
     expect(bBar.constraints, isEmpty);
-    expect(bBar.customConstraints, isNull);
+    expect(bBar.customConstraints, 'NOT NULL');
   });
 
   test('recognizes aliases to rowid', () async {

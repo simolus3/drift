@@ -75,7 +75,8 @@ class Foo extends Table {
       final result = file.analysis.values.single;
       expect(result.result, isA<DriftTable>());
       expect(result.errorsDuringAnalysis, [
-        isDriftError('The referenced element is not understood by drift.')
+        isDriftError('The referenced element, OtherTable, is not understood by '
+                'drift.')
             .withSpan('OtherTable'),
       ]);
     });
