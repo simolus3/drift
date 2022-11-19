@@ -36,18 +36,35 @@ class DelayedStreamQueryStore implements StreamQueryStore {
     throw UnimplementedError('The stream will call this on the delegate');
   }
 
+  Stream<T> _delegateStream<T>(
+      Stream<T> Function(StreamQueryStore store) createStream) {
+    if (_resolved != null) {
+      return createStream(_resolved!);
+    } else {
+      // Note: We can't use Stream.fromFuture(...).asyncExpand() since it is a
+      // single-subscription stream.
+      // `.asBroadcastStream()` doesn't work either because the internal caching
+      // breaks query streams which need to know about live subscribers.
+      return Stream.multi(
+        (listener) async {
+          final store = await _delegate;
+          if (!listener.isClosed) {
+            await listener.addStream(createStream(store));
+          }
+        },
+        isBroadcast: true,
+      );
+    }
+  }
+
   @override
   Stream<List<Map<String, Object?>>> registerStream(
       QueryStreamFetcher fetcher) {
-    return Stream.fromFuture(_delegate)
-        .asyncExpand((resolved) => resolved.registerStream(fetcher))
-        .asBroadcastStream();
+    return _delegateStream((store) => store.registerStream(fetcher));
   }
 
   @override
   Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
-    return Stream.fromFuture(_delegate)
-        .asyncExpand((resolved) => resolved.updatesForSync(query))
-        .asBroadcastStream();
+    return _delegateStream((store) => store.updatesForSync(query));
   }
 }

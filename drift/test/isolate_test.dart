@@ -193,6 +193,26 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
     );
   });
 
+  test('stream queries can be listened to multiple times', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/2158
+    final stream = database
+        .customSelect('select 1 as x')
+        .map((x) => x.read<int>('x'))
+        .watchSingle();
+
+    Future<void> listenThenCancel() async {
+      final result = await stream.first.timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => fail('timed out!'),
+      );
+      expect(result, equals(1));
+    }
+
+    await listenThenCancel();
+    await pumpEventQueue();
+    await listenThenCancel(); // times out here when using DatabaseConnection.delayed
+  });
+
   test('can start transactions', () async {
     final initialCompanion = TodosTableCompanion.insert(content: 'my content');
 

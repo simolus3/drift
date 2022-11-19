@@ -72,7 +72,9 @@ abstract class _BaseExecutor extends QueryExecutor {
     final id = client._channel.newRequestId();
     // otherwise, send the request now and cancel it later, if that's desired
     doOnCancellation(() {
-      client._channel.request(RequestCancellation(id));
+      client._channel.request<void>(RequestCancellation(id)).onError((_, __) {
+        // Couldn't be cancelled. Ok then.
+      });
     });
 
     return client._channel.request<T>(
