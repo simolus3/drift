@@ -1,4 +1,6 @@
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
+import 'package:path/path.dart' show url;
 
 import '../analysis/results/results.dart';
 import '../analysis/options.dart';
@@ -55,14 +57,53 @@ class Writer extends _NodeOrWriter {
 abstract class _NodeOrWriter {
   Writer get writer;
 
+  AnnotatedDartCode _generatedElement(DriftElement element, String dartName) {
+    if (writer.generationOptions.isModular) {
+      return AnnotatedDartCode([
+        DartTopLevelSymbol(dartName, element.id.modularImportUri),
+      ]);
+    } else {
+      return AnnotatedDartCode([dartName]);
+    }
+  }
+
+  AnnotatedDartCode modularAccessor(Uri driftFile) {
+    final id = DriftElementId(driftFile, '(file)');
+
+    return AnnotatedDartCode([
+      DartTopLevelSymbol(
+          ReCase(url.basename(driftFile.path)).pascalCase, id.modularImportUri),
+    ]);
+  }
+
   AnnotatedDartCode companionType(DriftTable table) {
     final baseName = writer.options.useDataClassNameForCompanions
         ? table.nameOfRowClass
         : table.baseDartName;
 
-    return AnnotatedDartCode([
-      DartTopLevelSymbol('${baseName}Companion', table.id.libraryUri),
-    ]);
+    return _generatedElement(table, '${baseName}Companion');
+  }
+
+  AnnotatedDartCode entityInfoType(DriftElementWithResultSet element) {
+    return _generatedElement(element, element.entityInfoName);
+  }
+
+  AnnotatedDartCode rowType(DriftElementWithResultSet element) {
+    final existing = element.existingRowClass;
+    if (existing != null) {
+      return existing.targetType;
+    } else {
+      return _generatedElement(element, element.nameOfRowClass);
+    }
+  }
+
+  AnnotatedDartCode rowClass(DriftElementWithResultSet element) {
+    final existing = element.existingRowClass;
+    if (existing != null) {
+      return existing.targetClass;
+    } else {
+      return _generatedElement(element, element.nameOfRowClass);
+    }
   }
 
   /// Returns a Dart expression evaluating to the [converter].
@@ -139,24 +180,6 @@ abstract class _NodeOrWriter {
     }
   }
 
-  AnnotatedDartCode rowType(DriftElementWithResultSet element) {
-    final existing = element.existingRowClass;
-    if (existing != null) {
-      return existing.targetType;
-    } else {
-      return AnnotatedDartCode([element.nameOfRowClass]);
-    }
-  }
-
-  AnnotatedDartCode rowClass(DriftElementWithResultSet element) {
-    final existing = element.existingRowClass;
-    if (existing != null) {
-      return existing.targetClass;
-    } else {
-      return AnnotatedDartCode([element.nameOfRowClass]);
-    }
-  }
-
   String refUri(Uri definition, String element) {
     final prefix =
         writer.generationOptions.imports.prefixFor(definition, element);
@@ -166,6 +189,12 @@ abstract class _NodeOrWriter {
     } else {
       return '$prefix.$element';
     }
+  }
+
+  /// References a top-level symbol exposed by the core `package:drift/drift.dart`
+  /// library.
+  String drift(String element) {
+    return refUri(AnnotatedDartCode.drift, element);
   }
 
   String dartCode(AnnotatedDartCode code) {
@@ -291,6 +320,10 @@ class GenerationOptions {
   /// Whether companions should be generated.
   final bool writeCompanions;
 
+  /// Whether multiple files are generated, instead of just generating one file
+  /// for each database.
+  final bool isModular;
+
   final ImportManager imports;
 
   const GenerationOptions({
@@ -298,6 +331,7 @@ class GenerationOptions {
     this.forSchema,
     this.writeDataClasses = true,
     this.writeCompanions = true,
+    this.isModular = false,
   });
 
   /// Whether, instead of generating the full database code, we're only

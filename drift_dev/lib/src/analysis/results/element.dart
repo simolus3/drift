@@ -24,6 +24,12 @@ class DriftElementId {
 
   Map<String, Object?> toJson() => _$DriftElementIdToJson(this);
 
+  Uri get modularImportUri {
+    final path = url.withoutExtension(libraryUri.path);
+
+    return libraryUri.replace(path: '$path.drift.dart');
+  }
+
   @override
   int get hashCode => Object.hash(DriftElementId, libraryUri, name);
 

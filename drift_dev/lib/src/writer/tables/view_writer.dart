@@ -8,7 +8,7 @@ import 'table_writer.dart';
 class ViewWriter extends TableOrViewWriter {
   final DriftView view;
   final Scope scope;
-  final DatabaseWriter databaseWriter;
+  final DatabaseWriter? databaseWriter;
 
   @override
   late TextEmitter emitter;
@@ -41,10 +41,10 @@ class ViewWriter extends TableOrViewWriter {
     }
     buffer.writeln(' implements HasResultSet {');
 
+    final dbClassName = databaseWriter?.dbClassName ?? 'GeneratedDatabase';
     buffer
       ..writeln('final String? _alias;')
-      ..writeln(
-          '@override final ${databaseWriter.dbClassName} attachedDatabase;')
+      ..writeln('@override final $dbClassName attachedDatabase;')
       ..writeln('${view.entityInfoName}(this.attachedDatabase, '
           '[this._alias]);');
 

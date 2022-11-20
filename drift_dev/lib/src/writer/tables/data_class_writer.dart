@@ -17,7 +17,7 @@ class DataClassWriter {
 
   DataClassWriter(this.table, this.scope) : _emitter = scope.leaf();
 
-  String get serializerType => 'ValueSerializer?';
+  String get serializerType => _emitter.drift('ValueSerializer?');
 
   String _columnType(DriftColumn column) {
     return _emitter.dartCode(_emitter.dartType(column));
@@ -44,14 +44,15 @@ class DataClassWriter {
   }
 
   void write() {
-    final parentClass = table.customParentClass ?? 'DataClass';
+    final parentClass = table.customParentClass ?? _emitter.drift('DataClass');
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
     if (isInsertable) {
       // The data class is only an insertable if we can actually insert rows
       // into the target entity.
       final type = _emitter.dartCode(_emitter.writer.rowType(table));
-      _buffer.writeln('implements Insertable<$type> {');
+
+      _buffer.writeln('implements ${_emitter.drift('Insertable')}<$type> {');
     } else {
       _buffer.writeln('{');
     }
@@ -121,7 +122,8 @@ class DataClassWriter {
       ..write('factory $dataClassName.fromJson('
           'Map<String, dynamic> json, {$serializerType serializer}'
           ') {\n')
-      ..write('serializer ??= driftRuntimeOptions.defaultSerializer;\n')
+      ..write('serializer ??= ${_emitter.drift('driftRuntimeOptions')}'
+          '.defaultSerializer;\n')
       ..write('return $dataClassName(');
 
     for (final column in columns) {
@@ -161,7 +163,8 @@ class DataClassWriter {
   void _writeToJson() {
     _buffer.write('@override Map<String, dynamic> toJson('
         '{$serializerType serializer}) {\n'
-        'serializer ??= driftRuntimeOptions.defaultSerializer;\n'
+        'serializer ??= ${_emitter.drift('driftRuntimeOptions')}'
+        '.defaultSerializer;\n'
         'return <String, dynamic>{\n');
 
     for (final column in columns) {
@@ -187,6 +190,7 @@ class DataClassWriter {
   void _writeCopyWith() {
     final dataClassName = _emitter.dartCode(_emitter.writer.rowClass(table));
     final wrapNullableInValue = scope.options.generateValuesInCopyWith;
+    final valueType = _emitter.drift('Value');
 
     _buffer.write('$dataClassName copyWith({');
     for (var i = 0; i < columns.length; i++) {
@@ -197,8 +201,8 @@ class DataClassWriter {
       final typeName = _columnType(column);
       if (wrapNullableInValue && isNullable) {
         _buffer
-          ..write('Value<$typeName> ${column.nameInDart} ')
-          ..write('= const Value.absent()');
+          ..write('$valueType<$typeName> ${column.nameInDart} ')
+          ..write('= const $valueType.absent()');
       } else if (!isNullable) {
         // We always use nullable parameters in copyWith, since all parameters
         // are optional. The !isNullable check is there to avoid a duplicate
@@ -233,10 +237,13 @@ class DataClassWriter {
   }
 
   void _writeToColumnsOverride() {
+    final expression = _emitter.drift('Expression');
+    final variable = _emitter.drift('Variable');
+
     _buffer
-      ..write('@override\nMap<String, Expression> toColumns'
+      ..write('@override\nMap<String, $expression> toColumns'
           '(bool nullToAbsent) {\n')
-      ..write('final map = <String, Expression> {};');
+      ..write('final map = <String, $expression> {};');
 
     for (final column in columns) {
       // Generated column - cannot be used for inserts or updates
@@ -255,7 +262,7 @@ class DataClassWriter {
 
       final typeName = column.variableTypeCode(nullable: false);
       final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
-          'Variable<$typeName>';
+          '$variable<$typeName>';
 
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
@@ -309,12 +316,14 @@ class DataClassWriter {
       if (needsNullCheck) {
         _buffer
           ..write(dartName)
-          ..write(' == null && nullToAbsent ? const Value.absent() : ');
+          ..write(' == null && nullToAbsent ? '
+              'const ${_emitter.drift('Value')}.absent() : ');
         // We'll write the non-null case afterwards
       }
 
       _buffer
-        ..write('Value (')
+        ..write(_emitter.drift('Value'))
+        ..write('(')
         ..write(dartName)
         ..write('),');
     }
@@ -369,7 +378,7 @@ class RowMappingWriter {
       final columnName = column.nameInSql;
       final rawData = "data['\${effectivePrefix}$columnName']";
 
-      final sqlType = column.sqlType.toString();
+      final sqlType = writer.drift(column.sqlType.toString());
       var loadType = '$databaseGetter.typeMapping.read($sqlType, $rawData)';
 
       if (!column.nullable) {

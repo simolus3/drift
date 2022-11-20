@@ -8,6 +8,7 @@ import '../analysis/results/file_results.dart';
 import '../analysis/results/results.dart';
 import '../services/find_stream_update_rules.dart';
 import '../utils/string_escaper.dart';
+import 'modules.dart';
 import 'queries/query_writer.dart';
 import 'tables/table_writer.dart';
 import 'tables/view_writer.dart';
@@ -28,18 +29,22 @@ class DatabaseWriter {
       return 'DatabaseAtV${scope.generationOptions.forSchema}';
     }
 
-    return '_\$${db.id.name}';
+    final prefix = scope.generationOptions.isModular ? '' : r'_';
+
+    return '$prefix\$${db.id.name}';
   }
 
   void write() {
     final elements = input.resolvedAccessor.availableElements;
 
     // Write data classes, companions and info classes
-    for (final reference in elements) {
-      if (reference is DriftTable) {
-        TableWriter(reference, scope.child()).writeInto();
-      } else if (reference is DriftView) {
-        ViewWriter(reference, scope.child(), this).write();
+    if (!scope.generationOptions.isModular) {
+      for (final reference in elements) {
+        if (reference is DriftTable) {
+          TableWriter(reference, scope.child()).writeInto();
+        } else if (reference is DriftView) {
+          ViewWriter(reference, scope.child(), this).write();
+        }
       }
     }
 
@@ -74,7 +79,7 @@ class DatabaseWriter {
       }
 
       if (entity is DriftTable) {
-        final tableClassName = entity.entityInfoName;
+        final tableClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
 
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
@@ -126,6 +131,27 @@ class DatabaseWriter {
       );
     }
 
+    // Also write implicit DAOs for modular imports
+    if (scope.generationOptions.isModular) {
+      for (final import in input.resolvedAccessor.knownImports) {
+        if (import.hasModularDriftAccessor) {
+          final type = dbScope.modularAccessor(import.ownUri);
+          final getter = ReCase(type.toString()).camelCase;
+
+          dbScope.leaf()
+            ..writeDart(type)
+            ..write(' get $getter => ')
+            ..writeUriRef(
+                ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
+            ..writeln('(this).accessor<')
+            ..writeDart(type)
+            ..write('>(${asDartLiteral(import.ownUri.toString())}, ')
+            ..writeDart(type)
+            ..writeln('.new);');
+        }
+      }
+    }
+
     // Write implementation for query methods
     for (final query in input.availableRegularQueries) {
       QueryWriter(dbScope.child()).write(query);
@@ -134,11 +160,14 @@ class DatabaseWriter {
     // Write List of tables
     final schemaScope = dbScope.leaf();
 
+    final tableInfoType =
+        '${dbScope.drift('TableInfo')}<${dbScope.drift('Table')}, Object?>';
+    final schemaEntity = dbScope.drift('DatabaseSchemaEntity');
+
     schemaScope
-      ..write(
-          '@override\nIterable<TableInfo<Table, dynamic>> get allTables => ')
-      ..write('allSchemaEntities.whereType<TableInfo<Table, Object?>>();\n')
-      ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
+      ..write('@override\nIterable<$tableInfoType> get allTables => ')
+      ..write('allSchemaEntities.whereType<$tableInfoType>();\n')
+      ..write('@override\nList<$schemaEntity> get allSchemaEntities ')
       ..write('=> [');
 
     schemaScope

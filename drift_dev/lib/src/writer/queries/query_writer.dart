@@ -710,10 +710,10 @@ String? _defaultForDartPlaceholder(
     // the surrounding precedence in SQL.
     final sql = SqlWriter(scope.options)
         .writeNodeIntoStringLiteral(Parentheses(kind.defaultValue!));
-    return 'const CustomExpression($sql)';
+    return 'const ${scope.drift('CustomExpression')}($sql)';
   } else if (kind is SimpleDartPlaceholderType &&
       kind.kind == SimpleDartPlaceholderKind.orderBy) {
-    return 'const OrderBy.nothing()';
+    return 'const ${scope.drift('OrderBy')}.nothing()';
   } else {
     assert(!placeholder.hasDefaultOrImplicitFallback);
     return null;

@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        enabled: false
+
+      drift_dev:analyzer:
+        enabled: true
+      drift_dev:modular:
+        enabled: true

@@ -23,7 +23,8 @@ abstract class TableOrViewWriter {
 
     for (final constraint in column.constraints) {
       if (constraint is LimitingTextLength) {
-        final buffer = StringBuffer('GeneratedColumn.checkTextLength(');
+        final buffer =
+            StringBuffer(emitter.drift('GeneratedColumn.checkTextLength('));
 
         if (constraint.minLength != null) {
           buffer.write('minTextLength: ${constraint.minLength},');
@@ -45,7 +46,7 @@ abstract class TableOrViewWriter {
         final dartCode = emitter.dartCode(constraint.dartExpression);
 
         additionalParams['generatedAs'] =
-            'GeneratedAs($dartCode, ${constraint.stored})';
+            '${emitter.drift('GeneratedAs')}($dartCode, ${constraint.stored})';
       }
 
       if (constraint is PrimaryKeyColumn && constraint.isAutoIncrement) {
@@ -53,7 +54,7 @@ abstract class TableOrViewWriter {
       }
     }
 
-    additionalParams['type'] = column.sqlType.toString();
+    additionalParams['type'] = emitter.drift(column.sqlType.toString());
 
     if (tableOrView is DriftTable) {
       additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)
@@ -102,7 +103,7 @@ abstract class TableOrViewWriter {
     }
 
     final innerType = column.innerColumnType();
-    var type = 'GeneratedColumn<$innerType>';
+    var type = '${emitter.drift('GeneratedColumn')}<$innerType>';
     expressionBuffer
       ..write(type)
       ..write(
@@ -133,7 +134,8 @@ abstract class TableOrViewWriter {
       final converterCode = emitter.dartCode(emitter.writer
           .readConverter(converter, forNullable: column.nullable));
 
-      type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
+      type = '${emitter.drift('GeneratedColumnWithTypeConverter')}'
+          '<$mappedType, $innerType>';
       expressionBuffer
         ..write('.withConverter<')
         ..write(mappedType)
@@ -155,7 +157,7 @@ abstract class TableOrViewWriter {
     if (!scope.generationOptions.writeDataClasses) {
       buffer.writeln('''
         @override
-        Never map(Map<String, dynamic> data, {$String? tablePrefix}) {
+        Never map(Map<String, dynamic> data, {String? tablePrefix}) {
           throw UnsupportedError('TableInfo.map in schema verification code');
         }
       ''');
@@ -229,7 +231,8 @@ abstract class TableOrViewWriter {
   void writeGetColumnsOverride() {
     final columnsWithGetters =
         tableOrView.columns.map((c) => c.nameInDart).join(', ');
-    buffer.write('@override\nList<GeneratedColumn> get \$columns => '
+    buffer.write(
+        '@override\nList<${emitter.drift('GeneratedColumn')}> get \$columns => '
         '[$columnsWithGetters];\n');
   }
 
@@ -276,30 +279,37 @@ class TableWriter extends TableOrViewWriter {
 
     if (!scope.generationOptions.writeDataClasses) {
       // Write a small table header without data class
+      buffer
+        ..write('class ${table.entityInfoName} extends ')
+        ..write(emitter.drift('Table'))
+        ..write(' with ')
+        ..write(emitter.drift('TableInfo'));
       buffer.write('class ${table.entityInfoName} extends Table with '
           'TableInfo');
       if (table.isVirtual) {
-        buffer.write(', VirtualTableInfo');
+        buffer.write(', ${emitter.drift('VirtualTableInfo')}');
       }
     } else {
       // Regular generation, write full table class
       final dataClass = emitter.dartCode(emitter.writer.rowClass(table));
-      final tableDslName = table.definingDartClass ?? 'Table';
+      final tableDslName = table.definingDartClass ?? emitter.drift('Table');
 
       // class UsersTable extends Users implements TableInfo<Users, User> {
       final typeArgs = '<${table.entityInfoName}, $dataClass>';
+
       buffer.write('class ${table.entityInfoName} extends $tableDslName with '
-          'TableInfo$typeArgs ');
+          '${emitter.drift('TableInfo')}$typeArgs ');
 
       if (table.isVirtual) {
-        buffer.write(', VirtualTableInfo$typeArgs ');
+        buffer.write(', ${emitter.drift('VirtualTableInfo')}$typeArgs ');
       }
     }
 
     buffer
       ..writeln('{')
       // write a GeneratedDatabase reference that is set in the constructor
-      ..writeln('@override final GeneratedDatabase attachedDatabase;')
+      ..writeln(
+          '@override final ${emitter.drift('GeneratedDatabase')} attachedDatabase;')
       ..writeln('final String? _alias;')
       ..writeln(
           '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
@@ -366,9 +376,11 @@ class TableWriter extends TableOrViewWriter {
 
   void _writeColumnVerificationMeta(DriftColumn column) {
     if (!_skipVerification) {
+      final meta = emitter.drift('VerificationMeta');
+
       buffer
-        ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
-        ..write("const VerificationMeta('${column.nameInDart}');\n");
+        ..write('static const $meta ${_fieldNameForColumnMeta(column)} = ')
+        ..writeln("const $meta('${column.nameInDart}');");
     }
   }
 
@@ -376,11 +388,13 @@ class TableWriter extends TableOrViewWriter {
     if (_skipVerification) return;
 
     final innerType = emitter.dartCode(emitter.writer.rowType(table));
-    buffer
-      ..write('@override\nVerificationContext validateIntegrity'
-          '(Insertable<$innerType> instance, '
-          '{bool isInserting = false}) {\n')
-      ..write('final context = VerificationContext();\n')
+    emitter
+      ..writeln('@override')
+      ..writeDriftRef('VerificationContext')
+      ..write(' validateIntegrity(')
+      ..writeDriftRef('Insertable')
+      ..writeln('<$innerType> instance, {bool isInserting = false}) {')
+      ..write('final context = ${emitter.drift('VerificationContext')}();\n')
       ..write('final data = instance.toColumns(true);\n');
 
     const locals = {'instance', 'isInserting', 'context', 'data'};
@@ -392,8 +406,8 @@ class TableWriter extends TableOrViewWriter {
       if (column.typeConverter != null) {
         // dont't verify custom columns, we assume that the user knows what
         // they're doing
-        buffer.write(
-            'context.handle($metaName, const VerificationResult.success());');
+        buffer.write('context.handle($metaName, '
+            'const ${emitter.drift('VerificationResult')}.success());');
         continue;
       }
 
@@ -421,11 +435,12 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writePrimaryKeyOverride() {
-    buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
+    buffer.write(
+        '@override\nSet<${emitter.drift('GeneratedColumn')}> get \$primaryKey => ');
     final primaryKey = table.fullPrimaryKey;
 
     if (primaryKey.isEmpty) {
-      buffer.write('const <GeneratedColumn>{};');
+      buffer.write('const {};');
       return;
     }
 
@@ -452,7 +467,8 @@ class TableWriter extends TableOrViewWriter {
       return;
     }
 
-    buffer.write('@override\nList<Set<GeneratedColumn>> get uniqueKeys => [');
+    buffer.write('@override\nList<Set<${emitter.drift('GeneratedColumn')}>> '
+        'get uniqueKeys => [');
 
     for (final uniqueKey in uniqueKeys) {
       buffer.write('{');

@@ -6,6 +6,7 @@ import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 import '../results/database.dart';
 import '../results/element.dart';
 import '../results/file_results.dart';
+import '../results/query.dart';
 import 'error.dart';
 
 class FileState {
@@ -24,6 +25,15 @@ class FileState {
   /// Whether this file contains a drift database or a drift accessor / DAO.
   bool get containsDatabaseAccessor {
     return analyzedElements.any((e) => e is BaseDriftAccessor);
+  }
+
+  /// Whether an accessor class making queries and imports available should be
+  /// written for this file if modular analysis is enabled.
+  bool get hasModularDriftAccessor {
+    final hasImports = discovery?.importDependencies.isNotEmpty == true;
+    final hasQuery = analyzedElements.any((e) => e is DefinedSqlQuery);
+
+    return hasImports || hasQuery;
   }
 
   /// All analyzed [DriftElement]s found in this library.

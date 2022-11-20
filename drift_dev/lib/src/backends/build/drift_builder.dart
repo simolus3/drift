@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:drift_dev/src/writer/tables/table_writer.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../../analysis/custom_result_class.dart';
@@ -11,6 +12,8 @@ import '../../utils/string_escaper.dart';
 import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
 import '../../writer/import_manager.dart';
+import '../../writer/modules.dart';
+import '../../writer/tables/view_writer.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
 
@@ -26,16 +29,29 @@ enum DriftGenerationMode {
   ///
   /// Drift will generate a single part file for the main database file and each
   /// DAO-defining file.
-  monolithicSharedPart,
+  monolithicSharedPart(true, true),
 
   /// Like [monolithicSharedPart], except that drift will generate a single
   /// part file on its own instead of generating a part file for `source_gen`
   /// to process later.
-  monolithicPart;
+  monolithicPart(true, true),
 
-  bool get isMonolithic => true;
+  /// Generates a separate Dart library (no `part of` directive) for each input
+  /// (.drift file or .dart file with databases / tables).
+  modular(false, false);
 
-  bool get isPartFile => true;
+  /// Whether this mode defines a "monolithic" build.
+  ///
+  /// In a monolithic build, drift will generate all code into a single file,
+  /// even if tables and queries are defined across multiple `.drift` files.
+  /// In modular (non-monolithic) builds, files are generated for each input
+  /// defining drift elements instead.
+  final bool isMonolithic;
+
+  /// Whether this build mode generates a part file.
+  final bool isPartFile;
+
+  const DriftGenerationMode(this.isMonolithic, this.isPartFile);
 
   /// Whether the analysis happens in the generating build step.
   ///
@@ -47,8 +63,6 @@ enum DriftGenerationMode {
 }
 
 class DriftBuilder extends Builder {
-  static final Version _minimalDartLanguageVersion = Version(2, 12, 0);
-
   final DriftOptions options;
   final DriftGenerationMode generationMode;
 
@@ -71,11 +85,93 @@ class DriftBuilder extends Builder {
         return {
           '.dart': ['.drift.dart']
         };
+      case DriftGenerationMode.modular:
+        return {
+          '.dart': ['.drift.dart'],
+          '.drift': ['.drift.dart'],
+        };
     }
   }
 
   @override
   Future<void> build(BuildStep buildStep) async {
+    final run = _DriftBuildRun(options, generationMode, buildStep);
+    await run.run();
+  }
+}
+
+extension on Version {
+  String get majorMinor => '$major.$minor';
+}
+
+class _DriftBuildRun {
+  final DriftOptions options;
+  final DriftGenerationMode mode;
+  final BuildStep buildStep;
+
+  final DriftAnalysisDriver driver;
+
+  /// When emitting a direct part file, contains the `// @dart` language version
+  /// comment from the main library. We need to apply it to the part file as
+  /// well.
+  Version? overriddenLanguageVersion;
+
+  /// The Dart language version from the package. When it's too old and we're
+  /// generating libraries, we need to apply a `// @dart` version comment to get
+  /// a suitable version.
+  Version? packageLanguageVersion;
+
+  late Writer writer;
+
+  Set<Uri> analyzedUris = {};
+
+  _DriftBuildRun(this.options, this.mode, this.buildStep)
+      : driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
+          ..cacheReader = BuildCacheReader(buildStep);
+
+  Future<void> run() async {
+    await _warnAboutDeprecatedOptions();
+    if (!await _checkForElementsToBuild()) return;
+
+    await _checkForLanguageVersions();
+
+    final fileResult =
+        await _analyze(buildStep.inputId.uri, isEntrypoint: true);
+
+    // For the monolithic build modes, we only generate code for databases and
+    // crawl the tables from there.
+    if (mode.isMonolithic && !fileResult.containsDatabaseAccessor) {
+      return;
+    }
+
+    _createWriter();
+    if (mode.isMonolithic) {
+      await _generateMonolithic(fileResult);
+    } else {
+      await _generateModular(fileResult);
+    }
+    await _emitCode();
+  }
+
+  Future<FileState> _analyze(Uri uri, {bool isEntrypoint = false}) async {
+    final result = await driver.fullyAnalyze(uri);
+
+    // If we're doing a monolithic build, we need to warn about errors in
+    // imports too.
+    final printErrors =
+        isEntrypoint || (mode.isMonolithic && analyzedUris.add(result.ownUri));
+    if (printErrors) {
+      for (final error in result.fileAnalysis?.analysisErrors ?? const []) {
+        log.warning(error);
+      }
+    }
+
+    return result;
+  }
+
+  /// Once per build, prints a warning about deprecated build options if they
+  /// are applied to this builder.
+  Future<void> _warnAboutDeprecatedOptions() async {
     final flags = await buildStep.fetchResource(_flags);
     if (!flags.didWarnAboutDeprecatedOptions &&
         options.enabledDeprecatedOption) {
@@ -84,11 +180,11 @@ class DriftBuilder extends Builder {
           'Consider removing the option from your build.yaml.');
       flags.didWarnAboutDeprecatedOptions = true;
     }
+  }
 
-    final driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
-      ..cacheReader = BuildCacheReader(buildStep);
-
-    if (!generationMode.embeddedAnalyzer) {
+  /// Checks if the input file contains elements drift should generate code for.
+  Future<bool> _checkForElementsToBuild() async {
+    if (!mode.embeddedAnalyzer) {
       // An analysis step should have already run for this asset. If we can't
       // pick up results from that, there is no code for drift to generate.
       final fromCache =
@@ -97,15 +193,17 @@ class DriftBuilder extends Builder {
       if (fromCache == null) {
         // Don't do anything! There are no analysis results for this file, so
         // there's nothing for drift to generate code for.
-        return;
+        return false;
       }
     }
 
-    // Ok, we actually have something to generate. We're generating code
-    // needing version 2.12 (or later) of the Dart _language_. This property is
-    // inherited from the main file, so let's check that.
-    Version? overriddenLanguageVersion;
-    if (generationMode.isPartFile) {
+    return true;
+  }
+
+  /// Prints a warning if the used Dart version is incompatible with drift's
+  /// minimal version constraints.
+  Future<void> _checkForLanguageVersions() async {
+    if (mode.isPartFile) {
       final library = await buildStep.inputLibrary;
       overriddenLanguageVersion = library.languageVersion.override;
 
@@ -123,43 +221,41 @@ class DriftBuilder extends Builder {
         );
       }
     }
+  }
 
-    Set<Uri> analyzedUris = {};
-    Future<FileState> analyze(Uri uri) async {
-      final fileResult = await driver.fullyAnalyze(uri);
-      if (analyzedUris.add(fileResult.ownUri)) {
-        for (final error
-            in fileResult.fileAnalysis?.analysisErrors ?? const []) {
-          log.warning(error);
-        }
+  Future<void> _generateModular(FileState entrypointState) async {
+    for (final element in entrypointState.analysis.values) {
+      final result = element.result;
+
+      if (result is DriftTable) {
+        TableWriter(result, writer.child()).writeInto();
+      } else if (result is DriftView) {
+        ViewWriter(result, writer.child(), null).write();
+      } else if (result is DriftDatabase) {
+        final resolved =
+            entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
+        final input = DatabaseGenerationInput(result, resolved, const {});
+        DatabaseWriter(input, writer.child()).write();
       }
-
-      return fileResult;
     }
 
-    final fileResult = await analyze(buildStep.inputId.uri);
-
-    // For the monolithic build modes, we only generate code for databases and
-    // crawl the tables from there.
-    if (generationMode.isMonolithic && !fileResult.containsDatabaseAccessor) {
-      return;
+    if (entrypointState.hasModularDriftAccessor) {
+      ModularAccessorWriter(writer.child(), entrypointState).write();
     }
+  }
 
-    final generationOptions = GenerationOptions(
-      imports: ImportManagerForPartFiles(),
-    );
-    final writer = Writer(options, generationOptions: generationOptions);
-
-    for (final element in fileResult.analysis.values) {
+  Future<void> _generateMonolithic(FileState entrypointState) async {
+    for (final element in entrypointState.analysis.values) {
       final result = element.result;
 
       if (result is BaseDriftAccessor) {
-        final resolved = fileResult.fileAnalysis!.resolvedDatabases[result.id]!;
+        final resolved =
+            entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
         var importedQueries = <DefinedSqlQuery, SqlQuery>{};
 
         for (final query
             in resolved.availableElements.whereType<DefinedSqlQuery>()) {
-          final resolvedFile = await analyze(query.id.libraryUri);
+          final resolvedFile = await _analyze(query.id.libraryUri);
           final resolvedQuery =
               resolvedFile.fileAnalysis?.resolvedQueries[query.id];
 
@@ -189,34 +285,51 @@ class DriftBuilder extends Builder {
         }
       }
     }
+  }
 
+  void _createWriter() {
+    if (mode.isMonolithic) {
+      final generationOptions = GenerationOptions(
+        imports: ImportManagerForPartFiles(),
+      );
+      writer = Writer(options, generationOptions: generationOptions);
+    } else {
+      final imports = LibraryInputManager();
+      final generationOptions = GenerationOptions(
+        imports: imports,
+        isModular: true,
+      );
+      writer = Writer(options, generationOptions: generationOptions);
+      imports.linkToWriter(writer);
+    }
+  }
+
+  Future<void> _emitCode() {
     final output = StringBuffer();
     output.writeln('// ignore_for_file: type=lint');
 
-    if (generationMode == DriftGenerationMode.monolithicPart) {
+    if (mode == DriftGenerationMode.monolithicPart) {
       final originalFile = buildStep.inputId.pathSegments.last;
 
       if (overriddenLanguageVersion != null) {
         // Part files need to have the same version as the main library.
-        output.writeln('// @dart=${overriddenLanguageVersion.majorMinor}');
+        output.writeln('// @dart=${overriddenLanguageVersion!.majorMinor}');
       }
 
       output.writeln('part of ${asDartLiteral(originalFile)};');
     }
     output.write(writer.writeGenerated());
 
-    var generated = output.toString();
+    var code = output.toString();
     try {
-      generated = DartFormatter().format(generated);
+      code = DartFormatter().format(code);
     } on FormatterException {
       log.warning('Could not format generated source. The generated code is '
           'probably invalid, and this is most likely a bug in drift_dev.');
     }
 
-    await buildStep.writeAsString(buildStep.allowedOutputs.single, generated);
+    return buildStep.writeAsString(buildStep.allowedOutputs.single, code);
   }
-}
 
-extension on Version {
-  String get majorMinor => '$major.$minor';
+  static final Version _minimalDartLanguageVersion = Version(2, 12, 0);
 }
