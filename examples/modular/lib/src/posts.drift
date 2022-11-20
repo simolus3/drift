@@ -1,0 +1,12 @@
+import 'users.drift';
+
+CREATE TABLE posts (
+  id INTEGER PRIMARY KEY,
+  author INTEGER NOT NULL REFERENCES users (id),
+  content TEXT
+);
+
+CREATE TABLE likes (
+  post INTEGER NOT NULL REFERENCES posts (id),
+  liked_by INTEGER NOT NULL REFERENCES users (id)
+);

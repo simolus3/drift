@@ -219,6 +219,187 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
   bool get dontWriteConstraints => true;
 }
 
+class Follow extends i0.DataClass implements i0.Insertable<i1.Follow> {
+  final int followed;
+  final int follower;
+  const Follow({required this.followed, required this.follower});
+  @override
+  Map<String, i0.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, i0.Expression>{};
+    map['followed'] = i0.Variable<int>(followed);
+    map['follower'] = i0.Variable<int>(follower);
+    return map;
+  }
+
+  i1.FollowsCompanion toCompanion(bool nullToAbsent) {
+    return i1.FollowsCompanion(
+      followed: i0.Value(followed),
+      follower: i0.Value(follower),
+    );
+  }
+
+  factory Follow.fromJson(Map<String, dynamic> json,
+      {i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return Follow(
+      followed: serializer.fromJson<int>(json['followed']),
+      follower: serializer.fromJson<int>(json['follower']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'followed': serializer.toJson<int>(followed),
+      'follower': serializer.toJson<int>(follower),
+    };
+  }
+
+  i1.Follow copyWith({int? followed, int? follower}) => i1.Follow(
+        followed: followed ?? this.followed,
+        follower: follower ?? this.follower,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Follow(')
+          ..write('followed: $followed, ')
+          ..write('follower: $follower')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(followed, follower);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is i1.Follow &&
+          other.followed == this.followed &&
+          other.follower == this.follower);
+}
+
+class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
+  final i0.Value<int> followed;
+  final i0.Value<int> follower;
+  const FollowsCompanion({
+    this.followed = const i0.Value.absent(),
+    this.follower = const i0.Value.absent(),
+  });
+  FollowsCompanion.insert({
+    required int followed,
+    required int follower,
+  })  : followed = i0.Value(followed),
+        follower = i0.Value(follower);
+  static i0.Insertable<i1.Follow> custom({
+    i0.Expression<int>? followed,
+    i0.Expression<int>? follower,
+  }) {
+    return i0.RawValuesInsertable({
+      if (followed != null) 'followed': followed,
+      if (follower != null) 'follower': follower,
+    });
+  }
+
+  i1.FollowsCompanion copyWith(
+      {i0.Value<int>? followed, i0.Value<int>? follower}) {
+    return i1.FollowsCompanion(
+      followed: followed ?? this.followed,
+      follower: follower ?? this.follower,
+    );
+  }
+
+  @override
+  Map<String, i0.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, i0.Expression>{};
+    if (followed.present) {
+      map['followed'] = i0.Variable<int>(followed.value);
+    }
+    if (follower.present) {
+      map['follower'] = i0.Variable<int>(follower.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('i1.FollowsCompanion(')
+          ..write('followed: $followed, ')
+          ..write('follower: $follower')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
+  @override
+  final i0.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Follows(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _followedMeta =
+      const i0.VerificationMeta('followed');
+  late final i0.GeneratedColumn<int> followed = i0.GeneratedColumn<int>(
+      'followed', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
+  static const i0.VerificationMeta _followerMeta =
+      const i0.VerificationMeta('follower');
+  late final i0.GeneratedColumn<int> follower = i0.GeneratedColumn<int>(
+      'follower', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
+  @override
+  List<i0.GeneratedColumn> get $columns => [followed, follower];
+  @override
+  String get aliasedName => _alias ?? 'follows';
+  @override
+  String get actualTableName => 'follows';
+  @override
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Follow> instance,
+      {bool isInserting = false}) {
+    final context = i0.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('followed')) {
+      context.handle(_followedMeta,
+          followed.isAcceptableOrUnknown(data['followed']!, _followedMeta));
+    } else if (isInserting) {
+      context.missing(_followedMeta);
+    }
+    if (data.containsKey('follower')) {
+      context.handle(_followerMeta,
+          follower.isAcceptableOrUnknown(data['follower']!, _followerMeta));
+    } else if (isInserting) {
+      context.missing(_followerMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<i0.GeneratedColumn> get $primaryKey => {followed, follower};
+  @override
+  i1.Follow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return i1.Follow(
+      followed: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}followed'])!,
+      follower: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}follower'])!,
+    );
+  }
+
+  @override
+  Follows createAlias(String alias) {
+    return Follows(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints =>
+      const ['PRIMARY KEY(followed, follower)'];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 class UsersDrift extends i2.ModularAccessor {
   UsersDrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<i1.User> findUsers({FindUsers$predicate? predicate}) {

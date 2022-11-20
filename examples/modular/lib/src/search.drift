@@ -1,0 +1,23 @@
+import 'posts.drift';
+
+CREATE VIRTUAL TABLE search_in_posts USING fts5 (
+    author,
+    content,
+    content=posts,
+    content_rowid=id
+);
+
+-- Keep fts5 table and posts synchronized
+
+CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN
+  INSERT INTO search_in_posts (rowid, author, content) VALUES (new.id, new.author, new.content);
+END;
+
+CREATE TRIGGER posts_update AFTER UPDATE ON posts BEGIN
+  INSERT INTO search_in_posts (search_in_posts, rowid, author, content) VALUES ('delete', old.id, old.author, old.content);
+  INSERT INTO search_in_posts (rowid, author, content) VALUES (new.id, new.author, new.content);
+END;
+
+CREATE TRIGGER posts_delete AFTER DELETE ON posts BEGIN
+  INSERT INTO search_in_posts (search_in_posts, rowid, author, content) VALUES ('delete', old.id, old.author, old.content);
+END;

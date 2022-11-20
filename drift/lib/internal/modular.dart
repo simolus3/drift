@@ -23,11 +23,10 @@ class ModularAccessor extends DatabaseAccessor<GeneratedDatabase> {
     return attachedDatabase.resultSet(name);
   }
 
-  /// Find an accessor by its [name] in the database, or create it with
-  /// [create]. The result will be cached.
-  T accessor<T extends DatabaseAccessor>(
-      String name, T Function(GeneratedDatabase) create) {
-    return attachedDatabase.accessor<T>(name, create);
+  /// Find an accessor type, or create it with [create]. The result will be
+  /// cached.
+  T accessor<T extends DatabaseAccessor>(T Function(GeneratedDatabase) create) {
+    return attachedDatabase.accessor<T>(create);
   }
 }
 
@@ -46,17 +45,16 @@ extension ReadDatabaseContainer on GeneratedDatabase {
 
   /// Find an accessor by its [name] in the database, or create it with
   /// [create]. The result will be cached.
-  T accessor<T extends DatabaseAccessor>(
-      String name, T Function(GeneratedDatabase) create) {
+  T accessor<T extends DatabaseAccessor>(T Function(GeneratedDatabase) create) {
     final cache = _cache.knownAccessors;
 
-    return cache.putIfAbsent(name, () => create(attachedDatabase)) as T;
+    return cache.putIfAbsent(T, () => create(attachedDatabase)) as T;
   }
 }
 
 class _DatabaseElementCache {
   final Map<String, DatabaseSchemaEntity> knownEntities;
-  final Map<String, DatabaseAccessor> knownAccessors = {};
+  final Map<Type, DatabaseAccessor> knownAccessors = {};
 
   _DatabaseElementCache(GeneratedDatabase database)
       : knownEntities = {

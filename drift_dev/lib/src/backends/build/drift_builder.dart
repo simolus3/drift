@@ -197,6 +197,14 @@ class _DriftBuildRun {
       }
     }
 
+    if (mode == DriftGenerationMode.modular &&
+        buildStep.inputId.extension != '.dart') {
+      // For modular drift file generation, we need to know about imports which
+      // are only available when discovery ran.
+      await driver.prepareFileForAnalysis(buildStep.inputId.uri,
+          needsDiscovery: true);
+    }
+
     return true;
   }
 
@@ -231,6 +239,18 @@ class _DriftBuildRun {
         TableWriter(result, writer.child()).writeInto();
       } else if (result is DriftView) {
         ViewWriter(result, writer.child(), null).write();
+      } else if (result is DriftTrigger) {
+        writer.leaf()
+          ..writeDriftRef('Trigger')
+          ..write(' get ${result.dbGetterName} => ')
+          ..write(DatabaseWriter.createTrigger(writer.child(), result))
+          ..writeln(';');
+      } else if (result is DriftIndex) {
+        writer.leaf()
+          ..writeDriftRef('Index')
+          ..write(' get ${result.dbGetterName} => ')
+          ..write(DatabaseWriter.createIndex(writer.child(), result))
+          ..writeln(';');
       } else if (result is DriftDatabase) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;

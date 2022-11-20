@@ -4,4 +4,10 @@ CREATE TABLE users (
     biography TEXT
 );
 
+CREATE TABLE follows (
+    followed INTEGER NOT NULL REFERENCES users (id),
+    follower INTEGER NOT NULL REFERENCES users (id),
+    PRIMARY KEY (followed, follower)
+);
+
 findUsers($predicate = TRUE): SELECT * FROM users WHERE $predicate;

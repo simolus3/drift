@@ -74,7 +74,19 @@ class DatabaseWriter {
 
     for (final entity in elements.whereType<DriftSchemaElement>()) {
       final getterName = entity.dbGetterName;
+
       if (getterName != null) {
+        // In the modular generation mode, table and view instances are still
+        // created in the database instance. However, triggers and indices are
+        // generated as a top-level field which is simply imported.
+        if (scope.generationOptions.isModular &&
+            (entity is DriftTrigger || entity is DriftIndex)) {
+          final import = dbScope.generatedElement(entity, getterName);
+
+          entityGetters[entity] = dbScope.dartCode(import);
+          continue;
+        }
+
         entityGetters[entity] = getterName;
       }
 
@@ -88,24 +100,18 @@ class DatabaseWriter {
           code: '$tableClassName(this)',
         );
       } else if (entity is DriftTrigger) {
-        final sql = scope.sqlCode(entity.parsedStatement!);
-
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: 'Trigger',
-          code: 'Trigger(${asDartLiteral(sql)}, '
-              '${asDartLiteral(entity.schemaName)})',
+          code: createTrigger(dbScope, entity),
         );
       } else if (entity is DriftIndex) {
-        final sql = scope.sqlCode(entity.parsedStatement!);
-
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: 'Index',
-          code: 'Index(${asDartLiteral(entity.schemaName)}, '
-              '${asDartLiteral(sql)})',
+          code: createIndex(scope, entity),
         );
       } else if (entity is DriftView) {
         writeMemoizedGetter(
@@ -145,7 +151,7 @@ class DatabaseWriter {
                 ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
             ..writeln('(this).accessor<')
             ..writeDart(type)
-            ..write('>(${asDartLiteral(import.ownUri.toString())}, ')
+            ..write('>(')
             ..writeDart(type)
             ..writeln('.new);');
         }
@@ -191,15 +197,17 @@ class DatabaseWriter {
         FindStreamUpdateRules(input.resolvedAccessor).identifyRules();
     if (updateRules.rules.isNotEmpty) {
       schemaScope
-        ..write('@override\nStreamQueryUpdateRules get streamUpdateRules => ')
-        ..write('const StreamQueryUpdateRules([');
+        ..writeln('@override')
+        ..writeDriftRef('StreamQueryUpdateRules')
+        ..write(' get streamUpdateRules => const ')
+        ..writeDriftRef('StreamQueryUpdateRules([');
 
       for (final rule in updateRules.rules) {
         rule.writeConstructor(schemaScope);
         schemaScope.write(', ');
       }
 
-      schemaScope.write('],);\n');
+      schemaScope.writeln('],);');
     }
 
     if (scope.generationOptions.isGeneratingForSchema) {
@@ -222,6 +230,20 @@ class DatabaseWriter {
 
     // close the class
     schemaScope.write('}\n');
+  }
+
+  static String createTrigger(Scope scope, DriftTrigger entity) {
+    final sql = scope.sqlCode(entity.parsedStatement!);
+    final trigger = scope.drift('Trigger');
+
+    return '$trigger(${asDartLiteral(sql)}, ${asDartLiteral(entity.schemaName)})';
+  }
+
+  static String createIndex(Scope scope, DriftIndex entity) {
+    final sql = scope.sqlCode(entity.parsedStatement!);
+    final index = scope.drift('Index');
+
+    return '$index(${asDartLiteral(entity.schemaName)}, ${asDartLiteral(sql)})';
   }
 }
 

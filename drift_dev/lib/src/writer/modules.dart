@@ -1,3 +1,6 @@
+import 'package:path/path.dart' show url;
+import 'package:recase/recase.dart';
+
 import '../analysis/driver/state.dart';
 import '../analysis/results/results.dart';
 import '../utils/string_escaper.dart';
@@ -56,6 +59,21 @@ class ModularAccessorWriter {
           ..write(' get ${reference.dbGetterName} => this.resultSet<')
           ..writeDart(infoType)
           ..write('>(${asDartLiteral(reference.schemaName)});');
+      }
+    }
+
+    // Also make imports available
+    final imports = file.discovery?.importDependencies ?? const [];
+    for (final import in imports) {
+      if (url.extension(import.path) == '.drift') {
+        final moduleClass = restOfClass.modularAccessor(import);
+        final getterName = ReCase(moduleClass.toString()).camelCase;
+
+        restOfClass
+          ..writeDart(moduleClass)
+          ..write(' get $getterName => this.accessor(')
+          ..writeDart(moduleClass)
+          ..writeln('.new);');
       }
     }
 

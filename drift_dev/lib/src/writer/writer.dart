@@ -57,7 +57,7 @@ class Writer extends _NodeOrWriter {
 abstract class _NodeOrWriter {
   Writer get writer;
 
-  AnnotatedDartCode _generatedElement(DriftElement element, String dartName) {
+  AnnotatedDartCode generatedElement(DriftElement element, String dartName) {
     if (writer.generationOptions.isModular) {
       return AnnotatedDartCode([
         DartTopLevelSymbol(dartName, element.id.modularImportUri),
@@ -81,11 +81,11 @@ abstract class _NodeOrWriter {
         ? table.nameOfRowClass
         : table.baseDartName;
 
-    return _generatedElement(table, '${baseName}Companion');
+    return generatedElement(table, '${baseName}Companion');
   }
 
   AnnotatedDartCode entityInfoType(DriftElementWithResultSet element) {
-    return _generatedElement(element, element.entityInfoName);
+    return generatedElement(element, element.entityInfoName);
   }
 
   AnnotatedDartCode rowType(DriftElementWithResultSet element) {
@@ -93,7 +93,7 @@ abstract class _NodeOrWriter {
     if (existing != null) {
       return existing.targetType;
     } else {
-      return _generatedElement(element, element.nameOfRowClass);
+      return generatedElement(element, element.nameOfRowClass);
     }
   }
 
@@ -102,7 +102,7 @@ abstract class _NodeOrWriter {
     if (existing != null) {
       return existing.targetClass;
     } else {
-      return _generatedElement(element, element.nameOfRowClass);
+      return generatedElement(element, element.nameOfRowClass);
     }
   }
 
