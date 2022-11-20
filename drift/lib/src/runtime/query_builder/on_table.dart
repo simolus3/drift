@@ -115,4 +115,11 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   Future<int> deleteWhere(Expression<bool> Function(Tbl tbl) filter) {
     return (delete()..where(filter)).go();
   }
+
+  /// Deletes ALL rows from the table.
+  ///
+  /// See also [SingleTableQueryMixin.where].
+  Future<int> deleteAll() {
+    return delete().go();
+  }
 }
