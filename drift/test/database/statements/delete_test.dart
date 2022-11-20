@@ -124,5 +124,11 @@ void main() {
       verify(
           executor.runDelete('DELETE FROM "users" WHERE "id" < ?;', const [3]));
     });
+
+    test('deleteAll', () async {
+      await db.users.deleteAll();
+
+      verify(executor.runDelete('DELETE FROM "users";', const []));
+    });
   });
 }
