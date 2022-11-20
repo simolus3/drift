@@ -167,7 +167,7 @@ class $CategoriesTable extends Categories
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CategoriesTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -176,7 +176,7 @@ class $CategoriesTable extends Categories
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _descriptionMeta =
+  static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
@@ -184,7 +184,8 @@ class $CategoriesTable extends Categories
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL UNIQUE');
-  final VerificationMeta _priorityMeta = const VerificationMeta('priority');
+  static const VerificationMeta _priorityMeta =
+      const VerificationMeta('priority');
   @override
   late final GeneratedColumnWithTypeConverter<CategoryPriority, int> priority =
       GeneratedColumn<int>('priority', aliasedName, false,
@@ -192,7 +193,7 @@ class $CategoriesTable extends Categories
               requiredDuringInsert: false,
               defaultValue: const Constant(0))
           .withConverter<CategoryPriority>($CategoriesTable.$converterpriority);
-  final VerificationMeta _descriptionInUpperCaseMeta =
+  static const VerificationMeta _descriptionInUpperCaseMeta =
       const VerificationMeta('descriptionInUpperCase');
   @override
   late final GeneratedColumn<String> descriptionInUpperCase =
@@ -460,7 +461,7 @@ class $TodosTableTable extends TodosTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TodosTableTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -469,7 +470,7 @@ class $TodosTableTable extends TodosTable
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _titleMeta = const VerificationMeta('title');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, true,
@@ -477,19 +478,22 @@ class $TodosTableTable extends TodosTable
           GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
       type: DriftSqlType.string,
       requiredDuringInsert: false);
-  final VerificationMeta _contentMeta = const VerificationMeta('content');
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
+  static const VerificationMeta _targetDateMeta =
+      const VerificationMeta('targetDate');
   @override
   late final GeneratedColumn<DateTime> targetDate = GeneratedColumn<DateTime>(
       'target_date', aliasedName, true,
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  final VerificationMeta _categoryMeta = const VerificationMeta('category');
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
   @override
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
@@ -756,7 +760,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UsersTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -765,7 +769,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
@@ -774,7 +778,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
+  static const VerificationMeta _isAwesomeMeta =
+      const VerificationMeta('isAwesome');
   @override
   late final GeneratedColumn<bool> isAwesome =
       GeneratedColumn<bool>('is_awesome', aliasedName, false,
@@ -786,13 +791,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
             SqlDialect.postgres: '',
           }),
           defaultValue: const Constant(true));
-  final VerificationMeta _profilePictureMeta =
+  static const VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
   late final GeneratedColumn<Uint8List> profilePicture =
       GeneratedColumn<Uint8List>('profile_picture', aliasedName, false,
           type: DriftSqlType.blob, requiredDuringInsert: true);
-  final VerificationMeta _creationTimeMeta =
+  static const VerificationMeta _creationTimeMeta =
       const VerificationMeta('creationTime');
   @override
   late final GeneratedColumn<DateTime> creationTime = GeneratedColumn<DateTime>(
@@ -989,12 +994,12 @@ class $SharedTodosTable extends SharedTodos
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $SharedTodosTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _todoMeta = const VerificationMeta('todo');
+  static const VerificationMeta _todoMeta = const VerificationMeta('todo');
   @override
   late final GeneratedColumn<int> todo = GeneratedColumn<int>(
       'todo', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-  final VerificationMeta _userMeta = const VerificationMeta('user');
+  static const VerificationMeta _userMeta = const VerificationMeta('user');
   @override
   late final GeneratedColumn<int> user = GeneratedColumn<int>(
       'user', aliasedName, false,
@@ -1148,23 +1153,25 @@ class $TableWithoutPKTable extends TableWithoutPK
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TableWithoutPKTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _notReallyAnIdMeta =
+  static const VerificationMeta _notReallyAnIdMeta =
       const VerificationMeta('notReallyAnId');
   @override
   late final GeneratedColumn<int> notReallyAnId = GeneratedColumn<int>(
       'not_really_an_id', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-  final VerificationMeta _someFloatMeta = const VerificationMeta('someFloat');
+  static const VerificationMeta _someFloatMeta =
+      const VerificationMeta('someFloat');
   @override
   late final GeneratedColumn<double> someFloat = GeneratedColumn<double>(
       'some_float', aliasedName, false,
       type: DriftSqlType.double, requiredDuringInsert: true);
-  final VerificationMeta _webSafeIntMeta = const VerificationMeta('webSafeInt');
+  static const VerificationMeta _webSafeIntMeta =
+      const VerificationMeta('webSafeInt');
   @override
   late final GeneratedColumn<BigInt> webSafeInt = GeneratedColumn<BigInt>(
       'web_safe_int', aliasedName, true,
       type: DriftSqlType.bigInt, requiredDuringInsert: false);
-  final VerificationMeta _customMeta = const VerificationMeta('custom');
+  static const VerificationMeta _customMeta = const VerificationMeta('custom');
   @override
   late final GeneratedColumnWithTypeConverter<MyCustomObject, String> custom =
       GeneratedColumn<String>('custom', aliasedName, false,
@@ -1209,7 +1216,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1342,7 +1349,7 @@ class $PureDefaultsTable extends PureDefaults
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $PureDefaultsTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _txtMeta = const VerificationMeta('txt');
+  static const VerificationMeta _txtMeta = const VerificationMeta('txt');
   @override
   late final GeneratedColumnWithTypeConverter<MyCustomObject?, String> txt =
       GeneratedColumn<String>('insert', aliasedName, true,
@@ -1677,7 +1684,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [

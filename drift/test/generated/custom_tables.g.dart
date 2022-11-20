@@ -48,7 +48,8 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   NoIds(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _payloadMeta = const VerificationMeta('payload');
+  static const VerificationMeta _payloadMeta =
+      const VerificationMeta('payload');
   late final GeneratedColumn<Uint8List> payload = GeneratedColumn<Uint8List>(
       'payload', aliasedName, false,
       type: DriftSqlType.blob,
@@ -222,14 +223,14 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   WithDefaults(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _aMeta = const VerificationMeta('a');
+  static const VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT \'something\'',
       defaultValue: const CustomExpression('\'something\''));
-  final VerificationMeta _bMeta = const VerificationMeta('b');
+  static const VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int> b = GeneratedColumn<int>(
       'b', aliasedName, true,
       type: DriftSqlType.int,
@@ -256,7 +257,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -426,19 +427,19 @@ class WithConstraints extends Table
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   WithConstraints(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _aMeta = const VerificationMeta('a');
+  static const VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
-  final VerificationMeta _bMeta = const VerificationMeta('b');
+  static const VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int> b = GeneratedColumn<int>(
       'b', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _cMeta = const VerificationMeta('c');
+  static const VerificationMeta _cMeta = const VerificationMeta('c');
   late final GeneratedColumn<double> c = GeneratedColumn<double>(
       'c', aliasedName, true,
       type: DriftSqlType.double,
@@ -470,7 +471,7 @@ class WithConstraints extends Table
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -685,27 +686,29 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   ConfigTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
+  static const VerificationMeta _configKeyMeta =
+      const VerificationMeta('configKey');
   late final GeneratedColumn<String> configKey = GeneratedColumn<String>(
       'config_key', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL PRIMARY KEY');
-  final VerificationMeta _configValueMeta =
+  static const VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
   late final GeneratedColumn<String> configValue = GeneratedColumn<String>(
       'config_value', aliasedName, true,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
-  final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
+  static const VerificationMeta _syncStateMeta =
+      const VerificationMeta('syncState');
   late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
       GeneratedColumn<int>('sync_state', aliasedName, true,
               type: DriftSqlType.int,
               requiredDuringInsert: false,
               $customConstraints: '')
           .withConverter<SyncType?>(ConfigTable.$convertersyncStaten);
-  final VerificationMeta _syncStateImplicitMeta =
+  static const VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
   late final GeneratedColumnWithTypeConverter<SyncType?, int>
       syncStateImplicit = GeneratedColumn<int>(
@@ -960,26 +963,28 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Mytable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _someidMeta = const VerificationMeta('someid');
+  static const VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedColumn<int> someid = GeneratedColumn<int>(
       'someid', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
+  static const VerificationMeta _sometextMeta =
+      const VerificationMeta('sometext');
   late final GeneratedColumn<String> sometext = GeneratedColumn<String>(
       'sometext', aliasedName, true,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
-  final VerificationMeta _isInsertingMeta =
+  static const VerificationMeta _isInsertingMeta =
       const VerificationMeta('isInserting');
   late final GeneratedColumn<bool> isInserting = GeneratedColumn<bool>(
       'is_inserting', aliasedName, true,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: '');
-  final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
+  static const VerificationMeta _somedateMeta =
+      const VerificationMeta('somedate');
   late final GeneratedColumn<DateTime> somedate = GeneratedColumn<DateTime>(
       'somedate', aliasedName, true,
       type: DriftSqlType.dateTime,
@@ -1187,19 +1192,19 @@ class Email extends Table
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Email(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _senderMeta = const VerificationMeta('sender');
+  static const VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedColumn<String> sender = GeneratedColumn<String>(
       'sender', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
-  final VerificationMeta _titleMeta = const VerificationMeta('title');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
-  final VerificationMeta _bodyMeta = const VerificationMeta('body');
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
   late final GeneratedColumn<String> body = GeneratedColumn<String>(
       'body', aliasedName, false,
       type: DriftSqlType.string,
@@ -1238,7 +1243,7 @@ class Email extends Table
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1386,13 +1391,15 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   WeirdTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
+  static const VerificationMeta _sqlClassMeta =
+      const VerificationMeta('sqlClass');
   late final GeneratedColumn<int> sqlClass = GeneratedColumn<int>(
       'class', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
+  static const VerificationMeta _textColumnMeta =
+      const VerificationMeta('textColumn');
   late final GeneratedColumn<String> textColumn = GeneratedColumn<String>(
       'text', aliasedName, false,
       type: DriftSqlType.string,
@@ -1425,7 +1432,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1849,7 +1856,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
