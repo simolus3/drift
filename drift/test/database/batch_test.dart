@@ -59,7 +59,7 @@ void main() {
             'UPDATE "users" SET "name" = ? WHERE "name" = ?;',
             'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
             'DELETE FROM "categories" WHERE "id" = ?;',
-            'DELETE FROM "categories" WHERE 1;',
+            'DELETE FROM "categories";',
             'DELETE FROM "todos" WHERE "id" = ?;',
             'some custom statement',
           ],

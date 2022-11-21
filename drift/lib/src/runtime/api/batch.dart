@@ -147,8 +147,11 @@ class Batch {
   ///
   /// See also:
   ///  - [DatabaseConnectionUser.delete]
-  void deleteAll<T extends Table, D>(TableInfo<T, D> table) =>
-      deleteWhere(table, (tbl) => const Constant(true));
+  void deleteAll<T extends Table, D>(TableInfo<T, D> table) {
+    _addUpdate(table, UpdateKind.delete);
+    final stmt = DeleteStatement(_user, table);
+    _addContext(stmt.constructQuery());
+  }
 
   /// Executes the custom [sql] statement with variables instantiated to [args].
   ///
