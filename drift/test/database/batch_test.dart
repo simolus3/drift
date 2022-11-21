@@ -39,7 +39,9 @@ void main() {
         CategoriesCompanion(id: Value(2), description: Value('new2')),
       ]);
 
-      b.deleteWhere(db.categories, (_) => const Constant(true));
+      b.deleteWhere<$CategoriesTable, Category>(
+          db.categories, (tbl) => tbl.id.equals(1));
+      b.deleteAll(db.categories);
       b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
 
       b.update(db.users, const UsersCompanion(name: Value('new name 2')));
@@ -56,6 +58,7 @@ void main() {
             'UPDATE "users" SET "name" = ?;',
             'UPDATE "users" SET "name" = ? WHERE "name" = ?;',
             'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
+            'DELETE FROM "categories" WHERE "id" = ?;',
             'DELETE FROM "categories" WHERE 1;',
             'DELETE FROM "todos" WHERE "id" = ?;',
             'some custom statement',
@@ -67,10 +70,11 @@ void main() {
             ArgumentsForBatchedStatement(2, ['Another', 'old']),
             ArgumentsForBatchedStatement(3, ['new1', 1]),
             ArgumentsForBatchedStatement(3, ['new2', 2]),
-            ArgumentsForBatchedStatement(4, []),
-            ArgumentsForBatchedStatement(5, [3]),
+            ArgumentsForBatchedStatement(4, [1]),
+            ArgumentsForBatchedStatement(5, []),
+            ArgumentsForBatchedStatement(6, [3]),
             ArgumentsForBatchedStatement(1, ['new name 2']),
-            ArgumentsForBatchedStatement(6, [4]),
+            ArgumentsForBatchedStatement(7, [4]),
           ],
         ),
       ),

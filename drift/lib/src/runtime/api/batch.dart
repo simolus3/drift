@@ -143,6 +143,13 @@ class Batch {
     _addContext(stmt.constructQuery());
   }
 
+  /// Deletes ALL rows from [table].
+  ///
+  /// See also:
+  ///  - [DatabaseConnectionUser.delete]
+  void deleteAll<T extends Table, D>(TableInfo<T, D> table) =>
+      deleteWhere(table, (tbl) => const Constant(true));
+
   /// Executes the custom [sql] statement with variables instantiated to [args].
   ///
   /// The statement will be added to this batch and executed when the batch
