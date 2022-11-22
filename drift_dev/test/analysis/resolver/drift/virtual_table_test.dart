@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/analysis/results/table.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -67,5 +69,27 @@ SELECT rowid, highlight(example_table_search, 0, '[match]', '[match]') name,
     final result = await state.analyze('package:a/table.drift');
     expect(result.allErrors,
         [isDriftError(contains('Function simple_query could not be found'))]);
+  });
+
+  test('supports spellfix1 tables', () async {
+    final state = TestBackend.inTest(
+      {'a|lib/a.drift': 'CREATE VIRTUAL TABLE demo USING spellfix1;'},
+      options: DriftOptions.defaults(
+        dialect: DialectOptions(
+          SqlDialect.sqlite,
+          SqliteAnalysisOptions(
+            modules: [SqlModule.spellfix1],
+          ),
+        ),
+      ),
+    );
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(
+      table.columns.map((e) => e.nameInSql),
+      containsAll(['word', 'rank', 'distance', 'langid', 'score', 'matchlen']),
+    );
   });
 }

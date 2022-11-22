@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -35,15 +36,10 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
             resolver.driver.options.storeDateTimeValuesAsText,
       );
       table = reader.read(stmt);
-    } catch (e, s) {
-      resolver.driver.backend.log
-          .warning('Error reading table from internal statement', e, s);
-      reportError(DriftAnalysisError.inDriftFile(
-        stmt.tableNameToken ?? stmt,
-        'The structure of this table could not be extracted, possibly due to a '
-        'bug in drift_dev.',
-      ));
-      rethrow;
+    } on CantReadSchemaException catch (e) {
+      reportError(DriftAnalysisError.inDriftFile(stmt.tableNameToken ?? stmt,
+          'Drift was unable to analyze this table: ${e.message}'));
+      throw const CouldNotResolveElementException();
     }
 
     final columns = <DriftColumn>[];

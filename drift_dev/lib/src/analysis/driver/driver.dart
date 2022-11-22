@@ -75,6 +75,8 @@ class DriftAnalysisDriver {
             const DriftNativeExtension(),
           if (options.hasModule(SqlModule.math)) const BuiltInMathExtension(),
           if (options.hasModule(SqlModule.rtree)) const RTreeExtension(),
+          if (options.hasModule(SqlModule.spellfix1))
+            const Spellfix1Extension(),
         ],
         version: options.sqliteVersion,
       ),
@@ -175,7 +177,9 @@ class DriftAnalysisDriver {
         try {
           await resolver.resolveDiscovered(discovered);
         } catch (e, s) {
-          backend.log.warning('Could not analyze ${discovered.ownId}', e, s);
+          if (e is! CouldNotResolveElementException) {
+            backend.log.warning('Could not analyze ${discovered.ownId}', e, s);
+          }
         }
       }
     }
@@ -226,4 +230,11 @@ class DriftAnalysisDriver {
 
 abstract class AnalysisResultCacheReader {
   Future<String?> readCacheFor(Uri uri);
+}
+
+/// Thrown by a local element resolver when an element could not be resolved and
+/// a more helpful error has already been added as an analysis error for the
+/// user to see.
+class CouldNotResolveElementException implements Exception {
+  const CouldNotResolveElementException();
 }

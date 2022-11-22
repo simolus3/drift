@@ -3,6 +3,8 @@ import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import 'test_utils.dart';
+
 void main() {
   DriftOptions parse(String yaml) {
     return checkedYamlDecode(yaml, (m) => DriftOptions.fromJson(m!));
@@ -70,5 +72,18 @@ sqlite:
                 (e) => e.yamlNode?.span.text, 'yamlNode.span.text', '"3.99"'),
       ),
     );
+  });
+
+  test('reports error about table when module is not imported', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': 'CREATE VIRTUAL TABLE place_spellfix USING spellfix1;',
+    });
+
+    final file = await backend.analyze('package:a/a.drift');
+    expect(file.analyzedElements, isEmpty);
+    expect(file.allErrors, [
+      isDriftError(contains('Unknown module "spellfix1", did you register it?'))
+          .withSpan('place_spellfix'),
+    ]);
   });
 }
