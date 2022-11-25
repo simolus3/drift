@@ -257,6 +257,11 @@ class QueryStream {
         // table has changed, invalidate cache
         _lastData = null;
 
+        // If we have in-flight queries right now, we can no longer guarantee
+        // that their results reflect these changes already. So we have to
+        // cancel them and ignore their results.
+        _cancelRunningQueries();
+
         // It could be that we have no active, but some paused listeners. In
         // that case, we still want to invalidate cached data but there's no
         // point in fetching new data now. We'll load the query again after
@@ -291,10 +296,14 @@ class QueryStream {
         _lastData = null;
         _tablesChangedSubscription = null;
 
-        for (final op in _runningOperations) {
-          op.cancel();
-        }
+        _cancelRunningQueries();
       });
+    }
+  }
+
+  void _cancelRunningQueries() {
+    for (final op in _runningOperations) {
+      op.cancel();
     }
   }
 

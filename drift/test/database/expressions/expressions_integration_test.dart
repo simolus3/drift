@@ -183,6 +183,10 @@ void main() {
           .watchSingle();
 
       expect(stream, emitsInOrder([1, 1]));
+
+      // Give the stream time to run the first select
+      await pumpEventQueue();
+
       db.markTablesUpdated({db.sharedTodos});
     });
 

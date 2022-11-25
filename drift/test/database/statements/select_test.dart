@@ -153,7 +153,7 @@ void main() {
       expect(db.select(db.todosTable).getSingleOrNull(), completion(isNull));
     });
 
-    test('get multiple times', () {
+    test('get multiple times', () async {
       final resultRows = <List<Map<String, dynamic>>>[
         [_dataOfTodoEntry],
         [],
@@ -172,9 +172,11 @@ void main() {
       expectLater(db.select(db.todosTable).watchSingleOrNull(),
           emitsInOrder([_todoEntry, isNull, emitsError(anything)]));
 
-      db
-        ..markTablesUpdated({db.todosTable})
-        ..markTablesUpdated({db.todosTable});
+      await pumpEventQueue(); // First select as listeners attach
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(); // Second select due to invalidation
+      db.markTablesUpdated({db.todosTable});
+      // Third select due to invalidation
     });
   });
 

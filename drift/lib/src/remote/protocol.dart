@@ -429,6 +429,11 @@ class NotifyTablesUpdated {
   final List<TableUpdate> updates;
 
   NotifyTablesUpdated(this.updates);
+
+  @override
+  String toString() {
+    return 'NotifyTablesUpdated($updates)';
+  }
 }
 
 class SelectResult {

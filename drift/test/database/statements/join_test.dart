@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -141,7 +142,7 @@ void main() {
     verify(executor.runSelect(argThat(contains('LIMIT 10 OFFSET 5')), []));
   });
 
-  test('can be watched', () {
+  test('can be watched', () async {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
 
@@ -149,11 +150,12 @@ void main() {
         .select(todos)
         .join([innerJoin(categories, todos.category.equalsExp(categories.id))]);
 
-    final stream = query.watch();
-    expectLater(stream, emitsInOrder([[], []]));
+    final queue = StreamQueue(query.watch());
+    expect(await queue.next, []);
 
     db.markTablesUpdated({todos});
     db.markTablesUpdated({categories});
+    expect(await queue.next, []);
   });
 
   test('updates when any queried table changes in transaction', () {

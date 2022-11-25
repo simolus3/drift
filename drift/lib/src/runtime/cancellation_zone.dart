@@ -59,7 +59,12 @@ extension NonNullableCancellationExtension<T extends Object>
   /// [CancellationException] is thrown in [result].
   Future<T?> get resultOrNullIfCancelled async {
     try {
-      return await result;
+      final response = await result;
+      if (_cancellationRequested) {
+        return null;
+      }
+
+      return response;
     } on CancellationException {
       return null;
     }
