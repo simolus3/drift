@@ -1,7 +1,6 @@
 @TestOn('vm')
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/src/remote/protocol.dart';
 import 'package:mockito/mockito.dart';
