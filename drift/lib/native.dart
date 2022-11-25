@@ -10,7 +10,10 @@
 library drift.ffi;
 
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:drift/drift.dart';
+import 'package:drift/isolate.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -48,6 +51,53 @@ class NativeDatabase extends DelegatedDatabase {
   factory NativeDatabase(File file,
       {bool logStatements = false, DatabaseSetup? setup}) {
     return NativeDatabase._(_NativeDelegate(file, setup), logStatements);
+  }
+
+  /// Creates a database storing its result in [file].
+  ///
+  /// This method will create the same database as the default constructor of
+  /// the [NativeDatabase] class. It also behaves the same otherwise: The [file]
+  /// is created if it doesn't exist, [logStatements] can be used to print
+  /// statements and [setup] can be used to perform a one-time setup work when
+  /// the database is created.
+  ///
+  /// The big distinction of this method is that the database is implicitly
+  /// created on a background isolate, freeing up your main thread accessing the
+  /// database from I/O work needed to run statements.
+  /// When the database returned by this method is closed, the background
+  /// isolate will shut down as well.
+  ///
+  /// __Important limitations__: If the [setup] parameter is given, it must be
+  /// a static or top-level function. The reason is that it is executed on
+  /// another isolate.
+  static QueryExecutor createInBackground(File file,
+      {bool logStatements = false, DatabaseSetup? setup}) {
+    return createBackgroundConnection(file,
+            logStatements: logStatements, setup: setup)
+        .executor;
+  }
+
+  /// Like [createInBackground], except that it returns the whole
+  /// [DatabaseConnection] instead of just the executor.
+  ///
+  /// This creates a database writing data to the given [file]. The database
+  /// runs in a background isolate and is stopped when closed.
+  static DatabaseConnection createBackgroundConnection(File file,
+      {bool logStatements = false, DatabaseSetup? setup}) {
+    return DatabaseConnection.delayed(Future.sync(() async {
+      final receiveIsolate = ReceivePort();
+      await Isolate.spawn(
+        _NativeIsolateStartup.start,
+        _NativeIsolateStartup(
+            file.absolute.path, logStatements, setup, receiveIsolate.sendPort),
+        debugName: 'Drift isolate worker for ${file.path}',
+      );
+
+      final driftIsolate = await receiveIsolate.first as DriftIsolate;
+      receiveIsolate.close();
+
+      return driftIsolate.connect(singleClientMode: true);
+    }));
   }
 
   /// Creates an in-memory database won't persist its changes on disk.
@@ -202,5 +252,27 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
 
       database.dispose();
     }
+  }
+}
+
+class _NativeIsolateStartup {
+  final String path;
+  final bool enableLogs;
+  final DatabaseSetup? setup;
+  final SendPort sendServer;
+
+  _NativeIsolateStartup(
+      this.path, this.enableLogs, this.setup, this.sendServer);
+
+  static void start(_NativeIsolateStartup startup) {
+    final isolate = DriftIsolate.inCurrent(() {
+      return DatabaseConnection(NativeDatabase(
+        File(startup.path),
+        logStatements: startup.enableLogs,
+        setup: startup.setup,
+      ));
+    });
+
+    startup.sendServer.send(isolate);
   }
 }

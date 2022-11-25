@@ -36,6 +36,28 @@ a background isolate. Zero code changes are needed for queries!
 
 {% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
 
+## Simple setup
+
+Starting from Drift version 2.3.0, using drift isolates has been greatly
+simplified. Simply use `NativeDatabase.createInBackground` as a drop-in
+replacement for the `NativeDatabase` you've been using before:
+
+{% include "blocks/snippet" snippets = snippets name = 'simple' %}
+
+In the common case where you only need a isolate for performance reasons, this
+is as simple as it gets.
+The rest of this article explains a more complex setup giving you full control
+over the internal components making up a drift isolate. This is useful for
+advanced use cases, including:
+
+- Having two databases on different isolates which need to stay in sync.
+- Sharing a drift database connection across different Dart or Flutter engines,
+  like for a background service on Android.
+
+In most other cases, simply using `NativeDatabase.createInbackground` works
+great! It implements the same approach shared in this article, except that all
+the complicated bits are hidden behind a simple method.
+
 ## Preparations
 
 To use the isolate api, first enable the appropriate [build option]({{ "builder_options.md" | pageUrl }}) by

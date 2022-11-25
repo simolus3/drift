@@ -9,6 +9,9 @@
 - Add `singleClientMode` to `remote()` and `DriftIsolate` connections to make
   the common case with one client more efficient.
 - Fix a concurrency issues around transactions.
+- Add `NativeDatabase.createInBackground` as a drop-in replacement for
+  `NativeDatabase`. It creates a drift isolate behind the scenes, avoiding all
+  of the boilerplate usually involved with drift isolates.
 - __Experimental__: Add a [modular generation mode](https://drift.simonbinder.eu/docs/advanced-features/builder_options/#enabling-modular-code-generation)
   in which drift will generate multiple smaller files instead of one very large
   one with all tables and generated queries.

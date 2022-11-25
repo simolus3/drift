@@ -127,3 +127,16 @@ DatabaseConnection createDriftIsolateAndConnect() {
   }));
 }
 // #enddocregion init_connect
+
+// #docregion simple
+QueryExecutor createSimple() {
+  return LazyDatabase(() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dir.path, 'db.sqlite'));
+
+    // Using createInBackground creates a drift isolate with the recommended
+    // options behind the scenes.
+    return NativeDatabase.createInBackground(file);
+  });
+}
+// #enddocregion simple
