@@ -1,6 +1,7 @@
 @TestOn('vm')
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/src/remote/protocol.dart';
 import 'package:mockito/mockito.dart';
@@ -30,7 +31,7 @@ void main() {
     server.serve(controller.foreign);
 
     final client =
-        remote(controller.local.expectedToClose, shutdownOnClose: true);
+        remote(controller.local.expectedToClose, singleClientMode: true);
     final db = TodoDb.connect(client);
 
     await db.todosTable.select().get();
@@ -38,6 +39,31 @@ void main() {
 
     expect(server.done, completes);
   });
+
+  test(
+    'does not send table update notifications in single client mode',
+    () async {
+      final server =
+          DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+      final controller = StreamChannelController();
+      server.serve(controller.foreign, serialize: false);
+
+      final client = remote(
+        controller.local.transformSink(StreamSinkTransformer.fromHandlers(
+          handleData: (data, out) {
+            expect(data, isNot(isA<NotifyTablesUpdated>()));
+            out.add(data);
+          },
+        )),
+        serialize: false,
+        singleClientMode: true,
+      );
+
+      final db = TodoDb.connect(client);
+      await db.todosTable.select().get();
+      await db.close();
+    },
+  );
 
   test('Uint8Lists are mapped from and to Uint8Lists', () async {
     const protocol = DriftProtocol();

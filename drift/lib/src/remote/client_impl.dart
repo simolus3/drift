@@ -13,7 +13,12 @@ import 'protocol.dart';
 /// The client part of a remote drift communication scheme.
 class DriftClient {
   final DriftCommunication _channel;
-  final bool _shutdownOnClose;
+
+  /// Whether we know that only a single client will use the database server.
+  ///
+  /// In this case, we shutdown the server after the client disconnects and
+  /// can avoid forwarding stream query updaten notifications.
+  final bool _singleClientMode;
 
   late final _RemoteStreamQueryStore _streamStore =
       _RemoteStreamQueryStore(this);
@@ -32,7 +37,7 @@ class DriftClient {
     StreamChannel<Object?> channel,
     bool debugLog,
     bool serialize,
-    this._shutdownOnClose,
+    this._singleClientMode,
   ) : _channel = DriftCommunication(channel,
             debugLog: debugLog, serialize: serialize) {
     _channel.setRequestHandler(_handleRequest);
@@ -149,7 +154,7 @@ class _RemoteQueryExecutor extends _BaseExecutor {
     final channel = client._channel;
 
     if (!channel.isClosed) {
-      if (client._shutdownOnClose) {
+      if (client._singleClientMode) {
         return channel
             .request(NoArgsRequest.terminateAll)
             .whenComplete(channel.close);
@@ -233,11 +238,13 @@ class _RemoteStreamQueryStore extends StreamQueryStore {
   @override
   void handleTableUpdates(Set<TableUpdate> updates,
       [bool comesFromServer = false]) {
-    if (comesFromServer) {
+    if (comesFromServer || _client._singleClientMode) {
       super.handleTableUpdates(updates);
     } else {
-      // requests are async, but the function is synchronous. We await that
-      // future in close()
+      // Also notify the server (so that queries on other connections have a
+      // chance to update as well). Since this method is synchronous but the
+      // connection isn't, we store this request in a completer and await
+      // pending operations in close() (which is async).
       final completer = Completer<void>();
       _awaitingUpdates.add(completer);
 

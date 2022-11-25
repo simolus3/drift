@@ -117,7 +117,7 @@ This call will release all resources used by the drift isolate.
 
 In many cases, you know that only a single client will connect to the
 `DriftIsolate` (for instance because you're spawning a new `DriftIsolate` when
-opening a database). In this case, you can set the `shutdownOnClose: true`
+opening a database). In this case, you can set the `singleClientMode: true`
 parameter on `connect()`.
 With this parameter, closing the single connection will also fully dispose the
 drift isolate.

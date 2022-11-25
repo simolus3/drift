@@ -29,7 +29,7 @@ DatabaseConnection connect() {
 
     // Each connect() spawns a new isolate which is only used for one
     // connection, so we shutdown the isolate when the database is closed.
-    return driftIsolate.connect(shutdownOnClose: true);
+    return driftIsolate.connect(singleClientMode: true);
   }));
 }
 

@@ -127,7 +127,7 @@ void main() {
     expect(done.first, completion(anything));
 
     final drift = await spawned.first as DriftIsolate;
-    final db = TodoDb.connect(await drift.connect(shutdownOnClose: true));
+    final db = TodoDb.connect(await drift.connect(singleClientMode: true));
     await db.close();
   }, tags: 'background_isolate');
 

@@ -11,50 +11,67 @@ void main() {
   for (final existingListener in [true, false]) {
     for (final useIsolate in [true, false]) {
       for (final useTransaction in [true, false]) {
-        final vars = 'existingListener=$existingListener, '
-            'useIsolate=$useIsolate, '
-            'useTransaction=$useTransaction';
-
-        test('can read-your-writes ($vars)', () async {
-          final db = useIsolate
-              ? _SomeDb.connect(await _connect())
-              : _SomeDb(NativeDatabase.memory());
-
-          addTearDown(db.close);
-
-          await db.into(db.someTable).insert(_SomeTableCompanion());
-
-          Stream<_SomeTableData> getRow() =>
-              db.select(db.someTable).watchSingle();
-
-          Future<void> readYourWrite() async {
-            final update = _SomeTableCompanion(name: Value('x'));
-            await db.update(db.someTable).write(update);
-            // await pumpEventQueue();
-            final row = await getRow().first;
-            expect(row.name, equals('x'),
-                reason: 'should be able to read the row we just wrote');
-          }
-
-          if (existingListener) {
-            getRow().listen(null);
-          }
-
-          await (useTransaction
-              ? db.transaction(readYourWrite)
-              : readYourWrite());
-        });
+        for (final singleClientMode in [true, false]) {
+          _defineTest(
+              existingListener, useIsolate, useTransaction, singleClientMode);
+        }
       }
     }
   }
 }
 
-Future<DatabaseConnection> _connect() async {
+void _defineTest(
+  bool existingListener,
+  bool useIsolate,
+  bool useTransaction,
+  bool singleClientMode,
+) {
+  final vars = 'existingListener=$existingListener, '
+      'useIsolate=$useIsolate, '
+      'useTransaction=$useTransaction, '
+      'singleClientMode=$singleClientMode';
+
+  test('can read-your-writes ($vars)', () async {
+    final isolate = useIsolate ? await _spawnIsolate() : null;
+
+    final db = useIsolate
+        ? _SomeDb.connect(await isolate!.connect())
+        : _SomeDb(NativeDatabase.memory());
+
+    addTearDown(() async {
+      await db.close();
+
+      if (!singleClientMode && useIsolate) {
+        await isolate!.shutdownAll();
+      }
+    });
+
+    await db.into(db.someTable).insert(_SomeTableCompanion());
+
+    Stream<_SomeTableData> getRow() => db.select(db.someTable).watchSingle();
+
+    Future<void> readYourWrite() async {
+      final update = _SomeTableCompanion(name: Value('x'));
+      await db.update(db.someTable).write(update);
+      // await pumpEventQueue();
+      final row = await getRow().first;
+      expect(row.name, equals('x'),
+          reason: 'should be able to read the row we just wrote');
+    }
+
+    if (existingListener) {
+      getRow().listen(null);
+    }
+
+    await (useTransaction ? db.transaction(readYourWrite) : readYourWrite());
+  });
+}
+
+Future<DriftIsolate> _spawnIsolate() async {
   final out = ReceivePort();
   final args = out.sendPort;
   await Isolate.spawn(_isolateEntrypoint, args);
-  final isolate = (await out.first) as DriftIsolate;
-  return isolate.connect();
+  return (await out.first) as DriftIsolate;
 }
 
 void _isolateEntrypoint(SendPort out) {

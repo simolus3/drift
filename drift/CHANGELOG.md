@@ -6,8 +6,8 @@
   They can be used to compare the column against a list of Dart expressions that
   will be mapped through a type converter.
 - Add `TableStatements.insertAll` to atomically insert multiple rows.
-- Add `shutdownOnClose` to `remote()` and `DriftIsolate` connections to shutdown
-  a drift server or isolate after closing a database connection.
+- Add `singleClientMode` to `remote()` and `DriftIsolate` connections to make
+  the common case with one client more efficient.
 - Fix a concurrency issues around transactions.
 
 ## 2.2.0

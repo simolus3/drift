@@ -119,11 +119,12 @@ abstract class DriftServer {
 /// The other end of the [channel] must be attached to a drift server with
 /// [DriftServer.serve] for this setup to work.
 ///
-/// The [shutdownOnClose] parameter controls whether [shutdown] is called
-/// after closing the returned database connection. By default, only this
-/// connection will be closed and the server will continue to run. When enabled,
-/// the server will shutdown when this connection is closed. This is useful when
-/// it is known that the server will only serve a single connection.
+/// If it is known that only a single client will connect to this database
+/// server, [singleClientMode] can be enabled.
+/// When enabled, [shutdown] is implicitly called when the database connection
+/// is closed. This may make it easier to dispose the remote isolate or server.
+/// Also, update notifications for table updates don't have to be sent which
+/// reduces load on the connection.
 ///
 /// If [serialize] is true, drift will only send [bool], [int], [double],
 /// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
@@ -137,9 +138,9 @@ DatabaseConnection remote(
   StreamChannel<Object?> channel, {
   bool debugLog = false,
   bool serialize = true,
-  bool shutdownOnClose = false,
+  bool singleClientMode = false,
 }) {
-  final client = DriftClient(channel, debugLog, serialize, shutdownOnClose);
+  final client = DriftClient(channel, debugLog, serialize, singleClientMode);
   return client.connection;
 }
 

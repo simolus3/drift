@@ -88,23 +88,26 @@ class DriftIsolate {
   /// All operations on the returned [DatabaseConnection] will be executed on a
   /// background isolate.
   ///
-  /// When [shutdownOnClose] is enabled (it defaults to `false`), the drift
-  /// server on the remote isolate will be shut down when this database
-  /// connection is closed. This option can be enabled when it is known that the
-  /// drift isolate will only ever serve one client.
+  /// When [singleClientMode] is enabled (it defaults to `false`), drift assumes
+  /// that the isolate will only be connected to once. In this mode, drift will
+  /// shutdown the remote isolate once the returned [DatabaseConnection] is
+  /// closed.
+  /// Also, stream queries are more efficient when this mode is enables since we
+  /// don't have to synchronize table updates to other clients (since there are
+  /// none).
   ///
   /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
   /// It will print messages exchanged between the two isolates.
   // todo: breaking: Make synchronous in drift 2
   Future<DatabaseConnection> connect({
     bool isolateDebugLog = false,
-    bool shutdownOnClose = false,
+    bool singleClientMode = false,
   }) async {
     return remote(
       _open(),
       debugLog: isolateDebugLog,
       serialize: serialize,
-      shutdownOnClose: shutdownOnClose,
+      singleClientMode: singleClientMode,
     );
   }
 
