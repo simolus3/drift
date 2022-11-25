@@ -238,9 +238,9 @@ class _RemoteStreamQueryStore extends StreamQueryStore {
   @override
   void handleTableUpdates(Set<TableUpdate> updates,
       [bool comesFromServer = false]) {
-    if (comesFromServer || _client._singleClientMode) {
-      super.handleTableUpdates(updates);
-    } else {
+    super.handleTableUpdates(updates);
+
+    if (!comesFromServer && !_client._singleClientMode) {
       // Also notify the server (so that queries on other connections have a
       // chance to update as well). Since this method is synchronous but the
       // connection isn't, we store this request in a completer and await
@@ -257,7 +257,7 @@ class _RemoteStreamQueryStore extends StreamQueryStore {
       }, test: (e) => e is ConnectionClosedException).whenComplete(() {
         _awaitingUpdates.remove(completer);
       });
-    }
+    } else {}
   }
 
   @override

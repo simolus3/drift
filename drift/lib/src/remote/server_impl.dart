@@ -96,7 +96,9 @@ class ServerImplementation implements DriftServer {
       return _runBatched(payload.stmts, payload.executorId);
     } else if (payload is NotifyTablesUpdated) {
       for (final connected in _activeChannels) {
-        connected.request(payload);
+        if (connected != comms) {
+          connected.request(payload);
+        }
       }
     } else if (payload is RunTransactionAction) {
       return _transactionControl(comms, payload.control, payload.executorId);
