@@ -256,6 +256,11 @@ class _DriftBuildRun {
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
         final input = DatabaseGenerationInput(result, resolved, const {});
         DatabaseWriter(input, writer.child()).write();
+      } else if (result is DatabaseAccessor) {
+        final resolved =
+            entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
+        final input = AccessorGenerationInput(result, resolved, const {});
+        AccessorWriter(input, writer.child()).write();
       }
     }
 

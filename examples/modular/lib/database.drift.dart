@@ -3,7 +3,9 @@ import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/users.drift.dart' as i1;
 import 'package:modular/src/posts.drift.dart' as i2;
 import 'package:modular/src/search.drift.dart' as i3;
-import 'package:drift/internal/modular.dart' as i4;
+import 'package:modular/accessor.dart' as i4;
+import 'package:modular/database.dart' as i5;
+import 'package:drift/internal/modular.dart' as i6;
 
 abstract class $Database extends i0.GeneratedDatabase {
   $Database(i0.QueryExecutor e) : super(e);
@@ -12,8 +14,13 @@ abstract class $Database extends i0.GeneratedDatabase {
   late final i3.SearchInPosts searchInPosts = i3.SearchInPosts(this);
   late final i2.Likes likes = i2.Likes(this);
   late final i1.Follows follows = i1.Follows(this);
+  late final i4.MyAccessor myAccessor = i4.MyAccessor(this as i5.Database);
   i1.UsersDrift get usersDrift =>
-      i4.ReadDatabaseContainer(this).accessor<i1.UsersDrift>(i1.UsersDrift.new);
+      i6.ReadDatabaseContainer(this).accessor<i1.UsersDrift>(i1.UsersDrift.new);
+  i2.PostsDrift get postsDrift =>
+      i6.ReadDatabaseContainer(this).accessor<i2.PostsDrift>(i2.PostsDrift.new);
+  i3.SearchDrift get searchDrift => i6.ReadDatabaseContainer(this)
+      .accessor<i3.SearchDrift>(i3.SearchDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -26,6 +33,7 @@ abstract class $Database extends i0.GeneratedDatabase {
         i3.postsUpdate,
         i3.postsDelete,
         likes,
+        i1.usersName,
         follows
       ];
   @override

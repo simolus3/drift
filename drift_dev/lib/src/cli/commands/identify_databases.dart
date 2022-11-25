@@ -38,7 +38,7 @@ class IdentifyDatabases extends MoorCommand {
 
           if (element is DriftDatabase) {
             final daos =
-                element.accessorTypes.map((e) => e.toString()).join(', ');
+                element.accessors.map((e) => e.ownType.toString()).join(', ');
             message
               ..writeln()
               ..write('Schema version: ${element.schemaVersion}, daos: $daos');

@@ -4,6 +4,8 @@ CREATE TABLE users (
     biography TEXT
 );
 
+CREATE INDEX users_name ON users (name);
+
 CREATE TABLE follows (
     followed INTEGER NOT NULL REFERENCES users (id),
     follower INTEGER NOT NULL REFERENCES users (id),

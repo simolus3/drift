@@ -219,6 +219,9 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
   bool get dontWriteConstraints => true;
 }
 
+i0.Index get usersName =>
+    i0.Index('users_name', 'CREATE INDEX users_name ON users (name)');
+
 class Follow extends i0.DataClass implements i0.Insertable<i1.Follow> {
   final int followed;
   final int follower;

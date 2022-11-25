@@ -13,16 +13,22 @@ class AccessorWriter {
     final classScope = scope.child();
 
     final daoName = input.accessor.declaration.name!;
-    final dbTypeName = classScope.dartCode(input.accessor.databaseClass);
-    classScope.leaf().write('mixin _\$${daoName}Mixin on '
-        'DatabaseAccessor<$dbTypeName> {\n');
+
+    final prefix = scope.generationOptions.isModular ? '' : r'_';
+    classScope.leaf()
+      ..write('mixin $prefix\$${daoName}Mixin on ')
+      ..writeDriftRef('DatabaseAccessor<')
+      ..writeDart(input.accessor.databaseClass)
+      ..writeln('> {');
 
     for (final entity in input.resolvedAccessor.availableElements
         .whereType<DriftElementWithResultSet>()) {
-      final infoType = entity.entityInfoName;
+      final infoType = scope.entityInfoType(entity);
       final getterName = entity.dbGetterName;
-      classScope.leaf().write(
-          '$infoType get $getterName => attachedDatabase.$getterName;\n');
+
+      classScope.leaf()
+        ..writeDart(infoType)
+        ..writeln(' get $getterName => attachedDatabase.$getterName;');
     }
 
     for (final query in input.availableRegularQueries) {

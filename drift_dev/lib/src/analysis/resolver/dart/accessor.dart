@@ -112,7 +112,7 @@ class DartAccessorResolver
 
     final declaration = DriftDeclaration.dartElement(element);
     if (discovered.isDatabase) {
-      final accessorTypes = <AnnotatedDartCode>[];
+      final accessors = <DatabaseAccessor>[];
       final rawDaos = annotation.getField('daos')!.toListValue()!;
       for (final value in rawDaos) {
         final type = value.toTypeValue()!;
@@ -129,7 +129,10 @@ class DartAccessorResolver
           continue;
         }
 
-        accessorTypes.add(AnnotatedDartCode.type(type));
+        final dao = await resolveDartReferenceOrReportError<DatabaseAccessor>(
+            type.element,
+            (msg) => DriftAnalysisError.forDartElement(element, msg));
+        if (dao != null) accessors.add(dao);
       }
 
       return DriftDatabase(
@@ -140,7 +143,7 @@ class DartAccessorResolver
         declaredIncludes: includes,
         declaredQueries: queries,
         schemaVersion: await _readSchemaVersion(),
-        accessorTypes: accessorTypes,
+        accessors: accessors,
       );
     } else {
       final dbType = element.allSupertypes
@@ -165,6 +168,7 @@ class DartAccessorResolver
         declaredViews: views,
         declaredIncludes: includes,
         declaredQueries: queries,
+        ownType: AnnotatedDartCode.type(element.thisType),
         databaseClass: AnnotatedDartCode.type(dbImpl),
       );
     }

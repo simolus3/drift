@@ -54,7 +54,7 @@ class DriftDatabase extends BaseDriftAccessor {
   /// versioned file.
   final int? schemaVersion;
 
-  final List<AnnotatedDartCode> accessorTypes;
+  final List<DatabaseAccessor> accessors;
 
   DriftDatabase({
     required super.id,
@@ -64,7 +64,7 @@ class DriftDatabase extends BaseDriftAccessor {
     required super.declaredIncludes,
     required super.declaredQueries,
     this.schemaVersion,
-    this.accessorTypes = const [],
+    this.accessors = const [],
   });
 }
 
@@ -74,6 +74,8 @@ class DatabaseAccessor extends BaseDriftAccessor {
   /// The database class this dao belongs to.
   final AnnotatedDartCode databaseClass;
 
+  final AnnotatedDartCode ownType;
+
   DatabaseAccessor({
     required super.id,
     required super.declaration,
@@ -82,6 +84,7 @@ class DatabaseAccessor extends BaseDriftAccessor {
     required super.declaredIncludes,
     required super.declaredQueries,
     required this.databaseClass,
+    required this.ownType,
   });
 }
 

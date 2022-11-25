@@ -124,10 +124,10 @@ class DatabaseWriter {
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
-    for (final dao in db.accessorTypes) {
-      final typeName = firstLeaf.dartCode(dao);
-      final getterName = ReCase(typeName).camelCase;
-      final databaseImplName = db.id.name;
+    for (final dao in db.accessors) {
+      final typeName = firstLeaf.dartCode(dao.ownType);
+      final getterName = ReCase(dao.ownType.toString()).camelCase;
+      final databaseImplName = scope.dartCode(dao.databaseClass);
 
       writeMemoizedGetter(
         buffer: dbScope.leaf().buffer,

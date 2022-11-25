@@ -132,11 +132,15 @@ class ElementSerializer {
           for (final include in element.declaredIncludes) include.toString()
         ],
         'queries': element.declaredQueries,
-        if (element is DatabaseAccessor)
+        if (element is DatabaseAccessor) ...{
+          'type': element.ownType.toJson(),
           'database': element.databaseClass.toJson(),
+        },
         if (element is DriftDatabase) ...{
           'schema_version': element.schemaVersion,
-          'daos': element.accessorTypes,
+          'daos': [
+            for (final dao in element.accessors) _serializeElementReference(dao)
+          ],
         }
       };
     } else {
@@ -652,9 +656,10 @@ class ElementDeserializer {
             declaredIncludes: includes,
             declaredQueries: queries,
             schemaVersion: json['schema_version'] as int?,
-            accessorTypes: [
+            accessors: [
               for (final dao in json['daos'])
-                AnnotatedDartCode.fromJson(dao as Map)
+                await readDriftElement(DriftElementId.fromJson(dao as Map))
+                    as DatabaseAccessor,
             ],
           );
         } else {
@@ -668,6 +673,7 @@ class ElementDeserializer {
             declaredIncludes: includes,
             declaredQueries: queries,
             databaseClass: AnnotatedDartCode.fromJson(json['database'] as Map),
+            ownType: AnnotatedDartCode.fromJson(json['type'] as Map),
           );
         }
       default:
