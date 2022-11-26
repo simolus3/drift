@@ -54,6 +54,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       AnnotatedDartCode? defaultArgument;
 
       final typeName = column.definition?.typeName;
+
       final enumMatch =
           typeName != null ? _enumRegex.firstMatch(typeName) : null;
       if (enumMatch != null) {
@@ -72,6 +73,9 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
             (msg) => reportError(
                 DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg)),
             dartClass.classElement.thisType,
+            column.type.type == BasicType.int
+                ? EnumType.intEnum
+                : EnumType.textEnum,
           );
         }
       }

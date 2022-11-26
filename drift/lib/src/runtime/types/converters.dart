@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import '../../dsl/dsl.dart';
 import '../data_class.dart';
 
@@ -97,6 +98,26 @@ class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int> {
   @override
   int toSql(T value) {
     return value.index;
+  }
+}
+
+/// Implementation for an enum to string converter that uses the name of the
+/// enum as the value stored in the database.
+class EnumNameConverter<T extends Enum> extends TypeConverter<T, String> {
+  /// All values of the enum.
+  final List<T> values;
+
+  /// Constant default constructor.
+  const EnumNameConverter(this.values);
+
+  @override
+  T fromSql(String fromDb) {
+    return values.byName(fromDb);
+  }
+
+  @override
+  String toSql(T value) {
+    return value.name;
   }
 }
 
