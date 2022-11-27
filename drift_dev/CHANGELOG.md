@@ -1,3 +1,10 @@
+## 2.3.0
+
+- Support drift 2.3.x
+- Re-implement drift's internal analyzer to make the build process more efficient.
+- Add an optional, modular build mode in which drift generates code for each
+  file declaring tables instead of emitting a large file just for the entrypoint.
+
 ## 2.2.0+1
 
 - __Potentially breaking bug-fix__: Fix the nullability of columns generated for
