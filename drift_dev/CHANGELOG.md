@@ -1,3 +1,7 @@
+## 2.3.1
+
+- Fix invalid code being generated through `drift_dev schema generate`.
+
 ## 2.3.0
 
 - Support drift 2.3.x

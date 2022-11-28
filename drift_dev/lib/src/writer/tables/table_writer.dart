@@ -284,8 +284,6 @@ class TableWriter extends TableOrViewWriter {
         ..write(emitter.drift('Table'))
         ..write(' with ')
         ..write(emitter.drift('TableInfo'));
-      buffer.write('class ${table.entityInfoName} extends Table with '
-          'TableInfo');
       if (table.isVirtual) {
         buffer.write(', ${emitter.drift('VirtualTableInfo')}');
       }

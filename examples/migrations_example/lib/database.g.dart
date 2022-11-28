@@ -171,7 +171,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UsersTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -180,19 +180,21 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
-  final VerificationMeta _birthdayMeta = const VerificationMeta('birthday');
+  static const VerificationMeta _birthdayMeta =
+      const VerificationMeta('birthday');
   @override
   late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
       'birthday', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  final VerificationMeta _nextUserMeta = const VerificationMeta('nextUser');
+  static const VerificationMeta _nextUserMeta =
+      const VerificationMeta('nextUser');
   @override
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
@@ -424,26 +426,27 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Groups(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _titleMeta = const VerificationMeta('title');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
+  static const VerificationMeta _deletedMeta =
+      const VerificationMeta('deleted');
   late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
       'deleted', aliasedName, true,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression('FALSE'));
-  final VerificationMeta _ownerMeta = const VerificationMeta('owner');
+  static const VerificationMeta _ownerMeta = const VerificationMeta('owner');
   late final GeneratedColumn<int> owner = GeneratedColumn<int>(
       'owner', aliasedName, false,
       type: DriftSqlType.int,
@@ -649,19 +652,20 @@ class Notes extends Table
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Notes(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _titleMeta = const VerificationMeta('title');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
-  final VerificationMeta _contentMeta = const VerificationMeta('content');
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: '');
-  final VerificationMeta _searchTermsMeta =
+  static const VerificationMeta _searchTermsMeta =
       const VerificationMeta('searchTerms');
   late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
       'search_terms', aliasedName, false,
@@ -703,7 +707,7 @@ class Notes extends Table
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -872,7 +876,7 @@ abstract class _$Database extends GeneratedDatabase {
   late final Notes notes = Notes(this);
   late final GroupCount groupCount = GroupCount(this);
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
