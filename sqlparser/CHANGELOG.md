@@ -1,4 +1,4 @@
-## 0.24.0-dev
+## 0.24.0
 
 - Make `Fts5Table` constructor public.
 

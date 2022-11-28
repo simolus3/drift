@@ -1,4 +1,4 @@
-## 2.3.0
+## 2.4.0-dev
 
 - Add `textEnum` column builder and `EnumNameConverter` to be able to store enum
   values as string.
@@ -13,7 +13,7 @@
 - Add `TableStatements.insertAll` to atomically insert multiple rows.
 - Add `singleClientMode` to `remote()` and `DriftIsolate` connections to make
   the common case with one client more efficient.
-- Fix a concurrency issues around transactions.
+- Fix a concurrency issue around transactions.
 - Add `NativeDatabase.createInBackground` as a drop-in replacement for
   `NativeDatabase`. It creates a drift isolate behind the scenes, avoiding all
   of the boilerplate usually involved with drift isolates.

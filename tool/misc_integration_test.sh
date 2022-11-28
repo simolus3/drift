@@ -12,6 +12,12 @@ dart pub upgrade
 dart run build_runner build --delete-conflicting-outputs
 popd
 
+pushd examples/modular
+echo "Running build runner in modular example"
+dart pub upgrade
+dart run build_runner build --delete-conflicting-outputs
+popd
+
 pushd examples/migrations_example
 echo "Testing migrations in migrations_example"
 dart pub upgrade
