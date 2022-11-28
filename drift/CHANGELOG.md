@@ -1,3 +1,8 @@
+## 2.3.0
+
+- Add `textEnum` column builder and `EnumNameConverter` to be able to store enum
+  values as string.
+
 ## 2.3.0-dev
 
 - Add the `JsonTypeConverter2` mixin. It behaves similar to the existing json

@@ -1,3 +1,7 @@
+## 2.3.0
+
+- Add the support for `textEnum`.
+
 ## 2.2.0+1
 
 - __Potentially breaking bug-fix__: Fix the nullability of columns generated for
