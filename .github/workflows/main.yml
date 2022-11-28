@@ -328,13 +328,16 @@ jobs:
       - run: dart pub global activate melos && melos bootstrap --scope migrations_example
         working-directory: .
       - name: Run build
+        working-directory: examples/migrations_example
         run: |
           dart run build_runner build
           dart run drift_dev schema generate drift_migrations/ test/generated/ --data-classes --companions
           dart run drift_dev schema generate drift_migrations/ lib/src/generated
       - name: Test
+        working-directory: examples/migrations_example
         run: dart test
       - name: Check that extracting schema still works
+        working-directory: examples/migrations_example
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/
 
 #  upload_coverage:
