@@ -62,15 +62,12 @@ void main() {
     final file =
         backend.driver.cache.knownFiles[Uri.parse('package:a/main.dart')]!;
 
+    final notAnEnumError = isA<DriftAnalysisError>().having((e) => e.message,
+        'message', allOf(contains('Not an enum'), contains('NotAnEnum')));
     expect(
       file.allErrors,
       containsAllInOrder(
-        [
-          isA<DriftAnalysisError>().having((e) => e.message, 'message',
-              allOf(contains('Not an enum'), contains('NotAnEnum'))),
-          isA<DriftAnalysisError>().having((e) => e.message, 'message',
-              allOf(contains('Not an enum'), contains('NotAnEnum'))),
-        ],
+        [notAnEnumError, notAnEnumError],
       ),
     );
   });
