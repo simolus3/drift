@@ -3,6 +3,7 @@ import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as p;
 
 final _resolvers = AnalyzerResolvers();
 
@@ -48,6 +49,10 @@ Future<RecordingAssetWriter> emulateDriftBuild({
 
 extension OnlyDartOutputs on RecordingAssetWriter {
   Iterable<AssetId> get dartOutputs {
-    return assets.keys.where((e) => e.extension == '.dart');
+    return assets.keys.where((e) {
+      final fullExtension = p.url.extension(e.path, 2);
+
+      return e.extension == '.dart' && fullExtension != '.temp.dart';
+    });
   }
 }

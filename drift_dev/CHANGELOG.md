@@ -1,3 +1,7 @@
+## 2.3.2
+
+- Fix a builder crash when importing triggers or indices.
+
 ## 2.3.1
 
 - Fix invalid code being generated through `drift_dev schema generate`.

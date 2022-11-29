@@ -276,6 +276,14 @@ class _DriftBuildRun {
       if (result is BaseDriftAccessor) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
+
+        // In the monolithic build mode, we also need to analyze all reachable
+        // imports - it is needed to fully resolve triggers and indices, and we
+        // should also warn about issues in those files.
+        for (final file in driver.cache.crawlMulti(resolved.knownImports)) {
+          await _analyze(file.ownUri);
+        }
+
         var importedQueries = <DefinedSqlQuery, SqlQuery>{};
 
         for (final query

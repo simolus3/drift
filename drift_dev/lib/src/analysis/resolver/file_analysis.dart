@@ -84,6 +84,11 @@ class FileAnalyzer {
               .whereType<DeclaredStatement>()
               .firstWhere(
                   (e) => e.statement.firstPosition == element.sqlOffset);
+          // Necessary to create options when type hints for indexed variables
+          // are given.
+          AstPreparingVisitor.resolveIndexOfVariables(
+              stmt.allDescendants.whereType<Variable>().toList());
+
           final options = _createOptionsAndVars(engine, stmt);
 
           final analysisResult = engine.analyzeNode(stmt.statement, source,
