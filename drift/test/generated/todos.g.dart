@@ -266,12 +266,14 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String content;
   final DateTime? targetDate;
   final int? category;
+  final TodoStatus? status;
   const TodoEntry(
       {required this.id,
       this.title,
       required this.content,
       this.targetDate,
-      this.category});
+      this.category,
+      this.status});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -285,6 +287,10 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     }
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<int>(category);
+    }
+    if (!nullToAbsent || status != null) {
+      final converter = $TodosTableTable.$converterstatusn;
+      map['status'] = Variable<String>(converter.toSql(status));
     }
     return map;
   }
@@ -301,6 +307,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
+      status:
+          status == null && nullToAbsent ? const Value.absent() : Value(status),
     );
   }
 
@@ -313,6 +321,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
       category: serializer.fromJson<int?>(json['category']),
+      status: serializer.fromJson<TodoStatus?>(json['status']),
     );
   }
   factory TodoEntry.fromJsonString(String encodedJson,
@@ -329,6 +338,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
       'category': serializer.toJson<int?>(category),
+      'status': serializer.toJson<TodoStatus?>(status),
     };
   }
 
@@ -337,13 +347,15 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           Value<String?> title = const Value.absent(),
           String? content,
           Value<DateTime?> targetDate = const Value.absent(),
-          Value<int?> category = const Value.absent()}) =>
+          Value<int?> category = const Value.absent(),
+          Value<TodoStatus?> status = const Value.absent()}) =>
       TodoEntry(
         id: id ?? this.id,
         title: title.present ? title.value : this.title,
         content: content ?? this.content,
         targetDate: targetDate.present ? targetDate.value : this.targetDate,
         category: category.present ? category.value : this.category,
+        status: status.present ? status.value : this.status,
       );
   @override
   String toString() {
@@ -352,13 +364,15 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
-          ..write('category: $category')
+          ..write('category: $category, ')
+          ..write('status: $status')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, content, targetDate, category);
+  int get hashCode =>
+      Object.hash(id, title, content, targetDate, category, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -367,7 +381,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           other.title == this.title &&
           other.content == this.content &&
           other.targetDate == this.targetDate &&
-          other.category == this.category);
+          other.category == this.category &&
+          other.status == this.status);
 }
 
 class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
@@ -376,12 +391,14 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   final Value<String> content;
   final Value<DateTime?> targetDate;
   final Value<int?> category;
+  final Value<TodoStatus?> status;
   const TodosTableCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
+    this.status = const Value.absent(),
   });
   TodosTableCompanion.insert({
     this.id = const Value.absent(),
@@ -389,6 +406,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     required String content,
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
+    this.status = const Value.absent(),
   }) : content = Value(content);
   static Insertable<TodoEntry> custom({
     Expression<int>? id,
@@ -396,6 +414,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     Expression<String>? content,
     Expression<DateTime>? targetDate,
     Expression<int>? category,
+    Expression<String>? status,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -403,6 +422,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       if (content != null) 'content': content,
       if (targetDate != null) 'target_date': targetDate,
       if (category != null) 'category': category,
+      if (status != null) 'status': status,
     });
   }
 
@@ -411,13 +431,15 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       Value<String?>? title,
       Value<String>? content,
       Value<DateTime?>? targetDate,
-      Value<int?>? category}) {
+      Value<int?>? category,
+      Value<TodoStatus?>? status}) {
     return TodosTableCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       content: content ?? this.content,
       targetDate: targetDate ?? this.targetDate,
       category: category ?? this.category,
+      status: status ?? this.status,
     );
   }
 
@@ -439,6 +461,10 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     if (category.present) {
       map['category'] = Variable<int>(category.value);
     }
+    if (status.present) {
+      final converter = $TodosTableTable.$converterstatusn;
+      map['status'] = Variable<String>(converter.toSql(status.value));
+    }
     return map;
   }
 
@@ -449,7 +475,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
-          ..write('category: $category')
+          ..write('category: $category, ')
+          ..write('status: $status')
           ..write(')'))
         .toString();
   }
@@ -501,9 +528,15 @@ class $TodosTableTable extends TodosTable
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumnWithTypeConverter<TodoStatus?, String> status =
+      GeneratedColumn<String>('status', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<TodoStatus?>($TodosTableTable.$converterstatusn);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, content, targetDate, category];
+      [id, title, content, targetDate, category, status];
   @override
   String get aliasedName => _alias ?? 'todos';
   @override
@@ -536,6 +569,7 @@ class $TodosTableTable extends TodosTable
       context.handle(_categoryMeta,
           category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     }
+    context.handle(_statusMeta, const VerificationResult.success());
     return context;
   }
 
@@ -560,6 +594,9 @@ class $TodosTableTable extends TodosTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
       category: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])),
     );
   }
 
@@ -567,6 +604,11 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable createAlias(String alias) {
     return $TodosTableTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<TodoStatus, String> $converterstatus =
+      const EnumNameConverter<TodoStatus>(TodoStatus.values);
+  static TypeConverter<TodoStatus?, String?> $converterstatusn =
+      NullAwareTypeConverter.wrap($converterstatus);
 }
 
 class User extends DataClass implements Insertable<User> {
@@ -1631,6 +1673,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
         content: row.read<String>('content'),
         targetDate: row.readNullable<DateTime>('target_date'),
         category: row.readNullable<int>('category'),
+        status: NullAwareTypeConverter.wrapFromSql(
+            $TodosTableTable.$converterstatus,
+            row.readNullable<String>('status')),
         catId: row.read<int>('catId'),
         catDesc: row.read<String>('catDesc'),
       );
@@ -1705,6 +1750,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   final String content;
   final DateTime? targetDate;
   final int? category;
+  final TodoStatus? status;
   final int catId;
   final String catDesc;
   AllTodosWithCategoryResult({
@@ -1714,12 +1760,13 @@ class AllTodosWithCategoryResult extends CustomResultSet {
     required this.content,
     this.targetDate,
     this.category,
+    this.status,
     required this.catId,
     required this.catDesc,
   }) : super(row);
   @override
-  int get hashCode =>
-      Object.hash(id, title, content, targetDate, category, catId, catDesc);
+  int get hashCode => Object.hash(
+      id, title, content, targetDate, category, status, catId, catDesc);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1729,6 +1776,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
           other.content == this.content &&
           other.targetDate == this.targetDate &&
           other.category == this.category &&
+          other.status == this.status &&
           other.catId == this.catId &&
           other.catDesc == this.catDesc);
   @override
@@ -1739,6 +1787,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
           ..write('category: $category, ')
+          ..write('status: $status, ')
           ..write('catId: $catId, ')
           ..write('catDesc: $catDesc')
           ..write(')'))
