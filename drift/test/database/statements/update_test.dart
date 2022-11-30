@@ -58,13 +58,14 @@ void main() {
             id: 3,
             title: 'Title',
             content: 'Updated content',
+            status: TodoStatus.workInProgress,
             // category and targetDate are null
           ));
 
       verify(executor.runUpdate(
           'UPDATE "todos" SET "title" = ?, "content" = ?, '
           '"target_date" = ?, "category" = ?, "status" = ? WHERE "id" = ?;',
-          const ['Title', 'Updated content', null, null, null, 3]));
+          const ['Title', 'Updated content', null, null, 'workInProgress', 3]));
     });
 
     test('applies default values', () async {
