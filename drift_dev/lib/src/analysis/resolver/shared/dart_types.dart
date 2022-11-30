@@ -262,7 +262,9 @@ AppliedTypeConverter readEnumConverter(
     expression: expression,
     dartType: dartEnumType,
     jsonType: null,
-    sqlType: DriftSqlType.int,
+    sqlType: columnEnumType == EnumType.intEnum
+        ? DriftSqlType.int
+        : DriftSqlType.string,
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,
   );
