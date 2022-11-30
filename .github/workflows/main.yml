@@ -302,6 +302,44 @@ jobs:
         working-directory: .
       - run: tool/misc_integration_test.sh
 
+  migration_integration_tests:
+    name: "Integration tests for migration tooling"
+    needs: [compile_sqlite3, dart_dependencies]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+      - name: Download sqlite3
+        uses: actions/download-artifact@v2
+        with:
+          name: sqlite3
+          path: /tmp/sqlite/out/
+      - name: Use downloaded sqlite3
+        run: |
+          chmod a+x /tmp/sqlite/out/sqlite3
+          echo "/tmp/sqlite/out" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-
+      - run: dart pub global activate melos && melos bootstrap --scope migrations_example
+        working-directory: .
+      - name: Run build
+        working-directory: examples/migrations_example
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          dart run drift_dev schema generate drift_migrations/ test/generated/ --data-classes --companions
+          dart run drift_dev schema generate drift_migrations/ lib/src/generated
+      - name: Test
+        working-directory: examples/migrations_example
+        run: dart test
+      - name: Check that extracting schema still works
+        working-directory: examples/migrations_example
+        run: dart run drift_dev schema dump lib/database.dart drift_migrations/
+
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
 #    needs: [moor, sqlparser]

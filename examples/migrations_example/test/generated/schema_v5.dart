@@ -145,9 +145,11 @@ class Users extends Table with TableInfo<Users, UsersData> {
   Users(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
+      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string,
@@ -157,7 +159,8 @@ class Users extends Table with TableInfo<Users, UsersData> {
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'REFERENCES users (id)');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
   @override
   List<GeneratedColumn> get $columns => [id, name, nextUser];
   @override
@@ -170,11 +173,11 @@ class Users extends Table with TableInfo<Users, UsersData> {
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UsersData(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      nextUser: attachedDatabase.options.types
+      nextUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
     );
   }
@@ -386,13 +389,13 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GroupsData(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.options.types
+      title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      deleted: attachedDatabase.options.types
+      deleted: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
-      owner: attachedDatabase.options.types
+      owner: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
     );
   }
@@ -494,13 +497,13 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   GroupCountData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GroupCountData(
-      id: attachedDatabase.options.types
+      id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.options.types
+      name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      nextUser: attachedDatabase.options.types
+      nextUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
-      groupCount: attachedDatabase.options.types
+      groupCount: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}group_count'])!,
     );
   }
@@ -534,7 +537,7 @@ class DatabaseAtV5 extends GeneratedDatabase {
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>

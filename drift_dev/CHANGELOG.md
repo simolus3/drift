@@ -1,6 +1,15 @@
 ## 2.4.0-dev
 
 - Add the support for `textEnum`.
+
+## 2.3.2
+
+- Fix a builder crash when importing triggers or indices.
+
+## 2.3.1
+
+- Fix invalid code being generated through `drift_dev schema generate`.
+
 ## 2.3.0
 
 - Support drift 2.3.x
