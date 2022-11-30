@@ -67,4 +67,38 @@ CREATE INDEX semantic_error ON a (c);
       ],
     );
   });
+
+  test('Dart-defined tables are visible in drift files', () async {
+    final logger = Logger.detached('build');
+    expect(logger.onRecord, neverEmits(anything));
+
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/database.dart': '''
+import 'package:drift/drift.dart';
+
+@DataClassName('DFoo')
+class FooTable extends Table {
+  @override
+  String get tableName => 'foo';
+
+  IntColumn get fooId => integer()();
+}
+
+@DriftDatabase(include: {'queries.drift'})
+class MyDatabase {}
+''',
+        'a|lib/queries.drift': '''
+import 'database.dart';
+
+selectAll: SELECT * FROM foo;
+''',
+      },
+      logger: logger,
+    );
+
+    checkOutputs({
+      'a|lib/database.drift.dart': decodedMatches(contains('selectAll')),
+    }, result.dartOutputs, result);
+  });
 }
