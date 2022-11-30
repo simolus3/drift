@@ -22,6 +22,7 @@ void main() {
           content TEXT NOT NULL,
           target_date INTEGER NOT NULL,
           category TEXT NOT NULL,
+          status TEXT NULL,
           UNIQUE(title, category)
         );
       ''');
@@ -73,7 +74,8 @@ void main() {
           title TEXT NOT NULL,
           content TEXT NOT NULL,
           target_date INTEGER NOT NULL,
-          category_old INTEGER NULL
+          category_old INTEGER NULL,
+          status TEXT NULL
         );
       ''');
 
@@ -119,6 +121,7 @@ void main() {
           content TEXT NOT NULL,
           target_date INTEGER NOT NULL,
           category INTEGER NULL,
+          status TEXT NULL,
           additional_column TEXT NULL
         );
       ''');
@@ -186,6 +189,7 @@ void main() {
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
           target_date INTEGER NOT NULL,
+          status TEXT NULL,
           category INT
         );
       ''');

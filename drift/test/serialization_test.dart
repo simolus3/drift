@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
+
 import 'generated/todos.dart';
 
 final DateTime _someDate = DateTime(2019, 06, 08);
@@ -10,6 +11,7 @@ final TodoEntry _someTodoEntry = TodoEntry(
   content: 'content',
   targetDate: _someDate,
   category: 3,
+  status: TodoStatus.open,
 );
 
 final Map<String, dynamic> _regularSerialized = {
@@ -18,6 +20,7 @@ final Map<String, dynamic> _regularSerialized = {
   'content': 'content',
   'target_date': _someDate.millisecondsSinceEpoch,
   'category': 3,
+  'status': TodoStatus.open,
 };
 
 final Map<String, dynamic> _asTextSerialized = {
@@ -26,6 +29,7 @@ final Map<String, dynamic> _asTextSerialized = {
   'content': 'content',
   'target_date': _someDate.toIso8601String(),
   'category': 3,
+  'status': TodoStatus.open,
 };
 
 final Map<String, dynamic> _customSerialized = {
@@ -34,6 +38,7 @@ final Map<String, dynamic> _customSerialized = {
   'content': 'content',
   'target_date': _someDate.toIso8601String(),
   'category': 3,
+  'status': TodoStatus.open,
 };
 
 class CustomSerializer extends ValueSerializer {

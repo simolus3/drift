@@ -26,8 +26,8 @@ void main() {
     verify(executor.runSelect(
         'SELECT "t"."id" AS "t.id", "t"."title" AS "t.title", '
         '"t"."content" AS "t.content", "t"."target_date" AS "t.target_date", '
-        '"t"."category" AS "t.category", "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
-        '"c"."priority" AS "c.priority", '
+        '"t"."category" AS "t.category", "t"."status" AS "t.status", "c"."id" AS "c.id", '
+        '"c"."desc" AS "c.desc", "c"."priority" AS "c.priority", '
         '"c"."description_in_upper_case" AS "c.description_in_upper_case" '
         'FROM "todos" "t" LEFT OUTER JOIN "categories" "c" ON "c"."id" = "t"."category";',
         argThat(isEmpty)));

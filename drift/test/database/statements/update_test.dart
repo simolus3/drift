@@ -63,8 +63,8 @@ void main() {
 
       verify(executor.runUpdate(
           'UPDATE "todos" SET "title" = ?, "content" = ?, '
-          '"target_date" = ?, "category" = ? WHERE "id" = ?;',
-          ['Title', 'Updated content', null, null, 3]));
+          '"target_date" = ?, "category" = ?, "status" = ? WHERE "id" = ?;',
+          const ['Title', 'Updated content', null, null, null, 3]));
     });
 
     test('applies default values', () async {
