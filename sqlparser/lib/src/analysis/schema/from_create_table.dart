@@ -167,6 +167,10 @@ class SchemaFromCreateTable {
         );
       }
 
+      if (upper.contains('ENUMNAME')) {
+        return const ResolvedType(type: BasicType.text);
+      }
+
       if (upper.contains('ENUM')) {
         return const ResolvedType(type: BasicType.int);
       }

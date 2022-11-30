@@ -19,7 +19,7 @@ import 'find_dart_class.dart';
 
 class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
   static final RegExp _enumRegex =
-      RegExp(r'^enum\((\w+)\)$', caseSensitive: false);
+      RegExp(r'^enum(name)?\((\w+)\)$', caseSensitive: false);
 
   DriftTableResolver(super.file, super.discovered, super.resolver, super.state);
 
@@ -55,10 +55,10 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
 
       final typeName = column.definition?.typeName;
 
-      final enumMatch =
+      final enumIndexMatch =
           typeName != null ? _enumRegex.firstMatch(typeName) : null;
-      if (enumMatch != null) {
-        final dartTypeName = enumMatch.group(1)!;
+      if (enumIndexMatch != null) {
+        final dartTypeName = enumIndexMatch.group(2)!;
         final imports = file.discovery!.importDependencies.toList();
         final dartClass = await findDartClass(imports, dartTypeName);
 

@@ -88,8 +88,10 @@ CREATE TABLE b (
          import 'enum.dart';
 
          CREATE TABLE foo (
-           fruit ENUM(Fruits) NOT NULL,
-           another ENUM(DoesNotExist) NOT NULL
+           fruitIndex ENUM(Fruits) NOT NULL,
+           fruitName ENUMNAME(Fruits) NOT NULL,
+           anotherIndex ENUM(DoesNotExist) NOT NULL,
+           anotherName ENUMNAME(DoesNotExist) NOT NULL
          );
       ''',
       'a|lib/enum.dart': '''
@@ -101,11 +103,12 @@ CREATE TABLE b (
 
     final file = await state.analyze('package:a/a.drift');
     final table = file.analyzedElements.single as DriftTable;
-    final column = table.columns.singleWhere((c) => c.nameInSql == 'fruit');
+    final indexColumn =
+        table.columns.singleWhere((c) => c.nameInSql == 'fruitIndex');
 
-    expect(column.sqlType, DriftSqlType.int);
+    expect(indexColumn.sqlType, DriftSqlType.int);
     expect(
-      column.typeConverter,
+      indexColumn.typeConverter,
       isA<AppliedTypeConverter>()
           .having(
             (e) => e.expression.toString(),
@@ -115,11 +118,30 @@ CREATE TABLE b (
           .having((e) => e.dartType.getDisplayString(withNullability: true),
               'dartType', 'Fruits'),
     );
+    final nameColumn =
+        table.columns.singleWhere((c) => c.nameInSql == 'fruitName');
+
+    expect(nameColumn.sqlType, DriftSqlType.string);
+    expect(
+      nameColumn.typeConverter,
+      isA<AppliedTypeConverter>()
+          .having(
+            (e) => e.expression.toString(),
+            'expression',
+            contains('EnumNameConverter<Fruits>'),
+          )
+          .having((e) => e.dartType.getDisplayString(withNullability: true),
+              'dartType', 'Fruits'),
+    );
 
     expect(
       file.allErrors,
-      contains(isDriftError(contains('Type DoesNotExist could not be found'))
-          .withSpan('ENUM(DoesNotExist)')),
+      containsAllInOrder([
+        isDriftError(contains('Type DoesNotExist could not be found'))
+            .withSpan('ENUM(DoesNotExist)'),
+        isDriftError(contains('Type DoesNotExist could not be found'))
+            .withSpan('ENUMNAME(DoesNotExist)'),
+      ]),
     );
   });
 
