@@ -91,8 +91,7 @@ class Database extends _$Database {}
     tags: 'analyzer',
   );
   test(
-    // TODO: Better description
-    'generates ',
+    'It should generate a type converter using the EnumNameConverter when textEnum is used',
     () async {
       final writer = await emulateDriftBuild(
         inputs: const {
