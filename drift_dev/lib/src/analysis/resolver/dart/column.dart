@@ -15,7 +15,8 @@ import 'table.dart';
 
 const String _startInt = 'integer';
 const String _startInt64 = 'int64';
-const String _startEnum = 'intEnum';
+const String _startIntEnum = 'intEnum';
+const String _startTextEnum = 'textEnum';
 const String _startString = 'text';
 const String _startBool = 'boolean';
 const String _startDateTime = 'dateTime';
@@ -25,7 +26,8 @@ const String _startReal = 'real';
 const Set<String> _starters = {
   _startInt,
   _startInt64,
-  _startEnum,
+  _startIntEnum,
+  _startTextEnum,
   _startString,
   _startBool,
   _startDateTime,
@@ -349,20 +351,37 @@ class ColumnParser {
       );
     }
 
-    if (foundStartMethod == _startEnum) {
+    if (foundStartMethod == _startIntEnum) {
       if (converter != null) {
         _resolver.reportError(DriftAnalysisError.forDartElement(
           element,
-          'Using $_startEnum will apply a custom converter by default, '
+          'Using $_startIntEnum will apply a custom converter by default, '
           "so you can't add an additional converter",
         ));
       }
 
-      final enumType = remainingExpr.typeArgumentTypes![0];
+      final enumType = remainingExpr.typeArgumentTypes!.first;
       converter = readEnumConverter(
         (msg) => _resolver.reportError(DriftAnalysisError.inDartAst(element,
             remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
         enumType,
+        EnumType.intEnum,
+      );
+    } else if (foundStartMethod == _startTextEnum) {
+      if (converter != null) {
+        _resolver.reportError(DriftAnalysisError.forDartElement(
+          element,
+          'Using $_startTextEnum will apply a custom converter by default, '
+          "so you can't add an additional converter",
+        ));
+      }
+
+      final enumType = remainingExpr.typeArgumentTypes!.first;
+      converter = readEnumConverter(
+        (msg) => _resolver.reportError(DriftAnalysisError.inDartAst(element,
+            remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
+        enumType,
+        EnumType.textEnum,
       );
     }
 
@@ -427,7 +446,8 @@ class ColumnParser {
       _startString: DriftSqlType.string,
       _startInt: DriftSqlType.int,
       _startInt64: DriftSqlType.bigInt,
-      _startEnum: DriftSqlType.int,
+      _startIntEnum: DriftSqlType.int,
+      _startTextEnum: DriftSqlType.string,
       _startDateTime: DriftSqlType.dateTime,
       _startBlob: DriftSqlType.blob,
       _startReal: DriftSqlType.double,

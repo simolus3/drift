@@ -1,3 +1,7 @@
+## 2.4.0-dev
+
+- Add the support for `textEnum`.
+
 ## 2.3.2
 
 - Fix a builder crash when importing triggers or indices.

@@ -139,7 +139,7 @@ abstract class Table extends HasResultSet {
   /// corresponding to the enum's index. Note that this can invalidate your data
   /// if you add another value to the enum class.
   @protected
-  ColumnBuilder<int> intEnum<T>() => _isGenerated();
+  ColumnBuilder<int> intEnum<T extends Enum>() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds strings.
   /// Example (inside the body of a table class):
@@ -148,6 +148,13 @@ abstract class Table extends HasResultSet {
   /// ```
   @protected
   ColumnBuilder<String> text() => _isGenerated();
+
+  /// Creates a column to store an `enum` class [T].
+  ///
+  /// In the database, the column will be represented as text corresponding to
+  /// the name of the enum entries. Note that this can invalidate your data if
+  /// you rename the entries of the enum class.
+  ColumnBuilder<String> textEnum<T extends Enum>() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds bools.
   /// Example (inside the body of a table class):

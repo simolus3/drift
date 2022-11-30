@@ -50,6 +50,7 @@ void main() {
           'content': 'foo',
           'category': 'foo',
           'target_date': 'foo',
+          'status': 'foo',
         },
       );
 

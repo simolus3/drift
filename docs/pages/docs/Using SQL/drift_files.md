@@ -132,6 +132,8 @@ CREATE TABLE tasks (
 ```
 
 More information on storing enums is available [in the page on type converters]({{ '../Advanced Features/type_converters.md#using-converters-in-moor' | pageUrl }}).
+Instead of using an integer mapping enums by their index, you can also store them
+by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
 For details on all supported types, and information on how to switch between the
 datetime modes, see [this section]({{ '../Getting started/advanced_dart_tables.md#supported-column-types' | pageUrl }}).

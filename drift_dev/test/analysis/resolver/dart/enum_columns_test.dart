@@ -20,11 +20,13 @@ void main() {
         class NotAnEnum {}
 
         class ValidUsage extends Table {
-          IntColumn get fruit => intEnum<Fruits>()();
+          IntColumn get intFruit => intEnum<Fruits>()();
+          TextColumn get textFruit => textEnum<Fruits>()();
         }
 
         class InvalidNoEnum extends Table {
-          IntColumn get fruit => intEnum<NotAnEnum>()();
+          IntColumn get intFruit => intEnum<NotAnEnum>()();
+          TextColumn get textFruit => textEnum<NotAnEnum>()();
         }
       ''',
     });
@@ -47,16 +49,26 @@ void main() {
             'expression', contains('EnumIndexConverter')),
       ),
     );
+    expect(
+      table.appliedConverters,
+      contains(
+        isA<AppliedTypeConverter>().having((e) => e.expression.toString(),
+            'expression', contains('EnumNameConverter')),
+      ),
+    );
   });
 
   test('fails when used with a non-enum class', () {
     final file =
         backend.driver.cache.knownFiles[Uri.parse('package:a/main.dart')]!;
 
+    final notAnEnumError = isA<DriftAnalysisError>().having((e) => e.message,
+        'message', allOf(contains('Not an enum'), contains('NotAnEnum')));
     expect(
       file.allErrors,
-      contains(isA<DriftAnalysisError>().having((e) => e.message, 'message',
-          allOf(contains('Not an enum'), contains('NotAnEnum')))),
+      containsAllInOrder(
+        [notAnEnumError, notAnEnumError],
+      ),
     );
   });
 }

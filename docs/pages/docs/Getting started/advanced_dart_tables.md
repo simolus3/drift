@@ -175,6 +175,7 @@ Drift supports a variety of column types out of the box. You can store custom cl
 | `DateTime`   | `dateTime()`  | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)               |
 | `Uint8List`  | `blob()`      | `BLOB`                                              |
 | `Enum`       | `intEnum()`   | `INTEGER` (more information available [here]({{ "../Advanced Features/type_converters.md#implicit-enum-converters" | pageUrl }})). |
+| `Enum`       | `textEnum()`   | `TEXT` (more information available [here]({{ "../Advanced Features/type_converters.md#implicit-enum-converters" | pageUrl }})). |
 
 Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
 the database.

@@ -160,6 +160,11 @@ ExistingRowClass? validateExistingClass(
   );
 }
 
+enum EnumType {
+  intEnum,
+  textEnum,
+}
+
 AppliedTypeConverter? readTypeConverter(
   LibraryElement library,
   Expression dartExpression,
@@ -223,34 +228,43 @@ AppliedTypeConverter? readTypeConverter(
 
 AppliedTypeConverter readEnumConverter(
   void Function(String) reportError,
-  DartType enumType,
+  DartType dartEnumType,
+  EnumType columnEnumType,
 ) {
-  if (enumType is! InterfaceType) {
-    reportError('Not a class: `$enumType`');
+  if (dartEnumType is! InterfaceType) {
+    reportError('Not a class: `$dartEnumType`');
   }
 
-  final creatingClass = enumType.element;
+  final creatingClass = dartEnumType.element;
   if (creatingClass is! EnumElement) {
     reportError('Not an enum: `${creatingClass!.displayName}`');
   }
 
   // `const EnumIndexConverter<EnumType>(EnumType.values)`
+  // or
+  // `const EnumNameConverter<EnumType>(EnumType.values)`
   final expression = AnnotatedDartCode.build((builder) {
+    builder.addText('const ');
+    if (columnEnumType == EnumType.intEnum) {
+      builder.addSymbol('EnumIndexConverter', AnnotatedDartCode.drift);
+    } else {
+      builder.addSymbol('EnumNameConverter', AnnotatedDartCode.drift);
+    }
     builder
-      ..addText('const ')
-      ..addSymbol('EnumIndexConverter', AnnotatedDartCode.drift)
       ..addText('<')
-      ..addDartType(enumType)
+      ..addDartType(dartEnumType)
       ..addText('>(')
-      ..addDartType(enumType)
+      ..addDartType(dartEnumType)
       ..addText('.values)');
   });
 
   return AppliedTypeConverter(
     expression: expression,
-    dartType: enumType,
+    dartType: dartEnumType,
     jsonType: null,
-    sqlType: DriftSqlType.int,
+    sqlType: columnEnumType == EnumType.intEnum
+        ? DriftSqlType.int
+        : DriftSqlType.string,
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,
   );

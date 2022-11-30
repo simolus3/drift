@@ -90,6 +90,39 @@ class Database extends _$Database {}
     },
     tags: 'analyzer',
   );
+  test(
+    'It should generate a type converter using the EnumNameConverter when textEnum is used',
+    () async {
+      final writer = await emulateDriftBuild(
+        inputs: const {
+          'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+enum Priority { low, medium, high }
+
+class Todos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get priority => textEnum<Priority>()();
+}
+
+@DriftDatabase(
+  tables: [Todos],
+)
+class Database extends _$Database {}
+'''
+        },
+      );
+
+      checkOutputs({
+        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+  static TypeConverter<Priority, String> $converterpriority =
+      const EnumNameConverter<Priority>(Priority.values);''')),
+      }, writer.dartOutputs, writer);
+    },
+    tags: 'analyzer',
+  );
 }
 
 class _GeneratesConstDataClasses extends Matcher {

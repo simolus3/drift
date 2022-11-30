@@ -20,12 +20,16 @@ class TodosTable extends Table with AutoIncrement {
 
   IntColumn get category => integer().references(Categories, #id).nullable()();
 
+  TextColumn get status => textEnum<TodoStatus>().nullable()();
+
   @override
   List<Set<Column>>? get uniqueKeys => [
         {title, category},
         {title, targetDate},
       ];
 }
+
+enum TodoStatus { open, workInProgress, done }
 
 class Users extends Table with AutoIncrement {
   TextColumn get name => text().withLength(min: 6, max: 32).unique()();

@@ -1,4 +1,9 @@
-## 2.3.0
+## 2.4.0-dev
+
+- Add `textEnum` column builder and `EnumNameConverter` to be able to store enum
+  values as string.
+
+## 2.3.0-dev
 
 - Add the `JsonTypeConverter2` mixin. It behaves similar to the existing json
   type converters, but can use a different SQL and JSON type.
