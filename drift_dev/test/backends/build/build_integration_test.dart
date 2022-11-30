@@ -88,8 +88,11 @@ class FooTable extends Table {
 @DriftDatabase(include: {'queries.drift'})
 class MyDatabase {}
 ''',
-        'a|lib/queries.drift': '''
+        'a|lib/tables.drift': '''
 import 'database.dart';
+''',
+        'a|lib/queries.drift': '''
+import 'tables.drift';
 
 selectAll: SELECT * FROM foo;
 ''',
