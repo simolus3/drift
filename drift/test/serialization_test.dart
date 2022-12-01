@@ -20,7 +20,7 @@ final Map<String, dynamic> _regularSerialized = {
   'content': 'content',
   'target_date': _someDate.millisecondsSinceEpoch,
   'category': 3,
-  'status': TodoStatus.open,
+  'status': TodoStatus.open.name,
 };
 
 final Map<String, dynamic> _asTextSerialized = {
@@ -29,7 +29,7 @@ final Map<String, dynamic> _asTextSerialized = {
   'content': 'content',
   'target_date': _someDate.toIso8601String(),
   'category': 3,
-  'status': TodoStatus.open,
+  'status': TodoStatus.open.name,
 };
 
 final Map<String, dynamic> _customSerialized = {
@@ -38,7 +38,7 @@ final Map<String, dynamic> _customSerialized = {
   'content': 'content',
   'target_date': _someDate.toIso8601String(),
   'category': 3,
-  'status': TodoStatus.open,
+  'status': TodoStatus.open.name,
 };
 
 class CustomSerializer extends ValueSerializer {

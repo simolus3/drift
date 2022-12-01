@@ -117,7 +117,7 @@ class Database extends _$Database {}
 
       checkOutputs({
         'a|lib/main.drift.dart': decodedMatches(contains(r'''
-  static TypeConverter<Priority, String> $converterpriority =
+  static JsonTypeConverter2<Priority, String, String> $converterpriority =
       const EnumNameConverter<Priority>(Priority.values);''')),
       }, writer.dartOutputs, writer);
     },
