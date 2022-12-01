@@ -72,7 +72,7 @@ At the moment, drift supports these options:
 * `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
   For more information on these modes, see [datetime options]({{ '../Getting started/advanced_dart_tables#datetime-options' | pageUrl }}).
 * `column_name_case` (defaults to `snake_case`): Controls how the column names are re-cased from the Dart identifiers.
-  The possible values are  `preserve`, `camel_case`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
+  The possible values are  `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 
 ## Assumed SQL environment
 
