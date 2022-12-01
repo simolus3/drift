@@ -337,6 +337,7 @@ class ColumnParser {
 
     final sqlName = foundExplicitName ?? ReCase(getter.name.lexeme).snakeCase;
     final sqlType = _startMethodToColumnType(foundStartMethod);
+    final helper = await _resolver.resolver.driver.loadKnownTypes();
 
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
@@ -347,7 +348,7 @@ class ColumnParser {
         nullable,
         (message) => _resolver.reportError(
             DriftAnalysisError.inDartAst(element, mappedAs!, message)),
-        await _resolver.resolver.driver.loadKnownTypes(),
+        helper,
       );
     }
 
@@ -366,6 +367,7 @@ class ColumnParser {
             remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
         enumType,
         EnumType.intEnum,
+        helper,
       );
     } else if (foundStartMethod == _startTextEnum) {
       if (converter != null) {
@@ -382,6 +384,7 @@ class ColumnParser {
             remainingExpr.typeArguments ?? remainingExpr.methodName, msg)),
         enumType,
         EnumType.textEnum,
+        helper,
       );
     }
 

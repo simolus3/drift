@@ -83,7 +83,8 @@ mixin JsonTypeConverter<D, S> implements JsonTypeConverter2<D, S, S> {
 
 /// Implementation for an enum to int converter that uses the index of the enum
 /// as the value stored in the database.
-class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int> {
+class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int>
+    with JsonTypeConverter<T, int> {
   /// All values of the enum.
   final List<T> values;
 
@@ -103,7 +104,8 @@ class EnumIndexConverter<T extends Enum> extends TypeConverter<T, int> {
 
 /// Implementation for an enum to string converter that uses the name of the
 /// enum as the value stored in the database.
-class EnumNameConverter<T extends Enum> extends TypeConverter<T, String> {
+class EnumNameConverter<T extends Enum> extends TypeConverter<T, String>
+    with JsonTypeConverter<T, String> {
   /// All values of the enum.
   final List<T> values;
 
