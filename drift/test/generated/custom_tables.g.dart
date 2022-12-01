@@ -548,8 +548,8 @@ class Config extends DataClass implements Insertable<Config> {
       configKey: serializer.fromJson<String>(json['config_key']),
       configValue: serializer.fromJson<String?>(json['config_value']),
       syncState: serializer.fromJson<SyncType?>(json['sync_state']),
-      syncStateImplicit:
-          serializer.fromJson<SyncType?>(json['sync_state_implicit']),
+      syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
+          .fromJson(serializer.fromJson<int?>(json['sync_state_implicit'])),
     );
   }
   factory Config.fromJsonString(String encodedJson,
@@ -563,7 +563,8 @@ class Config extends DataClass implements Insertable<Config> {
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String?>(configValue),
       'sync_state': serializer.toJson<SyncType?>(syncState),
-      'sync_state_implicit': serializer.toJson<SyncType?>(syncStateImplicit),
+      'sync_state_implicit': serializer.toJson<int?>(
+          ConfigTable.$convertersyncStateImplicitn.toJson(syncStateImplicit)),
     };
   }
 
@@ -774,10 +775,11 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       const SyncTypeConverter();
   static TypeConverter<SyncType?, int?> $convertersyncStaten =
       NullAwareTypeConverter.wrap($convertersyncState);
-  static TypeConverter<SyncType, int> $convertersyncStateImplicit =
+  static JsonTypeConverter2<SyncType, int, int> $convertersyncStateImplicit =
       const EnumIndexConverter<SyncType>(SyncType.values);
-  static TypeConverter<SyncType?, int?> $convertersyncStateImplicitn =
-      NullAwareTypeConverter.wrap($convertersyncStateImplicit);
+  static JsonTypeConverter2<SyncType?, int?, int?>
+      $convertersyncStateImplicitn =
+      JsonTypeConverter2.asNullable($convertersyncStateImplicit);
   @override
   bool get isStrict => true;
   @override
@@ -1472,8 +1474,8 @@ class MyViewData extends DataClass {
       configKey: serializer.fromJson<String>(json['config_key']),
       configValue: serializer.fromJson<String?>(json['config_value']),
       syncState: serializer.fromJson<SyncType?>(json['sync_state']),
-      syncStateImplicit:
-          serializer.fromJson<SyncType?>(json['sync_state_implicit']),
+      syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
+          .fromJson(serializer.fromJson<int?>(json['sync_state_implicit'])),
     );
   }
   factory MyViewData.fromJsonString(String encodedJson,
@@ -1488,7 +1490,8 @@ class MyViewData extends DataClass {
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String?>(configValue),
       'sync_state': serializer.toJson<SyncType?>(syncState),
-      'sync_state_implicit': serializer.toJson<SyncType?>(syncStateImplicit),
+      'sync_state_implicit': serializer.toJson<int?>(
+          ConfigTable.$convertersyncStateImplicitn.toJson(syncStateImplicit)),
     };
   }
 
