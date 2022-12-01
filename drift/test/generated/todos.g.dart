@@ -39,7 +39,8 @@ class Category extends DataClass implements Insertable<Category> {
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
-      priority: serializer.fromJson<CategoryPriority>(json['priority']),
+      priority: $CategoriesTable.$converterpriority
+          .fromJson(serializer.fromJson<int>(json['priority'])),
       descriptionInUpperCase:
           serializer.fromJson<String>(json['descriptionInUpperCase']),
     );
@@ -55,7 +56,8 @@ class Category extends DataClass implements Insertable<Category> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
-      'priority': serializer.toJson<CategoryPriority>(priority),
+      'priority': serializer
+          .toJson<int>($CategoriesTable.$converterpriority.toJson(priority)),
       'descriptionInUpperCase':
           serializer.toJson<String>(descriptionInUpperCase),
     };
@@ -256,7 +258,7 @@ class $CategoriesTable extends Categories
     return $CategoriesTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<CategoryPriority, int> $converterpriority =
+  static JsonTypeConverter2<CategoryPriority, int, int> $converterpriority =
       const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
 }
 
@@ -321,7 +323,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
       category: serializer.fromJson<int?>(json['category']),
-      status: serializer.fromJson<TodoStatus?>(json['status']),
+      status: $TodosTableTable.$converterstatusn
+          .fromJson(serializer.fromJson<String?>(json['status'])),
     );
   }
   factory TodoEntry.fromJsonString(String encodedJson,
@@ -338,7 +341,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
       'category': serializer.toJson<int?>(category),
-      'status': serializer.toJson<TodoStatus?>(status),
+      'status': serializer
+          .toJson<String?>($TodosTableTable.$converterstatusn.toJson(status)),
     };
   }
 
@@ -605,10 +609,10 @@ class $TodosTableTable extends TodosTable
     return $TodosTableTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<TodoStatus, String> $converterstatus =
+  static JsonTypeConverter2<TodoStatus, String, String> $converterstatus =
       const EnumNameConverter<TodoStatus>(TodoStatus.values);
-  static TypeConverter<TodoStatus?, String?> $converterstatusn =
-      NullAwareTypeConverter.wrap($converterstatus);
+  static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
+      JsonTypeConverter2.asNullable($converterstatus);
 }
 
 class User extends DataClass implements Insertable<User> {
@@ -1308,7 +1312,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
       txt: $PureDefaultsTable.$convertertxtn
-          .fromJson(serializer.fromJson<Map<dynamic, dynamic>>(json['txt'])),
+          .fromJson(serializer.fromJson<Map<dynamic, dynamic>?>(json['txt'])),
     );
   }
   factory PureDefault.fromJsonString(String encodedJson,

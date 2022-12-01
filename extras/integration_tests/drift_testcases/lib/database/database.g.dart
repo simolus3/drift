@@ -210,7 +210,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UsersTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -219,23 +219,24 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  final VerificationMeta _birthDateMeta = const VerificationMeta('birthDate');
+  static const VerificationMeta _birthDateMeta =
+      const VerificationMeta('birthDate');
   @override
   late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
       'birth_date', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  final VerificationMeta _profilePictureMeta =
+  static const VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
   late final GeneratedColumn<Uint8List> profilePicture =
       GeneratedColumn<Uint8List>('profile_picture', aliasedName, true,
           type: DriftSqlType.blob, requiredDuringInsert: false);
-  final VerificationMeta _preferencesMeta =
+  static const VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
   @override
   late final GeneratedColumnWithTypeConverter<Preferences?, String>
@@ -455,17 +456,19 @@ class $FriendshipsTable extends Friendships
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $FriendshipsTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _firstUserMeta = const VerificationMeta('firstUser');
+  static const VerificationMeta _firstUserMeta =
+      const VerificationMeta('firstUser');
   @override
   late final GeneratedColumn<int> firstUser = GeneratedColumn<int>(
       'first_user', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-  final VerificationMeta _secondUserMeta = const VerificationMeta('secondUser');
+  static const VerificationMeta _secondUserMeta =
+      const VerificationMeta('secondUser');
   @override
   late final GeneratedColumn<int> secondUser = GeneratedColumn<int>(
       'second_user', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-  final VerificationMeta _reallyGoodFriendsMeta =
+  static const VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
   @override
   late final GeneratedColumn<bool> reallyGoodFriends =
@@ -625,7 +628,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, friendships];

@@ -133,8 +133,11 @@ class DataClassWriter {
 
       final typeConverter = column.typeConverter;
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
-        final type =
+        var type =
             _emitter.dartCode(AnnotatedDartCode.type(typeConverter.jsonType!));
+        if (column.nullable) {
+          type = '$type?';
+        }
 
         final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
         final converterField = _converter(column);

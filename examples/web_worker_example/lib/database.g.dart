@@ -115,13 +115,13 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   Entries(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'PRIMARY KEY');
-  final VerificationMeta _valueMeta = const VerificationMeta('value');
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
   late final GeneratedColumn<String> value = GeneratedColumn<String>(
       'text', aliasedName, false,
       type: DriftSqlType.string,
@@ -202,7 +202,7 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   }
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [entries];

@@ -230,7 +230,9 @@ AppliedTypeConverter readEnumConverter(
   void Function(String) reportError,
   DartType dartEnumType,
   EnumType columnEnumType,
+  KnownDriftTypes helper,
 ) {
+  final typeProvider = helper.helperLibrary.typeProvider;
   if (dartEnumType is! InterfaceType) {
     reportError('Not a class: `$dartEnumType`');
   }
@@ -261,7 +263,9 @@ AppliedTypeConverter readEnumConverter(
   return AppliedTypeConverter(
     expression: expression,
     dartType: dartEnumType,
-    jsonType: null,
+    jsonType: columnEnumType == EnumType.intEnum
+        ? typeProvider.intType
+        : typeProvider.stringType,
     sqlType: columnEnumType == EnumType.intEnum
         ? DriftSqlType.int
         : DriftSqlType.string,

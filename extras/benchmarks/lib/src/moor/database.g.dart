@@ -117,12 +117,12 @@ class $KeyValuesTable extends KeyValues
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $KeyValuesTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _keyMeta = const VerificationMeta('key');
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
       'key', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  final VerificationMeta _valueMeta = const VerificationMeta('value');
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
   @override
   late final GeneratedColumn<String> value = GeneratedColumn<String>(
       'value', aliasedName, false,
@@ -176,7 +176,7 @@ abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
   late final $KeyValuesTable keyValues = $KeyValuesTable(this);
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [keyValues];

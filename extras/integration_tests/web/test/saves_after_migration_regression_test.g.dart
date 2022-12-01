@@ -97,7 +97,7 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $FoosTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -234,7 +234,7 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $BarsTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -282,7 +282,7 @@ abstract class _$_FakeDb extends GeneratedDatabase {
   late final $FoosTable foos = $FoosTable(this);
   late final $BarsTable bars = $BarsTable(this);
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [foos, bars];
