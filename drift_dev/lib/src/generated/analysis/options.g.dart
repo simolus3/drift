@@ -153,7 +153,7 @@ const _$SqlModuleEnumMap = {
 };
 
 const _$ColumnNameCaseEnumMap = {
-  ColumnNameCase.none: 'none',
+  ColumnNameCase.preserve: 'preserve',
   ColumnNameCase.camel: 'camelCase',
   ColumnNameCase.constant: 'CONSTANT_CASE',
   ColumnNameCase.snake: 'snake_case',
