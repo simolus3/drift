@@ -1,10 +1,7 @@
-## 2.5.0-dev
-
-- Adds the `column_name_case` option with the possible values: `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
-
 ## 2.4.0-dev
 
 - Add the support for `textEnum`.
+- Adds the `column_name_case` option with the possible values: `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 
 ## 2.3.2
 
