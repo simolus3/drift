@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
@@ -335,7 +336,10 @@ class ColumnParser {
       remainingExpr = inner;
     }
 
-    final sqlName = foundExplicitName ?? ReCase(getter.name.lexeme).snakeCase;
+    _resolver.resolver.driver.options.columnNameCase;
+    final sqlName = foundExplicitName ??
+        _resolver.resolver.driver.options.columnNameCase
+            .apply(getter.name.lexeme);
     final sqlType = _startMethodToColumnType(foundStartMethod);
 
     AppliedTypeConverter? converter;
@@ -483,4 +487,26 @@ class PendingColumnInformation {
   final String? referencesColumnInSameTable;
 
   PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
+}
+
+extension on ColumnNameCase {
+  String apply(String name) {
+    final reCase = ReCase(name);
+    switch (this) {
+      case ColumnNameCase.preserve:
+        return name;
+      case ColumnNameCase.camel:
+        return reCase.camelCase;
+      case ColumnNameCase.constant:
+        return reCase.constantCase;
+      case ColumnNameCase.snake:
+        return reCase.snakeCase;
+      case ColumnNameCase.pascal:
+        return reCase.pascalCase;
+      case ColumnNameCase.lower:
+        return name.toLowerCase();
+      case ColumnNameCase.upper:
+        return name.toUpperCase();
+    }
+  }
 }

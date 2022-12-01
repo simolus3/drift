@@ -30,7 +30,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'named_parameters',
             'named_parameters_always_required',
             'scoped_dart_components',
-            'store_date_time_values_as_text'
+            'store_date_time_values_as_text',
+            'column_name_case'
           ],
         );
         final val = DriftOptions(
@@ -77,6 +78,11 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
                   v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
           storeDateTimeValuesAsText: $checkedConvert(
               'store_date_time_values_as_text', (v) => v as bool? ?? false),
+          columnNameCase: $checkedConvert(
+              'column_name_case',
+              (v) =>
+                  $enumDecodeNullable(_$ColumnNameCaseEnumMap, v) ??
+                  ColumnNameCase.snake),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
         );
@@ -103,6 +109,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'modules': 'sqlite_modules',
         'sqliteAnalysisOptions': 'sqlite',
         'storeDateTimeValuesAsText': 'store_date_time_values_as_text',
+        'columnNameCase': 'column_name_case',
         'dialect': 'sql'
       },
     );
@@ -133,6 +140,7 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
           instance.namedParametersAlwaysRequired,
       'scoped_dart_components': instance.scopedDartComponents,
       'store_date_time_values_as_text': instance.storeDateTimeValuesAsText,
+      'column_name_case': _$ColumnNameCaseEnumMap[instance.columnNameCase]!,
     };
 
 const _$SqlModuleEnumMap = {
@@ -142,6 +150,16 @@ const _$SqlModuleEnumMap = {
   SqlModule.math: 'math',
   SqlModule.rtree: 'rtree',
   SqlModule.spellfix1: 'spellfix1',
+};
+
+const _$ColumnNameCaseEnumMap = {
+  ColumnNameCase.none: 'none',
+  ColumnNameCase.camel: 'camelCase',
+  ColumnNameCase.constant: 'CONSTANT_CASE',
+  ColumnNameCase.snake: 'snake_case',
+  ColumnNameCase.pascal: 'PascalCase',
+  ColumnNameCase.lower: 'lowercase',
+  ColumnNameCase.upper: 'UPPERCASE',
 };
 
 DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
