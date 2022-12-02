@@ -218,6 +218,9 @@ class TableValuedFunction extends Queryable
   final String name;
 
   @override
+  Token? nameToken;
+
+  @override
   final String? as;
 
   @override

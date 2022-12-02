@@ -141,6 +141,37 @@ We currently support the following extensions:
   module is available. Note that this is not the case for most sqlite3 builds,
   including the ones shipping with `sqlite3_flutter_libs`.
 
+### Known custom functions
+
+The `modules` options can be used to tell drift's analyzer that a well-known
+sqlite3 extension is available at runtime. In some backends (like a `NativeDatabase`),
+it is also possible to specify entirely custom functions.
+
+To be able to use these functions in `.drift` files, you can tell drift's
+analyzer about them. To do so, add a `known_functions` block to the options:
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialect: sqlite
+            options:
+              known_functions:
+                my_function: "boolean (text, int null)"
+```
+
+With these options, drift will analyze queries under the assumption that a SQL
+function called `my_function` taking a non-nullable textual value an a nullable
+integer will return a non-null value that drift can interpret as a boolean.
+
+The syntax for a function type is defined as `<return type> (<argument types>)`.
+Each type consists of an arbitrary word used to determine [column affinity](https://www.sqlite.org/datatype3.html#determination_of_column_affinity),
+with drift also supporting `DATETIME` and `BOOLEAN` as type hints. Then, the
+optional `NULL` keyword can be used to indicate whether the type is nullable.
+
 ## Recommended options
 
 In general, we recommend using the default options.

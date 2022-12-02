@@ -183,7 +183,7 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
       ($checkedConvert) {
         $checkKeys(
           json,
-          allowedKeys: const ['modules', 'version'],
+          allowedKeys: const ['modules', 'version', 'known_functions'],
         );
         final val = SqliteAnalysisOptions(
           modules: $checkedConvert(
@@ -197,9 +197,18 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
               'version',
               (v) => _$JsonConverterFromJson<String, SqliteVersion>(
                   v, const _SqliteVersionConverter().fromJson)),
+          knownFunctions: $checkedConvert(
+              'known_functions',
+              (v) =>
+                  (v as Map?)?.map(
+                    (k, e) => MapEntry(
+                        k as String, KnownSqliteFunction.fromJson(e as String)),
+                  ) ??
+                  const {}),
         );
         return val;
       },
+      fieldKeyMap: const {'knownFunctions': 'known_functions'},
     );
 
 Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
@@ -208,6 +217,8 @@ Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
       'modules': instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
       'version': _$JsonConverterToJson<String, SqliteVersion>(
           instance.version, const _SqliteVersionConverter().toJson),
+      'known_functions':
+          instance.knownFunctions.map((k, e) => MapEntry(k, e.toJson())),
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

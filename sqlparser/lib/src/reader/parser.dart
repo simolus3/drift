@@ -889,6 +889,7 @@ class Parser {
       }
 
       return FunctionExpression(name: first.identifier, parameters: parameters)
+        ..nameToken = first
         ..setSpan(first, rightParen);
     } else {
       // Ok, just a regular reference then

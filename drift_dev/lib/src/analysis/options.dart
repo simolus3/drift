@@ -1,7 +1,10 @@
+import 'package:charcode/ascii.dart';
 import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import 'package:sqlparser/sqlparser.dart' show SqliteVersion;
+import 'package:sqlparser/sqlparser.dart'
+    show BasicType, ResolvedType, SchemaFromCreateTable, SqliteVersion;
+import 'package:string_scanner/string_scanner.dart';
 
 part '../generated/analysis/options.g.dart';
 
@@ -201,13 +204,86 @@ class SqliteAnalysisOptions {
   @_SqliteVersionConverter()
   final SqliteVersion? version;
 
-  const SqliteAnalysisOptions({this.modules = const [], this.version});
+  final Map<String, KnownSqliteFunction> knownFunctions;
+
+  const SqliteAnalysisOptions({
+    this.modules = const [],
+    this.version,
+    this.knownFunctions = const {},
+  });
 
   factory SqliteAnalysisOptions.fromJson(Map json) {
     return _$SqliteAnalysisOptionsFromJson(json);
   }
 
   Map<String, Object?> toJson() => _$SqliteAnalysisOptionsToJson(this);
+}
+
+class KnownSqliteFunction {
+  final List<ResolvedType> argumentTypes;
+  final ResolvedType returnType;
+
+  KnownSqliteFunction(this.argumentTypes, this.returnType);
+
+  factory KnownSqliteFunction.fromJson(String json) {
+    final scanner = StringScanner(json);
+    final types = SchemaFromCreateTable(driftExtensions: true);
+
+    ResolvedType parseType() {
+      scanner.scan(_whitespace);
+      scanner.expect(_word, name: 'Type name');
+      final type = types.resolveColumnType(scanner.lastMatch?.group(0));
+
+      return type.copyWith(nullable: scanner.scan(_null));
+    }
+
+    final argumentTypes = <ResolvedType>[];
+    final returnType = parseType();
+
+    scanner
+      ..scan(_whitespace)
+      ..expectChar($openParen)
+      ..scan(_whitespace);
+
+    if (scanner.peekChar() != $closeParen) {
+      argumentTypes.add(parseType());
+      while (scanner.scanChar($comma)) {
+        argumentTypes.add(parseType());
+      }
+    }
+
+    scanner
+      ..scan(_whitespace)
+      ..expectChar($closeParen)
+      ..scan(_whitespace)
+      ..expectDone();
+
+    return KnownSqliteFunction(argumentTypes, returnType);
+  }
+
+  String toJson() {
+    String toString(ResolvedType type) {
+      switch (type.type!) {
+        case BasicType.nullType:
+          return 'NULL';
+        case BasicType.int:
+          return 'INTEGER';
+        case BasicType.real:
+          return 'REAL';
+        case BasicType.text:
+          return 'TEXT';
+        case BasicType.blob:
+          return 'BLOB';
+      }
+    }
+
+    final types = argumentTypes.map(toString).join(', ');
+    return '${toString(returnType)}($types)';
+  }
+
+  static final _word = RegExp(r'\w+');
+  static final _null = RegExp(r'\s+null', caseSensitive: false);
+  static final _whitespace = RegExp(r'\s*');
 }
 
 class _SqliteVersionConverter extends JsonConverter<SqliteVersion, String> {
