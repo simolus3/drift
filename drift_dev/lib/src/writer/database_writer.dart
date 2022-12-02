@@ -62,11 +62,10 @@ class DatabaseWriter {
       ..write('class $className extends ')
       ..writeDriftRef('GeneratedDatabase')
       ..writeln('{')
-      ..writeln(
-          '$className(${firstLeaf.refDrift('QueryExecutor e')}): super(e);');
+      ..writeln('$className(${firstLeaf.drift('QueryExecutor e')}): super(e);');
 
     if (dbScope.options.generateConnectConstructor) {
-      final conn = firstLeaf.refDrift('DatabaseConnection');
+      final conn = firstLeaf.drift('DatabaseConnection');
       firstLeaf.write('$className.connect($conn c): super.connect(c); \n');
     }
 
@@ -220,7 +219,7 @@ class DatabaseWriter {
 
     if (scope.options.storeDateTimeValuesAsText) {
       // Override database options to reflect that DateTimes are stored as text.
-      final options = schemaScope.refDrift('DriftDatabaseOptions');
+      final options = schemaScope.drift('DriftDatabaseOptions');
 
       schemaScope
         ..writeln('@override')

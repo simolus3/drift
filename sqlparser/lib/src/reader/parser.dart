@@ -33,9 +33,6 @@ class Parser {
   final List<ParsingError> errors = [];
   final AutoCompleteEngine? autoComplete;
 
-  // todo remove this and don't be that lazy in driftFile()
-  var _lastStmtHadParsingError = false;
-
   /// Whether to enable the extensions drift makes to the sql grammar.
   final bool enableDriftExtensions;
 
@@ -242,31 +239,8 @@ class Parser {
     final first = _peek;
     final foundComponents = <PartOfDriftFile?>[];
 
-    // (we try again if the last statement had a parsing error)
-
-    // first, parse import statements
-    for (var stmt = _parseAsStatement(_import);
-        stmt != null || _lastStmtHadParsingError;
-        stmt = _parseAsStatement(_import)) {
-      foundComponents.add(stmt);
-    }
-
-    // next, table declarations
-    for (var stmt = _parseAsStatement(_create);
-        stmt != null || _lastStmtHadParsingError;
-        stmt = _parseAsStatement(_create)) {
-      foundComponents.add(stmt);
-    }
-
-    // finally, declared statements
-    for (var stmt = _parseAsStatement(_declaredStatement);
-        stmt != null || _lastStmtHadParsingError;
-        stmt = _parseAsStatement(_declaredStatement)) {
-      foundComponents.add(stmt);
-    }
-
-    if (!_isAtEnd) {
-      _error('Expected the file to end here.');
+    while (!_isAtEnd) {
+      foundComponents.add(_parseAsStatement(_partOfDriftFile));
     }
 
     foundComponents.removeWhere((c) => c == null);
@@ -275,9 +249,24 @@ class Parser {
     if (foundComponents.isNotEmpty) {
       file.setSpan(first, _previous);
     } else {
+      _suggestHintForTokens([TokenType.create, TokenType.import]);
+
+      if (_reportAutoComplete) {}
+
       file.setSpan(first, first); // empty file
     }
     return file;
+  }
+
+  PartOfDriftFile _partOfDriftFile() {
+    final found = _import() ?? _create() ?? _declaredStatement();
+
+    if (found != null) {
+      return found;
+    }
+
+    _error('Expected `IMPORT`, `CREATE`, or an identifier starting a compiled '
+        'query.');
   }
 
   ImportStatement? _import() {
@@ -393,7 +382,6 @@ class Parser {
   /// semicolon if one exists.
   T? _parseAsStatement<T extends Statement>(T? Function() parser,
       {bool requireSemicolon = true}) {
-    _lastStmtHadParsingError = false;
     final first = _peek;
     T? result;
     try {
@@ -405,7 +393,6 @@ class Parser {
         result.setSpan(first, _previous);
       }
     } on ParsingError {
-      _lastStmtHadParsingError = true;
       // the error is added to the list errors, so ignore. We skip after the
       // next semicolon to parse the next statement.
       _synchronize(TokenType.semicolon, skipTarget: true);
@@ -422,13 +409,15 @@ class Parser {
     return result;
   }
 
-  List<CrudStatement> _crudStatements() {
+  List<CrudStatement> _crudStatements(bool Function() reachedEnd) {
     final stmts = <CrudStatement>[];
 
-    for (var stmt = _parseAsStatement(_crud);
-        stmt != null || _lastStmtHadParsingError;
-        stmt = _parseAsStatement(_crud)) {
-      if (stmt != null) stmts.add(stmt);
+    while (!reachedEnd()) {
+      final stmt = _parseAsStatement(_crud);
+
+      if (stmt != null) {
+        stmts.add(stmt);
+      }
     }
 
     return stmts;
@@ -437,7 +426,7 @@ class Parser {
   /// Parses a block, which consists of statements between `BEGIN` and `END`.
   Block _consumeBlock() {
     final begin = _consume(TokenType.begin, 'Expected BEGIN');
-    final stmts = _crudStatements();
+    final stmts = _crudStatements(() => _check(TokenType.end));
     final end = _consume(TokenType.end, 'Expected END');
 
     return Block(stmts)
@@ -449,7 +438,8 @@ class Parser {
   TransactionBlock _transactionBlock() {
     final first = _peek;
     final begin = _beginStatement();
-    final stmts = _crudStatements();
+    final stmts = _crudStatements(
+        () => _checkAny(const [TokenType.commit, TokenType.end]));
     final end = _commit();
 
     return TransactionBlock(begin: begin, innerStatements: stmts, commit: end)

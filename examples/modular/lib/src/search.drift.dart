@@ -205,5 +205,20 @@ i0.Trigger get postsDelete => i0.Trigger(
 
 class SearchDrift extends i2.ModularAccessor {
   SearchDrift(i0.GeneratedDatabase db) : super(db);
+  i0.Selectable<i3.Post> search(String var1) {
+    return customSelect(
+        'WITH relevant_ports AS (SELECT "rowid" FROM search_in_posts WHERE search_in_posts MATCH ?1) SELECT posts.* FROM relevant_ports AS results INNER JOIN posts ON id = results."rowid"',
+        variables: [
+          i0.Variable<String>(var1)
+        ],
+        readsFrom: {
+          searchInPosts,
+          posts,
+        }).asyncMap(posts.mapFromRow);
+  }
+
+  i1.SearchInPosts get searchInPosts =>
+      this.resultSet<i1.SearchInPosts>('search_in_posts');
+  i3.Posts get posts => this.resultSet<i3.Posts>('posts');
   i3.PostsDrift get postsDrift => this.accessor(i3.PostsDrift.new);
 }

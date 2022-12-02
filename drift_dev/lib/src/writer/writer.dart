@@ -7,8 +7,6 @@ import '../analysis/options.dart';
 import 'import_manager.dart';
 import 'queries/sql_writer.dart';
 
-Uri _driftImport = Uri.parse('package:drift/drift.dart');
-
 /// Manages a tree structure which we use to generate code.
 ///
 /// Each leaf in the tree is a [StringBuffer] that contains some code. A
@@ -287,9 +285,7 @@ class TextEmitter extends _Node {
     return write(refUri(definition, element));
   }
 
-  void writeDriftRef(String element) => write(refDrift(element));
-
-  String refDrift(String element) => refUri(_driftImport, element);
+  void writeDriftRef(String element) => write(drift(element));
 
   void writeDart(AnnotatedDartCode code) => write(dartCode(code));
 

@@ -664,14 +664,18 @@ class _ExpandedVariableWriter {
     String constructVar(String dartExpr) {
       // No longer an array here, we apply a for loop if necessary
       final type = element.innerColumnType(nullable: false);
-      final buffer = StringBuffer('Variable<$type>(');
+
+      final varType = _emitter.drift('Variable');
+      final buffer = StringBuffer('$varType<$type>(');
       final capture = element.forCaptured;
 
       final converter = element.typeConverter;
       if (converter != null) {
         // Apply the converter.
         if (element.nullable && converter.canBeSkippedForNulls) {
-          buffer.write('NullAwareTypeConverter.wrapToSql('
+          final nullAware = _emitter.drift('NullAwareTypeConverter');
+
+          buffer.write('$nullAware.wrapToSql('
               '${_converter(_emitter, element.typeConverter!)}, $dartExpr)');
         } else {
           buffer.write(
