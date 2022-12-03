@@ -7,6 +7,10 @@ CREATE VIRTUAL TABLE search_in_posts USING fts5 (
     content_rowid=id
 );
 
+search: WITH relevant_ports AS (SELECT rowid FROM search_in_posts WHERE search_in_posts MATCH ?)
+  SELECT posts.* FROM relevant_ports results
+    INNER JOIN posts ON id = results.rowid;
+
 -- Keep fts5 table and posts synchronized
 
 CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN

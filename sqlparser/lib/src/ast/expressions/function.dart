@@ -10,6 +10,8 @@ abstract class SqlInvocation implements AstNode {
   /// The name of the function being called
   String get name;
 
+  Token? nameToken;
+
   FunctionParameters get parameters;
 }
 
@@ -23,6 +25,9 @@ class FunctionExpression extends Expression
   final String name;
   @override
   FunctionParameters parameters;
+
+  @override
+  Token? nameToken;
 
   FunctionExpression({required this.name, required this.parameters});
 

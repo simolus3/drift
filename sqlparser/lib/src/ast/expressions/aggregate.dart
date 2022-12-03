@@ -8,6 +8,9 @@ class AggregateFunctionInvocation extends Expression
   String get name => function.identifier;
 
   @override
+  Token? nameToken;
+
+  @override
   FunctionParameters parameters;
   Expression? filter;
 
@@ -18,7 +21,7 @@ class AggregateFunctionInvocation extends Expression
     required this.function,
     required this.parameters,
     this.filter,
-  });
+  }) : nameToken = function;
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

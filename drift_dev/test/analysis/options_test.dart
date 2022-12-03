@@ -86,4 +86,34 @@ sqlite:
           .withSpan('place_spellfix'),
     ]);
   });
+
+  group('parses functions', () {
+    test('succesfully', () {
+      final function = KnownSqliteFunction.fromJson('text (int, boolean nUlL)');
+
+      expect(function.returnType.type, BasicType.text);
+      expect(function.argumentTypes, [
+        isA<ResolvedType>().having((e) => e.type, 'type', BasicType.int),
+        isA<ResolvedType>()
+            .having((e) => e.type, 'type', BasicType.int)
+            .having((e) => e.hint, 'hint', const IsBoolean())
+            .having((e) => e.nullable, 'nullable', true),
+      ]);
+    });
+
+    test('supports empty args', () {
+      final function = KnownSqliteFunction.fromJson('text ()');
+
+      expect(function.returnType.type, BasicType.text);
+      expect(function.argumentTypes, isEmpty);
+    });
+
+    test('fails for invalid syntax', () {
+      final throws = throwsFormatException;
+
+      expect(() => KnownSqliteFunction.fromJson('x'), throws);
+      expect(() => KnownSqliteFunction.fromJson('(boolean)'), throws);
+      expect(() => KnownSqliteFunction.fromJson('int (boolean, )'), throws);
+    });
+  });
 }

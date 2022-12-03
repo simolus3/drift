@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -256,5 +256,37 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
       nested.cast<NestedResultTable>().map((e) => e.isNullable),
       [false, true, false, true],
     );
+  });
+
+  test('supports custom functions', () async {
+    final withoutOptions =
+        TestBackend.inTest({'a|lib/a.drift': 'a: SELECT my_function();'});
+    var result = await withoutOptions.analyze('package:a/a.drift');
+    expect(result.allErrors, [
+      isDriftError('Function my_function could not be found')
+          .withSpan('my_function'),
+      isDriftError(startsWith('Expression has an unknown type'))
+          .withSpan('my_function()'),
+    ]);
+
+    final withOptions =
+        TestBackend.inTest({'a|lib/a.drift': 'a: SELECT my_function(?, ?);'},
+            options: DriftOptions.defaults(
+              sqliteAnalysisOptions: SqliteAnalysisOptions(knownFunctions: {
+                'my_function':
+                    KnownSqliteFunction.fromJson('boolean (int, text)')
+              }),
+            ));
+    result = await withOptions.analyze('package:a/a.drift');
+
+    withOptions.expectNoErrors();
+
+    final query = result.fileAnalysis!.resolvedQueries.values.single;
+    expect(query.resultSet!.columns, [
+      isA<ResultColumn>().having((e) => e.sqlType, 'sqlType', DriftSqlType.bool)
+    ]);
+
+    final args = query.variables;
+    expect(args.map((e) => e.sqlType), [DriftSqlType.int, DriftSqlType.string]);
   });
 }

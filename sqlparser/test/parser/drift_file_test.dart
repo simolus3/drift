@@ -219,4 +219,21 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
       ]),
     );
   });
+
+  test('allows statements to appear in any order', () {
+    final result =
+        SqlEngine(EngineOptions(useDriftExtensions: true)).parseDriftFile('''
+CREATE TABLE foo (
+  a INTEGER NOT NULL
+);
+
+import 'b.dart';
+
+a: SELECT * FROM foo;
+
+CREATE INDEX x ON foo (a);
+''');
+
+    expect(result.errors, isEmpty);
+  });
 }

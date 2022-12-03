@@ -148,22 +148,10 @@ class DriftCommunication {
   /// [handler] returns a [Future], it will be awaited.
   void setRequestHandler(dynamic Function(Request) handler) {
     incomingRequests.listen((request) {
-      try {
-        final result = handler(request);
-
-        if (result is Future) {
-          result.then(
-            (value) => respond(request, value),
-            onError: (e, StackTrace s) {
-              respondError(request, e, s);
-            },
-          );
-        } else {
-          respond(request, result);
-        }
-      } catch (e, s) {
-        respondError(request, e, s);
-      }
+      Future.sync(() => handler(request)).then(
+        (result) => respond(request, result),
+        onError: (Object e, StackTrace s) => respondError(request, e, s),
+      );
     });
   }
 }

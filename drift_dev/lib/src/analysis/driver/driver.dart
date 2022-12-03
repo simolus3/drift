@@ -9,6 +9,7 @@ import '../resolver/dart/helper.dart';
 import '../resolver/discover.dart';
 import '../resolver/drift/sqlparser/mapping.dart';
 import '../resolver/file_analysis.dart';
+import '../resolver/queries/custom_known_functions.dart';
 import '../resolver/resolver.dart';
 import '../results/results.dart';
 import '../serializer.dart';
@@ -69,6 +70,7 @@ class DriftAnalysisDriver {
       EngineOptions(
         useDriftExtensions: true,
         enabledExtensions: [
+          DriftOptionsExtension(options),
           if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
           if (options.hasModule(SqlModule.json1)) const Json1Extension(),
           if (options.hasModule(SqlModule.moor_ffi))

@@ -142,7 +142,7 @@ class $CategoriesTable extends Categories
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CategoriesTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -151,12 +151,12 @@ class $CategoriesTable extends Categories
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  final VerificationMeta _colorMeta = const VerificationMeta('color');
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
   late final GeneratedColumnWithTypeConverter<Color, int> color =
       GeneratedColumn<int>('color', aliasedName, false,
@@ -382,7 +382,7 @@ class $TodoEntriesTable extends TodoEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TodoEntriesTable(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
@@ -391,13 +391,14 @@ class $TodoEntriesTable extends TodoEntries
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  final VerificationMeta _descriptionMeta =
+  static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  final VerificationMeta _categoryMeta = const VerificationMeta('category');
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
   @override
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, true,
@@ -405,7 +406,8 @@ class $TodoEntriesTable extends TodoEntries
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
-  final VerificationMeta _dueDateMeta = const VerificationMeta('dueDate');
+  static const VerificationMeta _dueDateMeta =
+      const VerificationMeta('dueDate');
   @override
   late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
       'due_date', aliasedName, true,
@@ -564,7 +566,7 @@ class TextEntries extends Table
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   TextEntries(this.attachedDatabase, [this._alias]);
-  final VerificationMeta _descriptionMeta =
+  static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
@@ -594,7 +596,7 @@ class TextEntries extends Table
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   TextEntrie map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -670,7 +672,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   }
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
