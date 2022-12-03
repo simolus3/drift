@@ -2,6 +2,7 @@ import 'package:charcode/ascii.dart';
 import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart'
     show BasicType, ResolvedType, SchemaFromCreateTable, SqliteVersion;
 import 'package:string_scanner/string_scanner.dart';
@@ -90,6 +91,9 @@ class DriftOptions {
   @JsonKey(defaultValue: false)
   final bool storeDateTimeValuesAsText;
 
+  @JsonKey(name: 'case_from_dart_to_sql', defaultValue: CaseFromDartToSql.snake)
+  final CaseFromDartToSql caseFromDartToSql;
+
   @internal
   const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
@@ -110,6 +114,7 @@ class DriftOptions {
     this.sqliteAnalysisOptions,
     this.storeDateTimeValuesAsText = false,
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
+    this.caseFromDartToSql = CaseFromDartToSql.snake,
   });
 
   DriftOptions({
@@ -130,6 +135,7 @@ class DriftOptions {
     required this.modules,
     required this.sqliteAnalysisOptions,
     required this.storeDateTimeValuesAsText,
+    required this.caseFromDartToSql,
     this.dialect,
   }) {
     // ignore: deprecated_member_use_from_same_package
@@ -357,4 +363,70 @@ enum SqlModule {
   rtree,
 
   spellfix1,
+}
+
+/// The possible values for the case of the table and column names.
+enum CaseFromDartToSql {
+  /// Preserves the case of the name as it is in the dart code.
+  ///
+  /// `myColumn` -> `myColumn`.
+  preserve,
+
+  /// Use camelCase.
+  ///
+  /// `my_column` -> `myColumn`.
+  @JsonValue('camelCase')
+  camel,
+
+  /// Use CONSTANT_CASE.
+  ///
+  /// `myColumn` -> `MY_COLUMN`.
+  @JsonValue('CONSTANT_CASE')
+  constant,
+
+  /// Use snake_case.
+  ///
+  /// `myColumn` -> `my_column`.
+  @JsonValue('snake_case')
+  snake,
+
+  /// Use PascalCase.
+  ///
+  /// `my_column` -> `MyColumn`.
+  // ignore: constant_identifier_names
+  @JsonValue('PascalCase')
+  pascal,
+
+  /// Use lowercase.
+  ///
+  /// `myColumn` -> `mycolumn`.
+  @JsonValue('lowercase')
+  lower,
+
+  /// Use UPPERCASE.
+  ///
+  /// `myColumn` -> `MYCOLUMN`.
+  @JsonValue('UPPERCASE')
+  upper;
+
+  /// Applies the correct case to the given [name].
+  String apply(String name) {
+    final reCase = ReCase(name);
+    switch (this) {
+      case CaseFromDartToSql.preserve:
+        return name;
+      case CaseFromDartToSql.camel:
+        return reCase.camelCase;
+      case CaseFromDartToSql.constant:
+        return reCase.constantCase;
+      case CaseFromDartToSql.snake:
+        return reCase.snakeCase;
+      case CaseFromDartToSql.pascal:
+        return reCase.pascalCase;
+      case CaseFromDartToSql.lower:
+        return name.toLowerCase();
+      case CaseFromDartToSql.upper:
+        return name.toUpperCase();
+    }
+  }
 }

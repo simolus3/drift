@@ -3,7 +3,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
-import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import '../../driver/error.dart';
@@ -335,7 +334,10 @@ class ColumnParser {
       remainingExpr = inner;
     }
 
-    final sqlName = foundExplicitName ?? ReCase(getter.name.lexeme).snakeCase;
+    _resolver.resolver.driver.options.caseFromDartToSql;
+    final sqlName = foundExplicitName ??
+        _resolver.resolver.driver.options.caseFromDartToSql
+            .apply(getter.name.lexeme);
     final sqlType = _startMethodToColumnType(foundStartMethod);
     final helper = await _resolver.resolver.driver.loadKnownTypes();
 
