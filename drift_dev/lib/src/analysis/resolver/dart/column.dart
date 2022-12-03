@@ -3,8 +3,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
-import 'package:drift_dev/src/analysis/options.dart';
-import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import '../../driver/error.dart';
@@ -490,26 +488,4 @@ class PendingColumnInformation {
   final String? referencesColumnInSameTable;
 
   PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
-}
-
-extension on CaseFromDartToSql {
-  String apply(String name) {
-    final reCase = ReCase(name);
-    switch (this) {
-      case CaseFromDartToSql.preserve:
-        return name;
-      case CaseFromDartToSql.camel:
-        return reCase.camelCase;
-      case CaseFromDartToSql.constant:
-        return reCase.constantCase;
-      case CaseFromDartToSql.snake:
-        return reCase.snakeCase;
-      case CaseFromDartToSql.pascal:
-        return reCase.pascalCase;
-      case CaseFromDartToSql.lower:
-        return name.toLowerCase();
-      case CaseFromDartToSql.upper:
-        return name.toUpperCase();
-    }
-  }
 }

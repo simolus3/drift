@@ -2,6 +2,7 @@ import 'package:charcode/ascii.dart';
 import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart'
     show BasicType, ResolvedType, SchemaFromCreateTable, SqliteVersion;
 import 'package:string_scanner/string_scanner.dart';
@@ -406,5 +407,26 @@ enum CaseFromDartToSql {
   ///
   /// `myColumn` -> `MYCOLUMN`.
   @JsonValue('UPPERCASE')
-  upper,
+  upper;
+
+  /// Applies the correct case to the given [name].
+  String apply(String name) {
+    final reCase = ReCase(name);
+    switch (this) {
+      case CaseFromDartToSql.preserve:
+        return name;
+      case CaseFromDartToSql.camel:
+        return reCase.camelCase;
+      case CaseFromDartToSql.constant:
+        return reCase.constantCase;
+      case CaseFromDartToSql.snake:
+        return reCase.snakeCase;
+      case CaseFromDartToSql.pascal:
+        return reCase.pascalCase;
+      case CaseFromDartToSql.lower:
+        return name.toLowerCase();
+      case CaseFromDartToSql.upper:
+        return name.toUpperCase();
+    }
+  }
 }
