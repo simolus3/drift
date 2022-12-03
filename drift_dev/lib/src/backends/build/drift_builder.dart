@@ -11,6 +11,7 @@ import '../../analysis/options.dart';
 import '../../utils/string_escaper.dart';
 import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
+import '../../writer/function_stubs_writer.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/modules.dart';
 import '../../writer/tables/view_writer.dart';
@@ -256,6 +257,10 @@ class _DriftBuildRun {
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
         final input = DatabaseGenerationInput(result, resolved, const {});
         DatabaseWriter(input, writer.child()).write();
+
+        // Also write stubs for known custom functions so that the user can
+        // easily register them on the database.
+        FunctionStubsWriter(driver, writer.leaf()).write();
       } else if (result is DatabaseAccessor) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;

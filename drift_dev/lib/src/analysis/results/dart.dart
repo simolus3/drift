@@ -47,6 +47,10 @@ class AnnotatedDartCode {
     ]);
   }
 
+  factory AnnotatedDartCode.importedSymbol(Uri uri, String name) {
+    return AnnotatedDartCode([DartTopLevelSymbol(name, uri)]);
+  }
+
   Map<String, Object?> toJson() {
     return {
       'elements': [

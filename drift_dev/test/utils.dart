@@ -4,13 +4,20 @@ import 'package:build_test/build_test.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 
 final _resolvers = AnalyzerResolvers();
+
+BuilderOptions builderOptionsFromYaml(String yaml) {
+  final map = loadYaml(yaml);
+  return BuilderOptions((map as YamlMap).cast());
+}
 
 Future<RecordingAssetWriter> emulateDriftBuild({
   required Map<String, String> inputs,
   BuilderOptions options = const BuilderOptions({}),
   Logger? logger,
+  bool modularBuild = false,
 }) async {
   _resolvers.reset();
 
@@ -29,7 +36,7 @@ Future<RecordingAssetWriter> emulateDriftBuild({
   final stages = [
     preparingBuilder(options),
     analyzer(options),
-    driftBuilderNotShared(options),
+    modularBuild ? modular(options) : driftBuilderNotShared(options),
   ];
 
   for (final stage in stages) {
