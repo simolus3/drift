@@ -90,8 +90,8 @@ class DriftOptions {
   @JsonKey(defaultValue: false)
   final bool storeDateTimeValuesAsText;
 
-  @JsonKey(name: 'column_name_case', defaultValue: ColumnNameCase.snake)
-  final ColumnNameCase columnNameCase;
+  @JsonKey(name: 'case_from_dart_to_sql', defaultValue: CaseFromDartToSql.snake)
+  final CaseFromDartToSql caseFromDartToSql;
 
   @internal
   const DriftOptions.defaults({
@@ -113,7 +113,7 @@ class DriftOptions {
     this.sqliteAnalysisOptions,
     this.storeDateTimeValuesAsText = false,
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
-    this.columnNameCase = ColumnNameCase.snake,
+    this.caseFromDartToSql = CaseFromDartToSql.snake,
   });
 
   DriftOptions({
@@ -134,7 +134,7 @@ class DriftOptions {
     required this.modules,
     required this.sqliteAnalysisOptions,
     required this.storeDateTimeValuesAsText,
-    required this.columnNameCase,
+    required this.caseFromDartToSql,
     this.dialect,
   }) {
     // ignore: deprecated_member_use_from_same_package
@@ -364,9 +364,9 @@ enum SqlModule {
   spellfix1,
 }
 
-/// The possible values for the case of the column names.
-enum ColumnNameCase {
-  /// Preserves the case of the column name as it is in the dart code.
+/// The possible values for the case of the table and column names.
+enum CaseFromDartToSql {
+  /// Preserves the case of the name as it is in the dart code.
   ///
   /// `myColumn` -> `myColumn`.
   preserve,

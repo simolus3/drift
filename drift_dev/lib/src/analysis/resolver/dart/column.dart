@@ -336,9 +336,9 @@ class ColumnParser {
       remainingExpr = inner;
     }
 
-    _resolver.resolver.driver.options.columnNameCase;
+    _resolver.resolver.driver.options.caseFromDartToSql;
     final sqlName = foundExplicitName ??
-        _resolver.resolver.driver.options.columnNameCase
+        _resolver.resolver.driver.options.caseFromDartToSql
             .apply(getter.name.lexeme);
     final sqlType = _startMethodToColumnType(foundStartMethod);
     final helper = await _resolver.resolver.driver.loadKnownTypes();
@@ -492,23 +492,23 @@ class PendingColumnInformation {
   PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
 }
 
-extension on ColumnNameCase {
+extension on CaseFromDartToSql {
   String apply(String name) {
     final reCase = ReCase(name);
     switch (this) {
-      case ColumnNameCase.preserve:
+      case CaseFromDartToSql.preserve:
         return name;
-      case ColumnNameCase.camel:
+      case CaseFromDartToSql.camel:
         return reCase.camelCase;
-      case ColumnNameCase.constant:
+      case CaseFromDartToSql.constant:
         return reCase.constantCase;
-      case ColumnNameCase.snake:
+      case CaseFromDartToSql.snake:
         return reCase.snakeCase;
-      case ColumnNameCase.pascal:
+      case CaseFromDartToSql.pascal:
         return reCase.pascalCase;
-      case ColumnNameCase.lower:
+      case CaseFromDartToSql.lower:
         return name.toLowerCase();
-      case ColumnNameCase.upper:
+      case CaseFromDartToSql.upper:
         return name.toUpperCase();
     }
   }

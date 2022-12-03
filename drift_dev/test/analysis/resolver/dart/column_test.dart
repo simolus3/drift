@@ -48,7 +48,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.snake),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.snake),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -77,7 +78,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.preserve),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.preserve),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -105,7 +107,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.camel),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.camel),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -134,7 +137,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.constant),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.constant),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -162,7 +166,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.pascal),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.pascal),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -190,7 +195,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.lower),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.lower),
     );
 
     final file = await state.analyze('package:a/main.dart');
@@ -218,7 +224,8 @@ class TestTable extends Table {
 class Database {}
 '''
       },
-      options: DriftOptions.defaults(columnNameCase: ColumnNameCase.upper),
+      options:
+          DriftOptions.defaults(caseFromDartToSql: CaseFromDartToSql.upper),
     );
 
     final file = await state.analyze('package:a/main.dart');

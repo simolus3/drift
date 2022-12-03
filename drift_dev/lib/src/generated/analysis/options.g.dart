@@ -31,7 +31,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'named_parameters_always_required',
             'scoped_dart_components',
             'store_date_time_values_as_text',
-            'column_name_case'
+            'case_from_dart_to_sql'
           ],
         );
         final val = DriftOptions(
@@ -78,11 +78,11 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
                   v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
           storeDateTimeValuesAsText: $checkedConvert(
               'store_date_time_values_as_text', (v) => v as bool? ?? false),
-          columnNameCase: $checkedConvert(
-              'column_name_case',
+          caseFromDartToSql: $checkedConvert(
+              'case_from_dart_to_sql',
               (v) =>
-                  $enumDecodeNullable(_$ColumnNameCaseEnumMap, v) ??
-                  ColumnNameCase.snake),
+                  $enumDecodeNullable(_$CaseFromDartToSqlEnumMap, v) ??
+                  CaseFromDartToSql.snake),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
         );
@@ -109,7 +109,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'modules': 'sqlite_modules',
         'sqliteAnalysisOptions': 'sqlite',
         'storeDateTimeValuesAsText': 'store_date_time_values_as_text',
-        'columnNameCase': 'column_name_case',
+        'caseFromDartToSql': 'case_from_dart_to_sql',
         'dialect': 'sql'
       },
     );
@@ -140,7 +140,8 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
           instance.namedParametersAlwaysRequired,
       'scoped_dart_components': instance.scopedDartComponents,
       'store_date_time_values_as_text': instance.storeDateTimeValuesAsText,
-      'column_name_case': _$ColumnNameCaseEnumMap[instance.columnNameCase]!,
+      'case_from_dart_to_sql':
+          _$CaseFromDartToSqlEnumMap[instance.caseFromDartToSql]!,
     };
 
 const _$SqlModuleEnumMap = {
@@ -152,14 +153,14 @@ const _$SqlModuleEnumMap = {
   SqlModule.spellfix1: 'spellfix1',
 };
 
-const _$ColumnNameCaseEnumMap = {
-  ColumnNameCase.preserve: 'preserve',
-  ColumnNameCase.camel: 'camelCase',
-  ColumnNameCase.constant: 'CONSTANT_CASE',
-  ColumnNameCase.snake: 'snake_case',
-  ColumnNameCase.pascal: 'PascalCase',
-  ColumnNameCase.lower: 'lowercase',
-  ColumnNameCase.upper: 'UPPERCASE',
+const _$CaseFromDartToSqlEnumMap = {
+  CaseFromDartToSql.preserve: 'preserve',
+  CaseFromDartToSql.camel: 'camelCase',
+  CaseFromDartToSql.constant: 'CONSTANT_CASE',
+  CaseFromDartToSql.snake: 'snake_case',
+  CaseFromDartToSql.pascal: 'PascalCase',
+  CaseFromDartToSql.lower: 'lowercase',
+  CaseFromDartToSql.upper: 'UPPERCASE',
 };
 
 DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
