@@ -348,7 +348,7 @@ class TableWriter extends TableOrViewWriter {
     for (final converter in table.appliedConverters) {
       final typeName =
           emitter.dartCode(emitter.writer.converterType(converter));
-      final code = converter.expression;
+      final code = emitter.dartCode(converter.expression);
 
       buffer.write('static $typeName ${converter.fieldName} = $code;');
 
@@ -360,8 +360,8 @@ class TableWriter extends TableOrViewWriter {
             emitter.writer.converterType(converter, makeNullable: true));
 
         final wrap = converter.alsoAppliesToJsonConversion
-            ? 'JsonTypeConverter2.asNullable'
-            : 'NullAwareTypeConverter.wrap';
+            ? emitter.drift('JsonTypeConverter2.asNullable')
+            : emitter.drift('NullAwareTypeConverter.wrap');
 
         final code = '$wrap(${converter.fieldName})';
 

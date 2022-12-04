@@ -1,7 +1,10 @@
+import 'preferences.dart';
+
 CREATE TABLE users (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    biography TEXT
+    biography TEXT,
+    preferences TEXT MAPPED BY `const PreferencesConverter()`
 );
 
 CREATE INDEX users_name ON users (name);

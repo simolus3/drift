@@ -1,13 +1,16 @@
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/users.drift.dart' as i1;
-import 'package:drift/internal/modular.dart' as i2;
+import 'package:modular/src/preferences.dart' as i2;
+import 'package:drift/internal/modular.dart' as i3;
 
 class User extends i0.DataClass implements i0.Insertable<i1.User> {
   final int id;
   final String name;
   final String? biography;
-  const User({required this.id, required this.name, this.biography});
+  final i2.Preferences? preferences;
+  const User(
+      {required this.id, required this.name, this.biography, this.preferences});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -15,6 +18,10 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
     map['name'] = i0.Variable<String>(name);
     if (!nullToAbsent || biography != null) {
       map['biography'] = i0.Variable<String>(biography);
+    }
+    if (!nullToAbsent || preferences != null) {
+      final converter = Users.$converterpreferencesn;
+      map['preferences'] = i0.Variable<String>(converter.toSql(preferences));
     }
     return map;
   }
@@ -26,6 +33,9 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       biography: biography == null && nullToAbsent
           ? const i0.Value.absent()
           : i0.Value(biography),
+      preferences: preferences == null && nullToAbsent
+          ? const i0.Value.absent()
+          : i0.Value(preferences),
     );
   }
 
@@ -36,6 +46,8 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       biography: serializer.fromJson<String?>(json['biography']),
+      preferences: Users.$converterpreferencesn.fromJson(
+          serializer.fromJson<Map<String, Object?>?>(json['preferences'])),
     );
   }
   @override
@@ -45,73 +57,86 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'biography': serializer.toJson<String?>(biography),
+      'preferences': serializer.toJson<Map<String, Object?>?>(
+          Users.$converterpreferencesn.toJson(preferences)),
     };
   }
 
   i1.User copyWith(
           {int? id,
           String? name,
-          i0.Value<String?> biography = const i0.Value.absent()}) =>
+          i0.Value<String?> biography = const i0.Value.absent(),
+          i0.Value<i2.Preferences?> preferences = const i0.Value.absent()}) =>
       i1.User(
         id: id ?? this.id,
         name: name ?? this.name,
         biography: biography.present ? biography.value : this.biography,
+        preferences: preferences.present ? preferences.value : this.preferences,
       );
   @override
   String toString() {
     return (StringBuffer('User(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('biography: $biography')
+          ..write('biography: $biography, ')
+          ..write('preferences: $preferences')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, biography);
+  int get hashCode => Object.hash(id, name, biography, preferences);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.User &&
           other.id == this.id &&
           other.name == this.name &&
-          other.biography == this.biography);
+          other.biography == this.biography &&
+          other.preferences == this.preferences);
 }
 
 class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   final i0.Value<int> id;
   final i0.Value<String> name;
   final i0.Value<String?> biography;
+  final i0.Value<i2.Preferences?> preferences;
   const UsersCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.biography = const i0.Value.absent(),
+    this.preferences = const i0.Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const i0.Value.absent(),
     required String name,
     this.biography = const i0.Value.absent(),
+    this.preferences = const i0.Value.absent(),
   }) : name = i0.Value(name);
   static i0.Insertable<i1.User> custom({
     i0.Expression<int>? id,
     i0.Expression<String>? name,
     i0.Expression<String>? biography,
+    i0.Expression<String>? preferences,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (biography != null) 'biography': biography,
+      if (preferences != null) 'preferences': preferences,
     });
   }
 
   i1.UsersCompanion copyWith(
       {i0.Value<int>? id,
       i0.Value<String>? name,
-      i0.Value<String?>? biography}) {
+      i0.Value<String?>? biography,
+      i0.Value<i2.Preferences?>? preferences}) {
     return i1.UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       biography: biography ?? this.biography,
+      preferences: preferences ?? this.preferences,
     );
   }
 
@@ -127,6 +152,11 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
     if (biography.present) {
       map['biography'] = i0.Variable<String>(biography.value);
     }
+    if (preferences.present) {
+      final converter = Users.$converterpreferencesn;
+      map['preferences'] =
+          i0.Variable<String>(converter.toSql(preferences.value));
+    }
     return map;
   }
 
@@ -135,7 +165,8 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
     return (StringBuffer('i1.UsersCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('biography: $biography')
+          ..write('biography: $biography, ')
+          ..write('preferences: $preferences')
           ..write(')'))
         .toString();
   }
@@ -166,8 +197,16 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
       type: i0.DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
+  static const i0.VerificationMeta _preferencesMeta =
+      const i0.VerificationMeta('preferences');
+  late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
+      preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
+              type: i0.DriftSqlType.string,
+              requiredDuringInsert: false,
+              $customConstraints: '')
+          .withConverter<i2.Preferences?>(Users.$converterpreferencesn);
   @override
-  List<i0.GeneratedColumn> get $columns => [id, name, biography];
+  List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -190,6 +229,7 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
       context.handle(_biographyMeta,
           biography.isAcceptableOrUnknown(data['biography']!, _biographyMeta));
     }
+    context.handle(_preferencesMeta, const i0.VerificationResult.success());
     return context;
   }
 
@@ -205,6 +245,9 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       biography: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
+      preferences: Users.$converterpreferencesn.fromSql(attachedDatabase
+          .typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
     );
   }
 
@@ -213,6 +256,11 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
     return Users(attachedDatabase, alias);
   }
 
+  static i0.JsonTypeConverter2<i2.Preferences, String, Map<String, Object?>>
+      $converterpreferences = const i2.PreferencesConverter();
+  static i0.JsonTypeConverter2<i2.Preferences?, String?, Map<String, Object?>?>
+      $converterpreferencesn =
+      i0.JsonTypeConverter2.asNullable($converterpreferences);
   @override
   List<String> get customConstraints => const [];
   @override
@@ -403,7 +451,7 @@ class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
   bool get dontWriteConstraints => true;
 }
 
-class UsersDrift extends i2.ModularAccessor {
+class UsersDrift extends i3.ModularAccessor {
   UsersDrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<i1.User> findUsers({FindUsers$predicate? predicate}) {
     var $arrayStartIndex = 1;

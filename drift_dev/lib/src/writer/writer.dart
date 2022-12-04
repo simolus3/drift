@@ -110,10 +110,9 @@ abstract class _NodeOrWriter {
     final fieldName = forNullable && converter.canBeSkippedForNulls
         ? converter.nullableFieldName
         : converter.fieldName;
-    final table = converter.owningColumn.owner;
 
     return AnnotatedDartCode([
-      DartTopLevelSymbol(table.entityInfoName, table.id.libraryUri),
+      entityInfoType(converter.owningColumn.owner),
       '.$fieldName',
     ]);
   }

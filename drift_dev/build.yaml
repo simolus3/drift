@@ -61,6 +61,7 @@ builders:
     build_to: cache
     auto_apply: none
     required_inputs: [".drift_prep.json"]
+    applies_builders: [":preparing_builder"]
 
 post_process_builders:
   cleanup:
