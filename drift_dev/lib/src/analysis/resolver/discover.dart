@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/visitor.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
+import '../backend.dart';
 import '../driver/driver.dart';
 import '../driver/error.dart';
 import '../driver/state.dart';
@@ -60,6 +61,14 @@ class DiscoverStep {
         try {
           library = await _driver.backend.readDart(_file.ownUri);
         } catch (e) {
+          if (e is! NotALibraryException) {
+            // Backends are supposed to throw NotALibraryExceptions if the
+            // library is a part file. For other exceptions, we better report
+            // the error.
+            _driver.backend.log
+                .warning('Could not resolve Dart library ${_file.ownUri}', e);
+          }
+
           _file.discovery = NotADartLibrary();
           break;
         }

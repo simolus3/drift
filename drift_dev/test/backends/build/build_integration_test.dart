@@ -1,3 +1,4 @@
+import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
@@ -103,5 +104,71 @@ selectAll: SELECT * FROM foo;
     checkOutputs({
       'a|lib/database.drift.dart': decodedMatches(contains('selectAll')),
     }, result.dartOutputs, result);
+  });
+
+  test('can work with existing part files', () async {
+    final logger = Logger.detached('build');
+    expect(logger.onRecord, neverEmits(anything));
+
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+part 'table.dart';
+
+@DriftDatabase(tables: [Users])
+class MyDatabase {}
+''',
+        'a|lib/table.dart': '''
+part of 'main.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+''',
+      },
+      logger: logger,
+    );
+
+    checkOutputs(
+      {'a|lib/main.drift.dart': decodedMatches(contains('class User'))},
+      result.dartOutputs,
+      result,
+    );
+  });
+
+  test('handles syntax error in source file', () async {
+    final logger = Logger.detached('build');
+    expect(
+      logger.onRecord,
+      emits(
+        isA<LogRecord>()
+            .having((e) => e.message, 'message',
+                contains('Could not resolve Dart library package:a/main.dart'))
+            .having(
+                (e) => e.error, 'error', isA<SyntaxErrorInAssetException>()),
+      ),
+    );
+
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn id => integer().autoIncrement()();
+  TextColumn name => text()();
+}
+
+@DriftDatabase(tables: [Users])
+class MyDatabase {}
+''',
+      },
+      logger: logger,
+    );
+
+    checkOutputs({}, result.dartOutputs, result);
   });
 }

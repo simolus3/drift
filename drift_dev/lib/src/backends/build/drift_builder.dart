@@ -185,7 +185,14 @@ class _DriftBuildRun {
 
   /// Checks if the input file contains elements drift should generate code for.
   Future<bool> _checkForElementsToBuild() async {
-    if (!mode.embeddedAnalyzer) {
+    if (mode.embeddedAnalyzer) {
+      // Run the discovery step, which we'll have to run either way, to check if
+      // there are any elements to generate code for.
+      final state = await driver.prepareFileForAnalysis(buildStep.inputId.uri,
+          needsDiscovery: true);
+
+      return state.discovery?.locallyDefinedElements.isNotEmpty == true;
+    } else {
       // An analysis step should have already run for this asset. If we can't
       // pick up results from that, there is no code for drift to generate.
       final fromCache =
