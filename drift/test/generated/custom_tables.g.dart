@@ -1624,7 +1624,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config,
-        }).asyncMap((QueryRow row) => config.mapFromRowWithAlias(row, const {
+        }).asyncMap((row) => config.mapFromRowWithAlias(row, const {
           'ck': 'config_key',
           'cf': 'config_value',
           'cs1': 'sync_state',
@@ -1691,7 +1691,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedpred.watchedTables,
-        }).map((QueryRow row) => row.read<String>('config_key'));
+        }).map((row) => row.read<String>('config_key'));
   }
 
   Selectable<JsonResult> tableValued() {
@@ -1700,7 +1700,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           config,
-        }).map((QueryRow row) {
+        }).map((row) {
       return JsonResult(
         row: row,
         key: row.read<String>('key'),
@@ -1713,7 +1713,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
         variables: [],
-        readsFrom: {}).map((QueryRow row) {
+        readsFrom: {}).map((row) {
       return JsonResult(
         row: row,
         key: row.read<String>('key'),
@@ -1739,7 +1739,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           withDefaults,
           withConstraints,
           ...generatedpredicate.watchedTables,
-        }).asyncMap((QueryRow row) async {
+        }).asyncMap((row) async {
       return MultipleResult(
         row: row,
         a: row.readNullable<String>('a'),
@@ -1773,7 +1773,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedexpr.watchedTables,
-        }).map((QueryRow row) {
+        }).map((row) {
       return ReadRowIdResult(
         row: row,
         rowid: row.read<int>('rowid'),
@@ -1809,7 +1809,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'WITH RECURSIVE cnt (x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
         variables: [],
-        readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
+        readsFrom: {}).map((row) => row.read<int>('x'));
   }
 
   Selectable<int?> nullableQuery() {
@@ -1817,7 +1817,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           config,
-        }).map((QueryRow row) => row.readNullable<int>('_c0'));
+        }).map((row) => row.readNullable<int>('_c0'));
   }
 
   Future<List<Config>> addConfig({required Insertable<Config> value}) {
@@ -1841,7 +1841,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           withConstraints,
           withDefaults,
-        }).asyncMap((QueryRow row) async {
+        }).asyncMap((row) async {
       return NestedResult(
         row: row,
         defaults: await withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),

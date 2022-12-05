@@ -30,18 +30,21 @@ class ViewWriter extends TableOrViewWriter {
   void _writeViewInfoClass() {
     emitter = scope.leaf();
 
-    buffer.write('class ${view.entityInfoName} extends ViewInfo');
+    buffer.write(
+        'class ${view.entityInfoName} extends ${emitter.drift('ViewInfo')}');
     if (scope.generationOptions.writeDataClasses) {
+      final viewClassName = emitter.dartCode(emitter.entityInfoType(view));
       emitter
-        ..write('<${view.entityInfoName}, ')
+        ..write('<$viewClassName, ')
         ..writeDart(emitter.rowType(view))
         ..write('>');
     } else {
       buffer.write('<${view.entityInfoName}, Never>');
     }
-    buffer.writeln(' implements HasResultSet {');
+    buffer.writeln(' implements ${emitter.drift('HasResultSet')} {');
 
-    final dbClassName = databaseWriter?.dbClassName ?? 'GeneratedDatabase';
+    final dbClassName =
+        databaseWriter?.dbClassName ?? emitter.drift('GeneratedDatabase');
     buffer
       ..writeln('final String? _alias;')
       ..writeln('@override final $dbClassName attachedDatabase;')
@@ -118,7 +121,7 @@ class ViewWriter extends TableOrViewWriter {
   }
 
   void _writeQuery() {
-    buffer.write('@override\nQuery? get query => ');
+    buffer.write('@override\n${emitter.drift('Query?')} get query => ');
 
     final source = view.source;
     if (source is DartViewSource) {

@@ -472,4 +472,4 @@ class UsersDrift extends i3.ModularAccessor {
   i1.Users get users => this.resultSet<i1.Users>('users');
 }
 
-typedef FindUsers$predicate = i0.Expression<bool> Function(Users users);
+typedef FindUsers$predicate = i0.Expression<bool> Function(i1.Users users);

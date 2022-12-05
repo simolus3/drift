@@ -113,11 +113,13 @@ class DatabaseWriter {
           code: createIndex(scope, entity),
         );
       } else if (entity is DriftView) {
+        final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
+
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
-          returnType: entity.entityInfoName,
-          code: '${entity.entityInfoName}(this)',
+          returnType: viewClassName,
+          code: '$viewClassName(this)',
         );
       }
     }

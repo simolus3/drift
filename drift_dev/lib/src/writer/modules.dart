@@ -42,7 +42,11 @@ class ModularAccessorWriter {
         referencedElements.addAll(queryElement.references);
       }
 
-      QueryWriter(scope.child()).write(query.value);
+      final value = query.value;
+      if (value is SqlSelectQuery) {
+        referencedElements.addAll(value.readsFromTables);
+      }
+      QueryWriter(scope.child()).write(value);
     }
 
     final restOfClass = scope.leaf();

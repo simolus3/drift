@@ -79,7 +79,7 @@ class QueryWriter {
 
     if (resultSet.singleColumn) {
       final column = resultSet.columns.single;
-      _buffer.write('(QueryRow row) => '
+      _buffer.write('(row) => '
           '${readingCode(column, scope.generationOptions, options)}');
     } else if (resultSet.matchingTable != null) {
       // note that, even if the result set has a matching table, we can't just
@@ -92,7 +92,7 @@ class QueryWriter {
         _buffer.write('${table.dbGetterName}.mapFromRow');
       } else {
         _buffer
-          ..write('(QueryRow row) => ')
+          ..write('(row) => ')
           ..write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
 
         for (final alias in match.aliasToColumn.entries) {
@@ -106,7 +106,7 @@ class QueryWriter {
         _buffer.write('})');
       }
     } else {
-      _buffer.write('(QueryRow row) ');
+      _buffer.write('(row) ');
       if (query.needsAsyncMapping) {
         _buffer.write('async ');
       }
@@ -292,7 +292,8 @@ class QueryWriter {
       final scopedType = scopedTypeName(element);
 
       final args = element.availableResultSets
-          .map((e) => '${e.argumentType} ${e.name}')
+          .map((e) =>
+              '${_emitter.dartCode(scope.entityInfoType(e.entity))} ${e.name}')
           .join(', ');
       root.leaf().write('typedef $scopedType = $type Function($args);');
 
@@ -421,9 +422,9 @@ class QueryWriter {
 
   void _writeUpdateKind(UpdatingQuery update) {
     if (update.isOnlyDelete) {
-      _buffer.write(', updateKind: UpdateKind.delete');
+      _buffer.write(', updateKind: ${_emitter.drift('UpdateKind.delete')}');
     } else if (update.isOnlyUpdate) {
-      _buffer.write(', updateKind: UpdateKind.update');
+      _buffer.write(', updateKind: ${_emitter.drift('UpdateKind.update')}');
     }
   }
 }
