@@ -91,3 +91,28 @@ class ModularAccessorWriter {
   static final Uri modularSupport =
       Uri.parse('package:drift/internal/modular.dart');
 }
+
+extension WriteImplicitDaoGetter on Scope {
+  void writeGetterForIncludedDriftFile(FileState import,
+      {required bool isAccessor}) {
+    assert(generationOptions.isModular);
+
+    if (import.hasModularDriftAccessor) {
+      final type = modularAccessor(import.ownUri);
+      final getter = ReCase(type.toString()).camelCase;
+
+      final db = isAccessor ? 'attachedDatabase' : 'this';
+
+      leaf()
+        ..writeDart(type)
+        ..write(' get $getter => ')
+        ..writeUriRef(
+            ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
+        ..writeln('($db).accessor<')
+        ..writeDart(type)
+        ..write('>(')
+        ..writeDart(type)
+        ..writeln('.new);');
+    }
+  }
+}

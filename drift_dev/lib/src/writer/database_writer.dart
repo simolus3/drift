@@ -141,21 +141,7 @@ class DatabaseWriter {
     // Also write implicit DAOs for modular imports
     if (scope.generationOptions.isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        if (import.hasModularDriftAccessor) {
-          final type = dbScope.modularAccessor(import.ownUri);
-          final getter = ReCase(type.toString()).camelCase;
-
-          dbScope.leaf()
-            ..writeDart(type)
-            ..write(' get $getter => ')
-            ..writeUriRef(
-                ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
-            ..writeln('(this).accessor<')
-            ..writeDart(type)
-            ..write('>(')
-            ..writeDart(type)
-            ..writeln('.new);');
-        }
+        dbScope.writeGetterForIncludedDriftFile(import, isAccessor: false);
       }
     }
 
