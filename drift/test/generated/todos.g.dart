@@ -1669,7 +1669,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           categories,
           todosTable,
-        }).map((row) {
+        }).map((QueryRow row) {
       return AllTodosWithCategoryResult(
         row: row,
         id: row.read<int>('id'),
@@ -1728,7 +1728,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           tableWithoutPK,
-        }).map((row) => $TableWithoutPKTable.$convertercustom
+        }).map((QueryRow row) => $TableWithoutPKTable.$convertercustom
         .fromSql(row.read<String>('custom')));
   }
 

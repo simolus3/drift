@@ -76,10 +76,11 @@ class QueryWriter {
   /// custom return type of a query.
   void _writeMappingLambda(SqlQuery query) {
     final resultSet = query.resultSet!;
+    final queryRow = _emitter.drift('QueryRow');
 
     if (resultSet.singleColumn) {
       final column = resultSet.columns.single;
-      _buffer.write('(row) => '
+      _buffer.write('($queryRow row) => '
           '${readingCode(column, scope.generationOptions, options)}');
     } else if (resultSet.matchingTable != null) {
       // note that, even if the result set has a matching table, we can't just
@@ -92,7 +93,7 @@ class QueryWriter {
         _buffer.write('${table.dbGetterName}.mapFromRow');
       } else {
         _buffer
-          ..write('(row) => ')
+          ..write('($queryRow row) => ')
           ..write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
 
         for (final alias in match.aliasToColumn.entries) {
@@ -106,7 +107,7 @@ class QueryWriter {
         _buffer.write('})');
       }
     } else {
-      _buffer.write('(row) ');
+      _buffer.write('($queryRow row) ');
       if (query.needsAsyncMapping) {
         _buffer.write('async ');
       }

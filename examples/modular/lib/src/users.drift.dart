@@ -451,25 +451,127 @@ class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
   bool get dontWriteConstraints => true;
 }
 
-class UsersDrift extends i3.ModularAccessor {
-  UsersDrift(i0.GeneratedDatabase db) : super(db);
-  i0.Selectable<i1.User> findUsers({FindUsers$predicate? predicate}) {
-    var $arrayStartIndex = 1;
-    final generatedpredicate = $write(
-        predicate?.call(this.users) ?? const i0.CustomExpression('(TRUE)'),
-        startIndex: $arrayStartIndex);
-    $arrayStartIndex += generatedpredicate.amountOfVariables;
-    return customSelect('SELECT * FROM users WHERE ${generatedpredicate.sql}',
-        variables: [
-          ...generatedpredicate.introducedVariables
-        ],
-        readsFrom: {
-          users,
-          ...generatedpredicate.watchedTables,
-        }).asyncMap(users.mapFromRow);
+class PopularUser extends i0.DataClass {
+  final int id;
+  final String name;
+  final String? biography;
+  final i2.Preferences? preferences;
+  const PopularUser(
+      {required this.id, required this.name, this.biography, this.preferences});
+  factory PopularUser.fromJson(Map<String, dynamic> json,
+      {i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return PopularUser(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      biography: serializer.fromJson<String?>(json['biography']),
+      preferences: Users.$converterpreferencesn.fromJson(
+          serializer.fromJson<Map<String, Object?>?>(json['preferences'])),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'biography': serializer.toJson<String?>(biography),
+      'preferences': serializer.toJson<Map<String, Object?>?>(
+          Users.$converterpreferencesn.toJson(preferences)),
+    };
   }
 
-  i1.Users get users => this.resultSet<i1.Users>('users');
+  i1.PopularUser copyWith(
+          {int? id,
+          String? name,
+          i0.Value<String?> biography = const i0.Value.absent(),
+          i0.Value<i2.Preferences?> preferences = const i0.Value.absent()}) =>
+      i1.PopularUser(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        biography: biography.present ? biography.value : this.biography,
+        preferences: preferences.present ? preferences.value : this.preferences,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('PopularUser(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('biography: $biography, ')
+          ..write('preferences: $preferences')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, biography, preferences);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is i1.PopularUser &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.biography == this.biography &&
+          other.preferences == this.preferences);
 }
 
-typedef FindUsers$predicate = i0.Expression<bool> Function(i1.Users users);
+class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
+    implements i0.HasResultSet {
+  final String? _alias;
+  @override
+  final i0.GeneratedDatabase attachedDatabase;
+  PopularUsers(this.attachedDatabase, [this._alias]);
+  @override
+  List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'popular_users';
+  @override
+  String get createViewStmt =>
+      'CREATE VIEW popular_users AS SELECT * FROM users ORDER BY (SELECT count(*) FROM follows WHERE followed = users.id)';
+  @override
+  PopularUsers get asDslTable => this;
+  @override
+  i1.PopularUser map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return i1.PopularUser(
+      id: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
+      biography: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
+      preferences: Users.$converterpreferencesn.fromSql(attachedDatabase
+          .typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
+    );
+  }
+
+  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: i0.DriftSqlType.int);
+  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: i0.DriftSqlType.string);
+  late final i0.GeneratedColumn<String> biography = i0.GeneratedColumn<String>(
+      'biography', aliasedName, true,
+      type: i0.DriftSqlType.string);
+  late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
+      preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
+              type: i0.DriftSqlType.string)
+          .withConverter<i2.Preferences?>(Users.$converterpreferencesn);
+  @override
+  PopularUsers createAlias(String alias) {
+    return PopularUsers(attachedDatabase, alias);
+  }
+
+  @override
+  i0.Query? get query => null;
+  @override
+  Set<String> get readTables => const {'users', 'follows'};
+}
+
+class UsersDrift extends i3.ModularAccessor {
+  UsersDrift(i0.GeneratedDatabase db) : super(db);
+}

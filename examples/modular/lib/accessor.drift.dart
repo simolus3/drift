@@ -6,6 +6,7 @@ import 'package:modular/src/users.drift.dart' as i2;
 mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
   i2.Users get users => attachedDatabase.users;
   i2.Follows get follows => attachedDatabase.follows;
+  i2.PopularUsers get popularUsers => attachedDatabase.popularUsers;
   Future<int> addUser({required i0.Insertable<i2.User> user}) {
     var $arrayStartIndex = 1;
     final generateduser =

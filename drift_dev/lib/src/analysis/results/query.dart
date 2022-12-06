@@ -840,9 +840,6 @@ class AvailableDriftResultSet {
 
   AvailableDriftResultSet(this.name, this.entity, [this.source]);
 
-  /// The argument type of this result set when used in a scoped function.
-  String get argumentType => entity.entityInfoName;
-
   @override
   int get hashCode => Object.hash(name, entity);
 

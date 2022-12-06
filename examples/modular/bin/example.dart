@@ -5,7 +5,7 @@ import 'package:modular/src/users.drift.dart';
 void main() async {
   final database = Database(NativeDatabase.memory(logStatements: true));
 
-  database.usersDrift.findUsers().watch().listen(print);
+  database.userQueriesDrift.findUsers().watch().listen(print);
 
   await database.myAccessor
       .addUser(user: UsersCompanion.insert(name: 'first_user'));

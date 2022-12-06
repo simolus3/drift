@@ -16,6 +16,7 @@ pushd examples/modular
 echo "Running build runner in modular example"
 dart pub upgrade
 dart run build_runner build --delete-conflicting-outputs
+dart run bin/example.dart
 popd
 
 pushd examples/migrations_example
