@@ -203,6 +203,10 @@ class Migrator {
       context.buffer.write('INSERT INTO $temporaryName (');
       var first = true;
       for (final column in table.$columns) {
+        if (column.generatedAs != null) {
+          continue;
+        }
+
         final transformer = migration.columnTransformer[column];
 
         if (transformer != null || !migration.newColumns.contains(column)) {
