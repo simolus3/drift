@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
+import '../resolver/intermediate_state.dart';
 import '../results/database.dart';
 import '../results/element.dart';
 import '../results/file_results.dart';
@@ -62,7 +63,12 @@ class FileState {
   }
 
   bool get _definesQuery {
-    return analyzedElements.any((e) => e is DefinedSqlQuery);
+    return analyzedElements.any((e) => e is DefinedSqlQuery) ||
+        // Also check discovery, we might not have analyzed all elements in this
+        // file if it's just an import.
+        discovery?.locallyDefinedElements
+                .any((e) => e is DiscoveredDriftStatement) ==
+            true;
   }
 
   /// Whether an accessor class making queries and imports available should be
