@@ -203,6 +203,8 @@ class Migrator {
       context.buffer.write('INSERT INTO $temporaryName (');
       var first = true;
       for (final column in table.$columns) {
+        if (column.generatedAs != null) continue;
+
         final transformer = migration.columnTransformer[column];
 
         if (transformer != null || !migration.newColumns.contains(column)) {
@@ -228,7 +230,7 @@ class Migrator {
         first = false;
       }
       context.buffer.write(' FROM ${context.identifier(tableName)};');
-      await _issueCustomQuery(context.sql, context.introducedVariables);
+      await _issueCustomQuery(context.sql, context.boundVariables);
 
       // Step 6: Drop the old table
       await _issueCustomQuery('DROP TABLE ${context.identifier(tableName)}');
