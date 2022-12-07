@@ -4,7 +4,7 @@ import 'accessor.dart';
 import 'database.drift.dart';
 
 @DriftDatabase(include: {
-  'src/users.drift',
+  'src/user_queries.drift',
   'src/posts.drift',
   'src/search.drift',
 }, daos: [

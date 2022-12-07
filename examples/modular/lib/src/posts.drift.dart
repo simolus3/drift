@@ -1,8 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/posts.drift.dart' as i1;
-import 'package:drift/internal/modular.dart' as i2;
-import 'package:modular/src/users.drift.dart' as i3;
 
 class Post extends i0.DataClass implements i0.Insertable<i1.Post> {
   final int id;
@@ -395,9 +393,4 @@ class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
   List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
-}
-
-class PostsDrift extends i2.ModularAccessor {
-  PostsDrift(i0.GeneratedDatabase db) : super(db);
-  i3.UsersDrift get usersDrift => this.accessor(i3.UsersDrift.new);
 }

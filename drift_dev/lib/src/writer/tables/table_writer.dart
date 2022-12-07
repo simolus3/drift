@@ -76,11 +76,11 @@ abstract class TableOrViewWriter {
 
         final literalEntries = [
           for (final entry in constraints.entries)
-            'SqlDialect.${entry.key.name}: ${asDartLiteral(entry.value)},',
+            '${emitter.drift('SqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
         ];
 
         additionalParams['defaultConstraints'] =
-            'GeneratedColumn.constraintsDependsOnDialect({${literalEntries.join('\n')}})';
+            '${emitter.drift('GeneratedColumn.constraintsDependsOnDialect')}({${literalEntries.join('\n')}})';
       } else {
         // Constraints are the same regardless of dialect, only generate one set
         // of them
@@ -88,7 +88,7 @@ abstract class TableOrViewWriter {
         final constraint = asDartLiteral(constraints.values.first);
 
         additionalParams['defaultConstraints'] =
-            'GeneratedColumn.constraintIsAlways($constraint)';
+            '${emitter.drift('GeneratedColumn.constraintIsAlways')}($constraint)';
       }
     }
 

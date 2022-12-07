@@ -7,6 +7,7 @@ import '../results/database.dart';
 import '../results/element.dart';
 import '../results/file_results.dart';
 import '../results/query.dart';
+import 'driver.dart';
 import 'error.dart';
 
 class FileState {
@@ -18,6 +19,8 @@ class FileState {
   final Map<DriftElementId, ElementAnalysisState> analysis = {};
   FileAnalysisResult? fileAnalysis;
 
+  bool? _needsModularAccessor;
+
   FileState(this.ownUri);
 
   String get extension => url.extension(ownUri.path);
@@ -25,15 +28,6 @@ class FileState {
   /// Whether this file contains a drift database or a drift accessor / DAO.
   bool get containsDatabaseAccessor {
     return analyzedElements.any((e) => e is BaseDriftAccessor);
-  }
-
-  /// Whether an accessor class making queries and imports available should be
-  /// written for this file if modular analysis is enabled.
-  bool get hasModularDriftAccessor {
-    final hasImports = discovery?.importDependencies.isNotEmpty == true;
-    final hasQuery = analyzedElements.any((e) => e is DefinedSqlQuery);
-
-    return hasImports || hasQuery;
   }
 
   /// All analyzed [DriftElement]s found in this library.
@@ -65,6 +59,23 @@ class FileState {
 
   bool elementIsAnalyzed(DriftElementId id) {
     return analysis[id]?.isUpToDate == true;
+  }
+
+  bool get _definesQuery {
+    return analyzedElements.any((e) => e is DefinedSqlQuery);
+  }
+
+  /// Whether an accessor class making queries and imports available should be
+  /// written for this file if modular analysis is enabled.
+  ///
+  /// This is the case if this accessor defines queries or if it transitively
+  /// imports a modular accessor.
+  bool needsModularAccessor(DriftAnalysisDriver driver) {
+    if (_needsModularAccessor != null) return _needsModularAccessor!;
+
+    return _needsModularAccessor = driver.cache.crawl(this).any((e) {
+      return e._definesQuery;
+    });
   }
 }
 

@@ -1,5 +1,6 @@
 import '../analysis/results/results.dart';
 import 'database_writer.dart';
+import 'modules.dart';
 import 'queries/query_writer.dart';
 import 'writer.dart';
 
@@ -33,6 +34,13 @@ class AccessorWriter {
 
     for (final query in input.availableRegularQueries) {
       QueryWriter(classScope.child()).write(query);
+    }
+
+    if (scope.generationOptions.isModular) {
+      for (final import in input.resolvedAccessor.knownImports) {
+        classScope.writeGetterForIncludedDriftFile(import, input.driver!,
+            isAccessor: true);
+      }
     }
 
     classScope.leaf().write('}');

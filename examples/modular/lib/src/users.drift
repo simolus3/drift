@@ -15,4 +15,6 @@ CREATE TABLE follows (
     PRIMARY KEY (followed, follower)
 );
 
-findUsers($predicate = TRUE): SELECT * FROM users WHERE $predicate;
+CREATE VIEW popular_users AS
+  SELECT * FROM users
+    ORDER BY (SELECT count(*) FROM follows WHERE followed = users.id);

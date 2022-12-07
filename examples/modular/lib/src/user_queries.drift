@@ -1,0 +1,5 @@
+import 'users.drift';
+
+findUsers($predicate = TRUE): SELECT * FROM users WHERE $predicate;
+findPopularUsers: SELECT * FROM popular_users;
+follow: INSERT INTO follows VALUES (?, ?);

@@ -262,7 +262,8 @@ class _DriftBuildRun {
       } else if (result is DriftDatabase) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
-        final input = DatabaseGenerationInput(result, resolved, const {});
+        final input =
+            DatabaseGenerationInput(result, resolved, const {}, driver);
         DatabaseWriter(input, writer.child()).write();
 
         // Also write stubs for known custom functions so that the user can
@@ -271,14 +272,13 @@ class _DriftBuildRun {
       } else if (result is DatabaseAccessor) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;
-        final input = AccessorGenerationInput(result, resolved, const {});
+        final input =
+            AccessorGenerationInput(result, resolved, const {}, driver);
         AccessorWriter(input, writer.child()).write();
       }
     }
 
-    if (entrypointState.hasModularDriftAccessor) {
-      ModularAccessorWriter(writer.child(), entrypointState).write();
-    }
+    ModularAccessorWriter(writer.child(), entrypointState, driver).write();
   }
 
   Future<void> _generateMonolithic(FileState entrypointState) async {
@@ -320,12 +320,12 @@ class _DriftBuildRun {
             .map((k, v) => MapEntry(k, mappedQueries[v] ?? v));
 
         if (result is DriftDatabase) {
-          final input =
-              DatabaseGenerationInput(result, resolved, importedQueries);
+          final input = DatabaseGenerationInput(
+              result, resolved, importedQueries, driver);
           DatabaseWriter(input, writer.child()).write();
         } else if (result is DatabaseAccessor) {
-          final input =
-              AccessorGenerationInput(result, resolved, importedQueries);
+          final input = AccessorGenerationInput(
+              result, resolved, importedQueries, driver);
           AccessorWriter(input, writer.child()).write();
         }
       }

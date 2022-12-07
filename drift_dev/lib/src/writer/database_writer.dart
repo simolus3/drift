@@ -4,6 +4,7 @@ import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';
 
+import '../analysis/driver/driver.dart';
 import '../analysis/results/file_results.dart';
 import '../analysis/results/results.dart';
 import '../services/find_stream_update_rules.dart';
@@ -17,7 +18,7 @@ import 'writer.dart';
 /// Generates the Dart code put into a `.g.dart` file when running the
 /// generator.
 class DatabaseWriter {
-  DatabaseGenerationInput input;
+  final DatabaseGenerationInput input;
   final Scope scope;
 
   DriftDatabase get db => input.accessor;
@@ -113,11 +114,13 @@ class DatabaseWriter {
           code: createIndex(scope, entity),
         );
       } else if (entity is DriftView) {
+        final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
+
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
-          returnType: entity.entityInfoName,
-          code: '${entity.entityInfoName}(this)',
+          returnType: viewClassName,
+          code: '$viewClassName(this)',
         );
       }
     }
@@ -139,21 +142,8 @@ class DatabaseWriter {
     // Also write implicit DAOs for modular imports
     if (scope.generationOptions.isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        if (import.hasModularDriftAccessor) {
-          final type = dbScope.modularAccessor(import.ownUri);
-          final getter = ReCase(type.toString()).camelCase;
-
-          dbScope.leaf()
-            ..writeDart(type)
-            ..write(' get $getter => ')
-            ..writeUriRef(
-                ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
-            ..writeln('(this).accessor<')
-            ..writeDart(type)
-            ..write('>(')
-            ..writeDart(type)
-            ..writeln('.new);');
-        }
+        dbScope.writeGetterForIncludedDriftFile(import, input.driver!,
+            isAccessor: false);
       }
     }
 
@@ -250,8 +240,10 @@ class GenerationInput<T extends BaseDriftAccessor> {
   final T accessor;
   final ResolvedDatabaseAccessor resolvedAccessor;
   final Map<DefinedSqlQuery, SqlQuery> importedQueries;
+  final DriftAnalysisDriver? driver;
 
-  GenerationInput(this.accessor, this.resolvedAccessor, this.importedQueries);
+  GenerationInput(
+      this.accessor, this.resolvedAccessor, this.importedQueries, this.driver);
 
   /// All locally-defined and imported [SqlQuery] elements that are regular
   /// queries (so no query with [QueryMode.atCreate]).

@@ -1,6 +1,6 @@
-import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 
+import '../analysis/driver/driver.dart';
 import '../analysis/driver/state.dart';
 import '../analysis/results/results.dart';
 import '../utils/string_escaper.dart';
@@ -19,11 +19,12 @@ import 'writer.dart';
 class ModularAccessorWriter {
   final Scope scope;
   final FileState file;
+  final DriftAnalysisDriver driver;
 
-  ModularAccessorWriter(this.scope, this.file);
+  ModularAccessorWriter(this.scope, this.file, this.driver);
 
   void write() {
-    if (!file.hasModularDriftAccessor) return;
+    if (!file.needsModularAccessor(driver)) return;
 
     final className = scope.modularAccessor(file.ownUri);
     final generatedDatabase = scope.drift('GeneratedDatabase');
@@ -42,7 +43,11 @@ class ModularAccessorWriter {
         referencedElements.addAll(queryElement.references);
       }
 
-      QueryWriter(scope.child()).write(query.value);
+      final value = query.value;
+      if (value is SqlSelectQuery) {
+        referencedElements.addAll(value.readsFromTables);
+      }
+      QueryWriter(scope.child()).write(value);
     }
 
     final restOfClass = scope.leaf();
@@ -65,7 +70,9 @@ class ModularAccessorWriter {
     // Also make imports available
     final imports = file.discovery?.importDependencies ?? const [];
     for (final import in imports) {
-      if (url.extension(import.path) == '.drift') {
+      final file = driver.cache.knownFiles[import];
+
+      if (file != null && file.needsModularAccessor(driver)) {
         final moduleClass = restOfClass.modularAccessor(import);
         final getterName = ReCase(moduleClass.toString()).camelCase;
 
@@ -86,4 +93,30 @@ class ModularAccessorWriter {
 
   static final Uri modularSupport =
       Uri.parse('package:drift/internal/modular.dart');
+}
+
+extension WriteImplicitDaoGetter on Scope {
+  void writeGetterForIncludedDriftFile(
+      FileState import, DriftAnalysisDriver driver,
+      {required bool isAccessor}) {
+    assert(generationOptions.isModular);
+
+    if (import.needsModularAccessor(driver)) {
+      final type = modularAccessor(import.ownUri);
+      final getter = ReCase(type.toString()).camelCase;
+
+      final db = isAccessor ? 'attachedDatabase' : 'this';
+
+      leaf()
+        ..writeDart(type)
+        ..write(' get $getter => ')
+        ..writeUriRef(
+            ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
+        ..writeln('($db).accessor<')
+        ..writeDart(type)
+        ..write('>(')
+        ..writeDart(type)
+        ..writeln('.new);');
+    }
+  }
 }
