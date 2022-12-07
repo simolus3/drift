@@ -1,6 +1,7 @@
 import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 
+import '../analysis/driver/driver.dart';
 import '../analysis/driver/state.dart';
 import '../analysis/results/results.dart';
 import '../utils/string_escaper.dart';
@@ -19,11 +20,12 @@ import 'writer.dart';
 class ModularAccessorWriter {
   final Scope scope;
   final FileState file;
+  final DriftAnalysisDriver driver;
 
-  ModularAccessorWriter(this.scope, this.file);
+  ModularAccessorWriter(this.scope, this.file, this.driver);
 
   void write() {
-    if (!file.hasModularDriftAccessor) return;
+    if (!file.needsModularAccessor(driver)) return;
 
     final className = scope.modularAccessor(file.ownUri);
     final generatedDatabase = scope.drift('GeneratedDatabase');
@@ -69,7 +71,9 @@ class ModularAccessorWriter {
     // Also make imports available
     final imports = file.discovery?.importDependencies ?? const [];
     for (final import in imports) {
-      if (url.extension(import.path) == '.drift') {
+      final file = driver.cache.knownFiles[import];
+
+      if (file != null && file.needsModularAccessor(driver)) {
         final moduleClass = restOfClass.modularAccessor(import);
         final getterName = ReCase(moduleClass.toString()).camelCase;
 
@@ -93,11 +97,12 @@ class ModularAccessorWriter {
 }
 
 extension WriteImplicitDaoGetter on Scope {
-  void writeGetterForIncludedDriftFile(FileState import,
+  void writeGetterForIncludedDriftFile(
+      FileState import, DriftAnalysisDriver driver,
       {required bool isAccessor}) {
     assert(generationOptions.isModular);
 
-    if (import.hasModularDriftAccessor) {
+    if (import.needsModularAccessor(driver)) {
       final type = modularAccessor(import.ownUri);
       final getter = ReCase(type.toString()).camelCase;
 

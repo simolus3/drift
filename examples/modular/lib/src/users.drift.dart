@@ -2,7 +2,6 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/users.drift.dart' as i1;
 import 'package:modular/src/preferences.dart' as i2;
-import 'package:drift/internal/modular.dart' as i3;
 
 class User extends i0.DataClass implements i0.Insertable<i1.User> {
   final int id;
@@ -570,8 +569,4 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
   i0.Query? get query => null;
   @override
   Set<String> get readTables => const {'users', 'follows'};
-}
-
-class UsersDrift extends i3.ModularAccessor {
-  UsersDrift(i0.GeneratedDatabase db) : super(db);
 }

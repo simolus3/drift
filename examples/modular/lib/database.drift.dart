@@ -19,8 +19,6 @@ abstract class $Database extends i0.GeneratedDatabase {
   late final i4.MyAccessor myAccessor = i4.MyAccessor(this as i5.Database);
   i6.UserQueriesDrift get userQueriesDrift => i7.ReadDatabaseContainer(this)
       .accessor<i6.UserQueriesDrift>(i6.UserQueriesDrift.new);
-  i2.PostsDrift get postsDrift =>
-      i7.ReadDatabaseContainer(this).accessor<i2.PostsDrift>(i2.PostsDrift.new);
   i3.SearchDrift get searchDrift => i7.ReadDatabaseContainer(this)
       .accessor<i3.SearchDrift>(i3.SearchDrift.new);
   @override

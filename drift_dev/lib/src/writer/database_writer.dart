@@ -4,6 +4,7 @@ import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';
 
+import '../analysis/driver/driver.dart';
 import '../analysis/results/file_results.dart';
 import '../analysis/results/results.dart';
 import '../services/find_stream_update_rules.dart';
@@ -17,7 +18,7 @@ import 'writer.dart';
 /// Generates the Dart code put into a `.g.dart` file when running the
 /// generator.
 class DatabaseWriter {
-  DatabaseGenerationInput input;
+  final DatabaseGenerationInput input;
   final Scope scope;
 
   DriftDatabase get db => input.accessor;
@@ -141,7 +142,8 @@ class DatabaseWriter {
     // Also write implicit DAOs for modular imports
     if (scope.generationOptions.isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        dbScope.writeGetterForIncludedDriftFile(import, isAccessor: false);
+        dbScope.writeGetterForIncludedDriftFile(import, input.driver,
+            isAccessor: false);
       }
     }
 
@@ -238,8 +240,10 @@ class GenerationInput<T extends BaseDriftAccessor> {
   final T accessor;
   final ResolvedDatabaseAccessor resolvedAccessor;
   final Map<DefinedSqlQuery, SqlQuery> importedQueries;
+  final DriftAnalysisDriver driver;
 
-  GenerationInput(this.accessor, this.resolvedAccessor, this.importedQueries);
+  GenerationInput(
+      this.accessor, this.resolvedAccessor, this.importedQueries, this.driver);
 
   /// All locally-defined and imported [SqlQuery] elements that are regular
   /// queries (so no query with [QueryMode.atCreate]).

@@ -42,7 +42,6 @@ class UserQueriesDrift extends i1.ModularAccessor {
   i2.PopularUsers get popularUsers =>
       this.resultSet<i2.PopularUsers>('popular_users');
   i2.Follows get follows => this.resultSet<i2.Follows>('follows');
-  i2.UsersDrift get usersDrift => this.accessor(i2.UsersDrift.new);
 }
 
 typedef FindUsers$predicate = i0.Expression<bool> Function(i2.Users users);
