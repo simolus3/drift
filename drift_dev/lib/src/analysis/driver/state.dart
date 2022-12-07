@@ -3,7 +3,6 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
-import '../resolver/intermediate_state.dart';
 import '../results/database.dart';
 import '../results/element.dart';
 import '../results/file_results.dart';

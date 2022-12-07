@@ -38,7 +38,7 @@ class AccessorWriter {
 
     if (scope.generationOptions.isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        classScope.writeGetterForIncludedDriftFile(import, input.driver,
+        classScope.writeGetterForIncludedDriftFile(import, input.driver!,
             isAccessor: true);
       }
     }

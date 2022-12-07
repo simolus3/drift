@@ -140,7 +140,7 @@ class GenerateUtilsCommand extends Command {
     );
     final resolved =
         ResolvedDatabaseAccessor(const {}, const [], schema.schema);
-    final input = DatabaseGenerationInput(database, resolved, const {});
+    final input = DatabaseGenerationInput(database, resolved, const {}, null);
 
     DatabaseWriter(input, writer.child()).write();
 

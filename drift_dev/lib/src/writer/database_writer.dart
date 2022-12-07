@@ -142,7 +142,7 @@ class DatabaseWriter {
     // Also write implicit DAOs for modular imports
     if (scope.generationOptions.isModular) {
       for (final import in input.resolvedAccessor.knownImports) {
-        dbScope.writeGetterForIncludedDriftFile(import, input.driver,
+        dbScope.writeGetterForIncludedDriftFile(import, input.driver!,
             isAccessor: false);
       }
     }
@@ -240,7 +240,7 @@ class GenerationInput<T extends BaseDriftAccessor> {
   final T accessor;
   final ResolvedDatabaseAccessor resolvedAccessor;
   final Map<DefinedSqlQuery, SqlQuery> importedQueries;
-  final DriftAnalysisDriver driver;
+  final DriftAnalysisDriver? driver;
 
   GenerationInput(
       this.accessor, this.resolvedAccessor, this.importedQueries, this.driver);

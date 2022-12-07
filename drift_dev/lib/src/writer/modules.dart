@@ -1,4 +1,3 @@
-import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 
 import '../analysis/driver/driver.dart';

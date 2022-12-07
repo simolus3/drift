@@ -111,7 +111,7 @@ class Database {}
     );
     final resolved =
         ResolvedDatabaseAccessor(const {}, const [], reader.entities.toList());
-    final input = DatabaseGenerationInput(database, resolved, const {});
+    final input = DatabaseGenerationInput(database, resolved, const {}, null);
 
     // Write the database. Not crashing is good enough for us here, we have
     // separate tests for verification
