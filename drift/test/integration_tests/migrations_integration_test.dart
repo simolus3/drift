@@ -257,12 +257,15 @@ void main() {
         CategoriesCompanion.insert(description: 'My Initial Description'));
 
     final migrator = db.createMigrator();
+    await migrator.drop(db.categoryTodoCountView);
+    await migrator.drop(db.todoWithCategoryView);
     await migrator.alterTable(TableMigration(
       db.categories,
       columnTransformer: {
         db.categories.description: db.categories.description.lower(),
       },
     ));
+    await migrator.recreateAllViews();
 
     final value = await db.categories.select().getSingle();
     expect(value.description, 'my initial description');
@@ -276,12 +279,15 @@ void main() {
         .insertOne(TodosTableCompanion.insert(content: 'my content'));
 
     final migrator = db.createMigrator();
+    await migrator.drop(db.categoryTodoCountView);
+    await migrator.drop(db.todoWithCategoryView);
     await migrator.alterTable(TableMigration(
       db.todosTable,
       columnTransformer: {
         db.todosTable.content: Variable('old: ') + db.todosTable.content,
       },
     ));
+    await migrator.recreateAllViews();
 
     final value = await db.todosTable.select().getSingle();
     expect(value.content, 'old: my content');
