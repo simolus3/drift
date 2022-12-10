@@ -282,14 +282,18 @@ class SchemaReader {
     final name = content['name'] as String;
     final sql = content['sql'] as String;
 
+    // Old versions of this file used to have a typo when serializing body
+    // references.
+    final bodyReferences =
+        (content['references_in_body'] ?? content['refences_in_body']) as List;
+
     return DriftTrigger(
       _id(name),
       _declaration,
       on: on,
       onWrite: UpdateKind.delete,
       references: [
-        for (final bodyRef in content['references_in_body'] as List)
-          _existingEntity(bodyRef)
+        for (final bodyRef in bodyReferences) _existingEntity(bodyRef)
       ],
       createStmt: sql,
       writes: const [],

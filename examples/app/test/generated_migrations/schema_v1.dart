@@ -9,9 +9,11 @@ class Categories extends Table with TableInfo {
   Categories(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
+      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
@@ -35,9 +37,6 @@ class Categories extends Table with TableInfo {
   Categories createAlias(String alias) {
     return Categories(attachedDatabase, alias);
   }
-
-  @override
-  bool get dontWriteConstraints => false;
 }
 
 class TodoEntries extends Table with TableInfo {
@@ -47,9 +46,11 @@ class TodoEntries extends Table with TableInfo {
   TodoEntries(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
+      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
@@ -73,9 +74,6 @@ class TodoEntries extends Table with TableInfo {
   TodoEntries createAlias(String alias) {
     return TodoEntries(attachedDatabase, alias);
   }
-
-  @override
-  bool get dontWriteConstraints => false;
 }
 
 class TextEntries extends Table with TableInfo, VirtualTableInfo {
@@ -95,7 +93,7 @@ class TextEntries extends Table with TableInfo, VirtualTableInfo {
   @override
   String get actualTableName => 'text_entries';
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
   Never map(Map<String, dynamic> data, {String? tablePrefix}) {
     throw UnsupportedError('TableInfo.map in schema verification code');
@@ -106,8 +104,6 @@ class TextEntries extends Table with TableInfo, VirtualTableInfo {
     return TextEntries(attachedDatabase, alias);
   }
 
-  @override
-  bool get dontWriteConstraints => true;
   @override
   String get moduleAndArgs =>
       'fts5(description, content=todo_entries, content_rowid=id)';
@@ -120,14 +116,24 @@ class DatabaseAtV1 extends GeneratedDatabase {
   late final TodoEntries todoEntries = TodoEntries(this);
   late final TextEntries textEntries = TextEntries(this);
   late final Trigger todosInsert = Trigger(
-      'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN\n  INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);\nEND;',
+      'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
       'todos_insert');
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables =>
+  Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [categories, todoEntries, textEntries, todosInsert];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('todo_entries',
+                limitUpdateKind: UpdateKind.delete),
+            result: [],
+          ),
+        ],
+      );
   @override
   int get schemaVersion => 1;
 }
