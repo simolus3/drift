@@ -1,8 +1,10 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
+import 'package:sqlparser/sqlparser.dart' show GeneratedAs, ReferenceAction;
+import 'package:sqlparser/utils/node_to_text.dart';
 
+import '../../utils/string_escaper.dart';
 import '../options.dart';
 import 'dart.dart';
 import 'element.dart';
@@ -224,6 +226,17 @@ class ColumnGeneratedAs extends DriftColumnConstraint {
 
   factory ColumnGeneratedAs.fromJson(Map json) =>
       _$ColumnGeneratedAsFromJson(json);
+
+  factory ColumnGeneratedAs.fromParser(GeneratedAs constraint) {
+    return ColumnGeneratedAs(
+        AnnotatedDartCode.build((b) => b
+          ..addText('const ')
+          ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
+          ..addText('(')
+          ..addText(asDartLiteral(constraint.expression.toSql()))
+          ..addText(')')),
+        constraint.stored);
+  }
 
   Map<String, Object?> toJson() => _$ColumnGeneratedAsToJson(this);
 }

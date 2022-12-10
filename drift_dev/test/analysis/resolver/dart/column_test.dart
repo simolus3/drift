@@ -232,4 +232,67 @@ class Database {}
     final column = table.columns.single;
     expect(column.nameInSql, 'TEXTCOLUMN');
   });
+
+  group('customConstraint analysis', () {
+    test('reports errors', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TestTable extends Table {
+  TextColumn get textColumn => text().customConstraint('NOT NULL invalid')();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.dart');
+      expect(file.allErrors, [
+        isDriftError(contains(
+                'Parse error in customConstraint(): Expected a constraint'))
+            .withSpan('invalid'),
+      ]);
+    });
+
+    test('warns about missing `NOT NULL`', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TestTable extends Table {
+  TextColumn get textColumn => text().customConstraint('UNIQUE')();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.dart');
+      expect(file.allErrors, [
+        isDriftError(
+                contains('This column is not declared to be `.nullable()`'))
+            .withSpan("'UNIQUE'"),
+      ]);
+    });
+
+    test('applies constraints', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TestTable extends Table {
+  TextColumn get textColumn => text()
+      .customConstraint('NOT NULL GENERATED ALWAYS AS (\\'\\')')();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      final column = table.columns.single;
+
+      expect(column.nullable, isFalse);
+      expect(column.isGenerated, isTrue);
+      expect(table.isColumnRequiredForInsert(column), isFalse);
+    });
+  });
 }

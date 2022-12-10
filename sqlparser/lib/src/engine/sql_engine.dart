@@ -104,15 +104,47 @@ class SqlEngine {
     return tokens;
   }
 
+  Parser _createParser(
+    List<Token> tokens, {
+    AutoCompleteEngine? autoComplete,
+    bool? driftExtensions,
+  }) {
+    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
+    return Parser(
+      tokensForParser,
+      useDrift: driftExtensions ?? options.useDriftExtensions,
+      autoComplete: autoComplete,
+    );
+  }
+
   /// Parses a single [sql] statement into an AST-representation.
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
-    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
-    final parser =
-        Parser(tokensForParser, useDrift: options.useDriftExtensions);
+    final parser = _createParser(tokens);
 
     final stmt = parser.safeStatement();
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
+  }
+
+  /// Parses [sql] as a list of column constraints.
+  ///
+  /// The [ParseResult.rootNode] will be a [ColumnDefinition] with the parsed
+  /// constraints.
+  ParseResult parseColumnConstraints(String sql) {
+    final tokens = tokenize(sql);
+    final parser = _createParser(tokens, driftExtensions: false);
+
+    return ParseResult._(
+      ColumnDefinition(
+        columnName: '',
+        typeName: '',
+        constraints: parser.columnConstraintsUntilEnd(),
+      ),
+      tokens,
+      parser.errors,
+      sql,
+      null,
+    );
   }
 
   /// Parses a `.drift` file, which can consist of multiple statements and
@@ -122,10 +154,7 @@ class SqlEngine {
 
     final tokens = tokenize(content);
     final autoComplete = AutoCompleteEngine(tokens, this);
-
-    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
-    final parser =
-        Parser(tokensForParser, useDrift: true, autoComplete: autoComplete);
+    final parser = _createParser(tokens, autoComplete: autoComplete);
 
     final driftFile = parser.driftFile();
     driftFile.scope = _constructRootScope();

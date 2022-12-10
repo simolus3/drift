@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
+import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../driver/error.dart';
 import '../../results/results.dart';
@@ -91,6 +92,7 @@ class ColumnParser {
     String? foundStartMethod;
     String? foundExplicitName;
     String? foundCustomConstraint;
+    Expression? customConstraintSource;
     AnnotatedDartCode? foundDefaultExpression;
     AnnotatedDartCode? clientDefaultExpression;
     Expression? mappedAs;
@@ -276,8 +278,9 @@ class ColumnParser {
             );
           }
 
-          foundCustomConstraint =
-              readStringLiteral(remainingExpr.argumentList.arguments.first);
+          final stringLiteral = customConstraintSource =
+              remainingExpr.argumentList.arguments.first;
+          foundCustomConstraint = readStringLiteral(stringLiteral);
 
           if (foundCustomConstraint == null) {
             _resolver.reportError(DriftAnalysisError.forDartElement(
@@ -426,6 +429,12 @@ class ColumnParser {
     final docString =
         getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
 
+    foundConstraints.addAll(_driftConstraintsFromCustomConstraints(
+      isNullable: nullable,
+      customConstraints: foundCustomConstraint,
+      sourceForCustomConstraints: customConstraintSource,
+    ));
+
     return PendingColumnInformation(
       DriftColumn(
         sqlType: sqlType,
@@ -473,6 +482,47 @@ class ColumnParser {
     if (object == null) return null;
 
     return object.computeConstantValue()!.getField('key')!.toStringValue();
+  }
+
+  Iterable<DriftColumnConstraint> _driftConstraintsFromCustomConstraints({
+    required bool isNullable,
+    String? customConstraints,
+    AstNode? sourceForCustomConstraints,
+  }) sync* {
+    if (customConstraints == null) return;
+
+    final engine = _resolver.resolver.driver.newSqlEngine();
+    final parseResult = engine.parseColumnConstraints(customConstraints);
+    final constraints =
+        (parseResult.rootNode as sql.ColumnDefinition).constraints;
+
+    for (final error in parseResult.errors) {
+      _resolver.reportError(DriftAnalysisError(error.token.span,
+          'Parse error in customConstraint(): ${error.message}'));
+    }
+
+    // Constraints override all constraints that drift will add. So if the
+    // column is non-nullable, there should be a `NON NULL` constraint.
+    if (!isNullable && !constraints.any((e) => e is sql.NotNull)) {
+      _resolver.reportError(DriftAnalysisError.inDartAst(
+        _resolver.discovered.dartElement,
+        sourceForCustomConstraints!,
+        "This column is not declared to be `.nullable()`, but also doesn't "
+        'have `NOT NULL` in its custom constraints. Please explicitly declare '
+        'the column to be nullable in Dart, or add a `NOT NULL` constraint for '
+        'consistency.',
+      ));
+    }
+
+    for (final constraint in constraints) {
+      if (constraint is sql.GeneratedAs) {
+        yield ColumnGeneratedAs.fromParser(constraint);
+      } else if (constraint is sql.PrimaryKeyColumn) {
+        yield PrimaryKeyColumn(constraint.autoIncrement);
+      } else if (constraint is sql.UniqueColumn) {
+        yield UniqueColumn();
+      }
+    }
   }
 }
 

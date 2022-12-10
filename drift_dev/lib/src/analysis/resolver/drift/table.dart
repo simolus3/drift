@@ -136,14 +136,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
             }
           }
         } else if (constraint is GeneratedAs) {
-          constraints.add(ColumnGeneratedAs(
-              AnnotatedDartCode.build((b) => b
-                ..addText('const ')
-                ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
-                ..addText('(')
-                ..addText(asDartLiteral(constraint.expression.toSql()))
-                ..addText(')')),
-              constraint.stored));
+          constraints.add(ColumnGeneratedAs.fromParser(constraint));
         } else if (constraint is Default) {
           defaultArgument = AnnotatedDartCode.build((b) => b
             ..addText('const ')

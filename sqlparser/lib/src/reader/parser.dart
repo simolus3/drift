@@ -185,6 +185,21 @@ class Parser {
         InvalidStatement();
   }
 
+  /// Parses the remaining input as column constraints.
+  List<ColumnConstraint> columnConstraintsUntilEnd() {
+    final constraints = <ColumnConstraint>[];
+
+    try {
+      while (!_isAtEnd) {
+        constraints.add(_columnConstraint()!);
+      }
+    } on ParsingError {
+      // ignore, it's also logged in [errors]
+    }
+
+    return constraints;
+  }
+
   Statement _statementWithoutSemicolon() {
     if (_checkAny(const [
       TokenType.$with,
