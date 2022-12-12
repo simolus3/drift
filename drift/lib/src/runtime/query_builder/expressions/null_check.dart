@@ -29,6 +29,21 @@ Expression<T> coalesce<T extends Object>(List<Expression<T>> expressions) {
   return FunctionCallExpression<T>('COALESCE', expressions);
 }
 
+/// Evaluates to the first expression that's not null, or null if both evaluate
+/// to null. See [coalesce] if you need more than 2.
+Expression<T> ifNull<T extends Object>(
+    Expression<T> first, Expression<T> second) {
+  return FunctionCallExpression<T>('IFNULL', [first, second]);
+}
+
+/// Extension defines the `nullIf` members.
+extension SqlNullIf on Expression {
+  /// Returns null if both [matcher] matches this expression.
+  Expression nullIf(Expression matcher) {
+    return FunctionCallExpression('NULLIF', [this, matcher]);
+  }
+}
+
 class _NullCheck extends Expression<bool> {
   final Expression _inner;
   final bool _isNull;

@@ -159,6 +159,12 @@ abstract class Expression<D extends Object> implements FunctionParameter {
     return CaseWhenExpression<T>(this, when.entries.toList(), orElse);
   }
 
+  /// Evaluates to `this` if [predicate] is true, otherwise evaluates to [ifFalse].
+  Expression<T> iif<T extends Object>(
+      Expression<bool> predicate, Expression<T> ifFalse) {
+    return FunctionCallExpression<T>('IIF', [predicate, this, ifFalse]);
+  }
+
   /// Writes this expression into the [GenerationContext], assuming that there's
   /// an outer expression with [precedence]. If the [Expression.precedence] of
   /// `this` expression is lower, it will be wrap}ped in
