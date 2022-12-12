@@ -1,3 +1,7 @@
+## 2.3.3
+
+- Fix a crash in `schema generate`.
+
 ## 2.3.2
 
 - Fix a builder crash when importing triggers or indices.
