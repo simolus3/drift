@@ -4,7 +4,7 @@ import 'package:modular/src/users.drift.dart' as i1;
 import 'package:modular/src/posts.drift.dart' as i2;
 import 'package:modular/src/search.drift.dart' as i3;
 import 'package:modular/accessor.dart' as i4;
-import 'package:modular/database.dart' as i5;
+import 'package:drift/src/runtime/api/runtime_api.dart' as i5;
 import 'package:modular/src/user_queries.drift.dart' as i6;
 import 'package:drift/internal/modular.dart' as i7;
 
@@ -16,7 +16,8 @@ abstract class $Database extends i0.GeneratedDatabase {
   late final i2.Likes likes = i2.Likes(this);
   late final i1.Follows follows = i1.Follows(this);
   late final i1.PopularUsers popularUsers = i1.PopularUsers(this);
-  late final i4.MyAccessor myAccessor = i4.MyAccessor(this as i5.Database);
+  late final i4.MyAccessor myAccessor =
+      i4.MyAccessor(this as i5.GeneratedDatabase);
   i6.UserQueriesDrift get userQueriesDrift => i7.ReadDatabaseContainer(this)
       .accessor<i6.UserQueriesDrift>(i6.UserQueriesDrift.new);
   i3.SearchDrift get searchDrift => i7.ReadDatabaseContainer(this)
