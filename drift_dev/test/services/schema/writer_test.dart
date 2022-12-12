@@ -43,6 +43,8 @@ END;
 CREATE INDEX groups_name ON "groups"(name);
 
 CREATE VIEW my_view AS SELECT id FROM "groups";
+
+simple_query: SELECT * FROM my_view; -- not part of the schema
       ''',
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';

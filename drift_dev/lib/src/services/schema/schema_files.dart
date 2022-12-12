@@ -31,9 +31,7 @@ class SchemaWriter {
         'version': _infoVersion,
       },
       'options': _serializeOptions(),
-      'entities': [
-        for (final entity in elements) _entityToJson(entity),
-      ],
+      'entities': elements.map(_entityToJson).whereType<Map>().toList(),
     };
   }
 
@@ -45,9 +43,9 @@ class SchemaWriter {
     return asJson;
   }
 
-  Map _entityToJson(DriftElement entity) {
-    String type;
-    Map data;
+  Map? _entityToJson(DriftElement entity) {
+    String? type;
+    Map? data;
 
     if (entity is DriftTable) {
       type = 'table';
@@ -86,15 +84,19 @@ class SchemaWriter {
         'dart_info_name': entity.entityInfoName,
         'columns': [for (final column in entity.columns) _columnData(column)],
       };
-    } else if (entity is DefinedSqlQuery && entity.mode == QueryMode.atCreate) {
-      type = 'special-query';
-      data = {
-        'scenario': 'create',
-        'sql': entity.sql,
-      };
+    } else if (entity is DefinedSqlQuery) {
+      if (entity.mode == QueryMode.atCreate) {
+        type = 'special-query';
+        data = {
+          'scenario': 'create',
+          'sql': entity.sql,
+        };
+      }
     } else {
       throw AssertionError('unknown entity type $entity');
     }
+
+    if (type == null) return null;
 
     return {
       'id': _idOf(entity),
