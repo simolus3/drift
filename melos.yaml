@@ -13,6 +13,7 @@ packages:
  - extras/encryption
  - extras/integration_tests/*
  - extras/plugin_example
+ - extras/assets/*
 
 command:
   bootstrap:
