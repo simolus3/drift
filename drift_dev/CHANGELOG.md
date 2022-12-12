@@ -3,6 +3,10 @@
 - Add the support for `textEnum`.
 - Adds the `case_from_dart_to_sql` option with the possible values: `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 
+## 2.3.3
+
+- Fix a crash in `schema generate`.
+
 ## 2.3.2
 
 - Fix a builder crash when importing triggers or indices.
