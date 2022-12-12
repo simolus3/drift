@@ -81,6 +81,16 @@ void main() {
     );
   });
 
+  test('custom statement can update queries', () async {
+    final update = TableUpdate.onTable(db.users);
+
+    await db.batch((batch) {
+      batch.customStatement('SELECT 1', [], {update});
+    });
+
+    verify(streamQueries.handleTableUpdates(argThat(contains(update))));
+  });
+
   test('supports inserts with upsert clause', () async {
     await db.batch((batch) {
       batch.insert(

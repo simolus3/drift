@@ -2,6 +2,8 @@
 
 - Add `textEnum` column builder and `EnumNameConverter` to be able to store enum
   values as string.
+- Add `updates` parameter to `Batch.customStatement` - it can be used to specify
+  which tables are affected by the custom statement.
 
 ## 2.3.0-dev
 

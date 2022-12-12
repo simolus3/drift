@@ -162,8 +162,13 @@ class Batch {
   /// See also:
   ///  - [DatabaseConnectionUser.customStatement], the equivalent method outside
   ///    of batches.
-  void customStatement(String sql, [List<dynamic>? args]) {
+  void customStatement(
+    String sql, [
+    List<dynamic>? args,
+    Iterable<TableUpdate> updates = const Iterable.empty(),
+  ]) {
     _addSqlAndArguments(sql, args ?? const []);
+    _createdUpdates.addAll(updates);
   }
 
   void _addContext(GenerationContext ctx) {
