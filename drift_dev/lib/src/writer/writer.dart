@@ -112,7 +112,7 @@ abstract class _NodeOrWriter {
         : converter.fieldName;
 
     return AnnotatedDartCode([
-      entityInfoType(converter.owningColumn.owner),
+      ...entityInfoType(converter.owningColumn.owner).elements,
       '.$fieldName',
     ]);
   }

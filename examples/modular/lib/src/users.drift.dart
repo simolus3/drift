@@ -19,7 +19,7 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       map['biography'] = i0.Variable<String>(biography);
     }
     if (!nullToAbsent || preferences != null) {
-      final converter = Users.$converterpreferencesn;
+      final converter = i1.Users.$converterpreferencesn;
       map['preferences'] = i0.Variable<String>(converter.toSql(preferences));
     }
     return map;
@@ -45,7 +45,7 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       biography: serializer.fromJson<String?>(json['biography']),
-      preferences: Users.$converterpreferencesn.fromJson(
+      preferences: i1.Users.$converterpreferencesn.fromJson(
           serializer.fromJson<Map<String, Object?>?>(json['preferences'])),
     );
   }
@@ -57,7 +57,7 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       'name': serializer.toJson<String>(name),
       'biography': serializer.toJson<String?>(biography),
       'preferences': serializer.toJson<Map<String, Object?>?>(
-          Users.$converterpreferencesn.toJson(preferences)),
+          i1.Users.$converterpreferencesn.toJson(preferences)),
     };
   }
 
@@ -152,7 +152,7 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
       map['biography'] = i0.Variable<String>(biography.value);
     }
     if (preferences.present) {
-      final converter = Users.$converterpreferencesn;
+      final converter = i1.Users.$converterpreferencesn;
       map['preferences'] =
           i0.Variable<String>(converter.toSql(preferences.value));
     }
@@ -203,7 +203,7 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
               type: i0.DriftSqlType.string,
               requiredDuringInsert: false,
               $customConstraints: '')
-          .withConverter<i2.Preferences?>(Users.$converterpreferencesn);
+          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
   @override
   List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
   @override
@@ -244,7 +244,7 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       biography: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
-      preferences: Users.$converterpreferencesn.fromSql(attachedDatabase
+      preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
           .typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
     );
@@ -464,7 +464,7 @@ class PopularUser extends i0.DataClass {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       biography: serializer.fromJson<String?>(json['biography']),
-      preferences: Users.$converterpreferencesn.fromJson(
+      preferences: i1.Users.$converterpreferencesn.fromJson(
           serializer.fromJson<Map<String, Object?>?>(json['preferences'])),
     );
   }
@@ -476,7 +476,7 @@ class PopularUser extends i0.DataClass {
       'name': serializer.toJson<String>(name),
       'biography': serializer.toJson<String?>(biography),
       'preferences': serializer.toJson<Map<String, Object?>?>(
-          Users.$converterpreferencesn.toJson(preferences)),
+          i1.Users.$converterpreferencesn.toJson(preferences)),
     };
   }
 
@@ -541,7 +541,7 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       biography: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
-      preferences: Users.$converterpreferencesn.fromSql(attachedDatabase
+      preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
           .typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
     );
@@ -559,7 +559,7 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
   late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
       preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
               type: i0.DriftSqlType.string)
-          .withConverter<i2.Preferences?>(Users.$converterpreferencesn);
+          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
   @override
   PopularUsers createAlias(String alias) {
     return PopularUsers(attachedDatabase, alias);

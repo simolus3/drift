@@ -17,7 +17,8 @@ class AnnotatedDartCode {
 
   final List<dynamic /* String|DartTopLevelSymbol */ > elements;
 
-  AnnotatedDartCode(this.elements);
+  AnnotatedDartCode(this.elements)
+      : assert(elements.every((e) => e is String || e is DartTopLevelSymbol));
 
   factory AnnotatedDartCode.ast(AstNode node) {
     return AnnotatedDartCode.build(((builder) => builder.addAstNode(node)));
