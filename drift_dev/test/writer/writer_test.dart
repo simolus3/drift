@@ -39,7 +39,7 @@ foo: SELECT foo FROM my_table;
         ),
         'a|lib/query.drift.dart': decodedMatches(
           allOf(
-            contains("import 'package:a/converter.dart';"),
+            contains("import 'package:a/table.drift.dart' as i2;"),
             contains(r'i2.MyTable.$converterfoo'),
           ),
         )
