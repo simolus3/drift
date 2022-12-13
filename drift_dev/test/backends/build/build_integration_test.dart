@@ -171,4 +171,26 @@ class MyDatabase {}
 
     checkOutputs({}, result.dartOutputs, result);
   });
+
+  test('generates custom result classes with modular generation', () async {
+    final logger = Logger.detached('driftBuild');
+    expect(logger.onRecord, neverEmits(anything));
+
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.drift': '''
+firstQuery AS MyResultClass: SELECT 'foo' AS r1, 1 AS r2;
+secondQuery AS MyResultClass: SELECT 'bar' AS r1, 2 AS r2;
+''',
+      },
+      modularBuild: true,
+      logger: logger,
+    );
+
+    checkOutputs({
+      'a|lib/main.drift.dart': decodedMatches(predicate((String generated) {
+        return 'class MyResultClass'.allMatches(generated).length == 1;
+      })),
+    }, result.dartOutputs, result);
+  });
 }

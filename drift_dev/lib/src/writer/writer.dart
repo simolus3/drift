@@ -112,7 +112,7 @@ abstract class _NodeOrWriter {
         : converter.fieldName;
 
     return AnnotatedDartCode([
-      entityInfoType(converter.owningColumn.owner),
+      ...entityInfoType(converter.owningColumn.owner).elements,
       '.$fieldName',
     ]);
   }
@@ -198,9 +198,7 @@ abstract class _NodeOrWriter {
     final buffer = StringBuffer();
 
     for (final lexeme in code.elements) {
-      if (lexeme is AnnotatedDartCode) {
-        buffer.write(dartCode(lexeme));
-      } else if (lexeme is DartTopLevelSymbol) {
+      if (lexeme is DartTopLevelSymbol) {
         final uri = lexeme.importUri;
 
         if (uri != null) {
