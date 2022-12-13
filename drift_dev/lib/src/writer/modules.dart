@@ -1,5 +1,7 @@
+import 'package:build/build.dart';
 import 'package:recase/recase.dart';
 
+import '../analysis/custom_result_class.dart';
 import '../analysis/driver/driver.dart';
 import '../analysis/driver/state.dart';
 import '../analysis/results/results.dart';
@@ -36,7 +38,15 @@ class ModularAccessorWriter {
 
     final referencedElements = <DriftElement>{};
 
-    final queries = file.fileAnalysis?.resolvedQueries ?? const {};
+    var queries = file.fileAnalysis?.resolvedQueries ?? const {};
+
+    final mappedQueries = transformCustomResultClasses(
+      queries.values,
+      (message) => log.warning('For accessor $className: $message'),
+    );
+
+    queries = queries.map((k, v) => MapEntry(k, mappedQueries[v] ?? v));
+
     for (final query in queries.entries) {
       final queryElement = file.analysis[query.key]?.result;
       if (queryElement != null) {
