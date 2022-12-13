@@ -36,7 +36,7 @@ class QueryWriter {
     }
 
     // We generate the Dart string literal for the SQL query by walking the
-    // parsed AST. This eliminates unecessary whitespace and comments in the
+    // parsed AST. This eliminates unnecessary whitespace and comments in the
     // generated code.
     // In some cases, the whitespace has an impact on the semantic of the
     // query. For instance, `SELECT 1 + 2` has a different column name than
@@ -620,7 +620,7 @@ class _ExpandedVariableWriter {
 
   void _writeNewVariables() {
     // In the new generation mode, we first write all non-array variables in
-    // a continous block, then we proceed to add arrays and other expanded
+    // a continuous block, then we proceed to add arrays and other expanded
     // declarations.
     var first = true;
 
