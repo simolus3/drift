@@ -165,6 +165,11 @@ abstract class Expression<D extends Object> implements FunctionParameter {
     return FunctionCallExpression<T>('IIF', [predicate, this, ifFalse]);
   }
 
+  /// Returns `null` if [matcher] is equal to this expression, `this` otherwise.
+  Expression<D> nullIf(Expression<D> matcher) {
+    return FunctionCallExpression('NULLIF', [this, matcher]);
+  }
+
   /// Writes this expression into the [GenerationContext], assuming that there's
   /// an outer expression with [precedence]. If the [Expression.precedence] of
   /// `this` expression is lower, it will be wrap}ped in

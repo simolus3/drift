@@ -36,14 +36,6 @@ Expression<T> ifNull<T extends Object>(
   return FunctionCallExpression<T>('IFNULL', [first, second]);
 }
 
-/// Extension defines the `nullIf` members.
-extension SqlNullIf on Expression {
-  /// Returns null if both [matcher] matches this expression.
-  Expression nullIf(Expression matcher) {
-    return FunctionCallExpression('NULLIF', [this, matcher]);
-  }
-}
-
 class _NullCheck extends Expression<bool> {
   final Expression _inner;
   final bool _isNull;
