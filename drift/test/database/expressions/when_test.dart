@@ -33,4 +33,11 @@ void main() {
     expect(() => x.caseMatch<Object>(when: const {}),
         throwsA(isA<ArgumentError>()));
   });
+
+  test('IIF', () {
+    expect(
+      x.iif<String>(CustomExpression<bool>('1 = 1'), const Constant('y')),
+      generates("IIF(1 = 1, x, 'y')"),
+    );
+  });
 }

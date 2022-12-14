@@ -35,4 +35,18 @@ void main() {
 
     expect(expr, generates('COALESCE(NULL, 3)'));
   });
+
+  test('generates IFNULL expressions', () {
+    expect(
+      drift.ifNull<int>(const Constant<int>(null), Constant(3)),
+      generates('IFNULL(NULL, 3)'),
+    );
+  });
+
+  test('generates NULLIF expressions', () {
+    expect(
+      Constant(3).nullIf(Constant(3)),
+      generates('NULLIF(3, 3)'),
+    );
+  });
 }
