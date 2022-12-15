@@ -312,6 +312,12 @@ If drift is unable to extract the version from your `schemaVersion` getter, prov
 $ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v3.json
 ```
 
+{% block "blocks/alert" title='<i class="fas fa-lightbulb"></i> Dumping a database' color="success" %}
+If, instead of exporting the schema of a database class, you want to export the schema of an existing sqlite3
+database file, you can do that as well! `drift_dev schema dump` recognizes a sqlite3 database file as its first
+argument and can extract the relevant schema from there.
+{% endblock %}
+
 #### Generating test code
 
 After you exported the database schema into a folder, you can generate old versions of your database class

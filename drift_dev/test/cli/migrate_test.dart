@@ -1,94 +1,42 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:isolate';
 
-import 'package:drift_dev/src/cli/cli.dart';
-import 'package:meta/meta.dart';
-import 'package:package_config/package_config_types.dart';
-import 'package:path/path.dart' as p;
-import 'package:test/scaffolding.dart';
+import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-@isTest
-void _test(String desc, Function() body) {
-  test(desc, () {
-    return IOOverrides.runZoned(
-      body,
-      getCurrentDirectory: () => Directory('${d.sandbox}/app'),
-    );
-  });
+import 'utils.dart';
+
+extension on TestDriftProject {
+  Future<void> migrateToDrift() async {
+    await runDriftCli(['migrate']);
+  }
 }
 
-Future<void> _apply() {
-  return MoorCli().run(['migrate']);
-}
-
-Future<void> _setup(Iterable<d.Descriptor> lib,
-    {String? pubspec, Iterable<d.Descriptor>? additional}) async {
-  // Copy and patch moor_generator's package config instead of running `pub get`
-  // in each test.
-
-  final uri = await Isolate.packageConfig;
-  final config =
-      PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
-
-  final driftDevUrl =
-      config.packages.singleWhere((e) => e.name == 'drift_dev').root;
-  final moorUrl = driftDevUrl.resolve('../extras/assets/old_moor_package/');
-  final moorFlutterUrl =
-      driftDevUrl.resolve('../extras/assets/old_moor_flutter_package/');
-
-  final appUri = '${File(p.join(d.sandbox, 'app')).absolute.uri}/';
-  final newConfig = PackageConfig([
-    ...config.packages,
-    Package('app', Uri.parse(appUri),
-        packageUriRoot: Uri.parse('${appUri}lib/')),
-    Package('moor', moorUrl, packageUriRoot: Uri.parse('${moorUrl}lib/')),
-    Package('moor_flutter', moorFlutterUrl,
-        packageUriRoot: Uri.parse('${moorFlutterUrl}lib/')),
-  ]);
-  final configBuffer = StringBuffer();
-  PackageConfig.writeString(newConfig, configBuffer);
-
-  pubspec ??= '''
-name: app
-
-environment:
-  sdk: ^2.12.0
-
-dependencies:
-  moor: ^4.4.0
-dev_dependencies:
-  moor_generator: ^4.4.0
-''';
-
-  await d.dir('app', [
+Future<TestDriftProject> _setup2(Iterable<d.Descriptor> lib,
+    {String? pubspec, Iterable<d.Descriptor>? additional}) {
+  return TestDriftProject.create([
     d.dir('lib', lib),
-    d.file('pubspec.yaml', pubspec),
-    d.dir('.dart_tool', [
-      d.file('package_config.json', configBuffer.toString()),
-    ]),
+    if (pubspec != null) d.file('pubspec.yaml', pubspec),
     ...?additional,
-  ]).create();
+  ]);
 }
 
 void main() {
-  _test('renames moor files', () async {
-    await _setup([
+  test('renames moor files', () async {
+    final project = await _setup2([
       d.file('a.moor', "import 'b.moor';"),
       d.file('b.moor', 'CREATE TABLE foo (x TEXT);'),
     ]);
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app/lib', [
+    await project.validate(d.dir('lib', [
       d.file('a.drift', "import 'b.drift';"),
       d.file('b.drift', 'CREATE TABLE foo (x TEXT);'),
-    ]).validate();
+    ]));
   });
 
-  _test('patches moor imports', () async {
-    await _setup([
+  test('patches moor imports', () async {
+    final project = await _setup2([
       d.file('a.dart', '''
 import 'package:moor/moor.dart' as moor;
 import 'package:moor/extensions/moor_ffi.dart';
@@ -99,9 +47,9 @@ export 'package:moor/fFI.dart';
 '''),
     ]);
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app/lib', [
+    await project.validate(d.dir('lib', [
       d.file('a.dart', '''
 import 'package:drift/drift.dart' as moor;
 import 'package:drift/extensions/native.dart';
@@ -110,11 +58,11 @@ import 'package:drift/src/some/internal/file.dart';
 export 'package:drift/web.dart';
 export 'package:drift/native.dart';
 '''),
-    ]).validate();
+    ]));
   });
 
-  _test('updates identifier names', () async {
-    await _setup([
+  test('updates identifier names', () async {
+    final project = await _setup2([
       d.file('a.dart', '''
 import 'package:moor/moor.dart';
 import 'package:moor/ffi.dart' as ffi;
@@ -147,9 +95,9 @@ void main() {
 '''),
     ]);
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app/lib', [
+    await project.validate(d.dir('lib', [
       d.file('a.dart', '''
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart' as ffi;
@@ -180,11 +128,11 @@ void main() {
   }
 }
 '''),
-    ]).validate();
+    ]));
   });
 
-  _test('patches include args from @UseMoor and @UseDao', () async {
-    await _setup([
+  test('patches include args from @UseMoor and @UseDao', () async {
+    final project = await _setup2([
       d.file('a.dart', '''
 import 'package:moor/moor.dart';
 
@@ -196,9 +144,9 @@ class MyDao {}
 '''),
     ]);
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app/lib', [
+    await project.validate(d.dir('lib', [
       d.file('a.dart', '''
 import 'package:drift/drift.dart';
 
@@ -208,11 +156,11 @@ class MyDatabase {}
 @DriftAccessor(include: {'package:x/y.drift'})
 class MyDao {}
 '''),
-    ]).validate();
+    ]));
   });
 
-  _test('patches `.moor.dart` part statements', () async {
-    await _setup([
+  test('patches `.moor.dart` part statements', () async {
+    final project = await _setup2([
       d.file('a.dart', r'''
 import 'package:moor/moor.dart';
 
@@ -227,9 +175,9 @@ class FooDao with _$FooDaoMixin {}
 '''),
     ]);
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app/lib', [
+    await project.validate(d.dir('lib', [
       d.file('a.dart', r'''
 import 'package:drift/drift.dart';
 
@@ -240,11 +188,11 @@ part 'a.drift.dart';
 )
 class FooDao with _$FooDaoMixin {}
 '''),
-    ]).validate();
+    ]));
   });
 
-  _test('updates pubspec.yaml', () async {
-    await _setup(const [], pubspec: '''
+  test('updates pubspec.yaml', () async {
+    final project = await _setup2(const [], pubspec: '''
 name: app
 
 environment:
@@ -267,10 +215,9 @@ dependency_overrides:
     version: ^1.2.3
 ''');
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app', [
-      d.file('pubspec.yaml', '''
+    await project.validate(d.file('pubspec.yaml', '''
 name: app
 
 environment:
@@ -291,12 +238,11 @@ dependency_overrides:
   drift_dev:
     hosted: foo
     version: ^1.2.3
-'''),
-    ]).validate();
+'''));
   });
 
-  _test('transforms build configuration files', () async {
-    await _setup(
+  test('transforms build configuration files', () async {
+    final project = await _setup2(
       const [],
       additional: [
         d.file('build.yaml', r'''
@@ -320,10 +266,9 @@ targets:
       ],
     );
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app', [
-      d.file('build.yaml', r'''
+    await project.validate(d.file('build.yaml', r'''
 targets:
   $default:
     builders:
@@ -340,12 +285,11 @@ targets:
       drift_dev|not_shared:
         options:
           another: option
-''')
-    ]).validate();
+'''));
   });
 
-  _test('transforms analysis option files', () async {
-    await _setup(
+  test('transforms analysis option files', () async {
+    final project = await _setup2(
       const [],
       additional: [
         d.file('analysis_options.yaml', '''
@@ -359,22 +303,20 @@ analyzer:
       ],
     );
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir('app', [
-      d.file('analysis_options.yaml', r'''
+    await project.validate(d.file('analysis_options.yaml', r'''
 # a comment
 analyzer:
   plugins:
     # comment 2
     - drift # another
     # another
-''')
-    ]).validate();
+'''));
   });
 
-  _test('transforms moor_flutter usages', () async {
-    await _setup(
+  test('transforms moor_flutter usages', () async {
+    final project = await _setup2(
       [
         d.file('a.dart', r'''
 import 'package:moor_flutter/moor_flutter.dart';
@@ -407,10 +349,9 @@ dev_dependencies:
 ''',
     );
 
-    await _apply();
+    await project.migrateToDrift();
 
-    await d.dir(
-      'app',
+    await project.validateDir(
       [
         d.file('pubspec.yaml', '''
 name: app
@@ -442,6 +383,6 @@ QueryExecutor _executor() {
 '''),
         ]),
       ],
-    ).validate();
+    );
   });
 }

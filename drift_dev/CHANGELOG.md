@@ -2,6 +2,7 @@
 
 - Add the support for `textEnum`.
 - Adds the `case_from_dart_to_sql` option with the possible values: `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
+- `drift_dev schema dump` can now dump the schema of existing sqlite3 database files as well.
 
 ## 2.3.3
 

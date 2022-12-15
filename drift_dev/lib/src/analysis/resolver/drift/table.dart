@@ -28,7 +28,6 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     Table table;
     final references = <DriftElement>{};
     final stmt = discovered.sqlNode;
-    final helper = await resolver.driver.loadKnownTypes();
 
     try {
       final reader = SchemaFromCreateTable(
@@ -75,7 +74,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
                 DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg)),
             dartClass.classElement.thisType,
             type == DriftSqlType.int ? EnumType.intEnum : EnumType.textEnum,
-            helper,
+            await resolver.driver.loadKnownTypes(),
           );
         }
       }

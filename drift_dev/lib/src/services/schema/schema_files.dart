@@ -126,6 +126,7 @@ class SchemaWriter {
       'without_rowid': table.withoutRowId,
       if (table.overrideTableConstraints != null)
         'constraints': table.overrideTableConstraints,
+      if (table.strict) 'strict': true,
       if (primaryKeyFromTableConstraint != null)
         'explicit_pk': [
           ...primaryKeyFromTableConstraint.primaryKey.map((c) => c.nameInSql)
@@ -360,6 +361,7 @@ class SchemaReader {
       columns: columns,
       baseDartName: pascalCase,
       fixedEntityInfoName: pascalCase,
+      strict: content['strict'] == true,
       nameOfRowClass: '${pascalCase}Data',
       writeDefaultConstraints: content['was_declared_in_moor'] != true,
       withoutRowId: withoutRowId,
