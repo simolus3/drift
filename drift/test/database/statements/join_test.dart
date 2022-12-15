@@ -27,7 +27,25 @@ void main() {
     ]).get();
 
     verify(executor.runSelect(
-        'SELECT "t"."id" AS "t.id", "t"."title" AS "t.title", "t"."content" AS "t.content", "t"."target_date" AS "t.target_date", "t"."category" AS "t.category", "t"."status" AS "t.status", "c"."id" AS "c.id", "c"."desc" AS "c.desc", "c"."priority" AS "c.priority", "c"."description_in_upper_case" AS "c.description_in_upper_case", "ct"."category_id" AS "ct.category_id", "ct"."description" AS "ct.description", "ct"."item_count" AS "ct.item_count" FROM "todos" "t" LEFT OUTER JOIN "categories" "c" ON "c"."id" = "t"."category" LEFT OUTER JOIN "category_todo_count_view" "ct" ON "ct"."category_id" = "c"."id";',
+        'SELECT '
+        '"t"."id" AS "t.id", '
+        '"t"."title" AS "t.title", '
+        '"t"."content" AS "t.content", '
+        '"t"."target_date" AS "t.target_date", '
+        '"t"."category" AS "t.category", '
+        '"t"."status" AS "t.status", '
+        '"c"."id" AS "c.id", '
+        '"c"."desc" AS "c.desc", '
+        '"c"."priority" AS "c.priority", '
+        '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
+        '"ct"."category_id" AS "ct.category_id", '
+        '"ct"."description" AS "ct.description", '
+        '"ct"."item_count" AS "ct.item_count" '
+        'FROM "todos" "t" '
+        'LEFT OUTER JOIN "categories" "c" '
+        'ON "c"."id" = "t"."category" '
+        'LEFT OUTER JOIN "category_todo_count_view" "ct" '
+        'ON "ct"."category_id" = "c"."id";',
         argThat(isEmpty)));
   });
 
