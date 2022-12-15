@@ -27,7 +27,7 @@ class Join<T extends HasResultSet, D> extends Component {
   final _JoinType _type;
 
   /// The [TableInfo] that will be added to the query
-  final Table table;
+  final HasResultSet table;
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
@@ -79,7 +79,7 @@ class Join<T extends HasResultSet, D> extends Component {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin(Table other, Expression<bool> on, {bool? useColumns}) {
+Join innerJoin(HasResultSet other, Expression<bool> on, {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
 
@@ -91,7 +91,8 @@ Join innerJoin(Table other, Expression<bool> on, {bool? useColumns}) {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin(Table other, Expression<bool> on, {bool? useColumns}) {
+Join leftOuterJoin(HasResultSet other, Expression<bool> on,
+    {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 
@@ -103,6 +104,6 @@ Join leftOuterJoin(Table other, Expression<bool> on, {bool? useColumns}) {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
-Join crossJoin(Table other, {bool? useColumns}) {
+Join crossJoin(HasResultSet other, {bool? useColumns}) {
   return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }
