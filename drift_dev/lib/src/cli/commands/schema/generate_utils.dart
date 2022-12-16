@@ -152,7 +152,7 @@ class GenerateUtilsCommand extends Command {
       ..writeln(_prefix)
       ..writeln('//@dart=2.12')
       ..writeln("import 'package:drift/drift.dart';")
-      ..writeln("import 'package:drift_dev/api/migrations.dart';");
+      ..writeln("import 'package:drift/internal/migrations.dart';");
 
     for (final version in versions) {
       buffer.writeln("import '${_filenameForVersion(version)}' as v$version;");

@@ -1,8 +1,11 @@
 import 'package:drift/drift.dart';
+import 'package:drift/internal/migrations.dart';
 import 'package:drift/native.dart';
 import 'package:drift_dev/src/services/schema/verifier_impl.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/sqlite3.dart';
+
+export 'package:drift/internal/migrations.dart';
 
 abstract class SchemaVerifier {
   factory SchemaVerifier(SchemaInstantiationHelper helper) =
@@ -115,29 +118,6 @@ class _GenerateFromScratch extends GeneratedDatabase {
 
   @override
   int get schemaVersion => 1;
-}
-
-/// The implementation of this class is generated through the `drift_dev`
-/// CLI tool.
-abstract class SchemaInstantiationHelper {
-  GeneratedDatabase databaseForVersion(QueryExecutor db, int version);
-}
-
-/// Thrown when trying to instantiate a schema that hasn't been saved.
-class MissingSchemaException implements Exception {
-  /// The requested version that doesn't exist.
-  final int requested;
-
-  /// All known schema versions.
-  final Iterable<int> available;
-
-  MissingSchemaException(this.requested, this.available);
-
-  @override
-  String toString() {
-    return 'Unknown schema version $requested. '
-        'Known are ${available.join(', ')}.';
-  }
 }
 
 /// Thrown when the actual schema differs from the expected schema.
