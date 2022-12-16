@@ -71,7 +71,8 @@ void main() {
 
       verify(mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
-          '("description", "item_count") AS SELECT '
+          '("category_id", "description", "item_count") AS SELECT '
+          '"t1"."id" AS "category_id", '
           '"t1"."desc" || \'!\' AS "description", '
           'COUNT("t0"."id") AS "item_count" '
           'FROM "categories" "t1" '
@@ -112,7 +113,8 @@ void main() {
 
       verify(mockExecutor.runCustom(
           'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
-          '("description", "item_count") AS SELECT '
+          '("category_id", "description", "item_count") AS SELECT '
+          '"t1"."id" AS "category_id", '
           '"t1"."desc" || \'!\' AS "description", '
           'COUNT("t0"."id") AS "item_count" '
           'FROM "categories" "t1" '

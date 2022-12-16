@@ -1440,13 +1440,16 @@ class $PureDefaultsTable extends PureDefaults
 }
 
 class CategoryTodoCountViewData extends DataClass {
+  final int? categoryId;
   final String? description;
   final int? itemCount;
-  const CategoryTodoCountViewData({this.description, this.itemCount});
+  const CategoryTodoCountViewData(
+      {this.categoryId, this.description, this.itemCount});
   factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CategoryTodoCountViewData(
+      categoryId: serializer.fromJson<int?>(json['categoryId']),
       description: serializer.fromJson<String?>(json['description']),
       itemCount: serializer.fromJson<int?>(json['itemCount']),
     );
@@ -1460,21 +1463,25 @@ class CategoryTodoCountViewData extends DataClass {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'categoryId': serializer.toJson<int?>(categoryId),
       'description': serializer.toJson<String?>(description),
       'itemCount': serializer.toJson<int?>(itemCount),
     };
   }
 
   CategoryTodoCountViewData copyWith(
-          {Value<String?> description = const Value.absent(),
+          {Value<int?> categoryId = const Value.absent(),
+          Value<String?> description = const Value.absent(),
           Value<int?> itemCount = const Value.absent()}) =>
       CategoryTodoCountViewData(
+        categoryId: categoryId.present ? categoryId.value : this.categoryId,
         description: description.present ? description.value : this.description,
         itemCount: itemCount.present ? itemCount.value : this.itemCount,
       );
   @override
   String toString() {
     return (StringBuffer('CategoryTodoCountViewData(')
+          ..write('categoryId: $categoryId, ')
           ..write('description: $description, ')
           ..write('itemCount: $itemCount')
           ..write(')'))
@@ -1482,11 +1489,12 @@ class CategoryTodoCountViewData extends DataClass {
   }
 
   @override
-  int get hashCode => Object.hash(description, itemCount);
+  int get hashCode => Object.hash(categoryId, description, itemCount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CategoryTodoCountViewData &&
+          other.categoryId == this.categoryId &&
           other.description == this.description &&
           other.itemCount == this.itemCount);
 }
@@ -1502,7 +1510,7 @@ class $CategoryTodoCountViewView
   $CategoriesTable get categories =>
       attachedDatabase.categories.createAlias('t1');
   @override
-  List<GeneratedColumn> get $columns => [description, itemCount];
+  List<GeneratedColumn> get $columns => [categoryId, description, itemCount];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -1516,6 +1524,8 @@ class $CategoryTodoCountViewView
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CategoryTodoCountViewData(
+      categoryId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category_id']),
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
       itemCount: attachedDatabase.typeMapping
@@ -1523,6 +1533,9 @@ class $CategoryTodoCountViewView
     );
   }
 
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+      'category_id', aliasedName, true,
+      generatedAs: GeneratedAs(categories.id, false), type: DriftSqlType.int);
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, true,
       generatedAs:

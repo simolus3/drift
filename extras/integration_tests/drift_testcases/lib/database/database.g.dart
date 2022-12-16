@@ -562,7 +562,7 @@ abstract class _$Database extends GeneratedDatabase {
         ],
         readsFrom: {
           friendships,
-        }).map((row) => row.read<int>('_c0'));
+        }).map((QueryRow row) => row.read<int>('_c0'));
   }
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
@@ -574,7 +574,7 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {
           friendships,
           users,
-        }).asyncMap((row) async {
+        }).asyncMap((QueryRow row) async {
       return FriendshipsOfResult(
         reallyGoodFriends: row.read<bool>('really_good_friends'),
         user: await users.mapFromRow(row, tablePrefix: 'nested_0'),
@@ -587,7 +587,7 @@ abstract class _$Database extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           users,
-        }).map((row) => row.read<int>('_c0'));
+        }).map((QueryRow row) => row.read<int>('_c0'));
   }
 
   Selectable<Preferences?> settingsFor(int user) {
@@ -597,7 +597,7 @@ abstract class _$Database extends GeneratedDatabase {
         ],
         readsFrom: {
           users,
-        }).map((row) => $UsersTable.$converterpreferences
+        }).map((QueryRow row) => $UsersTable.$converterpreferences
         .fromSql(row.readNullable<String>('preferences')));
   }
 

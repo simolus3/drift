@@ -18,18 +18,34 @@ void main() {
   test('generates join statements', () async {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
+    final categoryTodoCountView = db.alias(db.categoryTodoCountView, 'ct');
 
     await db.select(todos).join([
-      leftOuterJoin(categories, categories.id.equalsExp(todos.category))
+      leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
+      leftOuterJoin(categoryTodoCountView,
+          categoryTodoCountView.categoryId.equalsExp(categories.id)),
     ]).get();
 
     verify(executor.runSelect(
-        'SELECT "t"."id" AS "t.id", "t"."title" AS "t.title", '
-        '"t"."content" AS "t.content", "t"."target_date" AS "t.target_date", '
-        '"t"."category" AS "t.category", "t"."status" AS "t.status", "c"."id" AS "c.id", '
-        '"c"."desc" AS "c.desc", "c"."priority" AS "c.priority", '
-        '"c"."description_in_upper_case" AS "c.description_in_upper_case" '
-        'FROM "todos" "t" LEFT OUTER JOIN "categories" "c" ON "c"."id" = "t"."category";',
+        'SELECT '
+        '"t"."id" AS "t.id", '
+        '"t"."title" AS "t.title", '
+        '"t"."content" AS "t.content", '
+        '"t"."target_date" AS "t.target_date", '
+        '"t"."category" AS "t.category", '
+        '"t"."status" AS "t.status", '
+        '"c"."id" AS "c.id", '
+        '"c"."desc" AS "c.desc", '
+        '"c"."priority" AS "c.priority", '
+        '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
+        '"ct"."category_id" AS "ct.category_id", '
+        '"ct"."description" AS "ct.description", '
+        '"ct"."item_count" AS "ct.item_count" '
+        'FROM "todos" "t" '
+        'LEFT OUTER JOIN "categories" "c" '
+        'ON "c"."id" = "t"."category" '
+        'LEFT OUTER JOIN "category_todo_count_view" "ct" '
+        'ON "ct"."category_id" = "c"."id";',
         argThat(isEmpty)));
   });
 
