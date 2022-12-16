@@ -1029,6 +1029,10 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {someid};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {sometext, isInserting},
+      ];
+  @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return MytableData(
@@ -1049,7 +1053,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   }
 
   @override
-  List<String> get customConstraints => const ['PRIMARY KEY(someid DESC)'];
+  List<String> get customConstraints =>
+      const ['PRIMARY KEY(someid DESC)', 'UNIQUE(sometext, is_inserting)'];
   @override
   bool get dontWriteConstraints => true;
 }

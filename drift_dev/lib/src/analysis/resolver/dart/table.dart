@@ -61,6 +61,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
           UniqueColumns(uniqueKey),
       ],
+      overrideTableConstraints: await _readCustomConstraints(element),
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
     );
 
@@ -329,5 +330,45 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   Future<PendingColumnInformation?> _parseColumn(
       MethodDeclaration declaration, Element element) async {
     return ColumnParser(this).parse(declaration, element);
+  }
+
+  Future<List<String>> _readCustomConstraints(ClassElement element) async {
+    final customConstraints =
+        element.lookUpGetter('customConstraints', element.library);
+
+    if (customConstraints == null || customConstraints.isFromDefaultTable) {
+      // Does not define custom constraints
+      return const [];
+    }
+
+    final ast = await resolver.driver.backend
+        .loadElementDeclaration(customConstraints) as MethodDeclaration;
+    final body = ast.body;
+    if (body is! ExpressionFunctionBody) {
+      reportError(DriftAnalysisError.forDartElement(customConstraints,
+          'This must return a list literal with the => syntax'));
+      return const [];
+    }
+    final expression = body.expression;
+    final foundConstraints = <String>[];
+
+    if (expression is ListLiteral) {
+      for (final entry in expression.elements) {
+        if (entry is StringLiteral) {
+          final value = entry.stringValue;
+          if (value != null) {
+            foundConstraints.add(value);
+          }
+        } else {
+          reportError(DriftAnalysisError.inDartAst(
+              element, entry, 'This must be a string literal.'));
+        }
+      }
+    } else {
+      reportError(DriftAnalysisError.forDartElement(
+          customConstraints, 'This must return a list literal!'));
+    }
+
+    return foundConstraints;
   }
 }

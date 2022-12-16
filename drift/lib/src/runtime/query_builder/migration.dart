@@ -272,37 +272,39 @@ class Migrator {
 
     final dslTable = table.asDslTable;
 
-    // we're in a bit of a hacky situation where we don't write the primary
-    // as table constraint if it has already been written on a primary key
-    // column, even though that column appears in table.$primaryKey because we
-    // need to know all primary keys for the update(table).replace(row) API
-    final hasPrimaryKey = table.$primaryKey.isNotEmpty;
-    final dontWritePk = dslTable.dontWriteConstraints || hasAutoIncrement;
-    if (hasPrimaryKey && !dontWritePk) {
-      context.buffer.write(', PRIMARY KEY (');
-      final pkList = table.$primaryKey.toList(growable: false);
-      for (var i = 0; i < pkList.length; i++) {
-        final column = pkList[i];
+    if (!dslTable.dontWriteConstraints) {
+      final hasPrimaryKey = table.$primaryKey.isNotEmpty;
 
-        context.buffer.write(column.escapedName);
-
-        if (i != pkList.length - 1) context.buffer.write(', ');
-      }
-      context.buffer.write(')');
-    }
-
-    if (table.uniqueKeys.isNotEmpty) {
-      for (final key in table.uniqueKeys) {
-        context.buffer.write(', UNIQUE (');
-        final uqList = key.toList(growable: false);
-        for (var i = 0; i < uqList.length; i++) {
-          final column = uqList[i];
+      // we're in a bit of a hacky situation where we don't write the primary
+      // as table constraint if it has already been written on a primary key
+      // column, even though that column appears in table.$primaryKey because we
+      // need to know all primary keys for the update(table).replace(row) API
+      if (hasPrimaryKey && !hasAutoIncrement) {
+        context.buffer.write(', PRIMARY KEY (');
+        final pkList = table.$primaryKey.toList(growable: false);
+        for (var i = 0; i < pkList.length; i++) {
+          final column = pkList[i];
 
           context.buffer.write(column.escapedName);
 
-          if (i != uqList.length - 1) context.buffer.write(', ');
+          if (i != pkList.length - 1) context.buffer.write(', ');
         }
         context.buffer.write(')');
+      }
+
+      if (table.uniqueKeys.isNotEmpty) {
+        for (final key in table.uniqueKeys) {
+          context.buffer.write(', UNIQUE (');
+          final uqList = key.toList(growable: false);
+          for (var i = 0; i < uqList.length; i++) {
+            final column = uqList[i];
+
+            context.buffer.write(column.escapedName);
+
+            if (i != uqList.length - 1) context.buffer.write(', ');
+          }
+          context.buffer.write(')');
+        }
       }
     }
 

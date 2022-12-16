@@ -507,7 +507,12 @@ class TableWriter extends TableOrViewWriter {
         ..write('bool get isStrict => true;\n');
     }
 
-    if (table.overrideTableConstraints != null) {
+    // For Dart tables, the user already overrides the `customConstraints`
+    // getter in the source. So, since we extend that class by default, there's
+    // no need to override them again.
+    final writeTableConstraints = table.definingDartClass == null ||
+        scope.generationOptions.forSchema != null;
+    if (writeTableConstraints && table.overrideTableConstraints != null) {
       final value =
           table.overrideTableConstraints!.map(asDartLiteral).join(', ');
 

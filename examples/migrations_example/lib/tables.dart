@@ -16,4 +16,10 @@ class Users extends Table {
   List<Set<Column>> get uniqueKeys => [
         {name, birthday}
       ];
+
+  @override
+  List<String> get customConstraints => [
+        // This constraint has been added in schema version 9
+        'CHECK (LENGTH(name) < 10)',
+      ];
 }

@@ -29,7 +29,8 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS "mytable" ('
     '"sometext" TEXT, '
     '"is_inserting" INTEGER, '
     '"somedate" TEXT, '
-    'PRIMARY KEY(someid DESC)'
+    'PRIMARY KEY(someid DESC), '
+    'UNIQUE(sometext, is_inserting)'
     ');';
 
 const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS "email" USING '

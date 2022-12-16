@@ -24,7 +24,7 @@ void main() {
   // the schema is correct after the migration.
   // More complex tests ensuring data integrity are written below.
   group('general migration', () {
-    const currentSchema = 7;
+    const currentSchema = Database.latestSchemaVersion;
 
     for (var oldVersion = 1; oldVersion < currentSchema; oldVersion++) {
       group('from v$oldVersion', () {

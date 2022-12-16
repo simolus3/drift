@@ -3,13 +3,16 @@ import 'package:drift/drift.dart';
 import 'tables.dart';
 import 'src/generated/schema_v2.dart' as v2;
 import 'src/generated/schema_v4.dart' as v4;
+import 'src/generated/schema_v8.dart' as v8;
 
 part 'database.g.dart';
 
 @DriftDatabase(include: {'tables.drift'})
 class Database extends _$Database {
+  static const latestSchemaVersion = 9;
+
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => latestSchemaVersion;
 
   Database(DatabaseConnection connection) : super.connect(connection);
 
@@ -60,7 +63,18 @@ class Database extends _$Database {
               break;
             case 8:
               // Added a unique key to the users table
+
+              // TODO: Figure out why dropping the view is necessary (https://sqlite.org/forum/forumpost/de614349cb)
+              await m.drop(groupCount);
+              await m.alterTable(TableMigration(v8.Users(this)));
+              await m.recreateAllViews();
+              break;
+            case 9:
+              // Added a check to the users table
+              await m.drop(groupCount);
               await m.alterTable(TableMigration(users));
+              await m.recreateAllViews();
+
               break;
           }
         }

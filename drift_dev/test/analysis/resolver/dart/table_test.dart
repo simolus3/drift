@@ -288,4 +288,43 @@ class InvalidConstraints extends Table {
       ),
     );
   });
+
+  test('reads custom constraints from table', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class BadTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  @override
+  List<String> get customConstraints => constructConstraints();
+}
+
+class WithConstraints extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  @override
+  List<String> get customConstraints => [
+    1, 'two', 'three'
+  ];
+}
+'''
+    });
+
+    final state = await backend.analyze('package:a/a.dart');
+    final badTable = state.analysis[state.id('bad_table')]!;
+    final withConstraints = state.analysis[state.id('with_constraints')]!;
+
+    expect((badTable.result as DriftTable).overrideTableConstraints, []);
+    //expect(withConstraints.overrideTableConstraints, ['two', 'three']);
+
+    expect(state.errorsDuringDiscovery, isEmpty);
+    expect(badTable.errorsDuringAnalysis, [
+      isDriftError('This must return a list literal!')
+          .withSpan('customConstraints')
+    ]);
+    expect(withConstraints.errorsDuringAnalysis,
+        [isDriftError('This must be a string literal.').withSpan('1')]);
+  });
 }
