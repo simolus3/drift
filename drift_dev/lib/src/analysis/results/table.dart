@@ -51,7 +51,7 @@ class DriftTable extends DriftElementWithResultSet {
 
   /// When non-null, the generated table class will override the
   /// `customConstraints` getter in the table class with this value.
-  final List<String>? overrideTableConstraints;
+  final List<String> overrideTableConstraints;
 
   DriftTable(
     super.id,
@@ -68,7 +68,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.tableConstraints = const [],
     this.virtualTableData,
     this.writeDefaultConstraints = true,
-    this.overrideTableConstraints,
+    this.overrideTableConstraints = const [],
   });
 
   /// Whether this is a virtual table, created with a `CREATE VIRTUAL TABLE`

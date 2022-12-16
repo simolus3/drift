@@ -4,6 +4,8 @@
   values as string.
 - Add `updates` parameter to `Batch.customStatement` - it can be used to specify
   which tables are affected by the custom statement.
+- Fix `UNIQUE` keys declared in drift files being written twice.
+- Fix `customConstraints` not appearing in dumped database schema files.
 
 ## 2.3.0-dev
 

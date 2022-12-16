@@ -512,9 +512,9 @@ class TableWriter extends TableOrViewWriter {
     // no need to override them again.
     final writeTableConstraints = table.definingDartClass == null ||
         scope.generationOptions.forSchema != null;
-    if (writeTableConstraints && table.overrideTableConstraints != null) {
+    if (writeTableConstraints && table.overrideTableConstraints.isNotEmpty) {
       final value =
-          table.overrideTableConstraints!.map(asDartLiteral).join(', ');
+          table.overrideTableConstraints.map(asDartLiteral).join(', ');
 
       buffer
         ..write('@override\n')

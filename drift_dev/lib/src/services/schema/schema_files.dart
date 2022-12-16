@@ -124,8 +124,7 @@ class SchemaWriter {
             'USING ${table.virtualTableData!.module}'
             '(${table.virtualTableData!.moduleArguments.join(', ')})',
       'without_rowid': table.withoutRowId,
-      if (table.overrideTableConstraints != null)
-        'constraints': table.overrideTableConstraints,
+      'constraints': table.overrideTableConstraints,
       if (table.strict) 'strict': true,
       if (primaryKeyFromTableConstraint != null)
         'explicit_pk': [
@@ -365,7 +364,7 @@ class SchemaReader {
       nameOfRowClass: '${pascalCase}Data',
       writeDefaultConstraints: content['was_declared_in_moor'] != true,
       withoutRowId: withoutRowId,
-      overrideTableConstraints: tableConstraints,
+      overrideTableConstraints: tableConstraints ?? const [],
       tableConstraints: [
         if (explicitPk != null) PrimaryKeyColumns(explicitPk),
         for (final unique in uniqueKeys) UniqueColumns(unique)

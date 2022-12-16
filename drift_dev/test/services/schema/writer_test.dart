@@ -267,6 +267,7 @@ const expected = r'''
                 ],
                 "is_virtual": false,
                 "without_rowid": false,
+                "constraints": [],
                 "unique_keys": [
                     [
                         "name",

@@ -518,7 +518,7 @@ class ElementDeserializer {
           writeDefaultConstraints: json['write_default_constraints'] as bool,
           overrideTableConstraints: json['custom_constraints'] != null
               ? (json['custom_constraints'] as List).cast()
-              : null,
+              : const [],
         );
 
         for (final column in columns) {

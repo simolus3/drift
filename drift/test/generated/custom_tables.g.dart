@@ -94,8 +94,6 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   @override
   bool get withoutRowId => true;
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
 }
 
@@ -274,8 +272,6 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
     return WithDefaults(attachedDatabase, alias);
   }
 
-  @override
-  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }
@@ -783,8 +779,6 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   @override
   bool get isStrict => true;
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
 }
 
@@ -1270,8 +1264,6 @@ class Email extends Table
   }
 
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
   @override
   String get moduleAndArgs => 'fts5(sender, title, body)';
@@ -1456,8 +1448,6 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
     return WeirdTable(attachedDatabase, alias);
   }
 
-  @override
-  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }

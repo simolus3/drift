@@ -17,21 +17,25 @@ abstract class CategoriesTable extends Table {
   String get tableName;
 
   @override
-  List<String> get customConstraints =>
-      ['FOREIGN KEY(parentId) REFERENCES ' + tableName + '(id)'];
-
-  @override
   Set<Column> get primaryKey => {id};
 }
 
 class OccurrenceCategoriesTable extends CategoriesTable {
   @override
   String get tableName => 'occurrence_categories';
+
+  @override
+  List<String> get customConstraints =>
+      ['FOREIGN KEY(parentId) REFERENCES occurrence_categories(id)'];
 }
 
 class SocietiesCategoriesTable extends CategoriesTable {
   @override
   String get tableName => 'societies_categories';
+
+  @override
+  List<String> get customConstraints =>
+      ['FOREIGN KEY(parentId) REFERENCES societies_categories(id)'];
 }
 
 @DriftDatabase(tables: [OccurrenceCategoriesTable, SocietiesCategoriesTable])
