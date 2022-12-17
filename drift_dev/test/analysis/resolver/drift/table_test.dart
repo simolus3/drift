@@ -199,4 +199,25 @@ CREATE TABLE b (
       contains(isDriftError('Not an enum: `NotAnEnum`')),
     );
   });
+
+  test('supports JSON KEY annotation', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE TABLE waybills (
+    parent    INT      JSON KEY parentDoc        NULL,
+    id        INT                            NOT NULL,
+    dataType  TEXT                           NOT NULL
+);
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(
+        table.columnBySqlName['parent'],
+        isA<DriftColumn>().having(
+            (e) => e.overriddenJsonName, 'overriddenJsonName', 'parentDoc'));
+  });
 }

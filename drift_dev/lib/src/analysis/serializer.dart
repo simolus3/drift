@@ -133,7 +133,7 @@ class ElementSerializer {
         ],
         'queries': element.declaredQueries,
         if (element is DatabaseAccessor) ...{
-          'type': element.ownType.toJson(),
+          'dart_type': element.ownType.toJson(),
           'database': element.databaseClass.toJson(),
         },
         if (element is DriftDatabase) ...{
@@ -673,7 +673,7 @@ class ElementDeserializer {
             declaredIncludes: includes,
             declaredQueries: queries,
             databaseClass: AnnotatedDartCode.fromJson(json['database'] as Map),
-            ownType: AnnotatedDartCode.fromJson(json['type'] as Map),
+            ownType: AnnotatedDartCode.fromJson(json['dart_type'] as Map),
           );
         }
       default:

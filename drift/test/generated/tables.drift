@@ -6,7 +6,7 @@ CREATE TABLE no_ids (
 ) WITHOUT ROWID WITH NoIdRow;
 
 CREATE TABLE with_defaults (
-    a TEXT DEFAULT 'something',
+    a TEXT JSON KEY customJsonName DEFAULT 'something',
     b INT UNIQUE
 );
 

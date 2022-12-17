@@ -124,7 +124,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WithDefault(
-      a: serializer.fromJson<String?>(json['a']),
+      a: serializer.fromJson<String?>(json['customJsonName']),
       b: serializer.fromJson<int?>(json['b']),
     );
   }
@@ -137,7 +137,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'a': serializer.toJson<String?>(a),
+      'customJsonName': serializer.toJson<String?>(a),
       'b': serializer.toJson<int?>(b),
     };
   }

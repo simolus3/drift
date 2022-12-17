@@ -52,6 +52,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       final constraints = <DriftColumnConstraint>[];
       AppliedTypeConverter? converter;
       AnnotatedDartCode? defaultArgument;
+      String? overriddenJsonName;
 
       final typeName = column.definition?.typeName;
 
@@ -102,6 +103,9 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           }
 
           converter = await _readTypeConverter(type, nullable, constraint);
+        } else if (constraint is sql.JsonKey) {
+          writeIntoTable = false;
+          overriddenJsonName = constraint.jsonKey;
         } else if (constraint is ForeignKeyColumnConstraint) {
           // Note: Warnings about whether the referenced column exists or not
           // are reported later, we just need to know dependencies before the
@@ -162,6 +166,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         nullable: nullable,
         nameInSql: column.name,
         nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
+        overriddenJsonName: overriddenJsonName,
         constraints: constraints,
         typeConverter: converter,
         defaultArgument: defaultArgument,

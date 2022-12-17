@@ -247,4 +247,12 @@ void main() {
         '"sync_state" IS NOT NULL AND "sync_state" = ?;',
         [ConfigTable.$convertersyncState.toSql(SyncType.synchronized)]));
   });
+
+  test('respects `JSON KEY` option', () {
+    const entry = WithDefault(a: 'foo');
+    const asJson = {'customJsonName': 'foo', 'b': null};
+
+    expect(entry.toJson(), asJson);
+    expect(WithDefault.fromJson(asJson), entry);
+  });
 }
