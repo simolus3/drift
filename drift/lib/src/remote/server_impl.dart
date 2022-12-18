@@ -54,6 +54,7 @@ class ServerImplementation implements DriftServer {
 
     final comm = DriftCommunication(channel, serialize: serialize);
     comm.setRequestHandler((request) => _handleRequest(comm, request));
+    comm.request(ServerInfo(connection.executor.dialect));
 
     _activeChannels.add(comm);
     comm.closed.then((_) => _activeChannels.remove(comm));

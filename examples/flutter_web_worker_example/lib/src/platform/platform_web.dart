@@ -16,6 +16,7 @@ class PlatformInterface {
   static DatabaseConnection _connectToWorker(String databaseName) {
     final worker = SharedWorker(
         kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js', databaseName);
-    return remote(worker.port!.channel());
+    return DatabaseConnection.delayed(
+        connectToRemoteAndInitialize(worker.port!.channel()));
   }
 }

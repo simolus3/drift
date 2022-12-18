@@ -44,15 +44,17 @@ class DatabaseConnection {
   ///   }
   /// }
   /// ```
-  factory DatabaseConnection.delayed(FutureOr<DatabaseConnection> connection) {
+  factory DatabaseConnection.delayed(FutureOr<DatabaseConnection> connection,
+      {SqlDialect dialect = SqlDialect.sqlite}) {
     if (connection is DatabaseConnection) {
       return connection;
     }
 
     return DatabaseConnection(
-      LazyDatabase(() async => (await connection).executor),
+      LazyDatabase(() async => (await connection).executor, dialect: dialect),
       streamQueries: DelayedStreamQueryStore(
-          connection.then((conn) => conn.streamQueries)),
+        connection.then((conn) => conn.streamQueries),
+      ),
     );
   }
 

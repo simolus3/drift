@@ -29,8 +29,9 @@ void main() {
         DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
     server.serve(controller.foreign);
 
-    final client =
-        remote(controller.local.expectedToClose, singleClientMode: true);
+    final client = await connectToRemoteAndInitialize(
+        controller.local.expectedToClose,
+        singleClientMode: true);
     final db = TodoDb.connect(client);
 
     await db.todosTable.select().get();
@@ -47,7 +48,7 @@ void main() {
       final controller = StreamChannelController();
       server.serve(controller.foreign, serialize: false);
 
-      final client = remote(
+      final client = await connectToRemoteAndInitialize(
         controller.local.transformSink(StreamSinkTransformer.fromHandlers(
           handleData: (data, out) {
             expect(data, isNot(isA<NotifyTablesUpdated>()));
@@ -117,7 +118,7 @@ void main() {
     server.serve(channelController.foreign.changeStream(_checkStreamOfSimple),
         serialize: true);
 
-    final connection = remote(
+    final connection = await connectToRemoteAndInitialize(
         channelController.local
             .changeStream(_checkStreamOfSimple)
             .expectedToClose,
@@ -162,7 +163,8 @@ void main() {
     server.serve(controller.foreign);
     addTearDown(server.shutdown);
 
-    final db = TodoDb.connect(remote(controller.local));
+    final db =
+        TodoDb.connect(await connectToRemoteAndInitialize(controller.local));
     addTearDown(db.close);
 
     await db.transaction(() async {
@@ -189,6 +191,19 @@ void main() {
     verify(innerTransactions[2].send());
     verify(innerTransactions[1].send());
     verify(outerTransaction.send());
+  });
+
+  test('reports correct dialect of remote', () async {
+    final executor = MockExecutor();
+    when(executor.dialect).thenReturn(SqlDialect.postgres);
+
+    final controller = StreamChannelController();
+    final server = DriftServer(DatabaseConnection(executor))
+      ..serve(controller.foreign);
+
+    final client = await connectToRemoteAndInitialize(controller.local);
+    await server.shutdown();
+    expect(client.executor.dialect, SqlDialect.postgres);
   });
 }
 

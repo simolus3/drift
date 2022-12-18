@@ -14,6 +14,12 @@ import 'protocol.dart';
 class DriftClient {
   final DriftCommunication _channel;
 
+  SqlDialect _serverDialect = SqlDialect.sqlite;
+  final Completer<ServerInfo> _serverInfo = Completer();
+
+  /// Waits for the first [ServerInfo] message to this client.
+  Future<ServerInfo> get serverInfo => _serverInfo.future;
+
   /// Whether we know that only a single client will use the database server.
   ///
   /// In this case, we shutdown the server after the client disconnects and
@@ -51,6 +57,9 @@ class DriftClient {
       return _connectedDb.beforeOpen(executor, payload.details);
     } else if (payload is NotifyTablesUpdated) {
       _streamStore.handleTableUpdates(payload.updates.toSet(), true);
+    } else if (payload is ServerInfo) {
+      _serverDialect = payload.dialect;
+      _serverInfo.complete(payload);
     }
   }
 }
@@ -61,6 +70,9 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   // ignore: unused_element, https://github.com/dart-lang/sdk/issues/49007
   _BaseExecutor(this.client, [this._executorId]);
+
+  @override
+  SqlDialect get dialect => client._serverDialect;
 
   @override
   Future<void> runBatched(BatchedStatements statements) {
@@ -128,9 +140,6 @@ class _RemoteQueryExecutor extends _BaseExecutor {
 
   Completer<void>? _setSchemaVersion;
   Future<bool>? _serverIsOpen;
-
-  @override
-  SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
   TransactionExecutor beginTransaction() {

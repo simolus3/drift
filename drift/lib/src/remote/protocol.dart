@@ -22,6 +22,8 @@ class DriftProtocol {
   static const _tag_DirectValue = 10;
   static const _tag_SelectResult = 11;
   static const _tag_RequestCancellation = 12;
+  static const _tag_ServerInfo = 13;
+
   static const _tag_BigInt = 'bigint';
 
   Object? serialize(Message message) {
@@ -103,6 +105,11 @@ class DriftProtocol {
       ];
     } else if (payload is EnsureOpen) {
       return [_tag_EnsureOpen, payload.schemaVersion, payload.executorId];
+    } else if (payload is ServerInfo) {
+      return [
+        _tag_ServerInfo,
+        payload.dialect.name,
+      ];
     } else if (payload is RunBeforeOpen) {
       return [
         _tag_RunBeforeOpen,
@@ -189,6 +196,8 @@ class DriftProtocol {
         return RunTransactionAction(control, readNullableInt(2));
       case _tag_EnsureOpen:
         return EnsureOpen(readInt(1), readNullableInt(2));
+      case _tag_ServerInfo:
+        return ServerInfo(SqlDialect.values.byName(fullMessage![1] as String));
       case _tag_RunBeforeOpen:
         return RunBeforeOpen(
           OpeningDetails(readNullableInt(1), readInt(2)),
@@ -405,6 +414,17 @@ class EnsureOpen {
   @override
   String toString() {
     return 'EnsureOpen($schemaVersion, $executorId)';
+  }
+}
+
+class ServerInfo {
+  final SqlDialect dialect;
+
+  ServerInfo(this.dialect);
+
+  @override
+  String toString() {
+    return 'ServerInfo($dialect)';
   }
 }
 

@@ -98,12 +98,11 @@ class DriftIsolate {
   ///
   /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
   /// It will print messages exchanged between the two isolates.
-  // todo: breaking: Make synchronous in drift 2
   Future<DatabaseConnection> connect({
     bool isolateDebugLog = false,
     bool singleClientMode = false,
   }) async {
-    return remote(
+    return connectToRemoteAndInitialize(
       _open(),
       debugLog: isolateDebugLog,
       serialize: serialize,

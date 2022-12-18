@@ -15,7 +15,8 @@ const _useWorker = true;
 DatabaseConnection connect({bool isInWebWorker = false}) {
   if (_useWorker && !isInWebWorker) {
     final worker = SharedWorker('shared_worker.dart.js');
-    return remote(worker.port!.channel());
+    return DatabaseConnection.delayed(
+        connectToRemoteAndInitialize(worker.port!.channel()));
   } else {
     return DatabaseConnection.delayed(Future.sync(() async {
       // We're using the experimental wasm support in Drift because this gives

@@ -4,9 +4,9 @@ import 'package:drift/remote.dart';
 import 'package:drift/web.dart';
 import 'package:web_worker_example/database.dart';
 
-void main() {
+void main() async {
   final worker = SharedWorker('worker.dart.js');
-  final connection = remote(worker.port!.channel());
+  final connection = await connectToRemoteAndInitialize(worker.port!.channel());
   final db = MyDatabase(connection);
 
   final output = document.getElementById('output')!;

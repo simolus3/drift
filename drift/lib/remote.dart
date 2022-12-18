@@ -97,7 +97,7 @@ abstract class DriftServer {
   /// the message may be any Dart object.
   ///
   /// After calling [serve], you can obtain a [DatabaseConnection] on the other
-  /// end of the [channel] by calling [remote].
+  /// end of the [channel] by calling [connectToRemoteAndInitialize].
   ///
   /// __Warning__: As long as this library is marked experimental, the protocol
   /// might change with every drift version. For this reason, make sure that
@@ -134,6 +134,17 @@ abstract class DriftServer {
 ///
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
+///
+/// __NOTE__: This synchronous method has a flaw, as its [QueryExecutor.dialect]
+/// is always going to be [SqlDialect.sqlite]. While this not a problem in most
+/// scenarios where that is the actual database, it makes it harder to use with
+/// other database clients. The [connectToRemoteAndInitialize] method does not
+/// have this issue.
+///
+/// Due to this problem, it is recommended to avoid [remote] altogether. If you
+/// know the dialect beforehand, you can wrap [connectToRemoteAndInitialize] in
+/// a [DatabaseConnection.delayed] to get a connection sychronously.
+@Deprecated('Use the asynchronous `connectToRemoteAndInitialize` instead')
 DatabaseConnection remote(
   StreamChannel<Object?> channel, {
   bool debugLog = false,
@@ -141,6 +152,37 @@ DatabaseConnection remote(
   bool singleClientMode = false,
 }) {
   final client = DriftClient(channel, debugLog, serialize, singleClientMode);
+  return client.connection;
+}
+
+/// Connects to a remote server over a two-way communication channel.
+///
+/// The other end of the [channel] must be attached to a drift server with
+/// [DriftServer.serve] for this setup to work.
+///
+/// If it is known that only a single client will connect to this database
+/// server, [singleClientMode] can be enabled.
+/// When enabled, [shutdown] is implicitly called when the database connection
+/// is closed. This may make it easier to dispose the remote isolate or server.
+/// Also, update notifications for table updates don't have to be sent which
+/// reduces load on the connection.
+///
+/// If [serialize] is true, drift will only send [bool], [int], [double],
+/// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
+/// the message may be any Dart object.
+/// The value of [serialize] for [connectToRemoteAndInitialize] must be the same
+/// value passed to [DriftServer.serve].
+///
+/// The optional [debugLog] can be enabled to print incoming and outgoing
+/// messages.
+Future<DatabaseConnection> connectToRemoteAndInitialize(
+  StreamChannel<Object?> channel, {
+  bool debugLog = false,
+  bool serialize = true,
+  bool singleClientMode = false,
+}) async {
+  final client = DriftClient(channel, debugLog, serialize, singleClientMode);
+  await client.serverInfo;
   return client.connection;
 }
 
