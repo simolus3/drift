@@ -177,6 +177,35 @@ abstract class _NodeOrWriter {
     }
   }
 
+  /// The Dart type that matches the type of this column, ignoring type
+  /// converters.
+  ///
+  /// This is the same as [dartType] but without custom types.
+  AnnotatedDartCode variableTypeCode(HasType type, {bool? nullable}) {
+    if (type.isArray) {
+      final inner = innerColumnType(type, nullable: nullable ?? type.nullable);
+      return AnnotatedDartCode([
+        DartTopLevelSymbol.list,
+        '<',
+        ...inner.elements,
+        '>',
+      ]);
+    } else {
+      return innerColumnType(type, nullable: nullable ?? type.nullable);
+    }
+  }
+
+  /// The raw Dart type for this column, taking its nullability only from the
+  /// [nullable] parameter.
+  ///
+  /// This type does not respect type converters or arrays.
+  AnnotatedDartCode innerColumnType(HasType type, {bool nullable = false}) {
+    return AnnotatedDartCode([
+      dartTypeNames[type.sqlType],
+      if (nullable) '?',
+    ]);
+  }
+
   String refUri(Uri definition, String element) {
     final prefix =
         writer.generationOptions.imports.prefixFor(definition, element);

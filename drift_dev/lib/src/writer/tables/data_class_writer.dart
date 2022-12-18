@@ -263,7 +263,8 @@ class DataClassWriter {
       }
       if (needsScope) _buffer.write('{');
 
-      final typeName = column.variableTypeCode(nullable: false);
+      final typeName =
+          _emitter.dartCode(_emitter.variableTypeCode(column, nullable: false));
       final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
           '$variable<$typeName>';
 

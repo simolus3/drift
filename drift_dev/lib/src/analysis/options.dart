@@ -280,6 +280,8 @@ class KnownSqliteFunction {
           return 'TEXT';
         case BasicType.blob:
           return 'BLOB';
+        case BasicType.any:
+          return 'ANY';
       }
     }
 

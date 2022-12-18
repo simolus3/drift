@@ -132,7 +132,7 @@ class UpdateCompanionWriter {
 
     final expression = _emitter.drift('Expression');
     for (final column in columns) {
-      final typeName = column.innerColumnType();
+      final typeName = _emitter.dartCode(_emitter.innerColumnType(column));
       _buffer.write('$expression<$typeName>? ${column.nameInDart}, \n');
     }
 
@@ -188,7 +188,8 @@ class UpdateCompanionWriter {
       final getterName = thisIfNeeded(column.nameInDart, locals);
 
       _buffer.write('if ($getterName.present) {');
-      final typeName = column.variableTypeCode(nullable: false);
+      final typeName =
+          _emitter.dartCode(_emitter.variableTypeCode(column, nullable: false));
       final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
           '${_emitter.drift('Variable')}<$typeName>';
 

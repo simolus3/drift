@@ -4,6 +4,7 @@ import 'package:build_test/build_test.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
 final _resolvers = AnalyzerResolvers();
@@ -11,6 +12,13 @@ final _resolvers = AnalyzerResolvers();
 BuilderOptions builderOptionsFromYaml(String yaml) {
   final map = loadYaml(yaml);
   return BuilderOptions((map as YamlMap).cast());
+}
+
+Logger loggerThat(dynamic expectedLogs) {
+  final logger = Logger.detached('drift_dev_test');
+
+  expect(logger.onRecord, expectedLogs);
+  return logger;
 }
 
 Future<RecordingAssetWriter> emulateDriftBuild({

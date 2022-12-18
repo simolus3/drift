@@ -22,7 +22,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     final staticReferences = await _parseStaticReferences();
     final structure = await _parseSelectStructure(staticReferences);
     final columns = await _parseColumns(structure, staticReferences);
-    final dataClassInfo = _readDataClassInformation(columns);
+    final dataClassInfo = await _readDataClassInformation(columns);
 
     return DriftView(
       discovered.ownId,
@@ -303,7 +303,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     }[name];
   }
 
-  DataClassInformation _readDataClassInformation(List<DriftColumn> columns) {
+  Future<DataClassInformation> _readDataClassInformation(
+      List<DriftColumn> columns) async {
     DartObject? useRowClass;
     DartObject? driftView;
     AnnotatedDartCode? customParentClass;
@@ -359,10 +360,11 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       }
     }
 
+    final knownTypes = await resolver.driver.loadKnownTypes();
     final verified = existingClass == null
         ? null
         : validateExistingClass(columns, existingClass,
-            constructorInExistingClass!, generateInsertable!, this);
+            constructorInExistingClass!, generateInsertable!, this, knownTypes);
     return DataClassInformation(name, customParentClass, verified);
   }
 }

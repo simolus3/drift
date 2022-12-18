@@ -51,7 +51,7 @@ void main() {
           {
             "name": "id",
             "getter_name": "id",
-            "moor_type": "ColumnType.integer",
+            "moor_type": "int",
             "nullable": false,
             "customConstraints": "PRIMARY KEY",
             "default_dart": null,
@@ -63,7 +63,7 @@ void main() {
           {
             "name": "name",
             "getter_name": "name",
-            "moor_type": "ColumnType.text",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": "",
             "default_dart": null,
@@ -92,7 +92,7 @@ void main() {
           {
             "name": "name",
             "getter_name": "name",
-            "moor_type": "ColumnType.text",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,

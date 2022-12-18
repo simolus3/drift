@@ -211,8 +211,6 @@ class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
   }
 
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
 }
 
@@ -389,8 +387,6 @@ class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
     return Likes(attachedDatabase, alias);
   }
 
-  @override
-  List<String> get customConstraints => const [];
   @override
   bool get dontWriteConstraints => true;
 }

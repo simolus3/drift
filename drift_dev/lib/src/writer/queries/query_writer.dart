@@ -665,7 +665,8 @@ class _ExpandedVariableWriter {
     // write all the variables sequentially.
     String constructVar(String dartExpr) {
       // No longer an array here, we apply a for loop if necessary
-      final type = element.innerColumnType(nullable: false);
+      final type =
+          _emitter.dartCode(_emitter.innerColumnType(element, nullable: false));
 
       final varType = _emitter.drift('Variable');
       final buffer = StringBuffer('$varType<$type>(');

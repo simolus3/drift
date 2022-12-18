@@ -20,7 +20,7 @@ const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS "with_constraints" ('
 
 const _createConfig = 'CREATE TABLE IF NOT EXISTS "config" ('
     '"config_key" TEXT NOT NULL PRIMARY KEY, '
-    '"config_value" TEXT, '
+    '"config_value" ANY, '
     '"sync_state" INTEGER, '
     '"sync_state_implicit" INTEGER) STRICT;';
 
@@ -125,7 +125,8 @@ void main() {
 
     verify(mock
         .runSelect('SELECT * FROM config WHERE "config_key" = ?1', ['key']));
-    expect(parsed, const Config(configKey: 'key', configValue: 'value'));
+    expect(
+        parsed, const Config(configKey: 'key', configValue: DriftAny('value')));
   });
 
   test('applies default parameter expressions when not set', () async {
@@ -219,7 +220,7 @@ void main() {
       entry,
       const Config(
         configKey: 'key',
-        configValue: 'value',
+        configValue: DriftAny('value'),
         syncState: SyncType.locallyUpdated,
         syncStateImplicit: SyncType.locallyUpdated,
       ),

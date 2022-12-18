@@ -193,4 +193,52 @@ secondQuery AS MyResultClass: SELECT 'bar' AS r1, 2 AS r2;
       })),
     }, result.dartOutputs, result);
   });
+
+  test('generates imports for query variables with modular generation',
+      () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.drift': '''
+CREATE TABLE my_table (
+  a INTEGER PRIMARY KEY,
+  b TEXT,
+  c BLOB,
+  d ANY
+) STRICT;
+
+q: INSERT INTO my_table (b, c, d) VALUES (?, ?, ?);
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/main.drift.dart': decodedMatches(
+        allOf(
+          contains(
+            'import \'package:drift/drift.dart\' as i0;\n'
+            'import \'package:a/main.drift.dart\' as i1;\n'
+            'import \'dart:convert\' as i2;\n'
+            'import \'package:drift/internal/modular.dart\' as i3;\n',
+          ),
+          contains(
+            'class MyTableData extends i0.DataClass\n'
+            '    implements i0.Insertable<i1.MyTableData> {\n'
+            '  final int a;\n'
+            '  final String? b;\n'
+            '  final i2.Uint8List? c;\n'
+            '  final i0.DriftAny? d;\n',
+          ),
+          contains(
+            '      variables: [\n'
+            '        i0.Variable<String>(var1),\n'
+            '        i0.Variable<i2.Uint8List>(var2),\n'
+            '        i0.Variable<i0.DriftAny>(var3)\n'
+            '      ],\n',
+          ),
+        ),
+      ),
+    }, result.dartOutputs, result);
+  });
 }

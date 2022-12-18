@@ -65,8 +65,9 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
             'you missing an import?',
           ));
         } else {
-          existingRowClass =
-              validateExistingClass(columns, clazz, '', false, this);
+          final knownTypes = await resolver.driver.loadKnownTypes();
+          existingRowClass = validateExistingClass(
+              columns, clazz, '', false, this, knownTypes);
           final newName = existingRowClass?.targetClass.toString();
           if (newName != null) {
             rowClassName = newName;

@@ -78,6 +78,10 @@ class SqlTypes {
       return dartValue ? 1 : 0;
     }
 
+    if (dartValue is DriftAny) {
+      return dartValue.rawSqlValue;
+    }
+
     return dartValue;
   }
 
@@ -115,6 +119,8 @@ class SqlTypes {
       // BLOB literals are string literals containing hexadecimal data and
       // preceded by a single "x" or "X" character. Example: X'53514C697465'
       return "x'${hex.encode(dart)}'";
+    } else if (dart is DriftAny) {
+      return mapToSqlLiteral(dart.rawSqlValue);
     }
 
     throw ArgumentError.value(dart, 'dart',
@@ -190,7 +196,72 @@ class SqlTypes {
         return sqlValue as T;
       case DriftSqlType.double:
         return (sqlValue as num?)?.toDouble() as T;
+      case DriftSqlType.any:
+        return DriftAny(sqlValue) as T;
     }
+  }
+}
+
+/// A drift type around a SQL value with an unknown type.
+///
+/// In [STRICT tables], a column can be declared with the type `ANY`. In such
+/// column, _any_ value can be stored without sqlite3 (or drift) attempting to
+/// cast it to a specific type. Thus, the [rawSqlValue] is directly passed to
+/// or from the underlying SQL database package.
+///
+/// To write a custom value into the database with [DriftAny], you can construct
+/// it and pass it into a [Variable] or into a companion of a table having a
+/// column with an `ANY` type.
+///
+/// [STRICT tables]: https://www.sqlite.org/stricttables.html
+@sealed
+class DriftAny {
+  /// The direct, unmodified SQL value being wrapped by this [DriftAny]
+  /// instance.
+  ///
+  /// Please note that a [rawSqlValue] can't always be mapped to a unique Dart
+  /// interpretation - see [readAs] for a discussion of which additional
+  /// information is necessary to interpret this value.
+  final Object rawSqlValue;
+
+  /// Constructs a [DriftAny] wrapper around the [rawSqlValue] that will be
+  /// written into the database without any modification by drift.
+  const DriftAny(this.rawSqlValue) : assert(rawSqlValue is! DriftAny);
+
+  /// Interprets the [rawSqlValue] as a drift [type] under the configuration
+  /// given by [types].
+  ///
+  /// A given [rawSqlValue] may have different Dart representations that would
+  /// be given to you by drift. For instance, the SQL value `1` could have the
+  /// following possible Dart interpretations:
+  ///
+  ///   - The [bool] constant `true`.
+  ///   - The [int] constant `1`
+  ///   - The big integer [BigInt.one].
+  ///   - All [DateTime] values having `1` as their UNIX timestamp in seconds
+  ///     (this depends on the configuration - drift can be configured to store
+  ///     date times [as text] too).
+  ///
+  /// For this reason, it is not always possible to directly map these raw
+  /// values to Dart without further information. Drift also needs to know the
+  /// expected type and some configuration options for context. For all SQL
+  /// types _except_ `ANY`, drift will do this for you behind the scenes.
+  ///
+  /// You can obtain a [types] instance from a database or DAO by using
+  /// [DatabaseConnectionUser.typeMapping].
+  ///
+  /// [as text]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#datetime-options
+  T readAs<T extends Object>(DriftSqlType<T> type, SqlTypes types) {
+    return types.read<T>(type, rawSqlValue)!;
+  }
+
+  @override
+  int get hashCode => Object.hash(DriftAny, rawSqlValue);
+
+  @override
+  bool operator ==(other) {
+    return identical(this, other) ||
+        other is DriftAny && other.rawSqlValue == rawSqlValue;
   }
 }
 
@@ -235,7 +306,12 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
   blob<Uint8List>(),
 
   /// A [double] value, stored as a `REAL` type in sqlite.
-  double<core.double>();
+  double<core.double>(),
+
+  /// The drift type for columns declared as `ANY` in [STRICT tables].
+  ///
+  /// [STRICT tables]: https://www.sqlite.org/stricttables.html
+  any<DriftAny>();
 
   /// Returns a suitable representation of this type in SQL.
   String sqlTypeName(GenerationContext context) {
@@ -260,6 +336,8 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
         return dialect == SqlDialect.sqlite ? 'BLOB' : 'bytea';
       case DriftSqlType.double:
         return dialect == SqlDialect.sqlite ? 'REAL' : 'float8';
+      case DriftSqlType.any:
+        return 'ANY';
     }
   }
 

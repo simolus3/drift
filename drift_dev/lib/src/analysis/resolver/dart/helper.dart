@@ -21,6 +21,8 @@ class KnownDriftTypes {
   final InterfaceType driftAccessor;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
+  final InterfaceType driftAny;
+  final InterfaceType uint8List;
 
   KnownDriftTypes._(
     this.helperLibrary,
@@ -32,6 +34,8 @@ class KnownDriftTypes {
     this.jsonTypeConverter,
     this.driftDatabase,
     this.driftAccessor,
+    this.driftAny,
+    this.uint8List,
   );
 
   /// Constructs the set of known drift types from a helper library, which is
@@ -52,6 +56,10 @@ class KnownDriftTypes {
       exportNamespace.get('JsonTypeConverter2') as InterfaceElement,
       dbElement.defaultInstantiation,
       daoElement.defaultInstantiation,
+      (exportNamespace.get('DriftAny') as InterfaceElement)
+          .defaultInstantiation,
+      (exportNamespace.get('Uint8List') as InterfaceElement)
+          .defaultInstantiation,
     );
   }
 

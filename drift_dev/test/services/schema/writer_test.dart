@@ -90,7 +90,11 @@ class Database {}
   });
 
   test('can generate code from schema json', () {
-    final serializedSchema = json.decode(expected) as Map<String, dynamic>;
+    final serializedSchema = json.decode(
+            // Column types used to be serialized under a different format, test
+            // reading that as well.
+            expected.replaceAll('"int"', '"ColumnType.integer"'))
+        as Map<String, dynamic>;
     final reader = SchemaReader.readJson(serializedSchema);
 
     final writer = Writer(
@@ -142,7 +146,7 @@ const expected = r'''
                     {
                         "name": "id",
                         "getter_name": "id",
-                        "moor_type": "ColumnType.integer",
+                        "moor_type": "int",
                         "nullable": false,
                         "customConstraints": "NOT NULL PRIMARY KEY AUTOINCREMENT",
                         "default_dart": null,
@@ -154,7 +158,7 @@ const expected = r'''
                     {
                         "name": "name",
                         "getter_name": "name",
-                        "moor_type": "ColumnType.text",
+                        "moor_type": "string",
                         "nullable": false,
                         "customConstraints": "NOT NULL",
                         "default_dart": null,
@@ -185,7 +189,7 @@ const expected = r'''
                     {
                         "name": "sender",
                         "getter_name": "sender",
-                        "moor_type": "ColumnType.text",
+                        "moor_type": "string",
                         "nullable": false,
                         "customConstraints": "",
                         "default_dart": null,
@@ -195,7 +199,7 @@ const expected = r'''
                     {
                         "name": "title",
                         "getter_name": "title",
-                        "moor_type": "ColumnType.text",
+                        "moor_type": "string",
                         "nullable": false,
                         "customConstraints": "",
                         "default_dart": null,
@@ -205,7 +209,7 @@ const expected = r'''
                     {
                         "name": "body",
                         "getter_name": "body",
-                        "moor_type": "ColumnType.text",
+                        "moor_type": "string",
                         "nullable": false,
                         "customConstraints": "",
                         "default_dart": null,
@@ -230,7 +234,7 @@ const expected = r'''
                     {
                         "name": "id",
                         "getter_name": "id",
-                        "moor_type": "ColumnType.integer",
+                        "moor_type": "int",
                         "nullable": false,
                         "customConstraints": null,
                         "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
@@ -243,7 +247,7 @@ const expected = r'''
                     {
                         "name": "name",
                         "getter_name": "name",
-                        "moor_type": "ColumnType.text",
+                        "moor_type": "string",
                         "nullable": false,
                         "customConstraints": null,
                         "default_dart": null,
@@ -253,7 +257,7 @@ const expected = r'''
                     {
                         "name": "setting",
                         "getter_name": "settings",
-                        "moor_type": "ColumnType.text",
+                        "moor_type": "string",
                         "nullable": false,
                         "customConstraints": null,
                         "default_dart": null,
@@ -290,7 +294,7 @@ const expected = r'''
                     {
                         "name": "group",
                         "getter_name": "group",
-                        "moor_type": "ColumnType.integer",
+                        "moor_type": "int",
                         "nullable": false,
                         "customConstraints": "NOT NULL REFERENCES \"groups\"(id)",
                         "default_dart": null,
@@ -302,7 +306,7 @@ const expected = r'''
                     {
                         "name": "user",
                         "getter_name": "user",
-                        "moor_type": "ColumnType.integer",
+                        "moor_type": "int",
                         "nullable": false,
                         "customConstraints": "NOT NULL REFERENCES users(id)",
                         "default_dart": null,
@@ -314,7 +318,7 @@ const expected = r'''
                     {
                         "name": "is_admin",
                         "getter_name": "isAdmin",
-                        "moor_type": "ColumnType.boolean",
+                        "moor_type": "bool",
                         "nullable": false,
                         "customConstraints": "NOT NULL DEFAULT FALSE",
                         "default_dart": "const CustomExpression('FALSE')",
@@ -377,7 +381,7 @@ const expected = r'''
                     {
                         "name": "id",
                         "getter_name": "id",
-                        "moor_type": "ColumnType.integer",
+                        "moor_type": "int",
                         "nullable": false,
                         "customConstraints": null,
                         "default_dart": null,

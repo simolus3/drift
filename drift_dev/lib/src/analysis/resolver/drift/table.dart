@@ -304,8 +304,9 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
             'you missing an import?',
           ));
         } else {
-          existingRowClass =
-              validateExistingClass(columns, clazz, '', false, this);
+          final knownTypes = await resolver.driver.loadKnownTypes();
+          existingRowClass = validateExistingClass(
+              columns, clazz, '', false, this, knownTypes);
           dataClassName = existingRowClass?.targetClass.toString();
         }
       } else if (overriddenNames.contains('/')) {

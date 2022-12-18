@@ -36,12 +36,24 @@ const _affinityTests = {
 };
 
 void main() {
-  test('affinity from typename', () {
+  group('column type from SQL', () {
     const resolver = SchemaFromCreateTable();
 
-    _affinityTests.forEach((key, value) {
-      expect(resolver.columnAffinity(key), equals(value),
-          reason: '$key should have $value affinity');
+    test('affinity', () {
+      _affinityTests.forEach((key, value) {
+        expect(resolver.columnAffinity(key), equals(value),
+            reason: '$key should have $value affinity');
+      });
+    });
+
+    test('any in a non-strict table', () {
+      expect(resolver.resolveColumnType('ANY', isStrict: false).type,
+          BasicType.real);
+    });
+
+    test('any in a strict table', () {
+      expect(resolver.resolveColumnType('ANY', isStrict: true).type,
+          BasicType.any);
     });
   });
 
@@ -189,6 +201,28 @@ void main() {
       final table = engine.schemaReader.read(stmt as CreateTableStatement);
       expect(table.resolvedColumns.single.type.nullable, isFalse);
     });
+  });
+
+  test('resolves types in strict tables', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
+
+    final stmt = engine.parse('''
+CREATE TABLE foo (
+  a INTEGER PRIMARY KEY,
+  b TEXT,
+  c ANY
+) STRICT;
+''').rootNode;
+
+    final table =
+        const SchemaFromCreateTable().read(stmt as CreateTableStatement);
+
+    expect(table.resolvedColumns.map((c) => c.name), ['a', 'b', 'c']);
+    expect(table.resolvedColumns.map((c) => c.type), const [
+      ResolvedType(type: BasicType.int),
+      ResolvedType(type: BasicType.text, nullable: true),
+      ResolvedType(type: BasicType.any, nullable: true),
+    ]);
   });
 
   group('sets withoutRowid and isStrict', () {

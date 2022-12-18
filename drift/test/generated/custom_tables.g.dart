@@ -495,7 +495,7 @@ class WithConstraints extends Table
 
 class Config extends DataClass implements Insertable<Config> {
   final String configKey;
-  final String? configValue;
+  final DriftAny? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
   const Config(
@@ -508,7 +508,7 @@ class Config extends DataClass implements Insertable<Config> {
     final map = <String, Expression>{};
     map['config_key'] = Variable<String>(configKey);
     if (!nullToAbsent || configValue != null) {
-      map['config_value'] = Variable<String>(configValue);
+      map['config_value'] = Variable<DriftAny>(configValue);
     }
     if (!nullToAbsent || syncState != null) {
       final converter = ConfigTable.$convertersyncStaten;
@@ -542,7 +542,7 @@ class Config extends DataClass implements Insertable<Config> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Config(
       configKey: serializer.fromJson<String>(json['config_key']),
-      configValue: serializer.fromJson<String?>(json['config_value']),
+      configValue: serializer.fromJson<DriftAny?>(json['config_value']),
       syncState: serializer.fromJson<SyncType?>(json['sync_state']),
       syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
           .fromJson(serializer.fromJson<int?>(json['sync_state_implicit'])),
@@ -557,7 +557,7 @@ class Config extends DataClass implements Insertable<Config> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'config_key': serializer.toJson<String>(configKey),
-      'config_value': serializer.toJson<String?>(configValue),
+      'config_value': serializer.toJson<DriftAny?>(configValue),
       'sync_state': serializer.toJson<SyncType?>(syncState),
       'sync_state_implicit': serializer.toJson<int?>(
           ConfigTable.$convertersyncStateImplicitn.toJson(syncStateImplicit)),
@@ -566,7 +566,7 @@ class Config extends DataClass implements Insertable<Config> {
 
   Config copyWith(
           {String? configKey,
-          Value<String?> configValue = const Value.absent(),
+          Value<DriftAny?> configValue = const Value.absent(),
           Value<SyncType?> syncState = const Value.absent(),
           Value<SyncType?> syncStateImplicit = const Value.absent()}) =>
       Config(
@@ -603,7 +603,7 @@ class Config extends DataClass implements Insertable<Config> {
 
 class ConfigCompanion extends UpdateCompanion<Config> {
   final Value<String> configKey;
-  final Value<String?> configValue;
+  final Value<DriftAny?> configValue;
   final Value<SyncType?> syncState;
   final Value<SyncType?> syncStateImplicit;
   const ConfigCompanion({
@@ -620,7 +620,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   }) : configKey = Value(configKey);
   static Insertable<Config> custom({
     Expression<String>? configKey,
-    Expression<String>? configValue,
+    Expression<DriftAny>? configValue,
     Expression<int>? syncState,
     Expression<int>? syncStateImplicit,
   }) {
@@ -634,7 +634,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
 
   ConfigCompanion copyWith(
       {Value<String>? configKey,
-      Value<String?>? configValue,
+      Value<DriftAny?>? configValue,
       Value<SyncType?>? syncState,
       Value<SyncType?>? syncStateImplicit}) {
     return ConfigCompanion(
@@ -652,7 +652,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['config_key'] = Variable<String>(configKey.value);
     }
     if (configValue.present) {
-      map['config_value'] = Variable<String>(configValue.value);
+      map['config_value'] = Variable<DriftAny>(configValue.value);
     }
     if (syncState.present) {
       final converter = ConfigTable.$convertersyncStaten;
@@ -692,9 +692,9 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       $customConstraints: 'NOT NULL PRIMARY KEY');
   static const VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
-  late final GeneratedColumn<String> configValue = GeneratedColumn<String>(
+  late final GeneratedColumn<DriftAny> configValue = GeneratedColumn<DriftAny>(
       'config_value', aliasedName, true,
-      type: DriftSqlType.string,
+      type: DriftSqlType.any,
       requiredDuringInsert: false,
       $customConstraints: '');
   static const VerificationMeta _syncStateMeta =
@@ -752,7 +752,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       configKey: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
+          .read(DriftSqlType.any, data['${effectivePrefix}config_value']),
       syncState: ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
@@ -1454,7 +1454,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
 class MyViewData extends DataClass {
   final String configKey;
-  final String? configValue;
+  final DriftAny? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
   const MyViewData(
@@ -1467,7 +1467,7 @@ class MyViewData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MyViewData(
       configKey: serializer.fromJson<String>(json['config_key']),
-      configValue: serializer.fromJson<String?>(json['config_value']),
+      configValue: serializer.fromJson<DriftAny?>(json['config_value']),
       syncState: serializer.fromJson<SyncType?>(json['sync_state']),
       syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
           .fromJson(serializer.fromJson<int?>(json['sync_state_implicit'])),
@@ -1483,7 +1483,7 @@ class MyViewData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'config_key': serializer.toJson<String>(configKey),
-      'config_value': serializer.toJson<String?>(configValue),
+      'config_value': serializer.toJson<DriftAny?>(configValue),
       'sync_state': serializer.toJson<SyncType?>(syncState),
       'sync_state_implicit': serializer.toJson<int?>(
           ConfigTable.$convertersyncStateImplicitn.toJson(syncStateImplicit)),
@@ -1492,7 +1492,7 @@ class MyViewData extends DataClass {
 
   MyViewData copyWith(
           {String? configKey,
-          Value<String?> configValue = const Value.absent(),
+          Value<DriftAny?> configValue = const Value.absent(),
           Value<SyncType?> syncState = const Value.absent(),
           Value<SyncType?> syncStateImplicit = const Value.absent()}) =>
       MyViewData(
@@ -1551,7 +1551,7 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
       configKey: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
       configValue: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}config_value']),
+          .read(DriftSqlType.any, data['${effectivePrefix}config_value']),
       syncState: ConfigTable.$convertersyncStaten.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}sync_state'])),
@@ -1564,9 +1564,9 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   late final GeneratedColumn<String> configKey = GeneratedColumn<String>(
       'config_key', aliasedName, false,
       type: DriftSqlType.string);
-  late final GeneratedColumn<String> configValue = GeneratedColumn<String>(
+  late final GeneratedColumn<DriftAny> configValue = GeneratedColumn<DriftAny>(
       'config_value', aliasedName, true,
-      type: DriftSqlType.string);
+      type: DriftSqlType.any);
   late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
       GeneratedColumn<int>('sync_state', aliasedName, true,
               type: DriftSqlType.int)
@@ -1603,10 +1603,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
   late final MyView myView = MyView(this);
-  Future<int> writeConfig({required String key, String? value}) {
+  Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
-      variables: [Variable<String>(key), Variable<String>(value)],
+      variables: [Variable<String>(key), Variable<DriftAny>(value)],
       updates: {config},
     );
   }
@@ -1773,7 +1773,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         row: row,
         rowid: row.read<int>('rowid'),
         configKey: row.read<String>('config_key'),
-        configValue: row.readNullable<String>('config_value'),
+        configValue: row.readNullable<DriftAny>('config_value'),
         syncState: NullAwareTypeConverter.wrapFromSql(
             ConfigTable.$convertersyncState,
             row.readNullable<int>('sync_state')),
@@ -1954,7 +1954,7 @@ typedef Multiple$predicate = Expression<bool> Function(
 class ReadRowIdResult extends CustomResultSet {
   final int rowid;
   final String configKey;
-  final String? configValue;
+  final DriftAny? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
   ReadRowIdResult({

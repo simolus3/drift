@@ -27,6 +27,7 @@ ExistingRowClass? validateExistingClass(
   String constructor,
   bool generateInsertable,
   LocalElementResolver step,
+  KnownDriftTypes knownTypes,
 ) {
   final desiredClass = dartClass.classElement;
   final library = desiredClass.library;
@@ -111,7 +112,7 @@ ExistingRowClass? validateExistingClass(
         namedColumns[parameter] = column;
       }
 
-      _checkParameterType(parameter, column, step);
+      _checkParameterType(parameter, column, step, knownTypes);
     } else if (!parameter.isOptional) {
       step.reportError(DriftAnalysisError.forDartElement(
         parameter,
@@ -214,7 +215,7 @@ AppliedTypeConverter? readTypeConverter(
   }
 
   _checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
-      library.typeSystem, reportError);
+      library.typeSystem, helper, reportError);
 
   return AppliedTypeConverter(
     expression: AnnotatedDartCode.ast(dartExpression),
@@ -274,8 +275,12 @@ AppliedTypeConverter readEnumConverter(
   );
 }
 
-void _checkParameterType(ParameterElement element, DriftColumn column,
-    LocalElementResolver resolver) {
+void _checkParameterType(
+  ParameterElement element,
+  DriftColumn column,
+  LocalElementResolver resolver,
+  KnownDriftTypes helper,
+) {
   final type = element.type;
   final library = element.library!;
   final typesystem = library.typeSystem;
@@ -301,6 +306,7 @@ void _checkParameterType(ParameterElement element, DriftColumn column,
     element.type,
     library.typeProvider,
     library.typeSystem,
+    helper,
     error,
   );
 }
@@ -312,6 +318,7 @@ void _checkType(
   DartType typeToCheck,
   TypeProvider typeProvider,
   TypeSystem typeSystem,
+  KnownDriftTypes knownTypes,
   void Function(String) error,
 ) {
   DartType expectedDartType;
@@ -321,27 +328,17 @@ void _checkType(
       typeToCheck = typeSystem.promoteToNonNull(typeToCheck);
     }
   } else {
-    expectedDartType = typeProvider.typeFor(columnType);
+    expectedDartType = typeProvider.typeFor(columnType, knownTypes);
   }
 
-  // BLOB columns should be stored in an Uint8List (or a supertype of that).
-  // We don't get a Uint8List from the type provider unfortunately, but as it
-  // cannot be extended we can just check for that manually.
-  final isAllowedUint8List = typeConverter == null &&
-      columnType == DriftSqlType.blob &&
-      typeToCheck is InterfaceType &&
-      typeToCheck.element.name == 'Uint8List' &&
-      typeToCheck.element.library.name == 'dart.typed_data';
-
-  if (!typeSystem.isAssignableTo(expectedDartType, typeToCheck) &&
-      !isAllowedUint8List) {
+  if (!typeSystem.isAssignableTo(expectedDartType, typeToCheck)) {
     error('Parameter must accept '
         '${expectedDartType.getDisplayString(withNullability: true)}');
   }
 }
 
 extension on TypeProvider {
-  DartType typeFor(DriftSqlType type) {
+  DartType typeFor(DriftSqlType type, KnownDriftTypes knownTypes) {
     switch (type) {
       case DriftSqlType.int:
         return intType;
@@ -356,9 +353,11 @@ extension on TypeProvider {
         return intElement.library.getClass('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case DriftSqlType.blob:
-        return listType(intType);
+        return knownTypes.uint8List;
       case DriftSqlType.double:
         return doubleType;
+      case DriftSqlType.any:
+        return knownTypes.driftAny;
     }
   }
 }

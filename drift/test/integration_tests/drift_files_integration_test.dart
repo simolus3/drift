@@ -93,7 +93,7 @@ void main() {
       final stream = db.readView().watch();
       const entry = Config(
         configKey: 'another_key',
-        configValue: 'value',
+        configValue: DriftAny('value'),
         syncState: SyncType.synchronized,
         syncStateImplicit: SyncType.synchronized,
       );
@@ -155,7 +155,7 @@ void main() {
       final result = await db.addConfig(
           value: ConfigCompanion.insert(
         configKey: 'key2',
-        configValue: const Value('val'),
+        configValue: const Value(DriftAny('val')),
         syncState: const Value(SyncType.locallyCreated),
         syncStateImplicit: const Value(SyncType.locallyCreated),
       ));
@@ -165,7 +165,7 @@ void main() {
         result.single,
         const Config(
           configKey: 'key2',
-          configValue: 'val',
+          configValue: DriftAny('val'),
           syncState: SyncType.locallyCreated,
           syncStateImplicit: SyncType.locallyCreated,
         ),

@@ -261,8 +261,6 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
       $converterpreferencesn =
       i0.JsonTypeConverter2.asNullable($converterpreferences);
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
 }
 

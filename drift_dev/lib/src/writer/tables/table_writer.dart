@@ -102,8 +102,9 @@ abstract class TableOrViewWriter {
           emitter.dartCode(column.clientDefaultCode!);
     }
 
-    final innerType = column.innerColumnType();
-    var type = '${emitter.drift('GeneratedColumn')}<$innerType>';
+    final innerType = emitter.innerColumnType(column);
+    var type =
+        '${emitter.drift('GeneratedColumn')}<${emitter.dartCode(innerType)}>';
     expressionBuffer
       ..write(type)
       ..write(
@@ -135,7 +136,7 @@ abstract class TableOrViewWriter {
           .readConverter(converter, forNullable: column.nullable));
 
       type = '${emitter.drift('GeneratedColumnWithTypeConverter')}'
-          '<$mappedType, $innerType>';
+          '<$mappedType, ${emitter.dartCode(innerType)}>';
       expressionBuffer
         ..write('.withConverter<')
         ..write(mappedType)

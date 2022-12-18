@@ -34,8 +34,7 @@ abstract class $Database extends i0.GeneratedDatabase {
         i3.postsDelete,
         likes,
         follows,
-        popularUsers,
-        i1.usersName
+        popularUsers
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>

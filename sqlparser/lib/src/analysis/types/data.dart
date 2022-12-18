@@ -10,6 +10,12 @@ enum BasicType {
   real,
   text,
   blob,
+
+  /// A column that has explicitly been defined as `ANY` in a strict table.
+  ///
+  /// This is semantically different from a column with an unknown type, which
+  /// is why we don't currently use [any] as a fallback during type inference.
+  any,
 }
 
 class ResolvedType {

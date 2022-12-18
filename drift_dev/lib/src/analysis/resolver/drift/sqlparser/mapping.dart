@@ -99,6 +99,8 @@ class TypeMapping {
         return ResolvedType(type: BasicType.blob, hint: overrideHint);
       case DriftSqlType.double:
         return ResolvedType(type: BasicType.real, hint: overrideHint);
+      case DriftSqlType.any:
+        return ResolvedType(type: BasicType.any, hint: overrideHint);
     }
   }
 
@@ -132,6 +134,8 @@ class TypeMapping {
         return DriftSqlType.string;
       case BasicType.blob:
         return DriftSqlType.blob;
+      case BasicType.any:
+        return DriftSqlType.any;
     }
   }
 }

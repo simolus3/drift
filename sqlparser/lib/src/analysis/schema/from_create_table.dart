@@ -77,8 +77,11 @@ class SchemaFromCreateTable {
       name: stmt.tableName,
       resolvedColumns: [
         for (var def in stmt.columns)
-          _readColumn(def,
-              primaryKeyColumnsInStrictTable: stmt.isStrict ? primaryKey : null)
+          _readColumn(
+            def,
+            isStrict: stmt.isStrict,
+            primaryKeyColumnsInStrictTable: stmt.isStrict ? primaryKey : null,
+          )
       ],
       withoutRowId: stmt.withoutRowId,
       isStrict: stmt.isStrict,
@@ -114,8 +117,9 @@ class SchemaFromCreateTable {
   }
 
   TableColumn _readColumn(ColumnDefinition definition,
-      {Set<String>? primaryKeyColumnsInStrictTable}) {
-    final type = resolveColumnType(definition.typeName);
+      {required bool isStrict,
+      required Set<String>? primaryKeyColumnsInStrictTable}) {
+    final type = resolveColumnType(definition.typeName, isStrict: isStrict);
 
     // Column is nullable if it doesn't contain a `NotNull` constraint and it's
     // not part of a PK in a strict table.
@@ -137,7 +141,7 @@ class SchemaFromCreateTable {
   /// [IsDateTime] hints if the type name contains `BOOL` or `DATE`,
   /// respectively.
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity
-  ResolvedType resolveColumnType(String? typeName) {
+  ResolvedType resolveColumnType(String? typeName, {bool isStrict = false}) {
     if (typeName == null) {
       return const ResolvedType(type: BasicType.blob);
     }
@@ -154,6 +158,10 @@ class SchemaFromCreateTable {
 
     if (upper.contains('BLOB')) {
       return const ResolvedType(type: BasicType.blob);
+    }
+
+    if (isStrict && upper == 'ANY') {
+      return const ResolvedType(type: BasicType.any);
     }
 
     if (driftExtensions) {

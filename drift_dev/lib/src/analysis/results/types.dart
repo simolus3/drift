@@ -39,47 +39,6 @@ extension OperationOnTypes on HasType {
 
     return nullable;
   }
-
-  /// The moor Dart type that matches the type of this column.
-  ///
-  /// This is the same as [dartTypeCode] but without custom types.
-  String variableTypeCode({bool? nullable}) {
-    if (isArray) {
-      return 'List<${innerColumnType(nullable: nullable ?? this.nullable)}>';
-    } else {
-      return innerColumnType(nullable: nullable ?? this.nullable);
-    }
-  }
-
-  String innerColumnType({bool nullable = false}) {
-    String code;
-
-    switch (sqlType) {
-      case DriftSqlType.int:
-        code = 'int';
-        break;
-      case DriftSqlType.bigInt:
-        code = 'BigInt';
-        break;
-      case DriftSqlType.string:
-        code = 'String';
-        break;
-      case DriftSqlType.bool:
-        code = 'bool';
-        break;
-      case DriftSqlType.dateTime:
-        code = 'DateTime';
-        break;
-      case DriftSqlType.blob:
-        code = 'Uint8List';
-        break;
-      case DriftSqlType.double:
-        code = 'double';
-        break;
-    }
-
-    return nullable ? '$code?' : code;
-  }
 }
 
 Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
@@ -90,6 +49,7 @@ Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
   DriftSqlType.dateTime: DartTopLevelSymbol('DateTime', Uri.parse('dart:core')),
   DriftSqlType.blob: DartTopLevelSymbol('Uint8List', Uri.parse('dart:convert')),
   DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
+  DriftSqlType.any: DartTopLevelSymbol('DriftAny', AnnotatedDartCode.drift),
 });
 
 /// Maps from a column type to code that can be used to create a variable of the

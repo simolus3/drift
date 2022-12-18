@@ -405,6 +405,32 @@ class Companies extends Table {
             .having((e) => e.isAsyncFactory, 'isAsyncFactory', isTrue));
   });
 
+  test('handles `ANY` columns', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'row.dart';
+
+CREATE TABLE foo (
+  id INTEGER NOT NULL PRIMARY KEY,
+  x ANY
+) STRICT WITH FooData;
+''',
+      'a|lib/row.dart': '''
+import 'package:drift/drift.dart';
+
+class FooData {
+  FooData({required int id, required DriftAny? x});
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/a.drift');
+    backend.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(table.existingRowClass, isA<ExistingRowClass>());
+  });
+
   group('custom data class parent', () {
     test('check valid', () async {
       final file =
