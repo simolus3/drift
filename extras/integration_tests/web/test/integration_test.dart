@@ -64,4 +64,21 @@ void main() {
     final results = await db.customSelect('SELECT * FROM x1;').get();
     expect(results.length, 1);
   });
+
+  test('saves after returning', () async {
+    final executor = WebExecutor();
+
+    var db = Database(executor.createConnection());
+    addTearDown(() => executor.clearDatabaseAndClose(db));
+
+    await db.users.insertReturning(
+        UsersCompanion.insert(name: 'my new user', birthDate: DateTime.now()));
+    await db.close();
+
+    // Open a new database, the user should exist
+    db = Database(executor.createConnection());
+    final users = await db.users.select().get();
+    expect(users,
+        contains(isA<User>().having((e) => e.name, 'name', 'my new user')));
+  });
 }

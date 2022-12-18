@@ -181,7 +181,7 @@ class _WebDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<QueryResult> runSelect(String statement, List<Object?> args) {
+  Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     _checkArgs(args);
     // todo at least for stream queries we should cache prepared statements.
     final stmt = _db.prepare(statement)..executeWith(args);
@@ -197,6 +197,11 @@ class _WebDelegate extends DatabaseDelegate {
     columnNames ??= []; // assume no column names when there were no rows
 
     stmt.free();
+
+    if (statement.contains('RETURNING')) {
+      await _handlePotentialUpdate();
+    }
+
     return Future.value(QueryResult(columnNames, rows));
   }
 
