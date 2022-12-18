@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
+import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/driver.dart';
@@ -141,6 +142,35 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
         } else if (constraint is GeneratedAs) {
           constraints.add(ColumnGeneratedAs.fromParser(constraint));
         } else if (constraint is Default) {
+          final element = converter?.dartType.element;
+          if (element is EnumElement) {
+            final expression = constraint.expression;
+            if (type == DriftSqlType.int) {
+              if (expression is NumericLiteral) {
+                final values = element
+                        .getField('values')
+                        ?.computeConstantValue()
+                        ?.toListValue() ??
+                    const [];
+                if (!expression.isInt ||
+                    expression.value < 0 ||
+                    expression.value > values.length) {
+                  reportError(DriftAnalysisError.inDriftFile(constraint,
+                      '${expression.value} is not a valid index value for ${element.name}.'));
+                  continue;
+                }
+              }
+            } else {
+              if (expression is StringLiteral &&
+                  element.getField(expression.value)?.enclosingElement !=
+                      element) {
+                reportError(DriftAnalysisError.inDriftFile(constraint,
+                    '${expression.value} is not a valid enum value for ${element.name}.'));
+                continue;
+              }
+            }
+          }
+
           defaultArgument = AnnotatedDartCode.build((b) => b
             ..addText('const ')
             ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
