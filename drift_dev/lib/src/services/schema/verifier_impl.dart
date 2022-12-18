@@ -81,16 +81,26 @@ class VerifierImplementation implements SchemaVerifier {
 Input? _parseInputFromSchemaRow(
     Map<String, Object?> row, List<String> virtualTables) {
   final name = row['name'] as String;
+  if (isInternalElement(name, virtualTables)) {
+    return null;
+  }
 
+  return Input(name, row['sql'] as String);
+}
+
+/// Attempts to recognize whether [name] is likely the name of an internal
+/// sqlite3 table (like `sqlite3_sequence`) that we should not consider when
+/// comparing schemas.
+bool isInternalElement(String name, List<String> virtualTables) {
   // Skip sqlite-internal tables, https://www.sqlite.org/fileformat2.html#intschema
-  if (name.startsWith('sqlite_')) return null;
-  if (virtualTables.any((v) => name.startsWith('${v}_'))) return null;
+  if (name.startsWith('sqlite_')) return true;
+  if (virtualTables.any((v) => name.startsWith('${v}_'))) return true;
 
   // This file is added on some Android versions when using the native Android
   // database APIs, https://github.com/simolus3/drift/discussions/2042
-  if (name == 'android_metadata') return null;
+  if (name == 'android_metadata') return true;
 
-  return Input(name, row['sql'] as String);
+  return false;
 }
 
 extension CollectSchemaDb on DatabaseConnectionUser {

@@ -169,8 +169,6 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   }
 
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
 }
 

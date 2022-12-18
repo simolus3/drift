@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/services/schema/verifier_impl.dart';
 import 'package:logging/logging.dart';
 import 'package:sqlite3/common.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -17,16 +18,9 @@ import '../../analysis/results/results.dart';
 Future<List<DriftElement>> extractDriftElementsFromDatabase(
     CommonDatabase database) async {
   // Put everything from sqlite_schema into a fake drift file, analyze it.
-  final contents = database
-      .select('select * from sqlite_master')
-      .map((row) => row['sql'])
-      .whereType<String>()
-      .map((sql) => sql.endsWith(';') ? sql : '$sql;')
-      .join('\n');
-
   final logger = Logger('extractDriftElementsFromDatabase');
   final uri = Uri.parse('db.drift');
-  final backend = _SingleFileNoAnalyzerBackend(logger, contents, uri);
+  final backend = _SingleFileNoAnalyzerBackend(logger, uri);
   final driver = DriftAnalysisDriver(
     backend,
     DriftOptions.defaults(
@@ -37,8 +31,38 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
     ),
   );
 
-  final file = await driver.fullyAnalyze(uri);
+  final engineForParsing = driver.newSqlEngine();
+  final entities = <String, String>{};
+  final virtualTableNames = <String>[];
+  for (final row in database.select('select * from sqlite_master')) {
+    final name = row['name'] as String?;
+    var sql = row['sql'] as String?;
 
+    if (name == null ||
+        sql == null ||
+        isInternalElement(name, virtualTableNames)) {
+      continue;
+    }
+
+    if (!sql.endsWith(';')) {
+      sql += ';';
+    }
+
+    final parsed = engineForParsing.parse(sql).rootNode;
+
+    // Virtual table modules often add auxiliary tables that aren't part of the
+    // user-defined database schema. So we need to keep track of them to be
+    // able to filter internal tables out.
+    if (parsed is CreateVirtualTableStatement) {
+      virtualTableNames.add(parsed.tableName);
+    }
+
+    entities[name] = sql;
+  }
+  entities.removeWhere((name, _) => isInternalElement(name, virtualTableNames));
+  backend.contents = entities.values.join('\n');
+
+  final file = await driver.fullyAnalyze(uri);
   return [
     for (final entry in file.analysis.values)
       if (entry.result != null) entry.result!
@@ -49,10 +73,10 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   @override
   final Logger log;
 
-  final String file;
+  late final String contents;
   final Uri uri;
 
-  _SingleFileNoAnalyzerBackend(this.log, this.file, this.uri);
+  _SingleFileNoAnalyzerBackend(this.log, this.uri);
 
   Never _noAnalyzer() =>
       throw UnsupportedError('Dart analyzer not available here');
@@ -64,7 +88,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
 
   @override
   Future<String> readAsString(Uri uri) {
-    return Future.value(file);
+    return Future.value(contents);
   }
 
   @override
