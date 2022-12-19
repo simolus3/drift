@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
-import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/driver.dart';
