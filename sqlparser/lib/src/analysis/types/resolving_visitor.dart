@@ -205,6 +205,30 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitColumnDefinition(ColumnDefinition e, TypeExpectation arg) {
+    // If we're analyzing a `CREATE TABLE` statement, we might know this colum's
+    // type.
+    final createTable = e.parent;
+    if (createTable is CreateTableStatement) {
+      final resolvedTable =
+          session.context.rootScope.knownTables[createTable.tableName];
+      final resolvedColumn = resolvedTable?.findColumn(e.columnName);
+
+      if (resolvedColumn is ColumnWithType) {
+        final type = resolvedColumn.type;
+
+        if (type != null) {
+          // Make sure we have compatible types in the constraints
+          visitList(e.constraints, ExactTypeExpectation(type));
+          return;
+        }
+      }
+    }
+
+    super.visitColumnDefinition(e, arg);
+  }
+
+  @override
   void visitExists(ExistsExpression e, TypeExpectation arg) {
     session._checkAndResolve(e, const ResolvedType.bool(), arg);
     visit(e.select, const NoTypeExpectation());
@@ -226,7 +250,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     } else if (operatorType == TokenType.minus) {
       // unary minus - can be int or real depending on child node
       session._addRelation(CopyAndCast(e, e.inner, CastMode.numeric));
-      visit(e.inner, const RoughTypeExpectation.numeric());
+      visit(e.inner, arg.orMoreSpecific(const RoughTypeExpectation.numeric()));
     } else if (operatorType == TokenType.tilde) {
       // bitwise negation - definitely int, but nullability depends on child
       session._checkAndResolve(

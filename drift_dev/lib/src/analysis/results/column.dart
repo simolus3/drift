@@ -139,6 +139,10 @@ class AppliedTypeConverter {
   /// In other words, [sqlType] is potentially nullable.
   final bool sqlTypeIsNullable;
 
+  /// Whether this converter is one of the enum type converters built into
+  /// drift.
+  final bool isDriftEnumTypeConverter;
+
   /// Whether this type converter should also be used in the generated JSON
   /// serialization.
   bool get alsoAppliesToJsonConversion => jsonType != null;
@@ -178,6 +182,7 @@ class AppliedTypeConverter {
     required this.dartTypeIsNullable,
     required this.sqlTypeIsNullable,
     required this.jsonType,
+    required this.isDriftEnumTypeConverter,
   });
 }
 

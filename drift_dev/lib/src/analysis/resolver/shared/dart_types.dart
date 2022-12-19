@@ -223,6 +223,7 @@ AppliedTypeConverter? readTypeConverter(
     sqlType: columnType,
     dartTypeIsNullable: dartTypeNullable,
     sqlTypeIsNullable: sqlTypeNullable,
+    isDriftEnumTypeConverter: false,
   );
 }
 
@@ -271,6 +272,7 @@ AppliedTypeConverter readEnumConverter(
         : DriftSqlType.string,
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,
+    isDriftEnumTypeConverter: true,
   );
 }
 

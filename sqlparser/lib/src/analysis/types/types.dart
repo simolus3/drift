@@ -23,7 +23,16 @@ class TypeInferenceSession {
 
   void _checkAndResolve(
       Typeable t, ResolvedType r, TypeExpectation expectation) {
-    _expectIsPossible(r, expectation);
+    if (expectation is ExactTypeExpectation) {
+      final expectedType = expectation.type;
+
+      if (expectedType.hint != null &&
+          r.hint == null &&
+          expectedType.type == r.type) {
+        r = r.copyWith(hint: expectedType.hint);
+      }
+    }
+
     _markTypeResolved(t, r);
   }
 
@@ -35,11 +44,6 @@ class TypeInferenceSession {
   void _addRelation(TypeRelation relationship) {
     graph.addRelation(relationship);
   }
-
-  /// Check that [r] is compatible with [expectation].
-  ///
-  /// This is not currently implemented.
-  void _expectIsPossible(ResolvedType r, TypeExpectation expectation) {}
 
   /// This is not currently implemented.
   void _hintNullability(Typeable t, bool nullable) {
