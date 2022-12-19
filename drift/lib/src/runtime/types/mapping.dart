@@ -134,7 +134,7 @@ class SqlTypes {
     // ignore: unnecessary_cast
     switch (type as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return (sqlValue != 0) as T;
+        return (sqlValue != 0 && sqlValue != false) as T;
       case DriftSqlType.string:
         return sqlValue.toString() as T;
       case DriftSqlType.bigInt:
