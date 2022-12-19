@@ -10,6 +10,17 @@ part of 'types.dart';
 /// statement.
 abstract class TypeExpectation {
   const TypeExpectation();
+
+  int get specificity => 0;
+
+  /// Returns the expectaction from `this` or [other] with a higher specificity.
+  TypeExpectation orMoreSpecific(TypeExpectation other) {
+    if (specificity > other.specificity) {
+      return this;
+    } else {
+      return other;
+    }
+  }
 }
 
 /// Passed along when an ast node makes no assumption on the type of its
@@ -28,6 +39,9 @@ class ExactTypeExpectation extends TypeExpectation {
   /// When false, we can report a compile-time error for a type mismatch.
   final bool lax;
 
+  @override
+  int get specificity => lax ? 50 : 100;
+
   const ExactTypeExpectation._(this.type, this.lax);
 
   const ExactTypeExpectation(this.type) : lax = false;
@@ -45,6 +59,9 @@ class RoughTypeExpectation extends TypeExpectation {
   const RoughTypeExpectation._(this._type);
 
   const RoughTypeExpectation.numeric() : this._(_RoughType.numeric);
+
+  @override
+  int get specificity => 10;
 
   bool accepts(ResolvedType type) {
     final baseType = type.type;

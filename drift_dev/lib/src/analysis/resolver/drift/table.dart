@@ -10,14 +10,15 @@ import 'package:sqlparser/utils/node_to_text.dart';
 import '../../../utils/string_escaper.dart';
 import '../../backend.dart';
 import '../../driver/error.dart';
+import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
-import '../resolver.dart';
 import '../shared/dart_types.dart';
 import '../shared/data_class.dart';
-import 'find_dart_class.dart';
+import 'element_resolver.dart';
+import 'sqlparser/drift_lints.dart';
 
-class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
+class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
   static final RegExp _enumRegex =
       RegExp(r'^enum(name)?\((\w+)\)$', caseSensitive: false);
 
@@ -60,8 +61,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
           typeName != null ? _enumRegex.firstMatch(typeName) : null;
       if (enumIndexMatch != null) {
         final dartTypeName = enumIndexMatch.group(2)!;
-        final imports = file.discovery!.importDependencies.toList();
-        final dartClass = await findDartClass(imports, dartTypeName);
+        final dartClass = await findDartClass(dartTypeName);
 
         if (dartClass == null) {
           reportError(DriftAnalysisError.inDriftFile(
@@ -295,8 +295,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       final overriddenNames = driftTableInfo.overriddenDataClassName;
 
       if (driftTableInfo.useExistingDartClass) {
-        final imports = file.discovery!.importDependencies.toList();
-        final clazz = await findDartClass(imports, overriddenNames);
+        final clazz = await findDartClass(overriddenNames);
         if (clazz == null) {
           reportError(DriftAnalysisError.inDriftFile(
             stmt.tableNameToken!,
@@ -323,7 +322,7 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
     dartTableName ??= ReCase(state.ownId.name).pascalCase;
     dataClassName ??= dataClassNameForClassName(dartTableName);
 
-    return DriftTable(
+    final driftTable = DriftTable(
       discovered.ownId,
       DriftDeclaration(
         state.ownId.libraryUri,
@@ -343,6 +342,18 @@ class DriftTableResolver extends LocalElementResolver<DiscoveredDriftTable> {
       writeDefaultConstraints: false,
       overrideTableConstraints: sqlTableConstraints,
     );
+
+    // Run drift-specific lints on the `CREATE TABLE` statement, which requires
+    // having the resolved table structure first.
+    final engineForAnalysis = resolver.driver.typeMapping
+        .newEngineWithTables([driftTable, ...driftTable.references]);
+    final source = (file.discovery as DiscoveredDriftFile).originalSource;
+    final context = engineForAnalysis.analyzeNode(stmt, source);
+    final linter = DriftSqlLinter(context, references: references)
+      ..collectLints();
+    linter.sqlParserErrors.forEach(reportLint);
+
+    return driftTable;
   }
 
   Future<AppliedTypeConverter?> _readTypeConverter(

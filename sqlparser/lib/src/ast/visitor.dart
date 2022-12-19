@@ -449,7 +449,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   }
 
   @override
-  R? visitNumericLiteral(Literal e, A arg) {
+  R? visitNumericLiteral(NumericLiteral e, A arg) {
     return defaultLiteral(e, arg);
   }
 

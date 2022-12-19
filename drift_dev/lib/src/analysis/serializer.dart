@@ -273,6 +273,7 @@ class ElementSerializer {
       'sql_type': converter.sqlType.name,
       'dart_type_is_nullable': converter.dartTypeIsNullable,
       'sql_type_is_nullable': converter.sqlTypeIsNullable,
+      'is_drift_enum_converter': converter.isDriftEnumTypeConverter,
       if (converter.owningColumn != appliedTo)
         'owner': _serializeColumnReference(converter.owningColumn),
     };
@@ -725,6 +726,7 @@ class ElementDeserializer {
       sqlType: DriftSqlType.values.byName(json['sql_type'] as String),
       dartTypeIsNullable: json['dart_type_is_nullable'] as bool,
       sqlTypeIsNullable: json['sql_type_is_nullable'] as bool,
+      isDriftEnumTypeConverter: json['is_drift_enum_converter'] as bool,
     );
 
     if (readOwner != null) converter.owningColumn = readOwner;

@@ -1,7 +1,10 @@
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../../results/results.dart' hide ResultColumn;
+import 'mapping.dart';
 
 /// Implements (mostly drift-specific) lints for SQL statements that aren't
 /// implementeed in `sqlparser`.
@@ -119,6 +122,50 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitNumericLiteral(NumericLiteral e, void arg) {
+    final type = linter._context.typeOf(e);
+    final hint = type.type?.hint;
+
+    if (hint is TypeConverterHint && hint.converter.isDriftEnumTypeConverter) {
+      final enumElement =
+          (hint.converter.dartType as InterfaceType).element as EnumElement;
+      final entryCount =
+          enumElement.fields.where((e) => e.isEnumConstant).length;
+
+      var value = e.value;
+      final parent = e.parent;
+      AstNode span = e;
+
+      if (value is int) {
+        if (parent is UnaryExpression &&
+            parent.operator.type == TokenType.minus) {
+          // Something like `-1` gets parsed as `(unary-minus (1))`
+          value *= -1;
+          span = parent;
+        }
+
+        if (value.isNegative) {
+          linter.sqlParserErrors.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: 'From context, it seems like this int literal is written '
+                'into a column with an enum type, so it can\'t be negative.',
+            relevantNode: span,
+          ));
+        } else if (e.value >= entryCount) {
+          linter.sqlParserErrors.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: 'From context, it seems like this int literal is written '
+                'into a column with an enum type `${enumElement.name}`. However, '
+                'that enum only has $entryCount values, the constant index is '
+                'too large.',
+            relevantNode: span,
+          ));
+        }
+      }
+    }
+  }
+
+  @override
   void visitResultColumn(ResultColumn e, void arg) {
     super.visitResultColumn(e, arg);
 
@@ -183,7 +230,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
     final targeted = e.resolvedTargetColumns;
-    if (targeted == null) return;
+    if (targeted == null) return super.visitInsertStatement(e, arg);
 
     // First, check that the amount of values matches the declaration.
     final source = e.source;
@@ -258,6 +305,30 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
           message: 'Some columns are required but not present here. Expected '
               'values for $msg.',
           relevantNode: e.source.childNodes.first,
+        ));
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitStringLiteral(StringLiteral e, void arg) {
+    final type = linter._context.typeOf(e);
+    final hint = type.type?.hint;
+
+    if (hint is TypeConverterHint && hint.converter.isDriftEnumTypeConverter) {
+      final enumElement =
+          (hint.converter.dartType as InterfaceType).element as EnumElement;
+      final field = enumElement.getField(e.value);
+
+      if (field == null || !field.isEnumConstant) {
+        linter.sqlParserErrors.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'From context, it seems like this text literal is written '
+              'into a column with an enum type `${enumElement.name}`. However, '
+              'that enum declares no member with this name.',
+          relevantNode: e,
         ));
       }
     }
