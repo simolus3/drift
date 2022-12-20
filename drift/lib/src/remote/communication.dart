@@ -147,11 +147,16 @@ class DriftCommunication {
   /// [handler] throws, the error will be re-directed to the client. If
   /// [handler] returns a [Future], it will be awaited.
   void setRequestHandler(dynamic Function(Request) handler) {
-    incomingRequests.listen((request) {
-      Future.sync(() => handler(request)).then(
-        (result) => respond(request, result),
-        onError: (Object e, StackTrace s) => respondError(request, e, s),
-      );
+    incomingRequests.listen((request) async {
+      Object? response;
+
+      try {
+        response = await handler(request);
+      } catch (e, s) {
+        return respondError(request, e, s);
+      }
+
+      respond(request, response);
     });
   }
 }
