@@ -352,6 +352,17 @@ extension BuildIntColumn<T extends int> on ColumnBuilder<T> {
   ColumnBuilder<T> autoIncrement() => _isGenerated();
 }
 
+/// Tells the generator to build an [Int64Column]. See the docs at [ColumnBuilder]
+/// for details.
+extension BuildInt64Column on ColumnBuilder<BigInt> {
+  /// Enables auto-increment for this column, which will also make this column
+  /// the primary key of the table.
+  ///
+  /// For this reason, you can't use an [autoIncrement] column and also set a
+  /// custom [Table.primaryKey] on the same table.
+  ColumnBuilder<BigInt> autoIncrement() => _isGenerated();
+}
+
 /// Tells the generator to build an [TextColumn]. See the docs at
 /// [ColumnBuilder] for details.
 extension BuildTextColumn<T extends String> on ColumnBuilder<T> {

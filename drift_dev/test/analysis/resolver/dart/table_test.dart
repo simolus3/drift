@@ -327,4 +327,27 @@ class WithConstraints extends Table {
     expect(withConstraints.errorsDuringAnalysis,
         [isDriftError('This must be a string literal.').withSpan('1')]);
   });
+
+  test('supports autoIncrement on int64 columns', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  Int64Column get id => int64().autoIncrement()();
+}
+'''
+    });
+
+    final state = await backend.analyze('package:a/a.dart');
+    backend.expectNoErrors();
+
+    final table = state.analyzedElements.single as DriftTable;
+    final id = table.columns.single;
+    expect(table.fullPrimaryKey, {id});
+    expect(
+        id.constraints,
+        contains(isA<PrimaryKeyColumn>()
+            .having((e) => e.isAutoIncrement, 'isAutoIncrement', isTrue)));
+  });
 }
