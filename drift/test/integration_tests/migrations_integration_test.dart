@@ -15,7 +15,8 @@ void main() {
   test('change column types', () async {
     // Create todos table with category as text (it's an int? in Dart).
     final executor = NativeDatabase.memory(setup: (db) {
-      db.execute('''
+      db
+        ..execute('''
         CREATE TABLE todos (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
@@ -25,14 +26,12 @@ void main() {
           status TEXT NULL,
           UNIQUE(title, category)
         );
-      ''');
-
-      db.execute('CREATE INDEX my_index ON todos (content);');
-
-      db.execute('INSERT INTO todos (title, content, target_date, category) '
-          "VALUES ('title', 'content', 0, '12')");
-
-      db.execute('PRAGMA foreign_keys = ON');
+      ''')
+        ..execute('CREATE INDEX my_index ON todos (content);')
+        ..execute('INSERT INTO todos (title, content, target_date, category) '
+            "VALUES ('title', 'content', 0, '12')")
+        ..execute('CREATE VIEW todo_categories AS SELECT category FROM todos;')
+        ..execute('PRAGMA foreign_keys = ON');
     });
 
     final db = TodoDb(executor);
@@ -63,6 +62,11 @@ void main() {
     final foreignKeysResult =
         await db.customSelect('PRAGMA foreign_keys').getSingle();
     expect(foreignKeysResult.read<bool>('foreign_keys'), isTrue);
+
+    // Similarly, the legacy_alter_table behavior should be disabled.
+    final legacyAlterTable =
+        await db.customSelect('PRAGMA legacy_alter_table').getSingle();
+    expect(legacyAlterTable.read<bool>('legacy_alter_table'), isFalse);
   });
 
   test('rename columns', () async {

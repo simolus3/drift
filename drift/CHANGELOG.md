@@ -8,6 +8,8 @@
   generate a mapping to the new `DriftAny` type.
 - Fix `UNIQUE` keys declared in drift files being written twice.
 - Fix `customConstraints` not appearing in dumped database schema files.
+- Work-around an issue causing complex migrations via `Migrator.alterTable` not to
+  work if a view referenced the altered table.
 
 ## 2.3.0-dev
 

@@ -146,6 +146,9 @@ class Migrator {
     final foreignKeysEnabled =
         (await _db.customSelect('PRAGMA foreign_keys').getSingle())
             .read<bool>('foreign_keys');
+    final legacyAlterTable =
+        (await _db.customSelect('PRAGMA legacy_alter_table').getSingle())
+            .read<bool>('legacy_alter_table');
 
     if (foreignKeysEnabled) {
       await _db.customStatement('PRAGMA foreign_keys = OFF;');
@@ -235,10 +238,23 @@ class Migrator {
       // Step 6: Drop the old table
       await _issueCustomQuery('DROP TABLE ${context.identifier(tableName)}');
 
+      // This step is not mentioned in the documentation, but: If we use `ALTER`
+      // on an inconsistent schema (and it is inconsistent right now because
+      // we've just dropped the original table), we need to enable the legacy
+      // option which skips the integrity check.
+      // See also: https://sqlite.org/forum/forumpost/0e2390093fbb8fd6
+      if (!legacyAlterTable) {
+        await _issueCustomQuery('pragma legacy_alter_table = 1;');
+      }
+
       // Step 7: Rename the new table to the old name
       await _issueCustomQuery(
           'ALTER TABLE ${context.identifier(temporaryName)} '
           'RENAME TO ${context.identifier(tableName)}');
+
+      if (!legacyAlterTable) {
+        await _issueCustomQuery('pragma legacy_alter_table = 0;');
+      }
 
       // Step 8: Re-create associated indexes, triggers and views
       for (final stmt in createAffected) {

@@ -63,18 +63,11 @@ class Database extends _$Database {
               break;
             case 8:
               // Added a unique key to the users table
-
-              // TODO: Figure out why dropping the view is necessary (https://sqlite.org/forum/forumpost/de614349cb)
-              await m.drop(groupCount);
               await m.alterTable(TableMigration(v8.Users(this)));
-              await m.recreateAllViews();
               break;
             case 9:
               // Added a check to the users table
-              await m.drop(groupCount);
               await m.alterTable(TableMigration(users));
-              await m.recreateAllViews();
-
               break;
           }
         }
