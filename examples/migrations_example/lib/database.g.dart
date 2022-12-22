@@ -727,8 +727,6 @@ class Notes extends Table
   }
 
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
   @override
   String get moduleAndArgs =>

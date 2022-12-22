@@ -168,8 +168,6 @@ class Users extends Table with TableInfo<Users, User> {
   }
 
   @override
-  List<String> get customConstraints => const [];
-  @override
   bool get dontWriteConstraints => true;
 }
 

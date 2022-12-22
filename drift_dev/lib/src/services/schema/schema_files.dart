@@ -450,29 +450,26 @@ extension _SerializeSqlType on DriftSqlType {
   static DriftSqlType deserialize(String description) {
     switch (description) {
       case 'ColumnType.boolean':
-      case 'bool':
         return DriftSqlType.bool;
       case 'ColumnType.text':
-      case 'string':
         return DriftSqlType.string;
       case 'ColumnType.bigInt':
-      case 'bigInt':
         return DriftSqlType.bigInt;
       case 'ColumnType.integer':
-      case 'int':
         return DriftSqlType.int;
       case 'ColumnType.datetime':
-      case 'datetime':
         return DriftSqlType.dateTime;
       case 'ColumnType.blob':
-      case 'blob':
         return DriftSqlType.blob;
       case 'ColumnType.real':
-      case 'real':
         return DriftSqlType.double;
-      default:
-        throw ArgumentError.value(
-            description, 'description', 'Not a known column type');
+    }
+
+    try {
+      return DriftSqlType.values.byName(description);
+    } on ArgumentError {
+      throw ArgumentError.value(
+          description, 'description', 'Not a known column type');
     }
   }
 
