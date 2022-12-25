@@ -295,18 +295,11 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
       final overriddenNames = driftTableInfo.overriddenDataClassName;
 
       if (driftTableInfo.useExistingDartClass) {
-        final clazz = await findDartClass(overriddenNames);
-        if (clazz == null) {
-          reportError(DriftAnalysisError.inDriftFile(
-            stmt.tableNameToken!,
-            'Existing Dart class $overriddenNames was not found, are '
-            'you missing an import?',
-          ));
-        } else {
-          final knownTypes = await resolver.driver.loadKnownTypes();
-          existingRowClass = validateExistingClass(
-              columns, clazz, '', false, this, knownTypes);
-          dataClassName = existingRowClass?.targetClass.toString();
+        existingRowClass =
+            await resolveExistingRowClass(columns, driftTableInfo);
+        final nameFromExisting = existingRowClass?.targetClass?.toString();
+        if (nameFromExisting != null) {
+          dataClassName = nameFromExisting;
         }
       } else if (overriddenNames.contains('/')) {
         // Feature to also specify the generated table class. This is extremely

@@ -197,13 +197,18 @@ abstract class TableOrViewWriter {
       final ctor = info.constructor;
       emitter
         ..write('return ')
-        ..write(isAsync ? 'await ' : '')
-        ..writeDart(info.targetType);
+        ..write(isAsync ? 'await ' : '');
+      if (!info.isRecord) {
+        // Write the constructor or async mapping method for this existing row
+        // class. It will later be invoked by writing the arguments below.
+        // For records, the argument syntax is already a valid record literal.
+        emitter.writeDart(info.targetType);
 
-      if (ctor.isNotEmpty) {
-        buffer
-          ..write('.')
-          ..write(ctor);
+        if (ctor.isNotEmpty) {
+          buffer
+            ..write('.')
+            ..write(ctor);
+        }
       }
 
       writer.writeArguments(buffer);
@@ -265,9 +270,21 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void writeDataClass() {
-    if (!table.hasExistingRowClass &&
-        scope.generationOptions.writeDataClasses) {
-      DataClassWriter(table, scope.child()).write();
+    if (scope.generationOptions.writeDataClasses) {
+      final existing = table.existingRowClass;
+      if (existing != null) {
+        // We don't have to write a row class if we're using one provided by the
+        // user. However, if the existing row type is a record, it is helpful
+        // to generate a typedef for it.
+        if (existing.isRecord) {
+          scope.leaf()
+            ..write('typedef ${table.nameOfRowClass} = ')
+            ..writeDart(existing.targetType)
+            ..write(';');
+        }
+      } else {
+        DataClassWriter(table, scope.child()).write();
+      }
     }
 
     if (scope.generationOptions.writeCompanions) {
@@ -290,7 +307,7 @@ class TableWriter extends TableOrViewWriter {
       }
     } else {
       // Regular generation, write full table class
-      final dataClass = emitter.dartCode(emitter.writer.rowClass(table));
+      final dataClass = emitter.dartCode(emitter.writer.rowType(table));
       final tableDslName = table.definingDartClass ?? emitter.drift('Table');
 
       // class UsersTable extends Users implements TableInfo<Users, User> {

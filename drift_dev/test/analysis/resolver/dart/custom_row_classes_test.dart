@@ -371,6 +371,7 @@ class Companies extends Table {
             'GenericRow<String>',
           ),
     );
+    expect(stringTable.nameOfRowClass, 'GenericRow');
 
     expect(
       intTable.existingRowClass,
@@ -382,6 +383,7 @@ class Companies extends Table {
             'GenericRow<int>',
           ),
     );
+    expect(intTable.nameOfRowClass, 'GenericRow');
   });
 
   test('handles blob columns', () async {
@@ -511,5 +513,71 @@ class FooData {
         ],
       );
     });
+  });
+
+  group('records as row types', () {
+    test('supported with explicit record', () async {
+      final state = TestBackend.inTest(
+        {
+          'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass((id: int, name: String, birthday: DateTime))
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  DateTimeColumn get birthday => dateTime()();
+}
+''',
+        },
+        analyzerExperiments: ['records'],
+      );
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isRecord, 'isRecord', isTrue)
+            .having((e) => e.targetClass, 'targetClass', isNull)
+            .having((e) => e.targetType.toString(), 'targetType',
+                '({DateTime birthday, int id, String name})'),
+      );
+      expect(table.nameOfRowClass, 'User');
+    });
+
+    test('supported with implicit record', () async {
+      final state = TestBackend.inTest(
+        {
+          'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(Record)
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  DateTimeColumn get birthday => dateTime()();
+}
+''',
+        },
+        analyzerExperiments: ['records'],
+      );
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isRecord, 'isRecord', isTrue)
+            .having((e) => e.targetClass, 'targetClass', isNull)
+            .having((e) => e.targetType.toString(), 'targetType',
+                '({int id, String name, DateTime birthday})'),
+      );
+      expect(table.nameOfRowClass, 'User');
+    }, skip: requireDart('3.0.0-dev'));
   });
 }

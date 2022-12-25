@@ -22,7 +22,7 @@ class FoundDartClass {
 }
 
 ExistingRowClass? validateExistingClass(
-  Iterable<DriftColumn> columns,
+  List<DriftColumn> columns,
   FoundDartClass dartClass,
   String constructor,
   bool generateInsertable,
@@ -32,6 +32,13 @@ ExistingRowClass? validateExistingClass(
   final desiredClass = dartClass.classElement;
   final library = desiredClass.library;
   var isAsyncFactory = false;
+
+  if (desiredClass.thisType.isDartCoreRecord) {
+    // When the `Record` supertype from `dart:core` is used, generate a custom
+    // record type suitable for this row class.
+    return defaultRecordRowClass(
+        columns: columns, generateInsertable: generateInsertable);
+  }
 
   ExecutableElement? ctor;
   final InterfaceType instantiation;
@@ -158,6 +165,101 @@ ExistingRowClass? validateExistingClass(
     },
     generateInsertable: generateInsertable,
     isAsyncFactory: isAsyncFactory,
+  );
+}
+
+ExistingRowClass validateRowClassFromRecordType(
+  Element element,
+  Iterable<DriftColumn> columns,
+  RecordType dartType,
+  bool generateInsertable,
+  LocalElementResolver step,
+  KnownDriftTypes knownTypes,
+) {
+  final library = element.library!;
+
+  final unmatchedColumnsByName = {
+    for (final column in columns) column.nameInDart: column
+  };
+
+  final namedColumns = <String, String>{};
+
+  for (final parameter in dartType.namedFields) {
+    final column = unmatchedColumnsByName.remove(parameter.name);
+    if (column != null) {
+      namedColumns[parameter.name] = column.nameInSql;
+
+      _checkType(
+        column.sqlType,
+        column.nullable,
+        column.typeConverter,
+        parameter.type,
+        library.typeProvider,
+        library.typeSystem,
+        knownTypes,
+        (msg) {
+          step.reportError(DriftAnalysisError.forDartElement(element, msg));
+        },
+      );
+    } else {
+      step.reportError(DriftAnalysisError.forDartElement(
+        element,
+        'Unexpected parameter ${parameter.name} which has no matching column.',
+      ));
+    }
+  }
+
+  // The analyzer doesn't expose the name of positional record types yet, so we
+  // will have to come up with another approach to extract information for
+  // positional types.
+  if (dartType.positionalFields.isNotEmpty) {
+    step.reportError(DriftAnalysisError.forDartElement(element,
+        'Records with positional types are not yet supported as existing types.'));
+  }
+
+  return ExistingRowClass.record(
+    targetType: AnnotatedDartCode.type(dartType),
+    positionalColumns: const [],
+    namedColumns: namedColumns,
+    generateInsertable: generateInsertable,
+  );
+}
+
+ExistingRowClass defaultRecordRowClass({
+  required List<DriftColumn> columns,
+  required bool generateInsertable,
+}) {
+  final type = AnnotatedDartCode.build((builder) {
+    builder.addText('({');
+
+    for (var i = 0; i < columns.length; i++) {
+      if (i != 0) builder.addText(', ');
+
+      final column = columns[i];
+      final typeConverter = column.typeConverter;
+
+      if (typeConverter != null) {
+        builder.addDartType(typeConverter.dartType);
+        if (typeConverter.canBeSkippedForNulls && column.nullable) {
+          builder.addText('?');
+        }
+      } else {
+        builder.addTopLevel(dartTypeNames[column.sqlType]!);
+        if (column.nullable) builder.addText('?');
+      }
+
+      builder.addText(' ${column.nameInDart}');
+    }
+
+    builder.addText('})');
+  });
+
+  return ExistingRowClass.record(
+    targetType: type,
+    positionalColumns: [],
+    namedColumns: {
+      for (final column in columns) column.nameInDart: column.nameInSql,
+    },
   );
 }
 

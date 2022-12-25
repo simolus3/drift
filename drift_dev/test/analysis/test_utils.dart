@@ -19,6 +19,7 @@ import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 /// A [DriftBackend] implementation used for testing.
@@ -28,23 +29,30 @@ import 'package:test/test.dart';
 /// `drift_dev` imports can be analyzed as well.
 class TestBackend extends DriftBackend {
   final Map<String, String> sourceContents;
+  final Iterable<String> analyzerExperiments;
 
   late final DriftAnalysisDriver driver;
 
   AnalysisContext? _dartContext;
 
-  TestBackend(Map<String, String> sourceContents,
-      {DriftOptions options = const DriftOptions.defaults()})
-      : sourceContents = {
+  TestBackend(
+    Map<String, String> sourceContents, {
+    DriftOptions options = const DriftOptions.defaults(),
+    this.analyzerExperiments = const Iterable.empty(),
+  }) : sourceContents = {
           for (final entry in sourceContents.entries)
             AssetId.parse(entry.key).uri.toString(): entry.value,
         } {
     driver = DriftAnalysisDriver(this, options);
   }
 
-  factory TestBackend.inTest(Map<String, String> sourceContents,
-      {DriftOptions options = const DriftOptions.defaults()}) {
-    final backend = TestBackend(sourceContents, options: options);
+  factory TestBackend.inTest(
+    Map<String, String> sourceContents, {
+    DriftOptions options = const DriftOptions.defaults(),
+    Iterable<String> analyzerExperiments = const Iterable.empty(),
+  }) {
+    final backend = TestBackend(sourceContents,
+        options: options, analyzerExperiments: analyzerExperiments);
     addTearDown(backend.dispose);
 
     return backend;
@@ -95,6 +103,15 @@ class TestBackend extends DriftBackend {
         provider.setOverlay(path, content: value, modificationStamp: 1);
       }
     });
+
+    if (analyzerExperiments.isNotEmpty) {
+      final experiments = analyzerExperiments.join(', ');
+      provider.setOverlay(
+        '/a/analysis_options.yaml',
+        content: 'analyzer: {enable-experiment: [$experiments]}',
+        modificationStamp: 1,
+      );
+    }
 
     final collection = AnalysisContextCollection(
       includedPaths: ['/a'],
@@ -185,6 +202,20 @@ class _HasInferredColumnTypes extends CustomMatcher {
 
 TypeMatcher<DriftAnalysisError> isDriftError(dynamic message) {
   return isA<DriftAnalysisError>().having((e) => e.message, 'message', message);
+}
+
+final _version = RegExp(r'\d\.\d+\.\d+');
+
+String? requireDart(String minimalVersion) {
+  final version =
+      Version.parse(_version.firstMatch(Platform.version)!.group(0)!);
+  final minimal = Version.parse(minimalVersion);
+
+  if (version < minimal) {
+    return 'This test requires SDK version $minimalVersion or later';
+  } else {
+    return null;
+  }
 }
 
 extension DriftErrorMatchers on TypeMatcher<DriftAnalysisError> {

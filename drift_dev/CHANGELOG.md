@@ -4,6 +4,9 @@
 - Adds the `case_from_dart_to_sql` option with the possible values: `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 - `drift_dev schema dump` can now dump the schema of existing sqlite3 database files as well.
 - Warn about suspicious int or text literals being inserted into enum columns.
+- Experimental support for Dart records as existing row types. Please note that
+  records aren't stable yet in Dart or Drift, so this feature might be changed
+  or removed depending on its development in the Dart language.
 
 ## 2.3.3
 

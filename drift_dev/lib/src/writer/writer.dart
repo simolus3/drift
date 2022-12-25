@@ -88,7 +88,7 @@ abstract class _NodeOrWriter {
 
   AnnotatedDartCode rowType(DriftElementWithResultSet element) {
     final existing = element.existingRowClass;
-    if (existing != null) {
+    if (existing != null && !existing.isRecord) {
       return existing.targetType;
     } else {
       return generatedElement(element, element.nameOfRowClass);
@@ -98,7 +98,8 @@ abstract class _NodeOrWriter {
   AnnotatedDartCode rowClass(DriftElementWithResultSet element) {
     final existing = element.existingRowClass;
     if (existing != null) {
-      return existing.targetClass;
+      return existing.targetClass ??
+          (throw StateError('$element does not have a row class'));
     } else {
       return generatedElement(element, element.nameOfRowClass);
     }

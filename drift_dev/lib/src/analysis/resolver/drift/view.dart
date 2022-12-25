@@ -1,11 +1,9 @@
 import 'package:recase/recase.dart';
 
-import '../../driver/error.dart';
 import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
 import '../shared/column_name.dart';
-import '../shared/dart_types.dart';
 import '../shared/data_class.dart';
 import 'element_resolver.dart';
 import 'sqlparser/mapping.dart';
@@ -57,21 +55,10 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
     if (desiredNames != null) {
       final dataClassName = desiredNames.overriddenDataClassName;
       if (desiredNames.useExistingDartClass) {
-        final clazz = await findDartClass(dataClassName);
-        if (clazz == null) {
-          reportError(DriftAnalysisError.inDriftFile(
-            desiredNames,
-            'Existing Dart class $dataClassName was not found, are '
-            'you missing an import?',
-          ));
-        } else {
-          final knownTypes = await resolver.driver.loadKnownTypes();
-          existingRowClass = validateExistingClass(
-              columns, clazz, '', false, this, knownTypes);
-          final newName = existingRowClass?.targetClass.toString();
-          if (newName != null) {
-            rowClassName = newName;
-          }
+        existingRowClass = await resolveExistingRowClass(columns, desiredNames);
+        final newName = existingRowClass?.targetClass?.toString();
+        if (newName != null) {
+          rowClassName = newName;
         }
       } else {
         rowClassName = dataClassName;

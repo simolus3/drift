@@ -1,11 +1,22 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+// ignore: implementation_imports
+import 'package:analyzer/src/dart/element/type.dart'
+    show
+        RecordTypeImpl,
+        RecordTypeNamedFieldImpl,
+        RecordTypePositionalFieldImpl;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import '../../driver/driver.dart';
+import '../../driver/error.dart';
 import '../../results/results.dart';
+import '../resolver.dart';
+import '../shared/dart_types.dart';
+import '../shared/data_class.dart';
 
 /// A collection of elements and Dart types important to Drift.
 ///
@@ -188,4 +199,112 @@ class DataClassInformation {
     this.extending,
     this.existingClass,
   );
+
+  static Future<DataClassInformation> resolve(
+    LocalElementResolver resolver,
+    List<DriftColumn> columns,
+    ClassElement element,
+  ) async {
+    DartObject? dataClassName;
+    DartObject? useRowClass;
+
+    for (final annotation in element.metadata) {
+      final computed = annotation.computeConstantValue();
+      final annotationClass = computed!.type!.nameIfInterfaceType;
+
+      if (annotationClass == 'DataClassName') {
+        dataClassName = computed;
+      } else if (annotationClass == 'UseRowClass') {
+        useRowClass = computed;
+      }
+    }
+
+    if (dataClassName != null && useRowClass != null) {
+      resolver.reportError(DriftAnalysisError.forDartElement(
+        element,
+        "A table can't be annotated with both @DataClassName and @UseRowClass",
+      ));
+    }
+
+    String name;
+    AnnotatedDartCode? customParentClass;
+    ExistingRowClass? existingClass;
+
+    if (dataClassName != null) {
+      name = dataClassName.getField('name')!.toStringValue()!;
+      customParentClass =
+          parseCustomParentClass(name, dataClassName, element, resolver);
+    } else {
+      name = dataClassNameForClassName(element.name);
+    }
+
+    if (useRowClass != null) {
+      final type = useRowClass.getField('type')!.extractType();
+      final constructorInExistingClass =
+          useRowClass.getField('constructor')!.toStringValue()!;
+      final generateInsertable =
+          useRowClass.getField('generateInsertable')!.toBoolValue()!;
+      final helper = await resolver.resolver.driver.loadKnownTypes();
+
+      if (type is InterfaceType) {
+        final found = FoundDartClass(type.element, type.typeArguments);
+
+        existingClass = validateExistingClass(columns, found,
+            constructorInExistingClass, generateInsertable, resolver, helper);
+
+        if (existingClass?.isRecord != true) {
+          name = type.element.name;
+        }
+      } else if (type is RecordType) {
+        existingClass = validateRowClassFromRecordType(
+            element, columns, type, generateInsertable, resolver, helper);
+      } else {
+        resolver.reportError(DriftAnalysisError.forDartElement(
+          element,
+          'The @UseRowClass annotation must be used with a class',
+        ));
+      }
+    }
+
+    return DataClassInformation(name, customParentClass, existingClass);
+  }
+}
+
+extension on DartObject {
+  DartType? extractType() {
+    final typeValue = toTypeValue();
+    if (typeValue != null) return typeValue;
+
+    // Dart doesn't have record type literals, so if one writes
+    // `(int, String, x: bool)`, that's actually a record with the given type
+    // literals as fields. We need to reconstruct a record type out of that.
+    final type = this.type;
+    if (type != null && type is RecordType) {
+      // todo: Use public API after https://dart-review.googlesource.com/c/sdk/+/277401
+      final positionalFields = <RecordTypePositionalFieldImpl>[];
+      final namedFields = <RecordTypeNamedFieldImpl>[];
+
+      for (var i = 0; i < type.positionalFields.length; i++) {
+        final type = getField('\$$i')?.extractType();
+        if (type == null) return null;
+
+        positionalFields.add(RecordTypePositionalFieldImpl(type: type));
+      }
+
+      for (final named in type.namedFields) {
+        final type = getField(named.name)?.extractType();
+        if (type == null) return null;
+
+        namedFields.add(RecordTypeNamedFieldImpl(type: type, name: named.name));
+      }
+
+      return RecordTypeImpl(
+        positionalFields: positionalFields,
+        namedFields: namedFields,
+        nullabilitySuffix: NullabilitySuffix.none,
+      );
+    }
+
+    return null;
+  }
 }

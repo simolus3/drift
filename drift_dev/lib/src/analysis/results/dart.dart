@@ -186,6 +186,7 @@ class _AddFromDartType extends TypeVisitor<void> {
 
   @override
   void visitRecordType(RecordType type) {
+    _builder.addText('(');
     var first = true;
 
     for (final field in type.positionalFields) {
@@ -214,6 +215,7 @@ class _AddFromDartType extends TypeVisitor<void> {
       _builder.addText('}');
     }
 
+    _builder.addText(')');
     _writeSuffix(type.nullabilitySuffix);
   }
 
