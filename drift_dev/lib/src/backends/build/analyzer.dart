@@ -19,11 +19,11 @@ class DriftAnalyzer extends Builder {
   Map<String, List<String>> get buildExtensions => const {
         '.drift': [
           '.drift.drift_module.json',
-          '.types.temp.dart',
+          '.drift.types.temp.dart',
         ],
         '.dart': [
           '.dart.drift_module.json',
-          '.types.temp.dart',
+          '.dart.types.temp.dart',
         ],
       };
 
@@ -51,7 +51,7 @@ class DriftAnalyzer extends Builder {
           JsonUtf8Encoder(' ' * 2).convert(serialized.serializedElements);
 
       final jsonOutput = buildStep.inputId.addExtension('.drift_module.json');
-      final typesOutput = buildStep.inputId.changeExtension('.types.temp.dart');
+      final typesOutput = buildStep.inputId.addExtension('.types.temp.dart');
 
       await buildStep.writeAsBytes(jsonOutput, asJson);
 

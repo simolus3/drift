@@ -115,7 +115,7 @@ class BuildCacheReader implements AnalysisResultCacheReader {
 
   @override
   Future<LibraryElement?> readTypeHelperFor(Uri uri) async {
-    final assetId = AssetId.resolve(uri).changeExtension('.types.temp.dart');
+    final assetId = AssetId.resolve(uri).addExtension('.types.temp.dart');
     if (await _buildStep.canRead(assetId)) {
       return _buildStep.resolver.libraryFor(assetId, allowSyntaxErrors: true);
     }
