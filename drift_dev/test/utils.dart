@@ -75,9 +75,8 @@ Future<RecordingAssetWriter> emulateDriftBuild({
             deleteAsset: deleted.add,
           );
         }
-
-        deleted.forEach(writer.assets.remove);
       }
+      deleted.forEach(writer.assets.remove);
     }
   }
 
