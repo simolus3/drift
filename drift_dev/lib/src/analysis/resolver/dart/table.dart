@@ -1,15 +1,11 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import '../../driver/error.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
 import '../resolver.dart';
-import '../shared/dart_types.dart';
-import '../shared/data_class.dart';
 import 'column.dart';
 import 'helper.dart';
 
@@ -25,7 +21,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     final primaryKey = await _readPrimaryKey(element, columns);
     final uniqueKeys = await _readUniqueKeys(element, columns);
 
-    final dataClassInfo = await _readDataClassInformation(columns, element);
+    final dataClassInfo =
+        await DataClassInformation.resolve(this, columns, element);
 
     final references = <DriftElement>{};
 
@@ -105,69 +102,6 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     }
 
     return table;
-  }
-
-  Future<DataClassInformation> _readDataClassInformation(
-      List<DriftColumn> columns, ClassElement element) async {
-    DartObject? dataClassName;
-    DartObject? useRowClass;
-
-    for (final annotation in element.metadata) {
-      final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.nameIfInterfaceType;
-
-      if (annotationClass == 'DataClassName') {
-        dataClassName = computed;
-      } else if (annotationClass == 'UseRowClass') {
-        useRowClass = computed;
-      }
-    }
-
-    if (dataClassName != null && useRowClass != null) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        "A table can't be annotated with both @DataClassName and @UseRowClass",
-      ));
-    }
-
-    String name;
-    AnnotatedDartCode? customParentClass;
-    FoundDartClass? existingClass;
-    String? constructorInExistingClass;
-    bool? generateInsertable;
-
-    if (dataClassName != null) {
-      name = dataClassName.getField('name')!.toStringValue()!;
-      customParentClass =
-          parseCustomParentClass(name, dataClassName, element, this);
-    } else {
-      name = dataClassNameForClassName(element.name);
-    }
-
-    if (useRowClass != null) {
-      final type = useRowClass.getField('type')!.toTypeValue();
-      constructorInExistingClass =
-          useRowClass.getField('constructor')!.toStringValue()!;
-      generateInsertable =
-          useRowClass.getField('generateInsertable')!.toBoolValue()!;
-
-      if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element, type.typeArguments);
-        name = type.element.name;
-      } else {
-        reportError(DriftAnalysisError.forDartElement(
-          element,
-          'The @UseRowClass annotation must be used with a class',
-        ));
-      }
-    }
-
-    final helper = await resolver.driver.loadKnownTypes();
-    final verified = existingClass == null
-        ? null
-        : validateExistingClass(columns, existingClass,
-            constructorInExistingClass!, generateInsertable!, this, helper);
-    return DataClassInformation(name, customParentClass, verified);
   }
 
   Future<Set<DriftColumn>?> _readPrimaryKey(

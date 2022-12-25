@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
@@ -10,8 +9,6 @@ import 'package:recase/recase.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
 import '../resolver.dart';
-import '../shared/dart_types.dart';
-import '../shared/data_class.dart';
 import 'helper.dart';
 
 class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
@@ -22,7 +19,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     final staticReferences = await _parseStaticReferences();
     final structure = await _parseSelectStructure(staticReferences);
     final columns = await _parseColumns(structure, staticReferences);
-    final dataClassInfo = await _readDataClassInformation(columns);
+    final dataClassInfo = await DataClassInformation.resolve(
+        this, columns, discovered.dartElement);
 
     return DriftView(
       discovered.ownId,
@@ -301,71 +299,6 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       'Uint8List': DriftSqlType.blob,
       'double': DriftSqlType.double,
     }[name];
-  }
-
-  Future<DataClassInformation> _readDataClassInformation(
-      List<DriftColumn> columns) async {
-    DartObject? useRowClass;
-    DartObject? driftView;
-    AnnotatedDartCode? customParentClass;
-    final element = discovered.dartElement;
-
-    for (final annotation in element.metadata) {
-      final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.nameIfInterfaceType;
-
-      if (annotationClass == 'DriftView') {
-        driftView = computed;
-      } else if (annotationClass == 'UseRowClass') {
-        useRowClass = computed;
-      }
-    }
-
-    if (driftView != null && useRowClass != null) {
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        "A table can't be annotated with both @DataClassName and @UseRowClass",
-      ));
-    }
-
-    FoundDartClass? existingClass;
-    String? constructorInExistingClass;
-    bool? generateInsertable;
-
-    var name = dataClassNameForClassName(element.name);
-
-    if (driftView != null) {
-      final dataClassName =
-          driftView.getField('dataClassName')?.toStringValue();
-      name = dataClassName ?? dataClassNameForClassName(element.name);
-      customParentClass =
-          parseCustomParentClass(name, driftView, element, this);
-    }
-
-    if (useRowClass != null) {
-      final type = useRowClass.getField('type')!.toTypeValue();
-      constructorInExistingClass =
-          useRowClass.getField('constructor')!.toStringValue()!;
-      generateInsertable =
-          useRowClass.getField('generateInsertable')!.toBoolValue()!;
-
-      if (type is InterfaceType) {
-        existingClass = FoundDartClass(type.element, type.typeArguments);
-        name = type.element.name;
-      } else {
-        reportError(DriftAnalysisError.forDartElement(
-          element,
-          'The @UseRowClass annotation must be used with a class',
-        ));
-      }
-    }
-
-    final knownTypes = await resolver.driver.loadKnownTypes();
-    final verified = existingClass == null
-        ? null
-        : validateExistingClass(columns, existingClass,
-            constructorInExistingClass!, generateInsertable!, this, knownTypes);
-    return DataClassInformation(name, customParentClass, verified);
   }
 }
 

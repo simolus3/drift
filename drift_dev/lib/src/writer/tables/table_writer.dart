@@ -290,7 +290,7 @@ class TableWriter extends TableOrViewWriter {
       }
     } else {
       // Regular generation, write full table class
-      final dataClass = emitter.dartCode(emitter.writer.rowClass(table));
+      final dataClass = emitter.dartCode(emitter.writer.rowType(table));
       final tableDslName = table.definingDartClass ?? emitter.drift('Table');
 
       // class UsersTable extends Users implements TableInfo<Users, User> {

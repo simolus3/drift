@@ -53,13 +53,16 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
 /// by drift.
 @JsonSerializable()
 class ExistingRowClass {
-  /// The name of the class used as an existing row class.
-  final AnnotatedDartCode targetClass;
+  /// The name of the class used as an existing row class, or null if we're
+  /// using a record type instead of an existing class.
+  final AnnotatedDartCode? targetClass;
 
   /// The full type of the existing row class.
   ///
-  /// This is an instantiation of the [targetClass] with type parameters
-  /// determined during an analysis step.
+  /// For actual classes, this is an instantiation of the [targetClass] with
+  /// type parameters determined during an analysis step.
+  /// For records, [targetClass] is null and this [targetType] describes a Dart
+  /// record type to be used instead.
   final AnnotatedDartCode targetType;
 
   /// The constructor, factory or static method to use then instantiating the
@@ -83,6 +86,9 @@ class ExistingRowClass {
   /// Whether a `toCompanion` extension should be generated for this data class.
   final bool generateInsertable;
 
+  /// Whether a record type should be used as the existing row class.
+  bool get isRecord => targetClass == null;
+
   ExistingRowClass({
     required this.targetClass,
     required this.targetType,
@@ -92,6 +98,15 @@ class ExistingRowClass {
     this.generateInsertable = false,
     this.isAsyncFactory = false,
   });
+
+  ExistingRowClass.record({
+    required this.targetType,
+    required this.positionalColumns,
+    required this.namedColumns,
+    this.generateInsertable = false,
+  })  : targetClass = null,
+        constructor = '',
+        isAsyncFactory = false;
 
   factory ExistingRowClass.fromJson(Map json) =>
       _$ExistingRowClassFromJson(json);

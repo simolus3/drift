@@ -28,23 +28,30 @@ import 'package:test/test.dart';
 /// `drift_dev` imports can be analyzed as well.
 class TestBackend extends DriftBackend {
   final Map<String, String> sourceContents;
+  final Iterable<String> analyzerExperiments;
 
   late final DriftAnalysisDriver driver;
 
   AnalysisContext? _dartContext;
 
-  TestBackend(Map<String, String> sourceContents,
-      {DriftOptions options = const DriftOptions.defaults()})
-      : sourceContents = {
+  TestBackend(
+    Map<String, String> sourceContents, {
+    DriftOptions options = const DriftOptions.defaults(),
+    this.analyzerExperiments = const Iterable.empty(),
+  }) : sourceContents = {
           for (final entry in sourceContents.entries)
             AssetId.parse(entry.key).uri.toString(): entry.value,
         } {
     driver = DriftAnalysisDriver(this, options);
   }
 
-  factory TestBackend.inTest(Map<String, String> sourceContents,
-      {DriftOptions options = const DriftOptions.defaults()}) {
-    final backend = TestBackend(sourceContents, options: options);
+  factory TestBackend.inTest(
+    Map<String, String> sourceContents, {
+    DriftOptions options = const DriftOptions.defaults(),
+    Iterable<String> analyzerExperiments = const Iterable.empty(),
+  }) {
+    final backend = TestBackend(sourceContents,
+        options: options, analyzerExperiments: analyzerExperiments);
     addTearDown(backend.dispose);
 
     return backend;
@@ -95,6 +102,15 @@ class TestBackend extends DriftBackend {
         provider.setOverlay(path, content: value, modificationStamp: 1);
       }
     });
+
+    if (analyzerExperiments.isNotEmpty) {
+      final experiments = analyzerExperiments.join(', ');
+      provider.setOverlay(
+        '/a/analysis_options.yaml',
+        content: 'analyzer: {enable-experiment: [$experiments]}',
+        modificationStamp: 1,
+      );
+    }
 
     final collection = AnalysisContextCollection(
       includedPaths: ['/a'],

@@ -512,4 +512,56 @@ class FooData {
       );
     });
   });
+
+  group('records as row types', () {
+    test('supported with explicit record', () async {
+      final state = TestBackend.inTest(
+        {
+          'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+typedef MyRow = ({int id, String name, DateTime birthday});
+
+@UseRowClass(MyRow)
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  DateTimeColumn get birthday => dateTime()();
+}
+''',
+        },
+        analyzerExperiments: ['records'],
+      );
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(table.existingRowClass, isNotNull);
+    }, skip: 'Skipped due to limited analyzer record support');
+
+    test('supported with implicit record', () async {
+      final state = TestBackend.inTest(
+        {
+          'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(Record)
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  DateTimeColumn get birthday => dateTime()();
+}
+''',
+        },
+        analyzerExperiments: ['records'],
+      );
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(table.existingRowClass, isNotNull);
+    }, skip: 'Skipped due to limited analyzer record support');
+  });
 }

@@ -20,7 +20,7 @@ ExistingRowClass _$ExistingRowClassFromJson(Map json) => ExistingRowClass(
 
 Map<String, dynamic> _$ExistingRowClassToJson(ExistingRowClass instance) =>
     <String, dynamic>{
-      'target_class': instance.targetClass.toJson(),
+      'target_class': instance.targetClass?.toJson(),
       'target_type': instance.targetType.toJson(),
       'constructor': instance.constructor,
       'is_async_factory': instance.isAsyncFactory,
