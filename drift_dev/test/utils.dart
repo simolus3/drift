@@ -1,4 +1,5 @@
 import 'package:build/build.dart';
+import 'package:build/experiments.dart';
 import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/integrations/build.dart';
@@ -6,7 +7,8 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
-final _resolvers = AnalyzerResolvers();
+final _resolvers =
+    withEnabledExperiments(() => AnalyzerResolvers(), ['records']);
 
 BuilderOptions builderOptionsFromYaml(String yaml) {
   final map = loadYaml(yaml);

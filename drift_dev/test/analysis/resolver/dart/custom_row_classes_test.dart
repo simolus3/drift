@@ -371,6 +371,7 @@ class Companies extends Table {
             'GenericRow<String>',
           ),
     );
+    expect(stringTable.nameOfRowClass, 'GenericRow');
 
     expect(
       intTable.existingRowClass,
@@ -382,6 +383,7 @@ class Companies extends Table {
             'GenericRow<int>',
           ),
     );
+    expect(intTable.nameOfRowClass, 'GenericRow');
   });
 
   test('handles blob columns', () async {
@@ -575,6 +577,7 @@ class Users extends Table {
             .having((e) => e.targetType.toString(), 'targetType',
                 '({int id, String name, DateTime birthday})'),
       );
+      expect(table.nameOfRowClass, 'User');
     }, skip: requireDart('3.0.0-dev'));
   });
 }

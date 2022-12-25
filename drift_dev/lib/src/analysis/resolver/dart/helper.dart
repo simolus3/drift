@@ -251,7 +251,9 @@ class DataClassInformation {
         existingClass = validateExistingClass(columns, found,
             constructorInExistingClass, generateInsertable, resolver, helper);
 
-        name = type.element.name;
+        if (existingClass?.isRecord != true) {
+          name = type.element.name;
+        }
       } else if (type is RecordType) {
         existingClass = validateRowClassFromRecordType(
             element, columns, type, generateInsertable, resolver, helper);
