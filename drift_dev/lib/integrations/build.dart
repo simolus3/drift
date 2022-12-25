@@ -17,5 +17,9 @@ Builder modular(BuilderOptions options) =>
     DriftBuilder(DriftGenerationMode.modular, options);
 
 PostProcessBuilder driftCleanup(BuilderOptions options) {
-  return const FileDeletingBuilder(['.temp.dart']);
+  return const FileDeletingBuilder([
+    '.temp.dart',
+    '.drift_prep.json',
+    '.drift_module.json',
+  ]);
 }

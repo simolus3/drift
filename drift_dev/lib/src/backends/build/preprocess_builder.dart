@@ -29,7 +29,7 @@ import 'backend.dart';
 /// emitted into the json. That way, further analysis steps can easily recognize
 /// dependencies between different definitions.
 class PreprocessBuilder extends Builder {
-  static const _outputs = ['.temp.dart', '.drift_prep.json'];
+  static const _outputs = ['.expr.temp.dart', '.drift_prep.json'];
 
   PreprocessBuilder();
 
@@ -45,7 +45,7 @@ class PreprocessBuilder extends Builder {
     final input = buildStep.inputId;
     final preprocessor = await DriftPreprocessor.analyze(backend, input.uri);
 
-    final tempDartAsset = input.changeExtension('.temp.dart');
+    final tempDartAsset = input.changeExtension('.expr.temp.dart');
     await buildStep.writeAsString(
         tempDartAsset, preprocessor.temporaryDartFile);
 

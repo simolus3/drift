@@ -5,6 +5,8 @@ import 'package:build/build.dart';
 import '../../analysis/driver/driver.dart';
 import '../../analysis/serializer.dart';
 import '../../analysis/options.dart';
+import '../../writer/import_manager.dart';
+import '../../writer/writer.dart';
 import 'backend.dart';
 
 class DriftAnalyzer extends Builder {
@@ -15,8 +17,14 @@ class DriftAnalyzer extends Builder {
 
   @override
   Map<String, List<String>> get buildExtensions => const {
-        '.drift': ['.drift.drift_module.json'],
-        '.dart': ['.dart.drift_module.json']
+        '.drift': [
+          '.drift.drift_module.json',
+          '.types.temp.dart',
+        ],
+        '.dart': [
+          '.dart.drift_module.json',
+          '.types.temp.dart',
+        ],
       };
 
   @override
@@ -37,12 +45,33 @@ class DriftAnalyzer extends Builder {
         }
       }
 
-      final serializer = ElementSerializer();
-      final asJson = serializer.serializeElements(
+      final serialized = ElementSerializer.serialize(
           results.analysis.values.map((e) => e.result).whereType());
-      final serialized = JsonUtf8Encoder(' ' * 2).convert(asJson);
+      final asJson =
+          JsonUtf8Encoder(' ' * 2).convert(serialized.serializedElements);
 
-      await buildStep.writeAsBytes(buildStep.allowedOutputs.single, serialized);
+      final jsonOutput = buildStep.inputId.addExtension('.drift_module.json');
+      final typesOutput = buildStep.inputId.changeExtension('.types.temp.dart');
+
+      await buildStep.writeAsBytes(jsonOutput, asJson);
+
+      if (serialized.dartTypes.isNotEmpty) {
+        final imports = LibraryInputManager();
+        final writer = Writer(
+          options,
+          generationOptions: GenerationOptions(imports: imports),
+        );
+        imports.linkToWriter(writer);
+
+        for (var i = 0; i < serialized.dartTypes.length; i++) {
+          writer.leaf()
+            ..write('typedef T$i = ')
+            ..writeDart(serialized.dartTypes[i])
+            ..writeln(';');
+        }
+
+        await buildStep.writeAsString(typesOutput, writer.writeGenerated());
+      }
     }
   }
 }

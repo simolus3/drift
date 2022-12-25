@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../options.dart';
@@ -230,7 +231,17 @@ class DriftAnalysisDriver {
   }
 }
 
+/// Reads serialized data and a generated Dart helper file used to serialize
+/// drift elements.
+///
+/// Drift's element serializer generates two output: A JSON structure of all
+/// elements, and a helper `.dart` file containing `typedef`s for every Dart
+/// type referenced in the elements.
+///
+/// This class is responsible for recovering both assets in a subsequent build-
+/// step.
 abstract class AnalysisResultCacheReader {
+  Future<LibraryElement?> readTypeHelperFor(Uri uri);
   Future<String?> readCacheFor(Uri uri);
 }
 

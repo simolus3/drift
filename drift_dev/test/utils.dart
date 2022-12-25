@@ -3,7 +3,6 @@ import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:logging/logging.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
@@ -28,6 +27,7 @@ Future<RecordingAssetWriter> emulateDriftBuild({
   bool modularBuild = false,
 }) async {
   _resolvers.reset();
+  logger ??= Logger.detached('emulateDriftBuild');
 
   final writer = InMemoryAssetWriter();
   final reader = MultiAssetReader([
@@ -45,29 +45,50 @@ Future<RecordingAssetWriter> emulateDriftBuild({
     preparingBuilder(options),
     analyzer(options),
     modularBuild ? modular(options) : driftBuilderNotShared(options),
+    driftCleanup(options),
   ];
 
   for (final stage in stages) {
-    await runBuilder(
-      stage,
-      inputs.keys.map(makeAssetId),
-      reader,
-      writer,
-      _resolvers,
-      logger: logger,
-    );
+    if (stage is Builder) {
+      await runBuilder(
+        stage,
+        inputs.keys.map(makeAssetId),
+        reader,
+        writer,
+        _resolvers,
+        logger: logger,
+      );
+    } else if (stage is PostProcessBuilder) {
+      final deleted = <AssetId>[];
+
+      for (final assetId in writer.assets.keys) {
+        final shouldBuild =
+            stage.inputExtensions.any((e) => assetId.path.endsWith(e));
+        if (shouldBuild) {
+          await runPostProcessBuilder(
+            stage,
+            assetId,
+            reader,
+            writer,
+            logger,
+            addAsset: (_) {},
+            deleteAsset: deleted.add,
+          );
+        }
+
+        deleted.forEach(writer.assets.remove);
+      }
+    }
   }
 
-  logger?.clearListeners();
+  logger.clearListeners();
   return writer;
 }
 
 extension OnlyDartOutputs on RecordingAssetWriter {
   Iterable<AssetId> get dartOutputs {
     return assets.keys.where((e) {
-      final fullExtension = p.url.extension(e.path, 2);
-
-      return e.extension == '.dart' && fullExtension != '.temp.dart';
+      return e.extension == '.dart';
     });
   }
 }

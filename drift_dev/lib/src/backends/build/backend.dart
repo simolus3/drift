@@ -64,7 +64,7 @@ class DriftBuildBackend extends DriftBackend {
   Future<Expression> resolveExpression(
       Uri context, String dartExpression, Iterable<String> imports) async {
     final original = AssetId.resolve(context);
-    final tempDart = original.changeExtension('.temp.dart');
+    final tempDart = original.changeExtension('.expr.temp.dart');
     final prepJson = original.changeExtension('.drift_prep.json');
 
     DriftPreprocessorResult prepResult;
@@ -108,6 +108,16 @@ class BuildCacheReader implements AnalysisResultCacheReader {
     final assetId = AssetId.resolve(uri).addExtension('.drift_module.json');
     if (await _buildStep.canRead(assetId)) {
       return _buildStep.readAsString(assetId);
+    }
+
+    return null;
+  }
+
+  @override
+  Future<LibraryElement?> readTypeHelperFor(Uri uri) async {
+    final assetId = AssetId.resolve(uri).changeExtension('.types.temp.dart');
+    if (await _buildStep.canRead(assetId)) {
+      return _buildStep.resolver.libraryFor(assetId, allowSyntaxErrors: true);
     }
 
     return null;

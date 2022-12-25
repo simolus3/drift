@@ -186,7 +186,35 @@ class _AddFromDartType extends TypeVisitor<void> {
 
   @override
   void visitRecordType(RecordType type) {
-    throw UnsupportedError('RecordType to Dart source code');
+    var first = true;
+
+    for (final field in type.positionalFields) {
+      if (!first) {
+        _builder.addText(', ');
+      }
+      first = false;
+
+      field.type.accept(this);
+    }
+
+    if (type.namedFields.isNotEmpty) {
+      _builder.addText('{');
+      first = true;
+      for (final field in type.namedFields) {
+        if (!first) {
+          _builder.addText(', ');
+        }
+        first = false;
+
+        field.type.accept(this);
+        _builder
+          ..addText(' ')
+          ..addText(field.name);
+      }
+      _builder.addText('}');
+    }
+
+    _writeSuffix(type.nullabilitySuffix);
   }
 
   @override
