@@ -96,4 +96,59 @@ CREATE TABLE drift_ints (
         isA<ExistingRowClass>().having(
             (e) => e.targetType.toString(), 'targetType', 'GenericRow<int>'));
   });
+
+  group('can use records', () {
+    test('with explicit structure', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.drift': '''
+import 'helper.dart';
+
+CREATE TABLE foo (
+  foo TEXT NOT NULL,
+  bar INTEGER
+) WITH MyRecord;
+''',
+        'a|lib/helper.dart': '''
+typedef MyRecord = ({String foo, int? bar});
+''',
+      });
+
+      final file = await state.analyze('package:a/a.drift');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isRecord, 'isRecord', isTrue)
+            .having((e) => e.targetClass, 'targetClass', isNull)
+            .having((e) => e.targetType.toString(), 'targetType',
+                '({int? bar, String foo})'),
+      );
+    });
+
+    test('implicitly', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.drift': '''
+CREATE TABLE foo (
+  foo TEXT NOT NULL,
+  bar INTEGER
+) WITH Record;
+''',
+      });
+
+      final file = await state.analyze('package:a/a.drift');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isRecord, 'isRecord', isTrue)
+            .having((e) => e.targetClass, 'targetClass', isNull)
+            .having((e) => e.targetType.toString(), 'targetType',
+                '({String foo, int? bar})'),
+      );
+    }, skip: requireDart('3.0.0-dev'));
+  });
 }

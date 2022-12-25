@@ -26,9 +26,12 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     linter.sqlParserErrors.forEach(reportLint);
   }
 
-  Future<FoundDartClass?> findDartClass(String identifier) async {
+  Future<Element?> _findInDart(String identifier) async {
     final dartImports = file.discovery!.importDependencies
-        .where((importUri) => importUri.path.endsWith('.dart'));
+        .where((importUri) => importUri.path.endsWith('.dart'))
+        // Also add `dart:core` as a default import so that types like `Record`
+        // are available.
+        .followedBy([AnnotatedDartCode.dartCore]);
 
     for (final import in dartImports) {
       LibraryElement library;
@@ -39,17 +42,68 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       }
 
       final foundElement = library.exportNamespace.get(identifier);
-      if (foundElement is InterfaceElement) {
-        return FoundDartClass(foundElement, null);
-      } else if (foundElement is TypeAliasElement) {
-        final innerType = foundElement.aliasedType;
-        if (innerType is InterfaceType) {
-          return FoundDartClass(innerType.element, innerType.typeArguments);
-        }
+      if (foundElement != null) return foundElement;
+    }
+
+    return null;
+  }
+
+  Future<FoundDartClass?> findDartClass(String identifier) async {
+    final foundElement = await _findInDart(identifier);
+    if (foundElement is InterfaceElement) {
+      return FoundDartClass(foundElement, null);
+    } else if (foundElement is TypeAliasElement) {
+      final innerType = foundElement.aliasedType;
+      if (innerType is InterfaceType) {
+        return FoundDartClass(innerType.element, innerType.typeArguments);
       }
     }
 
     return null;
+  }
+
+  /// Attempts to find a matching [ExistingRowClass] for a [DriftTableName]
+  /// annotation.
+  Future<ExistingRowClass?> resolveExistingRowClass(
+      List<DriftColumn> columns, DriftTableName source) async {
+    assert(source.useExistingDartClass);
+
+    final dataClassName = source.overriddenDataClassName;
+    final element = await _findInDart(dataClassName);
+    FoundDartClass? foundDartClass;
+
+    if (element is InterfaceElement) {
+      foundDartClass = FoundDartClass(element, null);
+    } else if (element is TypeAliasElement) {
+      // Resolve type alias to a class, or use record if we have one.
+      final innerType = element.aliasedType;
+      if (innerType is InterfaceType) {
+        foundDartClass =
+            FoundDartClass(innerType.element, innerType.typeArguments);
+      } else if (innerType is RecordType) {
+        return validateRowClassFromRecordType(
+          element,
+          columns,
+          innerType,
+          false,
+          this,
+          await resolver.driver.loadKnownTypes(),
+        );
+      }
+    }
+
+    if (foundDartClass == null) {
+      reportError(DriftAnalysisError.inDriftFile(
+        source,
+        'Existing Dart class $dataClassName was not found, are '
+        'you missing an import?',
+      ));
+      return null;
+    } else {
+      final knownTypes = await resolver.driver.loadKnownTypes();
+      return validateExistingClass(
+          columns, foundDartClass, '', false, this, knownTypes);
+    }
   }
 
   SqlEngine newEngineWithTables(Iterable<DriftElement> references) {

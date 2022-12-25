@@ -22,7 +22,7 @@ class FoundDartClass {
 }
 
 ExistingRowClass? validateExistingClass(
-  Iterable<DriftColumn> columns,
+  List<DriftColumn> columns,
   FoundDartClass dartClass,
   String constructor,
   bool generateInsertable,
@@ -32,6 +32,13 @@ ExistingRowClass? validateExistingClass(
   final desiredClass = dartClass.classElement;
   final library = desiredClass.library;
   var isAsyncFactory = false;
+
+  if (desiredClass.thisType.isDartCoreRecord) {
+    // When the `Record` supertype from `dart:core` is used, generate a custom
+    // record type suitable for this row class.
+    return defaultRecordRowClass(
+        columns: columns, generateInsertable: generateInsertable);
+  }
 
   ExecutableElement? ctor;
   final InterfaceType instantiation;
@@ -231,8 +238,6 @@ ExistingRowClass defaultRecordRowClass({
       final column = columns[i];
       final typeConverter = column.typeConverter;
 
-      builder.addText('${column.nameInDart} ');
-
       if (typeConverter != null) {
         builder.addDartType(typeConverter.dartType);
         if (typeConverter.canBeSkippedForNulls && column.nullable) {
@@ -242,6 +247,8 @@ ExistingRowClass defaultRecordRowClass({
         builder.addTopLevel(dartTypeNames[column.sqlType]!);
         if (column.nullable) builder.addText('?');
       }
+
+      builder.addText(' ${column.nameInDart}');
     }
 
     builder.addText('})');

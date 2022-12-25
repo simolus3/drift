@@ -225,7 +225,7 @@ class DataClassInformation {
       ));
     }
 
-    String? name;
+    String name;
     AnnotatedDartCode? customParentClass;
     ExistingRowClass? existingClass;
 

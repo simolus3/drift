@@ -520,9 +520,7 @@ class FooData {
           'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
-typedef MyRow = ({int id, String name, DateTime birthday});
-
-@UseRowClass(MyRow)
+@UseRowClass((id: int, name: String, birthday: DateTime))
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -537,8 +535,16 @@ class Users extends Table {
       state.expectNoErrors();
 
       final table = file.analyzedElements.single as DriftTable;
-      expect(table.existingRowClass, isNotNull);
-    }, skip: 'Skipped due to limited analyzer record support');
+      expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isRecord, 'isRecord', isTrue)
+            .having((e) => e.targetClass, 'targetClass', isNull)
+            .having((e) => e.targetType.toString(), 'targetType',
+                '({DateTime birthday, int id, String name})'),
+      );
+      expect(table.nameOfRowClass, 'User');
+    });
 
     test('supported with implicit record', () async {
       final state = TestBackend.inTest(
@@ -561,7 +567,14 @@ class Users extends Table {
       state.expectNoErrors();
 
       final table = file.analyzedElements.single as DriftTable;
-      expect(table.existingRowClass, isNotNull);
-    }, skip: 'Skipped due to limited analyzer record support');
+      expect(
+        table.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.isRecord, 'isRecord', isTrue)
+            .having((e) => e.targetClass, 'targetClass', isNull)
+            .having((e) => e.targetType.toString(), 'targetType',
+                '({int id, String name, DateTime birthday})'),
+      );
+    }, skip: requireDart('3.0.0-dev'));
   });
 }

@@ -19,6 +19,7 @@ import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 /// A [DriftBackend] implementation used for testing.
@@ -201,6 +202,20 @@ class _HasInferredColumnTypes extends CustomMatcher {
 
 TypeMatcher<DriftAnalysisError> isDriftError(dynamic message) {
   return isA<DriftAnalysisError>().having((e) => e.message, 'message', message);
+}
+
+final _version = RegExp(r'\d\.\d+\.\d+');
+
+String? requireDart(String minimalVersion) {
+  final version =
+      Version.parse(_version.firstMatch(Platform.version)!.group(0)!);
+  final minimal = Version.parse(minimalVersion);
+
+  if (version < minimal) {
+    return 'This test requires SDK version $minimalVersion or later';
+  } else {
+    return null;
+  }
 }
 
 extension DriftErrorMatchers on TypeMatcher<DriftAnalysisError> {
