@@ -93,6 +93,15 @@ class QueryRow {
     return _db.typeMapping.read(type, data[key]);
   }
 
+  /// Interprets the column named [key] under the known drift type [type].
+  ///
+  /// Like [readNullable], except that the [type] is fixed and not inferred from
+  /// the type parameter [T].
+  @optionalTypeArgs
+  T? readNullableWithType<T extends Object>(DriftSqlType<T> type, String key) {
+    return _db.typeMapping.read(type, data[key]);
+  }
+
   /// Reads a bool from the column named [key].
   @Deprecated('Use read<bool>(key) directly')
   bool readBool(String key) => read<bool>(key);

@@ -238,7 +238,6 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       GenerationContext ctx, List<Map<String, Object?>> rows) {
     return Future.wait(rows.map((row) async {
       final readTables = <ResultSetImplementation, dynamic>{};
-      final readColumns = <Expression, dynamic>{};
 
       for (final table in _queriedTables(true)) {
         final prefix = '${table.aliasedName}.';
@@ -249,14 +248,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         }
       }
 
-      for (final aliasedColumn in _columnAliases.entries) {
-        final expr = aliasedColumn.key;
-        final value = row[aliasedColumn.value];
-
-        readColumns[expr] = ctx.typeMapping.read(expr.driftSqlType, value);
-      }
-
-      return TypedResult(readTables, QueryRow(row, database), readColumns);
+      final driftRow = QueryRow(row, database);
+      return TypedResult(
+          readTables, driftRow, _LazyExpressionMap(_columnAliases, driftRow));
     }));
   }
 
@@ -273,4 +267,40 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       trace: trace,
     );
   }
+}
+
+/// A map responsible for reading typed values for a [TypedResult].
+///
+/// In a [JoinedSelectStatement], every column of every table is read and
+/// interpreted as a result, even if it's never used later. For joins with lots
+/// of tables, this can quickly become very expensive.
+///
+/// So, to stay compatible with the [Map] interface but also be more efficient,
+/// we now use this implementation to lazily do the type mapping when a column
+/// is first read. There's a builtin cache so columns accessed a lot aren't
+/// read multiple times, but using this map we can generally speed things up
+/// when joins with lots of columns are used.
+class _LazyExpressionMap extends UnmodifiableMapBase<Expression, Object?> {
+  final Map<Expression, String> _columnAliases;
+  final QueryRow _rawData;
+
+  final Map<Expression, Object?> _cachedData = {};
+
+  _LazyExpressionMap(this._columnAliases, this._rawData);
+
+  @override
+  Object? operator [](Object? key) {
+    if (!containsKey(key) || key is! Expression) return null;
+
+    return _cachedData.putIfAbsent(key, () {
+      return _rawData.readNullableWithType(
+          key.driftSqlType, _columnAliases[key]!);
+    });
+  }
+
+  @override
+  Iterable<Expression> get keys => _columnAliases.keys;
+
+  @override
+  bool containsKey(Object? key) => _columnAliases.containsKey(key);
 }

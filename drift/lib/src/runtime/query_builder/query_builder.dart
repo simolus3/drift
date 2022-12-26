@@ -2,6 +2,7 @@
 // at runtime.
 
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
