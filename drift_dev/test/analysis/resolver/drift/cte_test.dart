@@ -33,7 +33,7 @@ WITH RECURSIVE
     expect(resultSet.singleColumn, isTrue);
     expect(resultSet.needsOwnClass, isFalse);
     expect(resultSet.columns.map(resultSet.dartNameFor), ['x']);
-    expect(resultSet.columns.map((c) => c.sqlType), [DriftSqlType.int]);
+    expect(resultSet.scalarColumns.map((c) => c.sqlType), [DriftSqlType.int]);
   });
 
   test('finds the underlying table when aliased through CTE', () async {

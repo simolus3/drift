@@ -135,7 +135,18 @@ class ValuesSelectStatement extends BaseSelectStatement
   Iterable<AstNode> get childNodes => values;
 }
 
-abstract class ResultColumn extends AstNode {}
+abstract class ResultColumn extends AstNode {
+  /// The acutal, schema-level [Column]s that this result column expands to.
+  ///
+  /// For a [ExpressionResultColumn], this is usually a singleton list with a
+  /// single [ExpressionColumn]. For star columns, the list may return more
+  /// elements.
+  ///
+  /// This list is populated during analysis, it will be `null` after parsing.
+  /// Further, it may be left in its unset state if the column could not be
+  /// analyzed due to an error.
+  List<Column>? resolvedColumns;
+}
 
 /// A result column that either yields all columns or all columns from a table
 /// by using "*" or "table.*".

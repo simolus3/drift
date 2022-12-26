@@ -1,12 +1,14 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
+import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../options.dart';
 import '../resolver/shared/column_name.dart';
 import 'column.dart';
+import 'dart.dart';
 import 'element.dart';
 import 'result_sets.dart';
 import 'table.dart';
@@ -362,12 +364,13 @@ class InferredResultSet {
   /// to create another class.
   final MatchingDriftTable? matchingTable;
 
-  /// Tables in the result set that should appear as a class.
-  ///
-  /// See [NestedResult] for further discussion and examples.
-  final List<NestedResult> nestedResults;
   Map<NestedResult, String>? _expandedNestedPrefixes;
 
+  /// All columns that are part of this result set.
+  ///
+  /// This includes [ScalarResultColumn]s, which hold simple SQL values, but
+  /// also [NestedResult]s, which hold subqueries or tables that are structured
+  /// into a single logical Dart column.
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
 
@@ -385,10 +388,12 @@ class InferredResultSet {
   InferredResultSet(
     this.matchingTable,
     this.columns, {
-    this.nestedResults = const [],
     this.resultClassName,
     this.dontGenerateResultClass = false,
   });
+
+  Iterable<ScalarResultColumn> get scalarColumns => columns.whereType();
+  Iterable<NestedResult> get nestedResults => columns.whereType();
 
   /// Whether a new class needs to be written to store the result of this query.
   ///
@@ -399,14 +404,16 @@ class InferredResultSet {
   /// We always need to generate a class if the query contains nested results.
   bool get needsOwnClass {
     return matchingTable == null &&
-        (columns.length > 1 || nestedResults.isNotEmpty) &&
+        (scalarColumns.length > 1 || nestedResults.isNotEmpty) &&
         !dontGenerateResultClass;
   }
 
   /// Whether this query returns a single column that should be returned
   /// directly.
   bool get singleColumn =>
-      matchingTable == null && nestedResults.isEmpty && columns.length == 1;
+      matchingTable == null &&
+      nestedResults.isEmpty &&
+      scalarColumns.length == 1;
 
   String? nestedPrefixFor(NestedResult table) {
     if (_expandedNestedPrefixes == null) {
@@ -429,8 +436,7 @@ class InferredResultSet {
   /// [column].
   String dartNameFor(ResultColumn column) {
     return _dartNames.putIfAbsent(column, () {
-      return dartNameForSqlColumn(column.name,
-          existingNames: _dartNames.values);
+      return column.dartGetterName(_dartNames.values);
     });
   }
 
@@ -444,10 +450,7 @@ class InferredResultSet {
   /// nested result sets.
   bool isCompatibleTo(InferredResultSet other) {
     const columnsEquality = UnorderedIterableEquality(_ResultColumnEquality());
-    const nestedEquality = UnorderedIterableEquality(_NestedResultEquality());
-
-    return columnsEquality.equals(columns, other.columns) &&
-        nestedEquality.equals(nestedResults, other.nestedResults);
+    return columnsEquality.equals(columns, other.columns);
   }
 }
 
@@ -471,7 +474,20 @@ class MatchingDriftTable {
   }
 }
 
-class ResultColumn implements HasType {
+@sealed
+abstract class ResultColumn {
+  /// A unique name for this column in Dart.
+  String dartGetterName(Iterable<String> existingNames);
+
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  int get compatibilityHashCode;
+
+  /// Checks whether this column is compatible to the [other] column, meaning
+  /// that they have the same name and type.
+  bool isCompatibleTo(ResultColumn other);
+}
+
+class ScalarResultColumn extends ResultColumn implements HasType {
   final String name;
   @override
   final DriftSqlType sqlType;
@@ -484,36 +500,36 @@ class ResultColumn implements HasType {
   /// The analyzed column from the `sqlparser` package.
   final Column? sqlParserColumn;
 
-  ResultColumn(this.name, this.sqlType, this.nullable,
+  ScalarResultColumn(this.name, this.sqlType, this.nullable,
       {this.typeConverter, this.sqlParserColumn});
 
   @override
   bool get isArray => false;
 
-  /// Hash-code that matching [compatibleTo], so that two compatible columns
-  /// will have the same [compatibilityHashCode].
-  int get compatibilityHashCode {
-    return Object.hash(name, sqlType, nullable, typeConverter);
+  @override
+  String dartGetterName(Iterable<String> existingNames) {
+    return dartNameForSqlColumn(name, existingNames: existingNames);
   }
 
-  /// Checks whether this column is compatible to the [other], meaning that they
-  /// have the same name and type.
-  bool compatibleTo(ResultColumn other) {
-    return other.name == name &&
+  @override
+  int get compatibilityHashCode {
+    return Object.hash(
+        ScalarResultColumn, name, sqlType, nullable, typeConverter);
+  }
+
+  @override
+  bool isCompatibleTo(ResultColumn other) {
+    return other is ScalarResultColumn &&
+        other.name == name &&
         other.sqlType == sqlType &&
         other.nullable == nullable &&
         other.typeConverter == typeConverter;
   }
 }
 
-/// A nested result, could either be a NestedResultTable or a NestedQueryResult.
-abstract class NestedResult {
-  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
-  int get compatibilityHashCode;
-
-  /// Checks whether this is compatible to the [other] nested result.
-  bool isCompatibleTo(NestedResult other);
-}
+/// A nested result, could either be a [NestedResultTable] or a
+/// [NestedResultQuery].
+abstract class NestedResult extends ResultColumn {}
 
 /// A nested table extracted from a `**` column.
 ///
@@ -549,7 +565,10 @@ class NestedResultTable extends NestedResult {
 
   NestedResultTable(this.from, this.name, this.table, {this.isNullable = true});
 
-  String get dartFieldName => ReCase(name).camelCase;
+  @override
+  String dartGetterName(Iterable<String> existingNames) {
+    return dartNameForSqlColumn(name, existingNames: existingNames);
+  }
 
   /// [hashCode] that matches [isCompatibleTo] instead of `==`.
   @override
@@ -560,7 +579,7 @@ class NestedResultTable extends NestedResult {
   /// Checks whether this is compatible to the [other] nested result, which is
   /// the case iff they have the same and read from the same table.
   @override
-  bool isCompatibleTo(NestedResult other) {
+  bool isCompatibleTo(ResultColumn other) {
     if (other is! NestedResultTable) return false;
 
     return other.name == name &&
@@ -579,6 +598,11 @@ class NestedResultQuery extends NestedResult {
     required this.query,
   });
 
+  @override
+  String dartGetterName(Iterable<String> existingNames) {
+    return dartNameForSqlColumn(filedName(), existingNames: existingNames);
+  }
+
   String filedName() {
     if (from.as != null) {
       return from.as!;
@@ -595,7 +619,7 @@ class NestedResultQuery extends NestedResult {
   int get compatibilityHashCode => hashCode;
 
   @override
-  bool isCompatibleTo(NestedResult other) => this == other;
+  bool isCompatibleTo(ResultColumn other) => this == other;
 }
 
 /// Something in the query that needs special attention when generating code,
@@ -868,26 +892,11 @@ class _ResultColumnEquality implements Equality<ResultColumn> {
   const _ResultColumnEquality();
 
   @override
-  bool equals(ResultColumn e1, ResultColumn e2) => e1.compatibleTo(e2);
+  bool equals(ResultColumn e1, ResultColumn e2) => e1.isCompatibleTo(e2);
 
   @override
   int hash(ResultColumn e) => e.compatibilityHashCode;
 
   @override
   bool isValidKey(Object? e) => e is ResultColumn;
-}
-
-class _NestedResultEquality implements Equality<NestedResult> {
-  const _NestedResultEquality();
-
-  @override
-  bool equals(NestedResult e1, NestedResult e2) {
-    return e1.isCompatibleTo(e2);
-  }
-
-  @override
-  int hash(NestedResult e) => e.compatibilityHashCode;
-
-  @override
-  bool isValidKey(Object? e) => e is NestedResultTable;
 }

@@ -28,39 +28,34 @@ class ResultSetWriter {
 
     final modifier = scope.options.fieldModifier;
 
-    // write fields
+    // Write fields
     for (final column in resultSet.columns) {
-      final name = resultSet.dartNameFor(column);
-      final runtimeType = into.dartCode(into.dartType(column));
+      final fieldName = resultSet.dartNameFor(column);
 
-      into.write('$modifier $runtimeType $name\n;');
+      if (column is ScalarResultColumn) {
+        final runtimeType = into.dartCode(into.dartType(column));
 
-      fields.add(EqualityField(name, isList: column.isUint8ListInDart));
-      if (!column.nullable) nonNullableFields.add(name);
-    }
+        into.write('$modifier $runtimeType $fieldName\n;');
 
-    for (final nested in resultSet.nestedResults) {
-      if (nested is NestedResultTable) {
-        final fieldName = nested.dartFieldName;
-
+        fields.add(EqualityField(fieldName, isList: column.isUint8ListInDart));
+        if (!column.nullable) nonNullableFields.add(fieldName);
+      } else if (column is NestedResultTable) {
         into
           ..write('$modifier ')
-          ..writeDart(nested.resultRowType(scope))
-          ..write(nested.isNullable ? '? ' : ' ')
+          ..writeDart(column.resultRowType(scope))
+          ..write(column.isNullable ? '? ' : ' ')
           ..writeln('$fieldName;');
 
         fields.add(EqualityField(fieldName));
-        if (!nested.isNullable) nonNullableFields.add(fieldName);
-      } else if (nested is NestedResultQuery) {
-        final fieldName = nested.filedName();
-
-        if (nested.query.resultSet.needsOwnClass) {
-          ResultSetWriter(nested.query, scope).write();
+        if (!column.isNullable) nonNullableFields.add(fieldName);
+      } else if (column is NestedResultQuery) {
+        if (column.query.resultSet.needsOwnClass) {
+          ResultSetWriter(column.query, scope).write();
         }
 
         into
           ..write('$modifier ')
-          ..writeDart(nested.resultRowType(scope))
+          ..writeDart(column.resultRowType(scope))
           ..writeln('$fieldName;');
 
         fields.add(EqualityField(fieldName));

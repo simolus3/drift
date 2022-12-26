@@ -38,8 +38,8 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
 
     final resultSet = (query as SqlSelectQuery).resultSet;
     expect(resultSet.matchingTable, isNull);
-    expect(resultSet.columns.map((c) => c.name), ['?', ':foo']);
-    expect(resultSet.columns.map((c) => c.sqlType),
+    expect(resultSet.scalarColumns.map((c) => c.name), ['?', ':foo']);
+    expect(resultSet.scalarColumns.map((c) => c.sqlType),
         [DriftSqlType.string, DriftSqlType.bool]);
   });
 
@@ -161,17 +161,19 @@ q3: SELECT datetime('now');
       expect(queries, hasLength(3));
 
       final q1 = queries[0];
-      expect(q1.resultSet!.columns.single.sqlType, DriftSqlType.dateTime);
+      expect(q1.resultSet!.scalarColumns.single.sqlType, DriftSqlType.dateTime);
 
       final q2 = queries[1];
       final q3 = queries[2];
 
       if (dateTimeAsText) {
-        expect(q2.resultSet!.columns.single.sqlType, DriftSqlType.int);
-        expect(q3.resultSet!.columns.single.sqlType, DriftSqlType.dateTime);
+        expect(q2.resultSet!.scalarColumns.single.sqlType, DriftSqlType.int);
+        expect(
+            q3.resultSet!.scalarColumns.single.sqlType, DriftSqlType.dateTime);
       } else {
-        expect(q2.resultSet!.columns.single.sqlType, DriftSqlType.dateTime);
-        expect(q3.resultSet!.columns.single.sqlType, DriftSqlType.string);
+        expect(
+            q2.resultSet!.scalarColumns.single.sqlType, DriftSqlType.dateTime);
+        expect(q3.resultSet!.scalarColumns.single.sqlType, DriftSqlType.string);
       }
     });
   }
@@ -203,7 +205,7 @@ FROM routes
     final query = file.fileAnalysis!.resolvedQueries.values.single;
     final resultSet = (query as SqlSelectQuery).resultSet;
 
-    expect(resultSet.columns.map((e) => e.name), ['id', 'from', 'to']);
+    expect(resultSet.scalarColumns.map((e) => e.name), ['id', 'from', 'to']);
     expect(resultSet.matchingTable, isNull);
     expect(
       resultSet.nestedResults.cast<NestedResultTable>().map((e) => e.name),
@@ -283,7 +285,8 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
 
     final query = result.fileAnalysis!.resolvedQueries.values.single;
     expect(query.resultSet!.columns, [
-      isA<ResultColumn>().having((e) => e.sqlType, 'sqlType', DriftSqlType.bool)
+      isA<ScalarResultColumn>()
+          .having((e) => e.sqlType, 'sqlType', DriftSqlType.bool)
     ]);
 
     final args = query.variables;

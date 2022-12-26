@@ -106,8 +106,8 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
     final queryInA =
         fileA.fileAnalysis!.resolvedQueries.values.single as SqlSelectQuery;
     expect(
-      queryInA.resultSet.columns.single,
-      const TypeMatcher<ResultColumn>()
+      queryInA.resultSet.scalarColumns.single,
+      const TypeMatcher<ScalarResultColumn>()
           .having((e) => e.sqlType, 'type', DriftSqlType.double),
     );
 

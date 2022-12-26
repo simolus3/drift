@@ -79,7 +79,7 @@ class QueryWriter {
     final queryRow = _emitter.drift('QueryRow');
 
     if (resultSet.singleColumn) {
-      final column = resultSet.columns.single;
+      final column = resultSet.scalarColumns.single;
       _buffer.write('($queryRow row) => '
           '${readingCode(column, scope.generationOptions, options)}');
     } else if (resultSet.matchingTable != null) {
@@ -119,31 +119,28 @@ class QueryWriter {
 
       for (final column in resultSet.columns) {
         final fieldName = resultSet.dartNameFor(column);
-        _buffer.write('$fieldName: '
-            '${readingCode(column, scope.generationOptions, options)},');
-      }
-      for (final nested in resultSet.nestedResults) {
-        if (nested is NestedResultTable) {
-          final prefix = resultSet.nestedPrefixFor(nested);
+
+        if (column is ScalarResultColumn) {
+          _buffer.write('$fieldName: '
+              '${readingCode(column, scope.generationOptions, options)},');
+        } else if (column is NestedResultTable) {
+          final prefix = resultSet.nestedPrefixFor(column);
           if (prefix == null) continue;
 
-          final fieldName = nested.dartFieldName;
-          final tableGetter = nested.table.dbGetterName;
+          final tableGetter = column.table.dbGetterName;
 
           final mappingMethod =
-              nested.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
+              column.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
 
           _buffer.write('$fieldName: await $tableGetter.$mappingMethod(row, '
               'tablePrefix: ${asDartLiteral(prefix)}),');
-        } else if (nested is NestedResultQuery) {
-          final fieldName = nested.filedName();
+        } else if (column is NestedResultQuery) {
           _buffer.write('$fieldName: await ');
-
-          _writeCustomSelectStatement(nested.query);
-
+          _writeCustomSelectStatement(column.query);
           _buffer.write('.get(),');
         }
       }
+
       _buffer.write(');\n}');
     }
   }
@@ -151,8 +148,8 @@ class QueryWriter {
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  String readingCode(ResultColumn column, GenerationOptions generationOptions,
-      DriftOptions moorOptions) {
+  String readingCode(ScalarResultColumn column,
+      GenerationOptions generationOptions, DriftOptions moorOptions) {
     final specialName = _transformer.newNameFor(column.sqlParserColumn!);
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);

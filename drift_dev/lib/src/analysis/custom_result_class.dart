@@ -77,7 +77,6 @@ Map<SqlSelectQuery, SqlSelectQuery> transformCustomResultClasses(
         null,
         query.resultSet.columns,
         resultClassName: resultSetName,
-        nestedResults: query.resultSet.nestedResults,
         // Only generate a result class for the first query in the group
         dontGenerateResultClass: !isFirst,
       );
@@ -86,7 +85,7 @@ Map<SqlSelectQuery, SqlSelectQuery> transformCustomResultClasses(
       // Dart name.
       newResultSet.forceDartNames({
         for (final entry in dartNames.entries)
-          newResultSet.columns.singleWhere((e) => e.compatibleTo(entry.key)):
+          newResultSet.columns.singleWhere((e) => e.isCompatibleTo(entry.key)):
               entry.value,
       });
 

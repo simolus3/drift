@@ -58,7 +58,7 @@ extension SqlQueryType on SqlQuery {
     }
 
     if (resultSet.singleColumn) {
-      return scope.dartType(resultSet.columns.single);
+      return scope.dartType(resultSet.scalarColumns.single);
     }
 
     return AnnotatedDartCode([resultClassName]);

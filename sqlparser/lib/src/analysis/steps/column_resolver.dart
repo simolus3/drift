@@ -283,8 +283,11 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           }
         }
 
-        usedColumns
-            .addAll(visibleColumnsForStar!.where((e) => e.includedInResults));
+        final added =
+            visibleColumnsForStar!.where((e) => e.includedInResults).toList();
+
+        usedColumns.addAll(added);
+        resultColumn.resolvedColumns = added;
       } else if (resultColumn is ExpressionResultColumn) {
         final expression = resultColumn.expression;
         Column column;
@@ -299,6 +302,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         }
 
         usedColumns.add(column);
+        resultColumn.resolvedColumns = [column];
 
         if (resultColumn.as != null) {
           // make this column available for references if there is no other

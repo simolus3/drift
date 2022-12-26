@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift/drift.dart' as drift;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
+import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 import '../../driver/driver.dart';
@@ -140,8 +141,10 @@ class QueryAnalyzer {
     InferredResultSet? resultSet;
     if (root is StatementReturningColumns) {
       final columns = root.returnedResultSet?.resolvedColumns;
+
       if (columns != null) {
-        resultSet = _inferResultSet(queryContext, columns);
+        final syntacticSource = root.returning?.columns;
+        resultSet = _inferResultSet(queryContext, columns, syntacticSource);
       }
     }
 
@@ -179,6 +182,7 @@ class QueryAnalyzer {
 
   SqlSelectQuery _handleSelect(_QueryHandlerContext queryContext) {
     final tableFinder = ReferencedTablesVisitor();
+    final root = queryContext.root;
     queryContext.root.acceptWithoutArg(tableFinder);
 
     _applyFoundTables(tableFinder);
@@ -194,16 +198,20 @@ class QueryAnalyzer {
 
     final driftEntities = [...driftTables, ...driftViews];
 
+    final resolvedColumns = (root as BaseSelectStatement).resolvedColumns!;
+    List<sql.ResultColumn>? syntacticColumns;
+
+    if (root is SelectStatement) {
+      syntacticColumns = root.columns;
+    }
+
     return SqlSelectQuery(
       queryContext.queryName,
       context,
       queryContext.root,
       queryContext.foundElements,
       driftEntities,
-      _inferResultSet(
-        queryContext,
-        (queryContext.root as BaseSelectStatement).resolvedColumns!,
-      ),
+      _inferResultSet(queryContext, resolvedColumns, syntacticColumns),
       queryContext.requestedResultClass,
       queryContext.nestedScope,
     );
@@ -212,12 +220,12 @@ class QueryAnalyzer {
   InferredResultSet _inferResultSet(
     _QueryHandlerContext queryContext,
     List<Column> rawColumns,
+    List<sql.ResultColumn>? syntacticColumns,
   ) {
     final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
-    // First, go through regular result columns
-    for (final column in rawColumns) {
+    void handleScalarColumn(Column column) {
       final type = context.typeOf(column).type;
       final driftType = driver.typeMapping.sqlTypeToDrift(type);
       AppliedTypeConverter? converter;
@@ -225,23 +233,52 @@ class QueryAnalyzer {
         converter = (type!.hint as TypeConverterHint).converter;
       }
 
-      columns.add(ResultColumn(column.name, driftType, type?.nullable ?? true,
+      columns.add(ScalarResultColumn(
+          column.name, driftType, type?.nullable ?? true,
           typeConverter: converter, sqlParserColumn: column));
 
       final resultSet = _resultSetOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != resultSet);
     }
 
-    final nestedResults = _findNestedResultTables(queryContext);
-    if (nestedResults.isNotEmpty) {
-      // The single table optimization doesn't make sense when nested result
-      // sets are present.
-      candidatesForSingleTable.clear();
+    // We prefer to extract the result set from syntactic columns, as this gives
+    // us the opportunity to get the ordering between "scalar" result columns
+    // and nested result sets right. We might not have a syntactic source
+    // though (for instance if a top-level `VALUES` select is used), so we
+    // fall-back to the resolved schema columns if necessary.
+    if (syntacticColumns == null) {
+      rawColumns.forEach(handleScalarColumn);
+    } else {
+      for (final column in syntacticColumns) {
+        final resolvedColumns = column.resolvedColumns;
+
+        if (column is NestedStarResultColumn) {
+          final resolved = _resolveNestedResultTable(queryContext, column);
+          if (resolved != null) {
+            // The single table optimization doesn't make sense when nested result
+            // sets are present.
+            candidatesForSingleTable.clear();
+            columns.add(resolved);
+          }
+        } else if (column is NestedQueryColumn) {
+          candidatesForSingleTable.clear();
+          columns.add(_resolveNestedResultQuery(queryContext, column));
+        } else {
+          if (resolvedColumns == null) continue;
+
+          // "Regular" column that either is or expands to a list of scalar
+          // result columns.
+          for (final column in resolvedColumns) {
+            handleScalarColumn(column);
+          }
+        }
+      }
     }
 
     // if all columns read from the same table, and all columns in that table
     // are present in the result set, we can use the data class we generate for
     // that table instead of generating another class just for this result set.
+
     if (candidatesForSingleTable.length == 1) {
       final table = candidatesForSingleTable.single;
       final driftTable =
@@ -268,7 +305,7 @@ class QueryAnalyzer {
           // it is! Remember the correct getter name from the data class for
           // later when we write the mapping code.
           final columnIndex = rawColumns.indexOf(inResultSet.single);
-          final resultColumn = columns[columnIndex];
+          final resultColumn = columns[columnIndex] as ScalarResultColumn;
 
           resultEntryToColumn[resultColumn] = column.nameInDart;
           resultColumnNameToDrift[resultColumn.name] = column;
@@ -295,73 +332,75 @@ class QueryAnalyzer {
     return InferredResultSet(
       null,
       columns,
-      nestedResults: nestedResults,
       resultClassName: queryContext.requestedResultClass,
     );
   }
 
-  List<NestedResult> _findNestedResultTables(
-      _QueryHandlerContext queryContext) {
-    // We don't currently support nested results for compound statements
-    if (queryContext.root is! SelectStatement) return const [];
-    final query = queryContext.root as SelectStatement;
-
-    final nestedTables = <NestedResult>[];
-    final analysis = JoinModel.of(query);
-
-    for (final column in query.columns) {
-      if (column is NestedStarResultColumn) {
-        final originalResult = column.resultSet;
-        final result = originalResult?.unalias();
-        if (result is! Table && result is! View) continue;
-
-        final driftTable = _lookupReference<DriftElementWithResultSet>(
-            (result as NamedResultSet).name);
-        final isNullable =
-            analysis == null || analysis.isNullableTable(originalResult!);
-        nestedTables.add(NestedResultTable(
-          column,
-          column.as ?? column.tableName,
-          driftTable,
-          isNullable: isNullable,
-        ));
-      } else if (column is NestedQueryColumn) {
-        final childScope = queryContext.nestedScope?.nestedQueries[column];
-
-        final foundElements = _extractElements(
-          ctx: context,
-          root: column.select,
-          required: requiredVariables,
-          nestedScope: childScope,
-        );
-        _verifyNoSkippedIndexes(foundElements);
-
-        final queryIndex = nestedQueryCounter++;
-
-        final name = 'nested_query_$queryIndex';
-        column.queryName = name;
-
-        var resultClassName = ReCase(queryContext.queryName).pascalCase;
-        if (column.as != null) {
-          resultClassName += ReCase(column.as!).pascalCase;
-        } else {
-          resultClassName += 'NestedQuery$queryIndex';
-        }
-
-        nestedTables.add(NestedResultQuery(
-          from: column,
-          query: _handleSelect(_QueryHandlerContext(
-            queryName: name,
-            requestedResultClass: resultClassName,
-            root: column.select,
-            foundElements: foundElements,
-            nestedScope: childScope,
-          )),
-        ));
-      }
+  /// Resolves a "nested star" column.
+  ///
+  /// Nested star columns refer to an existing result set, but instructs drift
+  /// that this result set should be handled as a nested type in Dart. For an
+  /// example, see https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results
+  NestedResultTable? _resolveNestedResultTable(
+      _QueryHandlerContext queryContext, NestedStarResultColumn column) {
+    final originalResult = column.resultSet;
+    final result = originalResult?.unalias();
+    if (result is! Table && result is! View) {
+      return null;
     }
 
-    return nestedTables;
+    final driftTable = _lookupReference<DriftElementWithResultSet>(
+        (result as NamedResultSet).name);
+    final analysis = JoinModel.of(column);
+    final isNullable =
+        analysis == null || analysis.isNullableTable(originalResult!);
+    return NestedResultTable(
+      column,
+      column.as ?? column.tableName,
+      driftTable,
+      isNullable: isNullable,
+    );
+  }
+
+  /// Resolves a `LIST` result column.
+  ///
+  /// The `LIST` macro allows defining a subquery whose results should be
+  /// exposed as a Dart list.
+  /// For an example, see https://drift.simonbinder.eu/docs/using-sql/drift_files/#list-subqueries
+  NestedResultQuery _resolveNestedResultQuery(
+      _QueryHandlerContext queryContext, NestedQueryColumn column) {
+    final childScope = queryContext.nestedScope?.nestedQueries[column];
+
+    final foundElements = _extractElements(
+      ctx: context,
+      root: column.select,
+      required: requiredVariables,
+      nestedScope: childScope,
+    );
+    _verifyNoSkippedIndexes(foundElements);
+
+    final queryIndex = nestedQueryCounter++;
+
+    final name = 'nested_query_$queryIndex';
+    column.queryName = name;
+
+    var resultClassName = ReCase(queryContext.queryName).pascalCase;
+    if (column.as != null) {
+      resultClassName += ReCase(column.as!).pascalCase;
+    } else {
+      resultClassName += 'NestedQuery$queryIndex';
+    }
+
+    return NestedResultQuery(
+      from: column,
+      query: _handleSelect(_QueryHandlerContext(
+        queryName: name,
+        requestedResultClass: resultClassName,
+        root: column.select,
+        foundElements: foundElements,
+        nestedScope: childScope,
+      )),
+    );
   }
 
   Column? _toTableOrViewColumn(Column? c) {
