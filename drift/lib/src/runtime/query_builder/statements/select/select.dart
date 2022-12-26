@@ -175,7 +175,8 @@ class TypedResult {
   /// [table].
   ///
   /// See also: [readTable], which throws instead of returning `null`.
-  D? readTableOrNull<T extends Table, D>(TableInfo<T, D> table) {
+  D? readTableOrNull<T extends HasResultSet, D>(
+      ResultSetImplementation<T, D> table) {
     return _parsedData[table] as D?;
   }
 
