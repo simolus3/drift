@@ -9,6 +9,13 @@ extension StringExpressionOperators on Expression<String> {
     return _LikeOperator(this, Variable.withString(regex));
   }
 
+  /// Whether this column matches the given expression. For details on what patters
+  /// are valid and how they are interpreted, check out
+  /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
+  Expression<bool> likeExp(Expression<String> regex) {
+    return _LikeOperator(this, regex);
+  }
+
   /// Matches this string against the regular expression in [regex].
   ///
   /// The [multiLine], [caseSensitive], [unicode] and [dotAll] parameters

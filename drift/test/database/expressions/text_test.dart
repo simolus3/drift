@@ -1,20 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
-import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
   const expression =
       CustomExpression<String>('col', precedence: Precedence.primary);
-  final db = TodoDb();
 
   test('generates like expressions', () {
-    final ctx = GenerationContext.fromDb(db);
-    expression.like('pattern').writeInto(ctx);
-
-    expect(ctx.sql, 'col LIKE ?');
-    expect(ctx.boundVariables, ['pattern']);
+    expect(expression.like('pattern'), generates('col LIKE ?', ['pattern']));
+    expect(expression.likeExp(expression), generates('col LIKE col'));
   });
 
   test('generates regexp expressions', () {

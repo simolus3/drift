@@ -6,6 +6,7 @@
   which tables are affected by the custom statement.
 - For `STRICT` tables in drift files declaring a `ANY` column, drift will now
   generate a mapping to the new `DriftAny` type.
+- Add `likeExp` to generate `LIKE` expression with any comparison expression.
 - Fix `UNIQUE` keys declared in drift files being written twice.
 - Fix `customConstraints` not appearing in dumped database schema files.
 - Work-around an issue causing complex migrations via `Migrator.alterTable` not to
