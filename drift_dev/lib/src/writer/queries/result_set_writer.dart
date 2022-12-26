@@ -42,7 +42,8 @@ class ResultSetWriter {
       } else if (column is NestedResultTable) {
         into
           ..write('$modifier ')
-          ..writeDart(column.resultRowType(scope))
+          ..writeDart(
+              AnnotatedDartCode.build((b) => b.addTypeOfNestedResult(column)))
           ..write(column.isNullable ? '? ' : ' ')
           ..writeln('$fieldName;');
 
@@ -55,7 +56,8 @@ class ResultSetWriter {
 
         into
           ..write('$modifier ')
-          ..writeDart(column.resultRowType(scope))
+          ..writeDart(
+              AnnotatedDartCode.build((b) => b.addTypeOfNestedResult(column)))
           ..writeln('$fieldName;');
 
         fields.add(EqualityField(fieldName));

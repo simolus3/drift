@@ -17,6 +17,7 @@ class FileAnalyzer {
 
   Future<FileAnalysisResult> runAnalysisOn(FileState state) async {
     final result = FileAnalysisResult();
+    final knownTypes = await driver.loadKnownTypes();
 
     if (state.extension == '.dart') {
       for (final elementAnalysis in state.analysis.values) {
@@ -55,8 +56,8 @@ class FileAnalyzer {
                 driver.typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
 
-            final analyzer =
-                QueryAnalyzer(context, driver, references: availableElements);
+            final analyzer = QueryAnalyzer(context, driver,
+                knownTypes: knownTypes, references: availableElements);
             queries[query.name] = analyzer.analyze(query);
 
             for (final error in analyzer.lints) {
@@ -95,6 +96,7 @@ class FileAnalyzer {
               stmtOptions: options.options);
 
           final analyzer = QueryAnalyzer(analysisResult, driver,
+              knownTypes: knownTypes,
               references: element.references,
               requiredVariables: options.variables);
 

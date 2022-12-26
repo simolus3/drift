@@ -56,13 +56,8 @@ abstract class _NodeOrWriter {
   Writer get writer;
 
   AnnotatedDartCode generatedElement(DriftElement element, String dartName) {
-    if (writer.generationOptions.isModular) {
-      return AnnotatedDartCode([
-        DartTopLevelSymbol(dartName, element.id.modularImportUri),
-      ]);
-    } else {
-      return AnnotatedDartCode([dartName]);
-    }
+    return AnnotatedDartCode.build(
+        (b) => b.addGeneratedElement(element, dartName));
   }
 
   AnnotatedDartCode modularAccessor(Uri driftFile) {
@@ -87,12 +82,7 @@ abstract class _NodeOrWriter {
   }
 
   AnnotatedDartCode rowType(DriftElementWithResultSet element) {
-    final existing = element.existingRowClass;
-    if (existing != null && !existing.isRecord) {
-      return existing.targetType;
-    } else {
-      return generatedElement(element, element.nameOfRowClass);
-    }
+    return AnnotatedDartCode.build((b) => b.addElementRowType(element));
   }
 
   AnnotatedDartCode rowClass(DriftElementWithResultSet element) {
@@ -149,33 +139,7 @@ abstract class _NodeOrWriter {
   }
 
   AnnotatedDartCode dartType(HasType hasType) {
-    AnnotatedDartCode nonListType() {
-      final converter = hasType.typeConverter;
-      if (converter != null) {
-        final nullable = converter.canBeSkippedForNulls && hasType.nullable;
-
-        return AnnotatedDartCode([
-          ...AnnotatedDartCode.type(converter.dartType).elements,
-          if (nullable) '?',
-        ]);
-      } else {
-        return AnnotatedDartCode([
-          dartTypeNames[hasType.sqlType],
-          if (hasType.nullable) '?',
-        ]);
-      }
-    }
-
-    if (hasType.isArray) {
-      return AnnotatedDartCode([
-        DartTopLevelSymbol.list,
-        '<',
-        ...nonListType().elements,
-        '>',
-      ]);
-    } else {
-      return nonListType();
-    }
+    return AnnotatedDartCode.build((b) => b.addDriftType(hasType));
   }
 
   /// The Dart type that matches the type of this column, ignoring type

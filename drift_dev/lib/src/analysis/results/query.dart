@@ -378,6 +378,10 @@ class InferredResultSet {
   /// it hasn't explicitly been set.
   final String? resultClassName;
 
+  /// If specified, an existing user-defined Dart type to use instead of
+  /// generating another class for the result of this query.
+  final ExistingQueryRowType? existingRowType;
+
   /// Explicitly controls that no result class should be generated for this
   /// result set.
   ///
@@ -389,6 +393,7 @@ class InferredResultSet {
     this.matchingTable,
     this.columns, {
     this.resultClassName,
+    this.existingRowType,
     this.dontGenerateResultClass = false,
   });
 
@@ -404,6 +409,7 @@ class InferredResultSet {
   /// We always need to generate a class if the query contains nested results.
   bool get needsOwnClass {
     return matchingTable == null &&
+        existingRowType == null &&
         (scalarColumns.length > 1 || nestedResults.isNotEmpty) &&
         !dontGenerateResultClass;
   }
@@ -452,6 +458,21 @@ class InferredResultSet {
     const columnsEquality = UnorderedIterableEquality(_ResultColumnEquality());
     return columnsEquality.equals(columns, other.columns);
   }
+}
+
+class ExistingQueryRowType {
+  final AnnotatedDartCode? rowType;
+  final bool isRecord;
+
+  final List<ResultColumn> positionalArguments;
+  final Map<String, ResultColumn> namedArguments;
+
+  ExistingQueryRowType({
+    required this.rowType,
+    required this.positionalArguments,
+    required this.namedArguments,
+    this.isRecord = false,
+  });
 }
 
 /// Information about a matching table. A table matches a query if a query

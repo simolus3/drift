@@ -46,4 +46,28 @@ foo WITH MyRow: SELECT 'hello world', 2;
           .withSpan('WITH MyRow')
     ]);
   });
+
+  test('resolves existing row class', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'a.dart';
+
+foo WITH MyRow: SELECT 'hello world' AS a, 2 AS b;
+''',
+      'a|lib/a.dart': '''
+class MyRow {
+  final String a;
+  final int b;
+
+  MyRow(this.a, this.b);
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final query = file.fileAnalysis!.resolvedQueries.values.single;
+    expect(query.resultSet?.existingRowType, isA<ExistingQueryRowType>());
+  });
 }

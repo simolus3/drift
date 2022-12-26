@@ -8,6 +8,12 @@ import 'package:analyzer/dart/element/type_visitor.dart';
 import 'package:build/build.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../options.dart';
+import 'element.dart';
+import 'query.dart';
+import 'result_sets.dart';
+import 'types.dart';
+
 part '../../generated/analysis/results/dart.g.dart';
 
 class AnnotatedDartCode {
@@ -118,6 +124,77 @@ class AnnotatedDartCodeBuilder {
   void addAstNode(AstNode node, {Set<AstNode> exclude = const {}}) {
     final visitor = _AddFromAst(this, exclude);
     node.accept(visitor);
+  }
+
+  /// Writes the Dart type of a drift column.
+  void addDriftType(HasType hasType) {
+    void addNonListType() {
+      final converter = hasType.typeConverter;
+      if (converter != null) {
+        final nullable = converter.canBeSkippedForNulls && hasType.nullable;
+
+        addDartType(converter.dartType);
+        if (nullable) addText('?');
+      } else {
+        addTopLevel(dartTypeNames[hasType.sqlType]!);
+        if (hasType.nullable) addText('?');
+      }
+    }
+
+    if (hasType.isArray) {
+      addSymbol('List', AnnotatedDartCode.dartCore);
+      addText('<');
+      addNonListType();
+      addText('>');
+    } else {
+      addNonListType();
+    }
+  }
+
+  void addGeneratedElement(DriftElement element, String dartName) {
+    addSymbol(dartName, element.id.modularImportUri);
+  }
+
+  /// Writes the row type used to represent a row in [element], which is either
+  /// a table or a view.
+  void addElementRowType(DriftElementWithResultSet element) {
+    final existing = element.existingRowClass;
+    if (existing != null && !existing.isRecord) {
+      addCode(existing.targetType);
+    } else {
+      addGeneratedElement(element, element.nameOfRowClass);
+    }
+  }
+
+  void addQueryResultRowType(SqlQuery query) {
+    final resultSet = query.resultSet;
+    if (resultSet == null) {
+      throw ArgumentError(
+          'This query (${query.name}) does not have a result set');
+    }
+
+    if (resultSet.matchingTable != null) {
+      return addElementRowType(resultSet.matchingTable!.table);
+    }
+
+    if (resultSet.singleColumn) {
+      return addDriftType(resultSet.scalarColumns.single);
+    }
+
+    return addText(query.resultClassName);
+  }
+
+  void addTypeOfNestedResult(NestedResult nested) {
+    if (nested is NestedResultTable) {
+      return addElementRowType(nested.table);
+    } else if (nested is NestedResultQuery) {
+      addSymbol('List', AnnotatedDartCode.dartCore);
+      addText('<');
+      addQueryResultRowType(nested.query);
+      addText('>');
+    } else {
+      throw ArgumentError.value(nested, 'nested', 'Unknown nested type');
+    }
   }
 
   AnnotatedDartCode build() {

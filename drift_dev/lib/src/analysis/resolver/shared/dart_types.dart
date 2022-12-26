@@ -189,7 +189,7 @@ ExistingRowClass validateRowClassFromRecordType(
     if (column != null) {
       namedColumns[parameter.name] = column.nameInSql;
 
-      _checkType(
+      checkType(
         column.sqlType,
         column.nullable,
         column.typeConverter,
@@ -236,19 +236,10 @@ ExistingRowClass defaultRecordRowClass({
       if (i != 0) builder.addText(', ');
 
       final column = columns[i];
-      final typeConverter = column.typeConverter;
 
-      if (typeConverter != null) {
-        builder.addDartType(typeConverter.dartType);
-        if (typeConverter.canBeSkippedForNulls && column.nullable) {
-          builder.addText('?');
-        }
-      } else {
-        builder.addTopLevel(dartTypeNames[column.sqlType]!);
-        if (column.nullable) builder.addText('?');
-      }
-
-      builder.addText(' ${column.nameInDart}');
+      builder
+        ..addDriftType(column)
+        ..addText(' ${column.nameInDart}');
     }
 
     builder.addText('})');
@@ -316,7 +307,7 @@ AppliedTypeConverter? readTypeConverter(
     }
   }
 
-  _checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
+  checkType(columnType, columnIsNullable, null, sqlType, library.typeProvider,
       library.typeSystem, helper, reportError);
 
   return AppliedTypeConverter(
@@ -403,7 +394,7 @@ void _checkParameterType(
     return;
   }
 
-  _checkType(
+  checkType(
     column.sqlType,
     column.nullable,
     column.typeConverter,
@@ -415,7 +406,7 @@ void _checkParameterType(
   );
 }
 
-void _checkType(
+void checkType(
   DriftSqlType columnType,
   bool columnIsNullable,
   AppliedTypeConverter? typeConverter,

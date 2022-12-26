@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift/drift.dart' as drift;
 import 'package:recase/recase.dart';
@@ -6,9 +7,11 @@ import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 import '../../driver/driver.dart';
+import '../dart/helper.dart';
 import '../drift/sqlparser/drift_lints.dart';
 import '../drift/sqlparser/mapping.dart';
 import '../../results/results.dart';
+import 'existing_row_class.dart';
 import 'nested_queries.dart';
 import 'required_variables.dart';
 
@@ -20,6 +23,7 @@ class _QueryHandlerContext {
   final NestedQueriesContainer? nestedScope;
   final String queryName;
   final String? requestedResultClass;
+  final DartType? requestedResultType;
 
   _QueryHandlerContext({
     required List<FoundElement> foundElements,
@@ -27,6 +31,7 @@ class _QueryHandlerContext {
     required this.queryName,
     required this.nestedScope,
     this.requestedResultClass,
+    this.requestedResultType,
   }) : foundElements = List.unmodifiable(foundElements);
 }
 
@@ -36,6 +41,7 @@ class _QueryHandlerContext {
 class QueryAnalyzer {
   final AnalysisContext context;
   final DriftAnalysisDriver driver;
+  final KnownDriftTypes knownTypes;
   final RequiredVariables requiredVariables;
   final Map<String, DriftElement> referencesByName;
 
@@ -54,6 +60,7 @@ class QueryAnalyzer {
   QueryAnalyzer(
     this.context,
     this.driver, {
+    required this.knownTypes,
     required List<DriftElement> references,
     this.requiredVariables = RequiredVariables.empty,
   }) : referencesByName = {
@@ -81,17 +88,18 @@ class QueryAnalyzer {
     );
     _verifyNoSkippedIndexes(foundElements);
 
-    final String? requestedResultClass;
+    String? requestedResultClass;
+    DartType? requestedResultType;
     if (declaration is DefinedSqlQuery) {
       requestedResultClass = declaration.resultClassName;
-    } else {
-      requestedResultClass = null;
+      requestedResultType = declaration.existingDartType;
     }
 
     final query = _mapToDrift(_QueryHandlerContext(
       foundElements: foundElements,
       queryName: declaration.name,
       requestedResultClass: requestedResultClass,
+      requestedResultType: requestedResultType,
       root: context.root,
       nestedScope: nestedScope,
     ));
@@ -329,11 +337,28 @@ class QueryAnalyzer {
       }
     }
 
-    return InferredResultSet(
+    var resultSet = InferredResultSet(
       null,
       columns,
       resultClassName: queryContext.requestedResultClass,
     );
+
+    if (queryContext.requestedResultType != null) {
+      resultSet = applyExistingType(
+        resultSet,
+        queryContext.requestedResultType!,
+        knownTypes,
+        (message) {
+          lints.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: message,
+            relevantNode: queryContext.root,
+          ));
+        },
+      );
+    }
+
+    return resultSet;
   }
 
   /// Resolves a "nested star" column.

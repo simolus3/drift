@@ -181,7 +181,7 @@ class QueryWriter {
       builder
         ..addSymbol('Selectable', AnnotatedDartCode.drift)
         ..addText('<')
-        ..addCode(select.resultRowType(scope))
+        ..addQueryResultRowType(select)
         ..addText('>');
     });
 
@@ -221,7 +221,7 @@ class QueryWriter {
         ..addText('<')
         ..addSymbol('List', AnnotatedDartCode.dartCore)
         ..addText('<')
-        ..addCode(update.resultRowType(scope))
+        ..addQueryResultRowType(update)
         ..addText('>>');
     });
 
