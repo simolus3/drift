@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:collection/collection.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -48,18 +49,36 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     return null;
   }
 
-  Future<FoundDartClass?> findDartClass(String identifier) async {
-    final foundElement = await _findInDart(identifier);
-    if (foundElement is InterfaceElement) {
-      return FoundDartClass(foundElement, null);
-    } else if (foundElement is TypeAliasElement) {
-      final innerType = foundElement.aliasedType;
-      if (innerType is InterfaceType) {
-        return FoundDartClass(innerType.element, innerType.typeArguments);
-      }
-    }
+  /// Resolves [identifier] to a Dart element declaring a type, or reports an
+  /// error if this is not possible.
+  ///
+  /// The [syntacticSource] will be the base for the error's span.
+  Future<DartType?> findDartTypeOrReportError(
+      String identifier, SyntacticEntity syntacticSource) async {
+    final element = await _findInDart(identifier);
 
-    return null;
+    if (element == null) {
+      reportError(
+        DriftAnalysisError.inDriftFile(syntacticSource,
+            'Could not find `$identifier`, are you missing an import?'),
+      );
+      return null;
+    } else if (element is InterfaceElement) {
+      final library = element.library;
+      return library.typeSystem.instantiateInterfaceToBounds(
+          element: element, nullabilitySuffix: NullabilitySuffix.none);
+    } else if (element is TypeAliasElement) {
+      final library = element.library;
+      return library.typeSystem.instantiateTypeAliasToBounds(
+          element: element, nullabilitySuffix: NullabilitySuffix.none);
+    } else {
+      reportError(DriftAnalysisError.inDriftFile(
+        syntacticSource,
+        '`$identifier` does not refer to anything defining a type. Expected '
+        'a class, a mixin, an interface or a typedef.',
+      ));
+      return null;
+    }
   }
 
   /// Attempts to find a matching [ExistingRowClass] for a [DriftTableName]

@@ -448,11 +448,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
         symbol(')');
       }
 
-      if (e.as != null) {
-        _keyword(TokenType.as);
-        identifier(e.as!);
-      }
-
+      visitNullable(e.as, arg);
       symbol(':', spaceAfter: true);
       visit(e.statement, arg);
       symbol(';');

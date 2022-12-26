@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
 import 'package:recase/recase.dart';
@@ -31,7 +32,18 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
   /// The unmodified source of the declared SQL statement forming this query.
   final String sql;
 
+  /// The overriden name of a result class that drift should generate for this
+  /// query.
+  ///
+  /// When multiple queries share the same result class name, drift will verify
+  /// that this is possible and map all these queries into the same generated
+  /// class.
   final String? resultClassName;
+
+  /// The existing Dart type into which a result row of this query should be
+  /// mapped.
+  final DartType? existingDartType;
+
   final QueryMode mode;
 
   /// The offset of [sql] in the source file, used to properly report errors
@@ -51,6 +63,7 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
     required this.sql,
     required this.sqlOffset,
     this.resultClassName,
+    this.existingDartType,
     this.mode = QueryMode.regular,
   });
 }

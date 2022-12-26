@@ -111,7 +111,7 @@ void main() {
             ],
             from: TableReference('tbl', as: 'foo'),
           ),
-          as: 'MyResultSet',
+          as: DriftTableName('MyResultSet', false),
         ),
         DeclaredStatement(
           SimpleName('add'),
@@ -235,5 +235,24 @@ CREATE INDEX x ON foo (a);
 ''');
 
     expect(result.errors, isEmpty);
+  });
+
+  test('declared statements can use existing classes syntax', () {
+    testDriftFile(
+      'foo WITH ExistingDartClass: SELECT 1;',
+      DriftFile([
+        DeclaredStatement(
+          SimpleName('foo'),
+          as: DriftTableName('ExistingDartClass', true),
+          SelectStatement(
+            columns: [
+              ExpressionResultColumn(
+                expression: NumericLiteral(1, token(TokenType.numberLiteral)),
+              ),
+            ],
+          ),
+        ),
+      ]),
+    );
   });
 }

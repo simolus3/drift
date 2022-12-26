@@ -61,19 +61,14 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
           typeName != null ? _enumRegex.firstMatch(typeName) : null;
       if (enumIndexMatch != null) {
         final dartTypeName = enumIndexMatch.group(2)!;
-        final dartClass = await findDartClass(dartTypeName);
+        final dartType = await findDartTypeOrReportError(
+            dartTypeName, column.definition?.typeNames?.toSingleEntity ?? stmt);
 
-        if (dartClass == null) {
-          reportError(DriftAnalysisError.inDriftFile(
-            column.definition!.typeNames!.toSingleEntity,
-            'Type $dartTypeName could not be found. Are you missing '
-            'an import?',
-          ));
-        } else {
+        if (dartType != null) {
           converter = readEnumConverter(
             (msg) => reportError(
                 DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg)),
-            dartClass.classElement.thisType,
+            dartType,
             type == DriftSqlType.int ? EnumType.intEnum : EnumType.textEnum,
             await resolver.driver.loadKnownTypes(),
           );

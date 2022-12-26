@@ -431,7 +431,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
 
   void visitDriftDeclaredStatement(DeclaredStatement e, void arg) {
     final current = _currentAs<DeclaredStatement>(e);
-    _assert(current.identifier == e.identifier && current.as == e.as, e);
+    _assert(current.identifier == e.identifier, e);
     _checkChildren(e);
   }
 

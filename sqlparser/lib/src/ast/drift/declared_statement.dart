@@ -15,7 +15,7 @@ class DeclaredStatement extends Statement implements PartOfDriftFile {
   List<StatementParameter> parameters;
 
   /// The desired result class name, if set.
-  final String? as;
+  DriftTableName? as;
 
   Token? colon;
 
@@ -36,10 +36,12 @@ class DeclaredStatement extends Statement implements PartOfDriftFile {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     statement = transformer.transformChild(statement, this, arg);
     parameters = transformer.transformChildren(parameters, this, arg);
+    as = transformer.transformNullableChild(as, this, arg);
   }
 
   @override
-  Iterable<AstNode> get childNodes => [statement, ...parameters];
+  Iterable<AstNode> get childNodes =>
+      [statement, ...parameters, if (as != null) as!];
 }
 
 /// How a statement was declared in a drift file.

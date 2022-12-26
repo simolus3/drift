@@ -9,6 +9,8 @@
 - Add `likeExp` to generate `LIKE` expression with any comparison expression.
 - Fix `UNIQUE` keys declared in drift files being written twice.
 - Fix `customConstraints` not appearing in dumped database schema files.
+- Lazily load columns in `TypedResult.read`, increasing performance for joins
+  with lots of tables or columns.
 - Work-around an issue causing complex migrations via `Migrator.alterTable` not to
   work if a view referenced the altered table.
 

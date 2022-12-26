@@ -324,10 +324,7 @@ class Parser {
       _consume(TokenType.rightParen, 'Expected closing parenthesis');
     }
 
-    String? as;
-    if (_matchOne(TokenType.as)) {
-      as = _consumeIdentifier('Expected a name of the result class').identifier;
-    }
+    final as = _driftTableName();
 
     final colon = _consume(
         TokenType.colon,

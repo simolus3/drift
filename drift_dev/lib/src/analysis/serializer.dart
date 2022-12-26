@@ -68,6 +68,7 @@ class ElementSerializer {
         'sql': element.sql,
         'offset': element.sqlOffset,
         'result_class': element.resultClassName,
+        'eixsting_type': _serializeType(element.existingDartType),
         'mode': element.mode.name,
       };
     } else if (element is DriftTrigger) {
@@ -496,6 +497,8 @@ class ElementDeserializer {
           createStmt: json['sql'] as String,
         );
       case 'query':
+        final rawExistingType = json['eixsting_type'];
+
         return DefinedSqlQuery(
           id,
           declaration,
@@ -503,6 +506,9 @@ class ElementDeserializer {
           sql: json['sql'] as String,
           sqlOffset: json['offset'] as int,
           resultClassName: json['result_class'] as String?,
+          existingDartType: rawExistingType != null
+              ? await _readDartType(id.libraryUri, rawExistingType as int)
+              : null,
           mode: QueryMode.values.byName(json['mode'] as String),
         );
       case 'trigger':
