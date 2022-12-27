@@ -77,34 +77,24 @@ class QueryWriter {
   void _writeMappingLambda(SqlQuery query) {
     final resultSet = query.resultSet!;
     final queryRow = _emitter.drift('QueryRow');
+    final existingRowType = resultSet.existingRowType;
 
-    if (resultSet.singleColumn) {
+    if (existingRowType != null) {
+      _emitter.write('($queryRow row) async => ');
+      _writeArgumentExpression(existingRowType, resultSet);
+    } else if (resultSet.singleColumn) {
       final column = resultSet.scalarColumns.single;
-      _buffer.write('($queryRow row) => '
-          '${readingCode(column, scope.generationOptions, options)}');
+      _emitter.write('($queryRow row) => ');
+      _readScalar(column);
     } else if (resultSet.matchingTable != null) {
-      // note that, even if the result set has a matching table, we can't just
-      // use the mapFromRow() function of that table - the column names might
-      // be different!
       final match = resultSet.matchingTable!;
-      final table = match.table;
 
       if (match.effectivelyNoAlias) {
-        _buffer.write('${table.dbGetterName}.mapFromRow');
+        // Tear-off mapFromRow method on table
+        _emitter.write('${match.table.dbGetterName}.mapFromRow');
       } else {
-        _buffer
-          ..write('($queryRow row) => ')
-          ..write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
-
-        for (final alias in match.aliasToColumn.entries) {
-          _buffer
-            ..write(asDartLiteral(alias.key))
-            ..write(': ')
-            ..write(asDartLiteral(alias.value.nameInSql))
-            ..write(', ');
-        }
-
-        _buffer.write('})');
+        _emitter.write('($queryRow row) => ');
+        _writeArgumentExpression(match, resultSet);
       }
     } else {
       _buffer.write('($queryRow row) ');
@@ -121,19 +111,16 @@ class QueryWriter {
         final fieldName = resultSet.dartNameFor(column);
 
         if (column is ScalarResultColumn) {
-          _buffer.write('$fieldName: '
-              '${readingCode(column, scope.generationOptions, options)},');
+          _buffer.write('$fieldName: ');
+          _readScalar(column);
+          _buffer.write(', ');
         } else if (column is NestedResultTable) {
           final prefix = resultSet.nestedPrefixFor(column);
           if (prefix == null) continue;
 
-          final tableGetter = column.table.dbGetterName;
-
-          final mappingMethod =
-              column.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
-
-          _buffer.write('$fieldName: await $tableGetter.$mappingMethod(row, '
-              'tablePrefix: ${asDartLiteral(prefix)}),');
+          _buffer.write('$fieldName: ');
+          _readNestedTable(column, prefix);
+          _buffer.write(',');
         } else if (column is NestedResultQuery) {
           _buffer.write('$fieldName: await ');
           _writeCustomSelectStatement(column.query);
@@ -145,11 +132,57 @@ class QueryWriter {
     }
   }
 
-  /// Returns Dart code that, given a variable of type `QueryRow` named `row`
+  /// Writes code that will read the [argument] for an existing row type from
+  /// the raw `QueryRow`.
+  void _writeArgumentExpression(
+      ArgumentForExistingQueryRowType argument, InferredResultSet resultSet) {
+    if (argument is MappedNestedListQuery) {
+      final queryRow = _emitter.drift('QueryRow');
+
+      _buffer.write('await ');
+      _writeCustomSelectStatement(argument.column.query,
+          includeMappingToDart: false);
+      _buffer.write('.map(');
+      _buffer.write('($queryRow row) => ');
+      _writeArgumentExpression(argument.nestedType, resultSet);
+      _buffer.write(').get()');
+    } else if (argument is ExistingQueryRowType) {
+      final singleValue = argument.singleValue;
+      if (singleValue != null) {
+        return _writeArgumentExpression(singleValue, resultSet);
+      }
+
+      if (!argument.isRecord) {
+        // We're writing a constructor, so let's start with the class name.
+        _emitter.writeDart(argument.rowType);
+      }
+
+      _buffer.write('(');
+      for (final positional in argument.positionalArguments) {
+        _writeArgumentExpression(positional, resultSet);
+        _buffer.write(', ');
+      }
+      argument.namedArguments.forEach((name, parameter) {
+        _buffer.write('$name: ');
+        _writeArgumentExpression(parameter, resultSet);
+        _buffer.write(', ');
+      });
+
+      _buffer.write(')');
+    } else if (argument is NestedResultTable) {
+      final prefix = resultSet.nestedPrefixFor(argument);
+      _readNestedTable(argument, prefix!);
+    } else if (argument is ScalarResultColumn) {
+      return _readScalar(argument);
+    } else if (argument is MatchingDriftTable) {
+      _readMatchingTable(argument);
+    }
+  }
+
+  /// Writes Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  String readingCode(ScalarResultColumn column,
-      GenerationOptions generationOptions, DriftOptions moorOptions) {
+  void _readScalar(ScalarResultColumn column) {
     final specialName = _transformer.newNameFor(column.sqlParserColumn!);
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
@@ -165,13 +198,44 @@ class QueryWriter {
         // nullable in SQL => just map null to null and only invoke the type
         // converter for non-null values.
         code = 'NullAwareTypeConverter.wrapFromSql'
-            '(${_converter(_emitter, converter)}, $code)';
+            '(${readConverter(_emitter, converter)}, $code)';
       } else {
         // Just apply the type converter directly.
-        code = '${_converter(_emitter, converter)}.fromSql($code)';
+        code = '${readConverter(_emitter, converter)}.fromSql($code)';
       }
     }
-    return code;
+
+    _emitter.write(code);
+  }
+
+  void _readMatchingTable(MatchingDriftTable match) {
+    // note that, even if the result set has a matching table, we can't just
+    // use the mapFromRow() function of that table - the column names might
+    // be different!
+    final table = match.table;
+
+    if (match.effectivelyNoAlias) {
+      _emitter.write('${table.dbGetterName}.mapFromRow(row)');
+    } else {
+      _emitter.write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
+
+      for (final alias in match.aliasToColumn.entries) {
+        _emitter
+          ..write(asDartLiteral(alias.key))
+          ..write(': ')
+          ..write(asDartLiteral(alias.value.nameInSql))
+          ..write(', ');
+      }
+      _emitter.write('})');
+    }
+  }
+
+  void _readNestedTable(NestedResultTable table, String prefix) {
+    final tableGetter = table.table.dbGetterName;
+    final mappingMethod = table.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
+
+    _emitter.write('await $tableGetter.$mappingMethod(row, '
+        'tablePrefix: ${asDartLiteral(prefix)})');
   }
 
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
@@ -199,18 +263,23 @@ class QueryWriter {
     _buffer.write(';\n}\n');
   }
 
-  void _writeCustomSelectStatement(SqlSelectQuery select) {
+  void _writeCustomSelectStatement(SqlSelectQuery select,
+      {bool includeMappingToDart = true}) {
     _buffer.write(' customSelect(${_queryCode(select)}, ');
     _writeVariables(select);
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    if (select.needsAsyncMapping) {
-      _buffer.write(').asyncMap(');
-    } else {
-      _buffer.write(').map(');
+    if (includeMappingToDart) {
+      if (select.needsAsyncMapping) {
+        _buffer.write(').asyncMap(');
+      } else {
+        _buffer.write(').map(');
+      }
+
+      _writeMappingLambda(select);
     }
-    _writeMappingLambda(select);
+
     _buffer.write(')');
   }
 
@@ -428,7 +497,7 @@ class QueryWriter {
 }
 
 /// Returns code to load an instance of the [converter] at runtime.
-String _converter(TextEmitter emitter, AppliedTypeConverter converter) {
+String readConverter(TextEmitter emitter, AppliedTypeConverter converter) {
   return emitter.dartCode(emitter.readConverter(converter));
 }
 
@@ -676,10 +745,10 @@ class _ExpandedVariableWriter {
           final nullAware = _emitter.drift('NullAwareTypeConverter');
 
           buffer.write('$nullAware.wrapToSql('
-              '${_converter(_emitter, element.typeConverter!)}, $dartExpr)');
+              '${readConverter(_emitter, element.typeConverter!)}, $dartExpr)');
         } else {
           buffer.write(
-              '${_converter(_emitter, element.typeConverter!)}.toSql($dartExpr)');
+              '${readConverter(_emitter, element.typeConverter!)}.toSql($dartExpr)');
         }
       } else if (capture != null) {
         buffer.write('row.read(${asDartLiteral(capture.helperColumn)})');

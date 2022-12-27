@@ -1,3 +1,4 @@
+import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/queries/query_writer.dart';
@@ -5,6 +6,7 @@ import 'package:drift_dev/src/writer/writer.dart';
 import 'package:test/test.dart';
 
 import '../../analysis/test_utils.dart';
+import '../../utils.dart';
 
 void main() {
   Future<String> generateForQueryInDriftFile(String driftFile,
@@ -164,5 +166,66 @@ FROM tbl AS parent WHERE parent.a = :a;
         ],
       );
     });
+  });
+
+  test('generates code for custom result classes', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+import 'rows.dart';
+
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+) WITH MyUser;
+
+foo WITH MyRow: SELECT name, otherUser.**, LIST(SELECT id FROM users) as nested
+ FROM users
+  INNER JOIN users otherUser ON otherUser.id = users.id + 1;
+''',
+        'a|lib/rows.dart': '''
+class MyUser {
+  final int id;
+  final String name;
+
+  MyUser({required this.id, required this.name});
+}
+
+class MyRow {
+  final String name;
+  final MyUser otherUser;
+  final List<int> nested;
+
+  MyRow(this.name, {required this.otherUser, required this.nested, String? unused});
+}
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(contains('''
+  i1.Selectable<i0.MyRow> foo() {
+    return customSelect(
+        'SELECT name,"otherUser"."id" AS "nested_0.id", "otherUser"."name" AS "nested_0.name" FROM users INNER JOIN users AS otherUser ON otherUser.id = users.id + 1',
+        variables: [],
+        readsFrom: {
+          users,
+        }).asyncMap((i1.QueryRow row) async => i0.MyRow(
+          row.read<String>('name'),
+          otherUser: await users.mapFromRow(row, tablePrefix: 'nested_0'),
+          nested: await customSelect('SELECT id FROM users',
+              variables: [],
+              readsFrom: {
+                users,
+              }).map((i1.QueryRow row) => row.read<int>('id')).get(),
+        ));
+  }
+'''))
+      },
+      result.dartOutputs,
+      result,
+    );
   });
 }

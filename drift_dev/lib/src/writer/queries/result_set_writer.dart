@@ -2,7 +2,6 @@ import '../../analysis/results/results.dart';
 import '../utils/hash_and_equals.dart';
 import '../utils/override_toString.dart';
 import '../writer.dart';
-import 'utils.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
 class ResultSetWriter {

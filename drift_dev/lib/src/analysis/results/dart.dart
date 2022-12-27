@@ -172,6 +172,10 @@ class AnnotatedDartCodeBuilder {
           'This query (${query.name}) does not have a result set');
     }
 
+    if (resultSet.existingRowType != null) {
+      return addCode(resultSet.existingRowType!.rowType);
+    }
+
     if (resultSet.matchingTable != null) {
       return addElementRowType(resultSet.matchingTable!.table);
     }
