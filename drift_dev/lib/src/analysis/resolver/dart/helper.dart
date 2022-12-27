@@ -1,14 +1,9 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
-// ignore: implementation_imports
-import 'package:analyzer/src/dart/element/type.dart'
-    show
-        RecordTypeImpl,
-        RecordTypeNamedFieldImpl,
-        RecordTypePositionalFieldImpl;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:collection/collection.dart';
 
 import '../../driver/driver.dart';
@@ -239,7 +234,8 @@ class DataClassInformation {
     }
 
     if (useRowClass != null) {
-      final type = useRowClass.getField('type')!.extractType();
+      final typeProvider = element.library.typeProvider;
+      final type = useRowClass.getField('type')!.extractType(typeProvider);
       final constructorInExistingClass =
           useRowClass.getField('constructor')!.toStringValue()!;
       final generateInsertable =
@@ -271,7 +267,7 @@ class DataClassInformation {
 }
 
 extension on DartObject {
-  DartType? extractType() {
+  DartType? extractType(TypeProvider typeProvider) {
     final typeValue = toTypeValue();
     if (typeValue != null) return typeValue;
 
@@ -281,27 +277,26 @@ extension on DartObject {
     final type = this.type;
     if (type != null && type is RecordType) {
       // todo: Use public API after https://dart-review.googlesource.com/c/sdk/+/277401
-      final positionalFields = <RecordTypePositionalFieldImpl>[];
-      final namedFields = <RecordTypeNamedFieldImpl>[];
+      final positionalFields = <DartType>[];
+      final namedFields = <String, DartType>{};
 
       for (var i = 0; i < type.positionalFields.length; i++) {
-        final type = getField('\$$i')?.extractType();
+        final type = getField('\$$i')?.extractType(typeProvider);
         if (type == null) return null;
 
-        positionalFields.add(RecordTypePositionalFieldImpl(type: type));
+        positionalFields.add(type);
       }
 
       for (final named in type.namedFields) {
-        final type = getField(named.name)?.extractType();
+        final type = getField(named.name)?.extractType(typeProvider);
         if (type == null) return null;
 
-        namedFields.add(RecordTypeNamedFieldImpl(type: type, name: named.name));
+        namedFields[named.name] = type;
       }
 
-      return RecordTypeImpl(
-        positionalFields: positionalFields,
-        namedFields: namedFields,
-        nullabilitySuffix: NullabilitySuffix.none,
+      return typeProvider.createRecordType(
+        positional: positionalFields,
+        named: namedFields.entries.toList(),
       );
     }
 

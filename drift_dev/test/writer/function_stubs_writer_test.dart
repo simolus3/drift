@@ -14,10 +14,10 @@ void main() {
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
-@DriftDatabase(include: {'a.drift'})
+@DriftDatabase(include: {'queries.drift'})
 class MyDatabase {}
 ''',
-        'a|lib/a.drift': '''
+        'a|lib/queries.drift': '''
 a: SELECT dart_version(), gcd(13, 15);
 ''',
       },
@@ -39,7 +39,8 @@ sql:
 
     checkOutputs(
       {
-        'a|lib/a.drift.dart': decodedMatches(contains('''
+        'a|lib/a.drift.dart': decodedMatches(
+          contains('''
 extension DefineFunctions on i3.CommonDatabase {
   void defineFunctions({
     required String Function() dartVersion,
@@ -63,7 +64,9 @@ extension DefineFunctions on i3.CommonDatabase {
     );
   }
 }
-''')),
+'''),
+        ),
+        'a|lib/queries.drift.dart': anything,
       },
       writer.dartOutputs,
       writer,

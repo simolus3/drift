@@ -62,7 +62,7 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   entities.removeWhere((name, _) => isInternalElement(name, virtualTableNames));
   backend.contents = entities.values.join('\n');
 
-  final file = await driver.fullyAnalyze(uri);
+  final file = await driver.resolveElements(uri);
   return [
     for (final entry in file.analysis.values)
       if (entry.result != null) entry.result!

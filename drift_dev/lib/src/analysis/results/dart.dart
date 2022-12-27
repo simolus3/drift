@@ -8,7 +8,6 @@ import 'package:analyzer/dart/element/type_visitor.dart';
 import 'package:build/build.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../options.dart';
 import 'element.dart';
 import 'query.dart';
 import 'result_sets.dart';
@@ -160,7 +159,7 @@ class AnnotatedDartCodeBuilder {
   void addElementRowType(DriftElementWithResultSet element) {
     final existing = element.existingRowClass;
     if (existing != null && !existing.isRecord) {
-      addCode(existing.targetType);
+      addDartType(existing.targetType);
     } else {
       addGeneratedElement(element, element.nameOfRowClass);
     }

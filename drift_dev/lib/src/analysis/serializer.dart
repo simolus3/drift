@@ -41,7 +41,9 @@ class ElementSerializer {
         'columns': [
           for (final column in element.columns) _serializeColumn(column),
         ],
-        'existing_data_class': element.existingRowClass?.toJson(),
+        'existing_data_class': element.existingRowClass != null
+            ? _serializeExistingRowClass(element.existingRowClass!)
+            : null,
         'table_constraints': [
           for (final constraint in element.tableConstraints)
             _serializeTableConstraint(constraint),
@@ -114,7 +116,9 @@ class ElementSerializer {
           for (final column in element.columns) _serializeColumn(column),
         ],
         'entity_info_name': element.entityInfoName,
-        'existing_data_class': element.existingRowClass?.toJson(),
+        'existing_data_class': element.existingRowClass != null
+            ? _serializeExistingRowClass(element.existingRowClass!)
+            : null,
         'custom_parent_class': element.customParentClass?.toJson(),
         'name_of_row_class': element.nameOfRowClass,
         'source': serializedSource,
@@ -289,6 +293,18 @@ class ElementSerializer {
     };
   }
 
+  Map<String, Object?> _serializeExistingRowClass(ExistingRowClass existing) {
+    return {
+      'target_class': existing.targetClass?.toJson(),
+      'target_type': _serializeType(existing.targetType),
+      'constructor': existing.constructor,
+      'is_async_factory': existing.isAsyncFactory,
+      'positional': existing.positionalColumns,
+      'named': existing.namedColumns,
+      'generate_insertable': existing.generateInsertable,
+    };
+  }
+
   Map<String, Object?> _serializeElementReference(DriftElement element) {
     return element.id.toJson();
   }
@@ -452,7 +468,8 @@ class ElementDeserializer {
           references: references,
           columns: columns,
           existingRowClass: json['existing_data_class'] != null
-              ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
+              ? await _readExistingRowClass(
+                  id.libraryUri, json['existing_data_class'] as Map)
               : null,
           tableConstraints: [
             for (final constraint in json['table_constraints'])
@@ -579,7 +596,8 @@ class ElementDeserializer {
               : null,
           nameOfRowClass: json['name_of_row_class'] as String,
           existingRowClass: json['existing_data_class'] != null
-              ? ExistingRowClass.fromJson(json['existing_data_class'] as Map)
+              ? await _readExistingRowClass(
+                  id.libraryUri, json['existing_data_class'] as Map)
               : null,
           source: source,
         );
@@ -690,6 +708,21 @@ class ElementDeserializer {
     if (readOwner != null) converter.owningColumn = readOwner;
 
     return converter;
+  }
+
+  Future<ExistingRowClass> _readExistingRowClass(
+      Uri definition, Map json) async {
+    return ExistingRowClass(
+      targetClass: json['target_class'] != null
+          ? AnnotatedDartCode.fromJson(json['target_class']! as Map)
+          : null,
+      targetType: await _readDartType(definition, json['target_type'] as int),
+      constructor: json['constructor'] as String,
+      isAsyncFactory: json['is_async_factory'] as bool,
+      positionalColumns: (json['positional'] as List).cast(),
+      namedColumns: (json['named'] as Map).cast(),
+      generateInsertable: json['generate_insertable'] as bool,
+    );
   }
 
   ReferenceAction? _readAction(String? value) {

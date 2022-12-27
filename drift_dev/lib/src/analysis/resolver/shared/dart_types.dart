@@ -4,6 +4,12 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
+// ignore: implementation_imports
+import 'package:analyzer/src/dart/element/type.dart'
+    show
+        RecordTypeImpl,
+        RecordTypeNamedFieldImpl,
+        RecordTypePositionalFieldImpl;
 import 'package:drift/drift.dart' show DriftSqlType;
 
 import '../../driver/error.dart';
@@ -37,7 +43,11 @@ ExistingRowClass? validateExistingClass(
     // When the `Record` supertype from `dart:core` is used, generate a custom
     // record type suitable for this row class.
     return defaultRecordRowClass(
-        columns: columns, generateInsertable: generateInsertable);
+      columns: columns,
+      generateInsertable: generateInsertable,
+      knownDriftTypes: knownTypes,
+      typeProvider: library.typeProvider,
+    );
   }
 
   ExecutableElement? ctor;
@@ -153,8 +163,7 @@ ExistingRowClass? validateExistingClass(
 
   return ExistingRowClass(
     targetClass: AnnotatedDartCode.topLevelElement(desiredClass),
-    targetType: AnnotatedDartCode.build(
-        (builder) => builder.addDartType(instantiation)),
+    targetType: instantiation,
     constructor: constructor,
     positionalColumns: [
       for (final column in positionalColumns) column.nameInSql
@@ -218,7 +227,7 @@ ExistingRowClass validateRowClassFromRecordType(
   }
 
   return ExistingRowClass.record(
-    targetType: AnnotatedDartCode.type(dartType),
+    targetType: dartType,
     positionalColumns: const [],
     namedColumns: namedColumns,
     generateInsertable: generateInsertable,
@@ -228,22 +237,17 @@ ExistingRowClass validateRowClassFromRecordType(
 ExistingRowClass defaultRecordRowClass({
   required List<DriftColumn> columns,
   required bool generateInsertable,
+  required TypeProvider typeProvider,
+  required KnownDriftTypes knownDriftTypes,
 }) {
-  final type = AnnotatedDartCode.build((builder) {
-    builder.addText('({');
-
-    for (var i = 0; i < columns.length; i++) {
-      if (i != 0) builder.addText(', ');
-
-      final column = columns[i];
-
-      builder
-        ..addDriftType(column)
-        ..addText(' ${column.nameInDart}');
-    }
-
-    builder.addText('})');
-  });
+  final type = typeProvider.createRecordType(
+    positional: const [],
+    named: [
+      for (final column in columns)
+        MapEntry(column.nameInDart,
+            regularColumnType(typeProvider, knownDriftTypes, column)),
+    ],
+  );
 
   return ExistingRowClass.record(
     targetType: type,
@@ -432,6 +436,21 @@ void checkType(
   }
 }
 
+DartType regularColumnType(
+    TypeProvider typeProvider, KnownDriftTypes knownTypes, HasType type) {
+  final converter = type.typeConverter;
+  if (converter != null) {
+    var dartType = converter.dartType;
+    if (type.nullable && converter.canBeSkippedForNulls) {
+      return typeProvider.makeNullable(dartType);
+    } else {
+      return dartType;
+    }
+  }
+
+  return typeProvider.typeFor(type.sqlType, knownTypes);
+}
+
 extension on TypeProvider {
   DartType typeFor(DriftSqlType type, KnownDriftTypes knownTypes) {
     switch (type) {
@@ -453,6 +472,48 @@ extension on TypeProvider {
         return doubleType;
       case DriftSqlType.any:
         return knownTypes.driftAny;
+    }
+  }
+}
+
+extension CreateRecordType on TypeProvider {
+  RecordType createRecordType({
+    required List<DartType> positional,
+    required List<MapEntry<String, DartType>> named,
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) {
+    // todo: Use public API after https://dart-review.googlesource.com/c/sdk/+/277401
+    return RecordTypeImpl(
+      positionalFields: [
+        for (final type in positional)
+          RecordTypePositionalFieldImpl(type: type),
+      ],
+      namedFields: [
+        for (final namedEntry in named)
+          RecordTypeNamedFieldImpl(name: namedEntry.key, type: namedEntry.value)
+      ],
+      nullabilitySuffix: nullabilitySuffix,
+    );
+  }
+
+  DartType makeNullable(DartType type) {
+    if (type is InterfaceType) {
+      return type.element.instantiate(
+        typeArguments: type.typeArguments,
+        nullabilitySuffix: NullabilitySuffix.none,
+      );
+    } else if (type is NeverType) {
+      return nullType;
+    } else if (type is RecordType) {
+      return createRecordType(
+        positional: [for (final type in type.positionalFields) type.type],
+        named: [
+          for (final type in type.namedFields) MapEntry(type.name, type.type),
+        ],
+        nullabilitySuffix: NullabilitySuffix.question,
+      );
+    } else {
+      return type;
     }
   }
 }

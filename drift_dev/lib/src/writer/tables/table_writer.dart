@@ -202,7 +202,7 @@ abstract class TableOrViewWriter {
         // Write the constructor or async mapping method for this existing row
         // class. It will later be invoked by writing the arguments below.
         // For records, the argument syntax is already a valid record literal.
-        emitter.writeDart(info.targetType);
+        emitter.writeDart(AnnotatedDartCode.type(info.targetType));
 
         if (ctor.isNotEmpty) {
           buffer
@@ -279,7 +279,7 @@ class TableWriter extends TableOrViewWriter {
         if (existing.isRecord) {
           scope.leaf()
             ..write('typedef ${table.nameOfRowClass} = ')
-            ..writeDart(existing.targetType)
+            ..writeDart(AnnotatedDartCode.type(existing.targetType))
             ..write(';');
         }
       } else {
