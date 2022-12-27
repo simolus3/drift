@@ -491,9 +491,14 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       identifier(e.tableName);
       symbol('.**', spaceAfter: true);
     } else if (e is NestedQueryColumn) {
-      symbol('LIST(');
+      symbol('LIST(', spaceBefore: true);
       visit(e.select, arg);
       symbol(')', spaceAfter: true);
+
+      if (e.as != null) {
+        _keyword(TokenType.as);
+        identifier(e.as!);
+      }
     } else if (e is TransactionBlock) {
       visit(e.begin, arg);
       _writeStatements(e.innerStatements);

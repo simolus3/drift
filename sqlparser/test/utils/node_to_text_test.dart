@@ -230,6 +230,14 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
+      test('with LIST column', () {
+        testFormat('SELECT LIST(SELECT * FROM foo) AS r');
+      });
+
+      test('with expression', () {
+        testFormat('SELECT 1, 2 AS r, 3');
+      });
+
       test('with windows', () {
         testFormat('''
           SELECT * FROM foo

@@ -410,7 +410,7 @@ void _checkParameterType(
   );
 }
 
-void checkType(
+bool checkType(
   DriftSqlType columnType,
   bool columnIsNullable,
   AppliedTypeConverter? typeConverter,
@@ -433,7 +433,10 @@ void checkType(
   if (!typeSystem.isAssignableTo(expectedDartType, typeToCheck)) {
     error('Parameter must accept '
         '${expectedDartType.getDisplayString(withNullability: true)}');
+    return false;
   }
+
+  return true;
 }
 
 DartType regularColumnType(

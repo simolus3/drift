@@ -286,6 +286,7 @@ class QueryAnalyzer {
     // if all columns read from the same table, and all columns in that table
     // are present in the result set, we can use the data class we generate for
     // that table instead of generating another class just for this result set.
+    InferredResultSet? resultSet;
 
     if (candidatesForSingleTable.length == 1) {
       final table = candidatesForSingleTable.single;
@@ -332,30 +333,27 @@ class QueryAnalyzer {
 
       if (matches) {
         final match = MatchingDriftTable(driftTable, resultColumnNameToDrift);
-        return InferredResultSet(match, columns)
+        resultSet = InferredResultSet(match, columns)
           ..forceDartNames(resultEntryToColumn);
       }
     }
 
-    var resultSet = InferredResultSet(
+    resultSet ??= InferredResultSet(
       null,
       columns,
       resultClassName: queryContext.requestedResultClass,
     );
 
     if (queryContext.requestedResultType != null) {
-      resultSet = applyExistingType(
-        resultSet,
-        queryContext.requestedResultType!,
-        knownTypes,
-        (message) {
-          lints.add(AnalysisError(
-            type: AnalysisErrorType.other,
-            message: message,
-            relevantNode: queryContext.root,
-          ));
-        },
-      );
+      final matcher = MatchExistingTypeForQuery(knownTypes, (message) {
+        lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: message,
+          relevantNode: queryContext.root,
+        ));
+      });
+
+      resultSet = matcher.applyTo(resultSet, queryContext.requestedResultType!);
     }
 
     return resultSet;

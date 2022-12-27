@@ -460,26 +460,47 @@ class InferredResultSet {
   }
 }
 
-class ExistingQueryRowType {
-  final AnnotatedDartCode? rowType;
+class ExistingQueryRowType implements ArgumentForExistingQueryRowType {
+  final AnnotatedDartCode rowType;
   final bool isRecord;
 
-  final List<ResultColumn> positionalArguments;
-  final Map<String, ResultColumn> namedArguments;
+  /// When set, instead of constructing the [rowType] from the arguments, the
+  /// argument specified here can just be cast into the desired [rowType].
+  ArgumentForExistingQueryRowType? singleValue;
+
+  final List<ArgumentForExistingQueryRowType> positionalArguments;
+  final Map<String, ArgumentForExistingQueryRowType> namedArguments;
 
   ExistingQueryRowType({
     required this.rowType,
+    required this.singleValue,
     required this.positionalArguments,
     required this.namedArguments,
     this.isRecord = false,
   });
+
+  @override
+  String toString() {
+    return 'ExistingQueryRowType(type: $rowType, singleValue: $singleValue, '
+        'positional: $positionalArguments, named: $namedArguments)';
+  }
+}
+
+@sealed
+abstract class ArgumentForExistingQueryRowType {}
+
+class MappedNestedListQuery extends ArgumentForExistingQueryRowType {
+  final NestedResultQuery column;
+  final ExistingQueryRowType nestedType;
+
+  MappedNestedListQuery(this.column, this.nestedType);
 }
 
 /// Information about a matching table. A table matches a query if a query
 /// selects all columns from that table, and nothing more.
 ///
 /// We still need to handle column aliases.
-class MatchingDriftTable {
+class MatchingDriftTable implements ArgumentForExistingQueryRowType {
   final DriftElementWithResultSet table;
   final Map<String, DriftColumn> aliasToColumn;
 
@@ -508,7 +529,8 @@ abstract class ResultColumn {
   bool isCompatibleTo(ResultColumn other);
 }
 
-class ScalarResultColumn extends ResultColumn implements HasType {
+class ScalarResultColumn extends ResultColumn
+    implements HasType, ArgumentForExistingQueryRowType {
   final String name;
   @override
   final DriftSqlType sqlType;
@@ -578,7 +600,8 @@ abstract class NestedResult extends ResultColumn {}
 ///
 /// Knowing that `User` should be extracted into a field is represented with a
 /// [NestedResultTable] information as part of the result set.
-class NestedResultTable extends NestedResult {
+class NestedResultTable extends NestedResult
+    implements ArgumentForExistingQueryRowType {
   final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
