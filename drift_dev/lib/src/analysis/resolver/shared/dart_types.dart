@@ -424,7 +424,7 @@ bool checkType(
   if (typeConverter != null) {
     expectedDartType = typeConverter.dartType;
     if (typeConverter.canBeSkippedForNulls && columnIsNullable) {
-      typeToCheck = typeSystem.promoteToNonNull(typeToCheck);
+      expectedDartType = typeProvider.makeNullable(expectedDartType);
     }
   } else {
     expectedDartType = typeProvider.typeFor(columnType, knownTypes);
@@ -503,7 +503,7 @@ extension CreateRecordType on TypeProvider {
     if (type is InterfaceType) {
       return type.element.instantiate(
         typeArguments: type.typeArguments,
-        nullabilitySuffix: NullabilitySuffix.none,
+        nullabilitySuffix: NullabilitySuffix.question,
       );
     } else if (type is NeverType) {
       return nullType;

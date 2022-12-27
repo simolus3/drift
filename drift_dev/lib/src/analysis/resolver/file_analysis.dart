@@ -100,7 +100,8 @@ class FileAnalyzer {
               references: element.references,
               requiredVariables: options.variables);
 
-          result.resolvedQueries[element.id] = analyzer.analyze(element)
+          result.resolvedQueries[element.id] = analyzer.analyze(element,
+              sourceForCustomName: stmt.as)
             ..declaredInDriftFile = true;
 
           for (final error in analyzer.lints) {

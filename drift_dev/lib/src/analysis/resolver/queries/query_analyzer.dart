@@ -25,6 +25,8 @@ class _QueryHandlerContext {
   final String? requestedResultClass;
   final DartType? requestedResultType;
 
+  final DriftTableName? sourceForFixedName;
+
   _QueryHandlerContext({
     required List<FoundElement> foundElements,
     required this.root,
@@ -32,6 +34,7 @@ class _QueryHandlerContext {
     required this.nestedScope,
     this.requestedResultClass,
     this.requestedResultType,
+    this.sourceForFixedName,
   }) : foundElements = List.unmodifiable(foundElements);
 }
 
@@ -72,7 +75,18 @@ class QueryAnalyzer {
     return referencesByName[name.toLowerCase()] as E;
   }
 
-  SqlQuery analyze(DriftQueryDeclaration declaration) {
+  /// Analyzes the query from its [declaration].
+  ///
+  /// This runs drfit-specific query analysis and lints on the query. It will
+  /// also detect read or written tables and a suitable result set for this
+  /// query in Dart.
+  ///
+  /// The [sourceForCustomName] can be set to the syntactic source responsible
+  /// for a [DefinedSqlQuery.existingDartType] or[DefinedSqlQuery.resultClassName],
+  /// respectively. It will improve the highlighted source span in error
+  /// messages.
+  SqlQuery analyze(DriftQueryDeclaration declaration,
+      {DriftTableName? sourceForCustomName}) {
     final nestedAnalyzer = NestedQueryAnalyzer();
     NestedQueriesContainer? nestedScope;
 
@@ -102,6 +116,7 @@ class QueryAnalyzer {
       requestedResultType: requestedResultType,
       root: context.root,
       nestedScope: nestedScope,
+      sourceForFixedName: sourceForCustomName,
     ));
 
     final linter = DriftSqlLinter(
@@ -349,7 +364,7 @@ class QueryAnalyzer {
         lints.add(AnalysisError(
           type: AnalysisErrorType.other,
           message: message,
-          relevantNode: queryContext.root,
+          relevantNode: queryContext.sourceForFixedName ?? queryContext.root,
         ));
       });
 

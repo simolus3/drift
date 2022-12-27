@@ -1853,6 +1853,33 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
+  Selectable<MyCustomResultClass> customResult() {
+    return customSelect(
+        'SELECT with_constraints.b, config.sync_state,"config"."config_key" AS "nested_0.config_key", "config"."config_value" AS "nested_0.config_value", "config"."sync_state" AS "nested_0.sync_state", "config"."sync_state_implicit" AS "nested_0.sync_state_implicit","no_ids"."payload" AS "nested_1.payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
+        variables: [],
+        readsFrom: {
+          withConstraints,
+          config,
+          noIds,
+        }).asyncMap((QueryRow row) async => MyCustomResultClass(
+          row.read<int>('b'),
+          syncState: NullAwareTypeConverter.wrapFromSql(
+              ConfigTable.$convertersyncState,
+              row.readNullable<int>('sync_state')),
+          config: await config.mapFromRow(row, tablePrefix: 'nested_0'),
+          noIds: await noIds.mapFromRow(row, tablePrefix: 'nested_1'),
+          nested: await customSelect('SELECT * FROM no_ids',
+                  variables: [],
+                  readsFrom: {
+                noIds,
+              })
+              .map((QueryRow row) => Buffer(
+                    row.read<Uint8List>('payload'),
+                  ))
+              .get(),
+        ));
+  }
+
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();

@@ -172,4 +172,13 @@ void main() {
       );
     });
   }, skip: ifOlderThanSqlite335(sqlite3Version));
+
+  test('can run query with custom result set', () async {
+    await db.withConstraints
+        .insertOne(WithConstraintsCompanion.insert(b: 1, a: Value('key')));
+    await db.noIds.insertOne(NoIdsCompanion.insert(payload: Uint8List(512)));
+
+    final result = await db.customResult().get();
+    print('result');
+  });
 }

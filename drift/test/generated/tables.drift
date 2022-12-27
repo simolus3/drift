@@ -98,3 +98,14 @@ addConfig: INSERT INTO config $value RETURNING *;
 nested: SELECT defaults.**, LIST(SELECT * FROM with_constraints c WHERE c.b = defaults.b)
   FROM with_defaults defaults
   WHERE a = ?;
+
+customResult WITH MyCustomResultClass:
+  SELECT
+    with_constraints.b,
+    config.sync_state,
+    config.**,
+    no_ids.**,
+    LIST(SELECT * FROM no_ids) AS nested
+  FROM with_constraints
+    INNER JOIN config ON config_key = with_constraints.a
+    CROSS JOIN no_ids;
