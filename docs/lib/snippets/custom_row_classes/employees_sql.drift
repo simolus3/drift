@@ -1,0 +1,17 @@
+import 'employee.dart';
+
+/* #docregion example */
+CREATE TABLE employees(
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  supervisor INTEGER REFERENCES employees(id)
+);
+
+employeeWithStaff WITH EmployeeWithStaff: SELECT
+    self.**,
+    supervisor.name,
+    LIST(SELECT * FROM employees WHERE supervisor = self.id) AS staff
+  FROM employees AS self
+    INNER JOIN employees supervisor ON supervisor.id = self.supervisor
+  WHERE id = ?;
+/* #enddocregion example */
