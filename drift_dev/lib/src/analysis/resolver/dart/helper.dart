@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
+import 'package:analyzer/dart/element/type_system.dart';
 import 'package:collection/collection.dart';
 
 import '../../driver/driver.dart';
@@ -235,7 +236,10 @@ class DataClassInformation {
 
     if (useRowClass != null) {
       final typeProvider = element.library.typeProvider;
-      final type = useRowClass.getField('type')!.extractType(typeProvider);
+      final typeSystem = element.library.typeSystem;
+
+      final type =
+          useRowClass.getField('type')!.extractType(typeProvider, typeSystem);
       final constructorInExistingClass =
           useRowClass.getField('constructor')!.toStringValue()!;
       final generateInsertable =
@@ -267,9 +271,17 @@ class DataClassInformation {
 }
 
 extension on DartObject {
-  DartType? extractType(TypeProvider typeProvider) {
+  DartType? extractType(TypeProvider typeProvider, TypeSystem typeSystem) {
     final typeValue = toTypeValue();
-    if (typeValue != null) return typeValue;
+    if (typeValue != null) {
+      if (typeValue.nullabilitySuffix == NullabilitySuffix.star) {
+        // For some reason the analyzer adds the star suffix on type literals,
+        // we definitely want to remove it.
+        return typeSystem.promoteToNonNull(typeValue);
+      }
+
+      return typeValue;
+    }
 
     // Dart doesn't have record type literals, so if one writes
     // `(int, String, x: bool)`, that's actually a record with the given type
@@ -281,14 +293,15 @@ extension on DartObject {
       final namedFields = <String, DartType>{};
 
       for (var i = 0; i < type.positionalFields.length; i++) {
-        final type = getField('\$$i')?.extractType(typeProvider);
+        final type = getField('\$$i')?.extractType(typeProvider, typeSystem);
         if (type == null) return null;
 
         positionalFields.add(type);
       }
 
       for (final named in type.namedFields) {
-        final type = getField(named.name)?.extractType(typeProvider);
+        final type =
+            getField(named.name)?.extractType(typeProvider, typeSystem);
         if (type == null) return null;
 
         namedFields[named.name] = type;

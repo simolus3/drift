@@ -259,6 +259,11 @@ class DriftAny {
     return identical(this, other) ||
         other is DriftAny && other.rawSqlValue == rawSqlValue;
   }
+
+  @override
+  String toString() {
+    return 'DriftAny(raw: $rawSqlValue)';
+  }
 }
 
 /// In [DriftSqlType.forNullableType], we need to do an `is` check over

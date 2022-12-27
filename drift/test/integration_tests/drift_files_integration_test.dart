@@ -179,6 +179,15 @@ void main() {
     await db.noIds.insertOne(NoIdsCompanion.insert(payload: Uint8List(512)));
 
     final result = await db.customResult().get();
-    print('result');
+    expect(result, hasLength(1));
+
+    final row = result.single;
+    expect(row.b, 1);
+    expect(row.syncState, isNull);
+    expect(
+        row.config, Config(configKey: 'key', configValue: DriftAny('values')));
+    expect(row.noIds,
+        isA<NoIdRow>().having((e) => e.payload, 'payload', hasLength(512)));
+    expect(row.nested, hasLength(1));
   });
 }

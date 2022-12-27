@@ -137,9 +137,9 @@ CREATE TABLE b (
     expect(
       file.allErrors,
       containsAllInOrder([
-        isDriftError(contains('Type DoesNotExist could not be found'))
+        isDriftError(contains('Could not find `DoesNotExist`'))
             .withSpan('ENUM(DoesNotExist)'),
-        isDriftError(contains('Type DoesNotExist could not be found'))
+        isDriftError(contains('Could not find `DoesNotExist`'))
             .withSpan('ENUMNAME(DoesNotExist)'),
       ]),
     );
