@@ -1,11 +1,13 @@
-## 2.4.0-dev
+## 2.4.0
 
-- Add the support for `textEnum`.
+- Add support for `textEnum` columns in Dart (or `ENUMNAME` in `.drift`) to store enum columns as text (via `Enum.name`).
 - Adds the `case_from_dart_to_sql` option with the possible values: `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 - `drift_dev schema dump` can now dump the schema of existing sqlite3 database files as well.
 - Warn about suspicious int or text literals being inserted into enum columns.
 - Support [existing row types on queries](https://drift.simonbinder.eu/docs/advanced-features/custom_row_classes/#queries)
   defined in drift files.
+- For Dart-defined columns, `customConstraint`s are now parsed and respected by the generator.
+- It is now allowed to interleave queries and tables in a drift file.
 - Experimental support for Dart records as existing row or query types. Please note that
   records aren't stable yet in Dart or Drift, so this feature might be changed
   or removed depending on its development in the Dart language.

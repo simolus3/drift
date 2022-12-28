@@ -266,8 +266,6 @@ class Parser {
     } else {
       _suggestHintForTokens([TokenType.create, TokenType.import]);
 
-      if (_reportAutoComplete) {}
-
       file.setSpan(first, first); // empty file
     }
     return file;

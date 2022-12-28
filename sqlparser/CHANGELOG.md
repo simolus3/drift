@@ -1,3 +1,8 @@
+## 0.25.0
+
+- Better analysis support for `ANY` columns in `STRICT` tables.
+- Assign resolved schema columns to synctactical `ResultColumn` in queries.
+
 ## 0.24.0
 
 - Make `Fts5Table` constructor public.

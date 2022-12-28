@@ -1,4 +1,4 @@
-## 2.4.0-dev
+## 2.4.0
 
 - Add `textEnum` column builder and `EnumNameConverter` to be able to store enum
   values as string.
