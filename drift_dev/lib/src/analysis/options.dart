@@ -94,6 +94,9 @@ class DriftOptions {
   @JsonKey(name: 'case_from_dart_to_sql', defaultValue: CaseFromDartToSql.snake)
   final CaseFromDartToSql caseFromDartToSql;
 
+  @JsonKey(name: 'write_to_columns_mixins', defaultValue: false)
+  final bool writeToColumnsMixins;
+
   @internal
   const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
@@ -115,6 +118,7 @@ class DriftOptions {
     this.storeDateTimeValuesAsText = false,
     this.dialect = const DialectOptions(SqlDialect.sqlite, null),
     this.caseFromDartToSql = CaseFromDartToSql.snake,
+    this.writeToColumnsMixins = false,
   });
 
   DriftOptions({
@@ -136,6 +140,7 @@ class DriftOptions {
     required this.sqliteAnalysisOptions,
     required this.storeDateTimeValuesAsText,
     required this.caseFromDartToSql,
+    required this.writeToColumnsMixins,
     this.dialect,
   }) {
     // ignore: deprecated_member_use_from_same_package
