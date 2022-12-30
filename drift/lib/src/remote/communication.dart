@@ -22,10 +22,12 @@ class DriftCommunication {
   // note that there are two DriftCommunication instances in each connection,
   // (one per remote). Each of them has an independent _currentRequestId field
   int _currentRequestId = 0;
-  final Completer<void> _closeCompleter = Completer();
   final Map<int, _PendingRequest> _pendingRequests = {};
   final StreamController<Request> _incomingRequests =
       StreamController(sync: true);
+
+  bool _startedClosingLocally = false;
+  final Completer<void> _closeCompleter = Completer();
 
   /// Starts a drift communication channel over a raw [StreamChannel].
   DriftCommunication(this._channel,
@@ -34,7 +36,15 @@ class DriftCommunication {
         _serialize = serialize {
     _inputSubscription = _channel.stream.listen(
       _handleMessage,
-      onDone: _closeCompleter.complete,
+      onDone: () {
+        // Channel closed => Complete pending requests with an error
+        for (final pending in _pendingRequests.values) {
+          pending.completeWithError(const ConnectionClosedException());
+        }
+        _pendingRequests.clear();
+
+        _closeCompleter.complete();
+      },
     );
   }
 
@@ -43,7 +53,7 @@ class DriftCommunication {
   Future<void> get closed => _closeCompleter.future;
 
   /// Whether this channel is closed at the moment.
-  bool get isClosed => _closeCompleter.isCompleted;
+  bool get isClosed => _startedClosingLocally || _closeCompleter.isCompleted;
 
   /// A stream of requests coming from the other peer.
   Stream<Request> get incomingRequests => _incomingRequests.stream;
@@ -52,20 +62,17 @@ class DriftCommunication {
   int newRequestId() => _currentRequestId++;
 
   /// Closes the connection to the server.
-  void close() {
+  Future<void> close() async {
     if (isClosed) return;
 
-    _channel.sink.close();
     _closeLocally();
+    await _closeCompleter.future;
   }
 
   void _closeLocally() {
+    _startedClosingLocally = true;
+    _channel.sink.close();
     _inputSubscription?.cancel();
-
-    for (final pending in _pendingRequests.values) {
-      pending.completeWithError(const ConnectionClosedException());
-    }
-    _pendingRequests.clear();
   }
 
   void _handleMessage(Object? msg) {
@@ -112,6 +119,13 @@ class DriftCommunication {
     return completer.future;
   }
 
+  /// Sends the [notification] to the other remote.
+  ///
+  /// The acknowledgement from the remote will be ignored.
+  void notify(Object? notification) {
+    _send(Request(newRequestId(), notification));
+  }
+
   void _send(Message msg) {
     if (isClosed) {
       throw StateError('Tried to send $msg over isolate channel, but the '
@@ -156,7 +170,9 @@ class DriftCommunication {
         return respondError(request, e, s);
       }
 
-      respond(request, response);
+      if (!isClosed) {
+        respond(request, response);
+      }
     });
   }
 }

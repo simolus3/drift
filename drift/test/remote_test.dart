@@ -1,4 +1,6 @@
 @TestOn('vm')
+import 'dart:async';
+
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
@@ -227,10 +229,8 @@ void _checkSimple(Object? object) {
 
 extension<T> on StreamChannel<T> {
   StreamChannel<T> get expectedToClose {
-    return transformSink(
-      StreamSinkTransformer.fromHandlers(
-        handleDone: expectAsync1((inner) => inner.close()),
-      ),
-    );
+    return transformStream(StreamTransformer.fromHandlers(
+      handleDone: expectAsync1((out) => out.close()),
+    ));
   }
 }

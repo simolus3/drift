@@ -67,20 +67,7 @@ class DriftIsolate {
   DriftIsolate.fromConnectPort(this.connectPort, {this.serialize = true});
 
   StreamChannel _open() {
-    final receive = ReceivePort('drift client receive');
-    connectPort.send([receive.sendPort, serialize]);
-
-    final controller =
-        StreamChannelController(allowForeignErrors: false, sync: true);
-    receive.listen((message) {
-      if (message is SendPort) {
-        controller.local.stream.listen(message.send, onDone: receive.close);
-      } else {
-        controller.local.sink.add(message);
-      }
-    });
-
-    return controller.foreign;
+    return connectToServer(connectPort, serialize);
   }
 
   /// Connects to this [DriftIsolate] from another isolate.
@@ -126,15 +113,26 @@ class DriftIsolate {
   /// Because [opener] will be called on another isolate with its own memory,
   /// it must either be a top-level member or a static class method.
   ///
-  /// To close the isolate later, use [shutdownAll].
+  /// To close the isolate later, use [shutdownAll]. Or, if you know that only
+  /// a single client will connect, set `singleClientMode: true` in [connect].
+  /// That way, the drift isolate will shutdown when the client is closed.
+  ///
+  /// The optional [isolateSpawn] parameter can be used to make drift use
+  /// something else instead of [Isolate.spawn] to spawn the isolate. This may
+  /// be useful if you want to set additional options on the isolate or
+  /// otherwise need a reference to it.
   ///
   /// {@macro drift_isolate_serialize}
-  static Future<DriftIsolate> spawn(DatabaseOpener opener,
-      {bool serialize = false}) async {
-    final receiveServer = ReceivePort();
+  static Future<DriftIsolate> spawn(
+    DatabaseOpener opener, {
+    bool serialize = false,
+    Future<Isolate> Function<T>(void Function(T), T) isolateSpawn =
+        Isolate.spawn,
+  }) async {
+    final receiveServer = ReceivePort('drift isolate connect');
     final keyFuture = receiveServer.first;
 
-    await Isolate.spawn(_startDriftIsolate, [receiveServer.sendPort, opener]);
+    await isolateSpawn(_startDriftIsolate, [receiveServer.sendPort, opener]);
     final key = await keyFuture as SendPort;
     return DriftIsolate.fromConnectPort(key, serialize: serialize);
   }

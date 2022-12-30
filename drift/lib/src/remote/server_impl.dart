@@ -41,7 +41,9 @@ class ServerImplementation implements DriftServer {
   final Completer<void> _done = Completer();
 
   /// Creates a server from the underlying connection and further options.
-  ServerImplementation(this.connection, this.allowRemoteShutdown);
+  ServerImplementation(this.connection, this.allowRemoteShutdown) {
+    done.then((_) => _closeRemainingConnections());
+  }
 
   @override
   Future<void> get done => _done.future;
@@ -54,7 +56,7 @@ class ServerImplementation implements DriftServer {
 
     final comm = DriftCommunication(channel, serialize: serialize);
     comm.setRequestHandler((request) => _handleRequest(comm, request));
-    comm.request(ServerInfo(connection.executor.dialect));
+    comm.notify(ServerInfo(connection.executor.dialect));
 
     _activeChannels.add(comm);
     comm.closed.then((_) => _activeChannels.remove(comm));
@@ -68,6 +70,12 @@ class ServerImplementation implements DriftServer {
     }
 
     return done;
+  }
+
+  void _closeRemainingConnections() {
+    for (final channel in _activeChannels) {
+      channel.close();
+    }
   }
 
   dynamic _handleRequest(DriftCommunication comms, Request request) {

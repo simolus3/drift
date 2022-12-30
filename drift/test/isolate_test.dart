@@ -5,6 +5,8 @@ import 'dart:isolate';
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
+import 'package:drift/src/isolate.dart';
+import 'package:drift/src/remote/communication.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -35,7 +37,13 @@ void main() {
 
   group('in background isolate', () {
     Future<DriftIsolate> spawnBackground(bool serialize) {
-      return DriftIsolate.spawn(_backgroundConnection, serialize: serialize);
+      return DriftIsolate.spawn(
+        _backgroundConnection,
+        serialize: serialize,
+        isolateSpawn: <T>(entrypoint, message) {
+          return Isolate.spawn<T>(entrypoint, message, errorsAreFatal: true);
+        },
+      );
     }
 
     group('with explicit serialization', () {
@@ -44,6 +52,16 @@ void main() {
 
     group('without explicit serialization', () {
       _runTests(() => spawnBackground(false), true, false);
+    });
+
+    test('shutdownAll closes other connections', () async {
+      final isolate = await spawnBackground(false);
+
+      final channel = connectToServer(isolate.connectPort, false);
+      final communication = DriftCommunication(channel, serialize: false);
+
+      await isolate.shutdownAll();
+      expect(communication.closed, completes);
     });
   }, tags: 'background_isolate');
 

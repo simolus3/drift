@@ -193,5 +193,10 @@ Future<DatabaseConnection> connectToRemoteAndInitialize(
 /// Also, the [DriftServer] must have been configured to allow remote-shutdowns.
 Future<void> shutdown(StreamChannel<Object?> channel, {bool serialize = true}) {
   final comm = DriftCommunication(channel, serialize: serialize);
-  return comm.request(NoArgsRequest.terminateAll).whenComplete(comm.close);
+  return comm
+      .request<void>(NoArgsRequest.terminateAll)
+      // Sending a terminate request will stop the server, so we won't get a
+      // response. This is expected and not an error we should throw.
+      .onError<ConnectionClosedException>((error, stackTrace) => null)
+      .whenComplete(comm.close);
 }

@@ -166,9 +166,10 @@ class _RemoteQueryExecutor extends _BaseExecutor {
       if (client._singleClientMode) {
         return channel
             .request(NoArgsRequest.terminateAll)
+            .onError<ConnectionClosedException>((error, stackTrace) => null)
             .whenComplete(channel.close);
       } else {
-        channel.close();
+        return channel.close();
       }
     }
 

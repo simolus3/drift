@@ -1,3 +1,7 @@
+## 2.4.1-dev
+
+- Fix `DriftIsolate` leaking resources for closed connections.
+
 ## 2.4.0
 
 - Add `textEnum` column builder and `EnumNameConverter` to be able to store enum
@@ -14,7 +18,7 @@
 - Work-around an issue causing complex migrations via `Migrator.alterTable` not to
   work if a view referenced the altered table.
 
-## 2.3.0-dev
+## 2.3.0
 
 - Add the `JsonTypeConverter2` mixin. It behaves similar to the existing json
   type converters, but can use a different SQL and JSON type.
