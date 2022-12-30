@@ -8,11 +8,11 @@ final Map<String, AstNode> testCases = {
       StarResultColumn('tbl'),
       StarResultColumn(null),
       ExpressionResultColumn(
-        expression: NumericLiteral(1, token(TokenType.numberLiteral)),
+        expression: NumericLiteral(1),
         as: 'name',
       ),
     ],
-    where: NumericLiteral(1, token(TokenType.numberLiteral)),
+    where: NumericLiteral(1),
     orderBy: OrderBy(terms: [
       OrderingTerm(
         expression: Reference(columnName: 'name'),
@@ -20,9 +20,9 @@ final Map<String, AstNode> testCases = {
       ),
     ]),
     limit: Limit(
-      count: NumericLiteral(3, token(TokenType.numberLiteral)),
+      count: NumericLiteral(3),
       offsetSeparator: token(TokenType.offset),
-      offset: NumericLiteral(5, token(TokenType.numberLiteral)),
+      offset: NumericLiteral(5),
     ),
   ),
   'SELECT tbl.*, (SELECT * FROM table2) FROM tbl': SelectStatement(

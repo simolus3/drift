@@ -115,7 +115,7 @@ class _HighlightingVisitor extends RecursiveVisitor<_DriftHighlighter, void> {
   }
 
   @override
-  void visitNumericLiteral(Literal e, _DriftHighlighter arg) {
+  void visitNumericLiteral(NumericLiteral e, _DriftHighlighter arg) {
     arg.reportSql(e, RegionType.number);
   }
 

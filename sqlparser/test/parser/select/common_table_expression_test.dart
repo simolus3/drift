@@ -27,10 +27,7 @@ void main() {
                 base: SelectStatement(
                   columns: [
                     ExpressionResultColumn(
-                      expression: NumericLiteral(
-                        1,
-                        token(TokenType.numberLiteral),
-                      ),
+                      expression: NumericLiteral(1),
                     ),
                   ],
                 ),
@@ -43,16 +40,13 @@ void main() {
                           expression: BinaryExpression(
                             Reference(columnName: 'x'),
                             token(TokenType.plus),
-                            NumericLiteral(1, token(TokenType.numberLiteral)),
+                            NumericLiteral(1),
                           ),
                         ),
                       ],
                       from: TableReference('cnt'),
                       limit: Limit(
-                        count: NumericLiteral(
-                          1000000,
-                          token(TokenType.numberLiteral),
-                        ),
+                        count: NumericLiteral(1000000),
                       ),
                     ),
                   ),
@@ -71,7 +65,7 @@ void main() {
 
   test('parses MATERIALIZED / NOT MATERIALIZED clauses', () {
     testStatement(
-      ''' 
+      '''
       WITH
         foo(x) AS MATERIALIZED (SELECT *),
         bar(x) AS NOT MATERIALIZED (SELECT *)

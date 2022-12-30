@@ -96,7 +96,7 @@ void main() {
             ),
             DartPlaceholderDefaultValue(
               'predicate',
-              BooleanLiteral.withTrue(token(TokenType.$true)),
+              BooleanLiteral(true),
             ),
           ],
         ),
@@ -246,9 +246,7 @@ CREATE INDEX x ON foo (a);
           as: DriftTableName('ExistingDartClass', true),
           SelectStatement(
             columns: [
-              ExpressionResultColumn(
-                expression: NumericLiteral(1, token(TokenType.numberLiteral)),
-              ),
+              ExpressionResultColumn(expression: NumericLiteral(1)),
             ],
           ),
         ),

@@ -18,7 +18,7 @@ void main() {
         having: StringComparisonExpression(
           left: Reference(columnName: 'country'),
           operator: token(TokenType.like),
-          right: StringLiteral.from(token(TokenType.stringLiteral), '%G%'),
+          right: StringLiteral('%G%'),
         ),
       ),
     );

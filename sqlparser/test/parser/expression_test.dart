@@ -11,25 +11,25 @@ final Map<String, Expression> _testCases = {
     not: true,
     check: BinaryExpression(
       BinaryExpression(
-        NumericLiteral(3, token(TokenType.numberLiteral)),
+        NumericLiteral(3),
         token(TokenType.star),
-        NumericLiteral(7, token(TokenType.numberLiteral)),
+        NumericLiteral(7),
       ),
       token(TokenType.plus),
-      NumericLiteral(1, token(TokenType.numberLiteral)),
+      NumericLiteral(1),
     ),
-    lower: NumericLiteral(31, token(TokenType.numberLiteral)),
-    upper: NumericLiteral(74, token(TokenType.numberLiteral)),
+    lower: NumericLiteral(31),
+    upper: NumericLiteral(74),
   ),
   '3 * 4 + 5 == COUNT(*)': BinaryExpression(
     BinaryExpression(
       BinaryExpression(
-        NumericLiteral(3, token(TokenType.numberLiteral)),
+        NumericLiteral(3),
         token(TokenType.star),
-        NumericLiteral(4, token(TokenType.numberLiteral)),
+        NumericLiteral(4),
       ),
       token(TokenType.plus),
-      NumericLiteral(5, token(TokenType.numberLiteral)),
+      NumericLiteral(5),
     ),
     token(TokenType.doubleEqual),
     FunctionExpression(
@@ -40,12 +40,12 @@ final Map<String, Expression> _testCases = {
   '? * ?3 + ?2 == :test': BinaryExpression(
     BinaryExpression(
       BinaryExpression(
-        NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+        NumberedVariable(null),
         token(TokenType.star),
-        NumberedVariable(QuestionMarkVariableToken(fakeSpan('?3'), 3)),
+        NumberedVariable(3),
       ),
       token(TokenType.plus),
-      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?2'), 2)),
+      NumberedVariable(2),
     ),
     token(TokenType.doubleEqual),
     ColonNamedVariable(ColonVariableToken(fakeSpan(':test'), ':test')),
@@ -97,8 +97,8 @@ final Map<String, Expression> _testCases = {
     not: true,
     left: Reference(columnName: 'x'),
     operator: token(TokenType.like),
-    right: StringLiteral.from(token(TokenType.stringLiteral), '%A%\$'),
-    escape: StringLiteral.from(token(TokenType.stringLiteral), '\$'),
+    right: StringLiteral('%A%\$'),
+    escape: StringLiteral('\$'),
   ),
   'NOT EXISTS (SELECT * FROM demo)': UnaryExpression(
     token(TokenType.not),
@@ -119,17 +119,17 @@ final Map<String, Expression> _testCases = {
     ),
   ),
   "'hello' || 'world' COLLATE NOCASE": BinaryExpression(
-    StringLiteral.from(token(TokenType.stringLiteral), 'hello'),
+    StringLiteral('hello'),
     token(TokenType.doublePipe),
     CollateExpression(
       operator: token(TokenType.collate),
-      inner: StringLiteral.from(token(TokenType.stringLiteral), 'world'),
+      inner: StringLiteral('world'),
       collateFunction: token(TokenType.identifier),
     ),
   ),
   'x in ?': InExpression(
     left: Reference(columnName: 'x'),
-    inside: NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+    inside: NumberedVariable(null),
   ),
   'x IN (SELECT col FROM tbl)': InExpression(
     left: Reference(columnName: 'x'),
@@ -148,12 +148,12 @@ final Map<String, Expression> _testCases = {
     left: Reference(columnName: 'x'),
     inside: Tuple(
       expressions: [
-        NumericLiteral(1.0, token(TokenType.numberLiteral)),
-        NumericLiteral(2.0, token(TokenType.numberLiteral)),
+        NumericLiteral(1.0),
+        NumericLiteral(2.0),
         SubQuery(
           select: SelectStatement(columns: [
             ExpressionResultColumn(
-              expression: NumericLiteral(3.0, token(TokenType.numberLiteral)),
+              expression: NumericLiteral(3.0),
             ),
           ]),
         ),
@@ -162,30 +162,26 @@ final Map<String, Expression> _testCases = {
   ),
   'CAST(3 + 4 AS TEXT)': CastExpression(
     BinaryExpression(
-      NumericLiteral(3.0, token(TokenType.numberLiteral)),
+      NumericLiteral(3.0),
       token(TokenType.plus),
-      NumericLiteral(4.0, token(TokenType.numberLiteral)),
+      NumericLiteral(4.0),
     ),
     'TEXT',
   ),
   'foo ISNULL': IsNullExpression(Reference(columnName: 'foo')),
   'foo NOTNULL': IsNullExpression(Reference(columnName: 'foo'), true),
-  'CURRENT_TIME': TimeConstantLiteral(
-      TimeConstantKind.currentTime, token(TokenType.currentTime)),
-  'CURRENT_TIMESTAMP': TimeConstantLiteral(
-      TimeConstantKind.currentTimestamp, token(TokenType.currentTimestamp)),
-  'CURRENT_DATE': TimeConstantLiteral(
-      TimeConstantKind.currentDate, token(TokenType.currentDate)),
+  'CURRENT_TIME': TimeConstantLiteral(TimeConstantKind.currentTime),
+  'CURRENT_TIMESTAMP': TimeConstantLiteral(TimeConstantKind.currentTimestamp),
+  'CURRENT_DATE': TimeConstantLiteral(TimeConstantKind.currentDate),
   '(1, 2, 3) > (?, ?, ?)': BinaryExpression(
     Tuple(expressions: [
-      for (var i = 1; i <= 3; i++)
-        NumericLiteral(i, token(TokenType.numberLiteral)),
+      for (var i = 1; i <= 3; i++) NumericLiteral(i),
     ]),
     token(TokenType.more),
     Tuple(expressions: [
-      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
-      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
-      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+      NumberedVariable(null),
+      NumberedVariable(null),
+      NumberedVariable(null),
     ]),
   ),
   'RAISE(IGNORE)': RaiseExpression(RaiseKind.ignore),

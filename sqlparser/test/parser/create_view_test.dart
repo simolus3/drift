@@ -24,9 +24,7 @@ void main() {
         viewName: 'my_view',
         query: SelectStatement(
           columns: [
-            ExpressionResultColumn(
-              expression: NumericLiteral(1, token(TokenType.numberLiteral)),
-            ),
+            ExpressionResultColumn(expression: NumericLiteral(1)),
           ],
         ),
         driftTableName: DriftTableName('ExistingDartClass', true),
@@ -66,7 +64,7 @@ void main() {
                 ),
               ),
               ExpressionResultColumn(
-                expression: StringLiteral(stringLiteral('dog')),
+                expression: StringLiteral('dog'),
               ),
             ],
             from: TableReference('dogs'),
@@ -96,9 +94,7 @@ void main() {
                       parameters: StarFunctionParameter(),
                     ),
                   ),
-                  ExpressionResultColumn(
-                    expression: StringLiteral(stringLiteral('cat')),
-                  )
+                  ExpressionResultColumn(expression: StringLiteral('cat'))
                 ],
                 from: TableReference('cats'),
                 groupBy: GroupBy(

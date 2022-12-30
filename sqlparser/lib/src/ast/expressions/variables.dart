@@ -6,15 +6,14 @@ abstract class Variable extends Expression {
 
 /// A "?" or "?123" variable placeholder
 class NumberedVariable extends Expression implements Variable {
-  final QuestionMarkVariableToken token;
-  int? get explicitIndex => token.explicitIndex;
+  QuestionMarkVariableToken? token;
+
+  int? explicitIndex;
 
   @override
   int? resolvedIndex;
 
-  NumberedVariable(this.token) {
-    resolvedIndex = token.explicitIndex;
-  }
+  NumberedVariable(this.explicitIndex) : resolvedIndex = explicitIndex;
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

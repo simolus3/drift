@@ -25,7 +25,7 @@ void main() {
         limit: Limit(
           count: DartExpressionPlaceholder(name: 'amount'),
           offsetSeparator: token(TokenType.offset),
-          offset: NumericLiteral(3, token(TokenType.numberLiteral)),
+          offset: NumericLiteral(3),
         ),
       ),
       driftMode: true,

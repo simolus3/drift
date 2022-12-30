@@ -1,3 +1,7 @@
+## 0.26.0-dev
+
+- Remove token parameter from constructor in `Literal` subclasses and `NumberedVariable`.
+
 ## 0.25.0
 
 - Better analysis support for `ANY` columns in `STRICT` tables.

@@ -23,7 +23,7 @@ final Map<String, Expression> _testCases = {
       WindowFunctionInvocation(
     function: identifier('row_number'),
     parameters: StarFunctionParameter(),
-    filter: NumericLiteral(1, token(TokenType.numberLiteral)),
+    filter: NumericLiteral(1),
     windowDefinition: WindowDefinition(
       baseWindowName: 'base_name',
       partitionBy: [
@@ -34,7 +34,7 @@ final Map<String, Expression> _testCases = {
         type: FrameType.groups,
         start: FrameBoundary.unboundedPreceding(),
         end: FrameBoundary.following(
-          NumericLiteral(3, token(TokenType.numberLiteral)),
+          NumericLiteral(3),
         ),
         excludeMode: ExcludeMode.ties,
       ),
@@ -62,7 +62,7 @@ final Map<String, Expression> _testCases = {
     filter: BinaryExpression(
       Reference(columnName: 'is_skipped'),
       token(TokenType.equal),
-      BooleanLiteral.withTrue(token(TokenType.$true)),
+      BooleanLiteral(true),
     ),
   ),
 };

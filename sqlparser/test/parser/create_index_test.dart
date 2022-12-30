@@ -14,7 +14,7 @@ void main() {
           IndexedColumn(Reference(columnName: 'baz')),
           IndexedColumn(Reference(columnName: 'inga')),
         ],
-        where: BooleanLiteral.withTrue(token(TokenType.$true)),
+        where: BooleanLiteral(true),
       ),
     );
   });

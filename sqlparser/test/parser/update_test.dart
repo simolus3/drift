@@ -10,9 +10,7 @@ final Map<String, AstNode> testCases = {
     set: [
       SetComponent(
         column: Reference(columnName: 'a'),
-        expression: NullLiteral(
-          token(TokenType.$null),
-        ),
+        expression: NullLiteral(),
       ),
       SetComponent(
         column: Reference(columnName: 'b'),
@@ -67,7 +65,7 @@ void main() {
             ],
             from: TableReference('sales'),
             groupBy: GroupBy(
-              by: [NumericLiteral(2, token(TokenType.numberLiteral))],
+              by: [NumericLiteral(2)],
             ),
           ),
           as: 'daily',

@@ -3,10 +3,10 @@ part of '../ast.dart';
 
 @optionalTypeArgs
 abstract class Literal<T> extends Expression {
-  final Token token;
+  Token? token;
   T get value;
 
-  Literal(this.token);
+  Literal();
 
   @override
   final Iterable<AstNode> childNodes = const <AstNode>[];
@@ -21,8 +21,6 @@ abstract class Literal<T> extends Expression {
 }
 
 class NullLiteral<T> extends Literal {
-  NullLiteral(Token token) : super(token);
-
   @override
   Null get value => null;
 
@@ -38,7 +36,7 @@ class NumericLiteral extends Literal<num> {
 
   bool get isInt => value is int;
 
-  NumericLiteral(this.value, Token token) : super(token);
+  NumericLiteral(this.value);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -50,12 +48,7 @@ class BooleanLiteral extends Literal<bool> {
   @override
   final bool value;
 
-  BooleanLiteral.withFalse(Token token)
-      : value = false,
-        super(token);
-  BooleanLiteral.withTrue(Token token)
-      : value = true,
-        super(token);
+  BooleanLiteral(this.value);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -68,13 +61,7 @@ class StringLiteral extends Literal {
   final String value;
   final bool isBinary;
 
-  StringLiteral(StringLiteralToken token)
-      : value = token.value,
-        isBinary = token.binary,
-        super(token);
-
-  StringLiteral.from(Token token, this.value, {this.isBinary = false})
-      : super(token);
+  StringLiteral(this.value, {this.isBinary = false});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -87,7 +74,7 @@ enum TimeConstantKind { currentTime, currentDate, currentTimestamp }
 class TimeConstantLiteral extends Literal {
   final TimeConstantKind kind;
 
-  TimeConstantLiteral(this.kind, Token keyword) : super(keyword);
+  TimeConstantLiteral(this.kind);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

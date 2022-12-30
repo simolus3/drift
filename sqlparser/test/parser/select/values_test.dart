@@ -11,14 +11,14 @@ void main() {
         [
           Tuple(
             expressions: [
-              StringLiteral(stringLiteral('foo')),
-              StringLiteral(stringLiteral('bar')),
+              StringLiteral('foo'),
+              StringLiteral('bar'),
             ],
           ),
           Tuple(
             expressions: [
-              NumericLiteral(1, token(TokenType.numberLiteral)),
-              NumericLiteral(2, token(TokenType.numberLiteral)),
+              NumericLiteral(1),
+              NumericLiteral(2),
             ],
           ),
         ],
@@ -36,8 +36,8 @@ void main() {
             [
               Tuple(
                 expressions: [
-                  NumericLiteral(1, token(TokenType.numberLiteral)),
-                  NumericLiteral(2, token(TokenType.numberLiteral)),
+                  NumericLiteral(1),
+                  NumericLiteral(2),
                 ],
               ),
             ],
@@ -54,8 +54,8 @@ void main() {
         [
           Tuple(
             expressions: [
-              NumericLiteral(1, token(TokenType.numberLiteral)),
-              NumericLiteral(2, token(TokenType.numberLiteral)),
+              NumericLiteral(1),
+              NumericLiteral(2),
             ],
           ),
         ],
@@ -65,9 +65,7 @@ void main() {
             CommonTableExpression(
               cteTableName: 'foo',
               as: ValuesSelectStatement([
-                Tuple(expressions: [
-                  NumericLiteral(3, token(TokenType.numberLiteral))
-                ]),
+                Tuple(expressions: [NumericLiteral(3)]),
               ]),
             ),
           ],

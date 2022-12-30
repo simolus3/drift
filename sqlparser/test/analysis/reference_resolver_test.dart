@@ -88,7 +88,7 @@ void main() {
     enforceEqual(
       resolved.expression,
       BinaryExpression(
-        NumericLiteral(3, token(TokenType.numberLiteral)),
+        NumericLiteral(3),
         token(TokenType.star),
         Reference(entityName: 'd', columnName: 'id'),
       ),

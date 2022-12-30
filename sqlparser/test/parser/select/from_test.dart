@@ -57,7 +57,7 @@ void main() {
               operator: JoinOperator.comma(),
               query: TableReference('table2'),
               constraint: OnConstraint(
-                expression: BooleanLiteral.withTrue(token(TokenType.$true)),
+                expression: BooleanLiteral(true),
               ),
             ),
           ],
@@ -147,9 +147,7 @@ void main() {
             Join(
               operator: JoinOperator(JoinOperatorKind.left, outer: true),
               query: TableReference('table3'),
-              constraint: OnConstraint(
-                expression: BooleanLiteral.withTrue(token(TokenType.$true)),
-              ),
+              constraint: OnConstraint(expression: BooleanLiteral(true)),
             ),
           ],
         ),
@@ -187,7 +185,7 @@ WHERE json_each.value LIKE '704-%';
           where: StringComparisonExpression(
             left: Reference(entityName: 'json_each', columnName: 'value'),
             operator: token(TokenType.like),
-            right: StringLiteral(stringLiteral('704-%')),
+            right: StringLiteral('704-%'),
           ),
         ),
       );

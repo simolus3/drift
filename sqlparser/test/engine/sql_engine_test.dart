@@ -40,8 +40,8 @@ void main() {
       final expectedConstraints = [
         PrimaryKeyColumn(null),
         NotNull(null),
-        CheckColumn(null, NumericLiteral(1, token(TokenType.numberLiteral))),
-        Default(null, NumericLiteral(0, token(TokenType.numberLiteral))),
+        CheckColumn(null, NumericLiteral(1)),
+        Default(null, NumericLiteral(0)),
       ];
 
       expect(parsedConstraints, hasLength(expectedConstraints.length));

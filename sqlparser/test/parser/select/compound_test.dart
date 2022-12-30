@@ -18,7 +18,7 @@ void main() {
             select: SelectStatement(
               columns: [
                 ExpressionResultColumn(
-                  expression: NumericLiteral(1, token(TokenType.numberLiteral)),
+                  expression: NumericLiteral(1),
                 ),
               ],
             ),
@@ -28,7 +28,7 @@ void main() {
             select: SelectStatement(
               columns: [
                 ExpressionResultColumn(
-                  expression: NumericLiteral(2, token(TokenType.numberLiteral)),
+                  expression: NumericLiteral(2),
                 ),
               ],
             ),

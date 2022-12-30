@@ -49,17 +49,13 @@ void main() {
             typeName: 'INT',
             constraints: [
               NotNull('score set'),
-              Default(
-                  null, NumericLiteral(420, token(TokenType.numberLiteral))),
+              Default(null, NumericLiteral(420)),
               CheckColumn(
                 null,
                 BinaryExpression(
                   Reference(columnName: 'score'),
                   token(TokenType.more),
-                  NumericLiteral(
-                    0,
-                    token(TokenType.numberLiteral),
-                  ),
+                  NumericLiteral(0),
                 ),
               ),
             ],
@@ -313,7 +309,7 @@ void main() {
               null,
               UnaryExpression(
                 Token(TokenType.minus, fakeSpan('-')),
-                NumericLiteral(1, NumericToken(fakeSpan('1'))),
+                NumericLiteral(1),
               ),
             )
           ])

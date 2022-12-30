@@ -12,21 +12,21 @@ void main() {
     whens: [
       WhenComponent(
         when: BinaryExpression(
-          NumericLiteral(1, token(TokenType.numberLiteral)),
+          NumericLiteral(1),
           token(TokenType.equal),
           ColonNamedVariable(_colon(':isReviewFolderSelected')),
         ),
         then: IsExpression(
           true,
           Reference(entityName: 'n', columnName: 'nextReviewTime'),
-          NullLiteral(token(TokenType.$null)),
+          NullLiteral(),
         ),
       ),
     ],
     elseExpr: IsExpression(
       false,
       Reference(entityName: 'n', columnName: 'nextReviewTime'),
-      NullLiteral(token(TokenType.$null)),
+      NullLiteral(),
     ),
   );
 
@@ -39,8 +39,8 @@ void main() {
   test('repro 1', () {
     testStatement(
       '''
-      SELECT * FROM notes n WHERE 
-        CASE 
+      SELECT * FROM notes n WHERE
+        CASE
           WHEN 1 = :isReviewFolderSelected THEN n.nextReviewTime IS NOT NULL
           ELSE n.nextReviewTime IS NULL
          END

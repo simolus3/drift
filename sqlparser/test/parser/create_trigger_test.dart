@@ -87,7 +87,7 @@ void main() {
         when: IsExpression(
           false,
           Reference(entityName: 'new', columnName: 'foo'),
-          NullLiteral(token(TokenType.$null)),
+          NullLiteral(),
         ),
         action: _block,
       ),

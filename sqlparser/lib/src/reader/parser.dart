@@ -744,16 +744,18 @@ class Parser {
         return _numericLiteral();
       }
       if (_matchOne(TokenType.stringLiteral)) {
-        return StringLiteral(token as StringLiteralToken);
+        token as StringLiteralToken;
+        return StringLiteral(token.value, isBinary: token.binary)
+          ..token = token;
       }
       if (_matchOne(TokenType.$null)) {
-        return NullLiteral(token);
+        return NullLiteral()..token = token;
       }
       if (_matchOne(TokenType.$true)) {
-        return BooleanLiteral.withTrue(token);
+        return BooleanLiteral(true)..token = token;
       }
       if (_matchOne(TokenType.$false)) {
-        return BooleanLiteral.withFalse(token);
+        return BooleanLiteral(false)..token = token;
       }
 
       const timeLiterals = {
@@ -764,7 +766,7 @@ class Parser {
 
       if (_match(timeLiterals.keys)) {
         final token = _previous;
-        return TimeConstantLiteral(timeLiterals[token.type]!, token);
+        return TimeConstantLiteral(timeLiterals[token.type]!)..token = token;
       }
 
       return null;
@@ -778,7 +780,9 @@ class Parser {
   NumericLiteral _numericLiteral() {
     final number = _consume(TokenType.numberLiteral, 'Expected a number here')
         as NumericToken;
-    return NumericLiteral(number.parsedNumber, number)..setSpan(number, number);
+    return NumericLiteral(number.parsedNumber)
+      ..token = number
+      ..setSpan(number, number);
   }
 
   Expression _primary() {
@@ -899,8 +903,10 @@ class Parser {
 
   Variable? _variableOrNull() {
     if (_matchOne(TokenType.questionMarkVariable)) {
-      return NumberedVariable(_previous as QuestionMarkVariableToken)
-        ..setSpan(_previous, _previous);
+      final token = _previous as QuestionMarkVariableToken;
+      return NumberedVariable(token.explicitIndex)
+        ..token = token
+        ..setSpan(token, token);
     } else if (_matchOne(TokenType.colonVariable)) {
       return ColonNamedVariable(_previous as ColonVariableToken)
         ..setSpan(_previous, _previous);

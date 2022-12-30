@@ -109,7 +109,7 @@ void main() {
                   IndexedColumn(Reference(columnName: 'bar')),
                 ],
                 where: BinaryExpression(
-                  NumericLiteral(2, token(TokenType.numberLiteral)),
+                  NumericLiteral(2),
                   token(TokenType.equal),
                   Reference(columnName: 'foo'),
                 ),
@@ -135,8 +135,7 @@ void main() {
                   [
                     SetComponent(
                       column: Reference(columnName: 'foo'),
-                      expression:
-                          NumericLiteral(2, token(TokenType.numberLiteral)),
+                      expression: NumericLiteral(2),
                     ),
                   ],
                 ),
@@ -161,13 +160,10 @@ void main() {
                   [
                     SetComponent(
                       column: Reference(columnName: 'foo'),
-                      expression:
-                          NumericLiteral(2, token(TokenType.numberLiteral)),
+                      expression: NumericLiteral(2),
                     ),
                   ],
-                  where: NumberedVariable(
-                    QuestionMarkVariableToken(fakeSpan('?'), null),
-                  ),
+                  where: NumberedVariable(null),
                 ),
               ),
             ],
@@ -195,8 +191,7 @@ void main() {
                   [
                     SetComponent(
                       column: Reference(columnName: 'x'),
-                      expression:
-                          NumericLiteral(2, token(TokenType.numberLiteral)),
+                      expression: NumericLiteral(2),
                     ),
                   ],
                 ),
@@ -218,7 +213,7 @@ void main() {
         returning: Returning([
           ExpressionResultColumn(expression: Reference(columnName: 'foo')),
           ExpressionResultColumn(
-            expression: NumericLiteral(3, token(TokenType.numberLiteral)),
+            expression: NumericLiteral(3),
           ),
           ExpressionResultColumn(expression: Reference(columnName: 'bar')),
         ]),

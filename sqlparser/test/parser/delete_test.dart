@@ -14,7 +14,6 @@ void main() {
           token(TokenType.equal),
           NumericLiteral(
             5,
-            token(TokenType.numberLiteral),
           ),
         ),
       ),

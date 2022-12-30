@@ -16,9 +16,9 @@ void main() {
         select.limit!,
         Limit(
           count: BinaryExpression(
-            NumericLiteral(5, token(TokenType.numberLiteral)),
+            NumericLiteral(5),
             token(TokenType.star),
-            NumericLiteral(3, token(TokenType.numberLiteral)),
+            NumericLiteral(3),
           ),
         ),
       );
@@ -33,9 +33,9 @@ void main() {
       enforceEqual(
         select.limit!,
         Limit(
-          count: NumericLiteral(10, token(TokenType.numberLiteral)),
+          count: NumericLiteral(10),
           offsetSeparator: token(TokenType.offset),
-          offset: NumericLiteral(2, token(TokenType.numberLiteral)),
+          offset: NumericLiteral(2),
         ),
       );
     });
@@ -51,9 +51,9 @@ void main() {
       enforceEqual(
         select.limit!,
         Limit(
-          count: NumericLiteral(2, token(TokenType.numberLiteral)),
+          count: NumericLiteral(2),
           offsetSeparator: token(TokenType.comma),
-          offset: NumericLiteral(10, token(TokenType.numberLiteral)),
+          offset: NumericLiteral(10),
         ),
       );
     });
