@@ -271,7 +271,7 @@ class UpdateCompanionWriter {
     final info = table.existingRowClass;
     if (info == null) return;
 
-    _buffer.write('mixin ${table.nameOfRowClass}Columns ');
+    _buffer.write('mixin ${table.baseDartName}ToColumns ');
 
     final type = _emitter.dartCode(_emitter.writer.rowType(table));
     _buffer.writeln('implements ${_emitter.drift('Insertable')}<$type> {');
