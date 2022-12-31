@@ -265,11 +265,17 @@ class TableWriter extends TableOrViewWriter {
       scope.generationOptions.isGeneratingForSchema;
 
   void writeInto() {
+    emitter = scope.leaf();
+
     writeDataClass();
     writeTableInfoClass();
   }
 
   void writeDataClass() {
+    if (scope.options.writeToColumnsMixins) {
+      writeToColumnsMixin();
+    }
+
     if (scope.generationOptions.writeDataClasses) {
       final existing = table.existingRowClass;
       if (existing != null) {
@@ -277,7 +283,7 @@ class TableWriter extends TableOrViewWriter {
         // user. However, if the existing row type is a record, it is helpful
         // to generate a typedef for it.
         if (existing.isRecord) {
-          scope.leaf()
+          emitter
             ..write('typedef ${table.nameOfRowClass} = ')
             ..writeDart(AnnotatedDartCode.type(existing.targetType))
             ..write(';');
@@ -293,8 +299,6 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void writeTableInfoClass() {
-    emitter = scope.leaf();
-
     if (!scope.generationOptions.writeDataClasses) {
       // Write a small table header without data class
       buffer
@@ -360,6 +364,81 @@ class TableWriter extends TableOrViewWriter {
 
     // close class
     buffer.write('}');
+  }
+
+  void writeToColumnsMixin() {
+    buffer.write('mixin ${table.baseDartName}ToColumns ');
+
+    final type = emitter.dartCode(emitter.writer.rowType(table));
+    buffer.writeln('implements ${emitter.drift('Insertable')}<$type> {');
+
+    for (final column in table.columns) {
+      if (column.documentationComment != null) {
+        buffer.write('${column.documentationComment}\n');
+      }
+      final typeName = emitter.dartCode(emitter.dartType(column));
+      buffer.writeln('$typeName get ${column.nameInDart};');
+    }
+
+    _writeToColumnsOverride();
+    buffer.write('}');
+  }
+
+  void _writeToColumnsOverride() {
+    final expression = emitter.drift('Expression');
+    final variable = emitter.drift('Variable');
+
+    buffer
+      ..write('@override\nMap<String, $expression> toColumns'
+          '(bool nullToAbsent) {\n')
+      ..write('final map = <String, $expression> {};');
+
+    for (final column in table.columns) {
+      // Generated column - cannot be used for inserts or updates
+      if (column.isGenerated) continue;
+
+      // We include all columns that are not null. If nullToAbsent is false, we
+      // also include null columns. When generating NNBD code, we can include
+      // non-nullable columns without an additional null check since we know
+      // the values aren't going to be null.
+      final needsNullCheck = column.nullableInDart;
+      final needsScope = needsNullCheck || column.typeConverter != null;
+      if (needsNullCheck) {
+        buffer.write('if (!nullToAbsent || ${column.nameInDart} != null)');
+      }
+      if (needsScope) buffer.write('{');
+
+      final typeName =
+          emitter.dartCode(emitter.variableTypeCode(column, nullable: false));
+      final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
+          '$variable<$typeName>';
+
+      if (column.typeConverter != null) {
+        // apply type converter before writing the variable
+        final converter = column.typeConverter!;
+
+        emitter
+          ..write('final converter = ')
+          ..writeDart(emitter.writer
+              .readConverter(converter, forNullable: column.nullable))
+          ..writeln(';')
+          ..write(mapSetter)
+          ..write('(converter.toSql(${column.nameInDart})');
+        buffer.write(');');
+      } else {
+        // no type converter. Write variable directly
+        buffer
+          ..write(mapSetter)
+          ..write('(')
+          ..write(column.nameInDart)
+          ..write(');');
+      }
+
+      // This one closes the optional if from before.
+      if (needsScope) buffer.write('}');
+    }
+
+    buffer.write('return map; \n}\n');
   }
 
   void _writeConvertersAsStaticFields() {

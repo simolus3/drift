@@ -48,11 +48,15 @@ class DataClassWriter {
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
     if (isInsertable) {
-      // The data class is only an insertable if we can actually insert rows
-      // into the target entity.
-      final type = _emitter.dartCode(_emitter.writer.rowType(table));
+      if (scope.options.writeToColumnsMixins) {
+        _buffer.writeln('with ${table.entityInfoName}ToColumns {');
+      } else {
+        // The data class is only an insertable if we can actually insert rows
+        // into the target entity.
+        final type = _emitter.dartCode(_emitter.writer.rowType(table));
 
-      _buffer.writeln('implements ${_emitter.drift('Insertable')}<$type> {');
+        _buffer.writeln('implements ${_emitter.drift('Insertable')}<$type> {');
+      }
     } else {
       _buffer.writeln('{');
     }
@@ -88,7 +92,9 @@ class DataClassWriter {
       ..write('});');
 
     if (isInsertable) {
-      _writeToColumnsOverride();
+      if (!scope.options.writeToColumnsMixins) {
+        _writeToColumnsOverride();
+      }
       if (scope.options.dataClassToCompanions) {
         _writeToCompanion();
       }
