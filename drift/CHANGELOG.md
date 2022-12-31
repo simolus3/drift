@@ -1,4 +1,4 @@
-## 2.4.1-dev
+## 2.4.1
 
 - Fix `DriftIsolate` leaking resources for closed connections.
 
