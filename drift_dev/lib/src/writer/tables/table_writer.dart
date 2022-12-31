@@ -380,65 +380,8 @@ class TableWriter extends TableOrViewWriter {
       buffer.writeln('$typeName get ${column.nameInDart};');
     }
 
-    _writeToColumnsOverride();
+    emitter.writeToColumnsOverride(table.columns);
     buffer.write('}');
-  }
-
-  void _writeToColumnsOverride() {
-    final expression = emitter.drift('Expression');
-    final variable = emitter.drift('Variable');
-
-    buffer
-      ..write('@override\nMap<String, $expression> toColumns'
-          '(bool nullToAbsent) {\n')
-      ..write('final map = <String, $expression> {};');
-
-    for (final column in table.columns) {
-      // Generated column - cannot be used for inserts or updates
-      if (column.isGenerated) continue;
-
-      // We include all columns that are not null. If nullToAbsent is false, we
-      // also include null columns. When generating NNBD code, we can include
-      // non-nullable columns without an additional null check since we know
-      // the values aren't going to be null.
-      final needsNullCheck = column.nullableInDart;
-      final needsScope = needsNullCheck || column.typeConverter != null;
-      if (needsNullCheck) {
-        buffer.write('if (!nullToAbsent || ${column.nameInDart} != null)');
-      }
-      if (needsScope) buffer.write('{');
-
-      final typeName =
-          emitter.dartCode(emitter.variableTypeCode(column, nullable: false));
-      final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
-          '$variable<$typeName>';
-
-      if (column.typeConverter != null) {
-        // apply type converter before writing the variable
-        final converter = column.typeConverter!;
-
-        emitter
-          ..write('final converter = ')
-          ..writeDart(emitter.writer
-              .readConverter(converter, forNullable: column.nullable))
-          ..writeln(';')
-          ..write(mapSetter)
-          ..write('(converter.toSql(${column.nameInDart})');
-        buffer.write(');');
-      } else {
-        // no type converter. Write variable directly
-        buffer
-          ..write(mapSetter)
-          ..write('(')
-          ..write(column.nameInDart)
-          ..write(');');
-      }
-
-      // This one closes the optional if from before.
-      if (needsScope) buffer.write('}');
-    }
-
-    buffer.write('return map; \n}\n');
   }
 
   void _writeConvertersAsStaticFields() {

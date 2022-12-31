@@ -92,8 +92,10 @@ class DataClassWriter {
       ..write('});');
 
     if (isInsertable) {
+      // If we generate mixins for the `toColumns` override, we don't need to
+      // generate a duplicate method in the data class.
       if (!scope.options.writeToColumnsMixins) {
-        _writeToColumnsOverride();
+        _emitter.writeToColumnsOverride(columns);
       }
       if (scope.options.dataClassToCompanions) {
         _writeToCompanion();
@@ -245,63 +247,6 @@ class DataClassWriter {
     _buffer.write(');');
   }
 
-  void _writeToColumnsOverride() {
-    final expression = _emitter.drift('Expression');
-    final variable = _emitter.drift('Variable');
-
-    _buffer
-      ..write('@override\nMap<String, $expression> toColumns'
-          '(bool nullToAbsent) {\n')
-      ..write('final map = <String, $expression> {};');
-
-    for (final column in columns) {
-      // Generated column - cannot be used for inserts or updates
-      if (column.isGenerated) continue;
-
-      // We include all columns that are not null. If nullToAbsent is false, we
-      // also include null columns. When generating NNBD code, we can include
-      // non-nullable columns without an additional null check since we know
-      // the values aren't going to be null.
-      final needsNullCheck = column.nullableInDart;
-      final needsScope = needsNullCheck || column.typeConverter != null;
-      if (needsNullCheck) {
-        _buffer.write('if (!nullToAbsent || ${column.nameInDart} != null)');
-      }
-      if (needsScope) _buffer.write('{');
-
-      final typeName =
-          _emitter.dartCode(_emitter.variableTypeCode(column, nullable: false));
-      final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
-          '$variable<$typeName>';
-
-      if (column.typeConverter != null) {
-        // apply type converter before writing the variable
-        final converter = column.typeConverter!;
-
-        _emitter
-          ..write('final converter = ')
-          ..writeDart(_emitter.writer
-              .readConverter(converter, forNullable: column.nullable))
-          ..writeln(';')
-          ..write(mapSetter)
-          ..write('(converter.toSql(${column.nameInDart})');
-        _buffer.write(');');
-      } else {
-        // no type converter. Write variable directly
-        _buffer
-          ..write(mapSetter)
-          ..write('(')
-          ..write(column.nameInDart)
-          ..write(');');
-      }
-
-      // This one closes the optional if from before.
-      if (needsScope) _buffer.write('}');
-    }
-
-    _buffer.write('return map; \n}\n');
-  }
-
   void _writeToCompanion() {
     final asTable = table as DriftTable;
     final companionType = _emitter.writer.companionType(asTable);
@@ -422,5 +367,61 @@ class RowMappingWriter {
     });
 
     buffer.write(')');
+  }
+}
+
+extension WriteToColumns on TextEmitter {
+  void writeToColumnsOverride(Iterable<DriftColumn> columns) {
+    final expression = drift('Expression');
+    final variable = drift('Variable');
+
+    this
+      ..write('@override\nMap<String, $expression> toColumns'
+          '(bool nullToAbsent) {\n')
+      ..write('final map = <String, $expression> {};');
+
+    for (final column in columns) {
+      // Generated column - cannot be used for inserts or updates
+      if (column.isGenerated) continue;
+
+      // We include all columns that are not null. If nullToAbsent is false, we
+      // also include null columns. When generating NNBD code, we can include
+      // non-nullable columns without an additional null check since we know
+      // the values aren't going to be null.
+      final needsNullCheck = column.nullableInDart;
+      final needsScope = needsNullCheck || column.typeConverter != null;
+      if (needsNullCheck) {
+        write('if (!nullToAbsent || ${column.nameInDart} != null)');
+      }
+      if (needsScope) write('{');
+
+      final typeName = dartCode(variableTypeCode(column, nullable: false));
+      final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
+          '$variable<$typeName>';
+
+      if (column.typeConverter != null) {
+        // apply type converter before writing the variable
+        final converter = column.typeConverter!;
+
+        this
+          ..write('final converter = ')
+          ..writeDart(readConverter(converter, forNullable: column.nullable))
+          ..writeln(';')
+          ..write(mapSetter)
+          ..write('(converter.toSql(${column.nameInDart}));');
+      } else {
+        // no type converter. Write variable directly
+        this
+          ..write(mapSetter)
+          ..write('(')
+          ..write(column.nameInDart)
+          ..write(');');
+      }
+
+      // This one closes the optional if from before.
+      if (needsScope) write('}');
+    }
+
+    write('return map; \n}\n');
   }
 }
