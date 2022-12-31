@@ -66,6 +66,9 @@ class DataClassWriter {
       if (column.documentationComment != null) {
         _buffer.write('${column.documentationComment}\n');
       }
+      if (scope.options.writeToColumnsMixins) {
+        _buffer.writeln('@override');
+      }
       final modifier = scope.options.fieldModifier;
       _buffer.writeln('$modifier ${_columnType(column)} ${column.nameInDart};');
     }
