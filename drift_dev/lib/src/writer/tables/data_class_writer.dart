@@ -100,7 +100,8 @@ class DataClassWriter {
       if (!scope.options.writeToColumnsMixins) {
         _emitter.writeToColumnsOverride(columns);
       }
-      if (scope.options.dataClassToCompanions) {
+      if (scope.options.dataClassToCompanions &&
+          scope.generationOptions.writeCompanions) {
         _writeToCompanion();
       }
     }
