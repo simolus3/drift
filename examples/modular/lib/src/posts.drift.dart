@@ -2,6 +2,82 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/posts.drift.dart' as i1;
 
+class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
+  @override
+  final i0.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Posts(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
+  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'PRIMARY KEY');
+  static const i0.VerificationMeta _authorMeta =
+      const i0.VerificationMeta('author');
+  late final i0.GeneratedColumn<int> author = i0.GeneratedColumn<int>(
+      'author', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
+  static const i0.VerificationMeta _contentMeta =
+      const i0.VerificationMeta('content');
+  late final i0.GeneratedColumn<String> content = i0.GeneratedColumn<String>(
+      'content', aliasedName, true,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  @override
+  List<i0.GeneratedColumn> get $columns => [id, author, content];
+  @override
+  String get aliasedName => _alias ?? 'posts';
+  @override
+  String get actualTableName => 'posts';
+  @override
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Post> instance,
+      {bool isInserting = false}) {
+    final context = i0.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('author')) {
+      context.handle(_authorMeta,
+          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
+    } else if (isInserting) {
+      context.missing(_authorMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<i0.GeneratedColumn> get $primaryKey => {id};
+  @override
+  i1.Post map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return i1.Post(
+      id: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
+      author: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}author'])!,
+      content: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}content']),
+    );
+  }
+
+  @override
+  Posts createAlias(String alias) {
+    return Posts(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 class Post extends i0.DataClass implements i0.Insertable<i1.Post> {
   final int id;
   final int author;
@@ -138,76 +214,67 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
   }
 }
 
-class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
+class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Posts(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
-  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
-      'id', aliasedName, false,
+  Likes(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _postMeta =
+      const i0.VerificationMeta('post');
+  late final i0.GeneratedColumn<int> post = i0.GeneratedColumn<int>(
+      'post', aliasedName, false,
       type: i0.DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: 'PRIMARY KEY');
-  static const i0.VerificationMeta _authorMeta =
-      const i0.VerificationMeta('author');
-  late final i0.GeneratedColumn<int> author = i0.GeneratedColumn<int>(
-      'author', aliasedName, false,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES posts(id)');
+  static const i0.VerificationMeta _likedByMeta =
+      const i0.VerificationMeta('likedBy');
+  late final i0.GeneratedColumn<int> likedBy = i0.GeneratedColumn<int>(
+      'liked_by', aliasedName, false,
       type: i0.DriftSqlType.int,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users(id)');
-  static const i0.VerificationMeta _contentMeta =
-      const i0.VerificationMeta('content');
-  late final i0.GeneratedColumn<String> content = i0.GeneratedColumn<String>(
-      'content', aliasedName, true,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
   @override
-  List<i0.GeneratedColumn> get $columns => [id, author, content];
+  List<i0.GeneratedColumn> get $columns => [post, likedBy];
   @override
-  String get aliasedName => _alias ?? 'posts';
+  String get aliasedName => _alias ?? 'likes';
   @override
-  String get actualTableName => 'posts';
+  String get actualTableName => 'likes';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Post> instance,
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Like> instance,
       {bool isInserting = false}) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('author')) {
-      context.handle(_authorMeta,
-          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
+    if (data.containsKey('post')) {
+      context.handle(
+          _postMeta, post.isAcceptableOrUnknown(data['post']!, _postMeta));
     } else if (isInserting) {
-      context.missing(_authorMeta);
+      context.missing(_postMeta);
     }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    if (data.containsKey('liked_by')) {
+      context.handle(_likedByMeta,
+          likedBy.isAcceptableOrUnknown(data['liked_by']!, _likedByMeta));
+    } else if (isInserting) {
+      context.missing(_likedByMeta);
     }
     return context;
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {id};
+  Set<i0.GeneratedColumn> get $primaryKey => const {};
   @override
-  i1.Post map(Map<String, dynamic> data, {String? tablePrefix}) {
+  i1.Like map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.Post(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
-      author: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}author'])!,
-      content: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}content']),
+    return i1.Like(
+      post: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}post'])!,
+      likedBy: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}liked_by'])!,
     );
   }
 
   @override
-  Posts createAlias(String alias) {
-    return Posts(attachedDatabase, alias);
+  Likes createAlias(String alias) {
+    return Likes(attachedDatabase, alias);
   }
 
   @override
@@ -322,71 +389,4 @@ class LikesCompanion extends i0.UpdateCompanion<i1.Like> {
           ..write(')'))
         .toString();
   }
-}
-
-class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
-  @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Likes(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _postMeta =
-      const i0.VerificationMeta('post');
-  late final i0.GeneratedColumn<int> post = i0.GeneratedColumn<int>(
-      'post', aliasedName, false,
-      type: i0.DriftSqlType.int,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES posts(id)');
-  static const i0.VerificationMeta _likedByMeta =
-      const i0.VerificationMeta('likedBy');
-  late final i0.GeneratedColumn<int> likedBy = i0.GeneratedColumn<int>(
-      'liked_by', aliasedName, false,
-      type: i0.DriftSqlType.int,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
-  @override
-  List<i0.GeneratedColumn> get $columns => [post, likedBy];
-  @override
-  String get aliasedName => _alias ?? 'likes';
-  @override
-  String get actualTableName => 'likes';
-  @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Like> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('post')) {
-      context.handle(
-          _postMeta, post.isAcceptableOrUnknown(data['post']!, _postMeta));
-    } else if (isInserting) {
-      context.missing(_postMeta);
-    }
-    if (data.containsKey('liked_by')) {
-      context.handle(_likedByMeta,
-          likedBy.isAcceptableOrUnknown(data['liked_by']!, _likedByMeta));
-    } else if (isInserting) {
-      context.missing(_likedByMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<i0.GeneratedColumn> get $primaryKey => const {};
-  @override
-  i1.Like map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.Like(
-      post: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}post'])!,
-      likedBy: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}liked_by'])!,
-    );
-  }
-
-  @override
-  Likes createAlias(String alias) {
-    return Likes(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
 }

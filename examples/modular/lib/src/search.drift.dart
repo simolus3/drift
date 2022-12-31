@@ -4,6 +4,80 @@ import 'package:modular/src/search.drift.dart' as i1;
 import 'package:drift/internal/modular.dart' as i2;
 import 'package:modular/src/posts.drift.dart' as i3;
 
+class SearchInPosts extends i0.Table
+    with
+        i0.TableInfo<SearchInPosts, i1.SearchInPost>,
+        i0.VirtualTableInfo<SearchInPosts, i1.SearchInPost> {
+  @override
+  final i0.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  SearchInPosts(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _authorMeta =
+      const i0.VerificationMeta('author');
+  late final i0.GeneratedColumn<String> author = i0.GeneratedColumn<String>(
+      'author', aliasedName, false,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  static const i0.VerificationMeta _contentMeta =
+      const i0.VerificationMeta('content');
+  late final i0.GeneratedColumn<String> content = i0.GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
+  @override
+  List<i0.GeneratedColumn> get $columns => [author, content];
+  @override
+  String get aliasedName => _alias ?? 'search_in_posts';
+  @override
+  String get actualTableName => 'search_in_posts';
+  @override
+  i0.VerificationContext validateIntegrity(
+      i0.Insertable<i1.SearchInPost> instance,
+      {bool isInserting = false}) {
+    final context = i0.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('author')) {
+      context.handle(_authorMeta,
+          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
+    } else if (isInserting) {
+      context.missing(_authorMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<i0.GeneratedColumn> get $primaryKey => const {};
+  @override
+  i1.SearchInPost map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return i1.SearchInPost(
+      author: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}author'])!,
+      content: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}content'])!,
+    );
+  }
+
+  @override
+  SearchInPosts createAlias(String alias) {
+    return SearchInPosts(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs =>
+      'fts5(author, content, content=posts, content_rowid=id)';
+}
+
 class SearchInPost extends i0.DataClass
     implements i0.Insertable<i1.SearchInPost> {
   final String author;
@@ -115,80 +189,6 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
           ..write(')'))
         .toString();
   }
-}
-
-class SearchInPosts extends i0.Table
-    with
-        i0.TableInfo<SearchInPosts, i1.SearchInPost>,
-        i0.VirtualTableInfo<SearchInPosts, i1.SearchInPost> {
-  @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  SearchInPosts(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _authorMeta =
-      const i0.VerificationMeta('author');
-  late final i0.GeneratedColumn<String> author = i0.GeneratedColumn<String>(
-      'author', aliasedName, false,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  static const i0.VerificationMeta _contentMeta =
-      const i0.VerificationMeta('content');
-  late final i0.GeneratedColumn<String> content = i0.GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  @override
-  List<i0.GeneratedColumn> get $columns => [author, content];
-  @override
-  String get aliasedName => _alias ?? 'search_in_posts';
-  @override
-  String get actualTableName => 'search_in_posts';
-  @override
-  i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.SearchInPost> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('author')) {
-      context.handle(_authorMeta,
-          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
-    } else if (isInserting) {
-      context.missing(_authorMeta);
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    } else if (isInserting) {
-      context.missing(_contentMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<i0.GeneratedColumn> get $primaryKey => const {};
-  @override
-  i1.SearchInPost map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.SearchInPost(
-      author: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}author'])!,
-      content: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}content'])!,
-    );
-  }
-
-  @override
-  SearchInPosts createAlias(String alias) {
-    return SearchInPosts(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-  @override
-  String get moduleAndArgs =>
-      'fts5(author, content, content=posts, content_rowid=id)';
 }
 
 i0.Trigger get postsInsert => i0.Trigger(

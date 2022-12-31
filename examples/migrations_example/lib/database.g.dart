@@ -3,6 +3,98 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UsersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('name'));
+  static const VerificationMeta _birthdayMeta =
+      const VerificationMeta('birthday');
+  @override
+  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+      'birthday', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _nextUserMeta =
+      const VerificationMeta('nextUser');
+  @override
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
+      'next_user', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
+  @override
+  String get aliasedName => _alias ?? 'users';
+  @override
+  String get actualTableName => 'users';
+  @override
+  VerificationContext validateIntegrity(Insertable<User> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    }
+    if (data.containsKey('birthday')) {
+      context.handle(_birthdayMeta,
+          birthday.isAcceptableOrUnknown(data['birthday']!, _birthdayMeta));
+    }
+    if (data.containsKey('next_user')) {
+      context.handle(_nextUserMeta,
+          nextUser.isAcceptableOrUnknown(data['next_user']!, _nextUserMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {name, birthday},
+      ];
+  @override
+  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return User(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthday: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
+      nextUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+    );
+  }
+
+  @override
+  $UsersTable createAlias(String alias) {
+    return $UsersTable(attachedDatabase, alias);
+  }
+}
+
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
@@ -166,67 +258,66 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+class Groups extends Table with TableInfo<Groups, Group> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
+  Groups(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+      $customConstraints: 'NOT NULL');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
       type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  static const VerificationMeta _deletedMeta =
+      const VerificationMeta('deleted');
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+      'deleted', aliasedName, true,
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultValue: const Constant('name'));
-  static const VerificationMeta _birthdayMeta =
-      const VerificationMeta('birthday');
-  @override
-  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
-      'birthday', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _nextUserMeta =
-      const VerificationMeta('nextUser');
-  @override
-  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
-      'next_user', aliasedName, true,
+      $customConstraints: 'DEFAULT FALSE',
+      defaultValue: const CustomExpression('FALSE'));
+  static const VerificationMeta _ownerMeta = const VerificationMeta('owner');
+  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
+      'owner', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
   @override
-  List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
+  List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? 'groups';
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => 'groups';
   @override
-  VerificationContext validateIntegrity(Insertable<User> instance,
+  VerificationContext validateIntegrity(Insertable<Group> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('title')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
     }
-    if (data.containsKey('birthday')) {
-      context.handle(_birthdayMeta,
-          birthday.isAcceptableOrUnknown(data['birthday']!, _birthdayMeta));
+    if (data.containsKey('deleted')) {
+      context.handle(_deletedMeta,
+          deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta));
     }
-    if (data.containsKey('next_user')) {
-      context.handle(_nextUserMeta,
-          nextUser.isAcceptableOrUnknown(data['next_user']!, _nextUserMeta));
+    if (data.containsKey('owner')) {
+      context.handle(
+          _ownerMeta, owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta));
+    } else if (isInserting) {
+      context.missing(_ownerMeta);
     }
     return context;
   }
@@ -234,28 +325,29 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-        {name, birthday},
-      ];
-  @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Group map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
+    return Group(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthday: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
-      nextUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      deleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
+      owner: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
     );
   }
 
   @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  Groups createAlias(String alias) {
+    return Groups(attachedDatabase, alias);
   }
+
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY(id)'];
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class Group extends DataClass implements Insertable<Group> {
@@ -421,96 +513,91 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   }
 }
 
-class Groups extends Table with TableInfo<Groups, Group> {
+class Notes extends Table
+    with TableInfo<Notes, Note>, VirtualTableInfo<Notes, Note> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Groups(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL');
+  Notes(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL');
-  static const VerificationMeta _deletedMeta =
-      const VerificationMeta('deleted');
-  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
-      'deleted', aliasedName, true,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      $customConstraints: 'DEFAULT FALSE',
-      defaultValue: const CustomExpression('FALSE'));
-  static const VerificationMeta _ownerMeta = const VerificationMeta('owner');
-  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
-      'owner', aliasedName, false,
-      type: DriftSqlType.int,
+      $customConstraints: '');
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
+      $customConstraints: '');
+  static const VerificationMeta _searchTermsMeta =
+      const VerificationMeta('searchTerms');
+  late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
+      'search_terms', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: '');
   @override
-  List<GeneratedColumn> get $columns => [id, title, deleted, owner];
+  List<GeneratedColumn> get $columns => [title, content, searchTerms];
   @override
-  String get aliasedName => _alias ?? 'groups';
+  String get aliasedName => _alias ?? 'notes';
   @override
-  String get actualTableName => 'groups';
+  String get actualTableName => 'notes';
   @override
-  VerificationContext validateIntegrity(Insertable<Group> instance,
+  VerificationContext validateIntegrity(Insertable<Note> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
     if (data.containsKey('title')) {
       context.handle(
           _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
-    if (data.containsKey('deleted')) {
-      context.handle(_deletedMeta,
-          deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta));
-    }
-    if (data.containsKey('owner')) {
-      context.handle(
-          _ownerMeta, owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta));
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
     } else if (isInserting) {
-      context.missing(_ownerMeta);
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('search_terms')) {
+      context.handle(
+          _searchTermsMeta,
+          searchTerms.isAcceptableOrUnknown(
+              data['search_terms']!, _searchTermsMeta));
+    } else if (isInserting) {
+      context.missing(_searchTermsMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  Group map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Group(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+    return Note(
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      deleted: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
-      owner: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      searchTerms: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}search_terms'])!,
     );
   }
 
   @override
-  Groups createAlias(String alias) {
-    return Groups(attachedDatabase, alias);
+  Notes createAlias(String alias) {
+    return Notes(attachedDatabase, alias);
   }
 
   @override
-  List<String> get customConstraints => const ['PRIMARY KEY(id)'];
-  @override
   bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs =>
+      'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
 }
 
 class Note extends DataClass implements Insertable<Note> {
@@ -644,93 +731,6 @@ class NotesCompanion extends UpdateCompanion<Note> {
           ..write(')'))
         .toString();
   }
-}
-
-class Notes extends Table
-    with TableInfo<Notes, Note>, VirtualTableInfo<Notes, Note> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Notes(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _titleMeta = const VerificationMeta('title');
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  static const VerificationMeta _searchTermsMeta =
-      const VerificationMeta('searchTerms');
-  late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
-      'search_terms', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: '');
-  @override
-  List<GeneratedColumn> get $columns => [title, content, searchTerms];
-  @override
-  String get aliasedName => _alias ?? 'notes';
-  @override
-  String get actualTableName => 'notes';
-  @override
-  VerificationContext validateIntegrity(Insertable<Note> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
-    } else if (isInserting) {
-      context.missing(_titleMeta);
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    } else if (isInserting) {
-      context.missing(_contentMeta);
-    }
-    if (data.containsKey('search_terms')) {
-      context.handle(
-          _searchTermsMeta,
-          searchTerms.isAcceptableOrUnknown(
-              data['search_terms']!, _searchTermsMeta));
-    } else if (isInserting) {
-      context.missing(_searchTermsMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => const {};
-  @override
-  Note map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Note(
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
-      searchTerms: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}search_terms'])!,
-    );
-  }
-
-  @override
-  Notes createAlias(String alias) {
-    return Notes(attachedDatabase, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-  @override
-  String get moduleAndArgs =>
-      'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
 }
 
 class GroupCountData extends DataClass {
