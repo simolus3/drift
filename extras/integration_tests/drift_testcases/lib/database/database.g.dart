@@ -3,6 +3,110 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UsersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _birthDateMeta =
+      const VerificationMeta('birthDate');
+  @override
+  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
+      'birth_date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _profilePictureMeta =
+      const VerificationMeta('profilePicture');
+  @override
+  late final GeneratedColumn<Uint8List> profilePicture =
+      GeneratedColumn<Uint8List>('profile_picture', aliasedName, true,
+          type: DriftSqlType.blob, requiredDuringInsert: false);
+  static const VerificationMeta _preferencesMeta =
+      const VerificationMeta('preferences');
+  @override
+  late final GeneratedColumnWithTypeConverter<Preferences?, String>
+      preferences = GeneratedColumn<String>('preferences', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<Preferences?>($UsersTable.$converterpreferences);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, birthDate, profilePicture, preferences];
+  @override
+  String get aliasedName => _alias ?? 'users';
+  @override
+  String get actualTableName => 'users';
+  @override
+  VerificationContext validateIntegrity(Insertable<User> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('birth_date')) {
+      context.handle(_birthDateMeta,
+          birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta));
+    } else if (isInserting) {
+      context.missing(_birthDateMeta);
+    }
+    if (data.containsKey('profile_picture')) {
+      context.handle(
+          _profilePictureMeta,
+          profilePicture.isAcceptableOrUnknown(
+              data['profile_picture']!, _profilePictureMeta));
+    }
+    context.handle(_preferencesMeta, const VerificationResult.success());
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return User(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
+      profilePicture: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
+      preferences: $UsersTable.$converterpreferences.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
+    );
+  }
+
+  @override
+  $UsersTable createAlias(String alias) {
+    return $UsersTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<Preferences?, String?> $converterpreferences =
+      const PreferenceConverter();
+}
+
 class User extends DataClass implements Insertable<User> {
   /// The user id
   final int id;
@@ -205,108 +309,91 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+class $FriendshipsTable extends Friendships
+    with TableInfo<$FriendshipsTable, Friendship> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  $FriendshipsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _firstUserMeta =
+      const VerificationMeta('firstUser');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  late final GeneratedColumn<int> firstUser = GeneratedColumn<int>(
+      'first_user', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _secondUserMeta =
+      const VerificationMeta('secondUser');
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _birthDateMeta =
-      const VerificationMeta('birthDate');
+  late final GeneratedColumn<int> secondUser = GeneratedColumn<int>(
+      'second_user', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _reallyGoodFriendsMeta =
+      const VerificationMeta('reallyGoodFriends');
   @override
-  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
-      'birth_date', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _profilePictureMeta =
-      const VerificationMeta('profilePicture');
-  @override
-  late final GeneratedColumn<Uint8List> profilePicture =
-      GeneratedColumn<Uint8List>('profile_picture', aliasedName, true,
-          type: DriftSqlType.blob, requiredDuringInsert: false);
-  static const VerificationMeta _preferencesMeta =
-      const VerificationMeta('preferences');
-  @override
-  late final GeneratedColumnWithTypeConverter<Preferences?, String>
-      preferences = GeneratedColumn<String>('preferences', aliasedName, true,
-              type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<Preferences?>($UsersTable.$converterpreferences);
+  late final GeneratedColumn<bool> reallyGoodFriends =
+      GeneratedColumn<bool>('really_good_friends', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, birthDate, profilePicture, preferences];
+      [firstUser, secondUser, reallyGoodFriends];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? 'friendships';
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => 'friendships';
   @override
-  VerificationContext validateIntegrity(Insertable<User> instance,
+  VerificationContext validateIntegrity(Insertable<Friendship> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    if (data.containsKey('first_user')) {
+      context.handle(_firstUserMeta,
+          firstUser.isAcceptableOrUnknown(data['first_user']!, _firstUserMeta));
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_firstUserMeta);
     }
-    if (data.containsKey('birth_date')) {
-      context.handle(_birthDateMeta,
-          birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta));
-    } else if (isInserting) {
-      context.missing(_birthDateMeta);
-    }
-    if (data.containsKey('profile_picture')) {
+    if (data.containsKey('second_user')) {
       context.handle(
-          _profilePictureMeta,
-          profilePicture.isAcceptableOrUnknown(
-              data['profile_picture']!, _profilePictureMeta));
+          _secondUserMeta,
+          secondUser.isAcceptableOrUnknown(
+              data['second_user']!, _secondUserMeta));
+    } else if (isInserting) {
+      context.missing(_secondUserMeta);
     }
-    context.handle(_preferencesMeta, const VerificationResult.success());
+    if (data.containsKey('really_good_friends')) {
+      context.handle(
+          _reallyGoodFriendsMeta,
+          reallyGoodFriends.isAcceptableOrUnknown(
+              data['really_good_friends']!, _reallyGoodFriendsMeta));
+    }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
   @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
-      profilePicture: attachedDatabase.typeMapping
-          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converterpreferences.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
+    return Friendship(
+      firstUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
+      secondUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
+      reallyGoodFriends: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
     );
   }
 
   @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  $FriendshipsTable createAlias(String alias) {
+    return $FriendshipsTable(attachedDatabase, alias);
   }
-
-  static TypeConverter<Preferences?, String?> $converterpreferences =
-      const PreferenceConverter();
 }
 
 class Friendship extends DataClass implements Insertable<Friendship> {
@@ -447,93 +534,6 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
           ..write('reallyGoodFriends: $reallyGoodFriends')
           ..write(')'))
         .toString();
-  }
-}
-
-class $FriendshipsTable extends Friendships
-    with TableInfo<$FriendshipsTable, Friendship> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $FriendshipsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _firstUserMeta =
-      const VerificationMeta('firstUser');
-  @override
-  late final GeneratedColumn<int> firstUser = GeneratedColumn<int>(
-      'first_user', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _secondUserMeta =
-      const VerificationMeta('secondUser');
-  @override
-  late final GeneratedColumn<int> secondUser = GeneratedColumn<int>(
-      'second_user', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _reallyGoodFriendsMeta =
-      const VerificationMeta('reallyGoodFriends');
-  @override
-  late final GeneratedColumn<bool> reallyGoodFriends =
-      GeneratedColumn<bool>('really_good_friends', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
-            SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
-            SqlDialect.mysql: '',
-            SqlDialect.postgres: '',
-          }),
-          defaultValue: const Constant(false));
-  @override
-  List<GeneratedColumn> get $columns =>
-      [firstUser, secondUser, reallyGoodFriends];
-  @override
-  String get aliasedName => _alias ?? 'friendships';
-  @override
-  String get actualTableName => 'friendships';
-  @override
-  VerificationContext validateIntegrity(Insertable<Friendship> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('first_user')) {
-      context.handle(_firstUserMeta,
-          firstUser.isAcceptableOrUnknown(data['first_user']!, _firstUserMeta));
-    } else if (isInserting) {
-      context.missing(_firstUserMeta);
-    }
-    if (data.containsKey('second_user')) {
-      context.handle(
-          _secondUserMeta,
-          secondUser.isAcceptableOrUnknown(
-              data['second_user']!, _secondUserMeta));
-    } else if (isInserting) {
-      context.missing(_secondUserMeta);
-    }
-    if (data.containsKey('really_good_friends')) {
-      context.handle(
-          _reallyGoodFriendsMeta,
-          reallyGoodFriends.isAcceptableOrUnknown(
-              data['really_good_friends']!, _reallyGoodFriendsMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
-  @override
-  Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Friendship(
-      firstUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
-      secondUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
-      reallyGoodFriends: attachedDatabase.typeMapping.read(
-          DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
-    );
-  }
-
-  @override
-  $FriendshipsTable createAlias(String alias) {
-    return $FriendshipsTable(attachedDatabase, alias);
   }
 }
 

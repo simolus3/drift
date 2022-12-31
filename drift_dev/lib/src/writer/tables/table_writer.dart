@@ -265,11 +265,17 @@ class TableWriter extends TableOrViewWriter {
       scope.generationOptions.isGeneratingForSchema;
 
   void writeInto() {
+    emitter = scope.leaf();
+
     writeDataClass();
     writeTableInfoClass();
   }
 
   void writeDataClass() {
+    if (scope.options.writeToColumnsMixins) {
+      writeToColumnsMixin();
+    }
+
     if (scope.generationOptions.writeDataClasses) {
       final existing = table.existingRowClass;
       if (existing != null) {
@@ -277,7 +283,7 @@ class TableWriter extends TableOrViewWriter {
         // user. However, if the existing row type is a record, it is helpful
         // to generate a typedef for it.
         if (existing.isRecord) {
-          scope.leaf()
+          emitter
             ..write('typedef ${table.nameOfRowClass} = ')
             ..writeDart(AnnotatedDartCode.type(existing.targetType))
             ..write(';');
@@ -293,8 +299,6 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void writeTableInfoClass() {
-    emitter = scope.leaf();
-
     if (!scope.generationOptions.writeDataClasses) {
       // Write a small table header without data class
       buffer
@@ -359,6 +363,24 @@ class TableWriter extends TableOrViewWriter {
     _overrideFieldsIfNeeded();
 
     // close class
+    buffer.write('}');
+  }
+
+  void writeToColumnsMixin() {
+    buffer.write('mixin ${table.baseDartName}ToColumns ');
+
+    final type = emitter.dartCode(emitter.writer.rowType(table));
+    buffer.writeln('implements ${emitter.drift('Insertable')}<$type> {');
+
+    for (final column in table.columns) {
+      if (column.documentationComment != null) {
+        buffer.write('${column.documentationComment}\n');
+      }
+      final typeName = emitter.dartCode(emitter.dartType(column));
+      buffer.writeln('$typeName get ${column.nameInDart};');
+    }
+
+    emitter.writeToColumnsOverride(table.columns);
     buffer.write('}');
   }
 

@@ -3,6 +3,66 @@
 part of 'regress_2166_test.dart';
 
 // ignore_for_file: type=lint
+class $_SomeTableTable extends _SomeTable
+    with TableInfo<$_SomeTableTable, _SomeTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $_SomeTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? 'some_table';
+  @override
+  String get actualTableName => 'some_table';
+  @override
+  VerificationContext validateIntegrity(Insertable<_SomeTableData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  _SomeTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return _SomeTableData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+    );
+  }
+
+  @override
+  $_SomeTableTable createAlias(String alias) {
+    return $_SomeTableTable(attachedDatabase, alias);
+  }
+}
+
 class _SomeTableData extends DataClass implements Insertable<_SomeTableData> {
   final int id;
   final String? name;
@@ -118,66 +178,6 @@ class _SomeTableCompanion extends UpdateCompanion<_SomeTableData> {
           ..write('name: $name')
           ..write(')'))
         .toString();
-  }
-}
-
-class $_SomeTableTable extends _SomeTable
-    with TableInfo<$_SomeTableTable, _SomeTableData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $_SomeTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? 'some_table';
-  @override
-  String get actualTableName => 'some_table';
-  @override
-  VerificationContext validateIntegrity(Insertable<_SomeTableData> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  _SomeTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return _SomeTableData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
-    );
-  }
-
-  @override
-  $_SomeTableTable createAlias(String alias) {
-    return $_SomeTableTable(attachedDatabase, alias);
   }
 }
 

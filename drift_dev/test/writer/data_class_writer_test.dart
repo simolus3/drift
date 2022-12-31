@@ -2,6 +2,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
+import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:collection/collection.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -123,6 +124,57 @@ class Database extends _$Database {}
     },
     tags: 'analyzer',
   );
+
+  test('can write mixins providing toColumns method', () async {
+    final writer = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.drift': '''
+import 'row.dart';
+
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE posts (
+  id INTEGER NOT NULL PRIMARY KEY,
+  content TEXT NOT NULL
+) WITH Post;
+''',
+        'a|lib/row.dart': '''
+import 'main.drift.dart';
+
+class Post with PostsToColumns {
+  @override
+  final int id;
+  @override
+  final String content;
+
+  Post(this.id, this.content);
+}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+      modularBuild: true,
+      options: BuilderOptions({'write_to_columns_mixins': true}),
+    );
+
+    checkOutputs({
+      'a|lib/main.drift.dart': decodedMatches(contains('''
+mixin PostsToColumns implements i1.Insertable<i2.Post> {
+  int get id;
+  String get content;
+  @override
+  Map<String, i1.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, i1.Expression>{};
+    map['id'] = i1.Variable<int>(id);
+    map['content'] = i1.Variable<String>(content);
+    return map;
+  }
+}
+''')),
+    }, writer.dartOutputs, writer);
+  });
 }
 
 class _GeneratesConstDataClasses extends Matcher {

@@ -3,6 +3,68 @@
 part of 'main.dart';
 
 // ignore_for_file: type=lint
+class $TodoCategoriesTable extends TodoCategories
+    with TableInfo<$TodoCategoriesTable, TodoCategory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodoCategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? 'todo_categories';
+  @override
+  String get actualTableName => 'todo_categories';
+  @override
+  VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoCategory(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
+  }
+
+  @override
+  $TodoCategoriesTable createAlias(String alias) {
+    return $TodoCategoriesTable(attachedDatabase, alias);
+  }
+}
+
 class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
@@ -115,12 +177,12 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
   }
 }
 
-class $TodoCategoriesTable extends TodoCategories
-    with TableInfo<$TodoCategoriesTable, TodoCategory> {
+class $TodoItemsTable extends TodoItems
+    with TableInfo<$TodoItemsTable, TodoItem> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TodoCategoriesTable(this.attachedDatabase, [this._alias]);
+  $TodoItemsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -130,30 +192,73 @@ class $TodoCategoriesTable extends TodoCategories
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _categoryIdMeta =
+      const VerificationMeta('categoryId');
   @override
-  String get aliasedName => _alias ?? 'todo_categories';
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+      'category_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES todo_categories (id)'));
+  static const VerificationMeta _generatedTextMeta =
+      const VerificationMeta('generatedText');
   @override
-  String get actualTableName => 'todo_categories';
+  late final GeneratedColumn<String> generatedText = GeneratedColumn<String>(
+      'generated_text', aliasedName, true,
+      generatedAs: GeneratedAs(
+          title + const Constant(' (') + content + const Constant(')'), false),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
   @override
-  VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
+  List<GeneratedColumn> get $columns =>
+      [id, title, content, categoryId, generatedText];
+  @override
+  String get aliasedName => _alias ?? 'todo_items';
+  @override
+  String get actualTableName => 'todo_items';
+  @override
+  VerificationContext validateIntegrity(Insertable<TodoItem> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('title')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+          _categoryIdMeta,
+          categoryId.isAcceptableOrUnknown(
+              data['category_id']!, _categoryIdMeta));
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('generated_text')) {
+      context.handle(
+          _generatedTextMeta,
+          generatedText.isAcceptableOrUnknown(
+              data['generated_text']!, _generatedTextMeta));
     }
     return context;
   }
@@ -161,19 +266,25 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+  TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TodoCategory(
+    return TodoItem(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content']),
+      categoryId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
+      generatedText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
     );
   }
 
   @override
-  $TodoCategoriesTable createAlias(String alias) {
-    return $TodoCategoriesTable(attachedDatabase, alias);
+  $TodoItemsTable createAlias(String alias) {
+    return $TodoItemsTable(attachedDatabase, alias);
   }
 }
 
@@ -352,117 +463,6 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
           ..write('categoryId: $categoryId')
           ..write(')'))
         .toString();
-  }
-}
-
-class $TodoItemsTable extends TodoItems
-    with TableInfo<$TodoItemsTable, TodoItem> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TodoItemsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _titleMeta = const VerificationMeta('title');
-  @override
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
-  @override
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _categoryIdMeta =
-      const VerificationMeta('categoryId');
-  @override
-  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
-      'category_id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES todo_categories (id)'));
-  static const VerificationMeta _generatedTextMeta =
-      const VerificationMeta('generatedText');
-  @override
-  late final GeneratedColumn<String> generatedText = GeneratedColumn<String>(
-      'generated_text', aliasedName, true,
-      generatedAs: GeneratedAs(
-          title + const Constant(' (') + content + const Constant(')'), false),
-      type: DriftSqlType.string,
-      requiredDuringInsert: false);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, content, categoryId, generatedText];
-  @override
-  String get aliasedName => _alias ?? 'todo_items';
-  @override
-  String get actualTableName => 'todo_items';
-  @override
-  VerificationContext validateIntegrity(Insertable<TodoItem> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
-    } else if (isInserting) {
-      context.missing(_titleMeta);
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    }
-    if (data.containsKey('category_id')) {
-      context.handle(
-          _categoryIdMeta,
-          categoryId.isAcceptableOrUnknown(
-              data['category_id']!, _categoryIdMeta));
-    } else if (isInserting) {
-      context.missing(_categoryIdMeta);
-    }
-    if (data.containsKey('generated_text')) {
-      context.handle(
-          _generatedTextMeta,
-          generatedText.isAcceptableOrUnknown(
-              data['generated_text']!, _generatedTextMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  TodoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TodoItem(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content']),
-      categoryId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
-      generatedText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
-    );
-  }
-
-  @override
-  $TodoItemsTable createAlias(String alias) {
-    return $TodoItemsTable(attachedDatabase, alias);
   }
 }
 

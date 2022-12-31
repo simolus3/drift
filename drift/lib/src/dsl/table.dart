@@ -314,6 +314,7 @@ class UseRowClass {
   ///
   /// This can be useful when a custom data class should be used for inserts or
   /// updates.
+  @Deprecated('Use `write_to_columns_mixins` build option instead')
   final bool generateInsertable;
 
   /// Customize the class used by drift to hold an instance of an annotated

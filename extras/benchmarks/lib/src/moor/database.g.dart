@@ -3,6 +3,67 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $KeyValuesTable extends KeyValues
+    with TableInfo<$KeyValuesTable, KeyValue> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KeyValuesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+      'key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+      'value', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? 'key_values';
+  @override
+  String get actualTableName => 'key_values';
+  @override
+  VerificationContext validateIntegrity(Insertable<KeyValue> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KeyValue(
+      key: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
+    );
+  }
+
+  @override
+  $KeyValuesTable createAlias(String alias) {
+    return $KeyValuesTable(attachedDatabase, alias);
+  }
+}
+
 class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;
   final String value;
@@ -108,67 +169,6 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
           ..write('value: $value')
           ..write(')'))
         .toString();
-  }
-}
-
-class $KeyValuesTable extends KeyValues
-    with TableInfo<$KeyValuesTable, KeyValue> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $KeyValuesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _keyMeta = const VerificationMeta('key');
-  @override
-  late final GeneratedColumn<String> key = GeneratedColumn<String>(
-      'key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _valueMeta = const VerificationMeta('value');
-  @override
-  late final GeneratedColumn<String> value = GeneratedColumn<String>(
-      'value', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [key, value];
-  @override
-  String get aliasedName => _alias ?? 'key_values';
-  @override
-  String get actualTableName => 'key_values';
-  @override
-  VerificationContext validateIntegrity(Insertable<KeyValue> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('key')) {
-      context.handle(
-          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
-    } else if (isInserting) {
-      context.missing(_keyMeta);
-    }
-    if (data.containsKey('value')) {
-      context.handle(
-          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
-    } else if (isInserting) {
-      context.missing(_valueMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {key};
-  @override
-  KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return KeyValue(
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      value: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
-    );
-  }
-
-  @override
-  $KeyValuesTable createAlias(String alias) {
-    return $KeyValuesTable(attachedDatabase, alias);
   }
 }
 

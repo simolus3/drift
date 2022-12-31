@@ -3,6 +3,105 @@
 part of 'todos.dart';
 
 // ignore_for_file: type=lint
+class $CategoriesTable extends Categories
+    with TableInfo<$CategoriesTable, Category> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'desc', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL UNIQUE');
+  static const VerificationMeta _priorityMeta =
+      const VerificationMeta('priority');
+  @override
+  late final GeneratedColumnWithTypeConverter<CategoryPriority, int> priority =
+      GeneratedColumn<int>('priority', aliasedName, false,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultValue: const Constant(0))
+          .withConverter<CategoryPriority>($CategoriesTable.$converterpriority);
+  static const VerificationMeta _descriptionInUpperCaseMeta =
+      const VerificationMeta('descriptionInUpperCase');
+  @override
+  late final GeneratedColumn<String> descriptionInUpperCase =
+      GeneratedColumn<String>('description_in_upper_case', aliasedName, false,
+          generatedAs: GeneratedAs(description.upper(), false),
+          type: DriftSqlType.string,
+          requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, description, priority, descriptionInUpperCase];
+  @override
+  String get aliasedName => _alias ?? 'categories';
+  @override
+  String get actualTableName => 'categories';
+  @override
+  VerificationContext validateIntegrity(Insertable<Category> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('desc')) {
+      context.handle(_descriptionMeta,
+          description.isAcceptableOrUnknown(data['desc']!, _descriptionMeta));
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    context.handle(_priorityMeta, const VerificationResult.success());
+    if (data.containsKey('description_in_upper_case')) {
+      context.handle(
+          _descriptionInUpperCaseMeta,
+          descriptionInUpperCase.isAcceptableOrUnknown(
+              data['description_in_upper_case']!, _descriptionInUpperCaseMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Category map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Category(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
+      priority: $CategoriesTable.$converterpriority.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
+      descriptionInUpperCase: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}description_in_upper_case'])!,
+    );
+  }
+
+  @override
+  $CategoriesTable createAlias(String alias) {
+    return $CategoriesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<CategoryPriority, int, int> $converterpriority =
+      const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
+}
+
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
@@ -163,12 +262,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   }
 }
 
-class $CategoriesTable extends Categories
-    with TableInfo<$CategoriesTable, Category> {
+class $TodosTableTable extends TodosTable
+    with TableInfo<$TodosTableTable, TodoEntry> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CategoriesTable(this.attachedDatabase, [this._alias]);
+  $TodosTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -178,88 +277,118 @@ class $CategoriesTable extends Categories
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'desc', aliasedName, false,
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
       type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL UNIQUE');
-  static const VerificationMeta _priorityMeta =
-      const VerificationMeta('priority');
+      requiredDuringInsert: false);
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
   @override
-  late final GeneratedColumnWithTypeConverter<CategoryPriority, int> priority =
-      GeneratedColumn<int>('priority', aliasedName, false,
-              type: DriftSqlType.int,
-              requiredDuringInsert: false,
-              defaultValue: const Constant(0))
-          .withConverter<CategoryPriority>($CategoriesTable.$converterpriority);
-  static const VerificationMeta _descriptionInUpperCaseMeta =
-      const VerificationMeta('descriptionInUpperCase');
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _targetDateMeta =
+      const VerificationMeta('targetDate');
   @override
-  late final GeneratedColumn<String> descriptionInUpperCase =
-      GeneratedColumn<String>('description_in_upper_case', aliasedName, false,
-          generatedAs: GeneratedAs(description.upper(), false),
-          type: DriftSqlType.string,
-          requiredDuringInsert: false);
+  late final GeneratedColumn<DateTime> targetDate = GeneratedColumn<DateTime>(
+      'target_date', aliasedName, true,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<int> category = GeneratedColumn<int>(
+      'category', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumnWithTypeConverter<TodoStatus?, String> status =
+      GeneratedColumn<String>('status', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<TodoStatus?>($TodosTableTable.$converterstatusn);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, description, priority, descriptionInUpperCase];
+      [id, title, content, targetDate, category, status];
   @override
-  String get aliasedName => _alias ?? 'categories';
+  String get aliasedName => _alias ?? 'todos';
   @override
-  String get actualTableName => 'categories';
+  String get actualTableName => 'todos';
   @override
-  VerificationContext validateIntegrity(Insertable<Category> instance,
+  VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('desc')) {
-      context.handle(_descriptionMeta,
-          description.isAcceptableOrUnknown(data['desc']!, _descriptionMeta));
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    context.handle(_priorityMeta, const VerificationResult.success());
-    if (data.containsKey('description_in_upper_case')) {
+    if (data.containsKey('title')) {
       context.handle(
-          _descriptionInUpperCaseMeta,
-          descriptionInUpperCase.isAcceptableOrUnknown(
-              data['description_in_upper_case']!, _descriptionInUpperCaseMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('target_date')) {
+      context.handle(
+          _targetDateMeta,
+          targetDate.isAcceptableOrUnknown(
+              data['target_date']!, _targetDateMeta));
+    }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    }
+    context.handle(_statusMeta, const VerificationResult.success());
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Category map(Map<String, dynamic> data, {String? tablePrefix}) {
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {title, category},
+        {title, targetDate},
+      ];
+  @override
+  TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Category(
+    return TodoEntry(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converterpriority.fromSql(attachedDatabase
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      targetDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
           .typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!),
-      descriptionInUpperCase: attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}description_in_upper_case'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])),
     );
   }
 
   @override
-  $CategoriesTable createAlias(String alias) {
-    return $CategoriesTable(attachedDatabase, alias);
+  $TodosTableTable createAlias(String alias) {
+    return $TodosTableTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<CategoryPriority, int, int> $converterpriority =
-      const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
+  static JsonTypeConverter2<TodoStatus, String, String> $converterstatus =
+      const EnumNameConverter<TodoStatus>(TodoStatus.values);
+  static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
+      JsonTypeConverter2.asNullable($converterstatus);
 }
 
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
@@ -486,12 +615,11 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   }
 }
 
-class $TodosTableTable extends TodosTable
-    with TableInfo<$TodosTableTable, TodoEntry> {
+class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TodosTableTable(this.attachedDatabase, [this._alias]);
+  $UsersTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -501,118 +629,108 @@ class $TodosTableTable extends TodosTable
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, true,
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
       additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
+          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
       type: DriftSqlType.string,
-      requiredDuringInsert: false);
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _isAwesomeMeta =
+      const VerificationMeta('isAwesome');
   @override
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _targetDateMeta =
-      const VerificationMeta('targetDate');
+  late final GeneratedColumn<bool> isAwesome =
+      GeneratedColumn<bool>('is_awesome', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(true));
+  static const VerificationMeta _profilePictureMeta =
+      const VerificationMeta('profilePicture');
   @override
-  late final GeneratedColumn<DateTime> targetDate = GeneratedColumn<DateTime>(
-      'target_date', aliasedName, true,
+  late final GeneratedColumn<Uint8List> profilePicture =
+      GeneratedColumn<Uint8List>('profile_picture', aliasedName, false,
+          type: DriftSqlType.blob, requiredDuringInsert: true);
+  static const VerificationMeta _creationTimeMeta =
+      const VerificationMeta('creationTime');
+  @override
+  late final GeneratedColumn<DateTime> creationTime = GeneratedColumn<DateTime>(
+      'creation_time', aliasedName, false,
+      check: () => creationTime.isBiggerThan(Constant(DateTime.utc(1950))),
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _categoryMeta =
-      const VerificationMeta('category');
-  @override
-  late final GeneratedColumn<int> category = GeneratedColumn<int>(
-      'category', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
-  @override
-  late final GeneratedColumnWithTypeConverter<TodoStatus?, String> status =
-      GeneratedColumn<String>('status', aliasedName, true,
-              type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<TodoStatus?>($TodosTableTable.$converterstatusn);
+      defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, content, targetDate, category, status];
+      [id, name, isAwesome, profilePicture, creationTime];
   @override
-  String get aliasedName => _alias ?? 'todos';
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get actualTableName => 'todos';
+  String get actualTableName => 'users';
   @override
-  VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
+  VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('title')) {
+    if (data.containsKey('name')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
-      context.missing(_contentMeta);
+      context.missing(_nameMeta);
     }
-    if (data.containsKey('target_date')) {
+    if (data.containsKey('is_awesome')) {
+      context.handle(_isAwesomeMeta,
+          isAwesome.isAcceptableOrUnknown(data['is_awesome']!, _isAwesomeMeta));
+    }
+    if (data.containsKey('profile_picture')) {
       context.handle(
-          _targetDateMeta,
-          targetDate.isAcceptableOrUnknown(
-              data['target_date']!, _targetDateMeta));
+          _profilePictureMeta,
+          profilePicture.isAcceptableOrUnknown(
+              data['profile_picture']!, _profilePictureMeta));
+    } else if (isInserting) {
+      context.missing(_profilePictureMeta);
     }
-    if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    if (data.containsKey('creation_time')) {
+      context.handle(
+          _creationTimeMeta,
+          creationTime.isAcceptableOrUnknown(
+              data['creation_time']!, _creationTimeMeta));
     }
-    context.handle(_statusMeta, const VerificationResult.success());
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-        {title, category},
-        {title, targetDate},
-      ];
-  @override
-  TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+  User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TodoEntry(
+    return User(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title']),
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
-      targetDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category']),
-      status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}status'])),
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      isAwesome: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_awesome'])!,
+      profilePicture: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture'])!,
+      creationTime: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}creation_time'])!,
     );
   }
 
   @override
-  $TodosTableTable createAlias(String alias) {
-    return $TodosTableTable(attachedDatabase, alias);
+  $UsersTable createAlias(String alias) {
+    return $UsersTable(attachedDatabase, alias);
   }
-
-  static JsonTypeConverter2<TodoStatus, String, String> $converterstatus =
-      const EnumNameConverter<TodoStatus>(TodoStatus.values);
-  static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
-      JsonTypeConverter2.asNullable($converterstatus);
 }
 
 class User extends DataClass implements Insertable<User> {
@@ -801,121 +919,64 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+class $SharedTodosTable extends SharedTodos
+    with TableInfo<$SharedTodosTable, SharedTodo> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  $SharedTodosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _todoMeta = const VerificationMeta('todo');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  late final GeneratedColumn<int> todo = GeneratedColumn<int>(
+      'todo', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _userMeta = const VerificationMeta('user');
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _isAwesomeMeta =
-      const VerificationMeta('isAwesome');
+  late final GeneratedColumn<int> user = GeneratedColumn<int>(
+      'user', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
   @override
-  late final GeneratedColumn<bool> isAwesome =
-      GeneratedColumn<bool>('is_awesome', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
-            SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
-            SqlDialect.mysql: '',
-            SqlDialect.postgres: '',
-          }),
-          defaultValue: const Constant(true));
-  static const VerificationMeta _profilePictureMeta =
-      const VerificationMeta('profilePicture');
+  List<GeneratedColumn> get $columns => [todo, user];
   @override
-  late final GeneratedColumn<Uint8List> profilePicture =
-      GeneratedColumn<Uint8List>('profile_picture', aliasedName, false,
-          type: DriftSqlType.blob, requiredDuringInsert: true);
-  static const VerificationMeta _creationTimeMeta =
-      const VerificationMeta('creationTime');
+  String get aliasedName => _alias ?? 'shared_todos';
   @override
-  late final GeneratedColumn<DateTime> creationTime = GeneratedColumn<DateTime>(
-      'creation_time', aliasedName, false,
-      check: () => creationTime.isBiggerThan(Constant(DateTime.utc(1950))),
-      type: DriftSqlType.dateTime,
-      requiredDuringInsert: false,
-      defaultValue: currentDateAndTime);
+  String get actualTableName => 'shared_todos';
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, isAwesome, profilePicture, creationTime];
-  @override
-  String get aliasedName => _alias ?? 'users';
-  @override
-  String get actualTableName => 'users';
-  @override
-  VerificationContext validateIntegrity(Insertable<User> instance,
+  VerificationContext validateIntegrity(Insertable<SharedTodo> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
+    if (data.containsKey('todo')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _todoMeta, todo.isAcceptableOrUnknown(data['todo']!, _todoMeta));
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_todoMeta);
     }
-    if (data.containsKey('is_awesome')) {
-      context.handle(_isAwesomeMeta,
-          isAwesome.isAcceptableOrUnknown(data['is_awesome']!, _isAwesomeMeta));
-    }
-    if (data.containsKey('profile_picture')) {
+    if (data.containsKey('user')) {
       context.handle(
-          _profilePictureMeta,
-          profilePicture.isAcceptableOrUnknown(
-              data['profile_picture']!, _profilePictureMeta));
+          _userMeta, user.isAcceptableOrUnknown(data['user']!, _userMeta));
     } else if (isInserting) {
-      context.missing(_profilePictureMeta);
-    }
-    if (data.containsKey('creation_time')) {
-      context.handle(
-          _creationTimeMeta,
-          creationTime.isAcceptableOrUnknown(
-              data['creation_time']!, _creationTimeMeta));
+      context.missing(_userMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
+  SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      isAwesome: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_awesome'])!,
-      profilePicture: attachedDatabase.typeMapping
-          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture'])!,
-      creationTime: attachedDatabase.typeMapping.read(
-          DriftSqlType.dateTime, data['${effectivePrefix}creation_time'])!,
+    return SharedTodo(
+      todo: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}todo'])!,
+      user: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}user'])!,
     );
   }
 
   @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  $SharedTodosTable createAlias(String alias) {
+    return $SharedTodosTable(attachedDatabase, alias);
   }
 }
 
@@ -1034,65 +1095,99 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   }
 }
 
-class $SharedTodosTable extends SharedTodos
-    with TableInfo<$SharedTodosTable, SharedTodo> {
+class $TableWithoutPKTable extends TableWithoutPK
+    with TableInfo<$TableWithoutPKTable, CustomRowClass> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $SharedTodosTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _todoMeta = const VerificationMeta('todo');
+  $TableWithoutPKTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _notReallyAnIdMeta =
+      const VerificationMeta('notReallyAnId');
   @override
-  late final GeneratedColumn<int> todo = GeneratedColumn<int>(
-      'todo', aliasedName, false,
+  late final GeneratedColumn<int> notReallyAnId = GeneratedColumn<int>(
+      'not_really_an_id', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _userMeta = const VerificationMeta('user');
+  static const VerificationMeta _someFloatMeta =
+      const VerificationMeta('someFloat');
   @override
-  late final GeneratedColumn<int> user = GeneratedColumn<int>(
-      'user', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<double> someFloat = GeneratedColumn<double>(
+      'some_float', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _webSafeIntMeta =
+      const VerificationMeta('webSafeInt');
   @override
-  List<GeneratedColumn> get $columns => [todo, user];
+  late final GeneratedColumn<BigInt> webSafeInt = GeneratedColumn<BigInt>(
+      'web_safe_int', aliasedName, true,
+      type: DriftSqlType.bigInt, requiredDuringInsert: false);
+  static const VerificationMeta _customMeta = const VerificationMeta('custom');
   @override
-  String get aliasedName => _alias ?? 'shared_todos';
+  late final GeneratedColumnWithTypeConverter<MyCustomObject, String> custom =
+      GeneratedColumn<String>('custom', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              clientDefault: _uuid.v4)
+          .withConverter<MyCustomObject>($TableWithoutPKTable.$convertercustom);
   @override
-  String get actualTableName => 'shared_todos';
+  List<GeneratedColumn> get $columns =>
+      [notReallyAnId, someFloat, webSafeInt, custom];
   @override
-  VerificationContext validateIntegrity(Insertable<SharedTodo> instance,
+  String get aliasedName => _alias ?? 'table_without_p_k';
+  @override
+  String get actualTableName => 'table_without_p_k';
+  @override
+  VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('todo')) {
+    if (data.containsKey('not_really_an_id')) {
       context.handle(
-          _todoMeta, todo.isAcceptableOrUnknown(data['todo']!, _todoMeta));
+          _notReallyAnIdMeta,
+          notReallyAnId.isAcceptableOrUnknown(
+              data['not_really_an_id']!, _notReallyAnIdMeta));
     } else if (isInserting) {
-      context.missing(_todoMeta);
+      context.missing(_notReallyAnIdMeta);
     }
-    if (data.containsKey('user')) {
+    if (data.containsKey('some_float')) {
+      context.handle(_someFloatMeta,
+          someFloat.isAcceptableOrUnknown(data['some_float']!, _someFloatMeta));
+    } else if (isInserting) {
+      context.missing(_someFloatMeta);
+    }
+    if (data.containsKey('web_safe_int')) {
       context.handle(
-          _userMeta, user.isAcceptableOrUnknown(data['user']!, _userMeta));
-    } else if (isInserting) {
-      context.missing(_userMeta);
+          _webSafeIntMeta,
+          webSafeInt.isAcceptableOrUnknown(
+              data['web_safe_int']!, _webSafeIntMeta));
     }
+    context.handle(_customMeta, const VerificationResult.success());
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {todo, user};
+  Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
+  CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SharedTodo(
-      todo: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}todo'])!,
-      user: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}user'])!,
+    return CustomRowClass.map(
+      attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}not_really_an_id'])!,
+      attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}some_float'])!,
+      custom: $TableWithoutPKTable.$convertercustom.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}custom'])!),
+      webSafeInt: attachedDatabase.typeMapping
+          .read(DriftSqlType.bigInt, data['${effectivePrefix}web_safe_int']),
     );
   }
 
   @override
-  $SharedTodosTable createAlias(String alias) {
-    return $SharedTodosTable(attachedDatabase, alias);
+  $TableWithoutPKTable createAlias(String alias) {
+    return $TableWithoutPKTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<MyCustomObject, String> $convertercustom =
+      const CustomConverter();
 }
 
 class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
@@ -1193,99 +1288,54 @@ extension CustomRowClassToInsertable on CustomRowClass {
   }
 }
 
-class $TableWithoutPKTable extends TableWithoutPK
-    with TableInfo<$TableWithoutPKTable, CustomRowClass> {
+class $PureDefaultsTable extends PureDefaults
+    with TableInfo<$PureDefaultsTable, PureDefault> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TableWithoutPKTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _notReallyAnIdMeta =
-      const VerificationMeta('notReallyAnId');
+  $PureDefaultsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _txtMeta = const VerificationMeta('txt');
   @override
-  late final GeneratedColumn<int> notReallyAnId = GeneratedColumn<int>(
-      'not_really_an_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _someFloatMeta =
-      const VerificationMeta('someFloat');
+  late final GeneratedColumnWithTypeConverter<MyCustomObject?, String> txt =
+      GeneratedColumn<String>('insert', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<MyCustomObject?>($PureDefaultsTable.$convertertxtn);
   @override
-  late final GeneratedColumn<double> someFloat = GeneratedColumn<double>(
-      'some_float', aliasedName, false,
-      type: DriftSqlType.double, requiredDuringInsert: true);
-  static const VerificationMeta _webSafeIntMeta =
-      const VerificationMeta('webSafeInt');
+  List<GeneratedColumn> get $columns => [txt];
   @override
-  late final GeneratedColumn<BigInt> webSafeInt = GeneratedColumn<BigInt>(
-      'web_safe_int', aliasedName, true,
-      type: DriftSqlType.bigInt, requiredDuringInsert: false);
-  static const VerificationMeta _customMeta = const VerificationMeta('custom');
+  String get aliasedName => _alias ?? 'pure_defaults';
   @override
-  late final GeneratedColumnWithTypeConverter<MyCustomObject, String> custom =
-      GeneratedColumn<String>('custom', aliasedName, false,
-              type: DriftSqlType.string,
-              requiredDuringInsert: false,
-              clientDefault: _uuid.v4)
-          .withConverter<MyCustomObject>($TableWithoutPKTable.$convertercustom);
+  String get actualTableName => 'pure_defaults';
   @override
-  List<GeneratedColumn> get $columns =>
-      [notReallyAnId, someFloat, webSafeInt, custom];
-  @override
-  String get aliasedName => _alias ?? 'table_without_p_k';
-  @override
-  String get actualTableName => 'table_without_p_k';
-  @override
-  VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
+  VerificationContext validateIntegrity(Insertable<PureDefault> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('not_really_an_id')) {
-      context.handle(
-          _notReallyAnIdMeta,
-          notReallyAnId.isAcceptableOrUnknown(
-              data['not_really_an_id']!, _notReallyAnIdMeta));
-    } else if (isInserting) {
-      context.missing(_notReallyAnIdMeta);
-    }
-    if (data.containsKey('some_float')) {
-      context.handle(_someFloatMeta,
-          someFloat.isAcceptableOrUnknown(data['some_float']!, _someFloatMeta));
-    } else if (isInserting) {
-      context.missing(_someFloatMeta);
-    }
-    if (data.containsKey('web_safe_int')) {
-      context.handle(
-          _webSafeIntMeta,
-          webSafeInt.isAcceptableOrUnknown(
-              data['web_safe_int']!, _webSafeIntMeta));
-    }
-    context.handle(_customMeta, const VerificationResult.success());
+    context.handle(_txtMeta, const VerificationResult.success());
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {txt};
   @override
-  CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
+  PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CustomRowClass.map(
-      attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}not_really_an_id'])!,
-      attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$convertercustom.fromSql(attachedDatabase
+    return PureDefault(
+      txt: $PureDefaultsTable.$convertertxtn.fromSql(attachedDatabase
           .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}custom'])!),
-      webSafeInt: attachedDatabase.typeMapping
-          .read(DriftSqlType.bigInt, data['${effectivePrefix}web_safe_int']),
+          .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
     );
   }
 
   @override
-  $TableWithoutPKTable createAlias(String alias) {
-    return $TableWithoutPKTable(attachedDatabase, alias);
+  $PureDefaultsTable createAlias(String alias) {
+    return $PureDefaultsTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<MyCustomObject, String> $convertercustom =
-      const CustomConverter();
+  static JsonTypeConverter2<MyCustomObject, String, Map<dynamic, dynamic>>
+      $convertertxt = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<dynamic, dynamic>?>
+      $convertertxtn = JsonTypeConverter2.asNullable($convertertxt);
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
@@ -1387,56 +1437,6 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
           ..write(')'))
         .toString();
   }
-}
-
-class $PureDefaultsTable extends PureDefaults
-    with TableInfo<$PureDefaultsTable, PureDefault> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $PureDefaultsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _txtMeta = const VerificationMeta('txt');
-  @override
-  late final GeneratedColumnWithTypeConverter<MyCustomObject?, String> txt =
-      GeneratedColumn<String>('insert', aliasedName, true,
-              type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<MyCustomObject?>($PureDefaultsTable.$convertertxtn);
-  @override
-  List<GeneratedColumn> get $columns => [txt];
-  @override
-  String get aliasedName => _alias ?? 'pure_defaults';
-  @override
-  String get actualTableName => 'pure_defaults';
-  @override
-  VerificationContext validateIntegrity(Insertable<PureDefault> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    context.handle(_txtMeta, const VerificationResult.success());
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {txt};
-  @override
-  PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return PureDefault(
-      txt: $PureDefaultsTable.$convertertxtn.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
-    );
-  }
-
-  @override
-  $PureDefaultsTable createAlias(String alias) {
-    return $PureDefaultsTable(attachedDatabase, alias);
-  }
-
-  static JsonTypeConverter2<MyCustomObject, String, Map<dynamic, dynamic>>
-      $convertertxt = const CustomJsonConverter();
-  static JsonTypeConverter2<MyCustomObject?, String?, Map<dynamic, dynamic>?>
-      $convertertxtn = JsonTypeConverter2.asNullable($convertertxt);
 }
 
 class CategoryTodoCountViewData extends DataClass {

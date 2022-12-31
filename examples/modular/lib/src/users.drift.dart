@@ -3,6 +3,99 @@ import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/users.drift.dart' as i1;
 import 'package:modular/src/preferences.dart' as i2;
 
+class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
+  @override
+  final i0.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Users(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
+  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL PRIMARY KEY');
+  static const i0.VerificationMeta _nameMeta =
+      const i0.VerificationMeta('name');
+  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  static const i0.VerificationMeta _biographyMeta =
+      const i0.VerificationMeta('biography');
+  late final i0.GeneratedColumn<String> biography = i0.GeneratedColumn<String>(
+      'biography', aliasedName, true,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints: '');
+  static const i0.VerificationMeta _preferencesMeta =
+      const i0.VerificationMeta('preferences');
+  late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
+      preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
+              type: i0.DriftSqlType.string,
+              requiredDuringInsert: false,
+              $customConstraints: '')
+          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
+  @override
+  List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
+  @override
+  String get aliasedName => _alias ?? 'users';
+  @override
+  String get actualTableName => 'users';
+  @override
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.User> instance,
+      {bool isInserting = false}) {
+    final context = i0.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('biography')) {
+      context.handle(_biographyMeta,
+          biography.isAcceptableOrUnknown(data['biography']!, _biographyMeta));
+    }
+    context.handle(_preferencesMeta, const i0.VerificationResult.success());
+    return context;
+  }
+
+  @override
+  Set<i0.GeneratedColumn> get $primaryKey => {id};
+  @override
+  i1.User map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return i1.User(
+      id: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
+      biography: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
+      preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
+          .typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
+    );
+  }
+
+  @override
+  Users createAlias(String alias) {
+    return Users(attachedDatabase, alias);
+  }
+
+  static i0.JsonTypeConverter2<i2.Preferences, String, Map<String, Object?>>
+      $converterpreferences = const i2.PreferencesConverter();
+  static i0.JsonTypeConverter2<i2.Preferences?, String?, Map<String, Object?>?>
+      $converterpreferencesn =
+      i0.JsonTypeConverter2.asNullable($converterpreferences);
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 class User extends i0.DataClass implements i0.Insertable<i1.User> {
   final int id;
   final String name;
@@ -171,101 +264,78 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   }
 }
 
-class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
+i0.Index get usersName =>
+    i0.Index('users_name', 'CREATE INDEX users_name ON users (name)');
+
+class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Users(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
-  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
-      'id', aliasedName, false,
+  Follows(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _followedMeta =
+      const i0.VerificationMeta('followed');
+  late final i0.GeneratedColumn<int> followed = i0.GeneratedColumn<int>(
+      'followed', aliasedName, false,
       type: i0.DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL PRIMARY KEY');
-  static const i0.VerificationMeta _nameMeta =
-      const i0.VerificationMeta('name');
-  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL');
-  static const i0.VerificationMeta _biographyMeta =
-      const i0.VerificationMeta('biography');
-  late final i0.GeneratedColumn<String> biography = i0.GeneratedColumn<String>(
-      'biography', aliasedName, true,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: '');
-  static const i0.VerificationMeta _preferencesMeta =
-      const i0.VerificationMeta('preferences');
-  late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
-      preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
-              type: i0.DriftSqlType.string,
-              requiredDuringInsert: false,
-              $customConstraints: '')
-          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
+  static const i0.VerificationMeta _followerMeta =
+      const i0.VerificationMeta('follower');
+  late final i0.GeneratedColumn<int> follower = i0.GeneratedColumn<int>(
+      'follower', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users(id)');
   @override
-  List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
+  List<i0.GeneratedColumn> get $columns => [followed, follower];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? 'follows';
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => 'follows';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.User> instance,
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Follow> instance,
       {bool isInserting = false}) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    if (data.containsKey('followed')) {
+      context.handle(_followedMeta,
+          followed.isAcceptableOrUnknown(data['followed']!, _followedMeta));
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_followedMeta);
     }
-    if (data.containsKey('biography')) {
-      context.handle(_biographyMeta,
-          biography.isAcceptableOrUnknown(data['biography']!, _biographyMeta));
+    if (data.containsKey('follower')) {
+      context.handle(_followerMeta,
+          follower.isAcceptableOrUnknown(data['follower']!, _followerMeta));
+    } else if (isInserting) {
+      context.missing(_followerMeta);
     }
-    context.handle(_preferencesMeta, const i0.VerificationResult.success());
     return context;
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {id};
+  Set<i0.GeneratedColumn> get $primaryKey => {followed, follower};
   @override
-  i1.User map(Map<String, dynamic> data, {String? tablePrefix}) {
+  i1.Follow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.User(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
-      biography: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
-      preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
-          .typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
+    return i1.Follow(
+      followed: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}followed'])!,
+      follower: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}follower'])!,
     );
   }
 
   @override
-  Users createAlias(String alias) {
-    return Users(attachedDatabase, alias);
+  Follows createAlias(String alias) {
+    return Follows(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.Preferences, String, Map<String, Object?>>
-      $converterpreferences = const i2.PreferencesConverter();
-  static i0.JsonTypeConverter2<i2.Preferences?, String?, Map<String, Object?>?>
-      $converterpreferencesn =
-      i0.JsonTypeConverter2.asNullable($converterpreferences);
+  @override
+  List<String> get customConstraints =>
+      const ['PRIMARY KEY(followed, follower)'];
   @override
   bool get dontWriteConstraints => true;
 }
-
-i0.Index get usersName =>
-    i0.Index('users_name', 'CREATE INDEX users_name ON users (name)');
 
 class Follow extends i0.DataClass implements i0.Insertable<i1.Follow> {
   final int followed;
@@ -376,76 +446,6 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
           ..write(')'))
         .toString();
   }
-}
-
-class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
-  @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Follows(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _followedMeta =
-      const i0.VerificationMeta('followed');
-  late final i0.GeneratedColumn<int> followed = i0.GeneratedColumn<int>(
-      'followed', aliasedName, false,
-      type: i0.DriftSqlType.int,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
-  static const i0.VerificationMeta _followerMeta =
-      const i0.VerificationMeta('follower');
-  late final i0.GeneratedColumn<int> follower = i0.GeneratedColumn<int>(
-      'follower', aliasedName, false,
-      type: i0.DriftSqlType.int,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
-  @override
-  List<i0.GeneratedColumn> get $columns => [followed, follower];
-  @override
-  String get aliasedName => _alias ?? 'follows';
-  @override
-  String get actualTableName => 'follows';
-  @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Follow> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('followed')) {
-      context.handle(_followedMeta,
-          followed.isAcceptableOrUnknown(data['followed']!, _followedMeta));
-    } else if (isInserting) {
-      context.missing(_followedMeta);
-    }
-    if (data.containsKey('follower')) {
-      context.handle(_followerMeta,
-          follower.isAcceptableOrUnknown(data['follower']!, _followerMeta));
-    } else if (isInserting) {
-      context.missing(_followerMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<i0.GeneratedColumn> get $primaryKey => {followed, follower};
-  @override
-  i1.Follow map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.Follow(
-      followed: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}followed'])!,
-      follower: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}follower'])!,
-    );
-  }
-
-  @override
-  Follows createAlias(String alias) {
-    return Follows(attachedDatabase, alias);
-  }
-
-  @override
-  List<String> get customConstraints =>
-      const ['PRIMARY KEY(followed, follower)'];
-  @override
-  bool get dontWriteConstraints => true;
 }
 
 class PopularUser extends i0.DataClass {

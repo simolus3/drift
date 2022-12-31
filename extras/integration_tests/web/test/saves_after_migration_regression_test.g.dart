@@ -3,6 +3,54 @@
 part of 'saves_after_migration_regression_test.dart';
 
 // ignore_for_file: type=lint
+class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FoosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  @override
+  List<GeneratedColumn> get $columns => [id];
+  @override
+  String get aliasedName => _alias ?? 'foos';
+  @override
+  String get actualTableName => 'foos';
+  @override
+  VerificationContext validateIntegrity(Insertable<Foo> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Foo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Foo(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+    );
+  }
+
+  @override
+  $FoosTable createAlias(String alias) {
+    return $FoosTable(attachedDatabase, alias);
+  }
+}
+
 class Foo extends DataClass implements Insertable<Foo> {
   final int id;
   const Foo({required this.id});
@@ -92,11 +140,11 @@ class FoosCompanion extends UpdateCompanion<Foo> {
   }
 }
 
-class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
+class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FoosTable(this.attachedDatabase, [this._alias]);
+  $BarsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -109,11 +157,11 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  String get aliasedName => _alias ?? 'foos';
+  String get aliasedName => _alias ?? 'bars';
   @override
-  String get actualTableName => 'foos';
+  String get actualTableName => 'bars';
   @override
-  VerificationContext validateIntegrity(Insertable<Foo> instance,
+  VerificationContext validateIntegrity(Insertable<Bar> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -126,17 +174,17 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Foo map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Bar map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Foo(
+    return Bar(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
     );
   }
 
   @override
-  $FoosTable createAlias(String alias) {
-    return $FoosTable(attachedDatabase, alias);
+  $BarsTable createAlias(String alias) {
+    return $BarsTable(attachedDatabase, alias);
   }
 }
 
@@ -226,54 +274,6 @@ class BarsCompanion extends UpdateCompanion<Bar> {
           ..write('id: $id')
           ..write(')'))
         .toString();
-  }
-}
-
-class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $BarsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  @override
-  List<GeneratedColumn> get $columns => [id];
-  @override
-  String get aliasedName => _alias ?? 'bars';
-  @override
-  String get actualTableName => 'bars';
-  @override
-  VerificationContext validateIntegrity(Insertable<Bar> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Bar map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Bar(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-    );
-  }
-
-  @override
-  $BarsTable createAlias(String alias) {
-    return $BarsTable(attachedDatabase, alias);
   }
 }
 
