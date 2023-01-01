@@ -75,7 +75,8 @@ class GenerateUtilsCommand extends Command {
       );
     }
 
-    await _writeLibraryFile(outputDir, schema.keys);
+    final versions = schema.keys.toList()..sort();
+    await _writeLibraryFile(outputDir, versions);
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
