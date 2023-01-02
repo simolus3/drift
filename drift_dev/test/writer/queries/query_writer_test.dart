@@ -206,20 +206,20 @@ class MyRow {
     checkOutputs(
       {
         'a|lib/a.drift.dart': decodedMatches(contains('''
-  i1.Selectable<i0.MyRow> foo() {
+  i0.Selectable<i1.MyRow> foo() {
     return customSelect(
         'SELECT name,"otherUser"."id" AS "nested_0.id", "otherUser"."name" AS "nested_0.name" FROM users INNER JOIN users AS otherUser ON otherUser.id = users.id + 1',
         variables: [],
         readsFrom: {
           users,
-        }).asyncMap((i1.QueryRow row) async => i0.MyRow(
+        }).asyncMap((i0.QueryRow row) async => i1.MyRow(
           row.read<String>('name'),
           otherUser: await users.mapFromRow(row, tablePrefix: 'nested_0'),
           nested: await customSelect('SELECT id FROM users',
               variables: [],
               readsFrom: {
                 users,
-              }).map((i1.QueryRow row) => row.read<int>('id')).get(),
+              }).map((i0.QueryRow row) => row.read<int>('id')).get(),
         ));
   }
 '''))

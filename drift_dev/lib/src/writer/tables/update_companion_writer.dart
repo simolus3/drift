@@ -25,12 +25,14 @@ class UpdateCompanionWriter {
   String get _companionClass => _emitter.companionType(table).toString();
   String get _companionType => _emitter.dartCode(_emitter.companionType(table));
 
-  void write() {
-    final rowClass = _emitter.dartCode(_emitter.rowType(table));
+  String get _rowType => scope.generationOptions.writeDataClasses
+      ? _emitter.dartCode(_emitter.rowType(table))
+      : 'dynamic';
 
+  void write() {
     _buffer.write('class $_companionClass '
         'extends '
-        '${_emitter.drift('UpdateCompanion')}<$rowClass> {\n');
+        '${_emitter.drift('UpdateCompanion')}<$_rowType> {\n');
     _writeFields();
 
     _writeConstructor();
@@ -124,10 +126,9 @@ class UpdateCompanionWriter {
             ? 'createCustom'
             : 'custom';
 
-    final rowType = _emitter.dartCode(_emitter.rowType(table));
     _buffer
       ..write(
-          'static ${_emitter.drift('Insertable')}<$rowType> $constructorName')
+          'static ${_emitter.drift('Insertable')}<$_rowType> $constructorName')
       ..write('({');
 
     final expression = _emitter.drift('Expression');

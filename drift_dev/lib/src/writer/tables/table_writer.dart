@@ -272,11 +272,11 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void writeDataClass() {
-    if (scope.options.writeToColumnsMixins) {
-      writeToColumnsMixin();
-    }
-
     if (scope.generationOptions.writeDataClasses) {
+      if (scope.options.writeToColumnsMixins) {
+        writeToColumnsMixin();
+      }
+
       final existing = table.existingRowClass;
       if (existing != null) {
         // We don't have to write a row class if we're using one provided by the
