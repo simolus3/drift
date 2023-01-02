@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' show DriftSqlType, SqlDialect, UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
 
+import '../../analysis/resolver/shared/data_class.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
 import '../../writer/utils/column_constraints.dart';
@@ -373,6 +374,7 @@ class SchemaReader {
 
   DriftView _readView(Map<String, dynamic> content) {
     final name = content['name'] as String;
+    final entityInfoName = content['dart_info_name'] as String;
 
     return DriftView(
       _id(name),
@@ -383,9 +385,9 @@ class SchemaReader {
       ],
       source: SqlViewSource(content['sql'] as String),
       customParentClass: null,
-      entityInfoName: content['dart_info_name'] as String,
+      entityInfoName: entityInfoName,
       existingRowClass: null,
-      nameOfRowClass: '${ReCase(name).pascalCase}Data',
+      nameOfRowClass: dataClassNameForClassName(entityInfoName),
       references: const [],
     );
   }

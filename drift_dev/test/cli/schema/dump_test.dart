@@ -86,7 +86,6 @@ void main() {
       "data": {
         "name": "names",
         "sql": "CREATE VIEW names AS SELECT name FROM users;",
-        "dart_data_name": "Name",
         "dart_info_name": "Names",
         "columns": [
           {
