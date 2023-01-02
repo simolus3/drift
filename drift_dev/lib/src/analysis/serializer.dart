@@ -94,7 +94,8 @@ class ElementSerializer {
       if (source is SqlViewSource) {
         serializedSource = {
           'kind': 'sql',
-          'sql': source.createView,
+          'sql': source.sqlCreateViewStmt,
+          'schema_sql': source.sqlCreateViewStmt,
         };
       } else if (source is DartViewSource) {
         serializedSource = {

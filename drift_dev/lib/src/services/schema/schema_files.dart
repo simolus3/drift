@@ -79,7 +79,7 @@ class SchemaWriter {
       type = 'view';
       data = {
         'name': entity.schemaName,
-        'sql': source.createView,
+        'sql': source.sqlCreateViewStmt,
         'dart_data_name': entity.nameOfRowClass,
         'dart_info_name': entity.entityInfoName,
         'columns': [for (final column in entity.columns) _columnData(column)],

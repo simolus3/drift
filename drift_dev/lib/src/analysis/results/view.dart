@@ -62,8 +62,12 @@ class DriftView extends DriftElementWithResultSet {
 abstract class DriftViewSource {}
 
 class SqlViewSource extends DriftViewSource {
-  /// The `CREATE VIEW` statement as it appears in the `.drift` file.
-  final String createView;
+  /// The `CREATE VIEW` statement like it appears in the database, with drift-
+  /// specific syntax stripped out.
+  ///
+  /// In particular, the [sqlCreateViewStmt] will not have a
+  /// [CreateViewStatement.driftTableName] set.
+  final String sqlCreateViewStmt;
 
   /// The parsed `CREATE VIEW` statement from [createView].
   ///
@@ -71,7 +75,7 @@ class SqlViewSource extends DriftViewSource {
   /// analysis.
   CreateViewStatement? parsedStatement;
 
-  SqlViewSource(this.createView);
+  SqlViewSource(this.sqlCreateViewStmt);
 }
 
 /// A table added to a view via a getter.

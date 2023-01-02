@@ -42,7 +42,7 @@ END;
 
 CREATE INDEX groups_name ON "groups"(name);
 
-CREATE VIEW my_view AS SELECT id FROM "groups";
+CREATE VIEW my_view WITH MyViewRow AS SELECT id FROM "groups";
 
 simple_query: SELECT * FROM my_view; -- not part of the schema
       ''',
@@ -65,6 +65,11 @@ class SettingsConverter extends TypeConverter<Settings, String> {
 
   String toSql(Settings s) => '';
   Settings fromSql(String db) => Settings();
+}
+
+class MyViewRow {
+  final int id;
+  MyViewRow(this.id);
 }
 
 @DriftDatabase(include: {'a.drift'}, tables: [Users])
@@ -375,7 +380,7 @@ const expected = r'''
             "data": {
                 "name": "my_view",
                 "sql": "CREATE VIEW my_view AS SELECT id FROM \"groups\";",
-                "dart_data_name": "MyViewData",
+                "dart_data_name": "MyViewRow",
                 "dart_info_name": "MyView",
                 "columns": [
                     {

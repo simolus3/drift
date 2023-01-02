@@ -82,7 +82,7 @@ class ViewWriter extends TableOrViewWriter {
       if (astNode != null) {
         emitter.writeSqlAsDartLiteral(astNode);
       } else {
-        emitter.write(asDartLiteral(source.createView));
+        emitter.write(asDartLiteral(source.sqlCreateViewStmt));
       }
       buffer.writeln(';');
     } else {

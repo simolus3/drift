@@ -1,4 +1,6 @@
 import 'package:recase/recase.dart';
+import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../driver/state.dart';
 import '../../results/results.dart';
@@ -65,12 +67,20 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       }
     }
 
+    final createStmtForDatabase = CreateViewStatement(
+      ifNotExists: stmt.ifNotExists,
+      viewName: stmt.viewName,
+      columns: stmt.columns,
+      query: stmt.query,
+      // Remove drift-specific syntax
+      driftTableName: null,
+    ).toSql();
+
     return DriftView(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       columns: columns,
-      source: SqlViewSource(
-          source.substring(stmt.firstPosition, stmt.lastPosition)),
+      source: SqlViewSource('$createStmtForDatabase;'),
       customParentClass: null,
       entityInfoName: entityInfoName,
       existingRowClass: existingRowClass,
