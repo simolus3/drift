@@ -1,3 +1,8 @@
+## 2.4.2
+
+- Fix an exception when a client disconnects from a drift remote server while
+  processing a pending table update.
+
 ## 2.4.1
 
 - Fix `DriftIsolate` leaking resources for closed connections.

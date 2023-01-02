@@ -1,4 +1,4 @@
-## 0.26.0-dev
+## 0.26.0
 
 - Remove token parameter from constructor in `Literal` subclasses and `NumberedVariable`.
 
