@@ -380,7 +380,6 @@ const expected = r'''
             "data": {
                 "name": "my_view",
                 "sql": "CREATE VIEW my_view AS SELECT id FROM \"groups\";",
-                "dart_data_name": "MyViewRow",
                 "dart_info_name": "MyView",
                 "columns": [
                     {

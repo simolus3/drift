@@ -80,7 +80,6 @@ class SchemaWriter {
       data = {
         'name': entity.schemaName,
         'sql': source.sqlCreateViewStmt,
-        'dart_data_name': entity.nameOfRowClass,
         'dart_info_name': entity.entityInfoName,
         'columns': [for (final column in entity.columns) _columnData(column)],
       };
@@ -386,7 +385,7 @@ class SchemaReader {
       customParentClass: null,
       entityInfoName: content['dart_info_name'] as String,
       existingRowClass: null,
-      nameOfRowClass: content['dart_data_name'] as String,
+      nameOfRowClass: '${ReCase(name).pascalCase}Data',
       references: const [],
     );
   }
