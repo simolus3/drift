@@ -5,7 +5,6 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
-import 'existing_row_classes_test.dart';
 import 'utils.dart';
 
 Future<SqlQuery> _handle(String sql) async {
