@@ -1,3 +1,7 @@
+## 0.27.0
+
+- Add `mappedBy` to `ExpressionResultColumn` when parsing in drift mode.
+
 ## 0.26.0
 
 - Remove token parameter from constructor in `Literal` subclasses and `NumberedVariable`.

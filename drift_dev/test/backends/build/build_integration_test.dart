@@ -241,4 +241,36 @@ q: INSERT INTO my_table (b, c, d) VALUES (?, ?, ?);
       ),
     }, result.dartOutputs, result);
   });
+
+  test('supports `MAPPED BY` for columns', () async {
+    final results = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+import 'converter.dart';
+
+a: SELECT NULLIF(1, 2) MAPPED BY `myConverter()` AS col;
+''',
+        'a|lib/converter.dart': '''
+import 'package:drift/drift.dart';
+
+TypeConverter<Object, int> myConverter() => throw 'stub';
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains('''
+class ADrift extends i1.ModularAccessor {
+  ADrift(i0.GeneratedDatabase db) : super(db);
+  i0.Selectable<Object?> a() {
+    return customSelect('SELECT NULLIF(1, 2) AS col',
+            variables: [], readsFrom: {})
+        .map((i0.QueryRow row) => i0.NullAwareTypeConverter.wrapFromSql(
+            i2.myConverter(), row.readNullable<int>('col')));
+  }
+}
+''')),
+    }, results.dartOutputs, results);
+  });
 }

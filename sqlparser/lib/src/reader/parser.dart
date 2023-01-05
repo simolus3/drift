@@ -1991,10 +1991,23 @@ class Parser {
     final tokenBefore = _peek;
 
     final expr = expression();
+    MappedBy? mappedBy;
+    if (enableDriftExtensions && _matchOne(TokenType.mapped)) {
+      final mapped = _previous;
+      _consume(TokenType.by, 'Expected `BY` to follow `MAPPED` here');
+
+      final dart = _consume(
+          TokenType.inlineDart, 'Expected Dart converter in backticks');
+      mappedBy = MappedBy(null, dart as InlineDartToken)..setSpan(mapped, dart);
+    }
+
     final as = _as();
 
-    return ExpressionResultColumn(expression: expr, as: as?.identifier)
-      ..setSpan(tokenBefore, _previous);
+    return ExpressionResultColumn(
+      expression: expr,
+      mappedBy: mappedBy,
+      as: as?.identifier,
+    )..setSpan(tokenBefore, _previous);
   }
 
   SchemaStatement? _create() {

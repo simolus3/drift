@@ -56,9 +56,9 @@ class FileAnalyzer {
                 driver.typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
 
-            final analyzer = QueryAnalyzer(context, driver,
+            final analyzer = QueryAnalyzer(context, state, driver,
                 knownTypes: knownTypes, references: availableElements);
-            queries[query.name] = analyzer.analyze(query);
+            queries[query.name] = await analyzer.analyze(query);
 
             for (final error in analyzer.lints) {
               result.analysisErrors.add(DriftAnalysisError.fromSqlError(error));
@@ -95,14 +95,14 @@ class FileAnalyzer {
           final analysisResult = engine.analyzeNode(stmt.statement, source,
               stmtOptions: options.options);
 
-          final analyzer = QueryAnalyzer(analysisResult, driver,
+          final analyzer = QueryAnalyzer(analysisResult, state, driver,
               knownTypes: knownTypes,
               references: element.references,
               requiredVariables: options.variables);
 
-          result.resolvedQueries[element.id] = analyzer.analyze(element,
-              sourceForCustomName: stmt.as)
-            ..declaredInDriftFile = true;
+          result.resolvedQueries[element.id] =
+              await analyzer.analyze(element, sourceForCustomName: stmt.as)
+                ..declaredInDriftFile = true;
 
           for (final error in analyzer.lints) {
             result.analysisErrors.add(DriftAnalysisError.fromSqlError(error));

@@ -664,7 +664,7 @@ class MyRow {
   });
 }
 
-TypeMatcher scalarColumn(String name) =>
+TypeMatcher<ScalarResultColumn> scalarColumn(String name) =>
     isA<ScalarResultColumn>().having((e) => e.name, 'name', name);
 
 TypeMatcher nestedTableColumm(String name) =>

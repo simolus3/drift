@@ -197,8 +197,8 @@ class QueryWriter {
         // The type converter maps non-nullable types, but the column may be
         // nullable in SQL => just map null to null and only invoke the type
         // converter for non-null values.
-        code = 'NullAwareTypeConverter.wrapFromSql'
-            '(${readConverter(_emitter, converter)}, $code)';
+        final wrapFrom = _emitter.drift('NullAwareTypeConverter.wrapFromSql');
+        code = '$wrapFrom(${readConverter(_emitter, converter)}, $code)';
       } else {
         // Just apply the type converter directly.
         code = '${readConverter(_emitter, converter)}.fromSql($code)';

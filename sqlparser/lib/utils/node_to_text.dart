@@ -182,54 +182,68 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       identifier(e.name!);
     }
 
-    e.when(primaryKey: (primaryKey) {
-      _keyword(TokenType.primary);
-      _keyword(TokenType.key);
-      _orderingMode(primaryKey.mode);
-      _conflictClause(primaryKey.onConflict);
-      if (primaryKey.autoIncrement) _keyword(TokenType.autoincrement);
-    }, notNull: (notNull) {
-      _keyword(TokenType.not);
-      _keyword(TokenType.$null);
-      _conflictClause(notNull.onConflict);
-    }, unique: (unique) {
-      _keyword(TokenType.unique);
-      _conflictClause(unique.onConflict);
-    }, check: (check) {
-      _keyword(TokenType.check);
-      symbol('(', spaceBefore: true);
-      visit(check.expression, arg);
-      symbol(')', spaceAfter: true);
-    }, isDefault: (def) {
-      _keyword(TokenType.$default);
-      final expr = def.expression;
-      if (expr is Literal) {
-        visit(expr, arg);
-      } else {
+    e.when(
+      primaryKey: (primaryKey) {
+        _keyword(TokenType.primary);
+        _keyword(TokenType.key);
+        _orderingMode(primaryKey.mode);
+        _conflictClause(primaryKey.onConflict);
+        if (primaryKey.autoIncrement) _keyword(TokenType.autoincrement);
+      },
+      notNull: (notNull) {
+        _keyword(TokenType.not);
+        _keyword(TokenType.$null);
+        _conflictClause(notNull.onConflict);
+      },
+      unique: (unique) {
+        _keyword(TokenType.unique);
+        _conflictClause(unique.onConflict);
+      },
+      check: (check) {
+        _keyword(TokenType.check);
         symbol('(', spaceBefore: true);
-        visit(expr, arg);
+        visit(check.expression, arg);
         symbol(')', spaceAfter: true);
-      }
-    }, collate: (collate) {
-      _keyword(TokenType.collate);
-      identifier(collate.collation);
-    }, foreignKey: (foreignKey) {
-      visit(foreignKey.clause, arg);
-    }, generatedAs: (generatedAs) {
-      _keyword(TokenType.generated);
-      _keyword(TokenType.always);
-      _keyword(TokenType.as);
+      },
+      isDefault: (def) {
+        _keyword(TokenType.$default);
+        final expr = def.expression;
+        if (expr is Literal) {
+          visit(expr, arg);
+        } else {
+          symbol('(', spaceBefore: true);
+          visit(expr, arg);
+          symbol(')', spaceAfter: true);
+        }
+      },
+      collate: (collate) {
+        _keyword(TokenType.collate);
+        identifier(collate.collation);
+      },
+      foreignKey: (foreignKey) {
+        visit(foreignKey.clause, arg);
+      },
+      generatedAs: (generatedAs) {
+        _keyword(TokenType.generated);
+        _keyword(TokenType.always);
+        _keyword(TokenType.as);
 
-      symbol('(', spaceBefore: true);
-      visit(generatedAs.expression, arg);
-      symbol(')', spaceAfter: true);
+        symbol('(', spaceBefore: true);
+        visit(generatedAs.expression, arg);
+        symbol(')', spaceAfter: true);
 
-      if (generatedAs.stored) {
-        _keyword(TokenType.stored);
-      } else {
-        _keyword(TokenType.virtual);
-      }
-    });
+        if (generatedAs.stored) {
+          _keyword(TokenType.stored);
+        } else {
+          _keyword(TokenType.virtual);
+        }
+      },
+      mappedBy: (mappedBy) {
+        _keyword(TokenType.mapped);
+        _keyword(TokenType.by);
+        dartCode(mappedBy.mapper.dartCode);
+      },
+    );
   }
 
   @override
@@ -581,6 +595,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitExpressionResultColumn(ExpressionResultColumn e, void arg) {
     visit(e.expression, arg);
+    visitNullable(e.mappedBy, arg);
+
     if (e.as != null) {
       _keyword(TokenType.as);
       identifier(e.as!);
@@ -1310,6 +1326,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     symbol(identifier, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
+  }
+
+  void dartCode(String code,
+      {bool spaceBefore = true, bool spaceAfter = true}) {
+    symbol('`$code`', spaceBefore: spaceBefore, spaceAfter: spaceAfter);
   }
 
   void _ifNotExists(bool ifNotExists) {

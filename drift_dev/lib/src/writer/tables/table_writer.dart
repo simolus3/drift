@@ -394,7 +394,7 @@ class TableWriter extends TableOrViewWriter {
 
       // Generate wrappers for non-nullable type converters that are applied to
       // nullable converters.
-      final column = converter.owningColumn;
+      final column = converter.owningColumn!;
       if (converter.canBeSkippedForNulls && column.nullable) {
         final nullableTypeName = emitter.dartCode(
             emitter.writer.converterType(converter, makeNullable: true));

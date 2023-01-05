@@ -127,7 +127,7 @@ class AppliedTypeConverter {
   final DartType? jsonType;
   final DriftSqlType sqlType;
 
-  late DriftColumn owningColumn;
+  late DriftColumn? owningColumn;
 
   /// Whether the Dart-value output of this type converter is nullable.
   ///
@@ -167,7 +167,7 @@ class AppliedTypeConverter {
 
   /// Type converters are stored as static fields in the table that created
   /// them. This will be the field name for this converter.
-  String get fieldName => '\$converter${owningColumn.nameInDart}';
+  String get fieldName => '\$converter${owningColumn!.nameInDart}';
 
   /// If this converter [canBeSkippedForNulls] and is applied to a nullable
   /// column, drift generates a new wrapped type converter which will deal with

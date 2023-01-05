@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift/drift.dart' as drift;
@@ -6,11 +7,14 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
+import '../../backend.dart';
 import '../../driver/driver.dart';
+import '../../driver/state.dart';
 import '../dart/helper.dart';
 import '../drift/sqlparser/drift_lints.dart';
 import '../drift/sqlparser/mapping.dart';
 import '../../results/results.dart';
+import '../shared/dart_types.dart';
 import 'existing_row_class.dart';
 import 'nested_queries.dart';
 import 'required_variables.dart';
@@ -43,10 +47,13 @@ class _QueryHandlerContext {
 /// on.
 class QueryAnalyzer {
   final AnalysisContext context;
+  final FileState fromFile;
   final DriftAnalysisDriver driver;
   final KnownDriftTypes knownTypes;
   final RequiredVariables requiredVariables;
   final Map<String, DriftElement> referencesByName;
+
+  final Map<InlineDartToken, dart.Expression> _resolvedExpressions = {};
 
   /// Found tables and views found need to be shared between the query and
   /// all subqueries to not muss any updates when watching query.
@@ -62,6 +69,7 @@ class QueryAnalyzer {
 
   QueryAnalyzer(
     this.context,
+    this.fromFile,
     this.driver, {
     required this.knownTypes,
     required List<DriftElement> references,
@@ -85,8 +93,10 @@ class QueryAnalyzer {
   /// for a [DefinedSqlQuery.existingDartType] or[DefinedSqlQuery.resultClassName],
   /// respectively. It will improve the highlighted source span in error
   /// messages.
-  SqlQuery analyze(DriftQueryDeclaration declaration,
-      {DriftTableName? sourceForCustomName}) {
+  Future<SqlQuery> analyze(DriftQueryDeclaration declaration,
+      {DriftTableName? sourceForCustomName}) async {
+    await _resolveDartTokens();
+
     final nestedAnalyzer = NestedQueryAnalyzer();
     NestedQueriesContainer? nestedScope;
 
@@ -131,6 +141,28 @@ class QueryAnalyzer {
       ..addAll(nestedAnalyzer.errors);
 
     return query;
+  }
+
+  Future<void> _resolveDartTokens() async {
+    for (final mappedBy in context.root.allDescendants.whereType<MappedBy>()) {
+      try {
+        final expression = await driver.backend.resolveExpression(
+          fromFile.ownUri,
+          mappedBy.mapper.dartCode,
+          fromFile.discovery!.importDependencies
+              .map((e) => e.toString())
+              .where((e) => e.endsWith('.dart')),
+        );
+
+        _resolvedExpressions[mappedBy.mapper] = expression;
+      } on CannotReadExpressionException catch (e) {
+        lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'Could not read expression: ${e.msg}',
+          relevantNode: mappedBy.mapper,
+        ));
+      }
+    }
   }
 
   SqlQuery _mapToDrift(_QueryHandlerContext queryContext) {
@@ -248,12 +280,33 @@ class QueryAnalyzer {
     final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
-    void handleScalarColumn(Column column) {
+    void handleScalarColumn(Column column,
+        [sql.ExpressionResultColumn? source]) {
       final type = context.typeOf(column).type;
       final driftType = driver.typeMapping.sqlTypeToDrift(type);
+      final mappedBy = source?.mappedBy;
       AppliedTypeConverter? converter;
+
       if (type?.hint is TypeConverterHint) {
         converter = (type!.hint as TypeConverterHint).converter;
+      } else if (mappedBy != null) {
+        final dartExpression = _resolvedExpressions[mappedBy.mapper];
+        if (dartExpression != null) {
+          converter = readTypeConverter(
+            knownTypes.helperLibrary,
+            dartExpression,
+            driftType,
+            type?.nullable ?? true,
+            (msg) => lints.add(
+              AnalysisError(
+                type: AnalysisErrorType.other,
+                message: msg,
+                relevantNode: mappedBy,
+              ),
+            ),
+            knownTypes,
+          )?..owningColumn = null;
+        }
       }
 
       columns.add(ScalarResultColumn(
@@ -289,10 +342,13 @@ class QueryAnalyzer {
         } else {
           if (resolvedColumns == null) continue;
 
+          final definition =
+              column is sql.ExpressionResultColumn ? column : null;
+
           // "Regular" column that either is or expands to a list of scalar
           // result columns.
           for (final column in resolvedColumns) {
-            handleScalarColumn(column);
+            handleScalarColumn(column, definition);
           }
         }
       }

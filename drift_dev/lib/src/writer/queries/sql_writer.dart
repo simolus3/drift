@@ -95,6 +95,16 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   @override
+  void visitColumnConstraint(ColumnConstraint e, void arg) {
+    if (e is MappedBy) {
+      // Just drop this constraint, it just serves as a type marker to drift
+      return;
+    }
+
+    super.visitColumnConstraint(e, arg);
+  }
+
+  @override
   void visitNamedVariable(ColonNamedVariable e, void arg) {
     final moor = _findMoorVar(e);
     if (moor != null) {

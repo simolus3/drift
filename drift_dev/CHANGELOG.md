@@ -1,3 +1,8 @@
+
+## 2.5.0-dev
+
+- Support `MAPPED BY` for individual columns in a select statement
+
 ## 2.4.1
 
 - Improvements and fixes for schema files:

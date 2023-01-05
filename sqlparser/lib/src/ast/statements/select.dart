@@ -170,20 +170,29 @@ class StarResultColumn extends ResultColumn {
 class ExpressionResultColumn extends ResultColumn
     implements Renamable, Referencable {
   Expression expression;
+
+  /// A drift-specific node to denote the type converter mapping this result
+  /// column to Dart.
+  MappedBy? mappedBy;
+
   @override
   final String? as;
 
-  ExpressionResultColumn({required this.expression, this.as});
+  ExpressionResultColumn({required this.expression, this.mappedBy, this.as});
 
   @override
   bool get visibleToChildren => false;
 
   @override
-  Iterable<AstNode> get childNodes => [expression];
+  Iterable<AstNode> get childNodes => [
+        expression,
+        if (mappedBy != null) mappedBy!,
+      ];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     expression = transformer.transformChild(expression, this, arg);
+    mappedBy = transformer.transformNullableChild(mappedBy, this, arg);
   }
 
   @override

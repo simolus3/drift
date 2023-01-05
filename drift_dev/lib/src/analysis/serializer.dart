@@ -290,7 +290,7 @@ class ElementSerializer {
       'sql_type_is_nullable': converter.sqlTypeIsNullable,
       'is_drift_enum_converter': converter.isDriftEnumTypeConverter,
       if (converter.owningColumn != appliedTo)
-        'owner': _serializeColumnReference(converter.owningColumn),
+        'owner': _serializeColumnReference(converter.owningColumn!),
     };
   }
 

@@ -1,4 +1,5 @@
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:test/scaffolding.dart';
 import '../utils.dart';
 
 final Map<String, AstNode> testCases = {
@@ -57,4 +58,18 @@ final Map<String, AstNode> testCases = {
 
 void main() {
   testAll(testCases);
+
+  test('supports mapped by columns', () {
+    testStatement(
+      'SELECT 1 MAPPED BY `foo` AS r',
+      SelectStatement(columns: [
+        ExpressionResultColumn(
+          expression: NumericLiteral(1),
+          mappedBy: MappedBy(null, inlineDart('foo')),
+          as: 'r',
+        ),
+      ]),
+      driftMode: true,
+    );
+  });
 }

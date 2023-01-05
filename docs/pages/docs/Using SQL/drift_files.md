@@ -365,6 +365,17 @@ When using type converters, we recommend the [`apply_converters_on_variables`]({
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
+The `MAPPED BY` syntax can also used on individual columns in a query:
+
+```sql
+SELECT
+  id,
+  json_extract(preferences, '$.settings') MAPPED BY `const PreferenceConverter`
+FROM users;
+```
+
+Type converters applied to columns in a select query will be used to map that column
+from SQL to Dart when the query is executed.
 
 ### Existing row classes
 

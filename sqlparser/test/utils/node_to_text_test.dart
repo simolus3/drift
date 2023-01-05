@@ -238,6 +238,10 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         testFormat('SELECT 1, 2 AS r, 3');
       });
 
+      test('with mapped by column', () {
+        testFormat('SELECT 1 MAPPED BY `MyEnumConverter()`');
+      });
+
       test('with windows', () {
         testFormat('''
           SELECT * FROM foo
