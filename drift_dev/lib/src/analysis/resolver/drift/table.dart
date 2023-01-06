@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/driver.dart';
@@ -8,7 +7,6 @@ import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../../utils/string_escaper.dart';
-import '../../backend.dart';
 import '../../driver/error.dart';
 import '../../driver/state.dart';
 import '../../results/results.dart';
@@ -97,7 +95,8 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
             continue;
           }
 
-          converter = await _readTypeConverter(type, nullable, constraint);
+          converter =
+              await typeConverterFromMappedBy(type, nullable, constraint);
         } else if (constraint is sql.JsonKey) {
           writeIntoTable = false;
           overriddenJsonName = constraint.jsonKey;
@@ -342,34 +341,5 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
     linter.sqlParserErrors.forEach(reportLint);
 
     return driftTable;
-  }
-
-  Future<AppliedTypeConverter?> _readTypeConverter(
-      DriftSqlType sqlType, bool nullable, MappedBy mapper) async {
-    final code = mapper.mapper.dartCode;
-
-    dart.Expression expression;
-    try {
-      expression = await resolver.driver.backend.resolveExpression(
-        file.ownUri,
-        code,
-        file.discovery!.importDependencies
-            .map((e) => e.toString())
-            .where((e) => e.endsWith('.dart')),
-      );
-    } on CannotReadExpressionException catch (e) {
-      reportError(DriftAnalysisError.inDriftFile(mapper, e.msg));
-      return null;
-    }
-
-    final knownTypes = await resolver.driver.loadKnownTypes();
-    return readTypeConverter(
-      knownTypes.helperLibrary,
-      expression,
-      sqlType,
-      nullable,
-      (msg) => reportError(DriftAnalysisError.inDriftFile(mapper, msg)),
-      knownTypes,
-    );
   }
 }

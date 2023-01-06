@@ -1,7 +1,8 @@
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/utils/node_to_text.dart';
+import 'package:sqlparser/sqlparser.dart' as sql;
 
+import '../../../writer/queries/sql_writer.dart';
 import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
@@ -27,26 +28,48 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
 
     final columns = <DriftColumn>[];
     final columnDartNames = <String>{};
+
     for (final column in parserView.resolvedColumns) {
       final type = column.type;
+      final driftType = resolver.driver.typeMapping.sqlTypeToDrift(type);
+      final nullable = type?.nullable ?? true;
+
       AppliedTypeConverter? converter;
+      var ownsConverter = false;
+
+      // If this column has a `MAPPED BY` constraint, we can apply the converter
+      // through that.
+      final source = column.source;
+      if (source is ExpressionColumn) {
+        final mappedBy = source.mappedBy;
+        if (mappedBy != null) {
+          converter =
+              await typeConverterFromMappedBy(driftType, nullable, mappedBy);
+          ownsConverter = true;
+        }
+      }
+
       if (type != null && type.hint is TypeConverterHint) {
-        converter = (type.hint as TypeConverterHint).converter;
+        converter ??= (type.hint as TypeConverterHint).converter;
       }
 
       final driftColumn = DriftColumn(
-        sqlType: resolver.driver.typeMapping.sqlTypeToDrift(type),
+        sqlType: driftType,
         nameInSql: column.name,
         nameInDart:
             dartNameForSqlColumn(column.name, existingNames: columnDartNames),
         declaration: DriftDeclaration.driftFile(stmt, file.ownUri),
-        nullable: type?.nullable == true,
+        nullable: nullable,
         typeConverter: converter,
         foreignConverter: true,
       );
 
       columns.add(driftColumn);
       columnDartNames.add(driftColumn.nameInDart);
+
+      if (ownsConverter) {
+        converter?.owningColumn = driftColumn;
+      }
     }
 
     var entityInfoName = ReCase(stmt.viewName).pascalCase;
@@ -74,7 +97,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       query: stmt.query,
       // Remove drift-specific syntax
       driftTableName: null,
-    ).toSql();
+    ).toSqlWithoutDriftSpecificSyntax(resolver.driver.options);
 
     return DriftView(
       discovered.ownId,

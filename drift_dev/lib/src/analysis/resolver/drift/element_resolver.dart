@@ -1,7 +1,9 @@
+import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:collection/collection.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:drift/drift.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
@@ -17,6 +19,35 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     extends LocalElementResolver<T> {
   DriftElementResolver(
       super.file, super.discovered, super.resolver, super.state);
+
+  Future<AppliedTypeConverter?> typeConverterFromMappedBy(
+      DriftSqlType sqlType, bool nullable, MappedBy mapper) async {
+    final code = mapper.mapper.dartCode;
+
+    dart.Expression expression;
+    try {
+      expression = await resolver.driver.backend.resolveExpression(
+        file.ownUri,
+        code,
+        file.discovery!.importDependencies
+            .map((e) => e.toString())
+            .where((e) => e.endsWith('.dart')),
+      );
+    } on CannotReadExpressionException catch (e) {
+      reportError(DriftAnalysisError.inDriftFile(mapper, e.msg));
+      return null;
+    }
+
+    final knownTypes = await resolver.driver.loadKnownTypes();
+    return readTypeConverter(
+      knownTypes.helperLibrary,
+      expression,
+      sqlType,
+      nullable,
+      (msg) => reportError(DriftAnalysisError.inDriftFile(mapper, msg)),
+      knownTypes,
+    );
+  }
 
   void reportLints(AnalysisContext context, Iterable<DriftElement> references) {
     context.errors.forEach(reportLint);

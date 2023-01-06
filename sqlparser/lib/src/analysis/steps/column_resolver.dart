@@ -293,12 +293,18 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         Column column;
 
         if (expression is Reference) {
-          column = ReferenceExpressionColumn(expression,
-              overriddenName: resultColumn.as);
+          column = ReferenceExpressionColumn(
+            expression,
+            overriddenName: resultColumn.as,
+            mappedBy: resultColumn.mappedBy,
+          );
         } else {
           final name = _nameOfResultColumn(resultColumn)!;
-          column =
-              ExpressionColumn(name: name, expression: resultColumn.expression);
+          column = ExpressionColumn(
+            name: name,
+            expression: resultColumn.expression,
+            mappedBy: resultColumn.mappedBy,
+          );
         }
 
         usedColumns.add(column);

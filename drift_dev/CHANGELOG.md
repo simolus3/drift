@@ -1,7 +1,7 @@
 
 ## 2.5.0-dev
 
-- Support `MAPPED BY` for individual columns in a select statement
+- Support `MAPPED BY` for individual columns in queries or in views defined with SQL.
 
 ## 2.4.1
 

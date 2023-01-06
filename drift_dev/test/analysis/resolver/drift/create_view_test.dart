@@ -145,4 +145,79 @@ CREATE VIEW IF NOT EXISTS repro AS
       'fooBarBaz', // fooBarBaz
     ]);
   });
+
+  test('copies type converter from table', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'converter.dart';
+
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY,
+  foo INTEGER NOT NULL MAPPED BY `createConverter()`
+);
+
+CREATE VIEW foos AS SELECT foo FROM users;
+''',
+      'a|lib/converter.dart': '''
+import 'package:drift/drift.dart';
+
+TypeConverter<Object, int> createConverter() => throw UnimplementedError();
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.drift');
+    backend.expectNoErrors();
+
+    final table = state.analysis[state.id('users')]!.result as DriftTable;
+    final tableColumn = table.columnBySqlName['foo'];
+
+    final view = state.analysis[state.id('foos')]!.result as DriftView;
+    final column = view.columns.single;
+
+    expect(
+      column.typeConverter,
+      isA<AppliedTypeConverter>()
+          .having(
+              (e) => e.expression.toString(), 'expression', 'createConverter()')
+          .having((e) => e.owningColumn, 'owningColumn', tableColumn),
+    );
+  });
+
+  test('can declare type converter on view column', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'converter.dart';
+
+CREATE VIEW v AS SELECT 1 MAPPED BY `createConverter()` AS r;
+''',
+      'a|lib/converter.dart': '''
+import 'package:drift/drift.dart';
+
+TypeConverter<Object, int> createConverter() => throw UnimplementedError();
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.drift');
+    backend.expectNoErrors();
+
+    final view = state.analyzedElements.single as DriftView;
+    final column = view.columns.single;
+
+    expect(
+      column.typeConverter,
+      isA<AppliedTypeConverter>()
+          .having(
+              (e) => e.expression.toString(), 'expression', 'createConverter()')
+          .having((e) => e.owningColumn, 'owningColumn', column),
+    );
+
+    expect(
+      view.source,
+      isA<SqlViewSource>().having(
+        (e) => e.sqlCreateViewStmt,
+        'sqlCreateViewStmt',
+        'CREATE VIEW v AS SELECT 1 AS r;',
+      ),
+    );
+  });
 }

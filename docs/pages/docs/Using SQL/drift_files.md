@@ -349,6 +349,7 @@ Future<List<Route>> routesByStart(int startPointId) {
 You can import and use [type converters]({{ "../Advanced Features/type_converters.md" | pageUrl }})
 written in Dart in a drift file. Importing a Dart file works with a regular `import` statement.
 To apply a type converter on a column definition, you can use the `MAPPED BY` column constraints:
+
 ```sql
 CREATE TABLE users (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -357,6 +358,18 @@ CREATE TABLE users (
 );
 ```
 
+Queries or views that reference a table-column with a type converter will also inherit that
+converter. In addition, both queries and views can specify a type converter to use for a
+specific column as well:
+
+```sql
+CREATE VIEW my_view AS SELECT 'foo' MAPPED BY `const PreferenceConverter()`
+
+SELECT
+  id,
+  json_extract(preferences, '$.settings') MAPPED BY `const PreferenceConverter()`
+FROM users;
+```
 
 More details on type converts in drift files are available
 [here]({{ "../Advanced Features/type_converters.md#using-converters-in-moor" | pageUrl }}).
@@ -365,17 +378,6 @@ When using type converters, we recommend the [`apply_converters_on_variables`]({
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
-The `MAPPED BY` syntax can also used on individual columns in a query:
-
-```sql
-SELECT
-  id,
-  json_extract(preferences, '$.settings') MAPPED BY `const PreferenceConverter`
-FROM users;
-```
-
-Type converters applied to columns in a select query will be used to map that column
-from SQL to Dart when the query is executed.
 
 ### Existing row classes
 

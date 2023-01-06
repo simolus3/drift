@@ -149,9 +149,10 @@ class QueryAnalyzer {
         final expression = await driver.backend.resolveExpression(
           fromFile.ownUri,
           mappedBy.mapper.dartCode,
-          fromFile.discovery!.importDependencies
-              .map((e) => e.toString())
-              .where((e) => e.endsWith('.dart')),
+          fromFile.discovery?.importDependencies
+                  .map((e) => e.toString())
+                  .where((e) => e.endsWith('.dart')) ??
+              const Iterable.empty(),
         );
 
         _resolvedExpressions[mappedBy.mapper] = expression;

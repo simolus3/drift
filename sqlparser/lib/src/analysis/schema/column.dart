@@ -198,7 +198,15 @@ class ExpressionColumn extends Column {
   /// The expression returned by this column.
   final Expression expression;
 
-  ExpressionColumn({required this.name, required this.expression});
+  /// When drift extensions are enabled and this column was defined with a
+  /// `MAPPED BY` clause, a reference to that clause.
+  final MappedBy? mappedBy;
+
+  ExpressionColumn({
+    required this.name,
+    required this.expression,
+    this.mappedBy,
+  });
 }
 
 /// A column that is created by a reference expression. The difference to an
@@ -219,7 +227,8 @@ class ReferenceExpressionColumn extends ExpressionColumn {
 
   final String? overriddenName;
 
-  ReferenceExpressionColumn(Reference ref, {this.overriddenName})
+  ReferenceExpressionColumn(Reference ref,
+      {this.overriddenName, super.mappedBy})
       : super(name: '_', expression: ref);
 }
 

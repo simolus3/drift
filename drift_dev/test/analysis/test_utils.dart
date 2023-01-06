@@ -4,7 +4,7 @@ import 'dart:isolate';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
@@ -34,6 +34,7 @@ class TestBackend extends DriftBackend {
   late final DriftAnalysisDriver driver;
 
   AnalysisContext? _dartContext;
+  OverlayResourceProvider? _resourceProvider;
 
   TestBackend(
     Map<String, String> sourceContents, {
@@ -72,8 +73,21 @@ class TestBackend extends DriftBackend {
     }
   }
 
+  String _pathFor(Uri uri) {
+    if (uri.scheme == 'package') {
+      final package = uri.pathSegments.first;
+      final path =
+          p.url.joinAll(['/$package/lib', ...uri.pathSegments.skip(1)]);
+
+      return path;
+    }
+
+    return uri.path;
+  }
+
   Future<void> _setupDartAnalyzer() async {
-    final provider = OverlayResourceProvider(PhysicalResourceProvider.INSTANCE);
+    final provider = _resourceProvider =
+        OverlayResourceProvider(PhysicalResourceProvider.INSTANCE);
 
     // Analyze example sources against the drift sources from the current
     // drift_dev test runner.
@@ -93,15 +107,8 @@ class TestBackend extends DriftBackend {
 
     // Also put sources into the overlay:
     sourceContents.forEach((key, value) {
-      final uri = Uri.parse(key);
-
-      if (uri.scheme == 'package') {
-        final package = uri.pathSegments.first;
-        final path =
-            p.url.joinAll(['/$package/lib', ...uri.pathSegments.skip(1)]);
-
-        provider.setOverlay(path, content: value, modificationStamp: 1);
-      }
+      final path = _pathFor(Uri.parse(key));
+      provider.setOverlay(path, content: value, modificationStamp: 1);
     });
 
     if (analyzerExperiments.isNotEmpty) {
@@ -142,9 +149,38 @@ class TestBackend extends DriftBackend {
   }
 
   @override
-  Future<Never> resolveExpression(
+  Future<dart.Expression> resolveExpression(
       Uri context, String dartExpression, Iterable<String> imports) async {
-    throw UnsupportedError('Not currently supported in tests');
+    final fileContents = StringBuffer();
+    for (final import in imports) {
+      fileContents.writeln("import '$import';");
+    }
+    fileContents.writeln('var field = $dartExpression;');
+    final path = '${_pathFor(context)}.exp.dart';
+
+    await _setupDartAnalyzer();
+    final resourceProvider = _resourceProvider!;
+    final analysisContext = _dartContext!;
+
+    resourceProvider.setOverlay(path,
+        content: fileContents.toString(), modificationStamp: 1);
+
+    try {
+      final result =
+          await analysisContext.currentSession.getResolvedLibrary(path);
+
+      if (result is ResolvedLibraryResult) {
+        final unit = result.units.single.unit;
+        final field =
+            unit.declarations.single as dart.TopLevelVariableDeclaration;
+
+        return field.variables.variables.single.initializer!;
+      } else {
+        throw CannotReadExpressionException('Could not resolve temp file');
+      }
+    } finally {
+      resourceProvider.removeOverlay(path);
+    }
   }
 
   @override
@@ -157,7 +193,7 @@ class TestBackend extends DriftBackend {
   }
 
   @override
-  Future<AstNode?> loadElementDeclaration(Element element) async {
+  Future<dart.AstNode?> loadElementDeclaration(Element element) async {
     final library = element.library;
     if (library == null) return null;
 

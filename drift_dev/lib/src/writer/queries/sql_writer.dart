@@ -24,6 +24,13 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
   return 'generated${placeholder.name}';
 }
 
+extension ToSqlText on AstNode {
+  String toSqlWithoutDriftSpecificSyntax(DriftOptions options) {
+    final writer = SqlWriter(options);
+    return writer.writeSql(this);
+  }
+}
+
 class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
   final SqlQuery? query;
