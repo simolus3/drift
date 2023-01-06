@@ -434,7 +434,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   @override
   void visitCastExpression(CastExpression e, TypeExpectation arg) {
     final type = session.context.schemaSupport.resolveColumnType(e.typeName);
-    session._checkAndResolve(e, type, arg);
+    session._checkAndResolve(e, type.withoutNullabilityInfo, arg);
     session._addRelation(NullableIfSomeOtherIs(e, [e.operand]));
     visit(e.operand, const NoTypeExpectation());
   }

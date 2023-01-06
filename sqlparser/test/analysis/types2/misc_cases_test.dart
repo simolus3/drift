@@ -58,6 +58,10 @@ const Map<String, ResolvedType?> _types = {
       ResolvedType(type: BasicType.int, nullable: true, hint: IsDateTime()),
   "SELECT datetime('now') = ?":
       ResolvedType(type: BasicType.text, nullable: true, hint: IsDateTime()),
+  'SELECT CAST(NULLIF(1, 2) AS INTEGER) = ?': ResolvedType(
+    type: BasicType.int,
+    nullable: true,
+  ),
 };
 
 SqlEngine _spawnEngine() {
