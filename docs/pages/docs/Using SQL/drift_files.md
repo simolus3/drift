@@ -142,6 +142,16 @@ by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 For details on all supported types, and information on how to switch between the
 datetime modes, see [this section]({{ '../Getting started/advanced_dart_tables.md#supported-column-types' | pageUrl }}).
 
+The additional drift-specific types (`BOOLEAN`, `DATETIME`, `ENUM` and `ENUMNAME`) are also supported in `CAST`
+expressions, which is helpful for views:
+
+```sql
+CREATE VIEW with_next_status AS
+  SELECT id, CAST(status + 1 AS ENUM(Status)) AS status
+    FROM tasks
+    WHERE status < 3;
+```
+
 ### Drift-specific features
 
 To help support drift's Dart API, `CREATE TABLE` statements in drift files can

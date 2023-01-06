@@ -11,7 +11,7 @@ hints, folding and outline.
 
 ## Features
 
-At the moment, the IDE supports 
+At the moment, the IDE supports
 
 - auto-complete to suggest matching keywords as you type
 - warnings and errors for your queries
