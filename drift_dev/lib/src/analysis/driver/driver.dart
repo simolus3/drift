@@ -69,7 +69,9 @@ class DriftAnalysisDriver {
   SqlEngine newSqlEngine() {
     return SqlEngine(
       EngineOptions(
-        useDriftExtensions: true,
+        driftOptions: DriftSqlOptions(
+          storeDateTimesAsText: options.storeDateTimeValuesAsText,
+        ),
         enabledExtensions: [
           DriftOptionsExtension(options),
           if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),

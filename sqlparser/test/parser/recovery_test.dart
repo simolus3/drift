@@ -41,7 +41,8 @@ CREATE TABLE foo (
   });
 
   test('parses trailing comma with error', () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
 
     final result = engine.parseDriftFile('''
 CREATE TABLE foo (

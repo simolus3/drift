@@ -41,7 +41,7 @@ class _DriftHighlighter extends Highlighter {
   void highlight() {
     final engine = SqlEngine(
       EngineOptions(
-        useDriftExtensions: true,
+        driftOptions: const DriftSqlOptions(),
         version: SqliteVersion.current,
       ),
     );

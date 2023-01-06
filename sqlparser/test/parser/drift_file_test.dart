@@ -162,8 +162,9 @@ END;
 
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/drift/issues/280#issuecomment-570789454
-    final parsed = SqlEngine(EngineOptions(useDriftExtensions: true))
-        .parseDriftFile('name: NSERT INTO foo DEFAULT VALUES;');
+    final parsed =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+            .parseDriftFile('name: NSERT INTO foo DEFAULT VALUES;');
 
     expect(
       parsed.errors,
@@ -182,7 +183,8 @@ END;
   });
 
   test('syntax errors contain correct position', () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
     final result = engine.parseDriftFile('''
 worksByComposer:
 SELECT DISTINCT A.* FROM works A, works B ON A.id =
@@ -222,7 +224,8 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
 
   test('allows statements to appear in any order', () {
     final result =
-        SqlEngine(EngineOptions(useDriftExtensions: true)).parseDriftFile('''
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+            .parseDriftFile('''
 CREATE TABLE foo (
   a INTEGER NOT NULL
 );

@@ -26,7 +26,7 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 
 extension ToSqlText on AstNode {
   String toSqlWithoutDriftSpecificSyntax(DriftOptions options) {
-    final writer = SqlWriter(options);
+    final writer = SqlWriter(options, escapeForDart: false);
     return writer.writeSql(this);
   }
 }
@@ -99,6 +99,36 @@ class SqlWriter extends NodeSqlBuilder {
     spaceIfNeeded();
     _out.write(str);
     needsSpace = true;
+  }
+
+  @override
+  void visitCastExpression(CastExpression e, void arg) {
+    final schema = SchemaFromCreateTable(
+      driftExtensions: true,
+      driftUseTextForDateTime: options.storeDateTimeValuesAsText,
+    );
+
+    final type = schema.resolveColumnType(e.typeName);
+    final hint = type.hint;
+
+    String? overriddenTypeName;
+
+    if (hint is IsDateTime) {
+      overriddenTypeName = options.storeDateTimeValuesAsText ? 'TEXT' : 'INT';
+    } else if (hint is IsBoolean) {
+      overriddenTypeName = 'INT';
+    }
+
+    if (overriddenTypeName != null) {
+      keyword(TokenType.cast);
+      symbol('(');
+      visit(e.operand, arg);
+      keyword(TokenType.as);
+      symbol(overriddenTypeName, spaceBefore: true);
+      symbol(')', spaceAfter: true);
+    } else {
+      super.visitCastExpression(e, arg);
+    }
   }
 
   @override

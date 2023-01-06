@@ -65,8 +65,9 @@ void main() {
     });
 
     test('never allows drift extensions', () {
-      final result = SqlEngine(EngineOptions(useDriftExtensions: true))
-          .parseColumnConstraints('MAPPED BY `myconverter()`');
+      final result =
+          SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+              .parseColumnConstraints('MAPPED BY `myconverter()`');
       expect(result.errors, [
         isA<ParsingError>().having(
             (e) => e.message, 'message', contains('Expected a constraint')),

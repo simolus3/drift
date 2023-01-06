@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../data.dart';
 
 void main() {
-  final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
+  final engine = SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
     ..registerTable(demoTable)
     ..registerTable(anotherTable);
 

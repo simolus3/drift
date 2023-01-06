@@ -63,8 +63,9 @@ void main() {
   });
 
   test("resolved columns don't include drift nested results", () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
-      ..registerTable(demoTable);
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+          ..registerTable(demoTable);
 
     final context = engine.analyze('SELECT demo.** FROM demo;');
 
@@ -105,9 +106,10 @@ void main() {
   });
 
   test('resolves columns from nested results', () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
-      ..registerTable(demoTable)
-      ..registerTable(anotherTable);
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+          ..registerTable(demoTable)
+          ..registerTable(anotherTable);
 
     final context = engine.analyze('SELECT SUM(*) AS rst FROM '
         '(SELECT COUNT(*) FROM demo UNION ALL SELECT COUNT(*) FROM tbl);');
@@ -123,8 +125,9 @@ void main() {
   });
 
   test('resolves columns in nested queries', () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
-      ..registerTable(demoTable);
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+          ..registerTable(demoTable);
 
     final context =
         engine.analyze('SELECT content, LIST(SELECT id FROM demo) FROM demo');

@@ -99,7 +99,8 @@ void main() {
   });
 
   test('supports booleans when drift extensions are enabled', () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
     final stmt = engine.parse('''
     CREATE TABLE foo (
       a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL

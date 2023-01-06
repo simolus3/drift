@@ -7,7 +7,8 @@ import 'package:test/test.dart';
 ComputedSuggestions completionsFor(String driftFile,
     {void Function(SqlEngine)? setup}) {
   final position = driftFile.indexOf('^');
-  final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+  final engine =
+      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
   setup?.call(engine);
 
   final result = engine.parseDriftFile(driftFile.replaceFirst('^', ''));

@@ -26,14 +26,15 @@ void main() {
   });
 
   test('does not register the same result set multiple times', () {
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
-      ..registerTableFromSql('''
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+          ..registerTableFromSql('''
         CREATE TABLE with_defaults (
           a TEXT DEFAULT 'something',
           b INT UNIQUE
         );
       ''')
-      ..registerTableFromSql('''
+          ..registerTableFromSql('''
         CREATE TABLE with_constraints (
           a TEXT,
           b INT NOT NULL,

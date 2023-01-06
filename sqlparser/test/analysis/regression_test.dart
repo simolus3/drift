@@ -35,15 +35,16 @@ void main() {
 
   test('regression test for #1188', () {
     // Test for https://github.com/simolus3/drift/issues/1188
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
-      ..registerTableFromSql('''
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+          ..registerTableFromSql('''
         CREATE TABLE IF NOT EXISTS "employees" (
      	    "id" INTEGER NOT NULL PRIMARY KEY,
      	    "name" TEXT NOT NULL UNIQUE,
      	    "manager_id" INTEGER
      	  );
       ''')
-      ..registerTableFromSql('''
+          ..registerTableFromSql('''
         CREATE TABLE IF NOT EXISTS "employee_notes" (
           "employee_id"	INTEGER NOT NULL PRIMARY KEY,
           "note" TEXT
@@ -85,14 +86,15 @@ void main() {
 
   test('regression test for #1234', () {
     // https://github.com/simolus3/drift/issues/1234#issuecomment-853270925
-    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
-      ..registerTableFromSql('''
+    final engine =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+          ..registerTableFromSql('''
         CREATE TABLE inboxes (
           id TEXT PRIMARY KEY NOT NULL,
           group_id TEXT NOT NULL
         );
       ''')
-      ..registerTableFromSql('''
+          ..registerTableFromSql('''
         CREATE TABLE assignable_users (
           user_id TEXT NOT NULL,
           inbox_id TEXT NOT NULL
@@ -116,8 +118,8 @@ void main() {
 
   test('regression test for #1096', () {
     // https://github.com/simolus3/drift/issues/1096#issuecomment-931378474
-    final engine = SqlEngine(
-        EngineOptions(useDriftExtensions: true, version: SqliteVersion.v3_35))
+    final engine = SqlEngine(EngineOptions(
+        driftOptions: const DriftSqlOptions(), version: SqliteVersion.v3_35))
       ..registerTableFromSql('''
 CREATE TABLE downloads (
     id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -159,8 +161,8 @@ CREATE TABLE downloads (
 
   test('regression test for #1858', () {
     // https://github.com/simolus3/drift/issues/1858
-    final engine = SqlEngine(
-        EngineOptions(useDriftExtensions: true, version: SqliteVersion.v3_38));
+    final engine = SqlEngine(EngineOptions(
+        driftOptions: const DriftSqlOptions(), version: SqliteVersion.v3_38));
 
     engine.registerTableFromSql('''
 CREATE TABLE IF NOT EXISTS contract_has_add_fees

@@ -6,8 +6,8 @@ import 'utils.dart';
 void main() {
   final oldEngine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35));
   final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
-  final engineInDriftMode = SqlEngine(
-      EngineOptions(version: SqliteVersion.v3_37, useDriftExtensions: true));
+  final engineInDriftMode = SqlEngine(EngineOptions(
+      version: SqliteVersion.v3_37, driftOptions: const DriftSqlOptions()));
 
   group('using STRICT', () {
     test('with an old sqlite3 version', () {

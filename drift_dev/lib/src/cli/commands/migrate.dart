@@ -99,7 +99,7 @@ class MigrateCommand extends MoorCommand {
 
   Future<String> _transformMoorFile(File file) async {
     final engine = SqlEngine(EngineOptions(
-        useDriftExtensions: true, version: SqliteVersion.current));
+        driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
     final originalContent = await file.readAsString();
     var output = originalContent;
     final result = engine.parseDriftFile(originalContent);

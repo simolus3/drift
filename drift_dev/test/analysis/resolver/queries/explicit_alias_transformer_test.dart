@@ -4,7 +4,8 @@ import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+  final engine =
+      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
   final result = engine.parse('CREATE TABLE a (id INTEGER);');
   engine.registerTable(const SchemaFromCreateTable()
       .read(result.rootNode as CreateTableStatement));

@@ -69,7 +69,7 @@ class DriftPreprocessor {
       DriftBackend backend, Uri uri) async {
     final contents = await backend.readAsString(uri);
     final engine = SqlEngine(EngineOptions(
-        useDriftExtensions: true, version: SqliteVersion.current));
+        driftOptions: const DriftSqlOptions(), version: SqliteVersion.current));
     final parsedInput = engine.parseDriftFile(contents);
 
     final directImports = _imports(parsedInput.rootNode, uri).toList();

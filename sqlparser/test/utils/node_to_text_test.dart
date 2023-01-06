@@ -6,7 +6,8 @@ import 'package:test/test.dart';
 enum _ParseKind { statement, driftFile }
 
 void main() {
-  final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+  final engine =
+      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
 
   void testFormat(String input,
       {_ParseKind kind = _ParseKind.statement, String? expectedOutput}) {

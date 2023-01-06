@@ -34,7 +34,8 @@ class ParseDriftFile extends BenchmarkBase {
   ParseDriftFile(ScoreEmitter emitter)
       : super('Moor file: Parse only', emitter);
 
-  final _engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+  final _engine =
+      SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
 
   @override
   void exercise() {

@@ -2,10 +2,13 @@ import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class EngineOptions {
+  /// If drift extensions are enabled, contains options on how to interpret
+  /// drift-specific syntax.
+  ///
   /// Drift extends the sql grammar a bit to support type converters and other
   /// features. Enabling this flag will make this engine parse sql with these
   /// extensions enabled.
-  final bool useDriftExtensions;
+  final DriftSqlOptions? driftOptions;
 
   /// The target sqlite version.
   ///
@@ -26,8 +29,10 @@ class EngineOptions {
   /// function) to the associated handler.
   final Map<String, TableValuedFunctionHandler> addedTableFunctions = {};
 
+  bool get useDriftExtensions => driftOptions != null;
+
   EngineOptions({
-    this.useDriftExtensions = false,
+    this.driftOptions,
     List<Extension> enabledExtensions = const [],
     this.version = SqliteVersion.minimum,
   }) : enabledExtensions = _allExtensions(enabledExtensions, version) {
@@ -64,6 +69,15 @@ class EngineOptions {
   void addTableValuedFunctionHandler(TableValuedFunctionHandler handler) {
     addedTableFunctions[handler.functionName.toLowerCase()] = handler;
   }
+}
+
+/// Drift-specific parsing and analysis options that are not enabled by default.
+class DriftSqlOptions {
+  final bool storeDateTimesAsText;
+
+  const DriftSqlOptions({
+    this.storeDateTimesAsText = false,
+  });
 }
 
 /// The assumed version of `sqlite3`.

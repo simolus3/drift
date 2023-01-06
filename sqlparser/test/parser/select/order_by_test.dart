@@ -31,9 +31,10 @@ void main() {
   });
 
   test('parses clauses with NULLS FIRST or NULLS LAST', () {
-    final parsed = SqlEngine(EngineOptions(useDriftExtensions: true))
-        .parse(r'SELECT * FROM tbl ORDER BY $a NULLS LAST, b NULLS FIRST')
-        .rootNode as SelectStatement;
+    final parsed =
+        SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()))
+            .parse(r'SELECT * FROM tbl ORDER BY $a NULLS LAST, b NULLS FIRST')
+            .rootNode as SelectStatement;
 
     enforceHasSpan(parsed);
     enforceEqual(

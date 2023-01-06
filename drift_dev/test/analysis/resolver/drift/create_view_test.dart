@@ -1,5 +1,6 @@
 @Tags(['analyzer'])
 import 'package:drift/drift.dart' as drift;
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
@@ -219,5 +220,61 @@ TypeConverter<Object, int> createConverter() => throw UnimplementedError();
         'CREATE VIEW v AS SELECT 1 AS r;',
       ),
     );
+  });
+
+  group('desugars cast', () {
+    Future<void> expectView(
+      String definition,
+      drift.DriftSqlType expectedType,
+      String expectedSql,
+      DriftOptions options,
+    ) async {
+      final backend = TestBackend.inTest(
+        {'a|lib/a.drift': definition},
+        options: options,
+      );
+      final state = await backend.analyze('package:a/a.drift');
+      backend.expectNoErrors();
+
+      final view = state.analyzedElements.single as DriftView;
+      final column = view.columns.single;
+
+      expect(column.sqlType, expectedType);
+      expect(
+        view.source,
+        isA<SqlViewSource>().having(
+          (e) => e.sqlCreateViewStmt,
+          'sqlCreateViewStmt',
+          expectedSql,
+        ),
+      );
+    }
+
+    test('to boolean', () async {
+      await expectView(
+        'CREATE VIEW x AS SELECT CAST(1 AS BOOLEAN) AS a;',
+        drift.DriftSqlType.bool,
+        'CREATE VIEW x AS SELECT CAST(1 AS INT) AS a;',
+        const DriftOptions.defaults(),
+      );
+    });
+
+    test('to datetime as int', () async {
+      await expectView(
+        'CREATE VIEW x AS SELECT CAST(1 AS DATETIME) AS a;',
+        drift.DriftSqlType.dateTime,
+        'CREATE VIEW x AS SELECT CAST(1 AS INT) AS a;',
+        const DriftOptions.defaults(storeDateTimeValuesAsText: false),
+      );
+    });
+
+    test('to datetime as text', () async {
+      await expectView(
+        "CREATE VIEW x AS SELECT CAST('x' AS DATETIME) AS a;",
+        drift.DriftSqlType.dateTime,
+        "CREATE VIEW x AS SELECT CAST('x' AS TEXT) AS a;",
+        const DriftOptions.defaults(storeDateTimeValuesAsText: true),
+      );
+    });
   });
 }

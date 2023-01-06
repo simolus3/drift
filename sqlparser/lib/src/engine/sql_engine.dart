@@ -34,8 +34,12 @@ class SqlEngine {
   /// The returned reader can be used to read the table structure from a
   /// [TableInducingStatement] by using [SchemaFromCreateTable.read].
   SchemaFromCreateTable get schemaReader {
-    return _schemaReader ??=
-        SchemaFromCreateTable(driftExtensions: options.useDriftExtensions);
+    final driftOptions = options.driftOptions;
+
+    return _schemaReader ??= SchemaFromCreateTable(
+      driftExtensions: driftOptions != null,
+      driftUseTextForDateTime: driftOptions?.storeDateTimesAsText == true,
+    );
   }
 
   /// Registers the [table], which means that it can later be used in sql

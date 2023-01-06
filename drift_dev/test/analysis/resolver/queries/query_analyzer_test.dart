@@ -5,6 +5,7 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
+import 'existing_row_classes_test.dart';
 import 'utils.dart';
 
 Future<SqlQuery> _handle(String sql) async {
@@ -291,5 +292,23 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
 
     final args = query.variables;
     expect(args.map((e) => e.sqlType), [DriftSqlType.int, DriftSqlType.string]);
+  });
+
+  test('can cast to DATETIME and BOOLEAN', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': '''
+a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.drift');
+    final query = state.fileAnalysis!.resolvedQueries.values.single;
+    final resultSet = query.resultSet!;
+
+    expect(resultSet.columns, [
+      scalarColumn('a').having((e) => e.sqlType, 'sqlType', DriftSqlType.bool),
+      scalarColumn('b')
+          .having((e) => e.sqlType, 'sqlType', DriftSqlType.dateTime),
+    ]);
   });
 }
