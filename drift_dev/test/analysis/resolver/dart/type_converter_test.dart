@@ -32,7 +32,7 @@ class Users extends Table {
 }
 ''',
       'a|lib/main.drift': '''
-import 'main.dart';
+import 'json.dart';
 
 CREATE TABLE users (
   foo TEXT MAPPED BY `withoutJson()`,
@@ -93,5 +93,5 @@ CREATE TABLE users (
 
   test('json converters in drift files', () {
     return testWith('package:a/main.drift');
-  }, skip: 'Reading Dart expressions not currently supported in tests');
+  });
 }

@@ -273,4 +273,50 @@ class ADrift extends i1.ModularAccessor {
 ''')),
     }, results.dartOutputs, results);
   });
+
+  test('generates type converters for views', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+import 'converter.dart';
+
+CREATE VIEW my_view AS SELECT
+  CAST(1 AS ENUM(MyEnum)) AS c1,
+  CAST('bar' AS ENUMNAME(MyEnum)) AS c2,
+  1 MAPPED BY `myConverter()` AS c3,
+  NULLIF(1, 2) MAPPED BY `myConverter()` AS c4
+;
+''',
+        'a|lib/converter.dart': '''
+import 'package:drift/drift.dart';
+
+enum MyEnum {
+  foo, bar
+}
+
+TypeConverter<Object, int> myConverter() => throw UnimplementedError();
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            contains(
+                ''''CREATE VIEW my_view AS SELECT CAST(1 AS INT) AS c1, CAST(\\'bar\\' AS TEXT) AS c2, 1 AS c3, NULLIF(1, 2) AS c4';'''),
+            contains(r'$converterc1 ='),
+            contains(r'$converterc2 ='),
+            contains(r'$converterc3 ='),
+            contains(r'$converterc4 ='),
+            contains(r'$converterc4n ='),
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result,
+    );
+  });
 }

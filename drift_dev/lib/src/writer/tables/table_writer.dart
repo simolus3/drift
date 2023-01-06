@@ -154,6 +154,36 @@ abstract class TableOrViewWriter {
     );
   }
 
+  void writeConvertersAsStaticFields() {
+    for (final converter in tableOrView.appliedConverters) {
+      if (converter.owningColumn?.owner != tableOrView) continue;
+
+      final typeName =
+          emitter.dartCode(emitter.writer.converterType(converter));
+      final code = emitter.dartCode(converter.expression);
+
+      buffer.write('static $typeName ${converter.fieldName} = $code;');
+
+      // Generate wrappers for non-nullable type converters that are applied to
+      // nullable converters.
+      final column = converter.owningColumn!;
+      if (converter.canBeSkippedForNulls && column.nullable) {
+        final nullableTypeName = emitter.dartCode(
+            emitter.writer.converterType(converter, makeNullable: true));
+
+        final wrap = converter.alsoAppliesToJsonConversion
+            ? emitter.drift('JsonTypeConverter2.asNullable')
+            : emitter.drift('NullAwareTypeConverter.wrap');
+
+        final code = '$wrap(${converter.fieldName})';
+
+        buffer
+            .write('static $nullableTypeName ${converter.nullableFieldName} = '
+                '$code;');
+      }
+    }
+  }
+
   void writeMappingMethod(Scope scope) {
     if (!scope.generationOptions.writeDataClasses) {
       buffer.writeln('''
@@ -359,7 +389,7 @@ class TableWriter extends TableOrViewWriter {
 
     _writeAliasGenerator();
 
-    _writeConvertersAsStaticFields();
+    writeConvertersAsStaticFields();
     _overrideFieldsIfNeeded();
 
     // close class
@@ -382,34 +412,6 @@ class TableWriter extends TableOrViewWriter {
 
     emitter.writeToColumnsOverride(table.columns);
     buffer.write('}');
-  }
-
-  void _writeConvertersAsStaticFields() {
-    for (final converter in table.appliedConverters) {
-      final typeName =
-          emitter.dartCode(emitter.writer.converterType(converter));
-      final code = emitter.dartCode(converter.expression);
-
-      buffer.write('static $typeName ${converter.fieldName} = $code;');
-
-      // Generate wrappers for non-nullable type converters that are applied to
-      // nullable converters.
-      final column = converter.owningColumn!;
-      if (converter.canBeSkippedForNulls && column.nullable) {
-        final nullableTypeName = emitter.dartCode(
-            emitter.writer.converterType(converter, makeNullable: true));
-
-        final wrap = converter.alsoAppliesToJsonConversion
-            ? emitter.drift('JsonTypeConverter2.asNullable')
-            : emitter.drift('NullAwareTypeConverter.wrap');
-
-        final code = '$wrap(${converter.fieldName})';
-
-        buffer
-            .write('static $nullableTypeName ${converter.nullableFieldName} = '
-                '$code;');
-      }
-    }
   }
 
   void _writeColumnVerificationMeta(DriftColumn column) {

@@ -107,6 +107,7 @@ class ViewWriter extends TableOrViewWriter {
       Set<String> get readTables => const {$readTables};
     ''');
 
+    writeConvertersAsStaticFields();
     buffer.writeln('}');
   }
 

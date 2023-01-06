@@ -22,15 +22,17 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
     final engine = newEngineWithTables(references);
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
+    final resolveTypes = allReferences.dartTypes.isEmpty
+        ? null
+        : await createTypeResolver(
+            allReferences,
+            await resolver.driver.loadKnownTypes(),
+          );
+
     final context = engine.analyzeNode(
       stmt,
       source,
-      stmtOptions: AnalyzeStatementOptions(
-        resolveTypeFromText: await createTypeResolver(
-          allReferences,
-          await resolver.driver.loadKnownTypes(),
-        ),
-      ),
+      stmtOptions: AnalyzeStatementOptions(resolveTypeFromText: resolveTypes),
     );
     reportLints(context, references);
 
