@@ -17,11 +17,21 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
   @override
   Future<DriftView> resolve() async {
     final stmt = discovered.sqlNode;
-    final references = await resolveSqlReferences(stmt);
+    final allReferences = await resolveSqlReferences(stmt);
+    final references = allReferences.referencedElements;
     final engine = newEngineWithTables(references);
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
-    final context = engine.analyzeNode(stmt, source);
+    final context = engine.analyzeNode(
+      stmt,
+      source,
+      stmtOptions: AnalyzeStatementOptions(
+        resolveTypeFromText: await createTypeResolver(
+          allReferences,
+          await resolver.driver.loadKnownTypes(),
+        ),
+      ),
+    );
     reportLints(context, references);
 
     final parserView = engine.schemaReader.readView(context, stmt);
@@ -51,6 +61,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
 
       if (type != null && type.hint is TypeConverterHint) {
         converter ??= (type.hint as TypeConverterHint).converter;
+        ownsConverter = converter.owningColumn == null;
       }
 
       final driftColumn = DriftColumn(

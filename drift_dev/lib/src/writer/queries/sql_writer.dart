@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show SqlDialect;
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 
+import '../../analysis/resolver/drift/element_resolver.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
 import '../../utils/string_escaper.dart';
@@ -117,6 +118,13 @@ class SqlWriter extends NodeSqlBuilder {
       overriddenTypeName = options.storeDateTimeValuesAsText ? 'TEXT' : 'INT';
     } else if (hint is IsBoolean) {
       overriddenTypeName = 'INT';
+    } else {
+      final enumMatch = FoundReferencesInSql.enumRegex.firstMatch(e.typeName);
+
+      if (enumMatch != null) {
+        final isStoredAsText = enumMatch.group(1) != null;
+        overriddenTypeName = isStoredAsText ? 'TEXT' : 'INT';
+      }
     }
 
     if (overriddenTypeName != null) {

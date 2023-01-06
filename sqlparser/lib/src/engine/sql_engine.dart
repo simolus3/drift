@@ -34,12 +34,25 @@ class SqlEngine {
   /// The returned reader can be used to read the table structure from a
   /// [TableInducingStatement] by using [SchemaFromCreateTable.read].
   SchemaFromCreateTable get schemaReader {
+    return _schemaReader ??= _createSchemaReader(null);
+  }
+
+  SchemaFromCreateTable _createSchemaReader(
+      AnalyzeStatementOptions? stmtOptions) {
     final driftOptions = options.driftOptions;
 
-    return _schemaReader ??= SchemaFromCreateTable(
-      driftExtensions: driftOptions != null,
-      driftUseTextForDateTime: driftOptions?.storeDateTimesAsText == true,
-    );
+    if (stmtOptions != null) {
+      return SchemaFromCreateTable(
+        driftExtensions: driftOptions != null,
+        driftUseTextForDateTime: driftOptions?.storeDateTimesAsText == true,
+        statementOptions: stmtOptions,
+      );
+    } else {
+      return _schemaReader ??= SchemaFromCreateTable(
+        driftExtensions: driftOptions != null,
+        driftUseTextForDateTime: driftOptions?.storeDateTimesAsText == true,
+      );
+    }
   }
 
   /// Registers the [table], which means that it can later be used in sql
@@ -223,8 +236,10 @@ class SqlEngine {
 
   AnalysisContext _createContext(
       AstNode node, String sql, AnalyzeStatementOptions? stmtOptions) {
+    final schemaSupport = _createSchemaReader(stmtOptions);
+
     return AnalysisContext(node, sql, _constructRootScope(), options,
-        stmtOptions: stmtOptions, schemaSupport: schemaReader);
+        stmtOptions: stmtOptions, schemaSupport: schemaSupport);
   }
 
   void _analyzeContext(AnalysisContext context) {

@@ -36,15 +36,25 @@ class DriftQueryResolver
       }
     }
 
+    final resolvedDartTypes = <String, DartType>{};
+    for (final entry in references.dartTypes.entries) {
+      final dartType = await findDartTypeOrReportError(entry.value, entry.key);
+      if (dartType != null) {
+        resolvedDartTypes[entry.value] = dartType;
+      }
+    }
+
     return DefinedSqlQuery(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      references: references,
+      references: references.referencedElements,
       sql: source.substring(stmt.firstPosition, stmt.lastPosition),
       sqlOffset: stmt.firstPosition,
       mode: isCreate ? QueryMode.atCreate : QueryMode.regular,
       resultClassName: resultClassName,
       existingDartType: existingType,
+      dartTypes: resolvedDartTypes,
+      dartTokens: references.dartExpressions,
     );
   }
 }

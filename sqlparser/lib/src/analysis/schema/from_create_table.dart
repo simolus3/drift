@@ -10,9 +10,12 @@ class SchemaFromCreateTable {
   /// enabled) should be reported as a text column instead of an int column.
   final bool driftUseTextForDateTime;
 
+  final AnalyzeStatementOptions? statementOptions;
+
   const SchemaFromCreateTable({
     this.driftExtensions = false,
     this.driftUseTextForDateTime = false,
+    this.statementOptions,
   });
 
   /// Reads a [Table] schema from the [stmt] inducing a table (either a
@@ -144,6 +147,12 @@ class SchemaFromCreateTable {
   ResolvedType resolveColumnType(String? typeName, {bool isStrict = false}) {
     if (typeName == null) {
       return const ResolvedType(type: BasicType.blob);
+    }
+
+    // S if a custom resolver is installed and yields a type for this column:
+    final custom = statementOptions?.resolveTypeFromText?.call(typeName);
+    if (custom != null) {
+      return custom;
     }
 
     final upper = typeName.toUpperCase();

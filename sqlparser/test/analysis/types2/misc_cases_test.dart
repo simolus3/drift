@@ -116,4 +116,25 @@ WITH RECURSIVE
         everyElement(isA<ResolveResult>()
             .having((e) => e.type?.nullable, 'type.nullable', isTrue)));
   });
+
+  test('can extract custom type', () {
+    final engine = SqlEngine();
+
+    final content = engine.analyze(
+      'SELECT CAST(1 AS MyCustomType)',
+      stmtOptions: AnalyzeStatementOptions(
+        resolveTypeFromText: expectAsync1(
+          (typeName) {
+            expect(typeName, 'MyCustomType');
+            return ResolvedType.bool();
+          },
+        ),
+      ),
+    );
+
+    final select = content.root as SelectStatement;
+    final column = select.resolvedColumns!.single;
+
+    expect(content.typeOf(column).type, ResolvedType.bool());
+  });
 }

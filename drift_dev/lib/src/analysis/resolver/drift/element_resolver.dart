@@ -11,9 +11,11 @@ import '../../backend.dart';
 import '../../driver/error.dart';
 import '../../driver/state.dart';
 import '../../results/results.dart';
+import '../dart/helper.dart';
 import '../resolver.dart';
 import '../shared/dart_types.dart';
 import 'sqlparser/drift_lints.dart';
+import 'sqlparser/mapping.dart';
 
 abstract class DriftElementResolver<T extends DiscoveredElement>
     extends LocalElementResolver<T> {
@@ -164,7 +166,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     return references.firstWhereOrNull((e) => e.id.sameName(name));
   }
 
-  Future<List<DriftElement>> resolveSqlReferences(AstNode stmt) async {
+  Future<List<DriftElement>> resolveTableReferences(AstNode stmt) async {
     final references =
         resolver.driver.newSqlEngine().findReferencedSchemaTables(stmt);
     final found = <DriftElement>[];
@@ -186,7 +188,91 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     return found;
   }
 
+  /// Finds all referenced tables, Dart expressions and Dart types referenced
+  /// in [stmt].
+  Future<FoundReferencesInSql> resolveSqlReferences(AstNode stmt) async {
+    final driftElements = await resolveTableReferences(stmt);
+
+    final identifier = _IdentifyDartElements();
+    stmt.accept(identifier, null);
+
+    return FoundReferencesInSql(
+      referencedElements: driftElements,
+      dartExpressions: identifier.dartExpressions,
+      dartTypes: identifier.dartTypes,
+    );
+  }
+
+  /// Creates a type resolver capable of resolving `ENUM` and `ENUMNAME` types.
+  ///
+  /// Because actual type resolving work is synchronous, types are pre-resolved
+  /// and must be known beforehand. Types can be found by [resolveSqlReferences].
+  Future<TypeFromText> createTypeResolver(
+    FoundReferencesInSql references,
+    KnownDriftTypes helper,
+  ) async {
+    final typeLiteralToResolved = <String, DartType>{};
+
+    for (final entry in references.dartTypes.entries) {
+      final type = await findDartTypeOrReportError(entry.value, entry.key);
+
+      if (type != null) {
+        typeLiteralToResolved[entry.value] = type;
+      }
+    }
+
+    return enumColumnFromText(typeLiteralToResolved, helper);
+  }
+
   void reportLint(AnalysisError parserError) {
     reportError(DriftAnalysisError.fromSqlError(parserError));
+  }
+}
+
+class FoundReferencesInSql {
+  /// All referenced tables in the statement.
+  final List<DriftElement> referencedElements;
+
+  /// All inline Dart tokens used in a `MAPPED BY`.
+  final List<String> dartExpressions;
+
+  /// All Dart types that were referenced in an `ENUM` or `ENUMNAME` cast
+  /// expression in SQL.
+  final Map<SyntacticEntity, String> dartTypes;
+
+  const FoundReferencesInSql({
+    this.referencedElements = const [],
+    this.dartExpressions = const [],
+    this.dartTypes = const {},
+  });
+
+  static final RegExp enumRegex =
+      RegExp(r'^enum(name)?\((\w+)\)$', caseSensitive: false);
+}
+
+class _IdentifyDartElements extends RecursiveVisitor<void, void> {
+  final List<String> dartExpressions = [];
+  final Map<SyntacticEntity, String> dartTypes = {};
+
+  @override
+  void visitCastExpression(CastExpression e, void arg) {
+    final match = FoundReferencesInSql.enumRegex.firstMatch(e.typeName);
+
+    if (match != null) {
+      // Found `ENUMNAME(x)`, where `x` is a Dart type that we might want to
+      // resolve later.
+      dartTypes[e] = match.group(2)!;
+    }
+
+    super.visitCastExpression(e, arg);
+  }
+
+  @override
+  void visitColumnConstraint(ColumnConstraint e, void arg) {
+    if (e is MappedBy) {
+      dartExpressions.add(e.mapper.dartCode);
+    } else {
+      super.visitColumnConstraint(e, arg);
+    }
   }
 }

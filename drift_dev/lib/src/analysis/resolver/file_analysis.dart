@@ -1,3 +1,4 @@
+import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../utils/entity_reference_sorter.dart';
@@ -6,6 +7,7 @@ import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/file_results.dart';
 import '../results/results.dart';
+import 'dart/helper.dart';
 import 'queries/query_analyzer.dart';
 import 'queries/required_variables.dart';
 
@@ -90,7 +92,8 @@ class FileAnalyzer {
           AstPreparingVisitor.resolveIndexOfVariables(
               stmt.allDescendants.whereType<Variable>().toList());
 
-          final options = _createOptionsAndVars(engine, stmt);
+          final options =
+              _createOptionsAndVars(engine, stmt, element, knownTypes);
 
           final analysisResult = engine.analyzeNode(stmt.statement, source,
               stmtOptions: options.options);
@@ -127,7 +130,11 @@ class FileAnalyzer {
   }
 
   _OptionsAndRequiredVariables _createOptionsAndVars(
-      SqlEngine engine, DeclaredStatement stmt) {
+    SqlEngine engine,
+    DeclaredStatement stmt,
+    DefinedSqlQuery query,
+    KnownDriftTypes helper,
+  ) {
     final reader = engine.schemaReader;
     final indexedHints = <int, ResolvedType>{};
     final namedHints = <String, ResolvedType>{};
@@ -168,6 +175,7 @@ class FileAnalyzer {
         indexedVariableTypes: indexedHints,
         namedVariableTypes: namedHints,
         defaultValuesForPlaceholder: defaultValues,
+        resolveTypeFromText: enumColumnFromText(query.dartTypes, helper),
       ),
       RequiredVariables(requiredIndex, requiredName),
     );

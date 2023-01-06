@@ -222,6 +222,57 @@ TypeConverter<Object, int> createConverter() => throw UnimplementedError();
     );
   });
 
+  test('supports enum columns', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'enums.dart';
+
+CREATE VIEW foo AS SELECT
+  1 AS c1,
+  CAST(1 AS ENUM(MyEnum)) AS c2,
+  CAST('foo' AS ENUMNAME(MyEnum)) AS c3;
+''',
+      'a|lib/enums.dart': '''
+enum MyEnum {
+  foo, bar
+}
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.drift');
+    backend.expectNoErrors();
+
+    final view = state.analyzedElements.single as DriftView;
+    final c1 = view.columns[0];
+    final c2 = view.columns[1];
+    final c3 = view.columns[2];
+
+    expect(c1.typeConverter, isNull);
+    expect(
+      c2.typeConverter,
+      isA<AppliedTypeConverter>()
+          .having((e) => e.isDriftEnumTypeConverter, 'isDriftEnumTypeConverter',
+              isTrue)
+          .having((e) => e.owningColumn, 'owningColumn', c2),
+    );
+    expect(
+      c3.typeConverter,
+      isA<AppliedTypeConverter>()
+          .having((e) => e.isDriftEnumTypeConverter, 'isDriftEnumTypeConverter',
+              isTrue)
+          .having((e) => e.owningColumn, 'owningColumn', c3),
+    );
+
+    expect(
+      view.source,
+      isA<SqlViewSource>().having(
+        (e) => e.sqlCreateViewStmt,
+        'sqlCreateViewStmt',
+        "CREATE VIEW foo AS SELECT 1 AS c1, CAST(1 AS INT) AS c2, CAST('foo' AS TEXT) AS c3;",
+      ),
+    );
+  });
+
   group('desugars cast', () {
     Future<void> expectView(
       String definition,

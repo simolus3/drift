@@ -311,4 +311,40 @@ a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
           .having((e) => e.sqlType, 'sqlType', DriftSqlType.dateTime),
     ]);
   });
+
+  test('can cast to enum type', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'enum.dart';
+
+a: SELECT
+  1 AS c1,
+  CAST(1 AS ENUM(MyEnum)) AS c2,
+  CAST('foo' AS ENUMNAME(MyEnum)) AS c3;
+''',
+      'a|lib/enum.dart': '''
+enum MyEnum {
+  foo, bar
+}
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.drift');
+    backend.expectNoErrors();
+
+    final query = state.fileAnalysis!.resolvedQueries.values.single;
+    final resultSet = query.resultSet!;
+
+    final isEnumConverter = isA<AppliedTypeConverter>().having(
+        (e) => e.isDriftEnumTypeConverter, 'isDriftEnumTypeConverter', isTrue);
+
+    expect(resultSet.columns, [
+      scalarColumn('c1')
+          .having((e) => e.typeConverter, 'typeConverter', isNull),
+      scalarColumn('c2')
+          .having((e) => e.typeConverter, 'typeConverter', isEnumConverter),
+      scalarColumn('c3')
+          .having((e) => e.typeConverter, 'typeConverter', isEnumConverter),
+    ]);
+  });
 }

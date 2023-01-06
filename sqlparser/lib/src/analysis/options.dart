@@ -1,5 +1,8 @@
 part of 'analysis.dart';
 
+/// Signature of a function that resolves the type of a SQL type literal.
+typedef TypeFromText = ResolvedType? Function(String);
+
 /// Options to analyze a sql statement. This can be used if the type of a
 /// variable is known from the outside.
 class AnalyzeStatementOptions {
@@ -10,10 +13,13 @@ class AnalyzeStatementOptions {
   /// expression, if set.
   final Map<String, Expression> defaultValuesForPlaceholder;
 
+  final TypeFromText? resolveTypeFromText;
+
   const AnalyzeStatementOptions({
     this.indexedVariableTypes = const {},
     this.namedVariableTypes = const {},
     this.defaultValuesForPlaceholder = const {},
+    this.resolveTypeFromText,
   });
 
   /// Looks up the defined type for that variable.

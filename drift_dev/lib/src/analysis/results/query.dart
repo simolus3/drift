@@ -58,6 +58,13 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
   @override
   String get name => id.name;
 
+  /// All in-line Dart source code literals embedded into the query.
+  final List<String> dartTokens;
+
+  /// All Dart type names embedded into the query, for instance in a
+  /// `CAST(x AS ENUMNAME(MyDartType))` expression.
+  final Map<String, DartType> dartTypes;
+
   DefinedSqlQuery(
     super.id,
     super.declaration, {
@@ -66,6 +73,8 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
     required this.sqlOffset,
     this.resultClassName,
     this.existingDartType,
+    this.dartTokens = const [],
+    this.dartTypes = const {},
     this.mode = QueryMode.regular,
   });
 }

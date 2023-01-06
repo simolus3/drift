@@ -1,8 +1,12 @@
+import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../../driver/driver.dart';
 import '../../../results/results.dart';
+import '../../dart/helper.dart';
+import '../../shared/dart_types.dart';
+import '../element_resolver.dart';
 
 /// Converts tables and types between `drift_dev` internal reprensentation and
 /// the one used by the `sqlparser` package.
@@ -138,6 +142,35 @@ class TypeMapping {
         return DriftSqlType.any;
     }
   }
+}
+
+/// Creates a [TypeFromText] implementation that will look up type converters
+/// for `ENUM` and `ENUMNAME` column.
+TypeFromText enumColumnFromText(
+    Map<String, DartType> knownTypes, KnownDriftTypes helper) {
+  return (String typeName) {
+    final match = FoundReferencesInSql.enumRegex.firstMatch(typeName);
+
+    if (match != null) {
+      final isStoredAsName = match.group(1) != null;
+      final type = knownTypes[match.group(2)];
+
+      if (type != null) {
+        return ResolvedType(
+          type: isStoredAsName ? BasicType.text : BasicType.int,
+          hint: TypeConverterHint(
+            readEnumConverter(
+              (_) {},
+              type,
+              isStoredAsName ? EnumType.textEnum : EnumType.intEnum,
+              helper,
+            )..owningColumn = null,
+          ),
+        );
+      }
+    }
+    return null;
+  };
 }
 
 class TypeConverterHint extends TypeHint {

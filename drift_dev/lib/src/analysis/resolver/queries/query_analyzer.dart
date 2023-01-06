@@ -53,7 +53,7 @@ class QueryAnalyzer {
   final RequiredVariables requiredVariables;
   final Map<String, DriftElement> referencesByName;
 
-  final Map<InlineDartToken, dart.Expression> _resolvedExpressions = {};
+  final Map<String, dart.Expression> _resolvedExpressions = {};
 
   /// Found tables and views found need to be shared between the query and
   /// all subqueries to not muss any updates when watching query.
@@ -95,7 +95,7 @@ class QueryAnalyzer {
   /// messages.
   Future<SqlQuery> analyze(DriftQueryDeclaration declaration,
       {DriftTableName? sourceForCustomName}) async {
-    await _resolveDartTokens();
+    await _resolveDartTokens(declaration);
 
     final nestedAnalyzer = NestedQueryAnalyzer();
     NestedQueriesContainer? nestedScope;
@@ -143,25 +143,26 @@ class QueryAnalyzer {
     return query;
   }
 
-  Future<void> _resolveDartTokens() async {
-    for (final mappedBy in context.root.allDescendants.whereType<MappedBy>()) {
-      try {
-        final expression = await driver.backend.resolveExpression(
-          fromFile.ownUri,
-          mappedBy.mapper.dartCode,
-          fromFile.discovery?.importDependencies
-                  .map((e) => e.toString())
-                  .where((e) => e.endsWith('.dart')) ??
-              const Iterable.empty(),
-        );
+  Future<void> _resolveDartTokens(DriftQueryDeclaration declaration) async {
+    if (declaration is DefinedSqlQuery) {
+      for (final expression in declaration.dartTokens) {
+        try {
+          final resolved = await driver.backend.resolveExpression(
+            fromFile.ownUri,
+            expression,
+            fromFile.discovery?.importDependencies
+                    .map((e) => e.toString())
+                    .where((e) => e.endsWith('.dart')) ??
+                const Iterable.empty(),
+          );
 
-        _resolvedExpressions[mappedBy.mapper] = expression;
-      } on CannotReadExpressionException catch (e) {
-        lints.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'Could not read expression: ${e.msg}',
-          relevantNode: mappedBy.mapper,
-        ));
+          _resolvedExpressions[expression] = resolved;
+        } on CannotReadExpressionException catch (e) {
+          lints.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: 'Could not read expression: ${e.msg}',
+          ));
+        }
       }
     }
   }
@@ -291,7 +292,7 @@ class QueryAnalyzer {
       if (type?.hint is TypeConverterHint) {
         converter = (type!.hint as TypeConverterHint).converter;
       } else if (mappedBy != null) {
-        final dartExpression = _resolvedExpressions[mappedBy.mapper];
+        final dartExpression = _resolvedExpressions[mappedBy.mapper.dartCode];
         if (dartExpression != null) {
           converter = readTypeConverter(
             knownTypes.helperLibrary,

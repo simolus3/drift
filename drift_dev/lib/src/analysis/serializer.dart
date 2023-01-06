@@ -70,8 +70,13 @@ class ElementSerializer {
         'sql': element.sql,
         'offset': element.sqlOffset,
         'result_class': element.resultClassName,
-        'eixsting_type': _serializeType(element.existingDartType),
+        'existing_type': _serializeType(element.existingDartType),
         'mode': element.mode.name,
+        'dart_tokens': element.dartTokens,
+        'dart_types': {
+          for (final entry in element.dartTypes.entries)
+            entry.key: _serializeType(entry.value)
+        },
       };
     } else if (element is DriftTrigger) {
       additionalInformation = {
@@ -515,7 +520,13 @@ class ElementDeserializer {
           createStmt: json['sql'] as String,
         );
       case 'query':
-        final rawExistingType = json['eixsting_type'];
+        final rawExistingType = json['existing_type'];
+        final types = <String, DartType>{};
+
+        for (final entry in (json['dart_types'] as Map).entries) {
+          types[entry.key as String] =
+              await _readDartType(id.libraryUri, entry.value as int);
+        }
 
         return DefinedSqlQuery(
           id,
@@ -528,6 +539,8 @@ class ElementDeserializer {
               ? await _readDartType(id.libraryUri, rawExistingType as int)
               : null,
           mode: QueryMode.values.byName(json['mode'] as String),
+          dartTokens: (json['dart_tokens'] as List).cast(),
+          dartTypes: types,
         );
       case 'trigger':
         DriftTable? on;

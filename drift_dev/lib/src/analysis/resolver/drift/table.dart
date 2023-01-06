@@ -17,9 +17,6 @@ import 'element_resolver.dart';
 import 'sqlparser/drift_lints.dart';
 
 class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
-  static final RegExp _enumRegex =
-      RegExp(r'^enum(name)?\((\w+)\)$', caseSensitive: false);
-
   DriftTableResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
@@ -55,8 +52,9 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
 
       final typeName = column.definition?.typeName;
 
-      final enumIndexMatch =
-          typeName != null ? _enumRegex.firstMatch(typeName) : null;
+      final enumIndexMatch = typeName != null
+          ? FoundReferencesInSql.enumRegex.firstMatch(typeName)
+          : null;
       if (enumIndexMatch != null) {
         final dartTypeName = enumIndexMatch.group(2)!;
         final dartType = await findDartTypeOrReportError(
