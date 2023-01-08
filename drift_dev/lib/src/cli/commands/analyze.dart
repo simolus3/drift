@@ -30,7 +30,7 @@ class AnalyzeCommand extends MoorCommand {
     }
 
     if (errorCount == 0) {
-      cli.logger.info('No errrors found');
+      cli.logger.info('No errors found');
     } else {
       cli.logger.info('Found $errorCount errors or problems');
       exit(1);
