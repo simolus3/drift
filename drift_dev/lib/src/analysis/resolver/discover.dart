@@ -194,12 +194,19 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   @override
   void visitClassElement(ClassElement element) {
     if (_isDslTable(element)) {
-      _pendingWork.add(Future.sync(() async {
-        final name = await _sqlNameOfTable(element);
-        final id = _discoverStep._id(name);
+      // Ignore "abstract tables" (i.e. table classes with abstract methods)
+      final declaresAbstractMethod = element.methods
+          .cast<ExecutableElement>()
+          .followedBy(element.accessors)
+          .any((e) => e.isAbstract);
+      if (!declaresAbstractMethod) {
+        _pendingWork.add(Future.sync(() async {
+          final name = await _sqlNameOfTable(element);
+          final id = _discoverStep._id(name);
 
-        found.add(DiscoveredDartTable(id, element));
-      }));
+          found.add(DiscoveredDartTable(id, element));
+        }));
+      }
     } else if (_isDslView(element)) {
       final annotation = _driftViewAnnotation(element);
       final name = annotation?.getField('name')?.toStringValue() ??

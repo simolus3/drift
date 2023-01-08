@@ -187,6 +187,42 @@ class Groups extends Table {
       );
     });
 
+    test('ignores abstract tables', () async {
+      final backend = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+abstract class Users extends Table {
+  IntColumn get id => integer()();
+}
+
+abstract class BaseRelationTable extends Table {
+  Column<int?> get parentId;
+  Column<int?> get childId;
+
+  @override
+  Set<Column> get primaryKey => {parentId, childId};
+}
+''',
+      });
+
+      final uri = Uri.parse('package:a/a.dart');
+      final state = await backend.driver.prepareFileForAnalysis(uri);
+
+      expect(state, hasNoErrors);
+      expect(
+        state.discovery,
+        isA<DiscoveredDartLibrary>().having(
+          (e) => e.locallyDefinedElements,
+          'locallyDefinedElements',
+          [
+            isA<DiscoveredDartTable>()
+                .having((t) => t.ownId, 'ownId', DriftElementId(uri, 'users')),
+          ],
+        ),
+      );
+    });
+
     test('table name errors', () async {
       final backend = TestBackend.inTest({
         'a|lib/expr.dart': '''
