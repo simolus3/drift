@@ -164,5 +164,5 @@ Firebase is a very good option when
 
 Yes! Drift stores its data in a sqlite3 database file that can be extracted from the device and inspected locally.
 
-To inspect a database on a device directly, you can use the [`moor_db_viewer`](https://pub.dev/packages/moor_db_viewer)
+To inspect a database on a device directly, you can use the [`moor_db_viewer`](https://pub.dev/packages/moor_db_viewer) or [`drift_db_viewer`] (https://pub.dev/packages/drift_db_viewer) (newer version)
 package by Koen Van Looveren.
