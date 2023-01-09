@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:html';
 import 'dart:indexed_db';
 import 'dart:js';
+import 'dart:js_util' as js_util;
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -88,7 +90,8 @@ abstract class DriftWebStorage {
         isIndexedDbSupported = false;
       }
     }
-    return isIndexedDbSupported && context.hasProperty('FileReader');
+
+    return isIndexedDbSupported && js_util.hasProperty(context, 'FileReader');
   }
 }
 
@@ -214,7 +217,13 @@ class _IndexedDbStorage implements DriftWebStorage {
         _database.transactionStore(_objectStoreName, 'readwrite');
     final store = transaction.objectStore(_objectStoreName);
 
-    await store.put(Blob([data]), name);
+    final request = js_util.callMethod<Request>(store, 'put', [data, name]);
+
+    final completer = Completer.sync();
+    request.onSuccess.listen((_) => completer.complete());
+    request.onError.listen(completer.completeError);
+    await completer.future;
+
     await transaction.completed;
   }
 
@@ -224,15 +233,19 @@ class _IndexedDbStorage implements DriftWebStorage {
         _database.transactionStore(_objectStoreName, 'readonly');
     final store = transaction.objectStore(_objectStoreName);
 
-    final result = await store.getObject(name) as Blob?;
-    if (result == null) return null;
+    final result = await store.getObject(name);
+    if (result is Blob) {
+      final reader = FileReader();
+      reader.readAsArrayBuffer(result);
+      // todo: Do we need to handle errors? We're reading from memory
+      await reader.onLoad.first;
 
-    final reader = FileReader();
-    reader.readAsArrayBuffer(result);
-    // todo: Do we need to handle errors? We're reading from memory
-    await reader.onLoad.first;
-
-    return reader.result as Uint8List;
+      return reader.result as Uint8List;
+    } else if (result is Uint8List) {
+      return result;
+    } else {
+      return null;
+    }
   }
 }
 
