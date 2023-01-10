@@ -65,7 +65,7 @@ AnnotatedDartCode? parseCustomParentClass(
         final genericType = extendingType.typeArguments[0];
         if (genericType.isDartCoreObject || genericType.isDynamic) {
           return AnnotatedDartCode([
-            DartTopLevelSymbol.topLevelElement(element),
+            DartTopLevelSymbol.topLevelElement(extendingType.element),
             '<',
             DartTopLevelSymbol(dartTypeName, null),
             '>',
@@ -84,7 +84,7 @@ AnnotatedDartCode? parseCustomParentClass(
         }
       }
 
-      return AnnotatedDartCode.topLevelElement(element);
+      return AnnotatedDartCode.type(extendingType);
     } else {
       resolver.reportError(
         DriftAnalysisError.forDartElement(

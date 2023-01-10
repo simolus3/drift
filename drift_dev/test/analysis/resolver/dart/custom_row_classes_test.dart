@@ -438,6 +438,9 @@ class FooData {
       final file =
           await state.analyze('package:a/custom_parent_class_no_error.dart');
       expect(file.allErrors, isEmpty);
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(table.customParentClass?.toString(), 'BaseModel');
     });
 
     test('check valid with type argument', () async {
