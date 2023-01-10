@@ -164,5 +164,5 @@ Firebase is a very good option when
 
 Yes! Drift stores its data in a sqlite3 database file that can be extracted from the device and inspected locally.
 
-To inspect a drift database on a direclty in your app, you can use the [`drift_db_viewer`](https://pub.dev/packages/drift_db_viewer)
+To inspect a drift database directly in your app, you can use the [`drift_db_viewer`](https://pub.dev/packages/drift_db_viewer)
 package by Koen Van Looveren.
