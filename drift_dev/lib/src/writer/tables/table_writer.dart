@@ -342,13 +342,19 @@ class TableWriter extends TableOrViewWriter {
     } else {
       // Regular generation, write full table class
       final dataClass = emitter.dartCode(emitter.writer.rowType(table));
-      final tableDslName = table.definingDartClass ?? emitter.drift('Table');
+      final tableDslName = table.definingDartClass ??
+          AnnotatedDartCode.importedSymbol(AnnotatedDartCode.drift, 'Table');
 
       // class UsersTable extends Users implements TableInfo<Users, User> {
       final typeArgs = '<${table.entityInfoName}, $dataClass>';
 
-      buffer.write('class ${table.entityInfoName} extends $tableDslName with '
-          '${emitter.drift('TableInfo')}$typeArgs ');
+      emitter
+        ..write('class ${table.entityInfoName} extends ')
+        ..writeDart(tableDslName)
+        ..write(' with ')
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.drift, 'TableInfo'))
+        ..write(typeArgs);
 
       if (table.isVirtual) {
         buffer.write(', ${emitter.drift('VirtualTableInfo')}$typeArgs ');

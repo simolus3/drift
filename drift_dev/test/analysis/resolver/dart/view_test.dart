@@ -68,10 +68,10 @@ abstract class TodoItemWithCategoryNameView extends View {
         result.analysis.values.map((e) => e.result).whereType<DriftView>();
     expect(views, hasLength(2));
 
-    final todoCategoryItemCount = views
-        .singleWhere((e) => e.definingDartClass == 'TodoCategoryItemCount');
-    final todoItemWithCategoryName = views.singleWhere(
-        (e) => e.definingDartClass == 'TodoItemWithCategoryNameView');
+    final todoCategoryItemCount = views.singleWhere(
+        (e) => e.definingDartClass.toString() == 'TodoCategoryItemCount');
+    final todoItemWithCategoryName = views.singleWhere((e) =>
+        e.definingDartClass.toString() == 'TodoItemWithCategoryNameView');
 
     expect(
         todoCategoryItemCount.source,

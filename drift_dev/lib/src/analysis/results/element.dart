@@ -5,6 +5,8 @@ import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import 'dart.dart';
+
 part '../../generated/analysis/results/element.g.dart';
 
 @sealed
@@ -87,9 +89,9 @@ abstract class DriftElement {
 
   /// If this element was extracted from a defined Dart class, returns the name
   /// of that class.
-  String? get definingDartClass {
+  AnnotatedDartCode? get definingDartClass {
     if (id.isDefinedInDart) {
-      return declaration.name;
+      return AnnotatedDartCode.importedSymbol(id.libraryUri, declaration.name!);
     }
     return null;
   }
