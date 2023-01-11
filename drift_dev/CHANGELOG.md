@@ -4,6 +4,8 @@
 - Support `MAPPED BY` for individual columns in queries or in views defined with SQL.
 - Consistently interpret `CAST (x AS DATETIME)` and `CAST(x AS TEXT)` in drift files.
 - Support a `CAST` to an enum type in drift types.
+- Fix table classes not extending defining Dart classes with modular generation.
+- Fix `@UseDataClass` with `extending` not working with modular generation.
 
 ## 2.4.1
 

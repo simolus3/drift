@@ -44,7 +44,9 @@ class DataClassWriter {
   }
 
   void write() {
-    final parentClass = table.customParentClass ?? _emitter.drift('DataClass');
+    final parentClass = table.customParentClass != null
+        ? _emitter.dartCode(table.customParentClass!)
+        : _emitter.drift('DataClass');
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
     if (isInsertable) {

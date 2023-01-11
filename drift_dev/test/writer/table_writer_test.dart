@@ -10,6 +10,9 @@ void main() {
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
+abstract class MyBaseDataClass extends DataClass {}
+
+@DataClassName('MyTag', extending: MyBaseDataClass)
 class Tags extends Table {
   IntColumn get id => integer().autoIncrement()();
 }
@@ -21,10 +24,11 @@ class Tags extends Table {
     checkOutputs({
       'a|lib/a.drift.dart': decodedMatches(
         allOf(
-          contains("import 'package:a/a.dart' as i2;"),
+          contains("import 'package:a/a.dart' as i0;"),
           contains(
-            r'class $TagsTable extends i2.Tags with i0.TableInfo<$TagsTable, i1.Tag>',
+            r'class $TagsTable extends i0.Tags with i2.TableInfo<$TagsTable, i1.MyTag>',
           ),
+          contains('class MyTag extends i0.MyBaseDataClass'),
         ),
       ),
     }, result.dartOutputs, result);
