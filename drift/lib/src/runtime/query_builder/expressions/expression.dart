@@ -68,7 +68,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// `NULL` values with equals.
   Expression<bool> equalsNullable(D? compare) {
     if (compare == null) {
-      return this.isNull();
+      return isNull();
     } else {
       return equals(compare);
     }
@@ -251,7 +251,45 @@ abstract class Expression<D extends Object> implements FunctionParameter {
 
 /// Used to order the precedence of sql expressions so that we can avoid
 /// unnecessary parens when generating sql statements.
-class Precedence implements Comparable<Precedence> {
+enum Precedence implements Comparable<Precedence> {
+  /// Precedence is unknown, assume lowest. This can be used for a
+  /// [CustomExpression] to always put parens around it.
+  unknown._(-1),
+
+  /// Precedence for the `OR` operator in sql
+  or._(10),
+
+  /// Precedence for the `AND` operator in sql
+  and._(11),
+
+  /// Precedence for most of the comparisons operators in sql, including
+  /// equality, is (not) checks, in, like, glob, match, regexp.
+  comparisonEq._(12),
+
+  /// Precedence for the <, <=, >, >= operators in sql
+  comparison._(13),
+
+  /// Precedence for bitwise operators in sql
+  bitwise._(14),
+
+  /// Precedence for the (binary) plus and minus operators in sql
+  plusMinus._(15),
+
+  /// Precedence for the *, / and % operators in sql
+  mulDivide._(16),
+
+  /// Precedence for the || operator in sql
+  stringConcatenation._(17),
+
+  /// Precedence for unary operators in sql
+  unary._(20),
+
+  /// Precedence for postfix operators (like collate) in sql
+  postfix._(21),
+
+  /// Highest precedence in sql, used for variables and literals.
+  primary._(100);
+
   /// Higher means higher precedence.
   final int _value;
 
@@ -260,16 +298,6 @@ class Precedence implements Comparable<Precedence> {
   @override
   int compareTo(Precedence other) {
     return _value.compareTo(other._value);
-  }
-
-  @override
-  int get hashCode => _value;
-
-  @override
-  bool operator ==(Object other) {
-    // runtimeType comparison isn't necessary, the private constructor prevents
-    // subclasses
-    return other is Precedence && other._value == _value;
   }
 
   /// Returns true if this [Precedence] is lower than [other].
@@ -283,44 +311,6 @@ class Precedence implements Comparable<Precedence> {
 
   /// Returns true if this [Precedence] is higher or equal to [other].
   bool operator >=(Precedence other) => compareTo(other) >= 0;
-
-  /// Precedence is unknown, assume lowest. This can be used for a
-  /// [CustomExpression] to always put parens around it.
-  static const Precedence unknown = Precedence._(-1);
-
-  /// Precedence for the `OR` operator in sql
-  static const Precedence or = Precedence._(10);
-
-  /// Precedence for the `AND` operator in sql
-  static const Precedence and = Precedence._(11);
-
-  /// Precedence for most of the comparisons operators in sql, including
-  /// equality, is (not) checks, in, like, glob, match, regexp.
-  static const Precedence comparisonEq = Precedence._(12);
-
-  /// Precedence for the <, <=, >, >= operators in sql
-  static const Precedence comparison = Precedence._(13);
-
-  /// Precedence for bitwise operators in sql
-  static const Precedence bitwise = Precedence._(14);
-
-  /// Precedence for the (binary) plus and minus operators in sql
-  static const Precedence plusMinus = Precedence._(15);
-
-  /// Precedence for the *, / and % operators in sql
-  static const Precedence mulDivide = Precedence._(16);
-
-  /// Precedence for the || operator in sql
-  static const Precedence stringConcatenation = Precedence._(17);
-
-  /// Precedence for unary operators in sql
-  static const Precedence unary = Precedence._(20);
-
-  /// Precedence for postfix operators (like collate) in sql
-  static const Precedence postfix = Precedence._(21);
-
-  /// Highest precedence in sql, used for variables and literals.
-  static const Precedence primary = Precedence._(100);
 }
 
 /// Defines the possible comparison operators that can appear in a
