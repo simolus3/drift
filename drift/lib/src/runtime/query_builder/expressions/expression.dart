@@ -42,6 +42,9 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   bool get isLiteral => false;
 
   /// Whether this expression is equal to the given expression.
+  ///
+  /// This generates an equals operator in SQL. To perform a comparison
+  /// sensitive to `NULL` values, use [isExp] instead.
   Expression<bool> equalsExp(Expression<D> compare) =>
       _Comparison.equal(this, compare);
 
@@ -52,7 +55,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   ///
   /// This method only supports comparing the value of the column to non-
   /// nullable values and translates to a direct `=` comparison in SQL.
-  /// To compare this column to `null`, use [equalsNullable].
+  /// To compare this column to `null`, use [isValue].
   Expression<bool> equals(D compare) =>
       _Comparison.equal(this, Variable<D>(compare));
 
@@ -89,6 +92,51 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// expression.
   Expression<D2> cast<D2 extends Object>() {
     return _CastInSqlExpression<D, D2>(this);
+  }
+
+  /// Generates an `IS` expression in SQL, comparing this expression with the
+  /// Dart [value].
+  ///
+  /// This is the SQL method most closely resembling the [Object.==] operator in
+  /// Dart. When this expression and [value] are both non-null, this is the same
+  /// as [equals]. Two `NULL` values are considered equal as well.
+  Expression<bool> isValue(D value) {
+    return isExp(Variable<D>(value));
+  }
+
+  /// Generates an `IS NOT` expression in SQL, comparing this expression with
+  /// the Dart [value].
+  ///
+  /// This the inverse of [isValue].
+  Expression<bool> isNotValue(D value) {
+    return isNotExp(Variable<D>(value));
+  }
+
+  /// Expression that is true if the inner expression resolves to a null value.
+  Expression<bool> isNull() => isExp(const Constant(null));
+
+  /// Expression that is true if the inner expression resolves to a non-null
+  /// value.
+  Expression<bool> isNotNull() => isNotExp(const Constant(null));
+
+  /// Generates an `IS` expression in SQL, comparing this expression with the
+  /// [other] expression.
+  ///
+  /// This is the SQL method most closely resembling the [Object.==] operator in
+  /// Dart. When this expression and [other] are both non-null, this is the same
+  /// as [equalsExp]. Two `NULL` values are considered equal as well.
+  Expression<bool> isExp(Expression<D> other) {
+    return BaseInfixOperator(this, 'IS', other,
+        precedence: Precedence.comparisonEq);
+  }
+
+  /// Generates an `IS NOT` expression in SQL, comparing this expression with
+  /// the [other] expression.
+  ///
+  /// This the inverse of [isExp].
+  Expression<bool> isNotExp(Expression<D> other) {
+    return BaseInfixOperator(this, 'IS NOT', other,
+        precedence: Precedence.comparisonEq);
   }
 
   /// An expression that is true if `this` resolves to any of the values in
@@ -279,31 +327,27 @@ class Precedence implements Comparable<Precedence> {
 /// [_Comparison].
 enum _ComparisonOperator {
   /// '<' in sql
-  less,
+  less('<'),
 
   /// '<=' in sql
-  lessOrEqual,
+  lessOrEqual('<='),
 
   /// '=' in sql
-  equal,
+  equal('='),
 
   /// '>=' in sql
-  moreOrEqual,
+  moreOrEqual('>='),
 
   /// '>' in sql
-  more
+  more('>');
+
+  final String operator;
+
+  const _ComparisonOperator(this.operator);
 }
 
 /// An expression that compares two child expressions.
 class _Comparison extends InfixOperator<bool> {
-  static const Map<_ComparisonOperator, String> _operatorNames = {
-    _ComparisonOperator.less: '<',
-    _ComparisonOperator.lessOrEqual: '<=',
-    _ComparisonOperator.equal: '=',
-    _ComparisonOperator.moreOrEqual: '>=',
-    _ComparisonOperator.more: '>'
-  };
-
   @override
   final Expression left;
   @override
@@ -313,7 +357,7 @@ class _Comparison extends InfixOperator<bool> {
   final _ComparisonOperator op;
 
   @override
-  String get operator => _operatorNames[op]!;
+  String get operator => op.operator;
 
   @override
   Precedence get precedence {

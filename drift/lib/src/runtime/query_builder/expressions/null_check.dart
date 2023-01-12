@@ -1,24 +1,13 @@
 part of '../query_builder.dart';
 
 /// Expression that is true if the inner expression resolves to a null value.
-@Deprecated('Use isNull through the SqlIsNull extension')
-Expression<bool> isNull(Expression inner) => _NullCheck(inner, true);
+@Deprecated('Use isNull on the Expression class')
+Expression<bool> isNull(Expression inner) => inner.isNull();
 
 /// Expression that is true if the inner expression resolves to a non-null
 /// value.
-@Deprecated('Use isNotNull through the SqlIsNull extension')
-Expression<bool> isNotNull(Expression inner) => _NullCheck(inner, false);
-
-/// Extension defines the `isNull` and `isNotNull` members to check whether the
-/// expression evaluates to null or not.
-extension SqlIsNull on Expression {
-  /// Expression that is true if the inner expression resolves to a null value.
-  Expression<bool> isNull() => _NullCheck(this, true);
-
-  /// Expression that is true if the inner expression resolves to a non-null
-  /// value.
-  Expression<bool> isNotNull() => _NullCheck(this, false);
-}
+@Deprecated('Use isNotNull on the Expression class')
+Expression<bool> isNotNull(Expression inner) => inner.isNotNull();
 
 /// Evaluates to the first expression in [expressions] that's not null, or
 /// null if all [expressions] evaluate to null.
@@ -34,35 +23,4 @@ Expression<T> coalesce<T extends Object>(List<Expression<T>> expressions) {
 Expression<T> ifNull<T extends Object>(
     Expression<T> first, Expression<T> second) {
   return FunctionCallExpression<T>('IFNULL', [first, second]);
-}
-
-class _NullCheck extends Expression<bool> {
-  final Expression _inner;
-  final bool _isNull;
-
-  @override
-  final Precedence precedence = Precedence.comparisonEq;
-
-  _NullCheck(this._inner, this._isNull);
-
-  @override
-  void writeInto(GenerationContext context) {
-    writeInner(context, _inner);
-
-    context.buffer.write(' IS ');
-    if (!_isNull) {
-      context.buffer.write('NOT ');
-    }
-    context.buffer.write('NULL');
-  }
-
-  @override
-  int get hashCode => Object.hash(_inner, _isNull);
-
-  @override
-  bool operator ==(Object other) {
-    return other is _NullCheck &&
-        other._inner == _inner &&
-        other._isNull == _isNull;
-  }
 }

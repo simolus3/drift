@@ -120,4 +120,15 @@ void main() {
     expect(a.equalsNullable(null), generates('a IS NULL'));
     expect(a.equalsExp(b), generates('a = b'));
   });
+
+  test('is', () {
+    const a = CustomExpression<int>('a', precedence: Precedence.primary);
+    const b = CustomExpression<int>('b', precedence: Precedence.primary);
+
+    expect(a.isValue(3), generates('a IS ?', [3]));
+    expect(a.isNotValue(3), generates('a IS NOT ?', [3]));
+
+    expect(a.isExp(b), generates('a IS b'));
+    expect(b.isNotExp(a), generates('b IS NOT a'));
+  });
 }

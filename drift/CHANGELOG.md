@@ -1,3 +1,8 @@
+## 2.5.0-dev
+
+- Add `isExp`, `isValue`, `isNotExp` and `isNotValue` methods to `Expression`
+  to generate the `IS` operator in SQL.
+
 ## 2.4.2
 
 - Fix an exception when a client disconnects from a drift remote server while
