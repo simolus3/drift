@@ -1,4 +1,7 @@
+import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 export 'database_stub.dart'
@@ -6,6 +9,39 @@ export 'database_stub.dart'
     if (dart.library.js) 'database_web.dart';
 export 'matchers.dart';
 export 'mocks.dart';
+
+@GenerateNiceMocks([
+  MockSpec<DatabaseDelegate>(),
+  MockSpec<DynamicVersionDelegate>(),
+  MockSpec<SupportedTransactionDelegate>(),
+  MockSpec<StreamQueryStore>(as: #MockStreamQueries),
+])
+export 'test_utils.mocks.dart';
+
+class CustomQueryExecutorUser extends QueryExecutorUser {
+  @override
+  final int schemaVersion;
+
+  Future<void> Function(
+    QueryExecutorUser self,
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) beforeOpenCallback;
+
+  CustomQueryExecutorUser(
+      {required this.schemaVersion, required this.beforeOpenCallback});
+
+  @override
+  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
+    return beforeOpenCallback(this, executor, details);
+  }
+}
+
+DatabaseConnection createConnection(QueryExecutor executor,
+    [StreamQueryStore? streams]) {
+  return DatabaseConnection(executor,
+      streamQueries: streams ?? StreamQueryStore());
+}
 
 GenerationContext stubContext({DriftDatabaseOptions? options}) {
   return GenerationContext(

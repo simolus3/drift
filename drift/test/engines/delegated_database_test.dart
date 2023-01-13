@@ -1,18 +1,9 @@
-//@dart=2.9
 import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-class _MockDelegate extends Mock implements DatabaseDelegate {}
-
-class _MockUserDb extends Mock implements GeneratedDatabase {}
-
-class _MockDynamicVersionDelegate extends Mock
-    implements DynamicVersionDelegate {}
-
-class _MockTransactionDelegate extends Mock
-    implements SupportedTransactionDelegate {}
+import '../test_utils/test_utils.dart';
 
 class _FakeExecutorUser extends QueryExecutorUser {
   @override
@@ -24,9 +15,9 @@ class _FakeExecutorUser extends QueryExecutorUser {
 }
 
 void main() {
-  _MockDelegate delegate;
+  late MockDatabaseDelegate delegate;
   setUp(() {
-    delegate = _MockDelegate();
+    delegate = MockDatabaseDelegate();
 
     when(delegate.isOpen).thenAnswer((_) => Future.value(true));
     when(delegate.runSelect(any, any))
@@ -66,20 +57,11 @@ void main() {
   });
 
   group('migrations', () {
-    DelegatedDatabase db;
-    _MockUserDb userDb;
-    setUp(() {
-      userDb = _MockUserDb();
-      when(userDb.schemaVersion).thenReturn(3);
-
-      when(delegate.isOpen).thenAnswer((_) => Future.value(false));
-      db = DelegatedDatabase(delegate);
-
-      when(userDb.beforeOpen(any, any)).thenAnswer((i) async {
-        final executor = i.positionalArguments[0] as QueryExecutor;
-        final details = i.positionalArguments[1] as OpeningDetails;
-
-        await executor.ensureOpen(userDb);
+    late DelegatedDatabase db;
+    final userDb = CustomQueryExecutorUser(
+      schemaVersion: 3,
+      beforeOpenCallback: (self, executor, details) async {
+        await executor.ensureOpen(self);
 
         if (details.wasCreated) {
           await executor.runCustom('created', []);
@@ -87,7 +69,12 @@ void main() {
           await executor.runCustom(
               'updated', [details.versionBefore, details.versionNow]);
         }
-      });
+      },
+    );
+
+    setUp(() {
+      when(delegate.isOpen).thenAnswer((_) => Future.value(false));
+      db = DelegatedDatabase(delegate);
     });
 
     test('when the database does not support versions', () async {
@@ -108,8 +95,7 @@ void main() {
     });
 
     test('when the database supports dynamic version', () async {
-      final version = _MockDynamicVersionDelegate();
-      when(userDb.schemaVersion).thenReturn(3);
+      final version = MockDynamicVersionDelegate();
       when(version.schemaVersion).thenAnswer((_) => Future.value(3));
       when(delegate.versionDelegate).thenReturn(version);
       await db.ensureOpen(userDb);
@@ -144,7 +130,7 @@ void main() {
   });
 
   group('transactions', () {
-    DelegatedDatabase db;
+    late DelegatedDatabase db;
 
     setUp(() {
       db = DelegatedDatabase(delegate, isSequential: true);
@@ -192,7 +178,7 @@ void main() {
     });
 
     test('when the database supports transactions', () async {
-      final transactionDelegate = _MockTransactionDelegate();
+      final transactionDelegate = MockSupportedTransactionDelegate();
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
         (i.positionalArguments.single as Function(QueryDelegate))(delegate);
       });
@@ -209,7 +195,7 @@ void main() {
     });
 
     test('supported transactions - begin fails', () async {
-      final transactionDelegate = _MockTransactionDelegate();
+      final transactionDelegate = MockSupportedTransactionDelegate();
       final exception = Exception('expected');
 
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) async {
@@ -231,7 +217,7 @@ void main() {
     });
 
     test('supported transactions - commit fails', () async {
-      final transactionDelegate = _MockTransactionDelegate();
+      final transactionDelegate = MockSupportedTransactionDelegate();
       final exception = Exception('expected');
 
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) async {

@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:mockito/mockito.dart';
 
 class MockExecutor extends Mock implements QueryExecutor {
@@ -116,41 +115,6 @@ class MockTransactionExecutor extends MockExecutor
   @override
   Future<void> rollback() =>
       _nsm(Invocation.method(#rollback, []), Future.value(null));
-}
-
-class MockStreamQueries extends Mock implements StreamQueryStore {
-  @override
-  Stream<List<Map<String, Object?>>> registerStream(
-          QueryStreamFetcher? fetcher) =>
-      _nsm(Invocation.method(#registerStream, [fetcher]),
-          const Stream<Never>.empty());
-
-  @override
-  Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery? query) => _nsm(
-      Invocation.method(#updatesForSync, [query]), const Stream<Never>.empty());
-
-  @override
-  void handleTableUpdates(Set<TableUpdate>? updates) =>
-      super.noSuchMethod(Invocation.method(#handleTableUpdates, [updates]));
-
-  @override
-  void markAsClosed(QueryStream? stream, dynamic Function()? whenRemoved) =>
-      super.noSuchMethod(
-          Invocation.method(#markAsClosed, [stream, whenRemoved]));
-
-  @override
-  void markAsOpened(QueryStream? stream) =>
-      super.noSuchMethod(Invocation.method(#markAsOpened, [stream]));
-
-  @override
-  Future<void> close() =>
-      _nsm(Invocation.method(#close, []), Future.value(null));
-}
-
-DatabaseConnection createConnection(QueryExecutor executor,
-    [StreamQueryStore? streams]) {
-  return DatabaseConnection(executor,
-      streamQueries: streams ?? StreamQueryStore());
 }
 
 extension on Mock {
