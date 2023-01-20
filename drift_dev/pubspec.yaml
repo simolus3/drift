@@ -14,7 +14,7 @@ dependencies:
   recase: '>=2.0.1 <5.0.0'
   meta: ^1.1.0
   path: ^1.6.0
-  json_annotation: ^4.7.0
+  json_annotation: ^4.8.0
   stream_transform: '>=0.1.0 <3.0.0'
 
   # CLI

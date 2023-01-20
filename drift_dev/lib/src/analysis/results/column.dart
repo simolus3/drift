@@ -66,7 +66,7 @@ class DriftColumn implements HasType {
   final DriftDeclaration declaration;
 
   /// The table or view owning this column.
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   late DriftElementWithResultSet owner;
 
   DriftColumn({
