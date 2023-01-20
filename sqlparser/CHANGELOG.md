@@ -1,3 +1,7 @@
+## 0.26.1
+
+- Fix missing space when formatting aggregate functions.
+
 ## 0.26.0
 
 - Remove token parameter from constructor in `Literal` subclasses and `NumberedVariable`.
