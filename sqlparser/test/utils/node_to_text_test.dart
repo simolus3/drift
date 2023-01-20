@@ -263,6 +263,27 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
+      test('window function expressions', () {
+        // https://github.com/simolus3/drift/issues/2273
+        testFormat('''
+          SELECT
+            ROW_NUMBER() OVER (
+              ORDER BY
+                date
+            ) AS rn,
+            date(
+              date,
+              '-' || ROW_NUMBER() OVER (
+                ORDER BY
+                  date
+              ) || ' day'
+            ) AS grp,
+            date
+          FROM
+            dates
+      ''');
+      });
+
       test('aggregate', () {
         testFormat('''
           SELECT

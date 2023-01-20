@@ -27,7 +27,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitAggregateFunctionInvocation(
       AggregateFunctionInvocation e, void arg) {
-    symbol(e.name);
+    symbol(e.name, spaceBefore: true);
 
     symbol('(');
     visit(e.parameters, arg);
