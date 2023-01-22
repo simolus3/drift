@@ -15,6 +15,9 @@ template: layouts/docs/single
 {% assign drift_tables = "package:drift_docs/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
 {% assign small = "package:drift_docs/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
 
+{% assign newDrift = "package:drift_docs/snippets/modular/drift/example.drift.excerpt.json" | readString | json_decode %}
+{% assign newDart = "package:drift_docs/snippets/modular/drift/dart_example.dart.excerpt.json" | readString | json_decode %}
+
 Drift files are a new feature that lets you write all your database code in SQL.
 But unlike raw SQL strings you might pass to simple database clients, everything in a drift file is verified
 by drift's powerful SQL analyzer.
@@ -291,16 +294,14 @@ would generate a column serialized as "userId" in json.
 You can make most of both SQL and Dart with "Dart Templates", which is a
 Dart expression that gets inlined to a query at runtime. To use them, declare a
 $-variable in a query:
-```sql
-_filterTodos: SELECT * FROM todos WHERE $predicate;
-```
-Drift will generate a `Selectable<Todo> _filterTodos(Expression<bool> predicate)`
-method that can be used to construct dynamic filters at runtime:
-```dart
-Stream<List<Todo>> watchInCategory(int category) {
-    return _filterTodos(todos.category.equals(category)).watch();
-}
-```
+
+{% include "blocks/snippet" snippets = newDrift name = "filterTodos" %}
+
+Drift will generate a `Selectable<Todo>` method with a `predicate` parameter that
+can be used to construct dynamic filters at runtime:
+
+{% include "blocks/snippet" snippets = newDart name = "watchInCategory" %}
+
 This lets you write a single SQL query and dynamically apply a predicate at runtime!
 This feature works for
 
@@ -314,45 +315,10 @@ This feature works for
 
 When used as expression, you can also supply a default value in your query:
 
-```sql
-_filterTodos ($predicate = TRUE): SELECT * FROM todos WHERE $predicate;
-```
+{% include "blocks/snippet" snippets = newDrift name = "getTodos" %}
 
 This will make the `predicate` parameter optional in Dart. It will use the
 default SQL value (here, `TRUE`) when not explicitly set.
-
-{% block "blocks/alert" title="Using column names in Dart" color="warning" %}
-If your query uses table aliases, you'll need to account for that when embedding Dart
-expressions in your SQL query. Consider this for instance:
-
-```sql
-findRoutes: SELECT r.* FROM routes r
-  INNER JOIN points "start" ON "start".id = r."start"
-  INNER JOIN points "end" ON "end".id = r."end"
-WHERE $predicate
-```
-
-If you want to filter for the `start` point in Dart, you have to use
-an explicit [`alias`](https://pub.dev/documentation/drift/latest/drift/DatabaseConnectionUser/alias.html):
-
-```dart
-Future<List<Route>> routesByStart(int startPointId) {
-  final start = alias(points, 'start');
-  return findRoutes(start.id.equals(startPointId));
-}
-```
-
-You can enable the `scoped_dart_components` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }})
-and let the generator help you here.
-When the option is enabled, drift would generate a `Expression<bool> Function(Routes r, Points start, Points end)` as a parameter, which
-makes this a lot easier:
-
-```dart
-Future<List<Route>> routesByStart(int startPointId) {
-  return findRoutes((r, start, end) => start.id.equals(startPointId));
-}
-```
-{% endblock %}
 
 ### Type converters
 

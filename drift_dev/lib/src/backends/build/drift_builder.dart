@@ -339,7 +339,7 @@ class _DriftBuildRun {
       );
       writer = Writer(options, generationOptions: generationOptions);
     } else {
-      final imports = LibraryInputManager();
+      final imports = LibraryInputManager(buildStep.allowedOutputs.single.uri);
       final generationOptions = GenerationOptions(
         imports: imports,
         isModular: true,

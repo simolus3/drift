@@ -24,28 +24,57 @@ builders:
         release: true
 
 targets:
-  # We run drift and other builders first, syntax higlighting is more
-  # accurate if the generated classes exist.
-  source_gen:
+  prepare:
+    auto_apply_builders: false
+    builders:
+      ":versions":
+        enabled: true
+      drift_dev:preparing_builder:
+        enabled: true
+    sources:
+      - "$package$"
+      - "lib/versions.json"
+      - "lib/snippets/**"
+      - "tool/write_versions.dart"
+      - "tool/snippets.dart"
+      - "test/generated/**"
+
+  codegen:
+    dependencies: [":prepare"]
     auto_apply_builders: false
     builders:
       drift_dev:preparing_builder:
+        enabled: false # Runs in prepare target
+
+      # Modular drift generation, suitable for standalone snippets that aren't part of a database
+      drift_dev:analyzer:
         enabled: true
+        options: &options
+          generate_connect_constructor: true
+        generate_for:
+          include: &modular
+            - "lib/snippets/modular/**"
+      drift_dev:modular:
+        enabled: true
+        options: *options
+        generate_for:
+          include: *modular
+
+      # Non-modular drift generation. Used for some "getting started" e2e examples.
       drift_dev:drift_dev:
         enabled: true
-        options:
-          generate_connect_constructor: true
+        options: *options
+        generate_for:
+          exclude: *modular
       json_serializable:
         enabled: true
     sources:
      - lib/**
      - test/generated/**
 
-  prepare:
-    dependencies: [":source_gen"]
+  syntax_highlighting:
+    dependencies: [":codegen"]
     builders:
-      ":versions":
-        enabled: true
       ":code_snippets":
         enabled: true
         generate_for:
@@ -58,13 +87,11 @@ targets:
     auto_apply_builders: false
     sources:
       - "$package$"
-      - "lib/versions.json"
       - "lib/snippets/**"
-      - "tool/write_versions.dart"
       - "tool/snippets.dart"
 
   $default:
-    dependencies: [":prepare"]
+    dependencies: [":codegen", ":syntax_highlighting"]
     builders:
       built_site:
         release_options:

@@ -1,3 +1,5 @@
+import 'package:path/path.dart' show url;
+
 import '../utils/string_escaper.dart';
 import 'writer.dart';
 
@@ -16,9 +18,16 @@ class LibraryInputManager extends ImportManager {
   static final _dartCore = Uri.parse('dart:core');
 
   final Map<Uri, String> _importAliases = {};
+
+  /// The uri of the file being generated.
+  ///
+  /// This allows constructing relative imports for assets that aren't in
+  /// `lib/`.
+  final Uri? _outputUri;
+
   TextEmitter? emitter;
 
-  LibraryInputManager();
+  LibraryInputManager([this._outputUri]);
 
   void linkToWriter(Writer writer) {
     emitter = writer.leaf();
@@ -33,8 +42,20 @@ class LibraryInputManager extends ImportManager {
     return _importAliases.putIfAbsent(definitionUri, () {
       final alias = 'i${_importAliases.length}';
 
-      emitter?.writeln(
-          'import ${asDartLiteral(definitionUri.toString())} as $alias;');
+      final importedScheme = definitionUri.scheme;
+      String importLiteral;
+
+      if (importedScheme != 'package' &&
+          importedScheme != 'dart' &&
+          importedScheme == _outputUri?.scheme) {
+        // Not a package nor a dart import, use a relative import instead
+        importLiteral = url.relative(definitionUri.path,
+            from: url.dirname(_outputUri!.path));
+      } else {
+        importLiteral = definitionUri.toString();
+      }
+
+      emitter?.writeln('import ${asDartLiteral(importLiteral)} as $alias;');
       return alias;
     });
   }
