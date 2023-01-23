@@ -49,6 +49,7 @@ Future<void> _runBuildAndCopyFiles(Directory output, bool isRelease) async {
     'build',
     '--release',
     '--define=built_site=environment=$siteEnv',
+    '--delete-conflicting-outputs'
   ];
   final build = await Process.start('dart', buildArgs);
   await _waitForProcess(build, 'build');
