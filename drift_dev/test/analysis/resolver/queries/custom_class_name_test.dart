@@ -1,8 +1,10 @@
+import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/analysis/custom_result_class.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
-import 'test_utils.dart';
+import '../../../utils.dart';
+import '../../test_utils.dart';
 
 void main() {
   Future<Iterable<SqlQuery>> analyzeQueries(String driftFile) async {
@@ -84,5 +86,33 @@ void main() {
         contains('DifferentNested'),
       ],
     );
+  });
+
+  test('can unify queries with LIST column', () async {
+    final results = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+CREATE TABLE books (
+  id INT NOT NULL PRIMARY KEY,
+  title TEXT NULL,
+  group_name TEXT NULL
+);
+
+getTitlesWithGroup AS GroupWithTitles: SELECT group_name, LIST(SELECT title FROM books) AS titles FROM books;
+
+getTitlesWithGroupOther AS GroupWithTitles: SELECT group_name, LIST(SELECT title FROM books WHERE title NOT LIKE 'Second%') AS titles FROM books;
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(isA<String>().having(
+        (e) => 'class GroupWithTitles'.allMatches(e),
+        'contains one GroupWithTitles class',
+        hasLength(1),
+      )),
+    }, results.dartOutputs, results);
   });
 }

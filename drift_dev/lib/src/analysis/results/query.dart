@@ -664,15 +664,15 @@ class NestedResultQuery extends NestedResult {
     return ReCase(query.name).camelCase;
   }
 
-  // Because it is currently not possible to reuse result classes from queries
-  // that use nested queries, every instance should be different. Therefore
-  // the object hashCode and equality operator is just fine.
+  @override
+  int get compatibilityHashCode =>
+      Object.hash(NestedResultQuery, query.resultSet.compatibilityHashCode);
 
   @override
-  int get compatibilityHashCode => hashCode;
-
-  @override
-  bool isCompatibleTo(ResultColumn other) => this == other;
+  bool isCompatibleTo(ResultColumn other) {
+    return other is NestedResultQuery &&
+        query.resultSet.isCompatibleTo(other.query.resultSet);
+  }
 }
 
 /// Something in the query that needs special attention when generating code,
