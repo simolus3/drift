@@ -14,7 +14,7 @@ extension Expressions on MyDatabase {
 
 // #docregion bitwise
 Expression<int> bitwiseMagic(Expression<int> a, Expression<int> b) {
-  // Generates `~(a | b)` in SQL.
+  // Generates `~(a & b)` in SQL.
   return ~(a.bitwiseAnd(b));
 }
 // #enddocregion bitwise
