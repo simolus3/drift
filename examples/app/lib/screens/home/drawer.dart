@@ -20,7 +20,7 @@ class CategoriesDrawer extends ConsumerWidget {
               'Todo-List Demo with drift',
               style: Theme.of(context)
                   .textTheme
-                  .subtitle1
+                  .titleMedium
                   ?.copyWith(color: Colors.white),
             ),
             decoration: const BoxDecoration(color: Colors.orange),

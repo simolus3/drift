@@ -37,6 +37,7 @@ class Users extends Table with AutoIncrement {
 
   BlobColumn get profilePicture => blob()();
   DateTimeColumn get creationTime => dateTime()
+      // ignore: recursive_getters
       .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
       .withDefault(currentDateAndTime)();
 }
