@@ -578,7 +578,7 @@ class Users extends Table {
             .having((e) => e.isRecord, 'isRecord', isTrue)
             .having((e) => e.targetClass, 'targetClass', isNull)
             .having((e) => e.targetType.toString(), 'targetType',
-                '({int id, String name, DateTime birthday})'),
+                '({DateTime birthday, int id, String name})'),
       );
       expect(table.nameOfRowClass, 'User');
     }, skip: requireDart('3.0.0-dev'));

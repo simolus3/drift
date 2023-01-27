@@ -73,7 +73,7 @@ class Database {}
     checkOutputs({
       'a|lib/a.drift.dart': decodedMatches(allOf(
         contains(
-          'typedef User = ({int id, String name, DateTime? birthDate});',
+          'typedef User = ({DateTime? birthDate, int id, String name});',
         ),
         contains(
           'return (id: attachedDatabase.typeMapping.read(DriftSqlType.int, data[\'\${effectivePrefix}id\'])!, '

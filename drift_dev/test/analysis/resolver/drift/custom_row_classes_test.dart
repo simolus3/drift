@@ -148,7 +148,7 @@ CREATE TABLE foo (
             .having((e) => e.isRecord, 'isRecord', isTrue)
             .having((e) => e.targetClass, 'targetClass', isNull)
             .having((e) => e.targetType.toString(), 'targetType',
-                '({String foo, int? bar})'),
+                '({int? bar, String foo})'),
       );
       expect(table.nameOfRowClass, 'FooData');
     }, skip: requireDart('3.0.0-dev'));

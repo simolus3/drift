@@ -47,6 +47,7 @@ ExistingRowClass? validateExistingClass(
       generateInsertable: generateInsertable,
       knownDriftTypes: knownTypes,
       typeProvider: library.typeProvider,
+      typeSystem: library.typeSystem,
     );
   }
 
@@ -238,14 +239,17 @@ ExistingRowClass defaultRecordRowClass({
   required List<DriftColumn> columns,
   required bool generateInsertable,
   required TypeProvider typeProvider,
+  required TypeSystem typeSystem,
   required KnownDriftTypes knownDriftTypes,
 }) {
   final type = typeProvider.createRecordType(
     positional: const [],
     named: [
       for (final column in columns)
-        MapEntry(column.nameInDart,
-            regularColumnType(typeProvider, knownDriftTypes, column)),
+        MapEntry(
+            column.nameInDart,
+            regularColumnType(
+                typeProvider, typeSystem, knownDriftTypes, column)),
     ],
   );
 
@@ -424,7 +428,8 @@ bool checkType(
   if (typeConverter != null) {
     expectedDartType = typeConverter.dartType;
     if (typeConverter.canBeSkippedForNulls && columnIsNullable) {
-      expectedDartType = typeProvider.makeNullable(expectedDartType);
+      expectedDartType =
+          typeProvider.makeNullable(expectedDartType, typeSystem);
     }
   } else {
     expectedDartType = typeProvider.typeFor(columnType, knownTypes);
@@ -440,18 +445,25 @@ bool checkType(
 }
 
 DartType regularColumnType(
-    TypeProvider typeProvider, KnownDriftTypes knownTypes, HasType type) {
+  TypeProvider typeProvider,
+  TypeSystem typeSystem,
+  KnownDriftTypes knownTypes,
+  HasType type,
+) {
   final converter = type.typeConverter;
   if (converter != null) {
     var dartType = converter.dartType;
     if (type.nullable && converter.canBeSkippedForNulls) {
-      return typeProvider.makeNullable(dartType);
+      return typeProvider.makeNullable(dartType, typeSystem);
     } else {
       return dartType;
     }
+  } else {
+    final typeForNonNullable = typeProvider.typeFor(type.sqlType, knownTypes);
+    return type.nullable
+        ? typeProvider.makeNullable(typeForNonNullable, typeSystem)
+        : typeForNonNullable;
   }
-
-  return typeProvider.typeFor(type.sqlType, knownTypes);
 }
 
 extension on TypeProvider {
@@ -499,24 +511,7 @@ extension CreateRecordType on TypeProvider {
     );
   }
 
-  DartType makeNullable(DartType type) {
-    if (type is InterfaceType) {
-      return type.element.instantiate(
-        typeArguments: type.typeArguments,
-        nullabilitySuffix: NullabilitySuffix.question,
-      );
-    } else if (type is NeverType) {
-      return nullType;
-    } else if (type is RecordType) {
-      return createRecordType(
-        positional: [for (final type in type.positionalFields) type.type],
-        named: [
-          for (final type in type.namedFields) MapEntry(type.name, type.type),
-        ],
-        nullabilitySuffix: NullabilitySuffix.question,
-      );
-    } else {
-      return type;
-    }
+  DartType makeNullable(DartType type, TypeSystem typeSystem) {
+    return typeSystem.leastUpperBound(type, nullType);
   }
 }
