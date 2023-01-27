@@ -78,9 +78,10 @@ class QueryWriter {
     final resultSet = query.resultSet!;
     final queryRow = _emitter.drift('QueryRow');
     final existingRowType = resultSet.existingRowType;
+    final asyncModifier = query.needsAsyncMapping ? 'async' : '';
 
     if (existingRowType != null) {
-      _emitter.write('($queryRow row) async => ');
+      _emitter.write('($queryRow row) $asyncModifier => ');
       _writeArgumentExpression(existingRowType, resultSet);
     } else if (resultSet.singleColumn) {
       final column = resultSet.scalarColumns.single;
@@ -97,11 +98,9 @@ class QueryWriter {
         _writeArgumentExpression(match, resultSet);
       }
     } else {
-      _buffer.write('($queryRow row) ');
-      if (query.needsAsyncMapping) {
-        _buffer.write('async ');
-      }
-      _buffer.write('{ return ${query.resultClassName}(');
+      _buffer
+        ..writeln('($queryRow row) $asyncModifier {')
+        ..write('return ${query.resultClassName}(');
 
       if (options.rawResultSetData) {
         _buffer.write('row: row,\n');

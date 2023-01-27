@@ -7,7 +7,8 @@
 - Support two different queries using `LIST()` columns having the same result class name.
 - Fix table classes not extending defining Dart classes with modular generation.
 - Fix `@UseDataClass` with `extending` not working with modular generation.
-- Fix `drift_dev` generating invalid code when using a type converter with a nullable JSON type.
+- Fix generating invalid code when using a type converter with a nullable JSON type.
+- Avoid unecessary `async` modifier when mapping queries to existing row classes.
 
 ## 2.4.1
 

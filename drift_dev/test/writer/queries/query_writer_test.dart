@@ -228,4 +228,63 @@ class MyRow {
       result,
     );
   });
+
+  test('can map to existing row class synchronously', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/2282
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/row.dart': '''
+class TestCustom {
+  final int testId;
+  final String testOneText;
+  final String testTwoText;
+  TestCustom({
+    required this.testId,
+    required this.testOneText,
+    required this.testTwoText,
+  });
+}
+''',
+        'a|lib/a.drift': '''
+import 'row.dart';
+
+CREATE TABLE TestOne (
+  test_id INT NOT NULL,
+  test_one_text TEXT NOT NULL
+);
+
+CREATE TABLE TestTwo (
+  test_id INT NOT NULL,
+  test_two_text TEXT NOT NULL
+);
+
+getTest WITH TestCustom:
+  SELECT
+      one.*,
+      two.test_two_text
+  FROM TestOne one
+  INNER JOIN TestTwo two
+    ON one.test_id = two.test_id;
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains(
+          '  i0.Selectable<i3.TestCustom> getTest() {\n'
+          '    return customSelect(\n'
+          '        \'SELECT one.*, two.test_two_text FROM TestOne AS one INNER JOIN TestTwo AS two ON one.test_id = two.test_id\',\n'
+          '        variables: [],\n'
+          '        readsFrom: {\n'
+          '          testTwo,\n'
+          '          testOne,\n'
+          '        }).map((i0.QueryRow row) => i3.TestCustom(\n'
+          '          testId: row.read<int>(\'test_id\'),\n'
+          '          testOneText: row.read<String>(\'test_one_text\'),\n'
+          '          testTwoText: row.read<String>(\'test_two_text\'),\n'
+          '        ));\n'
+          '  }')),
+    }, result.dartOutputs, result);
+  });
 }
