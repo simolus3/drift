@@ -149,7 +149,7 @@ class DataClassWriter {
       if (typeConverter != null && typeConverter.alsoAppliesToJsonConversion) {
         var type =
             _emitter.dartCode(AnnotatedDartCode.type(typeConverter.jsonType!));
-        if (column.nullable) {
+        if (column.nullable && typeConverter.canBeSkippedForNulls) {
           type = '$type?';
         }
 

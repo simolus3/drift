@@ -175,6 +175,43 @@ mixin PostsToColumns implements i1.Insertable<i2.Post> {
 ''')),
     }, writer.dartOutputs, writer);
   });
+
+  test('generates correct fromJson for nullable converters', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/2281
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class MyModel {}
+
+class MyConverter
+    extends TypeConverter<MyModel?, String?>
+    with JsonTypeConverter<MyModel?, String?> {
+  const MyConverter();
+}
+
+class MyTable extends Table {
+  TextColumn get invoiceContact => text()
+      .map(const MyConverter()).nullable()();
+}
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+  factory MyTableData.fromJson(Map<String, dynamic> json,
+      {i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return MyTableData(
+      invoiceContact: i1.$MyTableTable.$converterinvoiceContact
+          .fromJson(serializer.fromJson<String?>(json['invoiceContact'])),
+    );
+  }''')),
+    }, result.dartOutputs, result);
+  });
 }
 
 class _GeneratesConstDataClasses extends Matcher {
