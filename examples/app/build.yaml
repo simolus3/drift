@@ -27,10 +27,6 @@ targets:
 
           # This allows us to share a drift database across isolates (or different tabs on the web)
           generate_connect_constructor: true
-          # These options are generally recommended: https://drift.simonbinder.eu/docs/advanced-features/builder_options/#recommended-options
-          apply_converters_on_variables: true
-          generate_values_in_copy_with: true
-          scoped_dart_components: true
 
       # Configuring this builder isn't required for most apps. In our case, we
       # want to compile the web worker in `web/worker.dart` to JS and we use the
