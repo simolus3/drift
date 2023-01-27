@@ -43,4 +43,11 @@ void main() {
         const TodoWithCategoryViewData(
             description: 'category description', title: 'title'));
   });
+
+  test('all()', () async {
+    final user = await db.users.insertReturning(
+        UsersCompanion.insert(name: 'Test user', profilePicture: Uint8List(0)));
+
+    expect(await db.users.all().get(), [user]);
+  });
 }

@@ -2,6 +2,7 @@
 
 - Add `isExp`, `isValue`, `isNotExp` and `isNotValue` methods to `Expression`
   to generate the `IS` operator in SQL.
+- Add `all()` extension on tables and views to quickly query all rows.
 
 ## 2.4.2
 

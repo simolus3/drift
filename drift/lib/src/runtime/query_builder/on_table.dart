@@ -4,6 +4,14 @@ import 'package:drift/drift.dart';
 /// tables or views.
 extension TableOrViewStatements<Tbl extends HasResultSet, Row>
     on ResultSetImplementation<Tbl, Row> {
+  /// Selects all rows that are in this table.
+  ///
+  /// The returned [Selectable] can be run once as a future with [Selectable.get]
+  /// or as an auto-updating stream with [Selectable.watch].
+  Selectable<Row> all() {
+    return select();
+  }
+
   /// Composes a `SELECT` statement on the captured table or view.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.select].
