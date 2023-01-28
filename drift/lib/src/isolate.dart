@@ -41,6 +41,7 @@ StreamChannel connectToServer(SendPort serverConnectPort, bool serialize) {
 class RunningDriftServer {
   final Isolate self;
   final bool killIsolateWhenDone;
+  final bool onlyAcceptSingleConnection;
 
   final DriftServer server;
   final ReceivePort connectPort = ReceivePort('drift connect');
@@ -48,11 +49,19 @@ class RunningDriftServer {
 
   SendPort get portToOpenConnection => connectPort.sendPort;
 
-  RunningDriftServer(this.self, DatabaseConnection connection,
-      {this.killIsolateWhenDone = true})
-      : server = DriftServer(connection, allowRemoteShutdown: true) {
+  RunningDriftServer(
+    this.self,
+    DatabaseConnection connection, {
+    this.killIsolateWhenDone = true,
+    bool closeConnectionAfterShutdown = true,
+    this.onlyAcceptSingleConnection = false,
+  }) : server = DriftServer(connection, allowRemoteShutdown: true) {
     final subscription = connectPort.listen((message) {
       if (message is List && message.length == 2) {
+        if (onlyAcceptSingleConnection) {
+          connectPort.close();
+        }
+
         final sendPort = message[0]! as SendPort;
         final serialize = message[1]! as bool;
         final receiveForConnection =
@@ -65,6 +74,11 @@ class RunningDriftServer {
           if (message == disconnectMessage) {
             // Client closed the connection
             controller.local.sink.close();
+
+            if (onlyAcceptSingleConnection) {
+              // The only connection was closed, so shut down the server.
+              server.shutdown();
+            }
           } else {
             controller.local.sink.add(message);
           }

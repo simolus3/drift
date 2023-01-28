@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
@@ -156,6 +157,63 @@ void main() {
     await isolate.shutdownAll();
 
     verify(mockExecutor.close());
+  });
+
+  group('computeWithDatabase', () {
+    Future<void> testWith(DatabaseConnection connection,
+        {DriftIsolate? referenceIsolate}) async {
+      final db = TodoDb(connection);
+      final stream = StreamQueue(db.categories.all().watch());
+      await expectLater(stream, emits(isEmpty));
+
+      if (referenceIsolate != null) {
+        expect(identical(await db.serializableConnection(), referenceIsolate),
+            isTrue);
+      }
+
+      // Add category on remote isolate
+      await db.computeWithDatabase(
+        computation: (db) async {
+          await db.batch((batch) {
+            batch.insert(
+              db.categories,
+              CategoriesCompanion.insert(description: 'From remote isolate!'),
+            );
+          });
+        },
+        connect: TodoDb.new,
+      );
+
+      // Which should update the stream on the main isolate
+      await expectLater(
+          stream,
+          emits([
+            Category(
+              id: 1,
+              description: 'From remote isolate!',
+              priority: CategoryPriority.low,
+              descriptionInUpperCase: 'FROM REMOTE ISOLATE!',
+            )
+          ]));
+      await db.close();
+    }
+
+    test('with an existing isolate', () async {
+      final isolate = await DriftIsolate.spawn(_backgroundConnection);
+      await testWith(await isolate.connect(singleClientMode: true),
+          referenceIsolate: isolate);
+    });
+
+    test('with existing isolate, delayed', () async {
+      final isolate = await DriftIsolate.spawn(_backgroundConnection);
+      await testWith(
+          DatabaseConnection.delayed(isolate.connect(singleClientMode: true)),
+          referenceIsolate: isolate);
+    });
+
+    test('without using isolates in setup', () async {
+      await testWith(DatabaseConnection(NativeDatabase.memory()));
+    });
   });
 }
 

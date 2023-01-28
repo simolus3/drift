@@ -19,6 +19,9 @@ class ServerImplementation implements DriftServer {
   /// Whether clients are allowed to shutdown this server for all.
   final bool allowRemoteShutdown;
 
+  /// Whether this server should close the executor after shutting down.
+  final bool closeExecutorWhenShutdown;
+
   final Map<int, QueryExecutor> _managedExecutors = {};
   int _currentExecutorId = 0;
   int _knownSchemaVersion = 0;
@@ -40,13 +43,25 @@ class ServerImplementation implements DriftServer {
   final Set<DriftCommunication> _activeChannels = {};
   final Completer<void> _done = Completer();
 
+  final StreamController<NotifyTablesUpdated> _tableUpdateNotifications =
+      StreamController();
+
   /// Creates a server from the underlying connection and further options.
-  ServerImplementation(this.connection, this.allowRemoteShutdown) {
-    done.then((_) => _closeRemainingConnections());
+  ServerImplementation(this.connection, this.allowRemoteShutdown,
+      this.closeExecutorWhenShutdown) {
+    done.then((_) {
+      _closeRemainingConnections();
+      _tableUpdateNotifications.close();
+    });
   }
 
   @override
   Future<void> get done => _done.future;
+
+  @override
+  Stream<NotifyTablesUpdated> get tableUpdateNotifications {
+    return _tableUpdateNotifications.stream;
+  }
 
   @override
   void serve(StreamChannel<Object?> channel, {bool serialize = true}) {
@@ -65,8 +80,9 @@ class ServerImplementation implements DriftServer {
   @override
   Future<void> shutdown() {
     if (!_isShuttingDown) {
-      _done.complete(connection.executor.close());
       _isShuttingDown = true;
+      _done.complete(
+          closeExecutorWhenShutdown ? connection.executor.close() : null);
     }
 
     return done;
@@ -104,11 +120,8 @@ class ServerImplementation implements DriftServer {
     } else if (payload is ExecuteBatchedStatement) {
       return _runBatched(payload.stmts, payload.executorId);
     } else if (payload is NotifyTablesUpdated) {
-      for (final connected in _activeChannels) {
-        if (connected != comms) {
-          connected.notify(payload);
-        }
-      }
+      _tableUpdateNotifications.add(payload);
+      dispatchTableUpdateNotification(payload, comms);
     } else if (payload is RunTransactionAction) {
       return _transactionControl(comms, payload.control, payload.executorId);
     } else if (payload is RequestCancellation) {
@@ -238,6 +251,16 @@ class ServerImplementation implements DriftServer {
   void _notifyActiveExecutorUpdated() {
     if (!_backlogUpdated.isClosed) {
       _backlogUpdated.add(null);
+    }
+  }
+
+  @override
+  void dispatchTableUpdateNotification(NotifyTablesUpdated notification,
+      [DriftCommunication? source]) {
+    for (final connected in _activeChannels) {
+      if (connected != source) {
+        connected.notify(notification);
+      }
     }
   }
 }

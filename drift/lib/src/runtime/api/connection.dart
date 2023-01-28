@@ -12,10 +12,19 @@ class DatabaseConnection implements QueryExecutor {
   /// Manages active streams from select statements.
   final StreamQueryStore streamQueries;
 
+  /// Optional data attached to this connection.
+  ///
+  /// This is mostly used by drift internally to identify the source of
+  /// connections.
+  final FutureOr<Object?> connectionData;
+
   /// Constructs a raw database connection from the [executor] and optionally a
   /// specified [streamQueries] implementation to use.
-  DatabaseConnection(this.executor, {StreamQueryStore? streamQueries})
-      : streamQueries = streamQueries ?? StreamQueryStore();
+  DatabaseConnection(
+    this.executor, {
+    StreamQueryStore? streamQueries,
+    this.connectionData,
+  }) : streamQueries = streamQueries ?? StreamQueryStore();
 
   /// Constructs a [DatabaseConnection] from the [QueryExecutor] by using the
   /// default type system and a new [StreamQueryStore].
@@ -55,6 +64,7 @@ class DatabaseConnection implements QueryExecutor {
       streamQueries: DelayedStreamQueryStore(
         connection.then((conn) => conn.streamQueries),
       ),
+      connectionData: connection.then((c) => c.connectionData),
     );
   }
 

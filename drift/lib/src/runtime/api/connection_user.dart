@@ -573,6 +573,12 @@ abstract class DatabaseConnectionUser {
 
     return buffer.toString();
   }
+
+  /// Closes this database and releases associated resources.
+  Future<void> close() async {
+    await streamQueries.close();
+    await executor.close();
+  }
 }
 
 extension on TransactionExecutor {

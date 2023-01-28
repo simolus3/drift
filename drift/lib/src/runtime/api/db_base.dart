@@ -124,9 +124,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   }
 
   /// Closes this database and releases associated resources.
+  @override
   Future<void> close() async {
-    await streamQueries.close();
-    await executor.close();
+    await super.close();
 
     assert(() {
       if (_openedDbCount[runtimeType] != null) {

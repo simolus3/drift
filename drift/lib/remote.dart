@@ -74,10 +74,21 @@ abstract class DriftServer {
   ///
   /// If [allowRemoteShutdown] is set to `true` (it defaults to `false`),
   /// clients can use [shutdown] to stop this server remotely.
+  /// If [closeConnectionAfterShutdown] is set to `true` (the default), shutting
+  /// down the server will also close the [connection].
   factory DriftServer(DatabaseConnection connection,
-      {bool allowRemoteShutdown = false}) {
-    return ServerImplementation(connection, allowRemoteShutdown);
+      {bool allowRemoteShutdown = false,
+      bool closeConnectionAfterShutdown = true}) {
+    return ServerImplementation(
+        connection, allowRemoteShutdown, closeConnectionAfterShutdown);
   }
+
+  /// A stream of table update notifications sent from clients to this server.
+  ///
+  /// This only includes notifications sent from clients, not those dispatched
+  /// via [dispatchTableUpdateNotification] or by sending updates to the stream
+  /// query store of the underlying connection.
+  Stream<NotifyTablesUpdated> get tableUpdateNotifications;
 
   /// A future that completes when this server has been shut down.
   ///
@@ -112,6 +123,9 @@ abstract class DriftServer {
   ///
   /// This future returns after all client connections have been closed.
   Future<void> shutdown();
+
+  /// Forwards the [notification] for updated tables to all clients.
+  void dispatchTableUpdateNotification(NotifyTablesUpdated notification);
 }
 
 /// Connects to a remote server over a two-way communication channel.

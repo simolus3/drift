@@ -17,8 +17,6 @@ class DriftCommunication {
   final bool _debugLog;
   final bool _serialize;
 
-  StreamSubscription? _inputSubscription;
-
   // note that there are two DriftCommunication instances in each connection,
   // (one per remote). Each of them has an independent _currentRequestId field
   int _currentRequestId = 0;
@@ -34,7 +32,10 @@ class DriftCommunication {
       {bool debugLog = false, bool serialize = true})
       : _debugLog = debugLog,
         _serialize = serialize {
-    _inputSubscription = _channel.stream.listen(
+    // Note that this subscription does not need to be cancelled explicitly. As
+    // per [StreamChannel] guarantees, closing the sink will emit a done event
+    // and then dispose the stream.
+    _channel.stream.listen(
       _handleMessage,
       onDone: () {
         // Channel closed => Complete pending requests with an error
@@ -72,7 +73,6 @@ class DriftCommunication {
   void _closeLocally() {
     _startedClosingLocally = true;
     _channel.sink.close();
-    _inputSubscription?.cancel();
   }
 
   void _handleMessage(Object? msg) {
