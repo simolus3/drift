@@ -49,7 +49,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'use_column_name_as_json_key_when_defined_in_moor_file',
               (v) => v as bool? ?? true),
           generateConnectConstructor: $checkedConvert(
-              'generate_connect_constructor', (v) => v as bool? ?? false),
+              'generate_connect_constructor', (v) => v as bool? ?? true),
           dataClassToCompanions: $checkedConvert(
               'data_class_to_companions', (v) => v as bool? ?? true),
           generateMutableClasses:

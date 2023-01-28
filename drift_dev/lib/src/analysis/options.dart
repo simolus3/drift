@@ -45,9 +45,12 @@ class DriftOptions {
       defaultValue: true)
   final bool useColumnNameAsJsonKeyWhenDefinedInMoorFile;
 
-  /// Generate a `connect` constructor in database superclasses. This is
-  /// required to run databases in a background isolate.
-  @JsonKey(name: 'generate_connect_constructor', defaultValue: false)
+  /// Generate a `connect` constructor in database superclasses.
+  ///
+  /// This makes drift generate a constructor for database classes that takes a
+  /// `DatabaseConnection` instead of just a `QueryExecutor` - meaning that
+  /// stream queries can also be shared across multiple database instances.
+  @JsonKey(name: 'generate_connect_constructor', defaultValue: true)
   final bool generateConnectConstructor;
 
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
@@ -104,7 +107,7 @@ class DriftOptions {
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
-    this.generateConnectConstructor = false,
+    this.generateConnectConstructor = true,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
     this.rawResultSetData = false,
@@ -180,9 +183,6 @@ class DriftOptions {
   bool hasModule(SqlModule module) => effectiveModules.contains(module);
 
   /// Checks whether a deprecated option is enabled.
-  ///
-  /// At this time, all deprecated options have been removed, meaning that this
-  /// getter always returns `false`.
   bool get enabledDeprecatedOption => false;
 
   SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;

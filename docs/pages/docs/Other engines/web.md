@@ -194,8 +194,7 @@ DatabaseConnection connectToWorker() {
 }
 ```
 
-You can pass that `DatabaseConnection` to your database by enabling the
-`generate_connect_constructor` build option.
+You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on
 [isolates]({{ "../Advanced Features/isolates.md" | pageUrl }}).
 

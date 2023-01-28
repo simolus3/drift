@@ -48,13 +48,15 @@ At the moment, drift supports these options:
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
-* `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a 
+* `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a
   `.moor` (or `.drift`) file from and to json, use their sql name instead of the generated Dart getter name
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   You can always override the json key by using a `JSON KEY` column constraint
   (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).
-* `generate_connect_constructor`: Generate necessary code to support the [isolate runtime]({{ "isolates.md" | pageUrl }}).
-  This is a build option because isolates are still experimental. This will be the default option eventually.
+* `generate_connect_constructor`: Generates a named `connect()` constructor on database classes
+  that takes a `DatabaseConnection` instead of a `QueryExecutor` - this allows sharing stream queries
+  between two drift database instances, which can be helpful for some [isolate setups]({{ "isolates.md" | pageUrl }}).
+  The option is enabled by default.
 * `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
    data classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final

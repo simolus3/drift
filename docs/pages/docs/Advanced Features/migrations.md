@@ -369,12 +369,12 @@ void main() {
 
 In general, a test looks like this:
 
-- Use `verifier.startAt()` to obtain a [connection](https://pub.dev/documentation/moor/latest/moor/DatabaseConnection-class.html)
+1. Use `verifier.startAt()` to obtain a [connection](https://drift.simonbinder.eu/api/drift/databaseconnection-class)
   to a database with an initial schema.
   This database contains all your tables, indices and triggers from that version, created by using `Migrator.createAll`.
-- Create your application database (you can enable the [`generate_connect_constructor`]({{ "builder_options.md" | pageUrl }}) to use
-  a `DatabaseConnection` directly)
-- Call `verifier.migrateAndValidate(db, version)`. This will initiate a migration towards the target version (here, `2`).
+2. Create your application database with that connection - you can forward the `DatabaseConnection` to the
+  `GeneratedDatabase.connect()` constructor on the parent class for this.
+3. Call `verifier.migrateAndValidate(db, version)`. This will initiate a migration towards the target version (here, `2`).
   Unlike the database created by `startAt`, this uses the migration logic you wrote for your database.
 
 `migrateAndValidate` will extract all `CREATE` statement from the `sqlite_schema` table and semantically compare them.

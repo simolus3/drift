@@ -31,7 +31,6 @@ targets:
     builders:
       drift_dev:
         options:
-          generate_connect_constructor: true
           named_parameters: true
       build_web_compilers:entrypoint:
         generate_for:

@@ -25,9 +25,6 @@ targets:
               version: "3.38"
               modules: [fts5]
 
-          # This allows us to share a drift database across isolates (or different tabs on the web)
-          generate_connect_constructor: true
-
       # Configuring this builder isn't required for most apps. In our case, we
       # want to compile the web worker in `web/worker.dart` to JS and we use the
       # build system for that.
