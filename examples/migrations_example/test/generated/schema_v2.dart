@@ -2,6 +2,46 @@
 //@dart=2.12
 import 'package:drift/drift.dart';
 
+class Users extends Table with TableInfo<Users, UsersData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Users(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? 'users';
+  @override
+  String get actualTableName => 'users';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UsersData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+    );
+  }
+
+  @override
+  Users createAlias(String alias) {
+    return Users(attachedDatabase, alias);
+  }
+}
+
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
@@ -109,49 +149,8 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
   }
 }
 
-class Users extends Table with TableInfo<Users, UsersData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Users(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [id, name];
-  @override
-  String get aliasedName => _alias ?? 'users';
-  @override
-  String get actualTableName => 'users';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return UsersData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-    );
-  }
-
-  @override
-  Users createAlias(String alias) {
-    return Users(attachedDatabase, alias);
-  }
-}
-
 class DatabaseAtV2 extends GeneratedDatabase {
   DatabaseAtV2(QueryExecutor e) : super(e);
-  DatabaseAtV2.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>

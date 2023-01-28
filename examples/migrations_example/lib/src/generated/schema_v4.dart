@@ -90,7 +90,6 @@ class Groups extends Table with TableInfo {
 
 class DatabaseAtV4 extends GeneratedDatabase {
   DatabaseAtV4(QueryExecutor e) : super(e);
-  DatabaseAtV4.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   @override

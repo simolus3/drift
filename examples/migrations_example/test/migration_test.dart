@@ -47,7 +47,7 @@ void main() {
     final schema = await verifier.schemaAt(1);
 
     // Add some data to the users table, which only has an id column at v1
-    final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
+    final oldDb = v1.DatabaseAtV1(schema.newConnection());
     await oldDb.into(oldDb.users).insert(const v1.UsersCompanion(id: Value(1)));
     await oldDb.close();
 
@@ -57,7 +57,7 @@ void main() {
     await db.close();
 
     // Make sure the user is still here
-    final migratedDb = v2.DatabaseAtV2.connect(schema.newConnection());
+    final migratedDb = v2.DatabaseAtV2(schema.newConnection());
     final user = await migratedDb.select(migratedDb.users).getSingle();
     expect(user.id, 1);
     expect(user.name, 'no name'); // default from the migration
@@ -71,7 +71,7 @@ void main() {
     await db.close();
 
     // Test that the foreign key reference introduced in v5 works as expected.
-    final migratedDb = v5.DatabaseAtV5.connect(schema.newConnection());
+    final migratedDb = v5.DatabaseAtV5(schema.newConnection());
     // The `foreign_keys` pragma is a per-connection option and the generated
     // versioned classes don't enable it by default. So, enable it manually.
     await migratedDb.customStatement('pragma foreign_keys = on;');
@@ -88,7 +88,7 @@ void main() {
   test('view works after upgrade from v4 to v5', () async {
     final schema = await verifier.schemaAt(4);
 
-    final oldDb = v4.DatabaseAtV4.connect(schema.newConnection());
+    final oldDb = v4.DatabaseAtV4(schema.newConnection());
     await oldDb.batch((batch) {
       batch
         ..insert(oldDb.users, v4.UsersCompanion.insert(id: Value(1)))
@@ -104,7 +104,7 @@ void main() {
     await db.close();
 
     // Make sure the view works!
-    final migratedDb = v5.DatabaseAtV5.connect(schema.newConnection());
+    final migratedDb = v5.DatabaseAtV5(schema.newConnection());
     final viewCount = await migratedDb.select(migratedDb.groupCount).get();
 
     expect(

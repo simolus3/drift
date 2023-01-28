@@ -193,7 +193,6 @@ class Notes extends Table with TableInfo, VirtualTableInfo {
 
 class DatabaseAtV8 extends GeneratedDatabase {
   DatabaseAtV8(QueryExecutor e) : super(e);
-  DatabaseAtV8.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);

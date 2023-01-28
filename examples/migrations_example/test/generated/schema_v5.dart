@@ -2,6 +2,56 @@
 //@dart=2.12
 import 'package:drift/drift.dart';
 
+class Users extends Table with TableInfo<Users, UsersData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Users(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('name'));
+  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
+      'next_user', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, name, nextUser];
+  @override
+  String get aliasedName => _alias ?? 'users';
+  @override
+  String get actualTableName => 'users';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UsersData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      nextUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+    );
+  }
+
+  @override
+  Users createAlias(String alias) {
+    return Users(attachedDatabase, alias);
+  }
+}
+
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
@@ -138,54 +188,64 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
   }
 }
 
-class Users extends Table with TableInfo<Users, UsersData> {
+class Groups extends Table with TableInfo<Groups, GroupsData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Users(this.attachedDatabase, [this._alias]);
+  Groups(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
       type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+      'deleted', aliasedName, true,
+      type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultValue: const Constant('name'));
-  late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
-      'next_user', aliasedName, true,
+      $customConstraints: 'DEFAULT FALSE',
+      defaultValue: const CustomExpression<bool>('FALSE'));
+  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
+      'owner', aliasedName, false,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
-  List<GeneratedColumn> get $columns => [id, name, nextUser];
+  List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? 'groups';
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => 'groups';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return UsersData(
+    return GroupsData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      nextUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      deleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
+      owner: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
     );
   }
 
   @override
-  Users createAlias(String alias) {
-    return Users(attachedDatabase, alias);
+  Groups createAlias(String alias) {
+    return Groups(attachedDatabase, alias);
   }
+
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY (id)'];
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class GroupsData extends DataClass implements Insertable<GroupsData> {
@@ -351,66 +411,6 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
   }
 }
 
-class Groups extends Table with TableInfo<Groups, GroupsData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Groups(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
-      'deleted', aliasedName, true,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      $customConstraints: 'DEFAULT FALSE',
-      defaultValue: const CustomExpression<bool>('FALSE'));
-  late final GeneratedColumn<int> owner = GeneratedColumn<int>(
-      'owner', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users (id)');
-  @override
-  List<GeneratedColumn> get $columns => [id, title, deleted, owner];
-  @override
-  String get aliasedName => _alias ?? 'groups';
-  @override
-  String get actualTableName => 'groups';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return GroupsData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      deleted: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
-      owner: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
-    );
-  }
-
-  @override
-  Groups createAlias(String alias) {
-    return Groups(attachedDatabase, alias);
-  }
-
-  @override
-  List<String> get customConstraints => const ['PRIMARY KEY (id)'];
-  @override
-  bool get dontWriteConstraints => true;
-}
-
 class GroupCountData extends DataClass {
   final int id;
   final String name;
@@ -532,7 +532,6 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
 
 class DatabaseAtV5 extends GeneratedDatabase {
   DatabaseAtV5(QueryExecutor e) : super(e);
-  DatabaseAtV5.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);

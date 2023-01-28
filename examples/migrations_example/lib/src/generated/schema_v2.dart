@@ -38,7 +38,6 @@ class Users extends Table with TableInfo {
 
 class DatabaseAtV2 extends GeneratedDatabase {
   DatabaseAtV2(QueryExecutor e) : super(e);
-  DatabaseAtV2.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>

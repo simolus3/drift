@@ -146,7 +146,6 @@ class GroupCount extends ViewInfo<GroupCount, Never> implements HasResultSet {
 
 class DatabaseAtV6 extends GeneratedDatabase {
   DatabaseAtV6(QueryExecutor e) : super(e);
-  DatabaseAtV6.connect(DatabaseConnection c) : super.connect(c);
   late final Users users = Users(this);
   late final Groups groups = Groups(this);
   late final GroupCount groupCount = GroupCount(this);
