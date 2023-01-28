@@ -6,12 +6,12 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   group('with default options', () {
-    _testDateTimes(() => TodoDb.connect(testInMemoryDatabase()));
+    _testDateTimes(() => TodoDb(testInMemoryDatabase()));
   });
 
   group('storing date times as text', () {
     _testDateTimes(
-      () => TodoDb.connect(testInMemoryDatabase())
+      () => TodoDb(testInMemoryDatabase())
         ..options = const DriftDatabaseOptions(storeDateTimeAsText: true),
       dateTimeAsText: true,
     );
@@ -21,7 +21,7 @@ void main() {
     late TodoDb db;
 
     setUp(() async {
-      db = TodoDb.connect(testInMemoryDatabase());
+      db = TodoDb(testInMemoryDatabase());
 
       // we selectOnly from users for the lack of a better option. Insert one
       // row so that getSingle works

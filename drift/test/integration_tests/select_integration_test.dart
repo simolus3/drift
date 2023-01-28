@@ -9,7 +9,7 @@ void main() {
   late TodoDb db;
 
   setUp(() {
-    db = TodoDb.connect(testInMemoryDatabase());
+    db = TodoDb(testInMemoryDatabase());
   });
 
   tearDown(() => db.close());

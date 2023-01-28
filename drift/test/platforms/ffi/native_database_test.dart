@@ -27,8 +27,7 @@ void main() {
     test('work with connections', () async {
       final file = File(d.path('test.db'));
 
-      final db =
-          TodoDb.connect(NativeDatabase.createBackgroundConnection(file));
+      final db = TodoDb(NativeDatabase.createBackgroundConnection(file));
       await db.todosTable.select().get(); // Open the database
       await db.close();
 

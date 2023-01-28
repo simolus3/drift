@@ -53,10 +53,9 @@ At the moment, drift supports these options:
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   You can always override the json key by using a `JSON KEY` column constraint
   (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).
-* `generate_connect_constructor`: Generates a named `connect()` constructor on database classes
-  that takes a `DatabaseConnection` instead of a `QueryExecutor` - this allows sharing stream queries
-  between two drift database instances, which can be helpful for some [isolate setups]({{ "isolates.md" | pageUrl }}).
-  The option is enabled by default.
+* `generate_connect_constructor` (deprecated): Generates a named `connect()` constructor on database classes
+  that takes a `DatabaseConnection` instead of a `QueryExecutor`.
+  This option was deprecated in drift 2.5 because `DatabaseConnection` now implements `QueryExecutor`.
 * `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
    data classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final

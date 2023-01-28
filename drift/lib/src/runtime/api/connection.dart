@@ -5,7 +5,7 @@ part of 'runtime_api.dart';
 /// - a [QueryExecutor], which runs sql statements.
 /// - a [StreamQueryStore], which dispatches table changes to listening queries,
 ///   on which the auto-updating queries are based.
-class DatabaseConnection {
+class DatabaseConnection implements QueryExecutor {
   /// The executor to use when queries are executed.
   final QueryExecutor executor;
 
@@ -63,4 +63,41 @@ class DatabaseConnection {
   DatabaseConnection withExecutor(QueryExecutor executor) {
     return DatabaseConnection(executor, streamQueries: streamQueries);
   }
+
+  @override
+  TransactionExecutor beginTransaction() => executor.beginTransaction();
+
+  @override
+  Future<void> close() => executor.close();
+
+  @override
+  SqlDialect get dialect => executor.dialect;
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) => executor.ensureOpen(user);
+
+  @override
+  Future<void> runBatched(BatchedStatements statements) =>
+      executor.runBatched(statements);
+
+  @override
+  Future<void> runCustom(String statement, [List<Object?>? args]) =>
+      executor.runCustom(statement, args);
+
+  @override
+  Future<int> runDelete(String statement, List<Object?> args) =>
+      executor.runDelete(statement, args);
+
+  @override
+  Future<int> runInsert(String statement, List<Object?> args) =>
+      executor.runInsert(statement, args);
+
+  @override
+  Future<List<Map<String, Object?>>> runSelect(
+          String statement, List<Object?> args) =>
+      executor.runSelect(statement, args);
+
+  @override
+  Future<int> runUpdate(String statement, List<Object?> args) =>
+      executor.runUpdate(statement, args);
 }

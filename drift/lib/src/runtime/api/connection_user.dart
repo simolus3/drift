@@ -37,7 +37,9 @@ abstract class DatabaseConnectionUser {
   /// streams, wrap the underlying executor and perform type mapping.
   DatabaseConnectionUser(QueryExecutor executor,
       {StreamQueryStore? streamQueries})
-      : connection = DatabaseConnection(executor, streamQueries: streamQueries);
+      : connection = executor is DatabaseConnection
+            ? executor
+            : DatabaseConnection(executor, streamQueries: streamQueries);
 
   /// Creates another [DatabaseConnectionUser] by referencing the implementation
   /// from the [other] user.

@@ -19,7 +19,7 @@ void main() {
     final isolate = await DriftIsolate.spawn(createConnection);
     addTearDown(isolate.shutdownAll);
 
-    final db = EmptyDb.connect(await isolate.connect());
+    final db = EmptyDb(await isolate.connect());
     await db.customSelect('select 1').getSingle();
 
     final filter = BehaviorSubject<int>();

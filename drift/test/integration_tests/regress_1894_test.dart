@@ -6,7 +6,7 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   test('exists subqueries properly reference columns', () async {
-    final db = TodoDb.connect(testInMemoryDatabase());
+    final db = TodoDb(testInMemoryDatabase());
     addTearDown(db.close);
 
     final nonEmptyId = await db.categories

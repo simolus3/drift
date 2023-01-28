@@ -620,7 +620,6 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntrie> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-  _$AppDatabase.connect(DatabaseConnection c) : super.connect(c);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $TodoEntriesTable todoEntries = $TodoEntriesTable(this);
   late final TextEntries textEntries = TextEntries(this);

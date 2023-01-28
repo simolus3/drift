@@ -18,7 +18,7 @@ Future<int?> _getCategoryIdByDescription(
 
 void main() {
   test('type inference for nullable call in async function', () async {
-    final db = TodoDb.connect(testInMemoryDatabase());
+    final db = TodoDb(testInMemoryDatabase());
     addTearDown(db.close);
 
     final categoryDescription = 'category description';

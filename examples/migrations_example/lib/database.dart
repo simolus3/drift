@@ -14,7 +14,7 @@ class Database extends _$Database {
   @override
   int get schemaVersion => latestSchemaVersion;
 
-  Database(DatabaseConnection connection) : super.connect(connection);
+  Database(DatabaseConnection connection) : super(connection);
 
   @override
   MigrationStrategy get migration {

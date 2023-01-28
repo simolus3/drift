@@ -15,7 +15,7 @@ void main() {
     streamQueries = MockStreamQueries();
 
     final connection = createConnection(executor, streamQueries);
-    db = TodoDb.connect(connection);
+    db = TodoDb(connection);
   });
 
   test('generates insert statements', () async {

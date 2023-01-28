@@ -11,7 +11,7 @@ class Users extends Table {
 
 @DriftDatabase(tables: [Users])
 class Database extends _$Database {
-  Database.connect(DatabaseConnection c) : super.connect(c);
+  Database.connect(DatabaseConnection c) : super(c);
 
   @override
   int get schemaVersion => 1;

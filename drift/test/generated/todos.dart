@@ -209,10 +209,6 @@ class TodoDb extends _$TodoDb {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 
-  TodoDb.connect(DatabaseConnection connection) : super.connect(connection) {
-    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-  }
-
   @override
   MigrationStrategy migration = MigrationStrategy();
 

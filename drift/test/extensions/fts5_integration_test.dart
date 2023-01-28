@@ -6,7 +6,7 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   test('fts5 integration test', () async {
-    final db = CustomTablesDb.connect(testInMemoryDatabase());
+    final db = CustomTablesDb(testInMemoryDatabase());
 
     await db.into(db.email).insert(EmailCompanion.insert(
         sender: 'foo@example.org', title: 'Hello world', body: 'Test email'));

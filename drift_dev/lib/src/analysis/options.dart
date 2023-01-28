@@ -50,7 +50,9 @@ class DriftOptions {
   /// This makes drift generate a constructor for database classes that takes a
   /// `DatabaseConnection` instead of just a `QueryExecutor` - meaning that
   /// stream queries can also be shared across multiple database instances.
-  @JsonKey(name: 'generate_connect_constructor', defaultValue: true)
+  /// Starting from drift 2.5, the database connection class implements the
+  /// `QueryExecutor` interface, making this option unecessary.
+  @JsonKey(name: 'generate_connect_constructor', defaultValue: false)
   final bool generateConnectConstructor;
 
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
@@ -107,7 +109,7 @@ class DriftOptions {
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
-    this.generateConnectConstructor = true,
+    this.generateConnectConstructor = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
     this.rawResultSetData = false,
@@ -181,9 +183,6 @@ class DriftOptions {
 
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => effectiveModules.contains(module);
-
-  /// Checks whether a deprecated option is enabled.
-  bool get enabledDeprecatedOption => false;
 
   SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;
 

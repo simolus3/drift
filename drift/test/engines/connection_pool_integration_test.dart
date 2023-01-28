@@ -39,7 +39,7 @@ void main() {
       write: background.executor,
     ));
 
-    final db = TodoDb.connect(foreground);
+    final db = TodoDb(foreground);
 
     await db
         .into(db.categories)

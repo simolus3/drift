@@ -7,7 +7,7 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   test('Dart queries on views update correctly', () async {
-    final db = CustomTablesDb.connect(testInMemoryDatabase());
+    final db = CustomTablesDb(testInMemoryDatabase());
     addTearDown(db.close);
 
     expect(

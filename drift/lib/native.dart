@@ -73,8 +73,7 @@ class NativeDatabase extends DelegatedDatabase {
   static QueryExecutor createInBackground(File file,
       {bool logStatements = false, DatabaseSetup? setup}) {
     return createBackgroundConnection(file,
-            logStatements: logStatements, setup: setup)
-        .executor;
+        logStatements: logStatements, setup: setup);
   }
 
   /// Like [createInBackground], except that it returns the whole

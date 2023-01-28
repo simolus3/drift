@@ -50,7 +50,10 @@ targets:
       drift_dev:analyzer:
         enabled: true
         options: &options
-          generate_connect_constructor: true
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.39"
         generate_for:
           include: &modular
             - "lib/snippets/modular/**"

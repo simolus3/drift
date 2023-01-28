@@ -174,11 +174,16 @@ class _DriftBuildRun {
   /// are applied to this builder.
   Future<void> _warnAboutDeprecatedOptions() async {
     final flags = await buildStep.fetchResource(_flags);
-    if (!flags.didWarnAboutDeprecatedOptions &&
-        options.enabledDeprecatedOption) {
-      print('You have the eagerly_load_dart_ast option enabled. The option is '
-          'no longer necessary and will be removed in a future drift version. '
-          'Consider removing the option from your build.yaml.');
+    if (!flags.didWarnAboutDeprecatedOptions) {
+      if (options.generateConnectConstructor) {
+        log.warning(
+          'You enabled the `generate_connect_constructor` build option. This '
+          'option is no longer necessary in drift 2.5, as a '
+          '`DatabaseConnection` can now be passed to the default constructor '
+          'for generated databases. Consider removing this option.',
+        );
+      }
+
       flags.didWarnAboutDeprecatedOptions = true;
     }
   }

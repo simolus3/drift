@@ -35,7 +35,7 @@ void _defineTest(
     final isolate = useIsolate ? await _spawnIsolate() : null;
 
     final db = useIsolate
-        ? _SomeDb.connect(await isolate!.connect())
+        ? _SomeDb(await isolate!.connect())
         : _SomeDb(NativeDatabase.memory());
 
     addTearDown(() async {
@@ -91,8 +91,6 @@ class _SomeTable extends Table {
 @DriftDatabase(tables: [_SomeTable])
 class _SomeDb extends _$_SomeDb {
   _SomeDb(super.executor);
-
-  _SomeDb.connect(DatabaseConnection connection) : super.connect(connection);
 
   @override
   final schemaVersion = 1;

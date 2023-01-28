@@ -11,7 +11,7 @@ void main() {
   late CustomTablesDb db;
 
   setUp(() {
-    db = CustomTablesDb.connect(testInMemoryDatabase());
+    db = CustomTablesDb(testInMemoryDatabase());
   });
 
   tearDown(() => db.close());

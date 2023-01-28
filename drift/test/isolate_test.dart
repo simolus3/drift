@@ -76,7 +76,7 @@ void main() {
     final writer = await Isolate.spawn(_writeTodoEntryInBackground,
         _BackgroundEntryMessage(driftIsolate, receiveDone.sendPort));
 
-    final db = TodoDb.connect(await driftIsolate.connect());
+    final db = TodoDb(await driftIsolate.connect());
     final expectedEntry = const TypeMatcher<TodoEntry>()
         .having((e) => e.content, 'content', 'Hello from background');
 
@@ -98,7 +98,7 @@ void main() {
 
   test('errors propagate across isolates', () async {
     final isolate = await DriftIsolate.spawn(_backgroundConnection);
-    final db = TodoDb.connect(await isolate.connect());
+    final db = TodoDb(await isolate.connect());
 
     try {
       await db.customStatement('UPDATE non_existing_table SET foo = bar');
@@ -145,7 +145,7 @@ void main() {
     expect(done.first, completion(anything));
 
     final drift = await spawned.first as DriftIsolate;
-    final db = TodoDb.connect(await drift.connect(singleClientMode: true));
+    final db = TodoDb(await drift.connect(singleClientMode: true));
     await db.close();
   }, tags: 'background_isolate');
 
@@ -167,7 +167,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
   setUp(() async {
     isolate = await spawner();
 
-    database = TodoDb.connect(
+    database = TodoDb(
       DatabaseConnection.delayed(isolate.connect()),
     );
   });
@@ -355,7 +355,7 @@ DatabaseConnection _backgroundConnection() {
 
 Future<void> _writeTodoEntryInBackground(_BackgroundEntryMessage msg) async {
   final connection = await msg.isolate.connect();
-  final database = TodoDb.connect(connection);
+  final database = TodoDb(connection);
 
   await database
       .into(database.todosTable)

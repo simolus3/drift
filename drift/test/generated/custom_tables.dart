@@ -19,11 +19,6 @@ class CustomTablesDb extends _$CustomTablesDb {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 
-  CustomTablesDb.connect(DatabaseConnection connection)
-      : super.connect(connection) {
-    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-  }
-
   @override
   int get schemaVersion => 1;
 

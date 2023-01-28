@@ -34,7 +34,7 @@ void main() {
     final client = await connectToRemoteAndInitialize(
         controller.local.expectedToClose,
         singleClientMode: true);
-    final db = TodoDb.connect(client);
+    final db = TodoDb(client);
 
     await db.todosTable.select().get();
     await db.close();
@@ -61,7 +61,7 @@ void main() {
         singleClientMode: true,
       );
 
-      final db = TodoDb.connect(client);
+      final db = TodoDb(client);
       await db.todosTable.select().get();
       await db.close();
     },
@@ -125,7 +125,7 @@ void main() {
             .changeStream(_checkStreamOfSimple)
             .expectedToClose,
         serialize: true);
-    final db = TodoDb.connect(connection);
+    final db = TodoDb(connection);
 
     await db.customSelect('SELECT ?, ?, ?, ?', variables: [
       Variable.withBigInt(BigInt.one),
@@ -165,8 +165,7 @@ void main() {
     server.serve(controller.foreign);
     addTearDown(server.shutdown);
 
-    final db =
-        TodoDb.connect(await connectToRemoteAndInitialize(controller.local));
+    final db = TodoDb(await connectToRemoteAndInitialize(controller.local));
     addTearDown(db.close);
 
     await db.transaction(() async {

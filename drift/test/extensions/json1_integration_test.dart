@@ -10,7 +10,7 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   test('json1 integration test', () async {
-    final db = TodoDb.connect(testInMemoryDatabase());
+    final db = TodoDb(testInMemoryDatabase());
     const jsonObject = {
       'foo': 'bar',
       'array': [

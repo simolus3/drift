@@ -174,7 +174,6 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
 
 abstract class _$MyDatabase extends GeneratedDatabase {
   _$MyDatabase(QueryExecutor e) : super(e);
-  _$MyDatabase.connect(DatabaseConnection c) : super.connect(c);
   late final Entries entries = Entries(this);
   Selectable<Entrie> allEntries() {
     return customSelect('SELECT * FROM entries', variables: [], readsFrom: {

@@ -14,7 +14,7 @@ void main() {
     executor = MockExecutor();
     streamQueries = MockStreamQueries();
 
-    db = TodoDb.connect(createConnection(executor, streamQueries));
+    db = TodoDb(createConnection(executor, streamQueries));
   });
 
   test('runs generated statements', () async {

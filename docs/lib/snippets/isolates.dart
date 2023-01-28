@@ -17,10 +17,7 @@ part 'isolates.g.dart';
 @DriftDatabase(/*...*/)
 class TodoDb extends _$TodoDb {
   // Your existing constructor, whatever it may be...
-  TodoDb() : super(NativeDatabase.memory());
-
-  // this is the new constructor
-  TodoDb.connect(DatabaseConnection connection) : super.connect(connection);
+  TodoDb(QueryExecutor executor) : super(executor);
 
   @override
   int get schemaVersion => 1;
@@ -28,23 +25,16 @@ class TodoDb extends _$TodoDb {
 // #enddocregion database
 
 // #docregion isolate
-
-// This needs to be a top-level method because it's run on a background isolate
-DatabaseConnection _backgroundConnection() {
-  // Construct the database to use. This example uses a non-persistent in-memory
-  // database each time. You can use your existing NativeDatabase with a file as
-  // well, or a `LazyDatabase` if you need to construct it asynchronously. When
-  // using a Flutter plugin like `path_provider` to determine the path, also see
-  // the "Initialization on the main thread" section below!
-  final database = NativeDatabase.memory();
-  return DatabaseConnection(database);
-}
-
 void main() async {
   // create a drift executor in a new background isolate. If you want to start
   // the isolate yourself, you can also call DriftIsolate.inCurrent() from the
   // background isolate
-  final isolate = await DriftIsolate.spawn(_backgroundConnection);
+  final isolate = await DriftIsolate.spawn(() {
+    // This callback needs to return the database connection used by the drift
+    // isolate. This example uses a non-persistent in-memory database, but you
+    // can also use your existing NativeDatabase with a file as well.
+    return DatabaseConnection(NativeDatabase.memory());
+  });
 
   // we can now create a database connection that will use the isolate
   // internally. This is NOT what we returned from _backgroundConnection, drift
@@ -53,7 +43,7 @@ void main() async {
   // use `singleClientMode` to dispose the isolate after closing the connection.
   final connection = await isolate.connect(singleClientMode: true);
 
-  final db = TodoDb.connect(connection);
+  final db = TodoDb(connection);
 
   // you can now use your database exactly like you regularly would, it
   // transparently uses a background isolate internally
@@ -66,9 +56,11 @@ void main() async {
 
 void connectSynchronously() {
   // #docregion delayed
-  TodoDb.connect(
+  TodoDb(
     DatabaseConnection.delayed(Future.sync(() async {
-      final isolate = await DriftIsolate.spawn(_backgroundConnection);
+      final isolate = await DriftIsolate.spawn(() {
+        return DatabaseConnection(NativeDatabase.memory());
+      });
       return isolate.connect(singleClientMode: true);
     })),
   );

@@ -42,7 +42,7 @@ void main() {
       final isolate = await DriftIsolate.spawn(createConnection);
       addTearDown(isolate.shutdownAll);
 
-      final db = EmptyDb.connect(await isolate.connect());
+      final db = EmptyDb(await isolate.connect());
       await runTest(db);
     });
   }, skip: 'todo: Cancellations are currently broken on Dart 2.15');

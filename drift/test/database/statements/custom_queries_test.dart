@@ -17,7 +17,7 @@ void main() {
     streamQueries = MockStreamQueries();
 
     final connection = createConnection(executor, streamQueries);
-    db = TodoDb.connect(connection);
+    db = TodoDb(connection);
   });
 
   group('compiled custom queries', () {

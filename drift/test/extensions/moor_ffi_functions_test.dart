@@ -32,7 +32,7 @@ void main() {
   });
 
   test('containsCase integration test', () async {
-    final db = TodoDb.connect(testInMemoryDatabase());
+    final db = TodoDb(testInMemoryDatabase());
     // insert exactly one row so that we can evaluate expressions from Dart
     await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
 
@@ -59,7 +59,7 @@ void main() {
     late TodoDb db;
 
     setUp(() async {
-      db = TodoDb.connect(testInMemoryDatabase());
+      db = TodoDb(testInMemoryDatabase());
       // insert exactly one row so that we can evaluate expressions from Dart
       await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
     });

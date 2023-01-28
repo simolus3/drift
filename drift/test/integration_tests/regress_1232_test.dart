@@ -7,7 +7,7 @@ import '../test_utils/test_utils.dart';
 void main() {
   test('regression test for #1232', () async {
     // replace with generated table
-    final db = TodoDb.connect(testInMemoryDatabase());
+    final db = TodoDb(testInMemoryDatabase());
     final someTables = {db.todosTable};
 
     await db.customStatement('create table tbl (x int)');

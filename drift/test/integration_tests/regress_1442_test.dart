@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import '../test_utils/test_utils.dart';
 
 class _TestDb extends GeneratedDatabase {
-  _TestDb() : super.connect(testInMemoryDatabase());
+  _TestDb() : super(testInMemoryDatabase());
   @override
   final List<TableInfo> allTables = const [];
   @override

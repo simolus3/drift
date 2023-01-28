@@ -3,6 +3,8 @@
 - Add `isExp`, `isValue`, `isNotExp` and `isNotValue` methods to `Expression`
   to generate the `IS` operator in SQL.
 - Add `all()` extension on tables and views to quickly query all rows.
+- The `DatabaseConnection` class now implements `QueryExecutor`, meaning that
+  you no longer need a special `.connect()` constructor to use it.
 
 ## 2.4.2
 

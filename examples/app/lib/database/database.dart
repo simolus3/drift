@@ -10,10 +10,9 @@ part 'database.g.dart';
 
 @DriftDatabase(tables: [TodoEntries, Categories], include: {'sql.drift'})
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super.connect(impl.connect());
+  AppDatabase() : super(impl.connect());
 
-  AppDatabase.forTesting(DatabaseConnection connection)
-      : super.connect(connection);
+  AppDatabase.forTesting(DatabaseConnection connection) : super(connection);
 
   @override
   int get schemaVersion => 3;
