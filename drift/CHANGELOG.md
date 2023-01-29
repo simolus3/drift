@@ -1,4 +1,4 @@
-## 2.5.0-dev
+## 2.5.0
 
 - Add `isExp`, `isValue`, `isNotExp` and `isNotValue` methods to `Expression`
   to generate the `IS` operator in SQL.

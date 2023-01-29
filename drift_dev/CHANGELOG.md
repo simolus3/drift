@@ -1,5 +1,5 @@
 
-## 2.5.0-dev
+## 2.5.0
 
 - Support `MAPPED BY` for individual columns in queries or in views defined with SQL.
 - Consistently interpret `CAST (x AS DATETIME)` and `CAST(x AS TEXT)` in drift files.
