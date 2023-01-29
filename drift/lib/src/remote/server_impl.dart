@@ -14,7 +14,7 @@ import 'protocol.dart';
 @internal
 class ServerImplementation implements DriftServer {
   /// The Underlying database connection that will be used.
-  final DatabaseConnection connection;
+  final QueryExecutor connection;
 
   /// Whether clients are allowed to shutdown this server for all.
   final bool allowRemoteShutdown;
@@ -71,7 +71,7 @@ class ServerImplementation implements DriftServer {
 
     final comm = DriftCommunication(channel, serialize: serialize);
     comm.setRequestHandler((request) => _handleRequest(comm, request));
-    comm.notify(ServerInfo(connection.executor.dialect));
+    comm.notify(ServerInfo(connection.dialect));
 
     _activeChannels.add(comm);
     comm.closed.then((_) => _activeChannels.remove(comm));
@@ -81,8 +81,7 @@ class ServerImplementation implements DriftServer {
   Future<void> shutdown() {
     if (!_isShuttingDown) {
       _isShuttingDown = true;
-      _done.complete(
-          closeExecutorWhenShutdown ? connection.executor.close() : null);
+      _done.complete(closeExecutorWhenShutdown ? connection.close() : null);
     }
 
     return done;
@@ -168,7 +167,7 @@ class ServerImplementation implements DriftServer {
     await _waitForTurn(transactionId);
     return transactionId != null
         ? _managedExecutors[transactionId]!
-        : connection.executor;
+        : connection;
   }
 
   Future<int> _spawnTransaction(DriftCommunication comm, int? executor) async {

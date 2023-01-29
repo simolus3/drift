@@ -1,81 +1,106 @@
 ---
 data:
   title: Isolates
-  description: Using drift databases on a background isolate
+  description: Acessing drift databases on multiple isolates.
 template: layouts/docs/single
 ---
-
-Drift can transparently run your queries in a background isolate to keep the foreground
-free for other tasks. This is especially helpful for Flutter, where using a background isolate
-helps reduce skipped frames.
-
-With Drift's isolate setup, you only need to change how you _open_ your database. Internally,
-Drift will apply its magic and send all database operations to an internal server running on
-a background isolate. Zero code changes are needed for queries!
-
-{% block "blocks/alert" title="Drift isolate - key points" color="success" %}
-
-- Drift isolates have two primary use cases: To reduce the workload on your main
-  isolate by running queries in the background; or to seamlessly share a stateful
-  drift database between two isolates.
-- You can see [this example](https://github.com/simolus3/drift/blob/develop/examples/app/lib/database/connection/native.dart)
-  (and the rest of that small project) for a working setup using drift isolates.
-- Internally, a drift isolate is an in-process database server receiving queries to
-  execute through [`ReceivePort`s](https://api.dart.dev/stable/2.18.2/dart-isolate/ReceivePort-class.html).
-  Drift hides the complexity of managing and talking to this server from you.
-- You can use isolates and drift together without using a `DriftIsolate`! Are
-  `DriftIsolate` just lets two isolates talk to the exact same drift database
-  connection. If your isolates can have separate database connections, simply open
-  your database on each isolate independently. There's no need for a `DriftIsolate`
-  in that case.
-- Drift's isolate implementation is generic enough to work over any reliable
-  communication channel: You can also share a drift database between web workers
-  or even over a TCP socket! For details, see the platform-independent [remote](https://pub.dev/documentation/drift/latest/drift.remote/drift.remote-library.html)
-  library.
-{% endblock %}
-
 {% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
 
-## Simple setup
+As sqlite3 is a synchronous C library, accessing the database from the main isolate
+can cause blocking IO operations that lead to reduced responsiveness of your
+application.
+To resolve this problem, drift can spawn a long-running isolate to run SQL statements.
+When following the recommended [getting started guide]({{ '../Getting started/index.md' | pageUrl }})
+and using `NativeDatabase.createInBackground`, you automatically benefit from an isolate
+drift manages for you without needing additional setup.
+This page describes when advanced isolate setups are necessary, and how to approach them.
 
-Starting from Drift version 2.3.0, using drift isolates has been greatly
-simplified. Simply use `NativeDatabase.createInBackground` as a drop-in
-replacement for the `NativeDatabase` you've been using before:
+{% block "blocks/alert" title="When to use drift isolates" color="success" %}
+- Drift already uses isolates with the default setups to avoid blocking the main
+  isolate on synchronous IO.
+- You can open two _independent_ drift databases on different isolates without
+  any special setup or drift APIs too. These can even point to the same database
+  file, but then stream queries won't synchronize between those independent
+  instances.
+- If you need to share a single drift database on multiple isolates, some setup
+  is necessary. This is what drift's isolate APIs are for!
+{% endblock %}
 
-{% include "blocks/snippet" snippets = snippets name = 'simple' %}
+## Introduction
 
-In the common case where you only need a isolate for performance reasons, this
-is everything you need to do to run queries in a background isolate.
-The rest of this article explains a more complex setup giving you full control
-over the internal components making up a drift isolate. This is useful for
-advanced use cases, including:
+While the default setup is probably suitable for most apps, some scenarios require
+complete additional over the way drift manages isolates.
+In particular, some of these
 
-- Having two databases on different isolates which need to stay in sync.
-- Sharing a drift database connection across different Dart or Flutter engines,
-  like for a background service on Android.
+- You want to use a drift isolate in `compute()`, `Isolate.run` or generally in other isolates.
+- You need to access a drift database in a [background worker](https://pub.dev/packages/workmanager).
+- You want to  control the way drift spawns isolates instead of using the default.
 
-In most other cases, simply using `NativeDatabase.createInbackground` works
-great! It implements the same approach shared in this article, except that all
-the complicated bits are hidden behind a simple method.
+When you try to send a drift database instance across isolates, you will run into
+an exception about sending an invalid object:
 
-## Using drift in a background isolate {#using-moor-in-a-background-isolate}
+{% include "blocks/snippet" snippets = snippets name = 'invalid' %}
 
-The rest of this article assumes that your database class can be constructed
-with a `QueryExecutor`, e.g. because it defines a constructor like this:
+Unfortunately, there is no magic change drift could implement to make sending
+databases over isolates feasible: There's simply too much mutable state needed
+to implement features like stream queries or high-level transaction APIs.
+However, with a little bit of additional setup, you can use drift APIs to obtain
+two database instances that are synchronized by an isolate channel drift manages
+for you. Writes on one database are readable on the other isolate and even update
+stream queries. So essentially, you get one logical database instance shared
+between isolates.
 
-{% include "blocks/snippet" snippets = snippets name = 'database' %}
+## Simple sharing
 
-Of course, you can also move the approaches described here into the `super()`
-constructor invocation if you want to have a zero-argument constructor that
-starts an isolate by default.
+Starting from drift 2.5, running a short-lived computation workload on a separate
+isolate is easily possible with `computeWithDatabase`.
 
-With the database class ready, let's open it on a background isolate
+{% include "blocks/snippet" snippets = snippets name = 'compute' %}
+
+As the example shows, `computeWithDatabase` is an API useful to run heavy tasks,
+like inserting a large amount of batch data, into a database.
+
+Internally, `computeWithDatabase` does the following:
+
+1. It sets up a pair of `SendPort` / `ReceivePort`s over which database calls
+   are relayed.
+2. It spawns a new isolate with `Isolate.run` and creates a raw database
+   connection based on those ports.
+3. The new isolate invokes the `connect` callback to create a second instance
+   of your database class that talks to the main instance over isolate ports.
+4. The `computation` callback is invoked.
+5. Transparently, drift also takes care of winding down the connection afterwards.
+
+If you don't want drift to spawn the isolate for you, for instance because you want
+to use `compute` instead of `Isolate.run`, you can also do that manually with the
+`serializableConnection()` API:
+
+{% include "blocks/snippet" snippets = snippets name = 'custom-compute' %}
+
+## Manually managing drift isolates
+
+Instead of using functions like `NativeDatabase.createInBackground` or
+`computeWithDatabase`, you can also create database connections that can be
+shared across isolates manually.
+
+Drift exposes the `DriftIsolate` class, which is a reference to an internal
+database server you can access on other isolates.
+Creating a `DriftIsolate` server is possible with `DriftIsolate.spawn()`:
+
+{% include "blocks/snippet" snippets = snippets name = 'driftisolate-spawn' %}
+
+If you want to spawn the isolate yourself, that is possible too:
+
+{% include "blocks/snippet" snippets = snippets name = 'custom-spawn' %}
+
+After creating a `DriftIsolate` server, you can use `connect()` to connect
+to it from different isolates:
 
 {% include "blocks/snippet" snippets = snippets name = 'isolate' %}
 
 If you need to construct the database outside of an `async` context, you can use the
 `DatabaseConnection.delayed` constructor. In the example above, you
-could synchronously obtain a `TodoDb` by using:
+could synchronously obtain a `MyDatabase` instance by using:
 
 {% include "blocks/snippet" snippets = snippets name = 'delayed' %}
 
@@ -83,7 +108,7 @@ This can be helpful when using drift in dependency injection frameworks, since y
 to create the database instance synchronously.
 Internally, drift will connect when the first query is sent to the database.
 
-### Initialization on the main thread
+### Workaround for old Flutter versions
 
 Before Flutter 3.7, platforms channels weren't [available on background isolates](https://github.com/flutter/flutter/issues/13937).
 So, if functions like `getApplicationDocumentsDirectory` from `path_provider`
@@ -136,34 +161,21 @@ __One executor isolate, one foreground isolate__: This is the most common usage 
 `DriftIsolate.spawn` from the `main` method in your Flutter or Dart app. Similar to the example above,
 you could then use drift from the main isolate by connecting with `DriftIsolate.connect` and passing that
 connection to a generated database class.
+In this case, using the `DriftIsolate` APIs may be an overkill - `NativeDatabase.createInBackground` will
+do the exact same thing for you.
 
-__One executor isolate, multiple client isolates__: The `DriftIsolate` can be sent across multiple
+__One executor isolate, multiple client isolates__: The `DriftIsolate` handle can be sent across multiple
 isolates, each of which can use `DriftIsolate.connect` on their own. This is useful to implement
 a setup where you have three or more threads:
 
 - The drift executor isolate
 - A foreground isolate, probably for Flutter
-- Another background isolate, which could be used for networking.
+- Another background isolate, which could be used for networking or other long-running expensive tasks.
 
 You can then read data from the foreground isolate or start query streams, similar to the example
 above. The background isolate would _also_ call `DriftIsolate.connect` and create its own instance
 of the generated database class. Writes to one database will be visible to the other isolate and
 also update query streams.
-
-To safely send a `DriftIsolate` instance across a `SendPort`, it's recommended to instead send the
-underlying `SendPort` used internally by `DriftIsolate`:
-
-```dart
-// Don't do this, it doesn't work in all circumstances
-void shareDriftIsolate(DriftIsolate isolate, SendPort sendPort) {
-  sendPort.send(isolate);
-}
-
-// Instead, send the underlying SendPort:
-void shareDriftIsolate(DriftIsolate isolate, SendPort sendPort) {
-  sendPort.send(isolate.connectPort);
-}
-```
 
 The receiving end can reconstruct a `DriftIsolate` from a `SendPort` by using the
 `DriftIsolate.fromConnectPort` constructor. That `DriftIsolate` behaves exactly like the original

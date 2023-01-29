@@ -13,54 +13,88 @@ import 'package:path_provider/path_provider.dart';
 
 part 'isolates.g.dart';
 
-// #docregion database
-@DriftDatabase(/*...*/)
-class TodoDb extends _$TodoDb {
-  // Your existing constructor, whatever it may be...
-  TodoDb(QueryExecutor executor) : super(executor);
+class SomeTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get content => text()();
+}
+
+// #docregion isolate
+
+@DriftDatabase(tables: [SomeTable] /* ... */)
+class MyDatabase extends _$MyDatabase {
+  MyDatabase(QueryExecutor executor) : super(executor);
 
   @override
   int get schemaVersion => 1;
 }
-// #enddocregion database
+
+// #enddocregion isolate
+
+// #docregion driftisolate-spawn
+Future<DriftIsolate> createIsolateWithSpawn() async {
+  return await DriftIsolate.spawn(() {
+    // The callback to DriftIsolate.spawn() must return the database connection
+    // to use.
+    return LazyDatabase(() async {
+      // Note that this runs on a background isolate, which only started to
+      // support platform channels in Flutter 3.7. For earlier Flutter versions,
+      // a workaround is described later in this article.
+      final dbFolder = await getApplicationDocumentsDirectory();
+      final path = p.join(dbFolder.path, 'app.db');
+
+      return NativeDatabase(File(path));
+    });
+  });
+}
+// #enddocregion driftisolate-spawn
+
+// #docregion custom-spawn
+Future<DriftIsolate> createIsolateManually() async {
+  final receiveIsolate = ReceivePort('receive drift isolate handle');
+  await Isolate.spawn<SendPort>((message) async {
+    final server = DriftIsolate.inCurrent(() {
+      // Again, this needs to return the LazyDatabase or the connection to use.
+      // #enddocregion custom-spawn
+      throw 'stub';
+      // #docregion custom-spawn
+    });
+
+    // Now, inform the original isolate about the created server:
+    message.send(server);
+  }, receiveIsolate.sendPort);
+
+  final server = await receiveIsolate.first as DriftIsolate;
+  receiveIsolate.close();
+  return server;
+}
+// #enddocregion custom-spawn
+
+Future<DriftIsolate> createIsolate() => createIsolateWithSpawn();
 
 // #docregion isolate
 void main() async {
-  // create a drift executor in a new background isolate. If you want to start
-  // the isolate yourself, you can also call DriftIsolate.inCurrent() from the
-  // background isolate
-  final isolate = await DriftIsolate.spawn(() {
-    // This callback needs to return the database connection used by the drift
-    // isolate. This example uses a non-persistent in-memory database, but you
-    // can also use your existing NativeDatabase with a file as well.
-    return DatabaseConnection(NativeDatabase.memory());
-  });
+  final isolate = await createIsolate();
 
-  // we can now create a database connection that will use the isolate
-  // internally. This is NOT what we returned from _backgroundConnection, drift
-  // uses an internal proxy class for isolate communication.
+  // After creating the isolate, calling connect() will return a connection
+  // which can be used to create a database.
   // As long as the isolate is used by only one database (it is here), we can
   // use `singleClientMode` to dispose the isolate after closing the connection.
-  final connection = await isolate.connect(singleClientMode: true);
-
-  final db = TodoDb(connection);
+  final database = MyDatabase(await isolate.connect(singleClientMode: true));
 
   // you can now use your database exactly like you regularly would, it
-  // transparently uses a background isolate internally
+  // transparently uses a background isolate to execute queries.
   // #enddocregion isolate
   // Just using the db to avoid an analyzer error, this isn't part of the docs.
-  db.customSelect('SELECT 1');
+  database.customSelect('SELECT 1');
   // #docregion isolate
 }
 // #enddocregion isolate
 
 void connectSynchronously() {
   // #docregion delayed
-  TodoDb(
+  MyDatabase(
     DatabaseConnection.delayed(Future.sync(() async {
-      final isolate = await DriftIsolate.spawn(() {
-        return DatabaseConnection(NativeDatabase.memory());
-      });
+      final isolate = await createIsolate();
       return isolate.connect(singleClientMode: true);
     })),
   );
@@ -132,3 +166,62 @@ QueryExecutor createSimple() {
   });
 }
 // #enddocregion simple
+
+// #docregion invalid
+Future<void> invalidIsolateUsage() async {
+  final database = MyDatabase(NativeDatabase.memory());
+
+  // Unfortunately, this doesn't work: Drift databases contain references to
+  // async primitives like streams and futures that can't be serialized across
+  // isolates like this.
+  await Isolate.run(() async {
+    await database.batch((batch) {
+      // ...
+    });
+  });
+}
+// #enddocregion invalid
+
+Future<List<SomeTableData>> _complexAndExpensiveOperationToFetchRows() async {
+  throw 'stub';
+}
+
+// #docregion compute
+Future<void> insertBulkData(MyDatabase database) async {
+  // computeWithDatabase is an extension provided by package:drift/isolate.dart
+  await database.computeWithDatabase(
+    computation: (database) async {
+      // Expensive computation that runs on its own isolate but talks to the
+      // main database.
+      final rows = await _complexAndExpensiveOperationToFetchRows();
+      await database.batch((batch) {
+        batch.insertAll(database.someTable, rows);
+      });
+    },
+    connect: MyDatabase.new,
+  );
+}
+// #enddocregion compute
+
+// #docregion custom-compute
+Future<void> customIsolateUsage(MyDatabase database) async {
+  final connection = await database.serializableConnection();
+
+  await Isolate.run(
+    () async {
+      // We can't share the [database] object across isolates, but the connection
+      // is fine!
+      final databaseForIsolate = MyDatabase(await connection.connect());
+
+      try {
+        await databaseForIsolate.batch((batch) {
+          // (...)
+        });
+      } finally {
+        databaseForIsolate.close();
+      }
+    },
+    debugName: 'My custom database task',
+  );
+}
+// #enddocregion custom-compute

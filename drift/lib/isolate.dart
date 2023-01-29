@@ -17,7 +17,7 @@ import 'src/remote/protocol.dart';
 export 'remote.dart' show DriftRemoteException;
 
 /// Signature of a function that opens a database connection.
-typedef DatabaseOpener = DatabaseConnection Function();
+typedef DatabaseOpener = QueryExecutor Function();
 
 /// Defines utilities to run drift in a background isolate. In the operation
 /// mode created by these utilities, there's a single background isolate doing
