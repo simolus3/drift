@@ -201,4 +201,32 @@ CREATE TABLE users (
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
     expect(db.availableElements, hasLength(1));
   });
+
+  test('supports multiple references between same entities', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class OtherTable extends Table {
+  TextColumn get id => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+class ThisTable extends Table {
+  TextColumn get field1 => text().references(OtherTable, #id)();
+  TextColumn get field2 => text().references(OtherTable, #id)();
+  TextColumn get field3 => text().references(OtherTable, #id)();
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/a.dart');
+    state.expectNoErrors();
+
+    final thisTable =
+        file.analysis[file.id('this_table')]?.result as DriftTable;
+    expect(
+        thisTable.references, [file.analysis[file.id('other_table')]?.result]);
+  });
 }
