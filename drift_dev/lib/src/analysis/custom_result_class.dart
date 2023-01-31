@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'results/results.dart';
 
 /// Transforms queries given in [inputs] so that their result sets respect
@@ -66,36 +68,69 @@ Map<SqlSelectQuery, SqlSelectQuery> transformCustomResultClasses(
     }
 
     final referenceResult = queries.first.resultSet;
-    final dartNames = {
-      for (final column in referenceResult.columns)
-        column: referenceResult.dartNameFor(column),
-    };
 
-    var isFirst = true;
     for (final query in queries) {
-      final newResultSet = InferredResultSet(
-        null,
-        query.resultSet.columns,
-        resultClassName: resultSetName,
-        // Only generate a result class for the first query in the group
-        dontGenerateResultClass: !isFirst,
-      );
-
-      // Make sure compatible columns in the two result sets have the same
-      // Dart name.
-      newResultSet.forceDartNames({
-        for (final entry in dartNames.entries)
-          newResultSet.columns.singleWhere((e) => e.isCompatibleTo(entry.key)):
-              entry.value,
-      });
-
+      final newResultSet =
+          _makeResultSetsCompatible(query.resultSet, referenceResult);
       final newQuery = query.replaceResultSet(newResultSet);
       replacements[query] = newQuery;
-      isFirst = false;
     }
   }
 
   return replacements;
+}
+
+InferredResultSet _makeResultSetsCompatible(
+    InferredResultSet target, InferredResultSet reference) {
+  var columns = target.columns;
+  Map<ResultColumn, String>? newNames;
+
+  if (target != reference) {
+    // Make sure the result sets agree on the Dart column names to use.
+    final remainingColumns = LinkedHashSet.of(target.columns);
+    newNames = <ResultColumn, String>{};
+    columns = [];
+
+    for (final column in reference.columns) {
+      var columnFromThisResultSet =
+          remainingColumns.firstWhere((e) => e.isCompatibleTo(column));
+      remainingColumns.remove(columnFromThisResultSet);
+
+      newNames[columnFromThisResultSet] = reference.dartNameFor(column);
+
+      // For list columns, we need to apply the same unification to the
+      // result set of this column as well.
+      if (columnFromThisResultSet is NestedResultQuery) {
+        final nested = columnFromThisResultSet.query.resultSet;
+        if (nested.needsOwnClass) {
+          final transformed = _makeResultSetsCompatible(
+            nested,
+            (column as NestedResultQuery).query.resultSet,
+          );
+
+          columnFromThisResultSet = NestedResultQuery(
+            from: columnFromThisResultSet.from,
+            query: columnFromThisResultSet.query.replaceResultSet(transformed),
+          );
+        }
+      }
+
+      columns.add(columnFromThisResultSet);
+    }
+  }
+
+  final newResultSet = InferredResultSet(
+    null,
+    columns,
+    resultClassName: reference.resultClassName,
+    // Only generate a result class for the first query in the group
+    dontGenerateResultClass: target != reference,
+  );
+  if (newNames != null) {
+    newResultSet.forceDartNames(newNames);
+  }
+
+  return newResultSet;
 }
 
 bool _resultSetsCompatible(Iterable<InferredResultSet> resultSets) {

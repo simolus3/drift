@@ -115,4 +115,36 @@ getTitlesWithGroupOther AS GroupWithTitles: SELECT group_name, LIST(SELECT title
       )),
     }, results.dartOutputs, results);
   });
+
+  test('supports query with two list columns', () async {
+    var queries = await analyzeQueries('''
+CREATE TABLE books (
+  id INT NOT NULL PRIMARY KEY,
+  title TEXT NULL,
+  group_name TEXT NULL
+);
+
+a AS TitleList: SELECT LIST(SELECT title FROM books), LIST(SELECT id, title FROM books) FROM books;
+b AS TitleList: SELECT LIST(SELECT title FROM books), LIST(SELECT id, title FROM books) FROM books;
+    ''');
+
+    final errors = <String>[];
+    queries = transformCustomResultClasses(queries, errors.add).values;
+    expect(errors, isEmpty);
+
+    final a = queries.first;
+    final b = queries.last;
+
+    expect(a.name, 'a');
+    expect(b.name, 'b');
+    expect(a.resultClassName, 'TitleList');
+    expect(b.resultClassName, 'TitleList');
+    expect(a.resultSet?.dontGenerateResultClass, isFalse);
+    expect(b.resultSet?.dontGenerateResultClass, isTrue);
+
+    final nestedA = a.resultSet?.nestedResults.last as NestedResultQuery;
+    final nestedB = b.resultSet?.nestedResults.last as NestedResultQuery;
+    expect(nestedA.query.resultSet.needsOwnClass, isTrue);
+    expect(nestedB.query.resultSet.needsOwnClass, isFalse);
+  });
 }
