@@ -254,8 +254,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     }));
   }
 
-  @alwaysThrows
-  void _warnAboutDuplicate(
+  Never _warnAboutDuplicate(
       dynamic cause, StackTrace trace, ResultSetImplementation table) {
     throw DriftWrappedException(
       message: 'This query contained the table ${table.entityName} more than '
