@@ -251,13 +251,16 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           element.lookUpInheritedConcreteGetter(name, element.library);
       return getter!.variable;
     });
-
-    final results = await Future.wait(fields.map((field) async {
+    final results = <PendingColumnInformation>[];
+    for (final field in fields) {
       final node = await resolver.driver.backend
           .loadElementDeclaration(field.getter!) as MethodDeclaration;
+      final column = await _parseColumn(node, field.getter!);
 
-      return await _parseColumn(node, field.getter!);
-    }));
+      if (column != null) {
+        results.add(column);
+      }
+    }
 
     return results.whereType();
   }

@@ -229,4 +229,45 @@ class ThisTable extends Table {
     expect(
         thisTable.references, [file.analysis[file.id('other_table')]?.result]);
   });
+
+  test('supports references across files', () async {
+    final state = TestBackend.inTest({
+      'a|lib/this_table.dart': '''
+import 'package:drift/drift.dart';
+
+import 'other_table.dart';
+
+class ThisTable extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get field1 => text().references(OtherTable, #id)();
+  TextColumn get field2 => text().references(OtherTable, #id)();
+  TextColumn get field3 => text().references(OtherTable, #id)();
+
+  TextColumn get field4 => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+''',
+      'a|lib/other_table.dart': '''
+import 'package:drift/drift.dart';
+
+class OtherTable extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get field5 => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/this_table.dart');
+    state.expectNoErrors();
+
+    final thisTable = file.analyzedElements.single;
+    expect(thisTable.references, hasLength(1));
+  });
 }
