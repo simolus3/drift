@@ -1,3 +1,8 @@
+## 2.5.1
+
+- Fix an error resolving multiple table references across different files.
+- Fix crash when giving a query with two identical columns a custom result class name.
+
 ## 2.5.0+1
 
 - Support `MAPPED BY` for individual columns in queries or in views defined with SQL.
