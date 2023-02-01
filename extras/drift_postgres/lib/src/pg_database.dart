@@ -1,13 +1,28 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:drift/backends.dart';
-import 'package:postgres/postgres.dart';
+import 'package:postgres/postgres_v3_experimental.dart';
 
 /// A drift database implementation that talks to a postgres database.
 class PgDatabase extends DelegatedDatabase {
+  PgDatabase({
+    required PgEndpoint endpoint,
+    PgSessionSettings? sessionSettings,
+    bool logStatements = false,
+  }) : super(
+          _PgDelegate(
+            () => PgConnection.open(endpoint, sessionSettings: sessionSettings),
+            true,
+          ),
+          isSequential: true,
+          logStatements: logStatements,
+        );
+
   /// Creates a drift database implementation from a postgres database
   /// [connection].
-  PgDatabase(PostgreSQLConnection connection, {bool logStatements = false})
-      : super(_PgDelegate(connection, connection),
+  PgDatabase.opened(PgSession connection, {bool logStatements = false})
+      : super(_PgDelegate(() => connection, false),
             isSequential: true, logStatements: logStatements);
 
   @override
@@ -15,67 +30,60 @@ class PgDatabase extends DelegatedDatabase {
 }
 
 class _PgDelegate extends DatabaseDelegate {
-  final PostgreSQLConnection _db;
-  final PostgreSQLExecutionContext _ec;
-
-  _PgDelegate(this._db, this._ec) : closeUnderlyingWhenClosed = false;
-
-  bool _isOpen = false;
+  _PgDelegate(this._open, this.closeUnderlyingWhenClosed);
 
   final bool closeUnderlyingWhenClosed;
+  final FutureOr<PgSession> Function() _open;
+
+  PgSession? _openedSession;
 
   @override
-  TransactionDelegate get transactionDelegate => _PgTransactionDelegate(_db);
+  TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
   @override
   late DbVersionDelegate versionDelegate;
 
   @override
-  Future<bool> get isOpen => Future.value(_isOpen);
+  Future<bool> get isOpen => Future.value(_openedSession != null);
 
   @override
   Future<void> open(QueryExecutorUser user) async {
-    final pgVersionDelegate = _PgVersionDelegate(_db);
+    final session = await _open();
+    final pgVersionDelegate = _PgVersionDelegate(session);
 
-    await _db.open();
     await pgVersionDelegate.init();
 
+    _openedSession = session;
     versionDelegate = pgVersionDelegate;
-    _isOpen = true;
-  }
-
-  Future _ensureOpen() async {
-    if (_db.isClosed) {
-      await _db.open();
-    }
   }
 
   @override
   Future<void> runBatched(BatchedStatements statements) async {
-    await _ensureOpen();
+    final session = _openedSession!;
+    final prepared = <PgStatement>[];
 
-    for (final row in statements.arguments) {
-      final stmt = statements.statements[row.statementIndex];
-      final args = row.arguments;
+    try {
+      for (final statement in statements.statements) {
+        prepared.add(await session.prepare(PgSql(statement)));
+      }
 
-      await _ec.execute(stmt,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
+      for (final row in statements.arguments) {
+        final stmt = prepared[row.statementIndex];
+
+        await stmt.run(row.arguments);
+      }
+    } finally {
+      for (final stmt in prepared) {
+        await stmt.dispose();
+      }
     }
-
-    return Future.value();
   }
 
   Future<int> _runWithArgs(String statement, List<Object?> args) async {
-    await _ensureOpen();
+    final session = _openedSession!;
 
-    if (args.isEmpty) {
-      return _ec.execute(statement);
-    } else {
-      return _ec.execute(statement,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
-    }
+    final result = await session.execute(PgSql(statement), parameters: args);
+    return result.affectedRows;
   }
 
   @override
@@ -85,15 +93,8 @@ class _PgDelegate extends DatabaseDelegate {
 
   @override
   Future<int> runInsert(String statement, List<Object?> args) async {
-    await _ensureOpen();
-    PostgreSQLResult result;
-    if (args.isEmpty) {
-      result = await _ec.query(statement);
-    } else {
-      result = await _ec.query(statement,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
-    }
+    final session = _openedSession!;
+    final result = await session.execute(PgSql(statement), parameters: args);
     return result.firstOrNull?[0] as int? ?? 0;
   }
 
@@ -104,19 +105,18 @@ class _PgDelegate extends DatabaseDelegate {
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
-    await _ensureOpen();
-    final result = await _ec.query(statement,
-        substitutionValues: args.asMap().map((key, value) =>
-            MapEntry((key + 1).toString(), _convertValue(value))));
+    final session = _openedSession!;
+    final result = await session.execute(PgSql(statement), parameters: args);
 
-    return Future.value(QueryResult.fromRows(
-        result.map((e) => e.toColumnMap()).toList(growable: false)));
+    return QueryResult([
+      for (final pgColumn in result.schema.columns) pgColumn.columnName ?? '',
+    ], result);
   }
 
   @override
   Future<void> close() async {
     if (closeUnderlyingWhenClosed) {
-      await _db.close();
+      await _openedSession?.close();
     }
   }
 
@@ -129,42 +129,36 @@ class _PgDelegate extends DatabaseDelegate {
 }
 
 class _PgVersionDelegate extends DynamicVersionDelegate {
-  final PostgreSQLConnection database;
+  final PgSession database;
 
   _PgVersionDelegate(this.database);
 
   @override
   Future<int> get schemaVersion async {
-    final result = await database.query('SELECT version FROM __schema');
+    final result =
+        await database.execute(PgSql('SELECT version FROM __schema'));
     return result[0][0] as int;
   }
 
   Future init() async {
-    await database.query('CREATE TABLE IF NOT EXISTS __schema ('
-        'version integer NOT NULL DEFAULT 0)');
-    final count = await database.query('SELECT COUNT(*) FROM __schema');
+    await database.execute(PgSql('CREATE TABLE IF NOT EXISTS __schema ('
+        'version integer NOT NULL DEFAULT 0)'));
+
+    final count =
+        await database.execute(PgSql('SELECT COUNT(*) FROM __schema'));
     if (count[0][0] as int == 0) {
-      await database.query('INSERT INTO __schema (version) VALUES (0)');
+      await database
+          .execute(PgSql('INSERT INTO __schema (version) VALUES (0)'));
     }
   }
 
   @override
   Future<void> setSchemaVersion(int version) async {
-    await database.query('UPDATE __schema SET version = @1',
-        substitutionValues: {'1': version});
-  }
-}
-
-class _PgTransactionDelegate extends SupportedTransactionDelegate {
-  final PostgreSQLConnection _db;
-
-  const _PgTransactionDelegate(this._db);
-
-  @override
-  bool get managesLockInternally => false;
-
-  @override
-  Future startTransaction(Future Function(QueryDelegate) run) async {
-    await _db.transaction((connection) => run(_PgDelegate(_db, connection)));
+    await database.execute(
+      PgSql(r'UPDATE __schema SET version = $1', types: [PgDataType.integer]),
+      parameters: [
+        PgTypedParameter(PgDataType.integer, version),
+      ],
+    );
   }
 }
