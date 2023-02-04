@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:drift/drift.dart';
 
@@ -408,23 +409,31 @@ class DelegatedDatabase extends _BaseExecutor {
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
+    final randomId = _getRandomNumber();
+    print("Opening - $randomId - lock requested");
     return _openingLock.synchronized(() async {
-      if (_closed) {
-        return Future.error(StateError(
-            "Can't re-open a database after closing it. Please create a new "
-            'database connection and open that instead.'));
-      }
+      print("Opening - $randomId - lock obtained");
 
-      final alreadyOpen = await delegate.isOpen;
-      if (alreadyOpen) {
+      try {
+        if (_closed) {
+          return Future.error(StateError(
+              "Can't re-open a database after closing it. Please create a new "
+              'database connection and open that instead.'));
+        }
+
+        final alreadyOpen = await delegate.isOpen;
+        if (alreadyOpen) {
+          _ensureOpenCalled = true;
+          return true;
+        }
+
+        await delegate.open(user);
         _ensureOpenCalled = true;
+        await _runMigrations(user);
         return true;
+      } finally {
+        print("Opening - $randomId - will release lock");
       }
-
-      await delegate.open(user);
-      _ensureOpenCalled = true;
-      await _runMigrations(user);
-      return true;
     });
   }
 
@@ -481,20 +490,33 @@ class DelegatedDatabase extends _BaseExecutor {
 
   @override
   Future<void> close() {
+    final randomId = _getRandomNumber();
+    print("Closing - $randomId - lock requested");
     return _openingLock.synchronized(() {
-      if (_ensureOpenCalled && !_closed) {
-        _closed = true;
+      print("Closing - $randomId - lock obtained");
+      try {
+        if (_ensureOpenCalled && !_closed) {
+          _closed = true;
 
-        // Make sure the other methods throw an exception when used after
-        // close()
-        _ensureOpenCalled = false;
-        return delegate.close();
-      } else {
-        // User never attempted to open the database, so this is a no-op.
-        return Future.value();
+          // Make sure the other methods throw an exception when used after
+          // close()
+          _ensureOpenCalled = false;
+          return delegate.close();
+        } else {
+          // User never attempted to open the database, so this is a no-op.
+          return Future.value();
+        }
+      } finally {
+        print("Closing - $randomId - will release lock");
       }
     });
   }
+}
+
+final Random _random = Random();
+
+int _getRandomNumber() {
+  return _random.nextInt(9999);
 }
 
 /// Inside a `beforeOpen` callback, all drift apis must be available. At the
