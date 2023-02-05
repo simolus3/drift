@@ -76,17 +76,36 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
     return insert().insertOnConflictUpdate(row);
   }
 
-  /// Inserts one row into this table and returns it, along with auto-
-  /// generated fields.
+  /// Inserts one row into this table and returns it, along with auto-generated
+  /// fields.
   ///
-  /// Please note that this method is only available on recent sqlite3 versions.
-  /// See also [InsertStatement.insertReturning].
+  /// Please note that this function is unsuitable for situations where it is
+  /// not guaranteed that a row gets inserted (for instance because an upsert
+  /// clause with a `where` clause is used). For those instances,
+  /// use [insertReturningOrNull] instead.
   Future<Row> insertReturning(
     Insertable<Row> row, {
     InsertMode? mode,
     UpsertClause<Tbl, Row>? onConflict,
   }) {
     return insert().insertReturning(
+      row,
+      mode: mode,
+      onConflict: onConflict,
+    );
+  }
+
+  /// Inserts one row into this table and returns it, along with auto-generated
+  /// fields.
+  ///
+  /// When neither an insert nor an error happened (for instance because an
+  /// [onConflict] clause with a `where` clause was used), returns `null`.
+  Future<Row?> insertReturningOrNull(
+    Insertable<Row> row, {
+    InsertMode? mode,
+    UpsertClause<Tbl, Row>? onConflict,
+  }) {
+    return insert().insertReturningOrNull(
       row,
       mode: mode,
       onConflict: onConflict,

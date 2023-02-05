@@ -1,4 +1,5 @@
-import 'package:drift/drift.dart';
+import 'package:async/async.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -67,16 +68,18 @@ void main() {
                     const Constant(' ') +
                     excluded.description),
             where: (old, excluded) =>
-                old.priority.isBiggerOrEqual(excluded.priority)));
+                excluded.priority.isBiggerOrEqual(old.priority)));
 
     row = await db.select(db.categories).getSingle();
-    expect(row.description, 'original description');
+    expect(row.description, 'original description new description');
   });
 
   test('insert with DoUpdate and excluded row and where statement false',
       () async {
-    await db.into(db.categories).insert(
-        CategoriesCompanion.insert(description: 'original description'));
+    await db.into(db.categories).insert(CategoriesCompanion.insert(
+          priority: Value(CategoryPriority.medium),
+          description: 'original description',
+        ));
 
     var row = await db.select(db.categories).getSingle();
 
@@ -92,25 +95,72 @@ void main() {
                     const Constant(' ') +
                     excluded.description),
             where: (old, excluded) =>
-                old.priority.isBiggerOrEqual(excluded.priority)));
+                excluded.priority.isBiggerOrEqual(old.priority)));
 
     row = await db.select(db.categories).getSingle();
-    expect(row.description, 'original description new description');
+    expect(row.description, 'original description');
   });
 
-  test('returning', () async {
-    final entry = await db.into(db.categories).insertReturning(
-        CategoriesCompanion.insert(description: 'Description'));
+  group('returning', () {
+    test('simple', () async {
+      final entry = await db.into(db.categories).insertReturning(
+          CategoriesCompanion.insert(description: 'Description'));
 
-    expect(
-      entry,
-      const Category(
-        id: 1,
-        description: 'Description',
-        priority: CategoryPriority.low,
-        descriptionInUpperCase: 'DESCRIPTION',
-      ),
-    );
+      expect(
+        entry,
+        const Category(
+          id: 1,
+          description: 'Description',
+          priority: CategoryPriority.low,
+          descriptionInUpperCase: 'DESCRIPTION',
+        ),
+      );
+    });
+
+    test('when no row gets returned', () async {
+      final entry = await db.into(db.categories).insertReturning(
+          CategoriesCompanion.insert(description: 'Description'));
+
+      // The failed inserts also shouldn't trigger stream query updates.
+      final updates = StreamQueue(db.tableUpdates());
+      expect(updates, neverEmits(anything));
+
+      await expectLater(
+        db.into(db.categories).insertReturning(
+              CategoriesCompanion.insert(
+                id: Value(entry.id),
+                description: 'Attempted overwrie',
+              ),
+              mode: InsertMode.insertOrIgnore,
+            ),
+        throwsA(isStateError.having((e) => e.message, 'message',
+            contains('Please use insertReturningOrNull()'))),
+      );
+
+      await expectLater(
+        db.into(db.categories).insertReturningOrNull(
+              CategoriesCompanion.insert(
+                id: Value(entry.id),
+                description: 'Attempted overwrie',
+              ),
+              mode: InsertMode.insertOrIgnore,
+            ),
+        completion(isNull),
+      );
+
+      await expectLater(
+        db.categories.insertReturningOrNull(
+          CategoriesCompanion.insert(
+            id: Value(entry.id),
+            description: 'Attempted overwrie',
+          ),
+          mode: InsertMode.insertOrIgnore,
+        ),
+        completion(isNull),
+      );
+
+      await updates.cancel(immediate: true);
+    });
   }, skip: ifOlderThanSqlite335(sqlite3Version));
 
   test('generates working check constraints', () async {

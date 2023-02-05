@@ -78,22 +78,45 @@ class InsertStatement<T extends Table, D> {
     });
   }
 
-  /// Inserts a row into the table, and returns a generated instance.
+  /// Inserts a row into the table and returns it.
   ///
-  /// __Note__: This uses the `RETURNING` syntax added in sqlite3 version 3.35,
-  /// which is not available on most operating systems by default. When using
-  /// this method, make sure that you have a recent sqlite3 version available.
-  /// This is the case with `sqlite3_flutter_libs`.
+  /// Depending on the [InsertMode] or the [DoUpdate] `onConflict` clause, the
+  /// insert statement may not actually insert a row into the database. Since
+  /// this function was declared to return a non-nullable row, it throws an
+  /// exception in that case. Use [insertReturningOrNull] when performing an
+  /// insert with an insert mode like [InsertMode.insertOrIgnore] or when using
+  /// a [DoUpdate] with a `where` clause clause.
   Future<D> insertReturning(Insertable<D> entity,
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) async {
+    final row =
+        await insertReturningOrNull(entity, mode: mode, onConflict: onConflict);
+
+    if (row == null) {
+      throw StateError('The insert statement did not insert any rows that '
+          'could be returned. Please use insertReturningOrNull() when using a '
+          '`DoUpdate` clause with `where`.');
+    }
+
+    return row;
+  }
+
+  /// Inserts a row into the table and returns it.
+  ///
+  /// When no row was inserted and no exception was thrown, for instance because
+  /// [InsertMode.insertOrIgnore] was used or because the upsert clause had a
+  /// `where` clause that didn't match, `null` is returned instead.
+  Future<D?> insertReturningOrNull(Insertable<D> entity,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) async {
     final ctx = createContext(entity, mode ?? InsertMode.insert,
         onConflict: onConflict, returning: true);
 
     return database.doWhenOpened((e) async {
       final result = await e.runSelect(ctx.sql, ctx.boundVariables);
-      database
-          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
-      return table.map(result.single);
+      if (result.isNotEmpty) {
+        database.notifyUpdates(
+            {TableUpdate.onTable(table, kind: UpdateKind.insert)});
+        return table.map(result.single);
+      }
     });
   }
 

@@ -1,3 +1,7 @@
+## 2.6.0-dev
+
+- Add `insertReturningOrNull` for empty inserts.
+
 ## 2.5.0
 
 - Add `isExp`, `isValue`, `isNotExp` and `isNotValue` methods to `Expression`
