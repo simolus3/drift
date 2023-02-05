@@ -116,6 +116,8 @@ class InsertStatement<T extends Table, D> {
         database.notifyUpdates(
             {TableUpdate.onTable(table, kind: UpdateKind.insert)});
         return table.map(result.single);
+      } else {
+        return null;
       }
     });
   }
