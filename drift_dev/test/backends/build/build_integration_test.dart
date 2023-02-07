@@ -219,7 +219,7 @@ q: INSERT INTO my_table (b, c, d) VALUES (?, ?, ?);
           contains(
             'import \'package:drift/drift.dart\' as i0;\n'
             'import \'package:a/main.drift.dart\' as i1;\n'
-            'import \'dart:convert\' as i2;\n'
+            'import \'dart:typed_data\' as i2;\n'
             'import \'package:drift/internal/modular.dart\' as i3;\n',
           ),
           contains(
