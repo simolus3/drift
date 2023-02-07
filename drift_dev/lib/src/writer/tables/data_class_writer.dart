@@ -122,7 +122,7 @@ class DataClassWriter {
       columns
           .map((c) => EqualityField(c.nameInDart, isList: c.isUint8ListInDart)),
       _emitter.dartCode(_emitter.writer.rowClass(table)),
-      _buffer,
+      _emitter,
     );
 
     // finish class declaration
@@ -306,7 +306,7 @@ class DataClassWriter {
     final fields = columns
         .map((c) => EqualityField(c.nameInDart, isList: c.isUint8ListInDart))
         .toList();
-    writeHashCode(fields, _buffer);
+    writeHashCode(fields, _emitter);
     _buffer.write(';');
   }
 }

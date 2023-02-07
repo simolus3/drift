@@ -2,6 +2,7 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/users.drift.dart' as i1;
 import 'package:modular/src/preferences.dart' as i2;
+import 'dart:typed_data' as i3;
 
 class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
   @override
@@ -36,8 +37,16 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
               requiredDuringInsert: false,
               $customConstraints: '')
           .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
+  static const i0.VerificationMeta _profilePictureMeta =
+      const i0.VerificationMeta('profilePicture');
+  late final i0.GeneratedColumn<i3.Uint8List> profilePicture =
+      i0.GeneratedColumn<i3.Uint8List>('profile_picture', aliasedName, true,
+          type: i0.DriftSqlType.blob,
+          requiredDuringInsert: false,
+          $customConstraints: '');
   @override
-  List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
+  List<i0.GeneratedColumn> get $columns =>
+      [id, name, biography, preferences, profilePicture];
   @override
   String get aliasedName => _alias ?? 'users';
   @override
@@ -61,6 +70,12 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
           biography.isAcceptableOrUnknown(data['biography']!, _biographyMeta));
     }
     context.handle(_preferencesMeta, const i0.VerificationResult.success());
+    if (data.containsKey('profile_picture')) {
+      context.handle(
+          _profilePictureMeta,
+          profilePicture.isAcceptableOrUnknown(
+              data['profile_picture']!, _profilePictureMeta));
+    }
     return context;
   }
 
@@ -79,6 +94,8 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
       preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
           .typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
+      profilePicture: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
     );
   }
 
@@ -101,8 +118,13 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
   final String name;
   final String? biography;
   final i2.Preferences? preferences;
+  final i3.Uint8List? profilePicture;
   const User(
-      {required this.id, required this.name, this.biography, this.preferences});
+      {required this.id,
+      required this.name,
+      this.biography,
+      this.preferences,
+      this.profilePicture});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -114,6 +136,9 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
     if (!nullToAbsent || preferences != null) {
       final converter = i1.Users.$converterpreferencesn;
       map['preferences'] = i0.Variable<String>(converter.toSql(preferences));
+    }
+    if (!nullToAbsent || profilePicture != null) {
+      map['profile_picture'] = i0.Variable<i3.Uint8List>(profilePicture);
     }
     return map;
   }
@@ -128,6 +153,9 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       preferences: preferences == null && nullToAbsent
           ? const i0.Value.absent()
           : i0.Value(preferences),
+      profilePicture: profilePicture == null && nullToAbsent
+          ? const i0.Value.absent()
+          : i0.Value(profilePicture),
     );
   }
 
@@ -140,6 +168,8 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       biography: serializer.fromJson<String?>(json['biography']),
       preferences: i1.Users.$converterpreferencesn.fromJson(
           serializer.fromJson<Map<String, Object?>?>(json['preferences'])),
+      profilePicture:
+          serializer.fromJson<i3.Uint8List?>(json['profile_picture']),
     );
   }
   @override
@@ -151,6 +181,7 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       'biography': serializer.toJson<String?>(biography),
       'preferences': serializer.toJson<Map<String, Object?>?>(
           i1.Users.$converterpreferencesn.toJson(preferences)),
+      'profile_picture': serializer.toJson<i3.Uint8List?>(profilePicture),
     };
   }
 
@@ -158,12 +189,15 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
           {int? id,
           String? name,
           i0.Value<String?> biography = const i0.Value.absent(),
-          i0.Value<i2.Preferences?> preferences = const i0.Value.absent()}) =>
+          i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
+          i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent()}) =>
       i1.User(
         id: id ?? this.id,
         name: name ?? this.name,
         biography: biography.present ? biography.value : this.biography,
         preferences: preferences.present ? preferences.value : this.preferences,
+        profilePicture:
+            profilePicture.present ? profilePicture.value : this.profilePicture,
       );
   @override
   String toString() {
@@ -171,13 +205,15 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('biography: $biography, ')
-          ..write('preferences: $preferences')
+          ..write('preferences: $preferences, ')
+          ..write('profilePicture: $profilePicture')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, biography, preferences);
+  int get hashCode => Object.hash(id, name, biography, preferences,
+      i0.$driftBlobEquality.hash(profilePicture));
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -185,7 +221,9 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
           other.id == this.id &&
           other.name == this.name &&
           other.biography == this.biography &&
-          other.preferences == this.preferences);
+          other.preferences == this.preferences &&
+          i0.$driftBlobEquality
+              .equals(other.profilePicture, this.profilePicture));
 }
 
 class UsersCompanion extends i0.UpdateCompanion<i1.User> {
@@ -193,29 +231,34 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   final i0.Value<String> name;
   final i0.Value<String?> biography;
   final i0.Value<i2.Preferences?> preferences;
+  final i0.Value<i3.Uint8List?> profilePicture;
   const UsersCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.biography = const i0.Value.absent(),
     this.preferences = const i0.Value.absent(),
+    this.profilePicture = const i0.Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const i0.Value.absent(),
     required String name,
     this.biography = const i0.Value.absent(),
     this.preferences = const i0.Value.absent(),
+    this.profilePicture = const i0.Value.absent(),
   }) : name = i0.Value(name);
   static i0.Insertable<i1.User> custom({
     i0.Expression<int>? id,
     i0.Expression<String>? name,
     i0.Expression<String>? biography,
     i0.Expression<String>? preferences,
+    i0.Expression<i3.Uint8List>? profilePicture,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (biography != null) 'biography': biography,
       if (preferences != null) 'preferences': preferences,
+      if (profilePicture != null) 'profile_picture': profilePicture,
     });
   }
 
@@ -223,12 +266,14 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
       {i0.Value<int>? id,
       i0.Value<String>? name,
       i0.Value<String?>? biography,
-      i0.Value<i2.Preferences?>? preferences}) {
+      i0.Value<i2.Preferences?>? preferences,
+      i0.Value<i3.Uint8List?>? profilePicture}) {
     return i1.UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       biography: biography ?? this.biography,
       preferences: preferences ?? this.preferences,
+      profilePicture: profilePicture ?? this.profilePicture,
     );
   }
 
@@ -249,6 +294,9 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
       map['preferences'] =
           i0.Variable<String>(converter.toSql(preferences.value));
     }
+    if (profilePicture.present) {
+      map['profile_picture'] = i0.Variable<i3.Uint8List>(profilePicture.value);
+    }
     return map;
   }
 
@@ -258,7 +306,8 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('biography: $biography, ')
-          ..write('preferences: $preferences')
+          ..write('preferences: $preferences, ')
+          ..write('profilePicture: $profilePicture')
           ..write(')'))
         .toString();
   }
@@ -453,8 +502,13 @@ class PopularUser extends i0.DataClass {
   final String name;
   final String? biography;
   final i2.Preferences? preferences;
+  final i3.Uint8List? profilePicture;
   const PopularUser(
-      {required this.id, required this.name, this.biography, this.preferences});
+      {required this.id,
+      required this.name,
+      this.biography,
+      this.preferences,
+      this.profilePicture});
   factory PopularUser.fromJson(Map<String, dynamic> json,
       {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
@@ -464,6 +518,8 @@ class PopularUser extends i0.DataClass {
       biography: serializer.fromJson<String?>(json['biography']),
       preferences: i1.Users.$converterpreferencesn.fromJson(
           serializer.fromJson<Map<String, Object?>?>(json['preferences'])),
+      profilePicture:
+          serializer.fromJson<i3.Uint8List?>(json['profile_picture']),
     );
   }
   @override
@@ -475,6 +531,7 @@ class PopularUser extends i0.DataClass {
       'biography': serializer.toJson<String?>(biography),
       'preferences': serializer.toJson<Map<String, Object?>?>(
           i1.Users.$converterpreferencesn.toJson(preferences)),
+      'profile_picture': serializer.toJson<i3.Uint8List?>(profilePicture),
     };
   }
 
@@ -482,12 +539,15 @@ class PopularUser extends i0.DataClass {
           {int? id,
           String? name,
           i0.Value<String?> biography = const i0.Value.absent(),
-          i0.Value<i2.Preferences?> preferences = const i0.Value.absent()}) =>
+          i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
+          i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent()}) =>
       i1.PopularUser(
         id: id ?? this.id,
         name: name ?? this.name,
         biography: biography.present ? biography.value : this.biography,
         preferences: preferences.present ? preferences.value : this.preferences,
+        profilePicture:
+            profilePicture.present ? profilePicture.value : this.profilePicture,
       );
   @override
   String toString() {
@@ -495,13 +555,15 @@ class PopularUser extends i0.DataClass {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('biography: $biography, ')
-          ..write('preferences: $preferences')
+          ..write('preferences: $preferences, ')
+          ..write('profilePicture: $profilePicture')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, biography, preferences);
+  int get hashCode => Object.hash(id, name, biography, preferences,
+      i0.$driftBlobEquality.hash(profilePicture));
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -509,7 +571,9 @@ class PopularUser extends i0.DataClass {
           other.id == this.id &&
           other.name == this.name &&
           other.biography == this.biography &&
-          other.preferences == this.preferences);
+          other.preferences == this.preferences &&
+          i0.$driftBlobEquality
+              .equals(other.profilePicture, this.profilePicture));
 }
 
 class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
@@ -519,7 +583,8 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
   final i0.GeneratedDatabase attachedDatabase;
   PopularUsers(this.attachedDatabase, [this._alias]);
   @override
-  List<i0.GeneratedColumn> get $columns => [id, name, biography, preferences];
+  List<i0.GeneratedColumn> get $columns =>
+      [id, name, biography, preferences, profilePicture];
   @override
   String get aliasedName => _alias ?? entityName;
   @override
@@ -542,6 +607,8 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
       preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
           .typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
+      profilePicture: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
     );
   }
 
@@ -558,6 +625,9 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
       preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
               type: i0.DriftSqlType.string)
           .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
+  late final i0.GeneratedColumn<i3.Uint8List> profilePicture =
+      i0.GeneratedColumn<i3.Uint8List>('profile_picture', aliasedName, true,
+          type: i0.DriftSqlType.blob);
   @override
   PopularUsers createAlias(String alias) {
     return PopularUsers(attachedDatabase, alias);

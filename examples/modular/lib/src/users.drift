@@ -4,7 +4,8 @@ CREATE TABLE users (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     biography TEXT,
-    preferences TEXT MAPPED BY `const PreferencesConverter()`
+    preferences TEXT MAPPED BY `const PreferencesConverter()`,
+    profile_picture BLOB
 );
 
 CREATE INDEX users_name ON users (name);
