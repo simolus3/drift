@@ -18,6 +18,16 @@ class SomeTable extends Table {
   TextColumn get content => text()();
 }
 
+// Copying the definitions here because we can't import Flutter in documentation
+// snippets.
+class RootIsolateToken {
+  static final instance = RootIsolateToken();
+}
+
+class BackgroundIsolateBinaryMessenger {
+  static void ensureInitialized(RootIsolateToken token) {}
+}
+
 // #docregion isolate
 
 @DriftDatabase(tables: [SomeTable] /* ... */)
@@ -32,7 +42,12 @@ class MyDatabase extends _$MyDatabase {
 
 // #docregion driftisolate-spawn
 Future<DriftIsolate> createIsolateWithSpawn() async {
+  final token = RootIsolateToken.instance;
   return await DriftIsolate.spawn(() {
+    // This function runs in a new isolate, so we must first initialize the
+    // messenger to use platform channels.
+    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+
     // The callback to DriftIsolate.spawn() must return the database connection
     // to use.
     return LazyDatabase(() async {

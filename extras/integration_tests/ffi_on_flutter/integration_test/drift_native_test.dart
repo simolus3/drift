@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
 import 'package:drift_testcases/tests.dart';
+import 'package:flutter/services.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
@@ -93,6 +95,23 @@ Future<void> main() async {
 
     await db.close();
     await isolate.shutdownAll();
+  });
+
+  test('can use database path in background isolate', () async {
+    final token = RootIsolateToken.instance;
+    final isolate = await DriftIsolate.spawn(() {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+
+      return LazyDatabase(() async {
+        final path = await getDatabasesPath();
+        final file = File(join(path, 'background.db'));
+
+        return NativeDatabase(file);
+      });
+    });
+
+    final db = Database(await isolate.connect());
+    await db.customSelect('SELECT 1').getSingle();
   });
 }
 
