@@ -217,7 +217,7 @@ abstract class DatabaseConnectionUser {
   /// ```dart
   /// Stream<num> watchAverageCommentLength() {
   ///   final avgLength = comments.content.length.avg();
-  ///   final query = selectWithoutResults(comments)
+  ///   final query = selectOnly(comments)
   ///     ..addColumns([avgLength]);
   ///
   ///   return query.map((row) => row.read(avgLength)).watchSingle();
