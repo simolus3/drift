@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../database/database.dart';
+import 'backup/backup.dart';
 import 'home/card.dart';
 import 'home/drawer.dart';
 import 'home/state.dart';
@@ -48,6 +49,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       appBar: AppBar(
         title: const Text('Drift Todo list'),
         actions: [
+          const BackupIcon(),
           IconButton(
             onPressed: () => context.go('/search'),
             icon: const Icon(Icons.search),

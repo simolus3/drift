@@ -60,7 +60,7 @@ LazyDatabase _openConnection() {
         await file.writeAsBytes(buffer.asUint8List(blob.offsetInBytes, blob.lengthInBytes));
     }
 
-    return NativeDatabase.createInBackground(file);;
+    return NativeDatabase.createInBackground(file);
   });
 }
 ```

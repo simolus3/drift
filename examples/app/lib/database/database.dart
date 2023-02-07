@@ -119,7 +119,7 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  static Provider<AppDatabase> provider = Provider((ref) {
+  static final StateProvider<AppDatabase> provider = StateProvider((ref) {
     final database = AppDatabase();
     ref.onDispose(database.close);
 
