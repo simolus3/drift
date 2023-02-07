@@ -47,7 +47,8 @@ Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
   DriftSqlType.int: DartTopLevelSymbol('int', Uri.parse('dart:core')),
   DriftSqlType.bigInt: DartTopLevelSymbol('BigInt', Uri.parse('dart:core')),
   DriftSqlType.dateTime: DartTopLevelSymbol('DateTime', Uri.parse('dart:core')),
-  DriftSqlType.blob: DartTopLevelSymbol('Uint8List', Uri.parse('dart:convert')),
+  DriftSqlType.blob:
+      DartTopLevelSymbol('Uint8List', Uri.parse('dart:typed_data')),
   DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
   DriftSqlType.any: DartTopLevelSymbol('DriftAny', AnnotatedDartCode.drift),
 });

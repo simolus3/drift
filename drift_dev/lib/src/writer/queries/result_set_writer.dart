@@ -87,10 +87,10 @@ class ResultSetWriter {
     // if requested, override hashCode and equals
     if (scope.writer.options.overrideHashAndEqualsInResultSets) {
       into.write('@override int get hashCode => ');
-      writeHashCode(fields, into.buffer);
+      writeHashCode(fields, into);
       into.write(';\n');
 
-      overrideEquals(fields, className, into.buffer);
+      overrideEquals(fields, className, into);
       overrideToString(
           className, fields.map((f) => f.lexeme).toList(), into.buffer);
     }

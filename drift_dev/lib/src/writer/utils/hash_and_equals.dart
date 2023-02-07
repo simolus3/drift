@@ -1,3 +1,5 @@
+import '../writer.dart';
+
 const int _maxArgsToObjectHash = 20;
 
 class EqualityField {
@@ -13,14 +15,16 @@ class EqualityField {
 
 /// Writes an expression to calculate a hash code of an object that consists
 /// of the [fields].
-void writeHashCode(List<EqualityField> fields, StringBuffer into) {
+void writeHashCode(List<EqualityField> fields, TextEmitter into) {
+  late final equality = into.drift(r'$driftBlobEquality');
+
   if (fields.isEmpty) {
     into.write('identityHashCode(this)');
   } else if (fields.length == 1) {
     final field = fields[0];
 
     if (field.isList) {
-      into.write('\$driftBlobEquality.hash(${field.lexeme})');
+      into.write('$equality.hash(${field.lexeme})');
     } else {
       into.write('${field.lexeme}.hashCode');
     }
@@ -33,7 +37,7 @@ void writeHashCode(List<EqualityField> fields, StringBuffer into) {
       if (!first) into.write(', ');
 
       if (field.isList) {
-        into.write('\$driftBlobEquality.hash(${field.lexeme})');
+        into.write('$equality.hash(${field.lexeme})');
       } else {
         into.write(field.lexeme);
       }
@@ -48,7 +52,7 @@ void writeHashCode(List<EqualityField> fields, StringBuffer into) {
 /// Writes a operator == override for a class consisting of the [fields] into
 /// the buffer provided by [into].
 void overrideEquals(
-    Iterable<EqualityField> fields, String className, StringBuffer into) {
+    Iterable<EqualityField> fields, String className, TextEmitter into) {
   into
     ..writeln('@override')
     ..write('bool operator ==(Object other) => ')
@@ -61,7 +65,9 @@ void overrideEquals(
         final lexeme = field.lexeme;
 
         if (field.isList) {
-          return '\$driftBlobEquality.equals(other.$lexeme, this.$lexeme)';
+          final equality = into.drift(r'$driftBlobEquality');
+
+          return '$equality.equals(other.$lexeme, this.$lexeme)';
         } else {
           return 'other.$lexeme == this.$lexeme';
         }
