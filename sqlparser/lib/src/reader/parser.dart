@@ -844,8 +844,19 @@ class Parser {
     }
 
     if (_peek is KeywordToken) {
-      _error('Could not parse this expression. Note: This is a reserved '
-          'keyword, you can escape it in double ticks');
+      // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
+      if (tokens.length > _current + 1 &&
+          _peekNext.type == TokenType.leftParen) {
+        _error(
+          'Expected an expression here, but got a reserved keyword. Did you '
+          'mean to call a function? Try wrapping the keyword in double quotes.',
+        );
+      } else {
+        _error(
+          'Expected an expression here, but got a reserved keyword. Did you '
+          'mean to use it as an identifier? Try wrapping it in double quotes.',
+        );
+      }
     } else {
       _error('Could not parse this expression');
     }

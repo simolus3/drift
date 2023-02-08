@@ -83,13 +83,3 @@ void enforceHasSpan(AstNode node) {
     throw ArgumentError('Node $problematic did not have a span');
   }
 }
-
-void enforceError(String sql, Matcher textMatcher) {
-  final parsed = SqlEngine().parse(sql);
-
-  expect(
-    parsed.errors,
-    contains(
-        isA<ParsingError>().having((e) => e.message, 'message', textMatcher)),
-  );
-}
