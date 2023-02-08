@@ -119,11 +119,29 @@ void crudTests(TestExecutor executor) {
     tearDown(() => executor.clearDatabaseAndClose(database));
 
     Future<T?> evaluate<T extends Object>(Expression<T> expr) async {
+      late final Expression<T> effectiveExpr;
+      if (database.executor.dialect == SqlDialect.postgres) {
+        // 'SELECT'ing values that don't come from a table return as String
+        // by default, so we need to explicitly cast it to the expected type
+        // https://www.postgresql.org/docs/current/typeconv-select.html
+        effectiveExpr = expr.cast<T>();
+      } else {
+        effectiveExpr = expr;
+      }
+
       final query = database.selectOnly(database.users)
-        ..addColumns([expr])
+        ..addColumns([effectiveExpr])
         ..limit(1);
       final row = await query.getSingle();
-      return row.read(expr);
+      final columnValue = row.read(effectiveExpr);
+
+      expect(
+        columnValue,
+        TypeMatcher<T?>(),
+        reason:
+            "Type of the input argument does not match the returned column value",
+      );
+      return columnValue;
     }
 
     test('null', () {

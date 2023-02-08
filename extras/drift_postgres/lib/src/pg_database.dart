@@ -58,9 +58,7 @@ class _PgDelegate extends DatabaseDelegate {
       final stmt = statements.statements[row.statementIndex];
       final args = row.arguments;
 
-      await _ec.execute(stmt,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
+      await _ec.execute(stmt, substitutionValues: _convertArgs(args));
     }
 
     return Future.value();
@@ -72,9 +70,7 @@ class _PgDelegate extends DatabaseDelegate {
     if (args.isEmpty) {
       return _ec.execute(statement);
     } else {
-      return _ec.execute(statement,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
+      return _ec.execute(statement, substitutionValues: _convertArgs(args));
     }
   }
 
@@ -90,9 +86,10 @@ class _PgDelegate extends DatabaseDelegate {
     if (args.isEmpty) {
       result = await _ec.query(statement);
     } else {
-      result = await _ec.query(statement,
-          substitutionValues: args.asMap().map((key, value) =>
-              MapEntry((key + 1).toString(), _convertValue(value))));
+      result = await _ec.query(
+        statement,
+        substitutionValues: _convertArgs(args),
+      );
     }
     return result.firstOrNull?[0] as int? ?? 0;
   }
@@ -105,9 +102,10 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     await _ensureOpen();
-    final result = await _ec.query(statement,
-        substitutionValues: args.asMap().map((key, value) =>
-            MapEntry((key + 1).toString(), _convertValue(value))));
+    final result = await _ec.query(
+      statement,
+      substitutionValues: _convertArgs(args),
+    );
 
     return Future.value(QueryResult.fromRows(
         result.map((e) => e.toColumnMap()).toList(growable: false)));
@@ -125,6 +123,15 @@ class _PgDelegate extends DatabaseDelegate {
       return value.toInt();
     }
     return value;
+  }
+
+  Map<String, dynamic> _convertArgs(List<Object?> args) {
+    return args.asMap().map(
+          (key, value) => MapEntry(
+            (key + 1).toString(),
+            _convertValue(value),
+          ),
+        );
   }
 }
 
