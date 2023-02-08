@@ -1,3 +1,7 @@
+## 2.5.2
+
+- Fix generated code for `blob` columns when modular generation is enabled.
+
 ## 2.5.1
 
 - Fix an error resolving multiple table references across different files.
