@@ -555,7 +555,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<int> amountOfGoodFriends(int user) {
     return customSelect(
-        'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = 1 AND(f.first_user = @1 OR f.second_user = @1)',
+        'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = @1 OR f.second_user = @1)',
         variables: [
           Variable<int>(user)
         ],

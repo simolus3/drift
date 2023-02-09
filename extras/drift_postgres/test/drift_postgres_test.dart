@@ -7,7 +7,7 @@ class PgExecutor extends TestExecutor {
   bool get supportsReturning => true;
 
   @override
-  bool get hackyVariables => true;
+  bool get supportsNestedTransactions => true;
 
   @override
   DatabaseConnection createConnection() {

@@ -69,7 +69,7 @@ class PreferenceConverter extends NullAwareTypeConverter<Preferences, String> {
         'ORDER BY (SELECT COUNT(*) FROM friendships '
         'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
     'amountOfGoodFriends': 'SELECT COUNT(*) FROM friendships f WHERE '
-        'f.really_good_friends = 1 AND '
+        'f.really_good_friends = TRUE AND '
         '(f.first_user = :user OR f.second_user = :user)',
     'friendshipsOf': ''' SELECT
           f.really_good_friends, "user".**

@@ -74,15 +74,23 @@ class Variable<T extends Object> extends Expression<T> {
     var explicitStart = context.explicitVariableIndex;
 
     var mark = '?';
+    var suffix = '';
     if (context.dialect == SqlDialect.postgres) {
       explicitStart = 1;
       mark = '@';
+
+      if (value is List<int>) {
+        // We need to explicitly bind the variable as byte array. Otherwise
+        // a Uint8List like [1,2,3] would bind to "{1,2,3}" as bytes
+        suffix += ":bytea";
+      }
     }
 
     if (explicitStart != null) {
       context.buffer
         ..write(mark)
-        ..write(explicitStart + context.amountOfVariables);
+        ..write(explicitStart + context.amountOfVariables)
+        ..write(suffix);
       context.introduceVariable(
         this,
         mapToSimpleValue(context),
