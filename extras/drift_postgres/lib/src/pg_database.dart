@@ -25,7 +25,7 @@ class _PgDelegate extends DatabaseDelegate {
   final bool closeUnderlyingWhenClosed;
 
   @override
-  TransactionDelegate get transactionDelegate => _PgTransactionDelegate(_db);
+  TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
   @override
   late DbVersionDelegate versionDelegate;
@@ -159,19 +159,5 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
   Future<void> setSchemaVersion(int version) async {
     await database.query('UPDATE __schema SET version = @1',
         substitutionValues: {'1': version});
-  }
-}
-
-class _PgTransactionDelegate extends SupportedTransactionDelegate {
-  final PostgreSQLConnection _db;
-
-  const _PgTransactionDelegate(this._db);
-
-  @override
-  bool get managesLockInternally => false;
-
-  @override
-  Future startTransaction(Future Function(QueryDelegate) run) async {
-    await _db.transaction((connection) => run(_PgDelegate(_db, connection)));
   }
 }
