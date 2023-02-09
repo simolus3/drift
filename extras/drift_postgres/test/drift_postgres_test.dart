@@ -11,8 +11,6 @@ class PgExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    throw 'currently broken';
-
     return DatabaseConnection(PgDatabase(
       endpoint: PgEndpoint(
         host: 'localhost',

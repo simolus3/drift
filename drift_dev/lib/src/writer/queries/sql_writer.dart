@@ -101,7 +101,7 @@ class SqlWriter extends NodeSqlBuilder {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
-      final mark = _isPostgres ? '@' : '?';
+      final mark = _isPostgres ? '\\\$' : '?';
       _writeRawInSpaces('$mark${variable.index}');
     }
   }

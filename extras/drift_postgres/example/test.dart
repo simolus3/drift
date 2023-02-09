@@ -15,6 +15,11 @@ void main() async {
   );
 
   await postgres.ensureOpen(_NullUser());
+
+  final rows = await postgres.runSelect(r'SELECT $1', [true]);
+  final row = rows.single;
+  print(row);
+  print(row.values.map((e) => e.runtimeType).toList());
 }
 
 class _NullUser extends QueryExecutorUser {
