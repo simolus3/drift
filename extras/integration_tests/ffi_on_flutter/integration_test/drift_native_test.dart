@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';

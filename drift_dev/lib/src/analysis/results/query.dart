@@ -58,6 +58,15 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
   @override
   String get name => id.name;
 
+  @override
+  String? get dbGetterName {
+    if (mode != QueryMode.regular) {
+      return DriftSchemaElement.dbFieldName(id.name);
+    } else {
+      return null;
+    }
+  }
+
   /// All in-line Dart source code literals embedded into the query.
   final List<String> dartTokens;
 

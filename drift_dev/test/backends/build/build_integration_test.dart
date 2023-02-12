@@ -319,4 +319,32 @@ TypeConverter<Object, int> myConverter() => throw UnimplementedError();
       result,
     );
   });
+
+  test('supports @create queries in modular generation', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+CREATE TABLE foo (bar INTEGER PRIMARY KEY);
+
+@create: INSERT INTO foo VALUES (1);
+''',
+        'a|lib/db.dart': r'''
+import 'package:drift/drift.dart';
+
+import 'db.drift.dart';
+
+@DriftDatabase(include: {'a.drift'})
+class Database extends $Database {}
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart':
+          decodedMatches(contains(r'OnCreateQuery get $drift0 => ')),
+      'a|lib/db.drift.dart': decodedMatches(contains(r'.$drift0];'))
+    }, result.dartOutputs, result);
+  });
 }

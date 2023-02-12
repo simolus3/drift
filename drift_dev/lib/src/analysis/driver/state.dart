@@ -63,11 +63,12 @@ class FileState {
   }
 
   bool get _definesQuery {
-    return analyzedElements.any((e) => e is DefinedSqlQuery) ||
+    return analyzedElements
+            .any((e) => e is DefinedSqlQuery && e.mode == QueryMode.regular) ||
         // Also check discovery, we might not have analyzed all elements in this
         // file if it's just an import.
-        discovery?.locallyDefinedElements
-                .any((e) => e is DiscoveredDriftStatement) ==
+        discovery?.locallyDefinedElements.any((e) =>
+                e is DiscoveredDriftStatement && e.sqlNode.isRegularQuery) ==
             true;
   }
 

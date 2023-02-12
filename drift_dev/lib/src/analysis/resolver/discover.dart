@@ -131,7 +131,7 @@ class DiscoverStep {
             if (declaredName is SimpleName) {
               name = declaredName.name;
             } else {
-              name = 'special:${specialQueryNameCount++}';
+              name = '\$drift_${specialQueryNameCount++}';
             }
 
             pendingElements.add(DiscoveredDriftStatement(_id(name), node));

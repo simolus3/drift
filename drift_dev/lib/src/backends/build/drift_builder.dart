@@ -280,6 +280,27 @@ class _DriftBuildRun {
         final input =
             AccessorGenerationInput(result, resolved, const {}, driver);
         AccessorWriter(input, writer.child()).write();
+      } else if (result is DefinedSqlQuery) {
+        switch (result.mode) {
+          case QueryMode.regular:
+            // Ignore, this query will be made available in a generated accessor
+            // class.
+            break;
+          case QueryMode.atCreate:
+            final resolved =
+                entrypointState.fileAnalysis?.resolvedQueries[result.id];
+
+            if (resolved != null) {
+              writer.leaf()
+                ..writeDriftRef('OnCreateQuery')
+                ..write(' get ${result.dbGetterName} => ')
+                ..write(DatabaseWriter.createOnCreate(
+                    writer.child(), result, resolved))
+                ..writeln(';');
+            }
+
+            break;
+        }
       }
     }
 

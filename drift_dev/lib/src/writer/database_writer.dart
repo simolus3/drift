@@ -70,9 +70,9 @@ class DatabaseWriter {
       firstLeaf.write('$className.connect($conn c): super.connect(c); \n');
     }
 
-    final entityGetters = <DriftSchemaElement, String>{};
+    final entityGetters = <DriftElement, String>{};
 
-    for (final entity in elements.whereType<DriftSchemaElement>()) {
+    for (final entity in elements.whereType<DriftElement>()) {
       final getterName = entity.dbGetterName;
 
       if (getterName != null) {
@@ -80,7 +80,7 @@ class DatabaseWriter {
         // created in the database instance. However, triggers and indices are
         // generated as a top-level field which is simply imported.
         if (scope.generationOptions.isModular &&
-            (entity is DriftTrigger || entity is DriftIndex)) {
+            (entity is! DriftElementWithResultSet)) {
           final import = dbScope.generatedElement(entity, getterName);
 
           entityGetters[entity] = dbScope.dartCode(import);
@@ -163,16 +163,14 @@ class DatabaseWriter {
       ..write('@override\nIterable<$tableInfoType> get allTables => ')
       ..write('allSchemaEntities.whereType<$tableInfoType>();\n')
       ..write('@override\nList<$schemaEntity> get allSchemaEntities ')
-      ..write('=> [');
-
-    schemaScope
+      ..write('=> [')
       ..write(elements
           .map((e) {
-            if (e is DefinedSqlQuery && e.mode == QueryMode.atCreate) {
+            if (e is DefinedSqlQuery &&
+                e.mode == QueryMode.atCreate &&
+                !scope.generationOptions.isModular) {
               final resolved = input.importedQueries[e]!;
-              final sql = schemaScope.sqlCode(resolved.root!);
-
-              return 'OnCreateQuery(${asDartLiteral(sql)})';
+              return createOnCreate(dbScope, e, resolved);
             }
 
             return entityGetters[e];
@@ -233,6 +231,14 @@ class DatabaseWriter {
     final index = scope.drift('Index');
 
     return '$index(${asDartLiteral(entity.schemaName)}, ${asDartLiteral(sql)})';
+  }
+
+  static String createOnCreate(
+      Scope scope, DefinedSqlQuery query, SqlQuery resolved) {
+    final sql = scope.sqlCode(resolved.root!);
+    final onCreate = scope.drift('OnCreateQuery');
+
+    return '$onCreate(${asDartLiteral(sql)})';
   }
 }
 

@@ -3,6 +3,9 @@ import 'package:drift/drift.dart' as i0;
 import 'package:drift/internal/modular.dart' as i1;
 import 'package:modular/src/users.drift.dart' as i2;
 
+i0.OnCreateQuery get $drift0 =>
+    i0.OnCreateQuery('UPDATE users SET id = id + 1');
+
 class UserQueriesDrift extends i1.ModularAccessor {
   UserQueriesDrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<i2.User> findUsers({FindUsers$predicate? predicate}) {
