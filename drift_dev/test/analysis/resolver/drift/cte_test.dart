@@ -5,6 +5,37 @@ import 'package:test/test.dart';
 import '../../test_utils.dart';
 
 void main() {
+  test('parse nested CTE', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/test.drift': '''
+test:
+SELECT
+    *
+    FROM
+      (
+	      WITH cte AS (
+	          SELECT 1 AS val
+	      )
+	      SELECT * from cte
+      );
+'''
+    });
+
+    final file = await backend.analyze('package:a/test.drift');
+    backend.expectNoErrors();
+
+    final query =
+        file.fileAnalysis!.resolvedQueries.values.single as SqlSelectQuery;
+
+    expect(query.variables, isEmpty);
+    expect(query.readsFrom, isEmpty);
+
+    final resultSet = query.resultSet;
+    expect(resultSet.singleColumn, isTrue);
+    expect(resultSet.needsOwnClass, isFalse);
+    expect(resultSet.scalarColumns.map((c) => c.sqlType), [DriftSqlType.int]);
+  });
+
   test('recognizes CTE clause', () async {
     final backend = TestBackend.inTest({
       'a|lib/test.drift': '''

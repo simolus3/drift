@@ -1350,7 +1350,7 @@ class Parser {
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final first = _previous;
-      final innerStmt = select()!;
+      final innerStmt = _fullSelect()!;
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 
