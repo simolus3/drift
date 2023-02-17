@@ -183,10 +183,11 @@ class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
 class RowId extends TableColumn {
   // note that such alias is always called "rowid" in the result set -
   // "SELECT oid FROM table" yields a sinle column called "rowid"
-  RowId() : super('rowid', const ResolvedType(type: BasicType.int));
+  RowId({this.includedInResults = false})
+      : super('rowid', const ResolvedType(type: BasicType.int));
 
   @override
-  bool get includedInResults => false;
+  final bool includedInResults;
 }
 
 /// A column that is created by an expression. For instance, in the select
