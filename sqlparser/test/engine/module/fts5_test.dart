@@ -34,9 +34,10 @@ void main() {
           .read(result.root as TableInducingStatement);
 
       expect(table.name, 'foo');
-      expect(table.resultColumns,
-          [isA<Column>().having((c) => c.name, 'name', 'bar')]);
-      expect(table.findColumn('oid'), isA<RowId>());
+      expect(table.resultColumns, [
+        isA<RowId>().having((c) => c.name, 'name', 'rowid'),
+        isA<Column>().having((c) => c.name, 'name', 'bar')
+      ]);
 
       expect(
         table,
