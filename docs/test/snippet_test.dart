@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift_docs/snippets/migrations/datetime_conversion.dart';
+import 'package:drift_docs/snippets/modular/schema_inspection.dart';
 import 'package:test/test.dart';
 
 import 'generated/database.dart';
@@ -11,7 +12,7 @@ import 'generated/database.dart';
 void main() {
   group('changing datetime format', () {
     test('unix timestamp to text', () async {
-      final db = Database.connect(DatabaseConnection(NativeDatabase.memory()));
+      final db = Database(DatabaseConnection(NativeDatabase.memory()));
       addTearDown(db.close);
 
       final time = DateTime.fromMillisecondsSinceEpoch(
@@ -42,7 +43,7 @@ void main() {
 
     test('text to unix timestamp', () async {
       // First, create all tables using text as datetime
-      final db = Database.connect(DatabaseConnection(NativeDatabase.memory()));
+      final db = Database(DatabaseConnection(NativeDatabase.memory()));
       db.options = const DriftDatabaseOptions(storeDateTimeAsText: true);
       addTearDown(db.close);
 
@@ -72,7 +73,7 @@ void main() {
 
     test('text to unix timestamp, support old sqlite', () async {
       // First, create all tables using text as datetime
-      final db = Database.connect(DatabaseConnection(NativeDatabase.memory()));
+      final db = Database(DatabaseConnection(NativeDatabase.memory()));
       db.options = const DriftDatabaseOptions(storeDateTimeAsText: true);
       addTearDown(db.close);
 
@@ -98,6 +99,22 @@ void main() {
         User(id: 1, name: 'name', createdAt: time),
         const User(id: 2, name: 'name2', createdAt: null),
       ]);
+    });
+  });
+
+  group('runtime schema inspection', () {
+    test('findById', () async {
+      final db = Database(NativeDatabase.memory());
+      addTearDown(db.close);
+
+      await db.batch((batch) {
+        batch.insert(db.users, UsersCompanion.insert(name: 'foo')); // 1
+        batch.insert(db.users, UsersCompanion.insert(name: 'bar')); // 2
+        batch.insert(db.users, UsersCompanion.insert(name: 'baz')); // 3
+      });
+
+      final row = await db.users.findById(2).getSingle();
+      expect(row.name, 'bar');
     });
   });
 }

@@ -99,6 +99,10 @@ abstract class ResultSetImplementation<Tbl, Row> extends DatabaseSchemaEntity {
   /// when used in a query.
   ResultSetImplementation<Tbl, Row> createAlias(String alias) =>
       _AliasResultSet(alias, this);
+
+  /// Gets all [$columns] in this table or view, indexed by their (non-escaped)
+  /// name.
+  Map<String, GeneratedColumn> get columnsByName;
 }
 
 class _AliasResultSet<Tbl, Row> extends ResultSetImplementation<Tbl, Row> {
@@ -131,6 +135,10 @@ class _AliasResultSet<Tbl, Row> extends ResultSetImplementation<Tbl, Row> {
 
   @override
   Tbl get asDslTable => _inner.asDslTable;
+
+  @override
+  Map<String, GeneratedColumn<Object>> get columnsByName =>
+      _inner.columnsByName;
 }
 
 /// Extension to generate an alias for a table or a view.

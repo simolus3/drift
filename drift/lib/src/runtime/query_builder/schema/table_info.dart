@@ -48,7 +48,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
 
   Map<String, GeneratedColumn>? _columnsByName;
 
-  /// Gets all [$columns] in this table, indexed by their (non-escaped) name.
+  @override
   Map<String, GeneratedColumn> get columnsByName {
     return _columnsByName ??= {
       for (final column in $columns) column.$name: column

@@ -29,4 +29,13 @@ abstract class ViewInfo<Self extends HasResultSet, Row>
   /// If this view reads from other views, the [readTables] of that view are
   /// also included in this [readTables] set.
   Set<String> get readTables;
+
+  Map<String, GeneratedColumn>? _columnsByName;
+
+  @override
+  Map<String, GeneratedColumn> get columnsByName {
+    return _columnsByName ??= {
+      for (final column in $columns) column.$name: column
+    };
+  }
 }
