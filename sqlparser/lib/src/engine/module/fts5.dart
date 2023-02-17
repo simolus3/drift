@@ -122,7 +122,8 @@ class Fts5Table extends Table {
   }) : super(
           name: name,
           resolvedColumns: [
-            if (contentTable != null && contentRowId != null) RowId(),
+            if (contentTable != null && contentRowId != null)
+              RowId(includedInResults: true),
             ...columns,
             _Fts5RankColumn(),
             _Fts5TableColumn(name),
