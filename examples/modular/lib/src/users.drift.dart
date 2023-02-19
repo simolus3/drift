@@ -448,30 +448,38 @@ class Follow extends i0.DataClass implements i0.Insertable<i1.Follow> {
 class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
   final i0.Value<int> followed;
   final i0.Value<int> follower;
+  final i0.Value<int> rowid;
   const FollowsCompanion({
     this.followed = const i0.Value.absent(),
     this.follower = const i0.Value.absent(),
+    this.rowid = const i0.Value.absent(),
   });
   FollowsCompanion.insert({
     required int followed,
     required int follower,
+    this.rowid = const i0.Value.absent(),
   })  : followed = i0.Value(followed),
         follower = i0.Value(follower);
   static i0.Insertable<i1.Follow> custom({
     i0.Expression<int>? followed,
     i0.Expression<int>? follower,
+    i0.Expression<int>? rowid,
   }) {
     return i0.RawValuesInsertable({
       if (followed != null) 'followed': followed,
       if (follower != null) 'follower': follower,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   i1.FollowsCompanion copyWith(
-      {i0.Value<int>? followed, i0.Value<int>? follower}) {
+      {i0.Value<int>? followed,
+      i0.Value<int>? follower,
+      i0.Value<int>? rowid}) {
     return i1.FollowsCompanion(
       followed: followed ?? this.followed,
       follower: follower ?? this.follower,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -484,6 +492,9 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
     if (follower.present) {
       map['follower'] = i0.Variable<int>(follower.value);
     }
+    if (rowid.present) {
+      map['rowid'] = i0.Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -491,7 +502,8 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
   String toString() {
     return (StringBuffer('i1.FollowsCompanion(')
           ..write('followed: $followed, ')
-          ..write('follower: $follower')
+          ..write('follower: $follower, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

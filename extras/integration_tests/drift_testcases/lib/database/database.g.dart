@@ -477,37 +477,44 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
   final Value<int> firstUser;
   final Value<int> secondUser;
   final Value<bool> reallyGoodFriends;
+  final Value<int> rowid;
   const FriendshipsCompanion({
     this.firstUser = const Value.absent(),
     this.secondUser = const Value.absent(),
     this.reallyGoodFriends = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   FriendshipsCompanion.insert({
     required int firstUser,
     required int secondUser,
     this.reallyGoodFriends = const Value.absent(),
+    this.rowid = const Value.absent(),
   })  : firstUser = Value(firstUser),
         secondUser = Value(secondUser);
   static Insertable<Friendship> custom({
     Expression<int>? firstUser,
     Expression<int>? secondUser,
     Expression<bool>? reallyGoodFriends,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (firstUser != null) 'first_user': firstUser,
       if (secondUser != null) 'second_user': secondUser,
       if (reallyGoodFriends != null) 'really_good_friends': reallyGoodFriends,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   FriendshipsCompanion copyWith(
       {Value<int>? firstUser,
       Value<int>? secondUser,
-      Value<bool>? reallyGoodFriends}) {
+      Value<bool>? reallyGoodFriends,
+      Value<int>? rowid}) {
     return FriendshipsCompanion(
       firstUser: firstUser ?? this.firstUser,
       secondUser: secondUser ?? this.secondUser,
       reallyGoodFriends: reallyGoodFriends ?? this.reallyGoodFriends,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -523,6 +530,9 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
     if (reallyGoodFriends.present) {
       map['really_good_friends'] = Variable<bool>(reallyGoodFriends.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -531,7 +541,8 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
     return (StringBuffer('FriendshipsCompanion(')
           ..write('firstUser: $firstUser, ')
           ..write('secondUser: $secondUser, ')
-          ..write('reallyGoodFriends: $reallyGoodFriends')
+          ..write('reallyGoodFriends: $reallyGoodFriends, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

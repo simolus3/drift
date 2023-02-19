@@ -124,29 +124,36 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
 class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
   final Value<String> key;
   final Value<String> value;
+  final Value<int> rowid;
   const KeyValuesCompanion({
     this.key = const Value.absent(),
     this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   KeyValuesCompanion.insert({
     required String key,
     required String value,
+    this.rowid = const Value.absent(),
   })  : key = Value(key),
         value = Value(value);
   static Insertable<KeyValue> custom({
     Expression<String>? key,
     Expression<String>? value,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (key != null) 'key': key,
       if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  KeyValuesCompanion copyWith({Value<String>? key, Value<String>? value}) {
+  KeyValuesCompanion copyWith(
+      {Value<String>? key, Value<String>? value, Value<int>? rowid}) {
     return KeyValuesCompanion(
       key: key ?? this.key,
       value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -159,6 +166,9 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
     if (value.present) {
       map['value'] = Variable<String>(value.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -166,7 +176,8 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
   String toString() {
     return (StringBuffer('KeyValuesCompanion(')
           ..write('key: $key, ')
-          ..write('value: $value')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

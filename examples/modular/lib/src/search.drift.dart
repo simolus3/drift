@@ -142,30 +142,38 @@ class SearchInPost extends i0.DataClass
 class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
   final i0.Value<String> author;
   final i0.Value<String> content;
+  final i0.Value<int> rowid;
   const SearchInPostsCompanion({
     this.author = const i0.Value.absent(),
     this.content = const i0.Value.absent(),
+    this.rowid = const i0.Value.absent(),
   });
   SearchInPostsCompanion.insert({
     required String author,
     required String content,
+    this.rowid = const i0.Value.absent(),
   })  : author = i0.Value(author),
         content = i0.Value(content);
   static i0.Insertable<i1.SearchInPost> custom({
     i0.Expression<String>? author,
     i0.Expression<String>? content,
+    i0.Expression<int>? rowid,
   }) {
     return i0.RawValuesInsertable({
       if (author != null) 'author': author,
       if (content != null) 'content': content,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   i1.SearchInPostsCompanion copyWith(
-      {i0.Value<String>? author, i0.Value<String>? content}) {
+      {i0.Value<String>? author,
+      i0.Value<String>? content,
+      i0.Value<int>? rowid}) {
     return i1.SearchInPostsCompanion(
       author: author ?? this.author,
       content: content ?? this.content,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -178,6 +186,9 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
     if (content.present) {
       map['content'] = i0.Variable<String>(content.value);
     }
+    if (rowid.present) {
+      map['rowid'] = i0.Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -185,7 +196,8 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
   String toString() {
     return (StringBuffer('i1.SearchInPostsCompanion(')
           ..write('author: $author, ')
-          ..write('content: $content')
+          ..write('content: $content, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

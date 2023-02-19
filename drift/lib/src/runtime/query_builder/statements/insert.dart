@@ -169,6 +169,12 @@ class InsertStatement<T extends Table, D> {
       // include this column
     }
 
+    // The rowid is not included in the list of columns since it doesn't show
+    // up in selects, but we should also add that value to the map for inserts.
+    if (rawValues.containsKey('rowid')) {
+      map['rowid'] = rawValues['rowid']!;
+    }
+
     final ctx = GenerationContext.fromDb(database);
 
     if (ctx.dialect == SqlDialect.postgres &&

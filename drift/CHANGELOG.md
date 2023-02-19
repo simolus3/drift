@@ -1,6 +1,8 @@
 ## 2.6.0-dev
 
 - Add `insertReturningOrNull` for empty inserts.
+- Add `rowid` parameter to companions for tables with rowids that don't have a
+  visible alias for the rowid.
 
 ## 2.5.0
 

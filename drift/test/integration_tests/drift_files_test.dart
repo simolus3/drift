@@ -256,4 +256,12 @@ void main() {
     expect(entry.toJson(), asJson);
     expect(WithDefault.fromJson(asJson), entry);
   });
+
+  test('can run insert with rowid', () async {
+    await db.withDefaults
+        .insertOne(WithDefaultsCompanion.insert(rowid: Value(27)));
+
+    verify(mock
+        .runInsert('INSERT INTO "with_defaults" ("rowid") VALUES (?)', [27]));
+  });
 }

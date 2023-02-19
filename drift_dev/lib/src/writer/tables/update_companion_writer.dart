@@ -18,6 +18,8 @@ class UpdateCompanionWriter {
   late final List<DriftColumn> columns = [
     for (final column in table.columns)
       if (!column.isGenerated) column,
+    // Expose the rowid column in the companion if there's no alias
+    if (table.rowid?.isImplicitRowId == true) table.rowid!,
   ];
 
   UpdateCompanionWriter(this.table, this.scope) : _emitter = scope.leaf();
@@ -91,7 +93,7 @@ class UpdateCompanionWriter {
     for (final column in columns) {
       final param = column.nameInDart;
 
-      if (table.isColumnRequiredForInsert(column)) {
+      if (!column.isImplicitRowId && table.isColumnRequiredForInsert(column)) {
         requiredColumns.add(column);
         final typeName = _emitter.dartCode(_emitter.dartType(column));
 

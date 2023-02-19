@@ -580,23 +580,30 @@ class TextEntrie extends DataClass implements Insertable<TextEntrie> {
 
 class TextEntriesCompanion extends UpdateCompanion<TextEntrie> {
   final Value<String> description;
+  final Value<int> rowid;
   const TextEntriesCompanion({
     this.description = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   TextEntriesCompanion.insert({
     required String description,
+    this.rowid = const Value.absent(),
   }) : description = Value(description);
   static Insertable<TextEntrie> custom({
     Expression<String>? description,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (description != null) 'description': description,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  TextEntriesCompanion copyWith({Value<String>? description}) {
+  TextEntriesCompanion copyWith(
+      {Value<String>? description, Value<int>? rowid}) {
     return TextEntriesCompanion(
       description: description ?? this.description,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -606,13 +613,17 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntrie> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('TextEntriesCompanion(')
-          ..write('description: $description')
+          ..write('description: $description, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

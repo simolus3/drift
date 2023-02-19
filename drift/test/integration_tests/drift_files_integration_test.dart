@@ -150,6 +150,17 @@ void main() {
     );
   });
 
+  test('insert with explicit rowid', () async {
+    await db.withConstraints
+        .insertOne(WithConstraintsCompanion.insert(b: 1, rowid: Value(12)));
+    final row = await db
+        .select(db.withConstraints)
+        .addColumns([db.withConstraints.rowId]).getSingle();
+
+    expect(row.read(db.withConstraints.rowId), 12);
+    expect(row.readTable(db.withConstraints), WithConstraint(b: 1));
+  });
+
   group('returning', () {
     test('for custom inserts', () async {
       final result = await db.addConfig(

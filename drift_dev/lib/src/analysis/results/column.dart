@@ -20,6 +20,16 @@ class DriftColumn implements HasType {
   @override
   bool get isArray => false;
 
+  /// Whether this column represents the implicit `rowid` column added to tables
+  /// by default.
+  ///
+  /// In sqlite, every table that wasn't create with `WITHOUT ROWID` has a rowid,
+  /// an integer column uniquely identifying that row.
+  /// When a table has a single primary key of an integer column, that column
+  /// takes over the role of the rowid. In that case, drift will not expose an
+  /// implicit `rowid` column on the table.
+  final bool isImplicitRowId;
+
   /// Whether the user has explicitly declared this column to be nullable.
   ///
   /// For Dart-defined columns, this defaults to `false`. For columns defined in
@@ -75,6 +85,7 @@ class DriftColumn implements HasType {
     required this.nameInSql,
     required this.nameInDart,
     required this.declaration,
+    this.isImplicitRowId = false,
     this.typeConverter,
     this.clientDefaultCode,
     this.defaultArgument,

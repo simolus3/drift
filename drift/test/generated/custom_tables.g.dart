@@ -229,28 +229,35 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
 class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   final Value<String?> a;
   final Value<int?> b;
+  final Value<int> rowid;
   const WithDefaultsCompanion({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   WithDefaultsCompanion.insert({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   static Insertable<WithDefault> custom({
     Expression<String>? a,
     Expression<int>? b,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (a != null) 'a': a,
       if (b != null) 'b': b,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  WithDefaultsCompanion copyWith({Value<String?>? a, Value<int?>? b}) {
+  WithDefaultsCompanion copyWith(
+      {Value<String?>? a, Value<int?>? b, Value<int>? rowid}) {
     return WithDefaultsCompanion(
       a: a ?? this.a,
       b: b ?? this.b,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -263,6 +270,9 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
     if (b.present) {
       map['b'] = Variable<int>(b.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -270,7 +280,8 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   String toString() {
     return (StringBuffer('WithDefaultsCompanion(')
           ..write('a: $a, ')
-          ..write('b: $b')
+          ..write('b: $b, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -436,34 +447,43 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
   final Value<String?> a;
   final Value<int> b;
   final Value<double?> c;
+  final Value<int> rowid;
   const WithConstraintsCompanion({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
     this.c = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   WithConstraintsCompanion.insert({
     this.a = const Value.absent(),
     required int b,
     this.c = const Value.absent(),
+    this.rowid = const Value.absent(),
   }) : b = Value(b);
   static Insertable<WithConstraint> custom({
     Expression<String>? a,
     Expression<int>? b,
     Expression<double>? c,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (a != null) 'a': a,
       if (b != null) 'b': b,
       if (c != null) 'c': c,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   WithConstraintsCompanion copyWith(
-      {Value<String?>? a, Value<int>? b, Value<double?>? c}) {
+      {Value<String?>? a,
+      Value<int>? b,
+      Value<double?>? c,
+      Value<int>? rowid}) {
     return WithConstraintsCompanion(
       a: a ?? this.a,
       b: b ?? this.b,
       c: c ?? this.c,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -479,6 +499,9 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     if (c.present) {
       map['c'] = Variable<double>(c.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -487,7 +510,8 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     return (StringBuffer('WithConstraintsCompanion(')
           ..write('a: $a, ')
           ..write('b: $b, ')
-          ..write('c: $c')
+          ..write('c: $c, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -710,29 +734,34 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   final Value<DriftAny?> configValue;
   final Value<SyncType?> syncState;
   final Value<SyncType?> syncStateImplicit;
+  final Value<int> rowid;
   const ConfigCompanion({
     this.configKey = const Value.absent(),
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
     this.syncStateImplicit = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   ConfigCompanion.insert({
     required String configKey,
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
     this.syncStateImplicit = const Value.absent(),
+    this.rowid = const Value.absent(),
   }) : configKey = Value(configKey);
   static Insertable<Config> custom({
     Expression<String>? configKey,
     Expression<DriftAny>? configValue,
     Expression<int>? syncState,
     Expression<int>? syncStateImplicit,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (configKey != null) 'config_key': configKey,
       if (configValue != null) 'config_value': configValue,
       if (syncState != null) 'sync_state': syncState,
       if (syncStateImplicit != null) 'sync_state_implicit': syncStateImplicit,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
@@ -740,12 +769,14 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       {Value<String>? configKey,
       Value<DriftAny?>? configValue,
       Value<SyncType?>? syncState,
-      Value<SyncType?>? syncStateImplicit}) {
+      Value<SyncType?>? syncStateImplicit,
+      Value<int>? rowid}) {
     return ConfigCompanion(
       configKey: configKey ?? this.configKey,
       configValue: configValue ?? this.configValue,
       syncState: syncState ?? this.syncState,
       syncStateImplicit: syncStateImplicit ?? this.syncStateImplicit,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -767,6 +798,9 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['sync_state_implicit'] =
           Variable<int>(converter.toSql(syncStateImplicit.value));
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -776,7 +810,8 @@ class ConfigCompanion extends UpdateCompanion<Config> {
           ..write('configKey: $configKey, ')
           ..write('configValue: $configValue, ')
           ..write('syncState: $syncState, ')
-          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write('syncStateImplicit: $syncStateImplicit, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -1210,15 +1245,18 @@ class EmailCompanion extends UpdateCompanion<EMail> {
   final Value<String> sender;
   final Value<String> title;
   final Value<String> body;
+  final Value<int> rowid;
   const EmailCompanion({
     this.sender = const Value.absent(),
     this.title = const Value.absent(),
     this.body = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   EmailCompanion.insert({
     required String sender,
     required String title,
     required String body,
+    this.rowid = const Value.absent(),
   })  : sender = Value(sender),
         title = Value(title),
         body = Value(body);
@@ -1226,20 +1264,26 @@ class EmailCompanion extends UpdateCompanion<EMail> {
     Expression<String>? sender,
     Expression<String>? title,
     Expression<String>? body,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (sender != null) 'sender': sender,
       if (title != null) 'title': title,
       if (body != null) 'body': body,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   EmailCompanion copyWith(
-      {Value<String>? sender, Value<String>? title, Value<String>? body}) {
+      {Value<String>? sender,
+      Value<String>? title,
+      Value<String>? body,
+      Value<int>? rowid}) {
     return EmailCompanion(
       sender: sender ?? this.sender,
       title: title ?? this.title,
       body: body ?? this.body,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -1255,6 +1299,9 @@ class EmailCompanion extends UpdateCompanion<EMail> {
     if (body.present) {
       map['body'] = Variable<String>(body.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -1263,7 +1310,8 @@ class EmailCompanion extends UpdateCompanion<EMail> {
     return (StringBuffer('EmailCompanion(')
           ..write('sender: $sender, ')
           ..write('title: $title, ')
-          ..write('body: $body')
+          ..write('body: $body, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -1403,30 +1451,36 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
 class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   final Value<int> sqlClass;
   final Value<String> textColumn;
+  final Value<int> rowid;
   const WeirdTableCompanion({
     this.sqlClass = const Value.absent(),
     this.textColumn = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   WeirdTableCompanion.insert({
     required int sqlClass,
     required String textColumn,
+    this.rowid = const Value.absent(),
   })  : sqlClass = Value(sqlClass),
         textColumn = Value(textColumn);
   static Insertable<WeirdData> custom({
     Expression<int>? sqlClass,
     Expression<String>? textColumn,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (sqlClass != null) 'class': sqlClass,
       if (textColumn != null) 'text': textColumn,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   WeirdTableCompanion copyWith(
-      {Value<int>? sqlClass, Value<String>? textColumn}) {
+      {Value<int>? sqlClass, Value<String>? textColumn, Value<int>? rowid}) {
     return WeirdTableCompanion(
       sqlClass: sqlClass ?? this.sqlClass,
       textColumn: textColumn ?? this.textColumn,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -1439,6 +1493,9 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
     if (textColumn.present) {
       map['text'] = Variable<String>(textColumn.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -1446,7 +1503,8 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   String toString() {
     return (StringBuffer('WeirdTableCompanion(')
           ..write('sqlClass: $sqlClass, ')
-          ..write('textColumn: $textColumn')
+          ..write('textColumn: $textColumn, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
