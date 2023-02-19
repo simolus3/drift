@@ -108,4 +108,24 @@ void main() {
     await db.customSelect('Select 1').get();
     await db.close();
   });
+
+  test('rolling back after exception with batch in transaction', () async {
+    final db = TodoDb(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    const expectedException = 'error';
+
+    expectLater(() async {
+      await db.transaction(() async {
+        await db.batch((b) {
+          b.insert(
+              db.todosTable, TodosTableCompanion.insert(content: 'my content'));
+        });
+
+        throw expectedException;
+      });
+    }, throwsA(expectedException));
+
+    expect(await db.todosTable.all().get(), isEmpty);
+  });
 }
