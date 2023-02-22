@@ -575,6 +575,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'randomblob':
       case 'zeroblob':
         return const ResolvedType(type: BasicType.blob);
+      case 'unhex':
+        return const ResolvedType(type: BasicType.blob, nullable: true);
       case 'total':
       case 'avg':
       case 'percent_rank':
@@ -635,11 +637,24 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final visited = <AstNode>{};
     final name = e.name.toLowerCase();
 
-    if (name == 'nth_value' && params.length >= 2 && params[1] is Expression) {
-      // the second argument of nth_value is always an integer
-      final secondParam = params[1] as Expression;
-      visit(secondParam, _expectInt);
-      visited.add(secondParam);
+    switch (name) {
+      case 'nth_value':
+        if (params.length >= 2 && params[1] is Expression) {
+          // the second argument of nth_value is always an integer
+          final secondParam = params[1] as Expression;
+          visit(secondParam, _expectInt);
+          visited.add(secondParam);
+        }
+        break;
+      case 'unhex':
+        for (var i = 0; i < min(2, params.length); i++) {
+          final param = params[i];
+          if (param is Expression) {
+            visit(param, _expectString);
+            visited.add(param);
+          }
+        }
+        break;
     }
 
     final extensionHandler =

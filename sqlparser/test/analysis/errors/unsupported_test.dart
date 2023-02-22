@@ -106,6 +106,14 @@ void main() {
     currentEngine.analyze(sql).expectNoError();
   });
 
+  test('warns about unhex before 3.41', () {
+    const sql = "SELECT unhex('abcd')";
+
+    minimumEngine.analyze(sql).expectError('unhex',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    currentEngine.analyze(sql).expectNoError();
+  });
+
   test('warns about `IS DISTINCT FROM`', () {
     const sql = 'SELECT id IS DISTINCT FROM content FROM demo;';
     const notSql = 'SELECT id IS NOT DISTINCT FROM content FROM demo;';

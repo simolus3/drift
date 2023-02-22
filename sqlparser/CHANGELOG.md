@@ -1,3 +1,7 @@
+## 0.27.1-dev
+
+- Support the `unhex` function added in sqlite 3.41.0
+
 ## 0.27.0
 
 - Add `mappedBy` to `ExpressionResultColumn` when parsing in drift mode.

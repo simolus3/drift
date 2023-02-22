@@ -62,6 +62,8 @@ const Map<String, ResolvedType?> _types = {
     type: BasicType.int,
     nullable: true,
   ),
+  "SELECT unhex('ab') = ?": ResolvedType(type: BasicType.blob, nullable: true),
+  'SELECT unhex(?)': ResolvedType(type: BasicType.text),
 };
 
 SqlEngine _spawnEngine() {

@@ -4,8 +4,8 @@ import 'package:archive/archive_io.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart' as p;
 
-const _version = '3390300';
-const _year = '2022';
+const _version = '3410000';
+const _year = '2023';
 const _url = 'https://www.sqlite.org/$_year/sqlite-autoconf-$_version.tar.gz';
 
 Future<void> main(List<String> args) async {

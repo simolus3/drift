@@ -93,6 +93,9 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// can't provide analysis warnings when using recent sqlite3 features.
   static const SqliteVersion minimum = SqliteVersion.v3(34);
 
+  /// Version `3.41.0` added the built-in `unhex` function.
+  static const SqliteVersion v3_41 = SqliteVersion.v3(41);
+
   /// Version `3.39.0` of `sqlite3`.
   ///
   /// New language features include `RIGHT` / `FULL OUTER JOIN` and `IS DISTINCT
@@ -111,7 +114,7 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = v3_39;
+  static const SqliteVersion current = v3_41;
 
   /// The major version of sqlite.
   ///

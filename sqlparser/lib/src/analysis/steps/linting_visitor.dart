@@ -270,6 +270,18 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
             ),
           );
         }
+        break;
+      case 'unhex':
+        if (options.version < SqliteVersion.v3_41) {
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.notSupportedInDesiredVersion,
+              message: '`unhex` requires sqlite 3.41',
+              relevantNode: e.nameToken ?? e,
+            ),
+          );
+        }
+        break;
     }
 
     visitChildren(e, arg);
