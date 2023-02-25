@@ -3,7 +3,7 @@
 pushd extras/drift_postgres
 echo "Running integration tests with Postgres"
 dart pub upgrade
-dart test || true
+dart test
 popd
 
 pushd examples/with_built_value
