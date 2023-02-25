@@ -186,3 +186,20 @@ The "only" means that drift will only report columns we added via "addColumns". 
 all columns from the table would be selected, which is what you'd usually need.
 
 {% include "blocks/snippet" snippets = snippets name = 'averageItemLength' %}
+
+## Using selects as inserts
+
+In SQL, an `INSERT INTO SELECT` statement can be used to efficiently insert the rows from a `SELECT`
+statement into a table.
+It is possible to construct these statements in drift with the `insertFromSelect` method.
+This example shows how that method is used to construct a statement that creates a new category
+for each todo entry that didn't have one assigned before:
+
+{% include "blocks/snippet" snippets = snippets name = 'createCategoryForUnassignedTodoEntries' %}
+
+The first parameter for `insertFromSelect` is the select statement statement to use as a source.
+Then, the `columns` map maps columns from the table in which rows are inserted to columns from the
+select statement.
+In the example, the `newDescription` expression as added as a column to the query.
+Then, the map entry `categories.description: newDescription` is used so that the `description` column
+for new category rows gets set to that expression.

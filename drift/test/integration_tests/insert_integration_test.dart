@@ -241,4 +241,48 @@ void main() {
       );
     });
   });
+
+  group('insert from select', () {
+    test('simple', () async {
+      await db.todosTable
+          .insertOne(TodosTableCompanion.insert(content: 'my content'));
+
+      final query = db.select(db.todosTable);
+      await db.into(db.todosTable).insertFromSelect(query, columns: {
+        db.todosTable.content: db.todosTable.content,
+      });
+
+      final entries = await db.todosTable.all().get();
+      expect(entries, hasLength(2));
+    });
+
+    test('join', () async {
+      await db.categories
+          .insertOne(CategoriesCompanion.insert(description: 'without entry'));
+      final id = await db.categories
+          .insertOne(CategoriesCompanion.insert(description: 'with entry'));
+      await db.todosTable.insertOne(TodosTableCompanion.insert(
+          content: 'my content', category: Value(id)));
+
+      final amountOfTodos =
+          db.todosTable.id.count(filter: db.todosTable.id.isNotNull());
+      final newDescription = db.categories.description + amountOfTodos.cast();
+      final query = db.selectOnly(db.categories)
+        ..join([
+          leftOuterJoin(
+              db.todosTable, db.categories.id.equalsExp(db.todosTable.category))
+        ])
+        ..groupBy([db.categories.id])
+        ..addColumns([newDescription, db.categories.priority]);
+
+      await db.into(db.categories).insertFromSelect(query, columns: {
+        db.categories.description: newDescription,
+        db.categories.priority: db.categories.priority,
+      });
+
+      final categeories = await db.categories.all().get();
+      expect(categeories.map((e) => e.description),
+          ['without entry', 'with entry', 'without entry0', 'with entry1']);
+    });
+  });
 }

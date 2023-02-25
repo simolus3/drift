@@ -78,6 +78,66 @@ class InsertStatement<T extends Table, D> {
     });
   }
 
+  /// Inserts rows from the [select] statement.
+  ///
+  /// This method creates an `INSERT INTO SELECT` statement in SQL which will
+  /// insert a row into this table for each row returned by the [select]
+  /// statement.
+  ///
+  /// The [columns] map describes which column from the select statement should
+  /// be written into which column of the table. The keys of the map are the
+  /// target column, and values are expressions added to the select statement.
+  ///
+  /// For an example, see the [documentation website](https://drift.simonbinder.eu/docs/advanced-features/joins/#using-selects-as-insert)
+  @experimental
+  Future<void> insertFromSelect(
+    BaseSelectStatement select, {
+    required Map<Column, Expression> columns,
+    InsertMode mode = InsertMode.insert,
+    UpsertClause<T, D>? onConflict,
+  }) async {
+    // To be able to reference columns by names instead of by their index like
+    // normally done with `INSERT INTO SELECT`, we use a CTE. The final SQL
+    // statement will look like this:
+    // WITH source AS $select INSERT INTO $table (...) SELECT ... FROM source
+    final ctx = GenerationContext.fromDb(database);
+    const sourceCte = '_source';
+
+    ctx.buffer.write('WITH $sourceCte AS (');
+    select.writeInto(ctx);
+    ctx.buffer.write(') ');
+
+    final columnNameToSelectColumnName = <String, String>{};
+    columns.forEach((key, value) {
+      final name = select._nameForColumn(value);
+      if (name == null) {
+        throw ArgumentError.value(
+            value,
+            'column',
+            'This column passd to insertFromSelect() was not added to the '
+                'source select statement.');
+      }
+
+      columnNameToSelectColumnName[key.name] = name;
+    });
+
+    mode.writeInto(ctx);
+    ctx.buffer
+      ..write(' INTO ${ctx.identifier(table.aliasedName)} (')
+      ..write(columnNameToSelectColumnName.keys.map(ctx.identifier).join(', '))
+      ..write(') SELECT ')
+      ..write(
+          columnNameToSelectColumnName.values.map(ctx.identifier).join(', '))
+      ..write(' FROM $sourceCte');
+    _writeOnConflict(ctx, mode, null, onConflict);
+
+    return await database.doWhenOpened((e) async {
+      await e.runInsert(ctx.sql, ctx.boundVariables);
+      database
+          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
+    });
+  }
+
   /// Inserts a row into the table and returns it.
   ///
   /// Depending on the [InsertMode] or the [DoUpdate] `onConflict` clause, the
@@ -176,16 +236,9 @@ class InsertStatement<T extends Table, D> {
     }
 
     final ctx = GenerationContext.fromDb(database);
-
-    if (ctx.dialect == SqlDialect.postgres &&
-        mode != InsertMode.insert &&
-        mode != InsertMode.insertOrIgnore) {
-      throw ArgumentError('$mode not supported on postgres');
-    }
+    mode.writeInto(ctx);
 
     ctx.buffer
-      ..write(_insertKeywords[
-          ctx.dialect == SqlDialect.postgres ? InsertMode.insert : mode])
       ..write(' INTO ')
       ..write(ctx.identifier(table.aliasedName))
       ..write(' ');
@@ -196,13 +249,36 @@ class InsertStatement<T extends Table, D> {
       writeInsertable(ctx, map);
     }
 
-    void writeDoUpdate(DoUpdate<T, D> onConflict) {
+    _writeOnConflict(ctx, mode, entry, onConflict);
+
+    if (returning) {
+      ctx.buffer.write(' RETURNING *');
+    } else if (ctx.dialect == SqlDialect.postgres) {
+      if (table.$primaryKey.length == 1) {
+        final id = table.$primaryKey.firstOrNull;
+        if (id != null && id.type == DriftSqlType.int) {
+          ctx.buffer.write(' RETURNING ${id.name}');
+        }
+      }
+    }
+
+    return ctx;
+  }
+
+  void _writeOnConflict(
+    GenerationContext ctx,
+    InsertMode mode,
+    Insertable<D>? originalEntry,
+    UpsertClause<T, D>? onConflict,
+  ) {
+    if (onConflict is DoUpdate<T, D>) {
       if (onConflict._usesExcludedTable) {
         ctx.hasMultipleTables = true;
       }
+
       final upsertInsertable = onConflict._createInsertable(table);
 
-      if (!identical(entry, upsertInsertable)) {
+      if (!identical(originalEntry, upsertInsertable)) {
         // We run a ON CONFLICT DO UPDATE, so make sure upsertInsertable is
         // valid for updates.
         // the identical check is a performance optimization - for the most
@@ -257,26 +333,11 @@ class InsertStatement<T extends Table, D> {
           where.writeInto(ctx);
         }
       }
-    }
-
-    if (onConflict is DoUpdate<T, D>) {
-      writeDoUpdate(onConflict);
     } else if (onConflict is UpsertMultiple<T, D>) {
-      onConflict.clauses.forEach(writeDoUpdate);
-    }
-
-    if (returning) {
-      ctx.buffer.write(' RETURNING *');
-    } else if (ctx.dialect == SqlDialect.postgres) {
-      if (table.$primaryKey.length == 1) {
-        final id = table.$primaryKey.firstOrNull;
-        if (id != null && id.type == DriftSqlType.int) {
-          ctx.buffer.write(' RETURNING ${id.name}');
-        }
+      for (final clause in onConflict.clauses) {
+        _writeOnConflict(ctx, mode, originalEntry, clause);
       }
     }
-
-    return ctx;
   }
 
   void _validateIntegrity(Insertable<D>? d) {
@@ -315,7 +376,7 @@ class InsertStatement<T extends Table, D> {
 
 /// Enumeration of different insert behaviors. See the documentation on the
 /// individual fields for details.
-enum InsertMode {
+enum InsertMode implements Component {
   /// A regular `INSERT INTO` statement. When a row with the same primary or
   /// unique key already exists, the insert statement will fail and an exception
   /// will be thrown. If the exception is caught, previous statements made in
@@ -343,7 +404,19 @@ enum InsertMode {
   insertOrFail,
 
   /// Like [insert], but failures will be ignored.
-  insertOrIgnore,
+  insertOrIgnore;
+
+  @override
+  void writeInto(GenerationContext ctx) {
+    if (ctx.dialect == SqlDialect.postgres &&
+        this != InsertMode.insert &&
+        this != InsertMode.insertOrIgnore) {
+      throw ArgumentError('$this not supported on postgres');
+    }
+
+    ctx.buffer.write(_insertKeywords[
+        ctx.dialect == SqlDialect.postgres ? InsertMode.insert : this]);
+  }
 }
 
 const _insertKeywords = <InsertMode, String>{

@@ -426,6 +426,72 @@ void main() {
     ));
   });
 
+  group('insert from select', () {
+    test('with simple select statement', () async {
+      final query = db.select(db.categories);
+      await db.into(db.categories).insertFromSelect(query, columns: {
+        db.categories.description: db.categories.description,
+        db.categories.priority: db.categories.priority,
+      });
+
+      verify(executor.runInsert(
+        'WITH _source AS (SELECT * FROM "categories") INSERT INTO "categories" '
+        '("desc", "priority") SELECT "desc", "priority" FROM _source',
+        argThat(isEmpty),
+      ));
+    });
+
+    test('with join', () async {
+      final amountOfTodos = db.todosTable.id.count();
+      final newDescription = db.categories.description + amountOfTodos.cast();
+      final query = db.selectOnly(db.todosTable)
+        ..join([
+          innerJoin(
+              db.categories, db.categories.id.equalsExp(db.todosTable.category))
+        ])
+        ..groupBy([db.categories.id])
+        ..addColumns([newDescription, db.categories.priority]);
+
+      await db.into(db.categories).insertFromSelect(query, columns: {
+        db.categories.description: newDescription,
+        db.categories.priority: db.categories.priority,
+      });
+
+      verify(executor.runInsert(
+        'WITH _source AS (SELECT '
+        '"categories"."desc" || CAST(COUNT("todos"."id") AS TEXT) AS "c0", '
+        '"categories"."priority" AS "categories.priority" '
+        'FROM "todos" '
+        'INNER JOIN "categories" ON "categories"."id" = "todos"."category" '
+        'GROUP BY "categories"."id") '
+        'INSERT INTO "categories" ("desc", "priority") '
+        'SELECT "c0", "categories.priority" FROM _source',
+        argThat(isEmpty),
+      ));
+    });
+
+    test('with on conflict clause', () async {
+      final query = db.select(db.categories);
+      await db.into(db.categories).insertFromSelect(
+            query,
+            columns: {
+              db.categories.description: db.categories.description,
+              db.categories.priority: db.categories.priority,
+            },
+            onConflict: DoUpdate((old) => CategoriesCompanion.custom(
+                  description: old.description,
+                )),
+          );
+
+      verify(executor.runInsert(
+        'WITH _source AS (SELECT * FROM "categories") INSERT INTO "categories" '
+        '("desc", "priority") SELECT "desc", "priority" FROM _source '
+        'ON CONFLICT("id") DO UPDATE SET "desc" = "desc"',
+        argThat(isEmpty),
+      ));
+    });
+  });
+
   group('on table instances', () {
     test('insert', () async {
       await db.categories

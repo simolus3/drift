@@ -53,6 +53,35 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     });
   }
 
+  @override
+  String? _nameForColumn(Expression expression) {
+    // Custom column added to this join?
+    if (_columnAliases.containsKey(expression)) {
+      return _columnAliases[expression];
+    }
+
+    // From an added table?
+    if (expression is GeneratedColumn) {
+      for (final table in _queriedTables(true)) {
+        if (table.$columns.contains(expression)) {
+          return _nameForTableColumn(expression);
+        }
+      }
+    }
+
+    // Not added to this join
+    return null;
+  }
+
+  String _nameForTableColumn(GeneratedColumn column,
+      {String? generatingForView}) {
+    if (generatingForView == column.tableName) {
+      return column.$name;
+    } else {
+      return '${column.tableName}.${column.$name}';
+    }
+  }
+
   /// Lists all tables this query reads from.
   ///
   /// If [onlyResults] (defaults to false) is set, only tables that are included
@@ -90,11 +119,8 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       final column = _selectedColumns[i];
       String chosenAlias;
       if (column is GeneratedColumn) {
-        if (ctx.generatingForView == column.tableName) {
-          chosenAlias = column.$name;
-        } else {
-          chosenAlias = '${column.tableName}.${column.$name}';
-        }
+        chosenAlias = _nameForTableColumn(column,
+            generatingForView: ctx.generatingForView);
       } else {
         chosenAlias = 'c$i';
       }

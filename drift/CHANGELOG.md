@@ -1,6 +1,8 @@
 ## 2.6.0-dev
 
 - Add `insertReturningOrNull` for empty inserts.
+- Add `insertFromSelect` to `InsertStatement` to run `INSERT INTO SELECT`
+  statements.
 - Add `rowid` parameter to companions for tables with rowids that don't have a
   visible alias for the rowid.
 

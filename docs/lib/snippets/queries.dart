@@ -94,4 +94,17 @@ extension GroupByQueries on MyDatabase {
     return query.map((row) => row.readTable(otherTodos)).get();
   }
   // #enddocregion otherTodosInSameCategory
+
+  // #docregion createCategoryForUnassignedTodoEntries
+  Future<void> createCategoryForUnassignedTodoEntries() async {
+    final newDescription = Variable<String>('category for: ') + todos.title;
+    final query = selectOnly(todos)
+      ..where(todos.category.isNull())
+      ..addColumns([newDescription]);
+
+    await into(categories).insertFromSelect(query, columns: {
+      categories.description: newDescription,
+    });
+  }
+  // #enddocregion createCategoryForUnassignedTodoEntries
 }

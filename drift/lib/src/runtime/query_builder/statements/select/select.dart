@@ -10,6 +10,10 @@ typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 @sealed
 abstract class BaseSelectStatement extends Component {
   int get _returnedColumnCount;
+
+  /// The name for the given [expression] in the result set, or `null` if
+  /// [expression] was not added as a column to this select statement.
+  String? _nameForColumn(Expression expression);
 }
 
 /// A select statement that doesn't use joins.
@@ -36,6 +40,15 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
 
   @override
   int get _returnedColumnCount => table.$columns.length;
+
+  @override
+  String? _nameForColumn(Expression expression) {
+    if (table.$columns.contains(expression)) {
+      return (expression as Column).name;
+    } else {
+      return null;
+    }
+  }
 
   @override
   void writeStartPart(GenerationContext ctx) {
