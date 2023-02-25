@@ -1,6 +1,7 @@
-## 0.27.1-dev
+## 0.28.0-dev
 
 - Support the `unhex` function added in sqlite 3.41.0
+- Support custom keyword sets when formatting SQL.
 
 ## 0.27.0
 

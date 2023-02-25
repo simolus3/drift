@@ -77,13 +77,7 @@ class Variable<T extends Object> extends Expression<T> {
     var suffix = '';
     if (context.dialect == SqlDialect.postgres) {
       explicitStart = 1;
-      mark = '@';
-
-      if (value is List<int>) {
-        // We need to explicitly bind the variable as byte array. Otherwise
-        // a Uint8List like [1,2,3] would bind to "{1,2,3}" as bytes
-        suffix += ":bytea";
-      }
+      mark = r'$';
     }
 
     if (explicitStart != null) {

@@ -82,6 +82,16 @@ class SqlWriter extends NodeSqlBuilder {
     return _out.toString();
   }
 
+  @override
+  bool isKeyword(String lexeme) {
+    switch (options.effectiveDialect) {
+      case SqlDialect.postgres:
+        return isKeywordLexeme(lexeme) || isPostgresKeywordLexeme(lexeme);
+      default:
+        return isKeywordLexeme(lexeme);
+    }
+  }
+
   FoundVariable? _findMoorVar(Variable target) {
     return query!.variables.firstWhereOrNull(
         (f) => f.variable.resolvedIndex == target.resolvedIndex);
@@ -91,7 +101,7 @@ class SqlWriter extends NodeSqlBuilder {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
-      final mark = _isPostgres ? '@' : '?';
+      final mark = _isPostgres ? '\\\$' : '?';
       _writeRawInSpaces('$mark${variable.index}');
     }
   }
