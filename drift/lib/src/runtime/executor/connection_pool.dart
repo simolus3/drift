@@ -29,23 +29,13 @@ abstract class MultiExecutor extends QueryExecutor {
   MultiExecutor._();
 }
 
-class _ExecutorCompleter {
-  _ExecutorCompleter(this.statement, this.args)
-      : _completer = Completer<List<Map<String, Object?>>>();
+class _PendingSelect {
+  _PendingSelect(this.statement, this.args)
+      : completer = Completer<List<Map<String, Object?>>>();
 
   final String statement;
   final List<Object?> args;
-  final Completer<List<Map<String, Object?>>> _completer;
-
-  Future<List<Map<String, Object?>>> get future => _completer.future;
-
-  void complete([FutureOr<List<Map<String, Object?>>>? value]) {
-    _completer.complete(value);
-  }
-
-  void completeError(Object error, [StackTrace? stackTrace]) {
-    _completer.completeError(error, stackTrace);
-  }
+  final Completer<List<Map<String, Object?>>> completer;
 }
 
 class _QueryExecutorPool {
@@ -54,8 +44,8 @@ class _QueryExecutorPool {
   final List<QueryExecutor> _executors;
   final List<QueryExecutor> _idleExecutors;
 
-  final List<_ExecutorCompleter> _queue = [];
-  final List<_ExecutorCompleter> _running = [];
+  final List<_PendingSelect> _queue = [];
+  final List<_PendingSelect> _running = [];
 
   Future<bool> ensureOpen(QueryExecutorUser user) async {
     final result = await Future.wait(
@@ -72,10 +62,10 @@ class _QueryExecutorPool {
       return _executors.single.runSelect(statement, args);
     }
 
-    final executorCompleter = _ExecutorCompleter(statement, args);
+    final executorCompleter = _PendingSelect(statement, args);
     _queue.add(executorCompleter);
     _run();
-    return executorCompleter.future;
+    return executorCompleter.completer.future;
   }
 
   void _run() {
@@ -87,15 +77,15 @@ class _QueryExecutorPool {
 
     _running.add(completer);
 
-    completer.future.whenComplete(() {
-      _running.remove(completer);
-      _idleExecutors.add(executor);
-      _run();
-    });
-
-    executor
-        .runSelect(completer.statement, completer.args)
-        .then(completer.complete, onError: completer.completeError);
+    completer.completer.complete(Future.sync(() async {
+      try {
+        return await executor.runSelect(completer.statement, completer.args);
+      } finally {
+        _running.remove(completer);
+        _idleExecutors.add(executor);
+        _run();
+      }
+    }));
   }
 }
 

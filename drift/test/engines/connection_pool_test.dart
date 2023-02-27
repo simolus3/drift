@@ -115,4 +115,17 @@ void main() {
     verify(write.transactions.ensureOpen(any));
     verify(write.transactions.runSelect('select', []));
   });
+
+  test('select failure does not cause an unhandled exception', () async {
+    // https://github.com/simolus3/drift/issues/2323
+    final read2 = MockExecutor();
+    final multi =
+        MultiExecutor.withReadPool(reads: [read2, read], write: write);
+
+    when(read2.runSelect(any, any)).thenThrow('bang!');
+
+    await multi.ensureOpen(db);
+
+    expect(multi.runSelect('select 1', []), throwsA(isA<String>()));
+  });
 }
