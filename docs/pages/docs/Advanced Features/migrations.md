@@ -396,7 +396,11 @@ This can be used to insert data before a migration. After the migration ran, you
 Note that you can't use the regular database class from you app for this, since its data classes always expect the latest
 schema. However, you can instruct drift to generate older snapshots of your data classes and companions for this purpose.
 To enable this feature, pass the `--data-classes` and `--companions` command-line arguments to the `drift_dev schema generate`
-command.
+command:
+
+```
+$ dart run drift_dev schema generate --data-classes --companions drift_schemas/ test/generated_migrations/
+```
 
 Then, you can import the generated classes with an alias:
 
