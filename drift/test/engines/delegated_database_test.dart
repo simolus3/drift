@@ -103,7 +103,7 @@ void main() {
       verify(delegate.open(userDb));
       verifyNever(delegate.runCustom(any, any));
       verify(version.schemaVersion);
-      // Running migrations from version 3 to 3
+      // Not running migrations from version 3 to 3
       verifyNever(version.setSchemaVersion(3));
 
       when(version.schemaVersion).thenAnswer((_) => Future.value(2));
@@ -126,6 +126,17 @@ void main() {
       await db.ensureOpen(userDb);
 
       verify(delegate.runCustom('updated', argThat(equals([1, 3]))));
+    });
+
+    test('handles database downgrades', () async {
+      final version = MockDynamicVersionDelegate();
+      when(version.schemaVersion).thenAnswer((_) => Future.value(4));
+      when(delegate.versionDelegate).thenReturn(version);
+      await db.ensureOpen(userDb);
+
+      verify(delegate.open(userDb));
+      verify(delegate.runCustom('updated', argThat(equals([4, 3]))));
+      verify(version.setSchemaVersion(3));
     });
   });
 

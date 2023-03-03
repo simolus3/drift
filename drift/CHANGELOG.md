@@ -5,6 +5,8 @@
   statements.
 - Add `rowid` parameter to companions for tables with rowids that don't have a
   visible alias for the rowid.
+- After opening a database with a higher schema version than the current one set
+  in the database class, the schema version in the database will now be downgraded.
 
 ## 2.5.0
 
