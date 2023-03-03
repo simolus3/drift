@@ -1,4 +1,5 @@
 // GENERATED CODE, DO NOT EDIT BY HAND.
+// ignore_for_file: type=lint
 //@dart=2.12
 import 'package:drift/drift.dart';
 
@@ -575,15 +576,18 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
   final Value<String> title;
   final Value<String> content;
   final Value<String> searchTerms;
+  final Value<int> rowid;
   const NotesCompanion({
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.searchTerms = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   NotesCompanion.insert({
     required String title,
     required String content,
     required String searchTerms,
+    this.rowid = const Value.absent(),
   })  : title = Value(title),
         content = Value(content),
         searchTerms = Value(searchTerms);
@@ -591,22 +595,26 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
     Expression<String>? title,
     Expression<String>? content,
     Expression<String>? searchTerms,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (searchTerms != null) 'search_terms': searchTerms,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   NotesCompanion copyWith(
       {Value<String>? title,
       Value<String>? content,
-      Value<String>? searchTerms}) {
+      Value<String>? searchTerms,
+      Value<int>? rowid}) {
     return NotesCompanion(
       title: title ?? this.title,
       content: content ?? this.content,
       searchTerms: searchTerms ?? this.searchTerms,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -622,6 +630,9 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
     if (searchTerms.present) {
       map['search_terms'] = Variable<String>(searchTerms.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -630,7 +641,8 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
     return (StringBuffer('NotesCompanion(')
           ..write('title: $title, ')
           ..write('content: $content, ')
-          ..write('searchTerms: $searchTerms')
+          ..write('searchTerms: $searchTerms, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

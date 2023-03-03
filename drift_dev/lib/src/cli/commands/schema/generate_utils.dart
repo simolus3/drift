@@ -186,7 +186,8 @@ class GenerateUtilsCommand extends Command {
 
   static final _filenames = RegExp(r'(?:moor|drift)_schema_v(\d+)\.json');
   static final _dartfmt = DartFormatter();
-  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.';
+  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
+      '// ignore_for_file: type=lint';
 }
 
 class _ExportedSchema {
