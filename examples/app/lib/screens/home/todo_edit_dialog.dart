@@ -13,7 +13,7 @@ class TodoEditDialog extends ConsumerStatefulWidget {
   const TodoEditDialog({Key? key, required this.entry}) : super(key: key);
 
   @override
-  _TodoEditDialogState createState() => _TodoEditDialogState();
+  ConsumerState<TodoEditDialog> createState() => _TodoEditDialogState();
 }
 
 class _TodoEditDialogState extends ConsumerState<TodoEditDialog> {
@@ -82,7 +82,6 @@ class _TodoEditDialogState extends ConsumerState<TodoEditDialog> {
       ),
       actions: [
         TextButton(
-          child: const Text('Cancel'),
           style: ButtonStyle(
             textStyle: MaterialStateProperty.all(
               const TextStyle(color: Colors.black),
@@ -91,6 +90,7 @@ class _TodoEditDialogState extends ConsumerState<TodoEditDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
+          child: const Text('Cancel'),
         ),
         TextButton(
           child: const Text('Save'),

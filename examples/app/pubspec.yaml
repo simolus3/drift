@@ -13,20 +13,20 @@ dependencies:
   drift:
   file_picker: ^5.2.5
   flutter_colorpicker: ^1.0.3
-  flutter_riverpod: ^1.0.3
-  go_router: ^3.0.6
-  intl: ^0.17.0
+  flutter_riverpod: ^2.3.0
+  go_router: ^6.2.0
+  intl: ^0.18.0
   http: ^0.13.4 # used to load sqlite3 wasm files on the web
   sqlite3_flutter_libs: ^0.5.5
   sqlite3: ^1.7.0
   path_provider: ^2.0.9
   path: ^1.8.0
-  riverpod: ^1.0.3
+  riverpod: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
   build_runner: ^2.1.8
   # We use this to compile the shared web worker for the web database. This dependency
   # isn't required for most apps. You only need it if you want to target the web, use

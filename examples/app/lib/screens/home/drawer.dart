@@ -16,6 +16,7 @@ class CategoriesDrawer extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           DrawerHeader(
+            decoration: const BoxDecoration(color: Colors.orange),
             child: Text(
               'Todo-List Demo with drift',
               style: Theme.of(context)
@@ -23,7 +24,6 @@ class CategoriesDrawer extends ConsumerWidget {
                   .titleMedium
                   ?.copyWith(color: Colors.white),
             ),
-            decoration: const BoxDecoration(color: Colors.orange),
           ),
           Flexible(
             child: StreamBuilder<List<CategoryWithCount>>(
@@ -124,13 +124,13 @@ class _CategoryDrawerEntry extends ConsumerWidget {
                       },
                     ),
                     TextButton(
-                      child: const Text('Delete'),
                       style: ButtonStyle(
                         foregroundColor: MaterialStateProperty.all(Colors.red),
                       ),
                       onPressed: () {
                         Navigator.pop(context, true);
                       },
+                      child: const Text('Delete'),
                     ),
                   ],
                 );
