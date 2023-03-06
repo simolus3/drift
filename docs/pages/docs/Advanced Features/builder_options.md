@@ -261,19 +261,10 @@ By default, drift generates code from a single entrypoint - all tables, views
 and queries for a database are generated into a single part file.
 For larger projects, this file can become quite large, slowing down builds and
 the analyzer when it is re-generated.
-Starting from Drift version 2.3.0, a new, modular, build setup is available as
-an alternative for larger projects.
+Drift supports an alternative and modular code-generation mode intended as an
+alternative for larger projects.
 With this setup, drift generates multiple files and automatically manages
 imports between them.
-
-{% block "blocks/alert" title="Experimental" color="success" %}
-Please be aware that modular code generation is a drift feature in active
-development. It is not fully stable yet, with minor breaking changes to be
-expected until Drift 2.4.0.
-
-For those interested in trying this out - please report all issues or
-inconveniences you run into. Your feedback is cruicial to stabilize this feature!
-{% endblock %}
 
 As a motivating example, consider a large drift project with many tables or
 views being split across different files:
