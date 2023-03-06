@@ -54,6 +54,13 @@ between isolates.
 
 Starting from drift 2.5, running a short-lived computation workload on a separate
 isolate is easily possible with `computeWithDatabase`.
+This function helps spawn an isolate and opens another database instance on that
+isolate. Since the background database instance needs to talk to the main instance
+on the foreground isolate for synchronization, you need a constructor on your
+database class that can take a custom `QueryExecutor`, the class used by drift
+to represent lower-level databases:
+
+{% include "blocks/snippet" snippets = snippets name = 'database-definition' %}
 
 {% include "blocks/snippet" snippets = snippets name = 'compute' %}
 
