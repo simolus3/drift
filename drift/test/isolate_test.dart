@@ -195,6 +195,10 @@ void main() {
               descriptionInUpperCase: 'FROM REMOTE ISOLATE!',
             )
           ]));
+
+      // Make sure database still works after computeWithDatabase
+      // https://github.com/simolus3/drift/issues/2279#issuecomment-1455385439
+      await db.customSelect('SELECT 1').get();
       await db.close();
     }
 

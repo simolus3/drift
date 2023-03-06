@@ -55,7 +55,11 @@ class RunningDriftServer {
     this.killIsolateWhenDone = true,
     bool closeConnectionAfterShutdown = true,
     this.onlyAcceptSingleConnection = false,
-  }) : server = DriftServer(connection, allowRemoteShutdown: true) {
+  }) : server = DriftServer(
+          connection,
+          allowRemoteShutdown: true,
+          closeConnectionAfterShutdown: closeConnectionAfterShutdown,
+        ) {
     final subscription = connectPort.listen((message) {
       if (message is List && message.length == 2) {
         if (onlyAcceptSingleConnection) {
