@@ -140,6 +140,15 @@ void main() {
       Uint8List(12),
     ]));
 
+    when(executor.runInsert(any, any)).thenAnswer(
+        (realInvocation) => Future.error(UnimplementedError('error!')));
+    await expectLater(
+      db.categories
+          .insertOne(CategoriesCompanion.insert(description: 'description')),
+      throwsA(isA<DriftRemoteException>().having(
+          (e) => e.remoteCause, 'remoteCause', 'UnimplementedError: error!')),
+    );
+
     await db.close();
   });
 

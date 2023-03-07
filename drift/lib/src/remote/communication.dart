@@ -88,12 +88,9 @@ class DriftCommunication {
     } else if (msg is ErrorResponse) {
       final requestId = msg.requestId;
       final request = _pendingRequests.remove(requestId);
-      final backgroundTrace = msg.stackTrace != null
-          ? StackTrace.fromString(msg.stackTrace!)
-          : null;
 
       request?.completeWithError(
-          DriftRemoteException._(msg.error, backgroundTrace));
+          DriftRemoteException._(msg.error, msg.stackTrace));
       _pendingRequests.remove(msg.requestId);
     } else if (msg is Request) {
       _incomingRequests.add(msg);
@@ -145,14 +142,14 @@ class DriftCommunication {
   }
 
   /// Sends an erroneous response for a [Request].
-  void respondError(Request request, dynamic error, [StackTrace? trace]) {
+  void respondError(Request request, Object error, [StackTrace? trace]) {
     // sending a message while closed will throw, so don't even try.
     if (isClosed) return;
 
     if (error is CancellationException) {
       _send(CancelledResponse(request.id));
     } else {
-      _send(ErrorResponse(request.id, error.toString(), trace.toString()));
+      _send(ErrorResponse(request.id, error, trace));
     }
   }
 

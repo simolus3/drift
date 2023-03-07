@@ -7,6 +7,8 @@
   visible alias for the rowid.
 - After opening a database with a higher schema version than the current one set
   in the database class, the schema version in the database will now be downgraded.
+- When using a drift isolate in the same engine group, errors on the remote end are
+  reported as-is instead of wrapping them in a `DriftRemoteException`.
 
 ## 2.5.0
 

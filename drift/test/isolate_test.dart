@@ -409,6 +409,44 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
         emitsInOrder([anything]));
     database.markTablesUpdated({database.users});
   });
+
+  test('can see parameters in exception', () async {
+    final duplicateCategory =
+        CategoriesCompanion.insert(description: 'has unique constraint');
+    await database.categories.insertOne(duplicateCategory);
+
+    if (serialize) {
+      // We can't serialize exceptions, so expect a string error
+      await expectLater(
+        () => database.categories.insertOne(duplicateCategory),
+        throwsA(
+          isA<DriftRemoteException>().having(
+            (e) => e.remoteCause,
+            'remoteCause',
+            allOf(
+              contains('SqliteException'),
+              contains('parameters: has unique constraint'),
+            ),
+          ),
+        ),
+      );
+    } else {
+      await expectLater(
+        () => database.categories.insertOne(duplicateCategory),
+        throwsA(
+          isA<DriftRemoteException>().having(
+            (e) => e.remoteCause,
+            'remoteCause',
+            isA<SqliteException>()
+                .having((e) => e.causingStatement, 'causingStatement',
+                    'INSERT INTO "categories" ("desc") VALUES (?)')
+                .having((e) => e.parametersToStatement, 'parametersToStatement',
+                    ['has unique constraint']),
+          ),
+        ),
+      );
+    }
+  });
 }
 
 DatabaseConnection _backgroundConnection() {

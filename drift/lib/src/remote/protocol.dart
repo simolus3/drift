@@ -38,7 +38,7 @@ class DriftProtocol {
         _tag_Response_error,
         message.requestId,
         message.error.toString(),
-        message.stackTrace,
+        message.stackTrace?.toString(),
       ];
     } else if (message is SuccessResponse) {
       return [
@@ -63,7 +63,10 @@ class DriftProtocol {
       case _tag_Request:
         return Request(id, decodePayload(message[2]));
       case _tag_Response_error:
-        return ErrorResponse(id, message[2] as Object, message[3] as String);
+        final stringTrace = message[3] as String?;
+
+        return ErrorResponse(id, message[2] as Object,
+            stringTrace != null ? StackTrace.fromString(stringTrace) : null);
       case _tag_Response_success:
         return SuccessResponse(id, decodePayload(message[2]));
       case _tag_Response_cancelled:
@@ -303,7 +306,7 @@ class SuccessResponse extends Message {
 class ErrorResponse extends Message {
   final int requestId;
   final Object error;
-  final String? stackTrace;
+  final StackTrace? stackTrace;
 
   ErrorResponse(this.requestId, this.error, [this.stackTrace]);
 
