@@ -1,6 +1,11 @@
 name: Prepare
 description: Prepare CI environment to test a component of drift
 
+inputs:
+  dart_version:
+    description: Dart version, to restore the dependency cache
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -26,9 +31,9 @@ runs:
     - uses: actions/cache@v3
       with:
         path: "${{ env.PUB_CACHE }}"
-        key: dart-dependencies-${{ needs.setup.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+        key: dart-dependencies-${{ inputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
         restore-keys: |
-          dart-dependencies-${{ needs.setup.outputs.dart_version }}-
+          dart-dependencies-${{ inputs.dart_version }}-
           dart-dependencies-
     - name: Setup melos
       run: dart pub global activate melos && dart pub get

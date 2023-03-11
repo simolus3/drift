@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: melos bootstrap --scope drift_docs,drift
         working-directory: .
       - name: Run build
@@ -72,6 +74,8 @@ jobs:
       # setup
       - uses: actions/checkout@v3
       - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: melos bootstrap --scope drift
         working-directory: .
       - name: Get dependencies for plugin
@@ -108,6 +112,8 @@ jobs:
     # setup
     - uses: actions/checkout@v3
     - uses: ./.github/actions/prepare
+      with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
     - run: melos bootstrap --scope drift_dev
       working-directory: .
     # analysis
@@ -127,6 +133,8 @@ jobs:
       # setup
       - uses: actions/checkout@v2
       - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: dart pub upgrade
       # analysis
       - run: dart format -o none --set-exit-if-changed .
@@ -161,6 +169,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: melos bootstrap --no-flutter
         working-directory: .
       - run: tool/misc_integration_test.sh
@@ -172,6 +182,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: melos bootstrap --scope migrations_example
         working-directory: .
       - name: Run build
