@@ -26,9 +26,9 @@ runs:
     - uses: actions/cache@v3
       with:
         path: "${{ env.PUB_CACHE }}"
-        key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+        key: dart-dependencies-${{ needs.setup.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
         restore-keys: |
-          dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
+          dart-dependencies-${{ needs.setup.outputs.dart_version }}-
           dart-dependencies-
     - name: Setup melos
       run: dart pub global activate melos && dart pub get
