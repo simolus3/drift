@@ -17,7 +17,7 @@ jobs:
     name: "Compile sqlite3 for tests"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/cache@v3
         id: cache_build
         with:
@@ -34,7 +34,7 @@ jobs:
           melos bootstrap --scope drift
           dart run drift/tool/download_sqlite3.dart
       - name: Upload built sqlite3 binaries
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         # we only need these artifacts on Linux since we run unit tests on Linux only
         if: runner.os == 'Linux'
         with:
@@ -56,7 +56,7 @@ jobs:
         run: |
           version=`cat $DART_HOME/version`
           echo "Running on Dart $version"
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_STATE
       - uses: actions/cache@v3
         with:
           path: "${{ env.PUB_CACHE }}"

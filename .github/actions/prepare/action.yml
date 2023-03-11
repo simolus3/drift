@@ -13,7 +13,7 @@ runs:
 
     # Setup sqlite3
     - name: Download sqlite3
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: sqlite3
         path: /tmp/sqlite/out/
