@@ -15,10 +15,6 @@ packages:
  - extras/plugin_example
  - extras/assets/*
 
-command:
-  bootstrap:
-    usePubspecOverrides: true
-
 scripts:
   check_format:
     run: dart format -o none --set-exit-if-changed .

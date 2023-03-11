@@ -68,6 +68,6 @@ It's on pub at
 We use [melos](https://melos.invertase.dev/) to manage the different packages
 in this repository.
 
-You can install it with `dart pub global activate melos`. If your Dart SDK was
-installed as part of Flutter, you can then run `melos bootstrap` to provision
-all dependencies. Otherwise, run `flutter pub global run melos bootstrap`.
+You can install it with `dart pub global activate melos`. To activate it in this
+repository, run `dart pub get` in this directory followed by `melos bootstrap`.
+

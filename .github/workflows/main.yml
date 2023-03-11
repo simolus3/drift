@@ -30,6 +30,7 @@ jobs:
         if: steps.cache_build.outputs.cache-hit != 'true'
         run: |
           dart pub global activate melos
+          dart pub get
           melos bootstrap --scope drift
           dart run drift/tool/download_sqlite3.dart
       - name: Upload built sqlite3 binaries
@@ -64,7 +65,7 @@ jobs:
             dart-dependencies-${{ steps.dart_version.outputs.version }}-
             dart-dependencies-
       - name: Setup melos
-        run: dart pub global activate melos
+        run: dart pub global activate melos && dart pub get
       - name: Get Dart dependencies
         run: melos bootstrap --no-flutter
 
@@ -98,7 +99,7 @@ jobs:
           restore-keys: |
             dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
             dart-dependencies-
-      - run: dart pub global activate melos && melos bootstrap --scope drift_docs,drift
+      - run: dart pub global activate melos && dart pub get && melos bootstrap --scope drift_docs,drift
         working-directory: .
       - name: Run build
         env:
@@ -169,7 +170,7 @@ jobs:
           restore-keys: |
             dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
             dart-dependencies-
-      - run: dart pub global activate melos && melos bootstrap --scope drift
+      - run: dart pub global activate melos && dart pub get && melos bootstrap --scope drift
         working-directory: .
       - name: Get dependencies for plugin
         run: |
@@ -212,7 +213,7 @@ jobs:
         restore-keys: |
           dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
           dart-dependencies-
-    - run: dart pub global activate melos && melos bootstrap --scope drift_dev
+    - run: dart pub global activate melos && dart pub get && melos bootstrap --scope drift_dev
       working-directory: .
     # analysis
     - run: dart format -o none --set-exit-if-changed .
@@ -298,7 +299,7 @@ jobs:
           key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             dart-dependencies-
-      - run: dart pub global activate melos && melos bootstrap --no-flutter
+      - run: dart pub global activate melos && dart pub get && melos bootstrap --no-flutter
         working-directory: .
       - run: tool/misc_integration_test.sh
 
@@ -325,7 +326,7 @@ jobs:
           key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             dart-dependencies-
-      - run: dart pub global activate melos && melos bootstrap --scope migrations_example
+      - run: dart pub global activate melos && dart pub get && melos bootstrap --scope migrations_example
         working-directory: .
       - name: Run build
         working-directory: examples/migrations_example
