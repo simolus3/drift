@@ -26,12 +26,12 @@ scripts:
   build:
     run: flutter pub run build_runner build --delete-conflicting-outputs
     exec: {concurrency: 1}
-    select-package:
-      depends-on: build_runner
+    packageFilters:
+      dependsOn: build_runner
 
   test:
     run: dart test
     exec: {concurrency: 1}
-    select-package:
-      depends-on: test
+    packageFilters:
+      dependsOn: test
       ignore: drift_postgres # this is an integration test
