@@ -1,0 +1,35 @@
+name: Prepare
+description: Prepare CI environment to test a component of drift
+
+runs:
+  using: "composite"
+  steps:
+    - uses: dart-lang/setup-dart@v1
+
+    # Setup sqlite3
+    - name: Download sqlite3
+      uses: actions/download-artifact@v2
+      with:
+        name: sqlite3
+        path: /tmp/sqlite/out/
+    - name: Use downloaded sqlite3
+      shell: bash
+      run: |
+        chmod a+x /tmp/sqlite/out/sqlite3
+        echo "/tmp/sqlite/out" >> $GITHUB_PATH
+        echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+    - name: Check sqlite3 version
+      run: sqlite3 --version
+      shell: bash
+
+    # Setup Dart packages
+    - uses: actions/cache@v3
+      with:
+        path: "${{ env.PUB_CACHE }}"
+        key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
+          dart-dependencies-
+    - name: Setup melos
+      run: dart pub global activate melos && dart pub get
+      shell: bash

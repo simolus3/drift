@@ -6,68 +6,8 @@ env:
   PUB_ENVIRONMENT: bot.github
 
 jobs:
-  # Compile the latest sqlite3 library, which will be used to run tests in drift
-  # and sqlparser
-  compile_sqlite3:
-    strategy:
-      matrix:
-        # We only really need this for Ubuntu, but we recommend users run the same
-        # steps so we better make sure they work on all platforms.
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    name: "Compile sqlite3 for tests"
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
-        id: cache_build
-        with:
-          path: drift/.dart_tool/sqlite3/
-          key: ${{ runner.os }}-${{ hashFiles('drift/tool/') }}
-      - name: Download Dart
-        if: steps.cache_build.outputs.cache-hit != 'true'
-        uses: dart-lang/setup-dart@v1
-      - name: Compile sqlite3
-        if: steps.cache_build.outputs.cache-hit != 'true'
-        run: |
-          dart pub global activate melos
-          dart pub get
-          melos bootstrap --scope drift
-          dart run drift/tool/download_sqlite3.dart
-      - name: Upload built sqlite3 binaries
-        uses: actions/upload-artifact@v2
-        # we only need these artifacts on Linux since we run unit tests on Linux only
-        if: runner.os == 'Linux'
-        with:
-          name: sqlite3
-          path: drift/.dart_tool/sqlite3/
-          if-no-files-found: error
-          retention-days: 1
-
-  dart_dependencies:
-    name: Get and cache Dart dependencies
-    runs-on: ubuntu-latest
-    outputs:
-      dart_version: ${{ steps.dart_version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dart-lang/setup-dart@v1
-      - name: Get Dart version
-        id: dart_version
-        run: |
-          version=`cat $DART_HOME/version`
-          echo "Running on Dart $version"
-          echo "::set-output name=version::$version"
-      - uses: actions/cache@v3
-        with:
-          path: "${{ env.PUB_CACHE }}"
-          key: dart-dependencies-${{ steps.dart_version.outputs.version }}-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            dart-dependencies-${{ steps.dart_version.outputs.version }}-
-            dart-dependencies-
-      - name: Setup melos
-        run: dart pub global activate melos && dart pub get
-      - name: Get Dart dependencies
-        run: melos bootstrap --no-flutter
+  setup:
+    uses: ./.github/workflows/setup.yml
 
   docs:
     name: "Documentation"
@@ -79,27 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: dart-lang/setup-dart@v1
-      - name: Download sqlite3
-        uses: actions/download-artifact@v2
-        with:
-          name: sqlite3
-          path: /tmp/sqlite/out/
-      - name: Use downloaded sqlite3
-        run: |
-          chmod a+x /tmp/sqlite/out/sqlite3
-          echo "/tmp/sqlite/out" >> $GITHUB_PATH
-          echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
-      - name: Check sqlite3 version
-        run: sqlite3 --version
-      - uses: actions/cache@v3
-        with:
-          path: "${{ env.PUB_CACHE }}"
-          key: dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            dart-dependencies-${{ needs.dart_dependencies.outputs.dart_version }}-
-            dart-dependencies-
-      - run: dart pub global activate melos && dart pub get && melos bootstrap --scope drift_docs,drift
+      - uses: ./.github/actions/prepare
+      - run: melos bootstrap --scope drift_docs,drift
         working-directory: .
       - name: Run build
         env:
