@@ -26,7 +26,7 @@ class OccurrenceCategoriesTable extends CategoriesTable {
 
   @override
   List<String> get customConstraints =>
-      ['FOREIGN KEY(parentId) REFERENCES occurrence_categories(id)'];
+      ['FOREIGN KEY(parent_id) REFERENCES occurrence_categories(id)'];
 }
 
 class SocietiesCategoriesTable extends CategoriesTable {
@@ -35,7 +35,7 @@ class SocietiesCategoriesTable extends CategoriesTable {
 
   @override
   List<String> get customConstraints =>
-      ['FOREIGN KEY(parentId) REFERENCES societies_categories(id)'];
+      ['FOREIGN KEY(parent_id) REFERENCES societies_categories(id)'];
 }
 
 @DriftDatabase(tables: [OccurrenceCategoriesTable, SocietiesCategoriesTable])
