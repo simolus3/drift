@@ -1,5 +1,5 @@
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/analysis/results/table.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -251,6 +251,47 @@ class TestTable extends Table {
                 'Parse error in customConstraint(): Expected a constraint'))
             .withSpan('invalid'),
       ]);
+    });
+
+    test('resolves foreign key references', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class ReferencedTable extends Table {
+  TextColumn get textColumn => text()();
+}
+
+class TestTable extends Table {
+  TextColumn get a => text().customConstraint('NOT NULL REFERENCES foo (bar)')();
+  TextColumn get b => text().customConstraint('NOT NULL REFERENCES referenced_table (foo)')();
+  TextColumn get c => text().customConstraint('NOT NULL REFERENCES referenced_table (text_column)')();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.dart');
+      final referencedTable =
+          file.analysis[file.id('referenced_table')]!.result! as DriftTable;
+      final tableAnalysis = file.analysis[file.id('test_table')]!;
+
+      expect(tableAnalysis.errorsDuringAnalysis, [
+        isDriftError('`foo` could not be found in any import.')
+            .withSpan(contains('REFERENCES foo (bar)')),
+        isDriftError(contains('has no column named `foo`'))
+            .withSpan(contains('referenced_table (foo)')),
+      ]);
+
+      final testTable = tableAnalysis.result! as DriftTable;
+      expect(
+        testTable.columnBySqlName['c'],
+        isA<DriftColumn>().having(
+          (e) => e.constraints,
+          'constraints',
+          contains(isA<ForeignKeyReference>().having((e) => e.otherColumn,
+              'otherColumn', referencedTable.columns.single)),
+        ),
+      );
     });
 
     test('warns about missing `NOT NULL`', () async {

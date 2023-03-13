@@ -429,7 +429,7 @@ class ColumnParser {
     final docString =
         getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
 
-    foundConstraints.addAll(_driftConstraintsFromCustomConstraints(
+    foundConstraints.addAll(await _driftConstraintsFromCustomConstraints(
       isNullable: nullable,
       customConstraints: foundCustomConstraint,
       sourceForCustomConstraints: customConstraintSource,
@@ -484,12 +484,12 @@ class ColumnParser {
     return object.computeConstantValue()!.getField('key')!.toStringValue();
   }
 
-  Iterable<DriftColumnConstraint> _driftConstraintsFromCustomConstraints({
+  Future<List<DriftColumnConstraint>> _driftConstraintsFromCustomConstraints({
     required bool isNullable,
     String? customConstraints,
     AstNode? sourceForCustomConstraints,
-  }) sync* {
-    if (customConstraints == null) return;
+  }) async {
+    if (customConstraints == null) return const [];
 
     final engine = _resolver.resolver.driver.newSqlEngine();
     final parseResult = engine.parseColumnConstraints(customConstraints);
@@ -514,15 +514,51 @@ class ColumnParser {
       ));
     }
 
+    final parsedConstraints = <DriftColumnConstraint>[];
+
     for (final constraint in constraints) {
       if (constraint is sql.GeneratedAs) {
-        yield ColumnGeneratedAs.fromParser(constraint);
+        parsedConstraints.add(ColumnGeneratedAs.fromParser(constraint));
       } else if (constraint is sql.PrimaryKeyColumn) {
-        yield PrimaryKeyColumn(constraint.autoIncrement);
+        parsedConstraints.add(PrimaryKeyColumn(constraint.autoIncrement));
       } else if (constraint is sql.UniqueColumn) {
-        yield UniqueColumn();
+        parsedConstraints.add(UniqueColumn());
+      } else if (constraint is sql.ForeignKeyColumnConstraint) {
+        final clause = constraint.clause;
+
+        final table =
+            await _resolver.resolveSqlReferenceOrReportError<DriftTable>(
+          clause.foreignTable.tableName,
+          (msg) => DriftAnalysisError.inDartAst(
+            _resolver.discovered.dartElement,
+            sourceForCustomConstraints!,
+            msg,
+          ),
+        );
+
+        if (table != null) {
+          final columnName = clause.columnNames.first;
+          final column =
+              table.columnBySqlName[clause.columnNames.first.columnName];
+
+          if (column == null) {
+            _resolver.reportError(DriftAnalysisError.inDartAst(
+              _resolver.discovered.dartElement,
+              sourceForCustomConstraints!,
+              'The referenced table has no column named `$columnName`',
+            ));
+          } else {
+            parsedConstraints.add(ForeignKeyReference(
+              column,
+              constraint.clause.onUpdate,
+              constraint.clause.onDelete,
+            ));
+          }
+        }
       }
     }
+
+    return parsedConstraints;
   }
 }
 
