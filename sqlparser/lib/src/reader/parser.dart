@@ -2066,7 +2066,7 @@ class Parser {
 
     do {
       try {
-        final tableConstraint = _tableConstraintOrNull();
+        final tableConstraint = tableConstraintOrNull();
 
         if (tableConstraint != null) {
           encounteredTableConstraint = true;
@@ -2614,7 +2614,7 @@ class Parser {
     _error('Expected a constraint (primary key, nullability, etc.)');
   }
 
-  TableConstraint? _tableConstraintOrNull() {
+  TableConstraint? tableConstraintOrNull({bool requireConstraint = false}) {
     final first = _peek;
     final nameToken = _constraintNameOrNull();
     final name = nameToken?.identifier;
@@ -2657,7 +2657,7 @@ class Parser {
       return result;
     }
 
-    if (name != null) {
+    if (name != null || requireConstraint) {
       // if a constraint was started with CONSTRAINT <name> but then we didn't
       // find a constraint, that's an syntax error
       _error('Expected a table constraint (e.g. a primary key)');

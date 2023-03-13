@@ -1,6 +1,8 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
+import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../driver/error.dart';
 import '../../results/results.dart';
@@ -58,7 +60,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
           UniqueColumns(uniqueKey),
       ],
-      overrideTableConstraints: await _readCustomConstraints(element),
+      overrideTableConstraints: await _readCustomConstraints(columns, element),
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
     );
 
@@ -270,7 +272,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return ColumnParser(this).parse(declaration, element);
   }
 
-  Future<List<String>> _readCustomConstraints(ClassElement element) async {
+  Future<List<String>> _readCustomConstraints(
+      List<DriftColumn> localColumns, ClassElement element) async {
     final customConstraints =
         element.lookUpGetter('customConstraints', element.library);
 
@@ -289,6 +292,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     }
     final expression = body.expression;
     final foundConstraints = <String>[];
+    final foundConstraintSources = <SyntacticEntity>[];
 
     if (expression is ListLiteral) {
       for (final entry in expression.elements) {
@@ -296,6 +300,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           final value = entry.stringValue;
           if (value != null) {
             foundConstraints.add(value);
+            foundConstraintSources.add(entry);
           }
         } else {
           reportError(DriftAnalysisError.inDartAst(
@@ -305,6 +310,52 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     } else {
       reportError(DriftAnalysisError.forDartElement(
           customConstraints, 'This must return a list literal!'));
+    }
+
+    // Try to parse these constraints and emit warnings
+    final engine = resolver.driver.newSqlEngine();
+    for (var i = 0; i < foundConstraintSources.length; i++) {
+      final parsed = engine.parseTableConstraint(foundConstraints[i]).rootNode;
+
+      if (parsed is sql.InvalidStatement) {
+        reportError(DriftAnalysisError.inDartAst(
+            customConstraints,
+            foundConstraintSources[i],
+            'Could not parse this table constraint'));
+      } else if (parsed is sql.ForeignKeyTableConstraint) {
+        final source = foundConstraintSources[i];
+
+        // Check that the columns exist locally
+        final missingLocals = parsed.columns.where(
+            (e) => localColumns.every((l) => !l.hasEqualSqlName(e.columnName)));
+        if (missingLocals.isNotEmpty) {
+          reportError(DriftAnalysisError.inDartAst(
+            element,
+            source,
+            'Columns ${missingLocals.join(', ')} don\'t exist locally.',
+          ));
+        }
+
+        // Also see if we can resolve the referenced table.
+        final clause = parsed.clause;
+        final table = await resolveSqlReferenceOrReportError<DriftTable>(
+            clause.foreignTable.tableName,
+            (msg) => DriftAnalysisError.inDartAst(element, source, msg));
+
+        if (table != null) {
+          final missingColumns = clause.columnNames
+              .map((e) => e.columnName)
+              .where((e) => !table.columnBySqlName.containsKey(e));
+
+          if (missingColumns.isNotEmpty) {
+            reportError(DriftAnalysisError.inDartAst(
+              element,
+              source,
+              'Columns ${missingColumns.join(', ')} not found in table `${table.schemaName}`.',
+            ));
+          }
+        }
+      }
     }
 
     return foundConstraints;

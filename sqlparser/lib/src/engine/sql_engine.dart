@@ -164,6 +164,30 @@ class SqlEngine {
     );
   }
 
+  /// Parses [sql] as a single table constraint.
+  ///
+  /// The [ParseResult.rootNode] will either be a [TableConstraint] or an
+  /// [InvalidStatement] in case of parsing errors.
+  ParseResult parseTableConstraint(String sql) {
+    final tokens = tokenize(sql);
+    final parser = _createParser(tokens, driftExtensions: false);
+
+    AstNode? constraint;
+    try {
+      constraint = parser.tableConstraintOrNull(requireConstraint: true);
+    } on ParsingError {
+      // Ignore, will be added to parser.errors anyway
+    }
+
+    return ParseResult._(
+      constraint ?? InvalidStatement(),
+      tokens,
+      parser.errors,
+      sql,
+      null,
+    );
+  }
+
   /// Parses a `.drift` file, which can consist of multiple statements and
   /// additional components like import statements.
   ParseResult parseDriftFile(String content) {

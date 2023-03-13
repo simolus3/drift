@@ -74,4 +74,35 @@ void main() {
       ]);
     });
   });
+
+  group('parseTableConstraint', () {
+    test('parses constraint', () {
+      final result = SqlEngine().parseTableConstraint(
+          'CONSTRAINT foo FOREIGN KEY (a, b) REFERENCES c (d, e);');
+      expect(result.errors, isEmpty);
+
+      enforceEqual(
+        result.rootNode,
+        ForeignKeyTableConstraint(
+          'foo',
+          columns: [
+            Reference(columnName: 'a'),
+            Reference(columnName: 'b'),
+          ],
+          clause: ForeignKeyClause(
+            foreignTable: TableReference('c'),
+            columnNames: [
+              Reference(columnName: 'd'),
+              Reference(columnName: 'e'),
+            ],
+          ),
+        ),
+      );
+    });
+
+    test('report errors', () {
+      final result = SqlEngine().parseTableConstraint('parse error');
+      expect(result.errors, isNotEmpty);
+    });
+  });
 }

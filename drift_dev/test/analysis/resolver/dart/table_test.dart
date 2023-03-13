@@ -324,8 +324,44 @@ class WithConstraints extends Table {
       isDriftError('This must return a list literal!')
           .withSpan('customConstraints')
     ]);
-    expect(withConstraints.errorsDuringAnalysis,
-        [isDriftError('This must be a string literal.').withSpan('1')]);
+    expect(withConstraints.errorsDuringAnalysis, [
+      isDriftError('This must be a string literal.').withSpan('1'),
+      isDriftError('Could not parse this table constraint').withSpan("'two'"),
+      isDriftError('Could not parse this table constraint').withSpan("'three'"),
+    ]);
+  });
+
+  test('warns about foreign key references from customConstraints', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class References extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+class WithConstraints extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get foo => integer()();
+
+  @override
+  List<String> get customConstraints => [
+    'FOREIGN KEY (bar) REFERENCES foo (bar)',
+    'FOREIGN KEY (foo) REFERENCES "references" (bar)',
+    'FOREIGN KEY (foo) REFERENCES "references" (id)',
+  ];
+}
+'''
+    });
+
+    final state = await backend.analyze('package:a/a.dart');
+    final withConstraints = state.analysis[state.id('with_constraints')]!;
+
+    expect(withConstraints.errorsDuringAnalysis, [
+      isDriftError("Columns bar don't exist locally."),
+      isDriftError("`foo` could not be found in any import."),
+      isDriftError("Columns bar not found in table `references`."),
+    ]);
   });
 
   test('supports autoIncrement on int64 columns', () async {
