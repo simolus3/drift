@@ -9,6 +9,7 @@
   in the database class, the schema version in the database will now be downgraded.
 - When using a drift isolate in the same engine group, errors on the remote end are
   reported as-is instead of wrapping them in a `DriftRemoteException`.
+- Added support for `DO NOTHING` during upsert operations with constraint violations
 
 ## 2.5.0
 
