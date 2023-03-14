@@ -340,6 +340,34 @@ void main() {
     ));
   });
 
+  test('can use do nothing on upsert', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoNothing(),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("id") DO NOTHING',
+      argThat(equals(['my content'])),
+    ));
+  });
+
+  test('can use a custom conflict clause with do nothing', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoNothing(
+            target: [db.todosTable.content],
+          ),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("content") DO NOTHING',
+      argThat(equals(['my content'])),
+    ));
+  });
+
   test('insertOnConflictUpdate', () async {
     when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(3));
 

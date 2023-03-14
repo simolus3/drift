@@ -271,6 +271,29 @@ class InsertStatement<T extends Table, D> {
     Insertable<D>? originalEntry,
     UpsertClause<T, D>? onConflict,
   ) {
+    void writeOnConflictConstraint(List<Column<Object>>? target) {
+      ctx.buffer.write(' ON CONFLICT(');
+
+      final conflictTarget = target ?? table.$primaryKey.toList();
+
+      if (conflictTarget.isEmpty) {
+        throw ArgumentError(
+            'Table has no primary key, so a conflict target is needed.');
+      }
+
+      var first = true;
+      for (final target in conflictTarget) {
+        if (!first) ctx.buffer.write(', ');
+
+        // Writing the escaped name directly because it should not have a table
+        // name in front of it.
+        ctx.buffer.write(target.escapedName);
+        first = false;
+      }
+
+      ctx.buffer.write(')');
+    }
+
     if (onConflict is DoUpdate<T, D>) {
       if (onConflict._usesExcludedTable) {
         ctx.hasMultipleTables = true;
@@ -290,32 +313,15 @@ class InsertStatement<T extends Table, D> {
 
       final updateSet = upsertInsertable.toColumns(true);
 
-      ctx.buffer.write(' ON CONFLICT(');
-
-      final conflictTarget = onConflict.target ?? table.$primaryKey.toList();
-
-      if (conflictTarget.isEmpty) {
-        throw ArgumentError(
-            'Table has no primary key, so a conflict target is needed.');
-      }
-
-      var first = true;
-      for (final target in conflictTarget) {
-        if (!first) ctx.buffer.write(', ');
-
-        // Writing the escaped name directly because it should not have a table
-        // name in front of it.
-        ctx.buffer.write(target.escapedName);
-        first = false;
-      }
+      writeOnConflictConstraint(onConflict.target);
 
       if (ctx.dialect == SqlDialect.postgres &&
           mode == InsertMode.insertOrIgnore) {
-        ctx.buffer.write(') DO NOTHING ');
+        ctx.buffer.write(' DO NOTHING ');
       } else {
-        ctx.buffer.write(') DO UPDATE SET ');
+        ctx.buffer.write(' DO UPDATE SET ');
 
-        first = true;
+        var first = true;
         for (final update in updateSet.entries) {
           final column = ctx.identifier(update.key);
 
@@ -337,6 +343,9 @@ class InsertStatement<T extends Table, D> {
       for (final clause in onConflict.clauses) {
         _writeOnConflict(ctx, mode, originalEntry, clause);
       }
+    } else if (onConflict is DoNothing<T, D>) {
+      writeOnConflictConstraint(onConflict.target);
+      ctx.buffer.write(' DO NOTHING');
     }
   }
 
@@ -509,4 +518,16 @@ class UpsertMultiple<T extends Table, D> extends UpsertClause<T, D> {
   /// This requires a fairly recent sqlite3 version (3.35.0, released on 2021-
   /// 03-12).
   UpsertMultiple(this.clauses);
+}
+
+/// Upsert clause that does nothing on conflict
+class DoNothing<T extends Table, D> extends UpsertClause<T, D> {
+  /// An optional list of columns to serve as an "conflict target", which
+  /// specifies the uniqueness constraint that will trigger the upsert.
+  ///
+  /// By default, the primary key of the table will be used.
+  final List<Column>? target;
+
+  /// Creates an upsert clause that does nothing on conflict
+  DoNothing({this.target});
 }
