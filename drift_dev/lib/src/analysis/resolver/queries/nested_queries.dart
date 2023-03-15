@@ -137,8 +137,20 @@ class _AnalyzerState {
       );
     }
 
-    // Re-index variables, this time also considering the synthetic variables
-    // that we'll insert in [addHelperNodes] later.
+    // Re-index variables. This is necessary for two reasons:
+    //  1. We are adding synthetic variables in [addHelperNodes].
+    //  2. During query analysis, variables across all statements are unified
+    //     (a variable `:a` in a `LIST` query is considered equal to a variable
+    //     `:a` outside of the query, they'll get the same index). However, the
+    //     index of the variable will change if the subquery is lifted into its
+    //     own, separate query.
+    for (final variable in actualAndAddedVariables) {
+      final resolved = variable.resolvedIndex;
+      if (resolved != null) {
+        container.originalIndexForVariable[variable] = resolved;
+      }
+    }
+
     AstPreparingVisitor.resolveIndexOfVariables(actualAndAddedVariables);
   }
 }

@@ -14,10 +14,13 @@ class TypeGraph {
 
   ResolvedType? operator [](Typeable t) {
     final normalized = _variables.normalize(t);
+    return _lookupWithoutNormalization(normalized);
+  }
 
-    if (_knownTypes.containsKey(normalized)) {
-      final type = _knownTypes[normalized];
-      final nullability = _knownNullability[normalized];
+  ResolvedType? _lookupWithoutNormalization(Typeable t) {
+    if (_knownTypes.containsKey(t)) {
+      final type = _knownTypes[t];
+      final nullability = _knownNullability[t];
 
       if (nullability != null) {
         return type!.withNullable(nullability);
@@ -268,6 +271,10 @@ class _ResolvedVariables {
     } else {
       return t;
     }
+  }
+
+  Typeable? referenceForIndex(int resolvedVariableIndex) {
+    return _referenceForIndex[resolvedVariableIndex];
   }
 }
 

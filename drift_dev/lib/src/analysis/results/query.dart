@@ -274,6 +274,20 @@ class NestedQueriesContainer {
   final SelectStatement select;
   final Map<NestedQueryColumn, NestedQuery> nestedQueries = {};
 
+  /// The nested queries transformation may change the index of variables used
+  /// in a query.
+  ///
+  /// For instance, in `SELECT a, LIST(SELECT b FROM foo WHERE :a) FROM foo
+  /// WHERE :b = 2`, the variable `:a` is initially given the index 1, while
+  /// `:b` gets the index `2`.
+  /// After the transformation though, we end up with two queries `SELECT a
+  /// FROM foo WHERE :b = 2` (in which `:b` now has the index `1`), and
+  /// `SELECT b FROM foo WHERE :a`. The [Variable.resolvedIndex] will report
+  /// the correct index after the nested queries transformation, but for looking
+  /// up types it is beneficial to learn about the original index, since
+  /// variables with different indexes are considered different variables.
+  final Map<Variable, int> originalIndexForVariable = {};
+
   NestedQueriesContainer(this.select);
 
   /// Columns that should be added to the [select] statement to read variables

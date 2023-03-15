@@ -287,4 +287,53 @@ getTest WITH TestCustom:
           '  }')),
     }, result.dartOutputs, result);
   });
+
+  test('generates correct code for variables in LIST subquery', () async {
+    final outputs = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+CREATE TABLE t (
+  a REAL,
+  b INTEGER
+);
+
+failQuery:
+  SELECT
+    *,
+    LIST(SELECT * FROM t x WHERE x.b = b or x.b = :inB)
+  FROM
+    (SELECT * FROM t where a = :inA AND b = :inB);
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains('''
+  i0.Selectable<FailQueryResult> failQuery(double? inA, int? inB) {
+    return customSelect(
+        'SELECT * FROM (SELECT * FROM t WHERE a = ?1 AND b = ?2)',
+        variables: [
+          i0.Variable<double>(inA),
+          i0.Variable<int>(inB)
+        ],
+        readsFrom: {
+          t,
+        }).asyncMap((i0.QueryRow row) async {
+      return FailQueryResult(
+        a: row.readNullable<double>('a'),
+        b: row.readNullable<int>('b'),
+        nestedQuery0: await customSelect(
+            'SELECT * FROM t AS x WHERE x.b = b OR x.b = ?1',
+            variables: [
+              i0.Variable<int>(inB)
+            ],
+            readsFrom: {
+              t,
+            }).asyncMap(t.mapFromRow).get(),
+      );
+    });
+'''))
+    }, outputs.dartOutputs, outputs);
+  });
 }

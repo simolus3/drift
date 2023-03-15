@@ -245,9 +245,8 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       // references that can be resolved in the nested query and references
       // which require data from the parent query
       e.select.scope = MiscStatementSubScope(e.scope as StatementScope);
-      AstPreparingVisitor(context: context).start(e.select);
-    } else {
-      super.visitDriftSpecificNode(e, arg);
     }
+
+    super.visitDriftSpecificNode(e, arg);
   }
 }

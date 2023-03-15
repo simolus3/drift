@@ -43,6 +43,16 @@ class TypeInferenceSession {
     return graph[t];
   }
 
+  ResolvedType? typeOfVariable(int index) {
+    final reference = graph._variables.referenceForIndex(index);
+
+    if (reference != null) {
+      return graph._lookupWithoutNormalization(reference);
+    } else {
+      return null;
+    }
+  }
+
   void _addRelation(TypeRelation relationship) {
     graph.addRelation(relationship);
   }

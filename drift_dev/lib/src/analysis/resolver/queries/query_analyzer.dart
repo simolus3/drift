@@ -584,11 +584,26 @@ class QueryAnalyzer {
             (used is NumberedVariable) ? used.explicitIndex : null;
         final forCapture = used.meta<CapturedVariable>();
 
-        final internalType =
-            // If this variable was introduced to replace a reference from a
-            // `LIST` query to an outer query, use the type of the reference
-            // instead of the synthetic variable that we're replacing it with.
-            ctx.typeOf(forCapture != null ? forCapture.reference : used);
+        ResolveResult internalType;
+        if (forCapture != null) {
+          // If this variable was introduced to replace a reference from a
+          // `LIST` query to an outer query, use the type of the reference
+          // instead of the synthetic variable that we're replacing it with.
+          internalType = ctx.typeOf(forCapture.reference);
+        } else if (nestedScope != null &&
+            nestedScope.originalIndexForVariable.containsKey(used)) {
+          // The type inference algorithms treats variables as equal if they
+          // have the same logical index. The index of variables might change
+          // after applying the nested query transformer though, so we look up
+          // the original index used during type inference.
+          final originalIndex = nestedScope.originalIndexForVariable[used]!;
+          final type = ctx.types2.session.typeOfVariable(originalIndex);
+          internalType =
+              type != null ? ResolveResult(type) : ResolveResult.unknown();
+        } else {
+          internalType = ctx.typeOf(used);
+        }
+
         final type = driver.typeMapping.sqlTypeToDrift(internalType.type);
 
         if (forCapture != null) {
