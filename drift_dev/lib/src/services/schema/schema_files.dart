@@ -408,7 +408,6 @@ class SchemaReader {
     final getterName = data['getter_name'] as String?;
 
     final defaultDart = data['default_dart'] as String?;
-    final defaultClientDart = data['default_client_dart'] as String?;
 
     // Note: Not including client default code because that usually depends on
     // imports from the database.
@@ -419,9 +418,6 @@ class SchemaReader {
       nameInDart: getterName ?? ReCase(name).camelCase,
       defaultArgument:
           defaultDart != null ? AnnotatedDartCode([defaultDart]) : null,
-      clientDefaultCode: defaultClientDart != null
-          ? AnnotatedDartCode([defaultClientDart])
-          : null,
       declaration: _declaration,
       customConstraints: customConstraints,
       constraints: dslFeatures,
