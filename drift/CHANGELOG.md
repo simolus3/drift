@@ -1,6 +1,6 @@
-## 2.6.0-dev
+## 2.6.0
 
-- Add `insertReturningOrNull` for empty inserts.
+- Add `insertReturningOrNull` for potentially empty inserts.
 - Add `insertFromSelect` to `InsertStatement` to run `INSERT INTO SELECT`
   statements.
 - Add `rowid` parameter to companions for tables with rowids that don't have a
@@ -8,7 +8,7 @@
 - After opening a database with a higher schema version than the current one set
   in the database class, the schema version in the database will now be downgraded.
 - When using a drift isolate in the same engine group, errors on the remote end are
-  reported as-is instead of wrapping them in a `DriftRemoteException`.
+  reported directly instead of wrapping them in a `DriftRemoteException`.
 - Added support for `DO NOTHING` during upsert operations with constraint violations
 
 ## 2.5.0

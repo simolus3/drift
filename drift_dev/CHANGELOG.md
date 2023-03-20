@@ -1,3 +1,9 @@
+## 2.6.0
+
+- Fix invalid schema verification code being generated for columns with a
+  `clientDefault`.
+- Support drift 2.6.0
+
 ## 2.5.2
 
 - Fix generated code for `blob` columns when modular generation is enabled.
