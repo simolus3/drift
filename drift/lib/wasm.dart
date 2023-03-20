@@ -1,16 +1,13 @@
-/// A (very!) experimental web-compatible version of drift that doesn't depend
+/// An experimental web-compatible version of drift that doesn't depend
 /// on external JavaScript sources.
 ///
-/// This library is highly experimental and not production readdy at the moment.
-/// It exists for development and testing purposes for interested users.
+/// While the implementation is tested and no API breaking changes are expected
+/// to the public interface, it is still fairly new and may have remaining bugs
+/// or issues.
 ///
-/// While this library is marked as [experimental], it is not subject to
-/// semantic versioning. Future drift updates with a minor update might break
-/// APIs defined in this package or change the way data is persisted in
-/// backwards-incompatible ways.
-///
-/// To use drift on the web, use the `package:drift/web.dart` library as
-/// described in the [documentation](https://drift.simonbinder.eu/web/).
+/// A generally less efficient, but currently more stable backend is available
+/// through the `package:drift/web.dart` library described in the
+/// [documentation][https://drift.simonbinder.eu/web/].
 @experimental
 library drift.wasm;
 
@@ -32,7 +29,10 @@ typedef WasmDatabaseSetup = void Function(CommonDatabase database);
 /// database.
 ///
 /// Using this database requires adding a WebAssembly file for sqlite3 to your
-/// app. Details for that are available [here](https://github.com/simolus3/sqlite3.dart/).
+/// app.
+/// The [documentation](https://drift.simonbinder.eu/web/#drift-wasm) describes
+/// how to obtain this file. A [working example](https://github.com/simolus3/drift/blob/04539882330d80519128fec1ceb120fb1623a831/examples/app/lib/database/connection/web.dart#L27-L36)
+/// is also available in the drift repository.
 class WasmDatabase extends DelegatedDatabase {
   WasmDatabase._(DatabaseDelegate delegate, bool logStatements)
       : super(delegate, isSequential: true, logStatements: logStatements);

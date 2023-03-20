@@ -42,10 +42,10 @@ You can grab the latest version of `sql-wasm.js` and `sql-wasm.wasm` [here](http
 and copy them into your `web` folder.
 
 A full example that works on the web (and all other platforms) is available
-[here](https://github.com/rodydavis/moor_shared).
+[here](https://github.com/simolus3/drift/tree/develop/examples/app).
 
 ## Gotchas
-The database implementation uses WebAssembly, which needs to be supported by your browser. 
+The database implementation uses WebAssembly, which needs to be supported by your browser.
 Also, make sure that your webserver serves the `.wasm` file as `application/wasm`, browsers
 won't accept it otherwise.
 
@@ -272,15 +272,16 @@ You can pass that DatabaseConnection to your database by enabling the `generate_
 
 ## New web backend {#drift-wasm}
 
-__Warning__: This new backend is currently in a very experimental state and not suitable for production use.
+In recent versions, drift added support for a new backend exposed by the `package:drift/wasm.dart` library.
+Unlike sql.js or the official sqlite3 WASM edition which both use Emscripten, this backend does not need any
+external JavaScript sources.
+All bindings, including a virtual filesystem implementation used to store your databases, are implemented in
+Dart instead.
 
-Starting from version `1.6.0`, drift supports the new `package:drift/wasm.dart` backend for web apps.
-It binds to a sqlite3 WebAssembly module directly, without requireing an external JavaScript library.
-Unlike sql.js, which uses Emscripten, the new backend uses a custom [sqlite3 VFS](https://www.sqlite.org/vfs.html)
-and doesn't require any dependencies apart from sqlite3 itself.
-The intention is that this build can be optimized for Dart-typical use-cases. For instance, the sql.js backend
-needs to close and re-open the database connection for every save. The new backend can just use a custom
-virtual file system that sqlite3 will then use internally.
+This approach enables optimizations making this backend more efficient that the existing web version of drift.
+However, it should be noted that this backend is much newer and may potentially be less stable at the moment.
+We encourage you to use it and report any issues you may find, but please keep in mind that it may have some
+rough edges.
 
 As this version of sqlite3 was compiled with a custom VFS, you can't re-use the WebAssembly module from sql.js.
 Instead, grab a sqlite3.wasm file from the [releases](https://github.com/simolus3/sqlite3.dart/releases) of the
