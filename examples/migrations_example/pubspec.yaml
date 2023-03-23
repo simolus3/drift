@@ -7,9 +7,9 @@ environment:
 
 dependencies:
   drift:
+  drift_dev:
 
 dev_dependencies:
   lints: ^2.0.0
-  drift_dev:
   build_runner: ^2.0.0
   test: ^1.15.4

@@ -91,10 +91,20 @@ extension VerifySelf on GeneratedDatabase {
 
     final schemaOfThisDatabase = await collectSchemaInput(virtualTables);
 
-    // Collect the schema how it would be if we just called `createAll` on a
-    // clean database.
-    final referenceDb = _GenerateFromScratch(this, NativeDatabase.memory());
-    final referenceSchema = await referenceDb.collectSchemaInput(virtualTables);
+    // The expectedSchema expando will store the expected schema for this
+    // database when it's opened in a migration test. This allows this method
+    // to be used in migration tests -- otherwise, this would always compare the
+    // runtime schema to the latest schema from generated code.
+    var referenceSchema = expectedSchema[this];
+
+    if (referenceSchema == null) {
+      // Collect the schema how it would be if we just called `createAll` on a
+      // clean database.
+      final referenceDb = _GenerateFromScratch(this, NativeDatabase.memory());
+      referenceSchema = expectedSchema[this] ??
+          await referenceDb.collectSchemaInput(virtualTables);
+      await referenceDb.close();
+    }
 
     verify(referenceSchema, schemaOfThisDatabase, validateDropped);
   }

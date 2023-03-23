@@ -1,3 +1,7 @@
+## 2.7.0-dev
+
+- Make `validateDatabaseSchema()` work in migration tests.
+
 ## 2.6.0
 
 - Fix invalid schema verification code being generated for columns with a

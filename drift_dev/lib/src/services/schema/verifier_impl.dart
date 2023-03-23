@@ -7,6 +7,8 @@ import 'package:sqlite3/sqlite3.dart';
 
 import 'find_differences.dart';
 
+Expando<List<Input>> expectedSchema = Expando();
+
 class VerifierImplementation implements SchemaVerifier {
   final SchemaInstantiationHelper helper;
   final Random _random = Random();
@@ -21,17 +23,21 @@ class VerifierImplementation implements SchemaVerifier {
         if (table is VirtualTableInfo) table.entityName,
     ];
 
-    // Open the database to collect its schema. Put a delegate in between
-    // claiming that the actual version is what we expect.
-    await db.executor.ensureOpen(_DelegatingUser(expectedVersion, db));
-    final actualSchema = await db.executor.collectSchemaInput(virtualTables);
-
-    // Open another connection to instantiate and extract the reference schema.
+    // Open a connection to instantiate and extract the reference schema.
     final otherConnection = await startAt(expectedVersion);
     await otherConnection.executor.ensureOpen(_DelegatingUser(expectedVersion));
     final referenceSchema =
         await otherConnection.executor.collectSchemaInput(virtualTables);
     await otherConnection.executor.close();
+
+    // Attach the reference schema to the database so that VerifySelf.validateDatabaseSchema
+    // works
+    expectedSchema[db] = referenceSchema;
+
+    // Open the database to collect its schema. Put a delegate in between
+    // claiming that the actual version is what we expect.
+    await db.executor.ensureOpen(_DelegatingUser(expectedVersion, db));
+    final actualSchema = await db.executor.collectSchemaInput(virtualTables);
 
     verify(referenceSchema, actualSchema, validateDropped);
   }

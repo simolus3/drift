@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift_dev/api/migrations.dart';
 
 import 'tables.dart';
 import 'src/generated/schema_v2.dart' as v2;
@@ -71,6 +72,11 @@ class Database extends _$Database {
               break;
           }
         }
+      },
+      beforeOpen: (details) async {
+        // For Flutter apps, this should be wrapped in an if (kDebugMode) as
+        // suggested here: https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-a-database-schema-at-runtime
+        await validateDatabaseSchema();
       },
     );
   }
