@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:build/build.dart';
 
 import '../../analysis/driver/driver.dart';
-import '../../analysis/serializer.dart';
 import '../../analysis/options.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/writer.dart';
@@ -45,10 +44,9 @@ class DriftAnalyzer extends Builder {
         }
       }
 
-      final serialized = ElementSerializer.serialize(
-          results.analysis.values.map((e) => e.result).whereType());
+      final serialized = driver.serializeState(results);
       final asJson =
-          JsonUtf8Encoder(' ' * 2).convert(serialized.serializedElements);
+          JsonUtf8Encoder(' ' * 2).convert(serialized.serializedData);
 
       final jsonOutput = buildStep.inputId.addExtension('.drift_module.json');
       final typesOutput = buildStep.inputId.addExtension('.types.temp.dart');

@@ -15,6 +15,8 @@ class FileState {
   final Uri ownUri;
 
   DiscoveredFileState? discovery;
+  List<Uri>? cachedImports;
+
   final List<DriftAnalysisError> errorsDuringDiscovery = [];
 
   final Map<DriftElementId, ElementAnalysisState> analysis = {};
@@ -23,6 +25,8 @@ class FileState {
   bool? _needsModularAccessor;
 
   FileState(this.ownUri);
+
+  Iterable<Uri>? get imports => discovery?.importDependencies ?? cachedImports;
 
   String get extension => url.extension(ownUri.path);
 

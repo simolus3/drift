@@ -35,6 +35,7 @@ abstract class $Database extends i0.GeneratedDatabase {
         likes,
         follows,
         popularUsers,
+        i1.usersName,
         i4.$drift0
       ];
   @override

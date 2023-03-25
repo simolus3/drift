@@ -347,4 +347,37 @@ class Database extends $Database {}
       'a|lib/db.drift.dart': decodedMatches(contains(r'.$drift0];'))
     }, result.dartOutputs, result);
   });
+
+  test('writes query from transitive import', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'a.drift'})
+class MyDatabase {}
+''',
+        'a|lib/a.drift': '''
+import 'b.drift';
+
+CREATE TABLE foo (bar INTEGER);
+''',
+        'a|lib/b.drift': '''
+import 'c.drift';
+
+CREATE TABLE foo2 (bar INTEGER);
+''',
+        'a|lib/c.drift': '''
+q: SELECT 1;
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/main.drift.dart': decodedMatches(
+        contains(r'Selectable<int> q()'),
+      )
+    }, result.dartOutputs, result);
+  });
 }

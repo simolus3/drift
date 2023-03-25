@@ -5,7 +5,7 @@ import 'state.dart';
 ///
 /// At the moment, the cache is not set up to handle changing files.
 class DriftAnalysisCache {
-  final Map<Uri, Map<String, Object?>> serializedElements = {};
+  final Map<Uri, CachedSerializationResult> serializationCache = {};
   final Map<Uri, FileState> knownFiles = {};
   final Map<DriftElementId, DiscoveredElement> discoveredElements = {};
 
@@ -16,7 +16,7 @@ class DriftAnalysisCache {
   FileState notifyFileChanged(Uri uri) {
     // todo: Mark references for files that import this one as stale.
     // todo: Mark elements that reference an element in this file as stale.
-    serializedElements.remove(uri);
+    serializationCache.remove(uri);
 
     return knownFiles.putIfAbsent(uri, () => FileState(uri))
       ..errorsDuringDiscovery.clear()
@@ -62,12 +62,18 @@ class DriftAnalysisCache {
       final found = pending.removeLast();
       yield found;
 
-      for (final imported
-          in found.discovery?.importDependencies ?? const <Uri>[]) {
+      for (final imported in found.imports ?? const <Uri>[]) {
         if (seenUris.add(imported)) {
           pending.add(knownFiles[imported]!);
         }
       }
     }
   }
+}
+
+class CachedSerializationResult {
+  final List<Uri> cachedImports;
+  final Map<String, Map<String, Object?>> cachedElements;
+
+  CachedSerializationResult(this.cachedImports, this.cachedElements);
 }

@@ -10,9 +10,13 @@ import 'results/results.dart';
 
 class SerializedElements {
   final List<AnnotatedDartCode> dartTypes;
-  final Map<String, Object?> serializedElements;
+  final Map<String, Object?> serializedData;
+  final Map<String, Object?> _serializedElements;
 
-  SerializedElements(this.dartTypes, this.serializedElements);
+  SerializedElements(
+      this.dartTypes, this.serializedData, this._serializedElements) {
+    serializedData['elements'] = _serializedElements;
+  }
 }
 
 /// Serializes [DriftElement]s to JSON.
@@ -22,13 +26,13 @@ class SerializedElements {
 /// a single file changes). However, it means that we have to serialize analysis
 /// results to read them back in in a later build step.
 class ElementSerializer {
-  final SerializedElements _result = SerializedElements([], {});
+  final SerializedElements _result = SerializedElements([], {}, {});
 
   ElementSerializer._();
 
   void _serializeElements(Iterable<DriftElement> elements) {
     for (final element in elements) {
-      _result.serializedElements[element.id.name] = _serialize(element);
+      _result._serializedElements[element.id.name] = _serialize(element);
     }
   }
 

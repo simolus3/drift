@@ -98,8 +98,8 @@ class DriftAnalysisDriver {
   ///
   /// Returns non-null if analysis results were found and successfully restored.
   Future<Map<String, Object?>?> readStoredAnalysisResult(Uri uri) async {
-    final cached = cache.serializedElements[uri];
-    if (cached != null) return cached;
+    final cached = cache.serializationCache[uri];
+    if (cached != null) return cached.cachedElements;
 
     // Not available in in-memory cache, so let's read it from the file system.
     final reader = cacheReader;
@@ -109,7 +109,15 @@ class DriftAnalysisDriver {
     if (found == null) return null;
 
     final parsed = json.decode(found) as Map<String, Object?>;
-    return cache.serializedElements[uri] = parsed;
+    final data = CachedSerializationResult(
+      [
+        for (final entry in parsed['imports'] as List)
+          Uri.parse(entry as String)
+      ],
+      (parsed['elements'] as Map<String, Object?>).cast(),
+    );
+    cache.serializationCache[uri] = data;
+    return data.cachedElements;
   }
 
   Future<bool> _recoverFromCache(FileState state) async {
@@ -125,6 +133,21 @@ class DriftAnalysisDriver {
       } on CouldNotDeserializeException catch (e, s) {
         backend.log.fine('Could not deserialize $id', e, s);
         allRecovered = false;
+      }
+    }
+
+    final cachedImports = cache.serializationCache[state.ownUri]?.cachedImports;
+    if (cachedImports != null && state.discovery == null) {
+      state.cachedImports = cachedImports;
+      for (final import in cachedImports) {
+        final found = cache.stateForUri(import);
+
+        if (found.imports == null) {
+          // Attempt to recover this file as well to make sure we know the
+          // imports for every file transitively reachable from the sources
+          // analyzed.
+          await _recoverFromCache(found);
+        }
       }
     }
 
@@ -230,6 +253,24 @@ class DriftAnalysisDriver {
     }
 
     return state;
+  }
+
+  /// Serializes imports and locally-defined elements of the file.
+  ///
+  /// Serialized data can later be recovered if a [cacheReader] is set on this
+  /// driver, which avoids running duplicate analysis runs across build steps.
+  SerializedElements serializeState(FileState state) {
+    final data = ElementSerializer.serialize(
+        state.analysis.values.map((e) => e.result).whereType());
+
+    final imports = state.discovery?.importDependencies;
+    if (imports != null) {
+      data.serializedData['imports'] = [
+        for (final import in imports) import.toString()
+      ];
+    }
+
+    return data;
   }
 }
 
