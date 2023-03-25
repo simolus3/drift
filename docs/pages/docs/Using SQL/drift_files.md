@@ -189,6 +189,9 @@ Note that imports in drift file are always transitive, so in the above example
 you would have all imports declared in `other.drift` available as well.
 There is no `export` mechanism for drift files.
 
+The import of a `drift` file inside a `drift` file will only import the table definitions. 
+When you want to make e.g. queries visible, you need to include the file in your `DriftDatabase` annotation as well.
+
 Importing Dart files into a drift file will also work - then,
 all the tables declared via Dart tables can be used inside queries.
 We support both relative imports and the `package:` imports you
