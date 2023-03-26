@@ -1,3 +1,7 @@
+## 0.29.0-dev
+
+- Fix false-positive warnings about `AS` aliases in subqueries used in triggers.
+
 ## 0.28.0
 
 - Support the `unhex` function added in sqlite 3.41.0

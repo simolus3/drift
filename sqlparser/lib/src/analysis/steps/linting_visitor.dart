@@ -6,9 +6,23 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   final EngineOptions options;
   final AnalysisContext context;
 
-  bool _isTopLevelStatement = true;
+  bool _isInTopLevelTriggerStatement = false;
 
   LintingVisitor(this.options, this.context);
+
+  @override
+  void visitBaseSelectStatement(BaseSelectStatement stmt, void arg) {
+    if (_isInTopLevelTriggerStatement) {
+      // If this select statement is used as a subqery, we're no longer in a
+      // top-level trigger statements.
+      final saved = _isInTopLevelTriggerStatement;
+      _isInTopLevelTriggerStatement = stmt.parent is Block;
+      super.visitBaseSelectStatement(stmt, arg);
+      _isInTopLevelTriggerStatement = saved;
+    } else {
+      super.visitBaseSelectStatement(stmt, arg);
+    }
+  }
 
   @override
   void visitBinaryExpression(BinaryExpression e, void arg) {
@@ -141,10 +155,10 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
-    final topLevelBefore = _isTopLevelStatement;
-    _isTopLevelStatement = false;
+    final topLevelBefore = _isInTopLevelTriggerStatement;
+    _isInTopLevelTriggerStatement = true;
     visitChildren(e, arg);
-    _isTopLevelStatement = topLevelBefore;
+    _isInTopLevelTriggerStatement = topLevelBefore;
   }
 
   @override
@@ -172,7 +186,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitDefaultValues(DefaultValues e, void arg) {
     // `DEFAULT VALUES` is not supported in a trigger, see https://www.sqlite.org/lang_insert.html
-    if (!_isTopLevelStatement) {
+    if (_isInTopLevelTriggerStatement) {
       context.reportError(
         AnalysisError(
           type: AnalysisErrorType.synctactic,
@@ -304,7 +318,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitRaiseExpression(RaiseExpression e, void arg) {
-    if (_isTopLevelStatement) {
+    if (!_isInTopLevelTriggerStatement) {
       context.reportError(AnalysisError(
         type: AnalysisErrorType.raiseMisuse,
         relevantNode: e,
@@ -328,7 +342,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     // https://www.sqlite.org/lang_returning.html#limitations_and_caveats
     // Returning is not allowed in triggers
-    if (!_isTopLevelStatement) {
+    if (_isInTopLevelTriggerStatement) {
       context.reportError(AnalysisError(
         type: AnalysisErrorType.illegalUseOfReturning,
         message: 'RETURNING is not allowed in triggers',
@@ -421,7 +435,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     if (parent is HasPrimarySource && parent.table == e) {
       // The source of a `INSERT`, `UPDATE` or `DELETE` statement must not have
       // an alias in `CREATE TRIGGER` statements.
-      if (!_isTopLevelStatement && e.as != null) {
+      if (_isInTopLevelTriggerStatement && e.as != null) {
         context.reportError(AnalysisError(
           type: AnalysisErrorType.synctactic,
           message:

@@ -107,6 +107,14 @@ void main() {
                 'END;')
             .expectError('demo d', type: AnalysisErrorType.synctactic);
       });
+
+      test('allowed in subquery', () {
+        engine.analyze('''
+          CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN
+            INSERT INTO demo (content) SELECT content FROM demo AS ok;
+          END;
+        ''').expectNoError();
+      });
     });
   });
 }
