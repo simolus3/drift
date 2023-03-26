@@ -711,16 +711,17 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     } else if (column is DelegatedColumn && column.innerColumn != null) {
       _handleColumn(column.innerColumn);
 
+      var makeNullable = false;
+
       if (column is AvailableColumn) {
         // The nullability depends on whether the column was introduced in an
         // outer join.
         final model = context != null ? JoinModel.of(context) : null;
-        final isNullable =
-            model == null || model.availableColumnIsNullable(column);
-        _lazyCopy(column, column.innerColumn, makeNullable: isNullable);
-      } else {
-        _lazyCopy(column, column.innerColumn);
+
+        makeNullable = model != null && model.availableColumnIsNullable(column);
       }
+
+      _lazyCopy(column, column.innerColumn, makeNullable: makeNullable);
     }
   }
 

@@ -308,4 +308,29 @@ WITH RECURSIVE
     expect(session.typeOf(columns[2]),
         const ResolvedType(type: BasicType.int, nullable: true));
   });
+
+  test('analyzes nested columns', () {
+    engine.registerTableFromSql('''
+      CREATE TABLE x (
+        id INTEGER NOT NULL,
+        other INTEGER
+      );
+    ''');
+
+    final resolver = obtainResolver('''
+      SELECT xxx.id FROM (
+        SELECT * FROM (
+          SELECT id FROM x
+        ) xx
+      ) xxx;
+    ''');
+
+    final session = resolver.session;
+    final stmt = resolver.session.context.root as SelectStatement;
+    final columns = stmt.resolvedColumns!;
+
+    expect(columns, hasLength(1));
+    expect(session.typeOf(columns[0]),
+        const ResolvedType(type: BasicType.int, nullable: false));
+  });
 }
