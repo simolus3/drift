@@ -3,6 +3,10 @@ import 'package:build_verify/build_verify.dart';
 import 'package:test/scaffolding.dart';
 
 void main() {
-  test('build is up-to-date',
-      () => expectBuildClean(packageRelativeDirectory: 'drift'));
+  test('build is up-to-date', () {
+    return expectBuildClean(
+      packageRelativeDirectory: 'drift',
+      gitDiffPathArguments: ['test/generated'],
+    );
+  });
 }
