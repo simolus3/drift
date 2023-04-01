@@ -33,7 +33,6 @@
 web/shared_worker.dart.js
 
 # Web related
-lib/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols
