@@ -1,11 +1,8 @@
 import 'dart:async';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html';
 
 import 'package:drift/drift.dart';
-import 'package:drift/remote.dart';
-import 'package:drift/web.dart';
 import 'package:drift/wasm.dart';
+import 'package:drift/web/worker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fetch_client/fetch_client.dart' as http;
 import 'package:sqlite3/wasm.dart';
@@ -15,9 +12,8 @@ const _useWorker = true;
 /// Obtains a database connection for running drift on the web.
 DatabaseConnection connect({bool isInWebWorker = false}) {
   if (_useWorker && !isInWebWorker) {
-    final worker = SharedWorker('shared_worker.dart.js');
     return DatabaseConnection.delayed(
-        connectToRemoteAndInitialize(worker.port!.channel()));
+        connectToDriftWorker('shared_worker.dart.js', shared: true));
   } else {
     return DatabaseConnection.delayed(
       // We're using the experimental wasm support in Drift because this gives
