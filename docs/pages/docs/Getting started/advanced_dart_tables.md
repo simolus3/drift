@@ -151,7 +151,7 @@ Note that the primary key must essentially be constant so that the generator can
 
 Starting from version 1.6.0, `UNIQUE` SQL constraints can be defined on Dart tables too.
 A unique constraint contains one or more columns. The combination of all columns in a constraint
-must be unique in the table, or the databas will report an error on inserts.
+must be unique in the table, or the database will report an error on inserts.
 
 With drift, a unique constraint can be added to a single column by marking it as `.unique()` in
 the column builder.
