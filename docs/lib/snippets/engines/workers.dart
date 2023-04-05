@@ -21,10 +21,8 @@ void main() {
 DatabaseConnection connectToWorker() {
   return DatabaseConnection.delayed(connectToDriftWorker(
     'worker.dart.js',
-    // Whether to use a SharedWorker that will synchronize the database across
-    // tabs. Note that SharedWorkers may not be available on all browsers and
-    // platforms.
-    shared: true,
+    // Note that SharedWorkers may not be available on all browsers and platforms.
+    mode: DriftWorkerMode.shared,
   ));
 }
 // #enddocregion client

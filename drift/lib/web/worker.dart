@@ -6,29 +6,66 @@
 /// [the documentation]: https://drift.simonbinder.eu/web/#using-web-workers
 library drift.web.workers;
 
+import 'dart:async';
 import 'dart:html';
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/src/web/channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-StreamChannel _postMessageChannel(
-  EventTarget target,
-  void Function(Object?) postMessage,
-) {
-  final channelController = StreamChannelController();
-  final onMessage =
-      const EventStreamProvider<MessageEvent>('message').forTarget(target);
+/// Describes the topology between clients (e.g. tabs) and the drift web worker
+/// when spawned with [connectToDriftWorker].
+///
+/// For more details on the individial modes, see the documentation on
+/// [dedicated], [shared] and [dedicatedInShared].
+enum DriftWorkerMode {
+  /// Starts a new, regular web [Worker] when [connectToDriftWorker] is called.
+  ///
+  /// This worker, which we expect is a Dart program calling [driftWorkerMain]
+  /// in its `main` function compiled to JavaScript, will open a database
+  /// connection internally.
+  /// The connection returned by [connectToDriftWorker] will use a message
+  /// channel between the initiating tab and this worker to run its operations
+  /// on the worker, which can take load of the UI tab.
 
-  final messageSubscription =
-      onMessage.map((e) => e.data).listen(channelController.local.sink.add);
-  channelController.local.stream.listen(
-    postMessage,
-    onDone: messageSubscription.cancel,
-  );
+  /// However, it is not possible for a worker to be used across different tabs.
+  /// To do that, [shared] or [dedicatedInShared] needs to be used.
+  dedicated,
 
-  return channelController.foreign;
+  /// Starts a [SharedWorker] that is used across several browsing contexts
+  /// (e.g. tabs or even a custom worker you wrote).
+  ///
+  /// This shared worker, which we expect is a Dart program calling
+  /// [driftWorkerMain] in its `main` function compiled to JavaScript, will open
+  /// a database connection internally.
+  /// Just like for [dedicated] connections, the connection returned by
+  /// [connectToDriftWorker] will use a message channel between the current
+  /// context and the (potentially existing) shared worker.
+  ///
+  /// So, while every tab uses its own connection, they all connect to the same
+  /// shared worker. Thus, every tab has a view of the same logical database.
+  /// Even stream queries are synchronized across all tabs.
+  ///
+  /// Note that shared worker may not be supported in all browsers.
+  shared,
+
+  /// This mode generally works very similar to [shared] in the sense that a
+  /// shared worker is used and that all tabs calling [driftWorkerMain] get
+  /// a view of the same database with synchronized stream queries.
+  ///
+  /// However, a technical difference is that the actual database is not opened
+  /// in the shared worker itself. Instead, the shared worker creates a new
+  /// [Worker] internally that will host the database and forwards incoming
+  /// connections to this worker.
+  /// Generally, it is recommended to use a [shared] worker. However, some
+  /// database connections, such as the one based on the Origin-private File
+  /// System web API, is only available in dedicated workers. This setup enables
+  /// the use of such APIs.
+  ///
+  /// Note that shared worker may not be supported in all browsers.
+  dedicatedInShared;
 }
 
 /// A suitable entrypoint for a web worker aiming to make a drift database
@@ -77,55 +114,215 @@ StreamChannel _postMessageChannel(
 /// Dart and Drift.
 void driftWorkerMain(QueryExecutor Function() openConnection) {
   final self = WorkerGlobalScope.instance;
-  DriftServer server;
-  void Function() close;
+  _RunningDriftWorker worker;
 
   if (self is SharedWorkerGlobalScope) {
-    close = self.close;
-    server = DriftServer(openConnection());
-
-    // A shared worker can serve multiple tabs through channels
-    self.onConnect.listen((event) {
-      final msg = event as MessageEvent;
-      server.serve(msg.ports.first.channel());
-    });
+    worker = _RunningDriftWorker(true, openConnection);
   } else if (self is DedicatedWorkerGlobalScope) {
-    close = self.close;
-    server = DriftServer(openConnection(), allowRemoteShutdown: true);
-
-    // A dedicated worker can only serve a single originating tab through a
-    // channel created by `postMessage` calls.
-    server.serve(_postMessageChannel(self, self.postMessage));
+    worker = _RunningDriftWorker(false, openConnection);
   } else {
     throw StateError('This worker is neither a shared nor a dedicated worker');
   }
 
-  server.done.whenComplete(close);
+  worker.start();
 }
 
 /// Spawn or connect to a web worker written with [driftWorkerMain].
 ///
-/// Depending on the [shared] flag, this method creates either a regular [Worker]
-/// or a [SharedWorker] in the currenct context. The [workerJsUri] describes the
-/// path to the worker (e.g. `/database_worker.dart.js` if the original Dart
-/// file defining the worker is in `web/database_worker.dart`).
+/// Depending on the [mode] option, this method creates either a regular [Worker]
+/// or attaches itself to an [SharedWorker] in the current browsing context.
+/// For more details on the different modes, see [DriftWorkerMode]. By default,
+/// a dedicated worker will be used ([DriftWorkerMode.dedicated]).
+///
+/// The [workerJsUri] describes the path to the worker (e.g.
+/// `/database_worker.dart.js` if the original Dart file defining the worker is
+/// in `web/database_worker.dart`).
 ///
 /// When using a shared worker, the database (including stream queries!) are
 /// shared across multiple tabs in realtime.
 Future<DatabaseConnection> connectToDriftWorker(String workerJsUri,
-    {bool shared = false}) {
-  const name = 'drift database';
+    {DriftWorkerMode mode = DriftWorkerMode.dedicated}) {
+  StreamChannel<Object?> channel;
 
-  if (shared) {
-    final worker = SharedWorker(workerJsUri, name);
-
-    return connectToRemoteAndInitialize(worker.port!.channel());
-  } else {
+  if (mode == DriftWorkerMode.dedicated) {
     final worker = Worker(workerJsUri);
+    final webChannel = MessageChannel();
 
-    return connectToRemoteAndInitialize(
-      _postMessageChannel(worker, worker.postMessage),
-      singleClientMode: true,
-    );
+    // Transfer first port to the channel, we'll use the second port on this side.
+    worker.postMessage(webChannel.port1, [webChannel.port1]);
+    channel = webChannel.port2.channel();
+  } else {
+    final worker = SharedWorker(workerJsUri, 'drift database');
+    final port = worker.port!;
+
+    var didGetInitializationResponse = false;
+    port.postMessage(mode.name);
+    channel = port.channel().transformStream(StreamTransformer.fromHandlers(
+      handleData: (data, sink) {
+        if (didGetInitializationResponse) {
+          sink.add(data);
+        } else {
+          didGetInitializationResponse = true;
+
+          final response = data as bool;
+          if (response) {
+            // Initialization ok, all good!
+          } else {
+            sink
+              ..addError(StateError(
+                  'Shared worker disagrees with desired mode $mode, is there '
+                  'another tab using `connectToDriftWorker()` in a different '
+                  'mode?'))
+              ..close();
+          }
+        }
+      },
+    ));
   }
+
+  return connectToRemoteAndInitialize(channel, debugLog: true);
+}
+
+class _RunningDriftWorker {
+  final bool isShared;
+  final QueryExecutor Function() connectionFactory;
+
+  DriftServer? _startedServer;
+  DriftWorkerMode? _knownMode;
+  Worker? _dedicatedWorker;
+
+  _RunningDriftWorker(this.isShared, this.connectionFactory);
+
+  void start() {
+    if (isShared) {
+      const event = EventStreamProvider<MessageEvent>('connect');
+      event.forTarget(self).listen(_newConnection);
+    } else {
+      const event = EventStreamProvider<MessageEvent>('message');
+      event.forTarget(self).map((e) => e.data).listen(_handleMessage);
+
+      // We might be a direct dedicated worker or a dedicated worker proxied
+      // through a shared worker. It doesn't make a difference though.
+      _establishModeAndLaunchServer(DriftWorkerMode.dedicated);
+    }
+  }
+
+  DriftServer _establishModeAndLaunchServer(DriftWorkerMode mode) {
+    _knownMode = mode;
+    final server = _startedServer = DriftServer(
+      connectionFactory(),
+      allowRemoteShutdown: mode == DriftWorkerMode.dedicated,
+    );
+
+    server.done.whenComplete(() {
+      // The only purpose of this worker is to start the drift server, so if the
+      // server is done, so is the worker.
+      if (isShared) {
+        SharedWorkerGlobalScope.instance.close();
+      } else {
+        DedicatedWorkerGlobalScope.instance.close();
+      }
+    });
+
+    return server;
+  }
+
+  /// Handle a new connection, which implies that this worker is shared.
+  void _newConnection(MessageEvent event) {
+    assert(isShared);
+    final outgoingPort = event.ports.first;
+
+    // We still don't know whether this shared worker is supposed to host the
+    // server itself or whether this is delegated to a dedicated worker managed
+    // by the shared worker. In our protocol, the client will tell us the
+    // expected mode in its first message.
+    final originalChannel = outgoingPort.channel();
+    StreamSubscription<Object?>? subscription;
+
+    StreamChannel<Object?> remainingChannel() {
+      return originalChannel
+          .changeStream((_) => SubscriptionStream(subscription!));
+    }
+
+    subscription = originalChannel.stream.listen((first) {
+      final expectedMode = DriftWorkerMode.values.byName(first as String);
+
+      if (_knownMode == null) {
+        switch (expectedMode) {
+          case DriftWorkerMode.dedicated:
+            // This is a shared worker, so this mode won't work
+            originalChannel.sink
+              ..add(false)
+              ..close();
+            break;
+          case DriftWorkerMode.shared:
+            // Ok, we're supposed to run a drift server in this worker. Let's do
+            // that then.
+            final server =
+                _establishModeAndLaunchServer(DriftWorkerMode.shared);
+            originalChannel.sink.add(true);
+            server.serve(remainingChannel());
+            break;
+          case DriftWorkerMode.dedicatedInShared:
+            // Instead of running a server ourselves, we're starting a dedicated
+            // child worker and forward the port.
+            _knownMode = DriftWorkerMode.dedicatedInShared;
+            final worker = _dedicatedWorker = Worker(Uri.base.toString());
+
+            // This will call [_handleMessage], but in the context of the
+            // dedicated worker we just created.
+            outgoingPort.postMessage(true);
+            worker.postMessage(outgoingPort, [outgoingPort]);
+
+            // This closes the channel, but doesn't close the port since it has
+            // been transferred to the child worker.
+            originalChannel.sink.close();
+            break;
+        }
+      } else if (_knownMode == expectedMode) {
+        outgoingPort.postMessage(true);
+        switch (_knownMode!) {
+          case DriftWorkerMode.dedicated:
+            // This is a shared worker, we won't ever set our mode to this.
+            throw AssertionError();
+          case DriftWorkerMode.shared:
+            _startedServer!.serve(remainingChannel());
+            break;
+          case DriftWorkerMode.dedicatedInShared:
+            _dedicatedWorker!.postMessage(outgoingPort, [outgoingPort]);
+            originalChannel.sink.close();
+            break;
+        }
+      } else {
+        // Unsupported mode
+        originalChannel.sink
+          ..add(false)
+          ..close();
+      }
+    });
+  }
+
+  /// Handle an incoming message for a dedicated worker.
+  void _handleMessage(Object? message) {
+    assert(!isShared);
+
+    switch (_knownMode) {
+      case DriftWorkerMode.dedicated:
+      case DriftWorkerMode.dedicatedInShared:
+        if (message is MessagePort) {
+          _startedServer!.serve(message.channel());
+        } else {
+          throw StateError(
+              'Received unknown message $message, expected a port');
+        }
+        break;
+      case DriftWorkerMode.shared:
+      case null:
+        // This is a dedicated worker, so we won't have a shared topology.
+        // It also can't be null since we set the mode right away.
+        throw AssertionError();
+    }
+  }
+
+  static WorkerGlobalScope get self => WorkerGlobalScope.instance;
 }

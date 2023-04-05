@@ -12,8 +12,9 @@ const _useWorker = true;
 /// Obtains a database connection for running drift on the web.
 DatabaseConnection connect({bool isInWebWorker = false}) {
   if (_useWorker && !isInWebWorker) {
-    return DatabaseConnection.delayed(
-        connectToDriftWorker('shared_worker.dart.js', shared: true));
+    return DatabaseConnection.delayed(connectToDriftWorker(
+        'shared_worker.dart.js',
+        mode: DriftWorkerMode.shared));
   } else {
     return DatabaseConnection.delayed(
       // We're using the experimental wasm support in Drift because this gives
