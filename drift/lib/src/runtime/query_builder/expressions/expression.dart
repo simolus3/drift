@@ -200,11 +200,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
     required Map<Expression<D>, Expression<T>> when,
     Expression<T>? orElse,
   }) {
-    if (when.isEmpty) {
-      throw ArgumentError.value(when, 'when', 'Must not be empty');
-    }
-
-    return CaseWhenExpression<T>(this, when.entries.toList(), orElse);
+    return CaseWhenExpressionWithBase<D, T>(this, when: when, orElse: orElse);
   }
 
   /// Evaluates to `this` if [predicate] is true, otherwise evaluates to [ifFalse].
