@@ -336,4 +336,52 @@ failQuery:
 '''))
     }, outputs.dartOutputs, outputs);
   });
+
+  test('supports Dart component in HAVING', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/2378
+    final result = await generateForQueryInDriftFile(r'''
+CREATE TABLE albums (
+  id INTEGER NOT NULL PRIMARY KEY,
+  source_id INTEGER NOT NULL
+);
+
+CREATE TABLE songs (
+  id INTEGER NOT NULL PRIMARY KEY,
+  source_id INTEGER NOT NULL,
+  album_id INTEGER NOT NULL,
+  download_file_path TEXT
+);
+
+filterAlbums: SELECT
+    albums.*,
+    COUNT(songs.id) AS songs_count,
+    SUM(CASE WHEN songs.download_file_path IS NOT NULL THEN 1 ELSE 0 END) AS downloaded_songs_count
+  FROM albums
+  LEFT JOIN songs ON albums.source_id = songs.source_id AND albums.id = songs.album_id
+  WHERE $predicate
+  GROUP BY albums.source_id, albums.id
+  HAVING $having
+  ORDER BY $order
+  LIMIT $limit;
+''');
+
+    expect(
+      result,
+      allOf(
+        contains(
+          r'filterAlbums({required FilterAlbums$predicate predicate, '
+          r'required FilterAlbums$having having, FilterAlbums$order? order, '
+          r'required FilterAlbums$limit limit})',
+        ),
+        contains(r'typedef FilterAlbums$predicate = '
+            'Expression<bool> Function(Albums albums, Songs songs);'),
+        contains(r'typedef FilterAlbums$having = '
+            'Expression<bool> Function(Albums albums, Songs songs);'),
+        contains(r'typedef FilterAlbums$order = '
+            'OrderBy Function(Albums albums, Songs songs);'),
+        contains(r'typedef FilterAlbums$limit = '
+            'Limit Function(Albums albums, Songs songs);'),
+      ),
+    );
+  });
 }
