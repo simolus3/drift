@@ -4,6 +4,7 @@ const _intType = ResolvedType(type: BasicType.int);
 const _realType = ResolvedType(type: BasicType.real);
 const _textType = ResolvedType(type: BasicType.text);
 
+const _expectCondition = ExactTypeExpectation.laxly(ResolvedType.bool());
 const _expectInt = ExactTypeExpectation.laxly(_intType);
 const _expectNum = RoughTypeExpectation.numeric();
 const _expectString = ExactTypeExpectation.laxly(_textType);
@@ -127,6 +128,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visit(e.column, const NoTypeExpectation());
     _lazyCopy(e.expression, e.column);
     visit(e.expression, const NoTypeExpectation());
+  }
+
+  @override
+  void visitGroupBy(GroupBy e, TypeExpectation arg) {
+    visitList(e.by, const NoTypeExpectation());
+    visitNullable(e.having, _expectCondition);
   }
 
   @override
@@ -749,7 +756,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       // assume that a where statement is a boolean expression. Sqlite
       // internally casts (https://www.sqlite.org/lang_expr.html#booleanexpr),
       // so be lax
-      visit(e.where!, const ExactTypeExpectation.laxly(ResolvedType.bool()));
+      visit(e.where!, _expectCondition);
     }
   }
 
