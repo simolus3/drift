@@ -96,6 +96,18 @@ void main() {
     );
   });
 
+  test('allows references to result column in group by', () {
+    // https://github.com/simolus3/drift/issues/2378
+    final engine = SqlEngine()
+      ..registerTableFromSql('CREATE TABLE foo (bar INTEGER);');
+
+    final result = engine.analyze('''
+      SELECT *, bar > 20 AS test FROM foo GROUP BY bar HAVING test
+''');
+
+    expect(result.errors, isEmpty);
+  });
+
   test('does not allow references to result column outside of ORDER BY', () {
     final engine = SqlEngine()..registerTable(demoTable);
 

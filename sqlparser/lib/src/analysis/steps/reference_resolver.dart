@@ -1,13 +1,14 @@
 part of '../analysis.dart';
 
 /// Resolves any open [Reference] it finds in the AST.
-class ReferenceResolver extends RecursiveVisitor<void, void> {
+class ReferenceResolver
+    extends RecursiveVisitor<ReferenceResolvingContext, void> {
   final AnalysisContext context;
 
   ReferenceResolver(this.context);
 
   @override
-  void visitInsertStatement(InsertStatement e, void arg) {
+  void visitInsertStatement(InsertStatement e, ReferenceResolvingContext arg) {
     final table = e.table.resultSet;
     if (table != null) {
       // Resolve columns in the main table
@@ -20,7 +21,8 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitForeignKeyClause(ForeignKeyClause e, void arg) {
+  void visitForeignKeyClause(
+      ForeignKeyClause e, ReferenceResolvingContext arg) {
     final table = e.foreignTable.resultSet;
     if (table == null) {
       // If the table wasn't found, an earlier step will have reported an error
@@ -33,7 +35,19 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitReference(Reference e, void arg) {
+  void visitGroupBy(GroupBy e, ReferenceResolvingContext arg) {
+    return super.visitGroupBy(
+        e, const ReferenceResolvingContext(canReferToColumnAlias: true));
+  }
+
+  @override
+  void visitOrderBy(OrderBy e, ReferenceResolvingContext arg) {
+    return super.visitOrderBy(
+        e, ReferenceResolvingContext(canReferToColumnAlias: true));
+  }
+
+  @override
+  void visitReference(Reference e, ReferenceResolvingContext arg) {
     if (e.resolved != null) {
       return super.visitReference(e, arg);
     }
@@ -69,9 +83,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
       // todo special case for USING (...) in joins?
       final found = scope.resolveUnqualifiedReference(
         e.columnName,
-        // According to https://www.sqlite.org/lang_select.html#the_order_by_clause,
-        // a simple reference in an ordering term can refer to an output column.
-        allowReferenceToResultColumn: e.parent is OrderingTerm,
+        allowReferenceToResultColumn: arg.canReferToColumnAlias,
       );
 
       if (found.isEmpty) {
@@ -96,7 +108,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitUpdateStatement(UpdateStatement e, void arg) {
+  void visitUpdateStatement(UpdateStatement e, ReferenceResolvingContext arg) {
     final table = e.table.resultSet;
     if (table != null) {
       // Resolve the set components against the primary table
@@ -109,7 +121,8 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitWindowFunctionInvocation(WindowFunctionInvocation e, void arg) {
+  void visitWindowFunctionInvocation(
+      WindowFunctionInvocation e, ReferenceResolvingContext arg) {
     if (e.windowName != null && e.resolved == null) {
       e.resolved =
           StatementScope.cast(e.scope).windowDeclarations[e.windowName!];
@@ -165,4 +178,16 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     // table.findColumn contains logic to resolve row id aliases
     return resolved.findColumn(e.columnName);
   }
+}
+
+class ReferenceResolvingContext {
+  /// Whether unqualified references can be resolved against a column alias from
+  /// the surrounding select statement.
+  ///
+  /// This is only the case for `ORDER BY`, `GROUP BY` and `HAVING` clauses.
+  final bool canReferToColumnAlias;
+
+  const ReferenceResolvingContext({
+    this.canReferToColumnAlias = false,
+  });
 }

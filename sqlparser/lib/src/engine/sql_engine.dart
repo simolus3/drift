@@ -275,7 +275,7 @@ class SqlEngine {
 
       node
         ..acceptWithoutArg(ColumnResolver(context))
-        ..acceptWithoutArg(ReferenceResolver(context));
+        ..accept(ReferenceResolver(context), const ReferenceResolvingContext());
 
       final session = TypeInferenceSession(context, options);
       final resolver = TypeResolver(session);
