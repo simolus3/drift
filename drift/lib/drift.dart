@@ -15,7 +15,8 @@ export 'src/runtime/data_verification.dart';
 export 'src/runtime/exceptions.dart';
 export 'src/runtime/executor/connection_pool.dart';
 export 'src/runtime/executor/executor.dart';
-export 'src/runtime/query_builder/query_builder.dart';
+export 'src/runtime/query_builder/query_builder.dart'
+    hide CaseWhenExpressionWithBase, BaseCaseWhenExpression;
 export 'src/runtime/types/converters.dart';
 export 'src/runtime/types/mapping.dart';
 export 'src/utils/lazy_database.dart';

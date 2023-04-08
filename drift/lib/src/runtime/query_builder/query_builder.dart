@@ -3,16 +3,25 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/src/dsl/dsl.dart';
+import 'package:drift/src/runtime/api/options.dart';
+import 'package:drift/src/runtime/api/runtime_api.dart';
+import 'package:drift/src/runtime/data_class.dart';
+import 'package:drift/src/runtime/data_verification.dart';
+import 'package:drift/src/runtime/exceptions.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/types/converters.dart';
+import 'package:drift/src/runtime/types/mapping.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
 import '../../utils/async.dart';
 // New files should not be part of this mega library, which we're trying to
 // split up.
+import 'expressions/case_when.dart';
 import 'expressions/internal.dart';
 
 export 'expressions/bitwise.dart';
