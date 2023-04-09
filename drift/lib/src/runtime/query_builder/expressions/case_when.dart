@@ -2,18 +2,16 @@ import 'package:meta/meta.dart';
 
 import '../query_builder.dart';
 
-/// `CASE WHEN` expression **without** base expression in sqlite.
+/// A `CASE WHEN` expression **without** a base expression in sqlite.
 ///
 /// This expression evaluates to the first value in [BaseCaseWhenExpression.orderedCases]
-/// for which its key evaluates to `true`.
-///
-/// See [BaseCaseWhenExpression] for more info.
+/// for which [CaseWhen.when] evaluates to `true`.
 class CaseWhenExpression<R extends Object>
     extends BaseCaseWhenExpression<bool, R> {
   /// Creates a `CASE WHEN` expression from the independent components.
   ///
   /// This expression evaluates to the first value in [cases]
-  /// for which its key evaluates to `true`.
+  /// for which [CaseWhen.when] evaluates to `true`.
   ///
   /// If [cases] is empty - throws [ArgumentError]
   CaseWhenExpression({
@@ -42,9 +40,7 @@ class CaseWhenExpressionWithBase<T extends Object, R extends Object>
 
 /// A single when-then case for `CASE WHEN` expression in sqlite.
 ///
-/// TODO check if it should be replaced with multiple return values.
-///
-/// [Multiple return values GitHub issue](https://github.com/dart-lang/language/issues/68)
+// todo: This is a good candidate for a record after that feature turns stable.
 class CaseWhen<T extends Object, R extends Object> {
   /// Expression to use after `WHEN`
   final Expression<T> when;
@@ -72,7 +68,7 @@ abstract class BaseCaseWhenExpression<T extends Object, R extends Object>
   /// The optional base expression.
   ///
   /// If it is set, the keys in [orderedCases] will be compared to this expression.
-  final Expression? base;
+  final Expression<T>? base;
 
   /// The when-then entries for this expression.
   ///
