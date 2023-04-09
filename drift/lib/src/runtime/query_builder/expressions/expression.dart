@@ -202,7 +202,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   }) {
     return CaseWhenExpressionWithBase<D, T>(
       this,
-      cases: when.entries.map((e) => CaseWhen(e.key, then: e.value)).toList(),
+      cases: when.entries.map((e) => CaseWhen(e.key, then: e.value)),
       orElse: orElse,
     );
   }

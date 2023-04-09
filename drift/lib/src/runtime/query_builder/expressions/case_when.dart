@@ -33,7 +33,7 @@ class CaseWhenExpressionWithBase<T extends Object, R extends Object>
   /// If [cases] is empty - throws [ArgumentError]
   CaseWhenExpressionWithBase(
     Expression<T> base, {
-    required List<CaseWhen<T, R>> cases,
+    required Iterable<CaseWhen<T, R>> cases,
     Expression<R>? orElse,
   }) : super._(base, cases, orElse);
 }
@@ -73,7 +73,7 @@ abstract class BaseCaseWhenExpression<T extends Object, R extends Object>
   /// The when-then entries for this expression.
   ///
   /// This expression will evaluate to the value of the entry with a matching key.
-  final List<CaseWhen<T, R>> orderedCases;
+  final Iterable<CaseWhen<T, R>> orderedCases;
 
   /// The expression to use if no entry in [orderedCases] matched.
   final Expression<R>? orElse;
