@@ -39,10 +39,10 @@ void main() {
   group('CASE WHEN without base expression', () {
     test('WHEN without ELSE', () {
       expect(
-        CaseWhenExpression<int>(when: {
-          const CustomExpression("'id' IS 1"): const Constant(1),
-          const CustomExpression("'id' IS 2"): const Constant(2),
-        }),
+        CaseWhenExpression<int>(cases: [
+          const CaseWhen(CustomExpression("'id' IS 1"), then: Constant(1)),
+          const CaseWhen(CustomExpression("'id' IS 2"), then: Constant(2)),
+        ]),
         generates("CASE WHEN 'id' IS 1 THEN 1 WHEN 'id' IS 2 THEN 2 END"),
       );
     });
@@ -50,9 +50,9 @@ void main() {
     test('WHEN with ELSE', () {
       expect(
         CaseWhenExpression<int>(
-          when: {
-            const CustomExpression("'id' IS 1"): const Constant(1),
-          },
+          cases: [
+            const CaseWhen(CustomExpression("'id' IS 1"), then: Constant(1)),
+          ],
           orElse: y,
         ),
         generates("CASE WHEN 'id' IS 1 THEN 1 ELSE y END"),
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('does not allow empty WHEN map', () {
-      expect(() => CaseWhenExpression<Object>(when: const {}),
+      expect(() => CaseWhenExpression<Object>(cases: const []),
           throwsA(isA<ArgumentError>()));
     });
   });
