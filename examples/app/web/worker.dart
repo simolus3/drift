@@ -1,16 +1,10 @@
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html';
-
 import 'package:app/database/connection/web.dart';
-import 'package:drift/web.dart';
-import 'package:drift/remote.dart';
+import 'package:drift/web/worker.dart';
 
+/// This Dart program is the entrypoint of a web worker that will be compiled to
+/// JavaScript by running `build_runner build`. The resulting JavaScript file
+/// (`shared_worker.dart.js`) is part of the build result and will be shipped
+/// with the rest of the application when running or building a Flutter web app.
 void main() {
-  final self = SharedWorkerGlobalScope.instance;
-  final server = DriftServer(connect(isInWebWorker: true));
-
-  self.onConnect.listen((event) {
-    final msg = event as MessageEvent;
-    server.serve(msg.ports.first.channel());
-  });
+  return driftWorkerMain(() => connect(isInWebWorker: true));
 }

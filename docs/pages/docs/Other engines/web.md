@@ -150,49 +150,21 @@ the regular implementation.
 
 The following example is meant to be used with a regular Dart web app, compiled using
 [build_web_compilers](https://pub.dev/packages/build_web_compilers).
+A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example).
 
-To write a web worker that will serve requests for drift, create a file called `worker.dart` in 
+To write a web worker that will serve requests for drift, create a file called `worker.dart` in
 the `web/` folder of your app. It could have the following content:
 
-```dart
-import 'dart:html';
+{% assign workers = 'package:drift_docs/snippets/engines/workers.dart.excerpt.json' | readString | json_decode %}
 
-import 'package:drift/drift.dart';
-import 'package:drift/web.dart';
-import 'package:drift/remote.dart';
-
-void main() {
-  final self = SharedWorkerGlobalScope.instance;
-  self.importScripts('sql-wasm.js');
-
-  final db = WebDatabase.withStorage(DriftWebStorage.indexedDb('worker',
-      migrateFromLocalStorage: false, inWebWorker: true));
-  final server = DriftServer(DatabaseConnection(db));
-
-  self.onConnect.listen((event) {
-    final msg = event as MessageEvent;
-    server.serve(msg.ports.first.channel());
-  });
-}
-```
+{% include "blocks/snippet" snippets = workers name = "worker" %}
 
 For more information on this api, see the [remote API](https://pub.dev/documentation/drift/latest/remote/remote-library.html).
 
 Connecting to that worker is very simple with drift's web and remote apis. In your regular app code (outside of the worker),
 you can connect like this:
 
-```dart
-import 'dart:html';
-
-import 'package:drift/remote.dart';
-import 'package:drift/web.dart';
-import 'package:web_worker_example/database.dart';
-
-DatabaseConnection connectToWorker() {
-    final worker = SharedWorker('worker.dart.js');
-    return remote(worker.port!.channel());
-}
-```
+{% include "blocks/snippet" snippets = workers name = "client" %}
 
 You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on

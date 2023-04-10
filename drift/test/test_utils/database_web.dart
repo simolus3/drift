@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
-import 'package:http/http.dart' as http;
 import 'package:sqlite3/wasm.dart';
 import 'package:test/scaffolding.dart';
 
@@ -15,9 +14,8 @@ Future<WasmSqlite3> get sqlite3 {
     final channel = spawnHybridUri('/test/test_utils/sqlite_server.dart');
     final port = await channel.stream.first as int;
 
-    final response =
-        await http.get(Uri.parse('http://localhost:$port/sqlite3.wasm'));
-    return WasmSqlite3.load(response.bodyBytes);
+    return WasmSqlite3.loadFromUrl(
+        Uri.parse('http://localhost:$port/sqlite3.wasm'));
   });
 }
 

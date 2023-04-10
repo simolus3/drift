@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
-import 'package:http/http.dart' as http;
 import 'package:sqlite3/wasm.dart';
 
 QueryExecutor connect() {
@@ -9,11 +8,9 @@ QueryExecutor connect() {
     // IndexedDB database (named `my_app` here).
     final fs = await IndexedDbFileSystem.open(dbName: 'my_app');
 
-    // Load wasm bundle for sqlite3
-    final response = await http.get(Uri.parse('sqlite3.wasm'));
-    final sqlite3 = await WasmSqlite3.load(
-      response.bodyBytes,
-      SqliteEnvironment(fileSystem: fs),
+    final sqlite3 = await WasmSqlite3.loadFromUrl(
+      Uri.parse('sqlite3.wasm'),
+      environment: SqliteEnvironment(fileSystem: fs),
     );
 
     // Then, open a database:
