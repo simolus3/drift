@@ -1,4 +1,4 @@
-## 2.7.0-dev
+## 2.7.0
 
 - Make `validateDatabaseSchema()` work in migration tests.
 - Fix elements from transitive imports in drift files not being added reliably.

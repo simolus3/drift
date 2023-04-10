@@ -1,4 +1,4 @@
-## 0.29.0-dev
+## 0.28.1
 
 - Fix false-positive warnings about `AS` aliases in subqueries used in triggers.
 

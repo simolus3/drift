@@ -1,3 +1,10 @@
+## 2.7.0
+
+- Add support for `CASE` expressions without a base in the Dart API with the
+  `CaseWhenExpression` class.
+- Add the new `package:drift/web/workers.dart` library which makes it easier to
+  create web workers for drift.
+
 ## 2.6.0
 
 - Add `insertReturningOrNull` for potentially empty inserts.
