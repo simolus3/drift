@@ -1,3 +1,4 @@
+import 'package:app/database/connection/status.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,6 +45,26 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final currentEntries = ref.watch(entriesInCategory);
+    ref.listen<String?>(databaseStatusProvider, (previous, next) {
+      if (previous == null && next != null) {
+        // There's something wrong with the database: Show a warning
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Database warning'),
+              content: Text(next),
+              actions: [
+                TextButton(
+                  onPressed: context.pop,
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(

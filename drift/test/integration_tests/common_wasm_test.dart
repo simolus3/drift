@@ -1,7 +1,6 @@
 @TestOn('browser')
 import 'package:drift/wasm.dart';
 import 'package:drift_testcases/tests.dart';
-import 'package:http/http.dart' as http;
 import 'package:sqlite3/wasm.dart';
 import 'package:test/test.dart';
 
@@ -37,10 +36,10 @@ void main() {
     final channel = spawnHybridUri('/test/test_utils/sqlite_server.dart');
     final port = await channel.stream.first as int;
 
-    final response =
-        await http.get(Uri.parse('http://localhost:$port/sqlite3.wasm'));
-    sqlite3 = await WasmSqlite3.load(
-        response.bodyBytes, SqliteEnvironment(fileSystem: fs));
+    sqlite3 = await WasmSqlite3.loadFromUrl(
+      Uri.parse('http://localhost:$port/sqlite3.wasm'),
+      environment: SqliteEnvironment(fileSystem: fs),
+    );
   });
 
   runAllTests(DriftWasmExecutor(fs, () => sqlite3));

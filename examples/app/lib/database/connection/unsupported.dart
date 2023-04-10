@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Never _unsupported() {
   throw UnsupportedError(
@@ -8,7 +9,7 @@ Never _unsupported() {
 // Depending on the platform the app is compiled to, the following stubs will
 // be replaced with the methods in native.dart or web.dart
 
-DatabaseConnection connect() {
+DatabaseConnection connect(Ref ref) {
   _unsupported();
 }
 
