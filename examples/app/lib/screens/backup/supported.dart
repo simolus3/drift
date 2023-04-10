@@ -65,7 +65,7 @@ class BackupDialog extends ConsumerWidget {
             await tempDbFile.delete();
 
             // And now, re-open the database!
-            ref.read(AppDatabase.provider.notifier).reOpenDatabase();
+            ref.read(AppDatabase.provider.notifier).state = AppDatabase();
           },
           child: const Text('Restore'),
         ),

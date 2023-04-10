@@ -13,10 +13,7 @@ import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/src/web/channel.dart';
-import 'package:js/js_util.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: implementation_imports
-import 'package:sqlite3/src/wasm/js_interop/file_system_access.dart' as fsa;
 
 /// Describes the topology between clients (e.g. tabs) and the drift web worker
 /// when spawned with [connectToDriftWorker].
@@ -67,29 +64,10 @@ enum DriftWorkerMode {
   /// System web API, is only available in dedicated workers. This setup enables
   /// the use of such APIs.
   ///
-  /// Note that shared worker may not be supported in all browsers.
+  /// Note that only Firefox seems to support spawning dedicated workers in
+  /// shared workers, which makes this option effectively unsupported on Chrome
+  /// and Safari.
   dedicatedInShared;
-}
-
-/// Results of calling [checkForCompatibility] - reports whether features used
-/// to efficiently run drift on the web are supported in the current browser.
-class DriftWebCompatibility {
-  /// Whether the parts of the File System Access API providing the Origin-
-  /// Private File System implementation are supported on this browser.
-  final bool? opfsSupported;
-
-  /// Whether dedicated workers ([Worker]) are supported in this browser.
-  final bool dedicatedWorkersSupported;
-
-  /// Whether shared workers ([SharedWorker]) are supported in this browser.
-  final bool sharedWorkersSupported;
-
-  DriftWebCompatibility._(this.opfsSupported, this.dedicatedWorkersSupported,
-      this.sharedWorkersSupported);
-}
-
-enum _WorkerCommand {
-  checkOpfsSupport,
 }
 
 /// A suitable entrypoint for a web worker aiming to make a drift database
@@ -205,41 +183,6 @@ Future<DatabaseConnection> connectToDriftWorker(String workerJsUri,
   }
 
   return connectToRemoteAndInitialize(channel, debugLog: true);
-}
-
-/// Starts a dedicated worker to probe whether shared and dedicated workers are
-/// available and whether the File System Access API is correctly implemented in
-/// the current browser.
-///
-/// The [workerJsUri] is the URL of the worker calling `driftWorkerMain` - the
-/// same one you'd use for [connectToDriftWorker].
-///
-/// The returned [DriftWebCompatibility] contains the results of the feature
-/// detection.
-Future<DriftWebCompatibility> checkForDriftWebCompatibility(
-    String workerJsUri) async {
-  final workersSupported = hasProperty(globalThis, 'Worker');
-  final sharedWorkersSupported = hasProperty(globalThis, 'SharedWorker');
-
-  if (!workersSupported) {
-    return DriftWebCompatibility._(
-        null, workersSupported, sharedWorkersSupported);
-  }
-
-  final worker = Worker(workerJsUri);
-  final channel = MessageChannel();
-
-  worker.postMessage(
-      [_WorkerCommand.checkOpfsSupport.name, channel.port1], [channel.port1]);
-
-  final opfsSupported = await channel.port2.onMessage
-      .map((e) => e.data as bool)
-      .first
-      .timeout(const Duration(milliseconds: 300), onTimeout: () => false);
-  worker.terminate();
-
-  return DriftWebCompatibility._(
-      opfsSupported, workersSupported, sharedWorkersSupported);
 }
 
 class _RunningDriftWorker {
@@ -366,62 +309,10 @@ class _RunningDriftWorker {
       final server = _startedServer ??
           _establishModeAndLaunchServer(DriftWorkerMode.dedicated);
       server.serve(message.channel());
-    } else if (message is List) {
-      final command = message[0] as String;
-      final responsePort = message[1] as MessagePort;
-
-      try {
-        final recognizedCommand = _WorkerCommand.values.byName(command);
-
-        switch (recognizedCommand) {
-          case _WorkerCommand.checkOpfsSupport:
-            responsePort.postMessage(await _supportsOpfs());
-            break;
-        }
-      } catch (_) {
-        responsePort.postMessage(false);
-      }
     } else {
       throw StateError('Received unknown message $message, expected a port');
     }
   }
 
   static WorkerGlobalScope get self => WorkerGlobalScope.instance;
-}
-
-Future<bool> _supportsOpfs() async {
-  final manager = fsa.storageManager;
-  if (manager == null) return false;
-
-  const testName = '__drift_feature_check__';
-
-  // Some implementations of this API follow an old standard that we don't
-  // support. We can detect this by getSize() returning a promise.
-  final root = await manager.directory;
-  fsa.FileSystemFileHandle? file;
-  fsa.FileSystemSyncAccessHandle? handle;
-
-  try {
-    file = await root.openFile(testName, create: true);
-    handle = await file.createSyncAccessHandle();
-
-    final getSizeCall = callMethod(handle, 'getSize', []);
-    if (getSizeCall is! int) {
-      // Asynchronous -> Not supported!
-      return false;
-    }
-
-    return true;
-  } finally {
-    if (handle != null) {
-      final closeCall = callMethod(handle, 'close', []);
-      if (closeCall is Object) {
-        await promiseToFuture(closeCall);
-      }
-    }
-
-    if (file != null) {
-      await root.removeEntry(testName);
-    }
-  }
 }

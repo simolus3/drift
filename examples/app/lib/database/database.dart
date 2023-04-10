@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart' show Colors;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'connection/connection.dart' as impl;
@@ -11,7 +10,7 @@ part 'database.g.dart';
 
 @DriftDatabase(tables: [TodoEntries, Categories], include: {'sql.drift'})
 class AppDatabase extends _$AppDatabase {
-  AppDatabase._(Ref ref) : super(impl.connect(ref));
+  AppDatabase() : super(impl.connect());
 
   AppDatabase.forTesting(DatabaseConnection connection) : super(connection);
 
@@ -125,30 +124,12 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  static final StateNotifierProvider<DatabaseNotifier, AppDatabase> provider =
-      StateNotifierProvider(DatabaseNotifier._);
+  static final StateProvider<AppDatabase> provider = StateProvider((ref) {
+    final database = AppDatabase();
+    ref.onDispose(database.close);
 
-  static void reOpen() {}
-}
-
-class DatabaseNotifier extends StateNotifier<AppDatabase> {
-  final Ref _ref;
-
-  DatabaseNotifier._(this._ref) : super(_open(_ref));
-
-  void reOpenDatabase() {
-    state.close();
-    state = _open(_ref);
-  }
-
-  @override
-  void dispose() {
-    state.close();
-
-    super.dispose();
-  }
-
-  static AppDatabase _open(Ref ref) => AppDatabase._(ref);
+    return database;
+  });
 }
 
 class TodoEntryWithCategory {
