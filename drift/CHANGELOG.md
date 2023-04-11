@@ -1,3 +1,8 @@
+## 2.8.0-dev
+
+- Don't keep databases in an unusable state if the `setup` callback throws an
+  exception. Instead, drift will retry the next time the database is used.
+
 ## 2.7.0
 
 - Add support for `CASE` expressions without a base in the Dart API with the

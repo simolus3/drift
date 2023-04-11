@@ -14,10 +14,12 @@ import 'native_functions.dart';
 /// through `package:js`.
 abstract class Sqlite3Delegate<DB extends CommonDatabase>
     extends DatabaseDelegate {
-  /// The underlying database instance from the `sqlite3` package.
-  late DB database;
+  DB? _database;
 
-  bool _hasCreatedDatabase = false;
+  /// The underlying database instance from the `sqlite3` package.
+  DB get database => _database!;
+
+  bool _hasInitializedDatabase = false;
   bool _isOpen = false;
 
   final void Function(DB)? _setup;
@@ -35,8 +37,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// A delegate using an underlying sqlite3 database object that has already
   /// been opened.
   Sqlite3Delegate.opened(
-      this.database, this._setup, this.closeUnderlyingWhenClosed)
-      : _hasCreatedDatabase = true {
+      this._database, this._setup, this.closeUnderlyingWhenClosed) {
     _initializeDatabase();
   }
 
@@ -55,26 +56,33 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   Future<void> open(QueryExecutorUser db) async {
-    if (!_hasCreatedDatabase) {
-      _createDatabase();
-      _initializeDatabase();
+    if (!_hasInitializedDatabase) {
+      assert(_database == null);
+      _database = openDatabase();
+
+      try {
+        _initializeDatabase();
+      } catch (e) {
+        // If the initialization fails, we effectively don't have a usable
+        // database, so reset
+        _database?.dispose();
+        _database = null;
+
+        rethrow;
+      }
     }
 
     _isOpen = true;
     return Future.value();
   }
 
-  void _createDatabase() {
-    assert(!_hasCreatedDatabase);
-    _hasCreatedDatabase = true;
-
-    database = openDatabase();
-  }
-
   void _initializeDatabase() {
+    assert(!_hasInitializedDatabase);
+
     database.useNativeFunctions();
     _setup?.call(database);
-    versionDelegate = _VmVersionDelegate(database);
+    versionDelegate = _SqliteVersionDelegate(database);
+    _hasInitializedDatabase = true;
   }
 
   /// Synchronously prepares and runs [statements] collected from a batch.
@@ -127,10 +135,10 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   }
 }
 
-class _VmVersionDelegate extends DynamicVersionDelegate {
+class _SqliteVersionDelegate extends DynamicVersionDelegate {
   final CommonDatabase database;
 
-  _VmVersionDelegate(this.database);
+  _SqliteVersionDelegate(this.database);
 
   @override
   Future<int> get schemaVersion => Future.value(database.userVersion);

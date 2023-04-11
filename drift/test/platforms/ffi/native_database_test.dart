@@ -90,6 +90,36 @@ void main() {
       );
     });
   });
+
+  test('calls setup twice if first invocation fails', () async {
+    const exception = 'exception';
+    var count = 0;
+    final db = NativeDatabase.memory(
+      setup: expectAsync1(
+        (_) {
+          if (count++ == 0) {
+            throw exception;
+          }
+        },
+        count: 2,
+      ),
+    );
+
+    await expectLater(db.ensureOpen(_FakeExecutorUser()), throwsA(exception));
+
+    // Should also prevent subsequent open attempts
+    await expectLater(db.ensureOpen(_FakeExecutorUser()), completes);
+  });
+
+  test('throwing in setup prevents the database from being opened', () async {
+    const exception = 'exception';
+    final db = NativeDatabase.memory(setup: (_) => throw exception);
+
+    await expectLater(db.ensureOpen(_FakeExecutorUser()), throwsA(exception));
+
+    // Should also prevent subsequent open attempts
+    await expectLater(db.ensureOpen(_FakeExecutorUser()), throwsA(exception));
+  });
 }
 
 class _FakeExecutorUser extends QueryExecutorUser {
