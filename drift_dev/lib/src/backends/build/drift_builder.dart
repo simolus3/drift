@@ -402,5 +402,5 @@ class _DriftBuildRun {
     return buildStep.writeAsString(buildStep.allowedOutputs.single, code);
   }
 
-  static final Version _minimalDartLanguageVersion = Version(2, 12, 0);
+  static final Version _minimalDartLanguageVersion = Version(2, 13, 0);
 }
