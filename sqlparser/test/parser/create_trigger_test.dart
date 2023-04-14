@@ -93,4 +93,21 @@ void main() {
       ),
     );
   });
+
+  test('reports error for invalid statement in block', () {
+    expectParseError(
+      '''
+CREATE TRIGGER "UserLogins_insert" AFTER INSERT ON "UserLogins" BEGIN
+  INSERT INTO
+    "SyncChanges"("table", "pk", "lastUpdateTime", "isDeleted")
+    VALUES ('UserLogins', '{"userId": "' || new."userId" || '", "deviceId": "' || new."deviceId" || '"}', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), 0);
+  ON CONFLICT("table", "pk") DO UPDATE SET
+    "lastUpdateTime" = excluded."lastUpdateTime",
+    "isDeleted" = excluded."isDeleted";
+END;
+''',
+      message: contains('Invalid statement'),
+      span: 'ON',
+    );
+  });
 }

@@ -427,6 +427,8 @@ class Parser {
 
       if (stmt != null) {
         stmts.add(stmt);
+      } else {
+        _error('Invalid statement, expected SELECT, INSERT, UPDATE or DELETE.');
       }
     }
 
