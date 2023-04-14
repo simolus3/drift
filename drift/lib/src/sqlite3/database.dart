@@ -1,6 +1,8 @@
 @internal
 import 'dart:async';
+import 'dart:developer';
 
+import 'package:meta/dart2js.dart' as dart2js;
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 
@@ -88,22 +90,26 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// Synchronously prepares and runs [statements] collected from a batch.
   @protected
   void runBatchSync(BatchedStatements statements) {
+    Timeline.startSync('drift/runBatchSync');
     final prepared = <CommonPreparedStatement>[];
 
     try {
       for (final stmt in statements.statements) {
-        prepared.add(database.prepare(stmt, checkNoTail: true));
+        prepared.add(_prepare(stmt));
       }
 
-      for (final application in statements.arguments) {
-        final stmt = prepared[application.statementIndex];
+      Timeline.timeSync('drift/runBatchSync/execute', () {
+        for (final application in statements.arguments) {
+          final stmt = prepared[application.statementIndex];
 
-        stmt.execute(application.arguments);
-      }
+          stmt.execute(application.arguments);
+        }
+      });
     } finally {
       for (final stmt in prepared) {
         stmt.dispose();
       }
+      Timeline.finishSync();
     }
   }
 
@@ -111,26 +117,41 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// with the given [args].
   @protected
   void runWithArgsSync(String statement, List<Object?> args) {
-    if (args.isEmpty) {
-      database.execute(statement);
-    } else {
-      final stmt = database.prepare(statement, checkNoTail: true);
-      try {
-        stmt.execute(args);
-      } finally {
-        stmt.dispose();
+    Timeline.timeSync('drift/runWithArgsSync', () {
+      if (args.isEmpty) {
+        database.execute(statement);
+      } else {
+        final stmt = _prepare(statement);
+        try {
+          stmt.execute(args);
+        } finally {
+          stmt.dispose();
+        }
       }
-    }
+    }, arguments: {'sql': statement});
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
-    final stmt = database.prepare(statement, checkNoTail: true);
+    Timeline.startSync('drift/runSelect');
+    final stmt = _prepare(statement);
     try {
       final result = stmt.select(args);
       return QueryResult.fromRows(result.toList());
     } finally {
+      Timeline.finishSync();
       stmt.dispose();
+    }
+  }
+
+  @pragma('vm:prefer-inline')
+  @dart2js.tryInline
+  CommonPreparedStatement _prepare(String sql) {
+    Timeline.startSync('drift/prepare', arguments: {'sql': sql});
+    try {
+      return database.prepare(sql, checkNoTail: true);
+    } finally {
+      Timeline.finishSync();
     }
   }
 }
