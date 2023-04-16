@@ -2433,8 +2433,7 @@ class Parser {
   }
 
   ColumnDefinition _columnDefinition() {
-    final name = _consume(TokenType.identifier, 'Expected a column name')
-        as IdentifierToken;
+    final name = _consumeIdentifier('Expected a column name');
 
     final typeTokens = _typeName();
     String? typeName;

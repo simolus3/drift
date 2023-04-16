@@ -24,6 +24,13 @@ void main() {
           lexeme: 'group',
         ),
       ]);
+
+      expectError('CREATE TABLE x (table TEXT NOT NULL, foo INTEGER);', [
+        isParsingError(
+          message: 'Expected a column name (got keyword TABLE)',
+          lexeme: 'table',
+        ),
+      ]);
     });
   });
 }
