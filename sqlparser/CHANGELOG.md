@@ -1,3 +1,7 @@
+## 0.28.2-dev
+
+- Support resolving `IIF` functions.
+
 ## 0.28.1
 
 - Fix false-positive warnings about `AS` aliases in subqueries used in triggers.

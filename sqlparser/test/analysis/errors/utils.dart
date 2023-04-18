@@ -14,7 +14,7 @@ extension ExpectErrors on AnalysisContext {
   }
 }
 
-Matcher analysisErrorWith({String? lexeme, AnalysisErrorType? type}) {
+Matcher analysisErrorWith({String? lexeme, AnalysisErrorType? type, message}) {
   var matcher = isA<AnalysisError>();
 
   if (lexeme != null) {
@@ -22,6 +22,9 @@ Matcher analysisErrorWith({String? lexeme, AnalysisErrorType? type}) {
   }
   if (type != null) {
     matcher = matcher.having((e) => e.type, 'type', type);
+  }
+  if (message != null) {
+    matcher = matcher.having((e) => e.message, 'message', message);
   }
 
   return matcher;

@@ -856,7 +856,8 @@ class Parser {
       } else {
         _error(
           'Expected an expression here, but got a reserved keyword. Did you '
-          'mean to use it as an identifier? Try wrapping it in double quotes.',
+          'mean to use it as a column? Try wrapping it in double quotes '
+          '("${_peek.lexeme}").',
         );
       }
     } else {

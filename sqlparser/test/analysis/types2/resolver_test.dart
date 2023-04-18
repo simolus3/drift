@@ -83,6 +83,35 @@ void main() {
     });
   });
 
+  group('iif', () {
+    test('has type of arguments', () {
+      expect(resolveResultColumn('SELECT IIF(false, 0, 1)'),
+          const ResolvedType(type: BasicType.int));
+    });
+
+    test('is nullable if argument is', () {
+      expect(resolveResultColumn('SELECT IIF(false, NULL, 1)'),
+          const ResolvedType(type: BasicType.int, nullable: true));
+    });
+
+    test('is not nullable just because the condition is', () {
+      expect(resolveResultColumn('SELECT IIF(NULL, 0, 1)'),
+          const ResolvedType(type: BasicType.int));
+    });
+
+    test('infers one argument based on the other', () {
+      expect(resolveFirstVariable('SELECT IIF(false, ?, 1)'),
+          const ResolvedType(type: BasicType.int));
+      expect(resolveFirstVariable('SELECT IIF(false, 0, ?)'),
+          const ResolvedType(type: BasicType.int));
+    });
+
+    test('infers condition', () {
+      expect(resolveFirstVariable('SELECT IIF(?, 0, 1)'),
+          const ResolvedType(type: BasicType.int, hint: IsBoolean()));
+    });
+  });
+
   group('types in insert statements', () {
     test('for VALUES', () {
       final resolver =

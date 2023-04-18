@@ -20,7 +20,7 @@ void main() {
     test('as identifiers', () {
       expectError('SELECT group FROM foo;', [
         isParsingError(
-          message: contains('Did you mean to use it as an identifier?'),
+          message: contains('Did you mean to use it as a column?'),
           lexeme: 'group',
         ),
       ]);

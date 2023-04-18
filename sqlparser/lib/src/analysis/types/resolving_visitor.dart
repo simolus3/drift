@@ -518,6 +518,17 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       session._addRelation(NullableIfSomeOtherIs(e, params));
     }
 
+    void checkArgumentCount(int expectedArgs) {
+      if (params.length != expectedArgs) {
+        session.context.reportError(AnalysisError(
+          type: AnalysisErrorType.invalidAmountOfParameters,
+          message:
+              '${e.name} expects $expectedArgs arguments, got ${params.length}.',
+          relevantNode: e.parameters,
+        ));
+      }
+    }
+
     final lowercaseName = e.name.toLowerCase();
     switch (lowercaseName) {
       case 'round':
@@ -595,6 +606,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'unlikely':
         session._addRelation(CopyTypeFrom(e, params.first));
         return null;
+      case 'iif':
+        checkArgumentCount(3);
+
+        if (params.length == 3) {
+          // IIF(a, b, c) is essentially CASE WHEN a THEN b ELSE c END
+          final cases = [params[1], params[2]];
+          session
+            .._addRelation(CopyEncapsulating(e, cases))
+            .._addRelation(HaveSameType(cases));
+        }
+
+        return null;
       case 'coalesce':
       case 'ifnull':
         session._addRelation(CopyEncapsulating(
@@ -645,6 +668,15 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final name = e.name.toLowerCase();
 
     switch (name) {
+      case 'iif':
+        if (params.isNotEmpty) {
+          final condition = params[0];
+          if (condition is Expression) {
+            visited.add(condition);
+            visit(condition, _expectCondition);
+          }
+        }
+        break;
       case 'nth_value':
         if (params.length >= 2 && params[1] is Expression) {
           // the second argument of nth_value is always an integer
