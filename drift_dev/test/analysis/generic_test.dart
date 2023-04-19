@@ -270,4 +270,24 @@ class OtherTable extends Table {
     final thisTable = file.analyzedElements.single;
     expect(thisTable.references, hasLength(1));
   });
+
+  test('reports sensible error for missing table', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+getCompanyCustomersCount:
+  SELECT COUNT(*) AS "count"
+  FROM Customers AS c
+  INNER JOIN Customer_Companies AS cc
+    ON cc.customerId = c.id AND cc.companyId = :companyId;
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    final errors = file.analysis.values.single.errorsDuringAnalysis;
+    expect(errors, [
+      isDriftError(contains('`customers` could not be found in any import')),
+      isDriftError(
+          contains('`customer_companies` could not be found in any import')),
+    ]);
+  });
 }

@@ -170,6 +170,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     final references =
         resolver.driver.newSqlEngine().findReferencedSchemaTables(stmt);
     final found = <DriftElement>[];
+    final missingNames = <String, ResolveReferencedElementResult>{};
 
     for (final table in references) {
       final result = await resolver.resolveReference(discovered.ownId, table);
@@ -177,11 +178,22 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       if (result is ResolvedReferenceFound) {
         found.add(result.element);
       } else {
-        final referenceNode = stmt.allDescendants
-            .firstWhere((e) => e is TableReference && e.tableName == table);
+        missingNames[table.toLowerCase()] = result;
+      }
+    }
 
-        reportErrorForUnresolvedReference(result,
-            (msg) => DriftAnalysisError.inDriftFile(referenceNode, msg));
+    if (missingNames.isNotEmpty) {
+      // Ok, there are unresolved table references
+      for (final reference in stmt.allDescendants.whereType<TableReference>()) {
+        if (reference.resolved == null) {
+          final unresolvedBecause =
+              missingNames[reference.tableName.toLowerCase()];
+
+          if (unresolvedBecause != null) {
+            reportErrorForUnresolvedReference(unresolvedBecause,
+                (msg) => DriftAnalysisError.inDriftFile(reference, msg));
+          }
+        }
       }
     }
 
