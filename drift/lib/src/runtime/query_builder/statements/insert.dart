@@ -271,7 +271,8 @@ class InsertStatement<T extends Table, D> {
     Insertable<D>? originalEntry,
     UpsertClause<T, D>? onConflict,
   ) {
-    void writeOnConflictConstraint(List<Column<Object>>? target) {
+    void writeOnConflictConstraint(
+        List<Column<Object>>? target, Expression<bool>? where) {
       ctx.buffer.write(' ON CONFLICT(');
 
       final conflictTarget = target ?? table.$primaryKey.toList();
@@ -292,6 +293,10 @@ class InsertStatement<T extends Table, D> {
       }
 
       ctx.buffer.write(')');
+
+      if (where != null) {
+        Where(where).writeInto(ctx);
+      }
     }
 
     if (onConflict is DoUpdate<T, D>) {
@@ -313,7 +318,8 @@ class InsertStatement<T extends Table, D> {
 
       final updateSet = upsertInsertable.toColumns(true);
 
-      writeOnConflictConstraint(onConflict.target);
+      writeOnConflictConstraint(onConflict.target,
+          onConflict._targetCondition?.call(table.asDslTable));
 
       if (ctx.dialect == SqlDialect.postgres &&
           mode == InsertMode.insertOrIgnore) {
@@ -344,7 +350,7 @@ class InsertStatement<T extends Table, D> {
         _writeOnConflict(ctx, mode, originalEntry, clause);
       }
     } else if (onConflict is DoNothing<T, D>) {
-      writeOnConflictConstraint(onConflict.target);
+      writeOnConflictConstraint(onConflict.target, null);
       ctx.buffer.write(' DO NOTHING');
     }
   }
@@ -451,6 +457,7 @@ abstract class UpsertClause<T extends Table, D> {}
 class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   final Insertable<D> Function(T old, T excluded) _creator;
   final Where Function(T old, T excluded)? _where;
+  final Expression<bool> Function(T table)? _targetCondition;
 
   final bool _usesExcludedTable;
 
@@ -467,15 +474,27 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// If you need to refer to both the old row and the row that would have
   /// been inserted, use [DoUpdate.withExcluded].
   ///
+  /// A `DO UPDATE` clause must refer to a set of columns potentially causing a
+  /// conflict, and only a conflict on those columns causes this clause to be
+  /// applied. The most common conflict would be an existing row with the same
+  /// primary key, which is the default for [target]. Other unique indices can
+  /// be targeted too. If such a unique index has a condition, it can be set
+  /// with [targetCondition] (which forms the rarely used `WHERE` in the
+  /// conflict target).
+  ///
   /// The optional [where] clause can be used to disable the update based on
   /// the old value. If a [where] clause is set and it evaluates to false, a
   /// conflict will keep the old row without applying the update.
   ///
   /// For an example, see [InsertStatement.insert].
-  DoUpdate(Insertable<D> Function(T old) update,
-      {this.target, Expression<bool> Function(T old)? where})
-      : _creator = ((old, _) => update(old)),
+  DoUpdate(
+    Insertable<D> Function(T old) update, {
+    this.target,
+    Expression<bool> Function(T old)? where,
+    Expression<bool> Function(T table)? targetCondition,
+  })  : _creator = ((old, _) => update(old)),
         _where = where == null ? null : ((old, _) => Where(where(old))),
+        _targetCondition = targetCondition,
         _usesExcludedTable = false;
 
   /// Creates a `DO UPDATE` clause.
@@ -486,15 +505,27 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// to columns in the row that couldn't be inserted with the `excluded`
   /// parameter.
   ///
+  /// A `DO UPDATE` clause must refer to a set of columns potentially causing a
+  /// conflict, and only a conflict on those columns causes this clause to be
+  /// applied. The most common conflict would be an existing row with the same
+  /// primary key, which is the default for [target]. Other unique indices can
+  /// be targeted too. If such a unique index has a condition, it can be set
+  /// with [targetCondition] (which forms the rarely used `WHERE` in the
+  /// conflict target).
+  ///
   /// The optional [where] clause can be used to disable the update based on
   /// the old value. If a [where] clause is set and it evaluates to false, a
   /// conflict will keep the old row without applying the update.
   ///
   /// For an example, see [InsertStatement.insert].
-  DoUpdate.withExcluded(Insertable<D> Function(T old, T excluded) update,
-      {this.target, Expression<bool> Function(T old, T excluded)? where})
-      : _creator = update,
+  DoUpdate.withExcluded(
+    Insertable<D> Function(T old, T excluded) update, {
+    this.target,
+    Expression<bool> Function(T table)? targetCondition,
+    Expression<bool> Function(T old, T excluded)? where,
+  })  : _creator = update,
         _usesExcludedTable = true,
+        _targetCondition = targetCondition,
         _where = where == null
             ? null
             : ((old, excluded) => Where(where(old, excluded)));

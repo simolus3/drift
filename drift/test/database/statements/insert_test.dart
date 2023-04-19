@@ -246,6 +246,23 @@ void main() {
     ));
   });
 
+  test('can apply selective index in upsert clause', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoUpdate((old) {
+            return TodosTableCompanion.custom(
+                content: const Variable('important: ') + old.content);
+          }, targetCondition: (old) => old.category.equals(1)),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT("id")WHERE "category" = ? '
+      'DO UPDATE SET "content" = ? || "content"',
+      argThat(equals(['my content', 1, 'important: '])),
+    ));
+  });
+
   test(
     'can use multiple upsert targets',
     () async {

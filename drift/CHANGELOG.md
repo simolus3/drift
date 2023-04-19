@@ -2,6 +2,7 @@
 
 - Don't keep databases in an unusable state if the `setup` callback throws an
   exception. Instead, drift will retry the next time the database is used.
+- Allow targeting partial indices in `DoUpdate` ([#2394](https://github.com/simolus3/drift/issues/2394))
 
 ## 2.7.0
 
