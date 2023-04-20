@@ -274,7 +274,7 @@ class SqlEngine {
       AstPreparingVisitor(context: context).start(node);
 
       node
-        ..acceptWithoutArg(ColumnResolver(context))
+        ..accept(ColumnResolver(context), const ColumnResolverContext())
         ..accept(ReferenceResolver(context), const ReferenceResolvingContext());
 
       final session = TypeInferenceSession(context, options);

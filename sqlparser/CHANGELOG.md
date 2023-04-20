@@ -1,6 +1,8 @@
 ## 0.28.2-dev
 
 - Support resolving `IIF` functions.
+- Fix a crash when a CTE is used on an insert, update or delete statement.
+- Fix wrong column names being reported for references in subqueries and CTEs.
 
 ## 0.28.1
 

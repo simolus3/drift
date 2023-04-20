@@ -4,20 +4,21 @@ part of '../analysis.dart';
 /// columns are returned and which columns are available. For instance, when
 /// we have a table "t" with two columns "a" and "b", the select statement
 /// "SELECT a FROM t" has one result column but two columns available.
-class ColumnResolver extends RecursiveVisitor<void, void> {
+class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   final AnalysisContext context;
 
   ColumnResolver(this.context);
 
   @override
-  void visitSelectStatement(SelectStatement e, void arg) {
+  void visitSelectStatement(SelectStatement e, ColumnResolverContext arg) {
     // visit children first so that common table expressions are resolved
     visitChildren(e, arg);
-    _resolveSelect(e);
+    _resolveSelect(e, arg);
   }
 
   @override
-  void visitCompoundSelectStatement(CompoundSelectStatement e, void arg) {
+  void visitCompoundSelectStatement(
+      CompoundSelectStatement e, ColumnResolverContext arg) {
     // first, visit all children so that the compound parts have their columns
     // resolved
     visitChildren(e, arg);
@@ -26,7 +27,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
+  void visitValuesSelectStatement(
+      ValuesSelectStatement e, ColumnResolverContext arg) {
     // visit children to resolve CTEs
     visitChildren(e, arg);
 
@@ -34,8 +36,12 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitCommonTableExpression(CommonTableExpression e, void arg) {
-    visitChildren(e, arg);
+  void visitCommonTableExpression(
+      CommonTableExpression e, ColumnResolverContext arg) {
+    visitChildren(
+      e,
+      const ColumnResolverContext(referencesUseNameOfReferencedColumn: false),
+    );
 
     final resolved = e.as.resolvedColumns;
     final names = e.columnNames;
@@ -50,7 +56,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitDoUpdate(DoUpdate e, void arg) {
+  void visitDoUpdate(DoUpdate e, ColumnResolverContext arg) {
     final surroundingInsert = e.parents.whereType<InsertStatement>().first;
     final table = surroundingInsert.table.resultSet;
 
@@ -71,17 +77,17 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitUpdateStatement(UpdateStatement e, void arg) {
+  void visitUpdateStatement(UpdateStatement e, ColumnResolverContext arg) {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);
 
     final availableColumns = <Column>[];
 
     // Add columns from the main table, if it was resolved
-    _handle(e.table, availableColumns);
+    _handle(e.table, availableColumns, arg);
     // Also add columns from a FROM clause, if one is present
     final from = e.from;
-    if (from != null) _handle(from, availableColumns);
+    if (from != null) _handle(from, availableColumns, arg);
 
     e.statementScope.expansionOfStarColumn = availableColumns;
     for (final child in e.childNodes) {
@@ -91,7 +97,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       }
     }
 
-    _resolveReturningClause(e, e.table.resultSet);
+    _resolveReturningClause(e, e.table.resultSet, arg);
   }
 
   ResultSet? _addIfResolved(AstNode node, TableReference ref) {
@@ -104,7 +110,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitInsertStatement(InsertStatement e, void arg) {
+  void visitInsertStatement(InsertStatement e, ColumnResolverContext arg) {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);
 
@@ -112,11 +118,11 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     for (final child in e.childNodes) {
       if (child != e.withClause) visit(child, arg);
     }
-    _resolveReturningClause(e, into);
+    _resolveReturningClause(e, into, arg);
   }
 
   @override
-  void visitDeleteStatement(DeleteStatement e, void arg) {
+  void visitDeleteStatement(DeleteStatement e, ColumnResolverContext arg) {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);
 
@@ -124,7 +130,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     for (final child in e.childNodes) {
       if (child != e.withClause) visit(child, arg);
     }
-    _resolveReturningClause(e, from);
+    _resolveReturningClause(e, from, arg);
   }
 
   /// Infers the result set of a `RETURNING` clause.
@@ -146,17 +152,25 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   ///
   /// Note that `old.*` is forbidden by sqlite and not applicable here.
   void _resolveReturningClause(
-      StatementReturningColumns stmt, ResultSet? mainTable) {
+    StatementReturningColumns stmt,
+    ResultSet? mainTable,
+    ColumnResolverContext context,
+  ) {
     final clause = stmt.returning;
     if (clause == null) return;
 
-    final columns = _resolveColumns(stmt.statementScope, clause.columns,
-        columnsForStar: mainTable?.resolvedColumns);
+    final columns = _resolveColumns(
+      stmt.statementScope,
+      clause.columns,
+      context,
+      columnsForStar: mainTable?.resolvedColumns,
+    );
     stmt.returnedResultSet = CustomResultSet(columns);
   }
 
   @override
-  void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
+  void visitCreateTriggerStatement(
+      CreateTriggerStatement e, ColumnResolverContext arg) {
     final table = _resolveTableReference(e.onTable);
     if (table == null) {
       // further analysis is not really possible without knowing the table
@@ -179,7 +193,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  void _handle(Queryable queryable, List<Column> availableColumns) {
+  void _handle(Queryable queryable, List<Column> availableColumns,
+      ColumnResolverContext state) {
     void addColumns(Iterable<Column> columns) {
       ResultSetAvailableInStatement? available;
       if (queryable is TableOrSubquery) {
@@ -204,6 +219,11 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         }
       },
       isSelect: (select) {
+        // Inside subqueries, references don't take the name of the referenced
+        // column.
+        final childState =
+            ColumnResolverContext(referencesUseNameOfReferencedColumn: false);
+
         // the inner select statement doesn't have access to columns defined in
         // the outer statements, which is why we use _resolveSelect instead of
         // passing availableColumns down to a recursive call of _handle
@@ -211,7 +231,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         if (stmt is CompoundSelectStatement) {
           _resolveCompoundSelect(stmt);
         } else if (stmt is SelectStatement) {
-          _resolveSelect(stmt);
+          _resolveSelect(stmt, childState);
         } else if (stmt is ValuesSelectStatement) {
           _resolveValuesSelect(stmt);
         } else {
@@ -221,9 +241,9 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         addColumns(stmt.resolvedColumns!);
       },
       isJoin: (join) {
-        _handle(join.primary, availableColumns);
+        _handle(join.primary, availableColumns, state);
         for (final query in join.joins.map((j) => j.query)) {
-          _handle(query, availableColumns);
+          _handle(query, availableColumns, state);
         }
       },
       isTableFunction: (function) {
@@ -245,19 +265,20 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     );
   }
 
-  void _resolveSelect(SelectStatement s) {
+  void _resolveSelect(SelectStatement s, ColumnResolverContext context) {
     final availableColumns = <Column>[];
     if (s.from != null) {
-      _handle(s.from!, availableColumns);
+      _handle(s.from!, availableColumns, context);
     }
 
     final scope = s.statementScope;
     scope.expansionOfStarColumn = availableColumns;
 
-    s.resolvedColumns = _resolveColumns(scope, s.columns);
+    s.resolvedColumns = _resolveColumns(scope, s.columns, context);
   }
 
   List<Column> _resolveColumns(StatementScope scope, List<ResultColumn> columns,
+      ColumnResolverContext state,
       {List<Column>? columnsForStar}) {
     final usedColumns = <Column>[];
     final availableColumns = <Column>[...?scope.expansionOfStarColumn];
@@ -308,9 +329,14 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         Column column;
 
         if (expression is Reference) {
+          var fixedName = resultColumn.as;
+          if (!state.referencesUseNameOfReferencedColumn) {
+            fixedName = _nameOfResultColumn(resultColumn);
+          }
+
           column = ReferenceExpressionColumn(
             expression,
-            overriddenName: resultColumn.as,
+            overriddenName: fixedName,
             mappedBy: resultColumn.mappedBy,
           );
         } else {
@@ -348,7 +374,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
         resultColumn.resultSet = target.resultSet.resultSet;
       } else if (resultColumn is NestedQueryColumn) {
-        _resolveSelect(resultColumn.select);
+        _resolveSelect(resultColumn.select, state);
       }
     }
 
@@ -480,4 +506,28 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
     return null;
   }
+}
+
+class ColumnResolverContext {
+  /// Whether reference columns should use the name of the referenced column as
+  /// their own name (as opposed to their lexeme).
+  ///
+  /// This typically doesn't make a difference, as references uses the same
+  /// name as the referenced column. It does make a difference for rowid
+  /// references though:
+  ///
+  /// ```sql
+  /// CREATE TABLE foo (id INTEGER NOT NULL PRIMARY KEY);
+  ///
+  /// SELECT rowid FROM foo; -- returns a column named "id"
+  /// SELECT * FROM (SELECT rowid FROM foo); -- returns a column named "rowid"
+  /// WITH bar AS (SELECT rowid FROM foo) SELECT * FROM bar; -- again, "rowid"
+  /// ```
+  ///
+  /// As the example shows, references don't take the name of their referenced
+  /// column in subqueries or CTEs.
+  final bool referencesUseNameOfReferencedColumn;
+
+  const ColumnResolverContext(
+      {this.referencesUseNameOfReferencedColumn = true});
 }

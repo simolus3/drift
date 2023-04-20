@@ -162,7 +162,7 @@ extension FindReferenceAnalysis on SqlEngine {
         schemaSupport: schemaReader);
 
     AstPreparingVisitor(context: context).start(clone);
-    clone.acceptWithoutArg(ColumnResolver(context));
+    clone.accept(ColumnResolver(context), const ColumnResolverContext());
 
     return scope.addedTables;
   }

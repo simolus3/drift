@@ -18,7 +18,9 @@ abstract class ResultSet implements ResolvesToResultSet {
   bool get visibleToChildren => false;
 
   Column? findColumn(String name) {
-    return resolvedColumns!.firstWhereOrNull((c) => c.name == name);
+    final lowerName = name.toLowerCase();
+    return resolvedColumns!
+        .firstWhereOrNull((c) => c.name.toLowerCase() == lowerName);
   }
 }
 

@@ -61,6 +61,20 @@ void main() {
     expect(column.name, 'x');
   });
 
+  test('column references into CTE are case-insensitive', () async {
+    final engine = SqlEngine()..registerTable(demoTable);
+    final result = engine.analyze('''
+  WITH shuffle_order AS (
+    SELECT ROWID, row_number() OVER (ORDER BY RANDOM()) rn
+    FROM demo
+  )
+  UPDATE demo SET
+    content = (SELECT rn FROM shuffle_order WHERE shuffle_order.ROWID = demo.ROWID) - 1;
+''');
+
+    expect(result.errors, isEmpty);
+  });
+
   group('resolves CTEs for', () {
     late SqlEngine engine;
 

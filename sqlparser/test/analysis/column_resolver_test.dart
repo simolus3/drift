@@ -253,4 +253,21 @@ INSERT INTO demo VALUES (?, ?)
 
     result.expectNoError();
   });
+
+  test('names for alias to rowid', () {
+    final outer =
+        engine.analyze('SELECT RoWiD FROM demo').root as SelectStatement;
+    expect(outer.resolvedColumns?.map((e) => e.name), ['id']);
+
+    // These aliases somehow aren't renamed in nested queries
+    final subquery = engine
+        .analyze('SELECT * FROM (SELECT RoWiD FROM demo)')
+        .root as SelectStatement;
+    expect(subquery.resolvedColumns?.map((e) => e.name), ['RoWiD']);
+
+    final cte = engine
+        .analyze('WITH x AS (SELECT RoWiD FROM demo) SELECT * FROM x')
+        .root as SelectStatement;
+    expect(cte.resolvedColumns?.map((e) => e.name), ['RoWiD']);
+  });
 }
