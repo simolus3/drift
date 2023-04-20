@@ -72,6 +72,9 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
   @override
   void visitUpdateStatement(UpdateStatement e, void arg) {
+    // Resolve CTEs first
+    e.withClause?.accept(this, arg);
+
     final availableColumns = <Column>[];
 
     // Add columns from the main table, if it was resolved
@@ -83,7 +86,9 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     e.statementScope.expansionOfStarColumn = availableColumns;
     for (final child in e.childNodes) {
       // Visit remaining children
-      if (child != e.table && child != e.from) visit(child, arg);
+      if (child != e.table && child != e.from && child != e.withClause) {
+        visit(child, arg);
+      }
     }
 
     _resolveReturningClause(e, e.table.resultSet);
@@ -100,15 +105,25 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
+    // Resolve CTEs first
+    e.withClause?.accept(this, arg);
+
     final into = _addIfResolved(e, e.table);
-    visitChildren(e, arg);
+    for (final child in e.childNodes) {
+      if (child != e.withClause) visit(child, arg);
+    }
     _resolveReturningClause(e, into);
   }
 
   @override
   void visitDeleteStatement(DeleteStatement e, void arg) {
+    // Resolve CTEs first
+    e.withClause?.accept(this, arg);
+
     final from = _addIfResolved(e, e.from);
-    visitChildren(e, arg);
+    for (final child in e.childNodes) {
+      if (child != e.withClause) visit(child, arg);
+    }
     _resolveReturningClause(e, from);
   }
 

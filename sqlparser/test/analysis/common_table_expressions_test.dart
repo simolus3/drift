@@ -26,7 +26,7 @@ void main() {
   test('warns on column count mismatch', () {
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context = engine.analyze(''' 
+    final context = engine.analyze('''
       WITH
         cte (foo, bar, baz) AS (SELECT * FROM demo)
       SELECT 1;
@@ -59,5 +59,32 @@ void main() {
 
     expect(type.type, const ResolvedType(type: BasicType.int));
     expect(column.name, 'x');
+  });
+
+  group('resolves CTEs for', () {
+    late SqlEngine engine;
+
+    setUp(() {
+      engine = SqlEngine()..registerTable(demoTable);
+    });
+
+    test('update statements', () {
+      final result =
+          engine.analyze('WITH x AS (SELECT * FROM demo) UPDATE demo '
+              'SET content = x.content FROM x WHERE demo.id = x.id;');
+      expect(result.errors, isEmpty);
+    });
+
+    test('insert statements', () {
+      final result = engine.analyze(
+          'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x;');
+      expect(result.errors, isEmpty);
+    });
+
+    test('delete statements', () {
+      final result = engine.analyze(
+          'WITH x AS (SELECT * FROM demo) DELETE FROM demo WHERE id IN (SELECT id FROM x);');
+      expect(result.errors, isEmpty);
+    });
   });
 }
