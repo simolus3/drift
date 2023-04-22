@@ -6,14 +6,14 @@ _Note: Moor has been renamed to drift_
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
 [![Using melos](https://img.shields.io/badge/maintained%20with-melos-f700ff.svg?style=flat-square)](https://github.com/invertase/melos)
 
-## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22)
+## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22)
 
 <p align="center">
 <table>
     <tbody>
         <tr>
             <td align="center">
-                <a href="https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/sdk/android/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_AndroidChatSDK_klmh22" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
+                <a href="https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
             </td>
         </tr>
     </tbody>
