@@ -24,13 +24,16 @@ class DriftQueryResolver
     // `file_analysis.dart` after elements have been resolved.
 
     String? resultClassName;
-    DartType? existingType;
+    RequestedQueryResultType? existingType;
 
     final as = discovered.sqlNode.as;
     if (as != null) {
       if (as.useExistingDartClass) {
-        existingType =
+        final type =
             await findDartTypeOrReportError(as.overriddenDataClassName, as);
+        if (type != null) {
+          existingType = RequestedQueryResultType(type, as.constructorName);
+        }
       } else {
         resultClassName = as.overriddenDataClassName;
       }

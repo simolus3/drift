@@ -1,5 +1,6 @@
-## 0.28.2-dev
+## 0.29.0-dev
 
+- Parser support for constructor names in `WITH` drift syntax.
 - Support resolving `IIF` functions.
 - Fix a crash when a CTE is used on an insert, update or delete statement.
 - Fix wrong column names being reported for references in subqueries and CTEs.

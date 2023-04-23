@@ -2231,8 +2231,19 @@ class Parser {
       final useExisting = _previous.type == TokenType.$with;
       final name =
           _consumeIdentifier('Expected the name for the data class').identifier;
+      String? constructorName;
 
-      return DriftTableName(name, useExisting)..setSpan(first, _previous);
+      if (_matchOne(TokenType.dot)) {
+        constructorName = _consumeIdentifier(
+                'Expected name of the constructor to use after the dot')
+            .identifier;
+      }
+
+      return DriftTableName(
+        useExistingDartClass: useExisting,
+        overriddenDataClassName: name,
+        constructorName: constructorName,
+      )..setSpan(first, _previous);
     }
     return null;
   }

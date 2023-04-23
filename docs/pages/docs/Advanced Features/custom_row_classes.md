@@ -90,6 +90,16 @@ after the name of the view in the `CREATE VIEW` statement:
 CREATE VIEW my_view WITH ExistingClass AS SELECT ...
 ```
 
+You can make drift target named constructors too:
+
+```sql
+CREATE TABLE users(
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  birth_date DATETIME NOT NULL
+) WITH User.myNamedConstructor;
+```
+
 ## Inserts and updates with custom classes
 
 In most cases, generated companion classes are the right tool for updates and inserts.
@@ -136,6 +146,21 @@ class MyExistingClass {
 */
 
 myQuery WITH MyExistingClass: SELECT name, AVG(age) AS avg_age FROM entries GROUP BY category;
+```
+
+Again, you can also target a named constructor:
+
+```sql
+/*
+class MyExistingClass {
+  final String name;
+  final double avgAge;
+
+  MyExistingClass.fromSql(this.name, this.avgAge);
+}
+*/
+
+myQuery WITH MyExistingClass.fromSql: SELECT name, AVG(age) AS avg_age FROM entries GROUP BY category;
 ```
 
 For your convenience, drift is using different generation strategies even for queries _without_

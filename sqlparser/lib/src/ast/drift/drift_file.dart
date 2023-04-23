@@ -39,9 +39,14 @@ class DriftFile extends AstNode implements DriftSpecificNode {
 
 class DriftTableName extends AstNode implements DriftSpecificNode {
   final String overriddenDataClassName;
+  final String? constructorName;
   final bool useExistingDartClass;
 
-  DriftTableName(this.overriddenDataClassName, this.useExistingDartClass);
+  DriftTableName({
+    required this.useExistingDartClass,
+    required this.overriddenDataClassName,
+    this.constructorName,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

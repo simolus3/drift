@@ -372,6 +372,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
       keyword(TokenType.strict);
     }
+
+    e.driftTableName?.accept(this, arg);
   }
 
   @override
@@ -505,6 +507,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else if (e is DriftTableName) {
       keyword(e.useExistingDartClass ? TokenType.$with : TokenType.as);
       identifier(e.overriddenDataClassName);
+      final constructor = e.constructorName;
+      if (constructor != null) {
+        symbol('.');
+        identifier(constructor);
+      }
     } else if (e is NestedStarResultColumn) {
       identifier(e.tableName);
       symbol('.**', spaceAfter: true);

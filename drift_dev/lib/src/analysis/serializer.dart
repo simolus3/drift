@@ -69,12 +69,19 @@ class ElementSerializer {
         'sql': element.createStmt,
       };
     } else if (element is DefinedSqlQuery) {
+      final existingDartType = element.existingDartType;
+
       additionalInformation = {
         'type': 'query',
         'sql': element.sql,
         'offset': element.sqlOffset,
         'result_class': element.resultClassName,
-        'existing_type': _serializeType(element.existingDartType),
+        'existing_type': existingDartType != null
+            ? {
+                'type': _serializeType(existingDartType.type),
+                'constructor_name': existingDartType.constructorName,
+              }
+            : null,
         'mode': element.mode.name,
         'dart_tokens': element.dartTokens,
         'dart_types': {
@@ -524,12 +531,21 @@ class ElementDeserializer {
           createStmt: json['sql'] as String,
         );
       case 'query':
-        final rawExistingType = json['existing_type'];
         final types = <String, DartType>{};
 
         for (final entry in (json['dart_types'] as Map).entries) {
           types[entry.key as String] =
               await _readDartType(id.libraryUri, entry.value as int);
+        }
+
+        RequestedQueryResultType? existingDartType;
+
+        final rawExistingType = json['existing_type'];
+        if (rawExistingType != null) {
+          existingDartType = RequestedQueryResultType(
+            await _readDartType(id.libraryUri, rawExistingType['type'] as int),
+            rawExistingType['constructor_name'] as String?,
+          );
         }
 
         return DefinedSqlQuery(
@@ -539,9 +555,7 @@ class ElementDeserializer {
           sql: json['sql'] as String,
           sqlOffset: json['offset'] as int,
           resultClassName: json['result_class'] as String?,
-          existingDartType: rawExistingType != null
-              ? await _readDartType(id.libraryUri, rawExistingType as int)
-              : null,
+          existingDartType: existingDartType,
           mode: QueryMode.values.byName(json['mode'] as String),
           dartTokens: (json['dart_tokens'] as List).cast(),
           dartTypes: types,

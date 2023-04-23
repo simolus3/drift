@@ -19,7 +19,7 @@ CREATE TABLE existing (
   foo TEXT
 ) WITH ExistingRowClass;
 
-CREATE VIEW existing_view WITH ExistingForView (foo, bar)
+CREATE VIEW existing_view WITH ExistingForView.named (foo, bar)
   AS SELECT 1, 2;
       ''',
       'a|lib/rows.dart': '''
@@ -28,7 +28,7 @@ class ExistingRowClass {
 }
 
 class ExistingForView {
-  ExistingForView(int foo, int bar);
+  ExistingForView.named(int foo, int bar);
 }
       ''',
     });
@@ -50,6 +50,12 @@ class ExistingForView {
         existing.existingRowClass!.targetClass.toString(), 'ExistingRowClass');
 
     expect(existingView.nameOfRowClass, 'ExistingForView');
+    expect(
+        existingView.existingRowClass,
+        isA<ExistingRowClass>()
+            .having((e) => e.targetClass.toString(), 'targetClass',
+                'ExistingForView')
+            .having((e) => e.constructor, 'constructor', 'named'));
     expect(existingView.existingRowClass!.targetClass.toString(),
         'ExistingForView');
   });

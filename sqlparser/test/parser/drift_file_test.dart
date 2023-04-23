@@ -56,7 +56,10 @@ void main() {
               ],
             ),
           ],
-          driftTableName: DriftTableName('RowName', false),
+          driftTableName: DriftTableName(
+            overriddenDataClassName: 'RowName',
+            useExistingDartClass: false,
+          ),
         ),
         DeclaredStatement(
           SimpleName('all'),
@@ -111,7 +114,10 @@ void main() {
             ],
             from: TableReference('tbl', as: 'foo'),
           ),
-          as: DriftTableName('MyResultSet', false),
+          as: DriftTableName(
+            overriddenDataClassName: 'MyResultSet',
+            useExistingDartClass: false,
+          ),
         ),
         DeclaredStatement(
           SimpleName('add'),
@@ -242,11 +248,15 @@ CREATE INDEX x ON foo (a);
 
   test('declared statements can use existing classes syntax', () {
     testDriftFile(
-      'foo WITH ExistingDartClass: SELECT 1;',
+      'foo WITH ExistingDartClass.c: SELECT 1;',
       DriftFile([
         DeclaredStatement(
           SimpleName('foo'),
-          as: DriftTableName('ExistingDartClass', true),
+          as: DriftTableName(
+            overriddenDataClassName: 'ExistingDartClass',
+            constructorName: 'c',
+            useExistingDartClass: true,
+          ),
           SelectStatement(
             columns: [
               ExpressionResultColumn(expression: NumericLiteral(1)),

@@ -1,3 +1,7 @@
+## 2.8.0-dev
+
+- Support named constructors for existing row types in drift files ([#2399](https://github.com/simolus3/drift/issues/2399)).
+
 ## 2.7.0
 
 - Make `validateDatabaseSchema()` work in migration tests.

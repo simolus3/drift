@@ -228,7 +228,10 @@ void main() {
             typeName: 'INTEGER',
           ),
         ],
-        driftTableName: DriftTableName('MyExistingClass', true),
+        driftTableName: DriftTableName(
+          overriddenDataClassName: 'MyExistingClass',
+          useExistingDartClass: true,
+        ),
       ),
       driftMode: true,
     );
@@ -246,7 +249,10 @@ void main() {
           fakeSpan('b()'),
           fakeSpan('c'),
         ],
-        driftTableName: DriftTableName('drift', false),
+        driftTableName: DriftTableName(
+          overriddenDataClassName: 'drift',
+          useExistingDartClass: false,
+        ),
       ),
       driftMode: true,
     );

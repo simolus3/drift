@@ -20,7 +20,8 @@ class MatchExistingTypeForQuery {
       : typeSystem = knownTypes.helperLibrary.typeSystem,
         typeProvider = knownTypes.helperLibrary.typeProvider;
 
-  InferredResultSet applyTo(InferredResultSet resultSet, DartType desiredType) {
+  InferredResultSet applyTo(
+      InferredResultSet resultSet, RequestedQueryResultType desiredType) {
     final type = _findRowType(resultSet, desiredType, _reportError);
 
     if (type != null) {
@@ -36,9 +37,21 @@ class MatchExistingTypeForQuery {
 
   ExistingQueryRowType? _findRowType(
     InferredResultSet resultSet,
-    DartType desiredType,
+    dynamic /*DartType|RequestedQueryResultType*/ requestedType,
     _ErrorReporter reportError,
   ) {
+    DartType desiredType;
+    String? constructorName;
+    if (requestedType is DartType) {
+      desiredType = requestedType;
+    } else if (requestedType is RequestedQueryResultType) {
+      desiredType = requestedType.type;
+      constructorName = requestedType.constructorName;
+    } else {
+      throw ArgumentError.value(requestedType, 'requestedType',
+          'Must be a DartType of a RequestedQueryResultType');
+    }
+
     final positionalColumns = <ArgumentForExistingQueryRowType>[];
     final namedColumns = <String, ArgumentForExistingQueryRowType>{};
 
@@ -187,10 +200,18 @@ class MatchExistingTypeForQuery {
         // into the classes' default constructor.
         final element = desiredType.element;
 
-        final constructor = desiredType.lookUpConstructor('', element.library);
+        final constructor = desiredType.lookUpConstructor(
+            constructorName ?? '', element.library);
         if (constructor == null) {
-          reportError(
-              'The class to use as an existing row type must have an unnamed constructor.');
+          if (constructorName == null) {
+            reportError(
+                'The class to use as an existing row type must have an unnamed '
+                'constructor.');
+          } else {
+            reportError('The class to use as an existing row type must have a '
+                'constructor named `$constructorName`');
+          }
+
           return null;
         }
 
@@ -218,6 +239,7 @@ class MatchExistingTypeForQuery {
 
     return ExistingQueryRowType(
       rowType: annotatedTypeCode,
+      constructorName: constructorName ?? '',
       isRecord: desiredType is RecordType,
       singleValue: null,
       positionalArguments: positionalColumns,

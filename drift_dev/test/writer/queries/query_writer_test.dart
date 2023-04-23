@@ -384,4 +384,40 @@ filterAlbums: SELECT
       ),
     );
   });
+
+  test('generates invocation for named constructor in existing type', () async {
+    final outputs = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+import 'a.dart';
+
+foo WITH MyRow.foo: SELECT 'hello world' AS a, 2 AS b;
+''',
+        'a|lib/a.dart': '''
+class MyRow {
+  final String a;
+  final int b;
+
+  MyRow.foo(this.a, this.b);
+}
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains('''
+class ADrift extends i1.ModularAccessor {
+  ADrift(i0.GeneratedDatabase db) : super(db);
+  i0.Selectable<i2.MyRow> foo() {
+    return customSelect('SELECT \\'hello world\\' AS a, 2 AS b', variables: [], readsFrom: {})
+        .map((i0.QueryRow row) => i2.MyRow.foo(
+              row.read<String>('a'),
+              row.read<int>('b'),
+            ));
+  }
+}'''))
+    }, outputs.dartOutputs, outputs);
+  });
 }

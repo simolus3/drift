@@ -9,7 +9,7 @@ void main() {
       'a|lib/a.drift': '''
 import 'a.dart';
 
-foo WITH MyRow: SELECT 'hello world', 2;
+foo WITH MyRow: SELECT 'hello world' AS a, 2 AS b;
 ''',
       'a|lib/a.dart': '''
 class MyRow {
@@ -27,8 +27,48 @@ class MyRow {
     state.expectNoErrors();
     final query = file.analyzedElements.single as DefinedSqlQuery;
     expect(query.resultClassName, isNull);
-    expect(query.existingDartType?.getDisplayString(withNullability: true),
+    expect(query.existingDartType?.type.getDisplayString(withNullability: true),
         'MyRow');
+  });
+
+  test('can use named constructors', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'a.dart';
+
+foo WITH MyRow.foo: SELECT 'hello world' AS a, 2 AS b;
+''',
+      'a|lib/a.dart': '''
+class MyRow {
+  final String a;
+  final int b;
+
+  MyRow.foo(this.a, this.b);
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+
+    state.expectNoErrors();
+    final query = file.analyzedElements.single as DefinedSqlQuery;
+    expect(query.resultClassName, isNull);
+    expect(query.existingDartType?.type.getDisplayString(withNullability: true),
+        'MyRow');
+
+    final resolvedQuery = file.fileAnalysis!.resolvedQueries.values.single;
+    expect(
+      resolvedQuery.resultSet?.existingRowType,
+      isExistingRowType(
+        type: 'MyRow',
+        constructorName: 'foo',
+        named: isEmpty,
+        positional: [
+          scalarColumn('a'),
+          scalarColumn('b'),
+        ],
+      ),
+    );
   });
 
   test("warns if existing row classes don't exist", () async {
@@ -530,6 +570,26 @@ class MyRow {
       ]);
     });
 
+    test('when the desired constructor does not exist', () async {
+      final state = TestBackend.inTest({
+        'a|lib/a.drift': '''
+import 'a.dart';
+
+foo WITH MyRow.bar: SELECT 1;
+''',
+        'a|lib/a.dart': '''
+class MyRow {
+  MyRow.foo();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.drift');
+      expect(file.allErrors, [
+        isDriftError(contains('`bar`')),
+      ]);
+    });
+
     test('when there is a parameter with no matching column', () async {
       final state = TestBackend.inTest({
         'a|lib/a.drift': '''
@@ -679,6 +739,7 @@ TypeMatcher<MappedNestedListQuery> nestedListQuery(
 
 TypeMatcher<ExistingQueryRowType> isExistingRowType({
   String? type,
+  String? constructorName,
   Object? singleValue,
   Object? positional,
   Object? named,
@@ -687,6 +748,10 @@ TypeMatcher<ExistingQueryRowType> isExistingRowType({
 
   if (type != null) {
     matcher = matcher.having((e) => e.rowType.toString(), 'rowType', type);
+  }
+  if (constructorName != null) {
+    matcher = matcher.having(
+        (e) => e.constructorName, 'constructorName', constructorName);
   }
   if (singleValue != null) {
     matcher = matcher.having((e) => e.singleValue, 'singleValue', singleValue);

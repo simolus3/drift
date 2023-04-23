@@ -149,6 +149,12 @@ CREATE TABLE IF NOT EXISTS my_table(
       ''');
       });
 
+      test('with existing row class', () {
+        testFormat('''
+CREATE TABLE foo (bar INTEGER NOT NULL PRIMARY KEY) With FooData.myConstructor;
+''');
+      });
+
       test('virtual', () {
         testFormat('CREATE VIRTUAL TABLE foo USING bar(a, b, c);');
       });

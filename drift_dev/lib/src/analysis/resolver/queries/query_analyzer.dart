@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
-import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift/drift.dart' as drift;
 import 'package:recase/recase.dart';
@@ -27,7 +26,7 @@ class _QueryHandlerContext {
   final NestedQueriesContainer? nestedScope;
   final String queryName;
   final String? requestedResultClass;
-  final DartType? requestedResultType;
+  final RequestedQueryResultType? requestedResultType;
 
   final DriftTableName? sourceForFixedName;
 
@@ -113,7 +112,7 @@ class QueryAnalyzer {
     _verifyNoSkippedIndexes(foundElements);
 
     String? requestedResultClass;
-    DartType? requestedResultType;
+    RequestedQueryResultType? requestedResultType;
     if (declaration is DefinedSqlQuery) {
       requestedResultClass = declaration.resultClassName;
       requestedResultType = declaration.existingDartType;

@@ -27,7 +27,10 @@ void main() {
             ExpressionResultColumn(expression: NumericLiteral(1)),
           ],
         ),
-        driftTableName: DriftTableName('ExistingDartClass', true),
+        driftTableName: DriftTableName(
+          overriddenDataClassName: 'ExistingDartClass',
+          useExistingDartClass: true,
+        ),
       ),
       driftMode: true,
     );

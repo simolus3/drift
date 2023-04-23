@@ -154,6 +154,13 @@ class QueryWriter {
       if (!argument.isRecord) {
         // We're writing a constructor, so let's start with the class name.
         _emitter.writeDart(argument.rowType);
+
+        final constructorName = argument.constructorName;
+        if (constructorName.isNotEmpty) {
+          _emitter
+            ..write('.')
+            ..write(constructorName);
+        }
       }
 
       _buffer.write('(');

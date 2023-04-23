@@ -153,8 +153,8 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     } else {
       final knownTypes = await resolver.driver.loadKnownTypes();
-      return validateExistingClass(
-          columns, foundDartClass, '', false, this, knownTypes);
+      return validateExistingClass(columns, foundDartClass,
+          source.constructorName ?? '', false, this, knownTypes);
     }
   }
 

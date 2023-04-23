@@ -500,6 +500,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     final current = _currentAs<DriftTableName>(e);
     _assert(
         current.overriddenDataClassName == e.overriddenDataClassName &&
+            current.constructorName == e.constructorName &&
             current.useExistingDartClass == e.useExistingDartClass,
         e);
   }

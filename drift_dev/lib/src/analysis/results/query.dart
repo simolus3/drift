@@ -44,7 +44,7 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
 
   /// The existing Dart type into which a result row of this query should be
   /// mapped.
-  final DartType? existingDartType;
+  final RequestedQueryResultType? existingDartType;
 
   final QueryMode mode;
 
@@ -86,6 +86,17 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
     this.dartTypes = const {},
     this.mode = QueryMode.regular,
   });
+}
+
+/// An existing Dart type to be used as the result of a query.
+///
+/// This is stored in [DefinedSqlQuery.existingDartType] and later validated by
+/// [MatchExistingTypeForQuery].
+class RequestedQueryResultType {
+  final DartType type;
+  final String? constructorName;
+
+  RequestedQueryResultType(this.type, this.constructorName);
 }
 
 enum QueryMode {
@@ -494,6 +505,7 @@ class InferredResultSet {
 
 class ExistingQueryRowType implements ArgumentForExistingQueryRowType {
   final AnnotatedDartCode rowType;
+  final String constructorName;
   final bool isRecord;
 
   /// When set, instead of constructing the [rowType] from the arguments, the
@@ -508,6 +520,7 @@ class ExistingQueryRowType implements ArgumentForExistingQueryRowType {
     required this.singleValue,
     required this.positionalArguments,
     required this.namedArguments,
+    this.constructorName = '',
     this.isRecord = false,
   });
 
