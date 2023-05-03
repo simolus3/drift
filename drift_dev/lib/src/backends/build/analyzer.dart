@@ -3,9 +3,6 @@ import 'dart:isolate';
 
 import 'package:build/build.dart';
 import 'package:package_config/package_config.dart';
-import 'package:package_config/package_config_types.dart';
-import 'package:pub_semver/pub_semver.dart';
-import 'package:yaml/yaml.dart';
 
 import '../../analysis/driver/driver.dart';
 import '../../analysis/options.dart';
@@ -97,6 +94,8 @@ class DriftAnalyzer extends Builder {
 extension on BuildStep {
   Future<LanguageVersion?> get languageVersionForPackage async {
     try {
+      // This is kind of hacky, hopefully we can get this information out of the
+      // build system with https://github.com/dart-lang/build/issues/3492
       final configUri = await Isolate.packageConfig;
       if (configUri == null) return null;
 
