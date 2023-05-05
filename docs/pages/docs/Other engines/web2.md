@@ -58,7 +58,7 @@ Snippets to detect these error conditions are provided on this website, but the 
 on the structure of your app in the end.
 {% endblock %}
 
-### Ressources
+### Resources
 
 First, you'll need a version of sqlite3 that has been compiled to WASM and is ready to use Dart bindings for its IO work.
 You can grab this `sqlite3.wasm` file from the [GitHub releases](https://github.com/simolus3/sqlite3.dart/releases) of the sqlite3 package,
