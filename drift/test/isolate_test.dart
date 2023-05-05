@@ -199,6 +199,26 @@ void main() {
       // Make sure database still works after computeWithDatabase
       // https://github.com/simolus3/drift/issues/2279#issuecomment-1455385439
       await db.customSelect('SELECT 1').get();
+
+      // This should still work when computeWithDatabase is called in a
+      // transaction.
+      await db.transaction(() async {
+        await db.into(db.categories).insert(
+            CategoriesCompanion.insert(description: 'main / transaction'));
+
+        await db.computeWithDatabase(
+          computation: (db) async {
+            await db.batch((batch) {
+              batch.insert(
+                db.categories,
+                CategoriesCompanion.insert(description: 'nested remote batch!'),
+              );
+            });
+          },
+          connect: TodoDb.new,
+        );
+      });
+
       await db.close();
     }
 

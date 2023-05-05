@@ -221,13 +221,17 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
   /// requiring a database is also available through [computeWithDatabase].
   @experimental
   Future<DriftIsolate> serializableConnection() async {
+    final currentlyInRootConnection = resolvedEngine is GeneratedDatabase;
     // ignore: invalid_use_of_protected_member
-    final localConnection = connection;
+    final localConnection = resolvedEngine.connection;
     final data = await localConnection.connectionData;
 
-    if (data is DriftIsolate) {
-      // The local database is already connected to an isolate, use that one
-      // directly.
+    // If we're connected to an isolate already, we can use that one directly
+    // instead of starting a short-lived drift server.
+    // However, this does not work if [serializableConnection] is called in a
+    // transaction zone, since the top-level connection could be blocked waiting
+    // for the transaction (as transactions can't be concurrent in sqlite3).
+    if (data is DriftIsolate && currentlyInRootConnection) {
       return data;
     } else {
       // Set up a drift server acting as a proxy to the existing database
