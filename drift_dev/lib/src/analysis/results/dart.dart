@@ -397,6 +397,12 @@ class _AddFromDartType extends TypeVisitor<void> {
   }
 
   @override
+  void visitInvalidType(InvalidType type) {
+    _builder.addText('dynamic');
+    _writeSuffix(type.nullabilitySuffix);
+  }
+
+  @override
   void visitNeverType(NeverType type) {
     _builder.addText('Never');
     _writeSuffix(type.nullabilitySuffix);
