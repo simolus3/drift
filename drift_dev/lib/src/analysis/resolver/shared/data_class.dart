@@ -63,7 +63,7 @@ AnnotatedDartCode? parseCustomParentClass(
       final className = extendingType.nameIfInterfaceType;
       if (extendingType.typeArguments.length == 1) {
         final genericType = extendingType.typeArguments[0];
-        if (genericType.isDartCoreObject || genericType.isDynamic) {
+        if (genericType.isDartCoreObject || genericType is DynamicType) {
           return AnnotatedDartCode([
             DartTopLevelSymbol.topLevelElement(extendingType.element),
             '<',

@@ -153,7 +153,7 @@ class DartAccessorResolver
 
       final dbImpl = dbType?.typeArguments.single ??
           element.library.typeProvider.dynamicType;
-      if (dbImpl.isDynamic) {
+      if (dbImpl is DynamicType) {
         reportError(DriftAnalysisError.forDartElement(
           element,
           'This class must inherit from DatabaseAccessor<T>, where T is an '

@@ -4,7 +4,6 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/dart/element/type_visitor.dart';
 import 'package:build/build.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -116,8 +115,7 @@ class AnnotatedDartCodeBuilder {
   }
 
   void addDartType(DartType type) {
-    final visitor = _AddFromDartType(this);
-    type.accept(visitor);
+    _AddFromDartType(this).writeType(type);
   }
 
   void addAstNode(AstNode node, {Set<AstNode> exclude = const {}}) {
@@ -246,7 +244,9 @@ class DartTopLevelSymbol {
 ///
 /// This representation allwos emitting the Dart type with relevant imports
 /// managed dynamically.
-class _AddFromDartType extends TypeVisitor<void> {
+// Note: We don't extend TypeVisitor because we're not supposed to and the
+// inteface doesn't appear to be stable.
+class _AddFromDartType {
   final AnnotatedDartCodeBuilder _builder;
 
   _AddFromDartType(this._builder);
@@ -264,7 +264,26 @@ class _AddFromDartType extends TypeVisitor<void> {
     }
   }
 
-  @override
+  void writeType(DartType type) {
+    if (type is DynamicType) {
+      visitDynamicType(type);
+    } else if (type is FunctionType) {
+      visitFunctionType(type);
+    } else if (type is InterfaceType) {
+      visitInterfaceType(type);
+    } else if (type is InvalidType) {
+      visitInvalidType(type);
+    } else if (type is NeverType) {
+      visitNeverType(type);
+    } else if (type is RecordType) {
+      visitRecordType(type);
+    } else if (type is TypeParameterType) {
+      visitTypeParameterType(type);
+    } else if (type is VoidType) {
+      visitVoidType(type);
+    }
+  }
+
   void visitRecordType(RecordType type) {
     _builder.addText('(');
     var first = true;
@@ -275,7 +294,7 @@ class _AddFromDartType extends TypeVisitor<void> {
       }
       first = false;
 
-      field.type.accept(this);
+      writeType(field.type);
     }
 
     if (type.namedFields.isNotEmpty) {
@@ -287,7 +306,7 @@ class _AddFromDartType extends TypeVisitor<void> {
         }
         first = false;
 
-        field.type.accept(this);
+        writeType(field.type);
         _builder
           ..addText(' ')
           ..addText(field.name);
@@ -299,15 +318,12 @@ class _AddFromDartType extends TypeVisitor<void> {
     _writeSuffix(type.nullabilitySuffix);
   }
 
-  @override
   void visitDynamicType(DynamicType type) {
     _builder.addText('dynamic');
-    _writeSuffix(type.nullabilitySuffix);
   }
 
-  @override
   void visitFunctionType(FunctionType type) {
-    type.returnType.accept(this);
+    writeType(type.returnType);
 
     _builder.addText(' Function');
     final formals = type.typeFormals;
@@ -323,7 +339,7 @@ class _AddFromDartType extends TypeVisitor<void> {
         final bound = arg.bound;
         if (bound != null) {
           _builder.addText(' extends ');
-          bound.accept(this);
+          writeType(bound);
         }
         i++;
       }
@@ -355,7 +371,7 @@ class _AddFromDartType extends TypeVisitor<void> {
         _builder.addText(', ');
       }
 
-      parameter.type.accept(this);
+      writeType(parameter.type);
       if (parameter.isNamed) {
         _builder.addText(' ${parameter.name}');
       }
@@ -370,7 +386,6 @@ class _AddFromDartType extends TypeVisitor<void> {
     _writeSuffix(type.nullabilitySuffix);
   }
 
-  @override
   void visitInterfaceType(InterfaceType type) {
     final alias = type.alias;
     if (alias != null) {
@@ -387,7 +402,7 @@ class _AddFromDartType extends TypeVisitor<void> {
           _builder.addText(', ');
         }
 
-        arg.accept(this);
+        writeType(arg);
         i++;
       }
       _builder.addText('>');
@@ -396,19 +411,22 @@ class _AddFromDartType extends TypeVisitor<void> {
     _writeSuffix(type.nullabilitySuffix);
   }
 
-  @override
+  void visitInvalidType(InvalidType type) {
+    _builder
+      ..addText('dynamic')
+      ..addText('/* = invalid*/');
+  }
+
   void visitNeverType(NeverType type) {
     _builder.addText('Never');
     _writeSuffix(type.nullabilitySuffix);
   }
 
-  @override
   void visitTypeParameterType(TypeParameterType type) {
     _builder.addText(type.element.name);
     _writeSuffix(type.nullabilitySuffix);
   }
 
-  @override
   void visitVoidType(VoidType type) {
     _builder.addText('void');
     _writeSuffix(type.nullabilitySuffix);
