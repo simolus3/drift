@@ -42,8 +42,14 @@ class Scanner {
     final endSpan = _file.span(source.length);
     tokens.add(Token(TokenType.eof, endSpan));
 
+    Token? previous;
     for (var i = 0; i < tokens.length; i++) {
-      tokens[i].index = i;
+      final current = tokens[i];
+      current.index = i;
+      current.previous = previous;
+      previous?.next = current;
+
+      previous = current;
     }
 
     if (errors.isNotEmpty) {

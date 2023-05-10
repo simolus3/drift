@@ -623,6 +623,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 
 class Config extends DataClass implements Insertable<Config> {
   final String configKey;
+
+  /// The current value associated with the [configKey]
   final DriftAny? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;

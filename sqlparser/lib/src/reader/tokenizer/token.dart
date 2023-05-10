@@ -453,6 +453,8 @@ class Token implements SyntacticEntity {
   /// The index of this [Token] in the list of tokens scanned.
   late int index;
 
+  Token? previous, next;
+
   Token(this.type, this.span);
 
   @override

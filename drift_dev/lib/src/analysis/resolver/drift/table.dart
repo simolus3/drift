@@ -162,6 +162,7 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
         constraints: constraints,
         typeConverter: converter,
         defaultArgument: defaultArgument,
+        documentationComment: column.definition?.documentationComment,
         customConstraints: customConstraintsForDrift.toString(),
         declaration: DriftDeclaration.driftFile(
           column.definition?.nameToken ?? stmt,
@@ -339,5 +340,22 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
     linter.sqlParserErrors.forEach(reportLint);
 
     return driftTable;
+  }
+}
+
+extension on ColumnDefinition {
+  String? get documentationComment {
+    var lastBefore = first?.previous;
+
+    final tokens = <CommentToken>[];
+
+    while (lastBefore is CommentToken) {
+      tokens.add(lastBefore);
+      lastBefore = lastBefore.previous;
+    }
+
+    if (tokens.isEmpty) return null;
+
+    return tokens.map((t) => '///${t.content}').join('\n');
   }
 }

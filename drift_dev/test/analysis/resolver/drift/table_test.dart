@@ -220,4 +220,26 @@ CREATE TABLE waybills (
         isA<DriftColumn>().having(
             (e) => e.overriddenJsonName, 'overriddenJsonName', 'parentDoc'));
   });
+
+  test('recognizes documentation comments', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE TABLE IF NOT EXISTS currencies (
+  -- The name of this currency
+  name TEXT NOT NULL PRIMARY KEY,
+  symbol TEXT NOT NULL
+);
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(
+      table.columnBySqlName['name'],
+      isA<DriftColumn>().having((e) => e.documentationComment,
+          'documentationComment', '/// The name of this currency'),
+    );
+  });
 }

@@ -1,3 +1,7 @@
+## 0.30.0-dev
+
+- Add `previous` and `next` fields for tokens
+
 ## 0.29.0
 
 - Parser support for constructor names in `WITH` drift syntax.

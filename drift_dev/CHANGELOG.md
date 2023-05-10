@@ -1,3 +1,7 @@
+## 2.9.0-dev
+
+- Add documentation comments for comments on columns in drift files.
+
 ## 2.8.0
 
 - Support named constructors for existing row types in drift files ([#2399](https://github.com/simolus3/drift/issues/2399)).
