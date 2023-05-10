@@ -281,6 +281,9 @@ class _AddFromDartType {
       visitTypeParameterType(type);
     } else if (type is VoidType) {
       visitVoidType(type);
+    } else {
+      _builder.addText(
+          '/* unknown type ${type.getDisplayString(withNullability: true)} */');
     }
   }
 
