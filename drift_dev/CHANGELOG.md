@@ -1,6 +1,7 @@
-## 2.8.0-dev
+## 2.8.0
 
 - Support named constructors for existing row types in drift files ([#2399](https://github.com/simolus3/drift/issues/2399)).
+- Fix compilation issues with `analyzer: 5.12.0`.
 
 ## 2.7.0
 

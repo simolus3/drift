@@ -1,4 +1,4 @@
-## 2.8.0-dev
+## 2.8.0
 
 - Don't keep databases in an unusable state if the `setup` callback throws an
   exception. Instead, drift will retry the next time the database is used.

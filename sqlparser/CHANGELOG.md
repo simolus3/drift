@@ -1,4 +1,4 @@
-## 0.29.0-dev
+## 0.29.0
 
 - Parser support for constructor names in `WITH` drift syntax.
 - Support resolving `IIF` functions.
