@@ -75,11 +75,16 @@ class Database {}
         contains(
           'typedef User = ({DateTime? birthDate, int id, String name});',
         ),
-        contains(
-          'return (id: attachedDatabase.typeMapping.read(DriftSqlType.int, data[\'\${effectivePrefix}id\'])!, '
-          'name: attachedDatabase.typeMapping.read(DriftSqlType.string, data[\'\${effectivePrefix}name\'])!, '
-          'birthDate: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data[\'\${effectivePrefix}birth_date\']), );',
-        ),
+        contains(r'''
+    return (
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date']),
+    );
+'''),
       ))
     }, result.dartOutputs, result);
   }, skip: requireDart('3.0.0-dev'));
