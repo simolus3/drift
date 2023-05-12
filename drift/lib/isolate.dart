@@ -307,6 +307,12 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
   ///   );
   /// }
   /// ```
+  ///
+  /// Note that with the recommended setup of `NativeDatabase.createInBackground`,
+  /// drift will already use an isolate to run your SQL statements. Using
+  /// [computeWithDatabase] is beneficial when an an expensive work unit needs
+  /// to use the database, or when creating the SQL statements itself is
+  /// expensive.
   @experimental
   Future<Ret> computeWithDatabase<Ret>({
     required FutureOr<Ret> Function(DB) computation,
