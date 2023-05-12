@@ -68,7 +68,7 @@ class _TransactionStreamStore extends StreamQueryStore {
   }
 
   @override
-  void markAsClosed(QueryStream stream, Function() whenRemoved) {
+  void markAsClosed(QueryStream stream, void Function() whenRemoved) {
     super.markAsClosed(stream, whenRemoved);
 
     _queriesWithoutKey.add(stream);

@@ -82,7 +82,7 @@ void main() {
   test('does not emit cached data when resuming and data did not change',
       () async {
     final stream = db.select(db.users).watch();
-    final completer = Completer();
+    final completer = Completer<void>();
 
     final subscription = stream.listen(expectAsync1((data) {
       completer.complete();
@@ -102,7 +102,7 @@ void main() {
 
   test('emits new data if it changed during a paused subscription', () async {
     final stream = db.select(db.users).watch();
-    final completer = Completer();
+    final completer = Completer<void>();
 
     final subscription = stream.listen(expectAsync1((data) {
       if (!completer.isCompleted) completer.complete();
@@ -177,7 +177,8 @@ void main() {
     await first.first; // will listen to stream, then cancel
     await pumpEventQueue(times: 1); // give cancel event time to propagate
 
-    final checkEmits = expectLater(second, emitsInOrder([[], []]));
+    final checkEmits =
+        expectLater(second, emitsInOrder([<Object?>[], <Object?>[]]));
 
     db.markTablesUpdated({db.users});
     await pumpEventQueue(times: 1);
@@ -271,7 +272,7 @@ void main() {
       clearInteractions(executor);
 
       // The stream is kept open for the rest of this event iteration
-      final completer = Completer.sync();
+      final completer = Completer<void>.sync();
       Timer.run(completer.complete);
       await completer.future;
 
@@ -282,7 +283,7 @@ void main() {
 
     test('when all listeners are paused', () async {
       when(executor.runSelect(any, any)).thenAnswer((i) => Future.value([]));
-      final isPaused = Completer();
+      final isPaused = Completer<void>();
 
       final subscription = db.select(db.categories).watch().listen(null);
       subscription.onData((rows) {
@@ -307,7 +308,7 @@ void main() {
           ]));
       db.markTablesUpdated([db.categories]);
       await pumpEventQueue();
-      final hadData = Completer();
+      final hadData = Completer<void>();
 
       subscription.onData((rows) {
         expect(rows, hasLength(1));

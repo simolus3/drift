@@ -11,7 +11,7 @@ extension PortToChannel on MessagePort {
   /// This can be used to implement a remote database connection over service
   /// workers.
   StreamChannel<Object?> channel() {
-    final controller = StreamChannelController();
+    final controller = StreamChannelController<Object?>();
     onMessage.map((event) => event.data).pipe(controller.local.sink);
     controller.local.stream.listen(postMessage, onDone: close);
 

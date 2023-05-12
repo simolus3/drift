@@ -76,7 +76,7 @@ abstract class QueryExecutorUser {
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details);
 }
 
-const _equality = ListEquality();
+const _equality = ListEquality<Object?>();
 
 /// Stores information needed to run batched statements in the order they were
 /// issued without preparing statements multiple times.

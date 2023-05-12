@@ -3,6 +3,7 @@ data:
   title: "Experimental IDE"
   weight: 5
   description: Get real-time feedback as you type sql
+  hidden: true
 template: layouts/docs/single
 ---
 

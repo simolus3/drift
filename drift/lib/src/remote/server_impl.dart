@@ -143,7 +143,7 @@ class ServerImplementation implements DriftServer {
     final executor = await _loadExecutor(transactionId);
 
     // Give cancellations more time to come in
-    await Future.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
     checkIfCancelled();
 
     switch (method) {
@@ -277,7 +277,7 @@ class _ServerDbUser implements QueryExecutorUser {
       QueryExecutor executor, OpeningDetails details) async {
     final id = _server._putExecutor(executor, beforeCurrent: true);
     try {
-      await connection.request(RunBeforeOpen(details, id));
+      await connection.request<void>(RunBeforeOpen(details, id));
     } finally {
       _server._releaseExecutor(id);
     }

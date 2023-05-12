@@ -346,9 +346,9 @@ class SchemaReader {
 
     List<Set<DriftColumn>> uniqueKeys = [];
     if (content.containsKey('unique_keys')) {
-      for (final key in content['unique_keys']) {
+      for (final key in content['unique_keys'] as Iterable) {
         uniqueKeys.add({
-          for (final columnName in key)
+          for (final columnName in key as Iterable)
             columns.singleWhere((c) => c.nameInSql == columnName)
         });
       }
@@ -380,7 +380,7 @@ class SchemaReader {
       _id(name),
       _declaration,
       columns: [
-        for (final column in content['columns'])
+        for (final column in content['columns'] as Iterable)
           _readColumn(column as Map<String, dynamic>)
       ],
       source: SqlViewSource(content['sql'] as String),

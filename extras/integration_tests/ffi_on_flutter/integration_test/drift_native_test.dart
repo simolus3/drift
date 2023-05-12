@@ -6,7 +6,6 @@ import 'package:drift_testcases/tests.dart';
 import 'package:flutter/services.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:sqlite3/sqlite3.dart' as raw;
 import 'package:test/test.dart';
 
@@ -35,11 +34,16 @@ class FfiExecutor extends TestExecutor {
   }
 }
 
+Future<String> get _testDbDirectory async {
+  final dbDirectory =
+      await Directory.systemTemp.createTemp('drift-ffi-flutter');
+  return dbDirectory.path;
+}
+
 Future<void> main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final dbPath = await getDatabasesPath();
-  Directory(dbPath).createSync(recursive: true);
+  final dbPath = await _testDbDirectory;
   runAllTests(FfiExecutor(dbPath));
 
   test('supports the rtree module', () {
@@ -97,12 +101,12 @@ Future<void> main() async {
   });
 
   test('can use database path in background isolate', () async {
-    final token = RootIsolateToken.instance;
+    final token = RootIsolateToken.instance!;
     final isolate = await DriftIsolate.spawn(() {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
 
       return LazyDatabase(() async {
-        final path = await getDatabasesPath();
+        final path = await _testDbDirectory;
         final file = File(join(path, 'background.db'));
 
         return NativeDatabase(file);

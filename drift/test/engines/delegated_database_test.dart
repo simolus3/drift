@@ -191,7 +191,8 @@ void main() {
     test('when the database supports transactions', () async {
       final transactionDelegate = MockSupportedTransactionDelegate();
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
-        (i.positionalArguments.single as Function(QueryDelegate))(delegate);
+        (i.positionalArguments.single as void Function(
+            QueryDelegate))(delegate);
       });
       when(transactionDelegate.managesLockInternally).thenReturn(true);
 
@@ -232,7 +233,7 @@ void main() {
       final exception = Exception('expected');
 
       when(transactionDelegate.startTransaction(any)).thenAnswer((i) async {
-        await (i.positionalArguments.single as Function(
+        await (i.positionalArguments.single as Future<Object?> Function(
             QueryDelegate))(delegate);
         throw exception;
       });

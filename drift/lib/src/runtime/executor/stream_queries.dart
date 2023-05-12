@@ -119,7 +119,7 @@ class StreamQueryStore {
     _tableUpdates.add(updates);
   }
 
-  void markAsClosed(QueryStream stream, Function() whenRemoved) {
+  void markAsClosed(QueryStream stream, void Function() whenRemoved) {
     if (_isShuttingDown) return;
 
     final key = stream._fetcher.key;

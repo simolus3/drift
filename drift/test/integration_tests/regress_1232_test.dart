@@ -19,7 +19,7 @@ void main() {
         .watchSingle();
 
     expect(await watchValue().first, 1);
-    await Future.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
 
     watchValue().listen(null);
 

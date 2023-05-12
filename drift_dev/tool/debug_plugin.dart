@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -7,6 +6,7 @@ import 'package:analyzer_plugin/channel/channel.dart';
 import 'package:analyzer_plugin/protocol/protocol.dart';
 import 'package:args/args.dart';
 import 'package:drift_dev/src/backends/plugin/plugin.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 void main(List<String> args) {
   final parser = ArgParser()
@@ -32,10 +32,10 @@ class _WebSocketPluginServer implements PluginCommunicationChannel {
   final dynamic address;
   final int port;
 
-  HttpServer server;
+  late HttpServer server;
 
-  WebSocket _currentClient;
-  final StreamController<WebSocket> _clientStream =
+  WebSocket? _currentClient;
+  final StreamController<WebSocket?> _clientStream =
       StreamController.broadcast();
 
   _WebSocketPluginServer({dynamic address, this.port = 9999})
@@ -50,15 +50,17 @@ class _WebSocketPluginServer implements PluginCommunicationChannel {
   }
 
   void _handleClientAdded(WebSocket socket) {
-    if (_currentClient != null) {
+    var client = _currentClient;
+
+    if (client != null) {
       print('ignoring connection attempt because an active client already '
           'exists');
       socket.close();
     } else {
       print('client connected');
-      _currentClient = socket;
-      _clientStream.add(_currentClient);
-      _currentClient.done.then((_) {
+      client = _currentClient = socket;
+      _clientStream.add(client);
+      client.done.then((_) {
         print('client disconnected');
         _currentClient = null;
         _clientStream.add(null);
@@ -68,23 +70,23 @@ class _WebSocketPluginServer implements PluginCommunicationChannel {
 
   @override
   void close() {
-    server?.close(force: true);
+    server.close(force: true);
   }
 
   @override
   void listen(void Function(Request request) onRequest,
-      {Function onError, void Function() onDone}) {
+      {Function? onError, void Function()? onDone}) {
     final stream = _clientStream.stream;
 
     // wait until we're connected
-    stream.firstWhere((socket) => socket != null).then((_) {
-      _currentClient.listen((data) {
+    stream.whereType<WebSocket>().first.then((socket) {
+      socket.listen((data) {
         print('I: $data');
         onRequest(Request.fromJson(
             json.decode(data as String) as Map<String, dynamic>));
       });
     });
-    stream.firstWhere((socket) => socket == null).then((_) => onDone());
+    stream.firstWhere((socket) => socket == null).then((_) => onDone?.call());
   }
 
   @override

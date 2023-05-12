@@ -438,7 +438,7 @@ class ElementDeserializer {
     final id = DriftElementId.fromJson(json['id'] as Map);
     final declaration = DriftDeclaration.fromJson(json['declaration'] as Map);
     final references = <DriftElement>[
-      for (final reference in json['references'])
+      for (final reference in json.list('references'))
         await _readElementReference(reference as Map),
     ];
 
@@ -489,7 +489,7 @@ class ElementDeserializer {
                   id.libraryUri, json['existing_data_class'] as Map)
               : null,
           tableConstraints: [
-            for (final constraint in json['table_constraints'])
+            for (final constraint in json.list('table_constraints'))
               await _readTableConstraint(constraint as Map, columnByName),
           ],
           customParentClass: json['custom_parent_class'] != null
@@ -575,7 +575,7 @@ class ElementDeserializer {
           on: on,
           onWrite: UpdateKind.values.byName(json['onWrite'] as String),
           writes: [
-            for (final write in json['writes'])
+            for (final write in json.list('writes').cast<Map>())
               WrittenDriftTable(
                 await _readElementReference(write['table'] as Map)
                     as DriftTable,
@@ -609,7 +609,7 @@ class ElementDeserializer {
                 ? readReference(serializedSource['primaryFrom'] as Map)
                 : null,
             [
-              for (final element in serializedSource['staticReferences'])
+              for (final element in serializedSource.list('staticReferences'))
                 readReference(element as Map)
             ],
           );
@@ -640,11 +640,11 @@ class ElementDeserializer {
         };
 
         final tables = [
-          for (final tableId in json['tables'])
+          for (final tableId in json.list('tables'))
             referenceById[DriftElementId.fromJson(tableId as Map)] as DriftTable
         ];
         final views = [
-          for (final tableId in json['views'])
+          for (final tableId in json.list('views'))
             referenceById[DriftElementId.fromJson(tableId as Map)] as DriftView
         ];
         final includes =
@@ -664,7 +664,7 @@ class ElementDeserializer {
             declaredQueries: queries,
             schemaVersion: json['schema_version'] as int?,
             accessors: [
-              for (final dao in json['daos'])
+              for (final dao in json.list('daos'))
                 await readDriftElement(DriftElementId.fromJson(dao as Map))
                     as DatabaseAccessor,
             ],
@@ -803,21 +803,21 @@ class ElementDeserializer {
     switch (type) {
       case 'unique':
         return UniqueColumns({
-          for (final ref in json['columns']) localColumns[ref]!,
+          for (final ref in json.list('columns')) localColumns[ref]!,
         });
       case 'primary_key':
         return PrimaryKeyColumns(
-          {for (final ref in json['columns']) localColumns[ref]!},
+          {for (final ref in json.list('columns')) localColumns[ref]!},
         );
       case 'foreign':
         return ForeignKeyTable(
           localColumns: [
-            for (final ref in json['local']) localColumns[ref]!,
+            for (final ref in json.list('local')) localColumns[ref]!,
           ],
           otherTable:
               await _readElementReference(json['table'] as Map) as DriftTable,
           otherColumns: [
-            for (final ref in json['foreign'])
+            for (final ref in json.list('foreign'))
               await _readDriftColumnReference(ref as Map)
           ],
           onUpdate: _readAction(json['onUpdate'] as String?),
@@ -827,6 +827,10 @@ class ElementDeserializer {
         throw UnimplementedError('Unsupported constraint: $type');
     }
   }
+}
+
+extension on Map {
+  Iterable<Object?> list(String key) => this[key] as Iterable;
 }
 
 class CouldNotDeserializeException implements Exception {

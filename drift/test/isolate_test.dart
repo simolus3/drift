@@ -357,7 +357,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
       rowInserted.complete();
       // Hold transaction open for expectRowCount() outside the transaction to
       // finish
-      await Future.delayed(const Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       await database.customStatement('delete from tbl');
       await expectRowCount(database, 0);
     });

@@ -27,7 +27,7 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   }
 
   @override
-  void markAsClosed(QueryStream stream, Function() whenRemoved) {
+  void markAsClosed(QueryStream stream, void Function() whenRemoved) {
     throw UnimplementedError('The stream will call this on the delegate');
   }
 

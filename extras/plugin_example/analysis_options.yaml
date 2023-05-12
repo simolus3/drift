@@ -1,8 +1,0 @@
-include: package:pedantic/analysis_options.yaml
-
-# The source-controlled version of this file should always have the plugin commented out. Our development version with
-# the websocket proxy causes analysis errors when to plugin doesn't run
-
-#analyzer:
-#  plugins:
-#   - drift

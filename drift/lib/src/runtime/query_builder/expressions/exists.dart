@@ -11,7 +11,7 @@ Expression<bool> notExistsQuery(BaseSelectStatement select) {
   return _ExistsExpression(select, true);
 }
 
-class _ExistsExpression<T> extends Expression<bool> {
+class _ExistsExpression extends Expression<bool> {
   final BaseSelectStatement _select;
   final bool _not;
 

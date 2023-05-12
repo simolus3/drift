@@ -3,12 +3,12 @@ description: Documentation website for the drift project.
 publish_to: none
 
 environment:
-  sdk: '>=2.15.0 <3.0.0'
+  sdk: '>=2.19.0 <4.0.0'
 
 dependencies:
   drift:
   path: ^1.8.2
-  json_annotation: ^4.7.0
+  json_annotation: ^4.8.1
   docsy:
     hosted: https://simonbinder.eu
     version: ^0.2.2
@@ -31,11 +31,11 @@ dev_dependencies:
   build: ^2.1.0
   build_runner: ^2.0.5
   build_runner_core: ^7.2.7
-  build_web_compilers: ^3.2.0
+  build_web_compilers: ^4.0.0
   built_site:
     hosted: https://simonbinder.eu
-    version: ^0.2.10
-  linkcheck: ^2.0.19
+    version: ^0.2.15
+  linkcheck: ^3.0.0
   json_serializable: ^6.1.6
   shelf: ^1.2.0
   shelf_static: ^1.1.0
@@ -50,3 +50,10 @@ dependency_overrides:
     git:
       url: https://github.com/simolus3/mime.git
       ref: woff2
+  # The bootstrap_sass on pub.dev doesn't support null safety, so I'm hosting
+  # https://github.com/dart-league/bootstrap_sass/pull/13.
+  # Hopefully this can change soon once docsy migrates to bootstrap 5
+  bootstrap_sass:
+    hosted:
+      url: https://simonbinder.eu
+    version: "4.6.0"

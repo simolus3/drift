@@ -218,8 +218,8 @@ class _AggregateExpression<D extends Object> extends Expression<D> {
 
   @override
   int get hashCode {
-    return Object.hash(
-        functionName, distinct, const ListEquality().hash(parameter), filter);
+    return Object.hash(functionName, distinct,
+        const ListEquality<Object?>().hash(parameter), filter);
   }
 
   @override
@@ -232,7 +232,7 @@ class _AggregateExpression<D extends Object> extends Expression<D> {
     final typedOther = other as _AggregateExpression;
     return typedOther.functionName == functionName &&
         typedOther.distinct == distinct &&
-        const ListEquality().equals(typedOther.parameter, parameter) &&
+        const ListEquality<Object?>().equals(typedOther.parameter, parameter) &&
         typedOther.filter == filter;
   }
 }

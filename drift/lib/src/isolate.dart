@@ -18,7 +18,7 @@ StreamChannel connectToServer(SendPort serverConnectPort, bool serialize) {
   serverConnectPort.send([receive.sendPort, serialize]);
 
   final controller =
-      StreamChannelController(allowForeignErrors: false, sync: true);
+      StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
   receive.listen((message) {
     if (message is SendPort) {
       controller.local.stream.listen(message.send, onDone: () {
@@ -72,8 +72,8 @@ class RunningDriftServer {
             ReceivePort('drift channel #${_counter++}');
         sendPort.send(receiveForConnection.sendPort);
 
-        final controller =
-            StreamChannelController(allowForeignErrors: false, sync: true);
+        final controller = StreamChannelController<Object?>(
+            allowForeignErrors: false, sync: true);
         receiveForConnection.listen((message) {
           if (message == disconnectMessage) {
             // Client closed the connection

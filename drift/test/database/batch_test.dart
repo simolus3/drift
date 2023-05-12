@@ -186,7 +186,7 @@ void main() {
       batch.insert(
           db.categories, CategoriesCompanion.insert(description: 'first'));
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       batch.insert(
           db.categories, CategoriesCompanion.insert(description: 'second'));

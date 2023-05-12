@@ -365,7 +365,7 @@ void main() {
             await db.customStatement('pragma user_version = 3');
 
             await db.transaction(
-                () => Future.error('Error after partial migration'));
+                () => Future<void>.error('Error after partial migration'));
           }),
         ),
       );

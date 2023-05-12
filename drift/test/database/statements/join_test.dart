@@ -167,11 +167,11 @@ void main() {
         .join([innerJoin(categories, todos.category.equalsExp(categories.id))]);
 
     final queue = StreamQueue(query.watch());
-    expect(await queue.next, []);
+    expect(await queue.next, isEmpty);
 
     db.markTablesUpdated({todos});
     db.markTablesUpdated({categories});
-    expect(await queue.next, []);
+    expect(await queue.next, isEmpty);
   });
 
   test('updates when any queried table changes in transaction', () {
@@ -188,7 +188,7 @@ void main() {
       ..groupBy([b.description]);
 
     final stream = query.watch();
-    expectLater(stream, emitsInOrder([[], []]));
+    expectLater(stream, emitsInOrder([<Object?>[], <Object?>[]]));
 
     return db.transaction(() async {
       db.markTablesUpdated({b});

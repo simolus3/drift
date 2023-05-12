@@ -2,7 +2,7 @@ name: benchmarks
 description: Runs simple and complex benchmarks to measure performance of moor and moor_ffi
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
   drift: ^1.0.0

@@ -42,7 +42,7 @@ void main() {
   });
 
   test('singleElementsOrNull() emits null for empty data', () {
-    final stream = Stream.value([]);
+    final stream = Stream.value(<Object?>[]);
     expect(stream.transform(singleElementsOrNull()), emits(isNull));
   });
 
