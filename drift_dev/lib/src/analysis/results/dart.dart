@@ -220,7 +220,8 @@ class DartTopLevelSymbol {
     return DartTopLevelSymbol(name, _driftUri);
   }
 
-  factory DartTopLevelSymbol.topLevelElement(Element element) {
+  factory DartTopLevelSymbol.topLevelElement(Element element,
+      [String? elementName]) {
     assert(element.library?.topLevelElements.contains(element) == true);
 
     // We're using this to recover the right import URI when using
@@ -231,7 +232,8 @@ class DartTopLevelSymbol {
       sourceUri = AssetId.resolve(sourceUri).uri;
     }
 
-    return DartTopLevelSymbol(element.name ?? '(???)', sourceUri);
+    return DartTopLevelSymbol(
+        elementName ?? element.name ?? '(???)', sourceUri);
   }
 
   factory DartTopLevelSymbol.fromJson(Map json) =>
@@ -434,6 +436,15 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
 
   _AddFromAst(this._builder, this._excluding);
 
+  void _addTopLevelReference(Element? element, Token name2) {
+    if (element == null) {
+      _builder.addText(name2.lexeme);
+    } else {
+      _builder.addTopLevel(
+          DartTopLevelSymbol.topLevelElement(element, name2.lexeme));
+    }
+  }
+
   @override
   void visitNode(AstNode node) {
     if (_excluding.contains(node)) return;
@@ -468,6 +479,18 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     }
 
     _builder.addText(')');
+  }
+
+  @override
+  void visitExtensionOverride(ExtensionOverride node) {
+    _addTopLevelReference(node.element, node.name); // Transform identifier
+    node.typeArguments?.accept(this);
+    node.argumentList.accept(this);
+  }
+
+  @override
+  void visitNamedType(NamedType node) {
+    _addTopLevelReference(node.element, node.name2);
   }
 
   @override

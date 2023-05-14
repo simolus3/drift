@@ -16,6 +16,7 @@ import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
@@ -209,6 +210,16 @@ class TestBackend extends DriftBackend {
 
   Future<FileState> analyze(String uriString) {
     return driver.fullyAnalyze(Uri.parse(uriString));
+  }
+}
+
+class TestImportManager extends ImportManager {
+  final Map<Uri, String> importAliases = {};
+
+  @override
+  String? prefixFor(Uri definitionUri, String elementName) {
+    return importAliases.putIfAbsent(
+        definitionUri, () => 'i${importAliases.length}');
   }
 }
 

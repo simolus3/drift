@@ -9,11 +9,11 @@ void main() {
   group('LibraryInputManager', () {
     final sourceUri = AssetId('a', 'example/main.dart').uri;
 
-    late LibraryInputManager imports;
+    late LibraryImportManager imports;
     late Writer writer;
 
     setUp(() {
-      imports = LibraryInputManager(sourceUri);
+      imports = LibraryImportManager(sourceUri);
       final generationOptions =
           GenerationOptions(imports: imports, isModular: true);
       writer = Writer(const DriftOptions.defaults(),

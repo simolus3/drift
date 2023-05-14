@@ -14,7 +14,9 @@ class ImportManagerForPartFiles extends ImportManager {
   }
 }
 
-class LibraryInputManager extends ImportManager {
+/// An [ImportManager] for generation contexts that create standalone Dart
+/// libraries capable of managing their own imports.
+class LibraryImportManager extends ImportManager {
   static final _dartCore = Uri.parse('dart:core');
 
   final Map<Uri, String> _importAliases = {};
@@ -27,7 +29,7 @@ class LibraryInputManager extends ImportManager {
 
   TextEmitter? emitter;
 
-  LibraryInputManager([this._outputUri]);
+  LibraryImportManager([this._outputUri]);
 
   void linkToWriter(Writer writer) {
     emitter = writer.leaf();

@@ -1,6 +1,7 @@
-## 2.9.0-dev
+## 2.8.1
 
 - Add documentation comments for comments on columns in drift files.
+- Fix modular generation not generating imports correctly with the latest analyzer.
 
 ## 2.8.0
 

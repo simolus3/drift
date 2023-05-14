@@ -9,7 +9,7 @@ void main() {
   late Writer writer;
 
   setUp(() {
-    final imports = LibraryInputManager(Uri.parse('drift:test'));
+    final imports = LibraryImportManager(Uri.parse('drift:test'));
     final generationOptions =
         GenerationOptions(imports: imports, isModular: true);
     writer = Writer(const DriftOptions.defaults(),

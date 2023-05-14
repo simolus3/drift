@@ -64,7 +64,7 @@ class DriftAnalyzer extends Builder {
         final version = await buildStep.languageVersionForPackage ??
             _languageVersionForGeneralizedTypedefs;
 
-        final imports = LibraryInputManager();
+        final imports = LibraryImportManager();
         final writer = Writer(
           options,
           generationOptions: GenerationOptions(imports: imports),
