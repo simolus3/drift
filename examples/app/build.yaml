@@ -33,9 +33,15 @@ targets:
           - web/worker.dart
         options:
           compiler: dart2js
-      ":copy_compiled_worker_js":
-        enabled: true
 
+  # JS outputs by the build system are private, we use a `build_to: source` builder
+  # afterwards to make them visible in `web/`.
+  copy_js:
+    auto_apply_builders: false
+    dependencies: [$default]
+    builders:
+      ":copy_compiled_worker_js":
+          enabled: true
 
 # build_web_compilers writes a hidden asset, but we want an asset in `web/` for
 # flutter to see. So, copy that output. Again, this is not needed for most apps.
@@ -45,4 +51,3 @@ builders:
     builder_factories: ["CopyCompiledJs.new"]
     build_to: source
     build_extensions: {'web/worker.dart.js': ['web/shared_worker.dart.js']}
-    required_inputs: [".dart.js"]
