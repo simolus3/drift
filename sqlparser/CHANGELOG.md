@@ -1,4 +1,4 @@
-## 0.30.0-dev
+## 0.30.0
 
 - Add `previous` and `next` fields for tokens
 
