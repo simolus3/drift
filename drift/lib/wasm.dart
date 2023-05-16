@@ -131,3 +131,29 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
     }
   }
 }
+
+enum WasmStorageImplementation {
+  opfsShared,
+  opfsLocks,
+  unsafeIndexedDb,
+  inMemory,
+}
+
+enum MissingBrowserFeature {
+  sharedWorkers,
+  dedicatedWorkersInSharedWorkers,
+  nestedDedicatedWorkers,
+  fileSystemAccess,
+  indexedDb,
+  atomics,
+  sharedArrayBuffers,
+}
+
+class WasmDatabaseResult {
+  final QueryExecutor resolvedExecutor;
+  final WasmStorageImplementation chosenImplementation;
+  final Set<MissingBrowserFeature> missingFeatures;
+
+  WasmDatabaseResult(
+      this.resolvedExecutor, this.chosenImplementation, this.missingFeatures);
+}
