@@ -157,13 +157,7 @@ abstract class SqlQuery {
   /// appear inside the query.
   final List<FoundElement> elements;
 
-  /// Whether the underlying sql statement of this query operates on more than
-  /// one table. In that case, column references in Dart placeholders have to
-  /// write their table name (e.g. `foo.bar` instead of just `bar`).
-  final bool hasMultipleTables;
-
-  SqlQuery(this.name, this.elements, {bool? hasMultipleTables})
-      : hasMultipleTables = hasMultipleTables ?? false {
+  SqlQuery(this.name, this.elements) {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
   }
@@ -248,7 +242,7 @@ class SqlSelectQuery extends SqlQuery {
     this.resultSet,
     this.requestedResultClass,
     this.nestedContainer,
-  ) : super(name, elements, hasMultipleTables: readsFrom.length > 1);
+  ) : super(name, elements);
 
   Set<DriftTable> get readsFromTables {
     return {
@@ -379,9 +373,8 @@ class UpdatingQuery extends SqlQuery {
     List<FoundElement> elements,
     this.updates, {
     this.isInsert = false,
-    bool? hasMultipleTables,
     this.resultSet,
-  }) : super(name, elements, hasMultipleTables: hasMultipleTables);
+  }) : super(name, elements);
 }
 
 /// A special kind of query running multiple inner queries in a transaction.

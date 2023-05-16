@@ -231,7 +231,6 @@ class QueryAnalyzer {
           .whereType<WrittenDriftTable>()
           .toList(),
       isInsert: isInsert,
-      hasMultipleTables: updatedFinder.foundTables.length > 1,
       resultSet: resultSet,
     );
   }

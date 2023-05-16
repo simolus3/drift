@@ -529,15 +529,15 @@ abstract class DatabaseConnectionUser {
     return runZoned(calculation, zoneValues: {_zoneRootUserKey: user});
   }
 
-  /// Will be used by generated code to resolve inline Dart components in sql.
+  /// Will be used by generated code to resolve inline Dart components in sql by
+  /// writing the [component].
   @protected
   GenerationContext $write(Component component,
-      {bool? hasMultipleTables, int? startIndex}) {
+      {@Deprecated('Ignored, always true') bool? hasMultipleTables,
+      int? startIndex}) {
     final context = GenerationContext.fromDb(this)
-      ..explicitVariableIndex = startIndex;
-    if (hasMultipleTables != null) {
-      context.hasMultipleTables = hasMultipleTables;
-    }
+      ..explicitVariableIndex = startIndex
+      ..hasMultipleTables = true;
     component.writeInto(context);
 
     return context;

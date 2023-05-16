@@ -642,9 +642,7 @@ class _ExpandedDeclarationWriter {
       _buffer
         ..write(r'$write(')
         ..write(useExpression());
-      if (query.hasMultipleTables) {
-        _buffer.write(', hasMultipleTables: true');
-      }
+
       _buffer
         ..write(', startIndex: $highestAssignedIndexVar')
         ..write(');\n');

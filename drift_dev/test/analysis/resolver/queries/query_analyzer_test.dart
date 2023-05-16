@@ -6,22 +6,6 @@ import 'package:test/test.dart';
 
 import '../../test_utils.dart';
 import 'existing_row_classes_test.dart';
-import 'utils.dart';
-
-Future<SqlQuery> _handle(String sql) async {
-  return analyzeSingleQueryInDriftFile('''
-CREATE TABLE foo (
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  name VARCHAR
-);
-CREATE TABLE bar (
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  foo INTEGER NOT NULL REFERENCES foo(id)
-);
-
-a: $sql
-''');
-}
 
 void main() {
   test('respects explicit type arguments', () async {
@@ -63,27 +47,6 @@ bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
             .having((e) => e.isRequired, 'isRequired', isTrue)),
       ),
     );
-  });
-
-  group('detects whether multiple tables are referenced', () {
-    test('when only selecting from one table', () async {
-      final query = await _handle('SELECT * FROM foo;');
-      expect(query.hasMultipleTables, isFalse);
-    });
-
-    test('when selecting from multiple tables', () async {
-      final query =
-          await _handle('SELECT * FROM bar JOIN foo ON bar.foo = foo.id;');
-
-      expect(query.hasMultipleTables, isTrue);
-    });
-
-    test('when updating a single table', () async {
-      final query = await _handle('INSERT INTO bar (foo) SELECT id FROM foo;');
-
-      expect(query.hasMultipleTables, isTrue);
-      expect((query as UpdatingQuery).updates, hasLength(1));
-    });
   });
 
   test('infers result set for views', () async {

@@ -109,7 +109,7 @@ void main() {
 
     verify(mock.runSelect(
       'SELECT * FROM config WHERE config_key IN (?1, ?2) '
-      'ORDER BY "config_key" ASC',
+      'ORDER BY "config"."config_key" ASC',
       ['a', 'b'],
     ));
   });
@@ -123,8 +123,8 @@ void main() {
         .readDynamic(predicate: (config) => config.configKey.equals('key'))
         .getSingle();
 
-    verify(mock
-        .runSelect('SELECT * FROM config WHERE "config_key" = ?1', ['key']));
+    verify(mock.runSelect(
+        'SELECT * FROM config WHERE "config"."config_key" = ?1', ['key']));
     expect(
         parsed, const Config(configKey: 'key', configValue: DriftAny('value')));
   });

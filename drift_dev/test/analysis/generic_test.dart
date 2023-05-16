@@ -150,7 +150,6 @@ class ProgrammingLanguages extends Table {
     expect(importQuery.resultSet?.matchingTable?.table.nameOfRowClass,
         'ProgrammingLanguage');
     expect(importQuery.declaredInDriftFile, isFalse);
-    expect(importQuery.hasMultipleTables, isFalse);
     expect(
       importQuery.placeholders,
       contains(

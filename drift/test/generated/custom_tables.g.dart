@@ -1781,7 +1781,6 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final generatedpredicate = $write(
         predicate(
             alias(this.withDefaults, 'd'), alias(this.withConstraints, 'c')),
-        hasMultipleTables: true,
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelect(
