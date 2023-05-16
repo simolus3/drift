@@ -643,6 +643,10 @@ class _ExpandedDeclarationWriter {
         ..write(r'$write(')
         ..write(useExpression());
 
+      if (element.availableResultSets.length > 1) {
+        _buffer.write(', hasMultipleTables: true');
+      }
+
       _buffer
         ..write(', startIndex: $highestAssignedIndexVar')
         ..write(');\n');

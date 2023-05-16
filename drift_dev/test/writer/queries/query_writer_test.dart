@@ -112,6 +112,33 @@ query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
     });
   });
 
+  test(
+    'sets multipleTables: true for multiple references to same table',
+    () async {
+      // https://github.com/simolus3/drift/issues/2425
+      final generated = await generateForQueryInDriftFile(r'''
+        CREATE TABLE tbl (
+          id INTEGER NULL
+        );
+
+        query: SELECT tbl.id, next.id
+          FROM tbl
+            INNER JOIN tbl next ON next.id = tbl.id + 1
+          WHERE $predicate;
+      ''');
+      expect(
+        generated,
+        allOf(
+          contains(
+            "final generatedpredicate = "
+            r"$write(predicate(this.tbl, alias(this.tbl, 'next')), "
+            r"hasMultipleTables: true, startIndex: $arrayStartIndex);",
+          ),
+        ),
+      );
+    },
+  );
+
   group('generates correct code for nested queries', () {
     Future<void> runTest(
         DriftOptions options, List<Matcher> expectation) async {

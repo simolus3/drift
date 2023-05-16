@@ -533,11 +533,10 @@ abstract class DatabaseConnectionUser {
   /// writing the [component].
   @protected
   GenerationContext $write(Component component,
-      {@Deprecated('Ignored, always true') bool? hasMultipleTables,
-      int? startIndex}) {
+      {bool? hasMultipleTables, int? startIndex}) {
     final context = GenerationContext.fromDb(this)
       ..explicitVariableIndex = startIndex
-      ..hasMultipleTables = true;
+      ..hasMultipleTables = hasMultipleTables ?? false;
     component.writeInto(context);
 
     return context;

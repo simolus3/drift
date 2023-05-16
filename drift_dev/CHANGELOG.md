@@ -1,3 +1,8 @@
+## 2.8.2
+
+- Fix generated to write qualified column references for Dart components in
+  drift files if the same table is available under different names.
+
 ## 2.8.1
 
 - Add documentation comments for comments on columns in drift files.
