@@ -214,7 +214,7 @@ abstract class SingleOrNullSelectable<T> {
 /// {@macro drift_multi_selectable_example}
 /// {@macro drift_single_selectable_example}
 /// {@macro drift_single_or_null_selectable_example}
-abstract class Selectable<T>
+abstract mixin class Selectable<T>
     implements
         MultiSelectable<T>,
         SingleSelectable<T>,
