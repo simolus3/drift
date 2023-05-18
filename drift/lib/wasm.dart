@@ -132,10 +132,75 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   }
 }
 
+/// The storage implementation used by the `drift` and `sqlite3` packages to
+/// emulate a synchronous file system on the web, used by the sqlite3 C library
+/// to store databases.
+///
+/// As persistence APIs exposed by Browsers are usually asynchronous, faking
+/// a synchronous file system
 enum WasmStorageImplementation {
+  /// Uses the [Origin private file system APIs][OPFS] provided my modern
+  /// browsers to persist data.
+  ///
+  /// In this storage mode, drift will host a single shared worker between tabs.
+  /// As the file system API is only available in dedicated workers, the shared
+  /// worker will spawn an internal dedicated worker which is thus shared between
+  /// tabs as well.
+  ///
+  /// The OPFS API allows synchronous access to files, but only after they have
+  /// been opened asynchronously. Since sqlite3 only needs access to two files
+  /// for a database files, we can just open them once and keep them open while
+  /// the database is in use.
+  ///
+  /// This mode is a very reliable and efficient approach to access sqlite3
+  /// on the web, and the preferred mode used by drift.
+  ///
+  /// While the relevant specifications allow shared workers to spawn nested
+  /// workers, this is only implemented in Firefox at the time of writing.
+  /// Chrome (https://crbug.com/1088481) and Safari don't support this yet.
+  ///
+  /// [OPFS]: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API#origin_private_file_system
   opfsShared,
+
+  /// Uses the [Origin private file system APIs][OPFS] provided my modern
+  /// browsers to persist data.
+  ///
+  /// Unlike [opfsShared], this storage implementation does not use a shared
+  /// worker (either because it is not available or because the current browser
+  /// doesn't allow shared workers to spawn dedicated workers). Instead, each
+  /// tab spawns two dedicated workers that use `Atomics.wait` and `Atomics.notify`
+  /// to turn the asynchronous OPFS API into a synchronous file system
+  /// implementation.
+  ///
+  /// While being less efficient than [opfsShared], this mode is also very
+  /// reliably and used by the official WASM builds of the sqlite3 project as
+  /// well.
+  ///
+  /// It requires [cross-origin isolation], which needs to be enabled by serving
+  /// your app with special headers:
+  ///
+  /// ```
+  /// Cross-Origin-Opener-Policy: same-origin
+  /// Cross-Origin-Embedder-Policy: require-corp
+  /// ```
+  ///
+  /// [OPFS]: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API#origin_private_file_system´
+  /// [cross-origin isolation]: https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated
   opfsLocks,
+
+  sharedIndexedDb,
+
+  /// Uses the asynchronous IndexedDB API outside of any worker to persist data.
+  ///
+  /// Unlike [opfsShared] or [opfsLocks], this storage implementation can't
+  /// prevent two tabs from accessing the same data.
   unsafeIndexedDb,
+
+  /// A fallback storage implementation that doesn't store anything.
+  ///
+  /// This implementation is chosen when none of the features needed for other
+  /// storage implementations are supported by the current browser. In this case,
+  /// [WasmDatabaseResult.missingFeatures] enumerates missing browser features.
   inMemory,
 }
 
@@ -145,8 +210,8 @@ enum MissingBrowserFeature {
   nestedDedicatedWorkers,
   fileSystemAccess,
   indexedDb,
-  atomics,
   sharedArrayBuffers,
+  notCrossOriginIsolated,
 }
 
 class WasmDatabaseResult {
