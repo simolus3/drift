@@ -242,6 +242,8 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
 
   @override
   Future<void> close() async {
+    super.disposePreparedStmtsCache();
+
     if (closeUnderlyingWhenClosed) {
       try {
         tracker.markClosed(database);
