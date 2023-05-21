@@ -7,57 +7,15 @@
 /// asynchronous
 library;
 
+import 'dart:async';
 import 'dart:html';
 
+import 'package:async/async.dart';
 import 'package:drift/wasm.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
-// ignore: implementation_imports
-import 'package:sqlite3/src/wasm/js_interop/file_system_access.dart';
 
-@JS()
-@anonymous
-class WorkerInitializationMessage {
-  external String get type;
-  external Object get payload;
-
-  external factory WorkerInitializationMessage(
-      {required String type, required Object payload});
-}
-
-@JS()
-@anonymous
-class SharedWorkerSupportedFlags {
-  static const type = 'shared-supported';
-
-  external bool get canSpawnDedicatedWorkers;
-  external bool get dedicatedCanUseOpfs;
-  external bool get canUseIndexedDb;
-
-  external factory SharedWorkerSupportedFlags({
-    required bool canSpawnDedicatedWorkers,
-    required bool dedicatedCanUseOpfs,
-    required bool canUseIndexedDb,
-  });
-}
-
-@JS()
-@anonymous
-class DedicatedWorkerPurpose {
-  static const type = 'dedicated-worker-purpose';
-
-  static const purposeSharedOpfs = 'opfs-shared';
-
-  external String get purpose;
-
-  external factory DedicatedWorkerPurpose({required String purpose});
-}
-
-@JS()
-@anonymous
-class WorkerSetupError {
-  static const type = 'worker-error';
-}
+import 'wasm_setup/protocol.dart';
 
 @JS()
 external bool get crossOriginIsolated;
@@ -75,54 +33,24 @@ Future<WasmDatabaseResult> openWasmDatabase({
     final sharedWorker =
         SharedWorker(driftWorkerUri.toString(), 'drift worker');
     final port = sharedWorker.port!;
+
+    final sharedMessages =
+        StreamQueue(port.onMessage.map(WasmInitializationMessage.fromJs));
+
+    // First, the shared worker will tell us which features it supports.
+    final sharedFeatures = await sharedMessages.next as SharedWorkerStatus;
+  } else {
+    // If we don't support shared workers, we might still have support for
+    // OPFS in dedicated workers.
+    final dedicatedWorker = Worker(driftWorkerUri.toString());
+    DedicatedWorkerCompatibilityCheck().sendToWorker(dedicatedWorker);
+
+    final workerMessages = StreamQueue(
+        dedicatedWorker.onMessage.map(WasmInitializationMessage.fromJs));
+
+    final status =
+        await workerMessages.next as DedicatedWorkerCompatibilityResult;
   }
 
   throw 'todo';
-}
-
-/// Checks whether the OPFS API is likely to be correctly implemented in the
-/// current browser.
-///
-/// Since OPFS uses the synchronous file system access API, this method can only
-/// return true when called in a dedicated worker.
-Future<bool> checkOpfsSupport() async {
-  final storage = storageManager;
-  if (storage == null) return false;
-
-  final opfsRoot = await storage.directory;
-  const testFileName = '_drift_feature_detection';
-
-  FileSystemFileHandle? fileHandle;
-  FileSystemSyncAccessHandle? openedFile;
-
-  try {
-    fileHandle = await opfsRoot.openFile(testFileName, create: true);
-    openedFile = await fileHandle.createSyncAccessHandle();
-
-    // In earlier versions of the OPFS standard, some methods like `getSize()`
-    // on a sync file handle have actually been asynchronous. We don't support
-    // Browsers that implement the outdated spec.
-    final getSizeResult = callMethod<Object?>(openedFile, 'getSize', []);
-    if (typeofEquals<Object?>(getSizeResult, 'object')) {
-      // Returned a promise, that's no good.
-      await promiseToFuture<Object?>(getSizeResult!);
-      return false;
-    }
-
-    return true;
-  } on Object {
-    return false;
-  } finally {
-    if (openedFile != null) {
-      openedFile.close();
-    }
-
-    if (fileHandle != null) {
-      await opfsRoot.removeEntry(testFileName);
-    }
-  }
-}
-
-Future<bool> checkIndexedDbSupport() async {
-  return true;
 }
