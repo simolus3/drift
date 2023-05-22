@@ -192,19 +192,13 @@ class _PreparedStatementsCache {
       );
 
   /// Returns the cached prepared statement for the given [sql], or `null` if there is none.
-  /// The statement is marked as used.
   CommonPreparedStatement? _getCachedStatement(String sql) {
-    final entry = _cache[sql];
-    if (entry == null) {
-      return null;
-    }
-
-    return entry;
+    final stmt = _cache[sql];
+    return stmt;
   }
 
   /// Adds the given [stmt] to the cache.
   void add(String sql, CommonPreparedStatement stmt) {
-    //final now = DateTime.now();
     _cache[sql] = stmt;
   }
 
@@ -212,18 +206,6 @@ class _PreparedStatementsCache {
   void remove(String sql) {
     final stmt = _cache.remove(sql);
     stmt?.dispose();
-  }
-
-  /// Removes all statements that haven't been used recently (10 seconds).
-  void removeStale() {
-    return;
-    // final now = DateTime.now();
-    // for (final entry in _cache.entries.toList()) {
-    //   final cacheEntry = entry.value;
-    //   if (now.difference(cacheEntry.lastUsed).inSeconds > 10) {
-    //     remove(entry.key);
-    //   }
-    // }
   }
 
   /// Disposes all cached statements.
