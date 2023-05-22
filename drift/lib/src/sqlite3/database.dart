@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
+import 'package:quiver/collection.dart';
 
 import '../../backends.dart';
 import 'native_functions.dart';
@@ -23,6 +24,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   bool _isOpen = false;
 
   final void Function(DB)? _setup;
+
+  /// Whether prepared statements should be cached.
   final bool cachePreparedStatements;
 
   /// Whether the [database] should be closed when [close] is called on this
@@ -34,12 +37,6 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   final _PreparedStatementsCache _preparedStmtsCache =
       _PreparedStatementsCache();
-
-  /// The interval at which the prepared statements cache is checked for stale entries.
-  static const Duration _preparedStatementsCacheInterval =
-      Duration(seconds: 10);
-
-  Timer? _preparedStmtsCacheTimer;
 
   /// A delegate that will call [openDatabase] to open the database.
   Sqlite3Delegate(
@@ -56,7 +53,6 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     required this.cachePreparedStatements,
   }) {
     _initializeDatabase();
-    _initializePreparedStmtsCache();
   }
 
   /// This method is overridden by the platform-specific implementation to open
@@ -80,7 +76,6 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
       try {
         _initializeDatabase();
-        _initializePreparedStmtsCache();
       } catch (e) {
         // If the initialization fails, we effectively don't have a usable
         // database, so reset
@@ -106,20 +101,9 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     _hasInitializedDatabase = true;
   }
 
-  void _initializePreparedStmtsCache() {
-    assert(_preparedStmtsCacheTimer == null,
-        "Prepared statements cache already initialized");
-    // _preparedStmtsCacheTimer =
-    //     Timer.periodic(_preparedStatementsCacheInterval, (timer) {
-    //   _preparedStmtsCache.removeStale();
-    // });
-  }
-
-  /// Cancels the prepared statements cache timer and clears it up.
+  /// Disposes the prepared statements held in the cache.
   @protected
   void disposePreparedStmtsCache() {
-    _preparedStmtsCacheTimer?.cancel();
-    _preparedStmtsCacheTimer = null;
     _preparedStmtsCache.dispose();
   }
 
@@ -200,7 +184,12 @@ class _SqliteVersionDelegate extends DynamicVersionDelegate {
 }
 
 class _PreparedStatementsCache {
-  final Map<String, CommonPreparedStatement> _cache = {};
+  final LruMap<String, CommonPreparedStatement> _cache = LruMap(
+      // Currently quiver LRU doesn't return the removed entries,
+      // so we can't dispose them. Unlimited cache size until we find
+      // a solution.
+      // maximumSize: 64,
+      );
 
   /// Returns the cached prepared statement for the given [sql], or `null` if there is none.
   /// The statement is marked as used.
