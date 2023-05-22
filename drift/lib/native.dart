@@ -48,9 +48,19 @@ class NativeDatabase extends DelegatedDatabase {
   /// add custom user-defined sql functions or to provide encryption keys in
   /// SQLCipher implementations.
   /// {@endtemplate}
-  factory NativeDatabase(File file,
-      {bool logStatements = false, DatabaseSetup? setup}) {
-    return NativeDatabase._(_NativeDelegate(file, setup), logStatements);
+  factory NativeDatabase(
+    File file, {
+    bool logStatements = false,
+    DatabaseSetup? setup,
+    bool cachePreparedStatements = true,
+  }) {
+    return NativeDatabase._(
+        _NativeDelegate(
+          file,
+          setup,
+          cachePreparedStatements,
+        ),
+        logStatements);
   }
 
   /// Creates a database storing its result in [file].
@@ -102,9 +112,15 @@ class NativeDatabase extends DelegatedDatabase {
   /// Creates an in-memory database won't persist its changes on disk.
   ///
   /// {@macro drift_vm_database_factory}
-  factory NativeDatabase.memory(
-      {bool logStatements = false, DatabaseSetup? setup}) {
-    return NativeDatabase._(_NativeDelegate(null, setup), logStatements);
+  factory NativeDatabase.memory({
+    bool logStatements = false,
+    DatabaseSetup? setup,
+    bool cachePreparedStatements = true,
+  }) {
+    return NativeDatabase._(
+      _NativeDelegate(null, setup, cachePreparedStatements),
+      logStatements,
+    );
   }
 
   /// Creates a drift executor for an opened [database] from the `sqlite3`
@@ -119,12 +135,20 @@ class NativeDatabase extends DelegatedDatabase {
   /// internally when running [integration tests for migrations](https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-migrations).
   ///
   /// {@macro drift_vm_database_factory}
-  factory NativeDatabase.opened(Database database,
-      {bool logStatements = false,
-      DatabaseSetup? setup,
-      bool closeUnderlyingOnClose = true}) {
+  factory NativeDatabase.opened(
+    Database database, {
+    bool logStatements = false,
+    DatabaseSetup? setup,
+    bool closeUnderlyingOnClose = true,
+    bool cachePreparedStatements = true,
+  }) {
     return NativeDatabase._(
-        _NativeDelegate.opened(database, setup, closeUnderlyingOnClose),
+        _NativeDelegate.opened(
+          database,
+          setup,
+          closeUnderlyingOnClose,
+          cachePreparedStatements,
+        ),
         logStatements);
   }
 
@@ -181,12 +205,24 @@ class NativeDatabase extends DelegatedDatabase {
 class _NativeDelegate extends Sqlite3Delegate<Database> {
   final File? file;
 
-  _NativeDelegate(this.file, DatabaseSetup? setup) : super(setup);
+  _NativeDelegate(this.file, DatabaseSetup? setup, bool cachePreparedStatements)
+      : super(
+          setup,
+          cachePreparedStatements: cachePreparedStatements,
+        );
 
   _NativeDelegate.opened(
-      Database db, DatabaseSetup? setup, bool closeUnderlyingWhenClosed)
-      : file = null,
-        super.opened(db, setup, closeUnderlyingWhenClosed);
+    Database db,
+    DatabaseSetup? setup,
+    bool closeUnderlyingWhenClosed,
+    bool cachePreparedStatements,
+  )   : file = null,
+        super.opened(
+          db,
+          setup,
+          closeUnderlyingWhenClosed,
+          cachePreparedStatements: cachePreparedStatements,
+        );
 
   @override
   Database openDatabase() {

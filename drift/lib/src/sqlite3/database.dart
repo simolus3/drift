@@ -23,6 +23,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   bool _isOpen = false;
 
   final void Function(DB)? _setup;
+  final bool cachePreparedStatements;
 
   /// Whether the [database] should be closed when [close] is called on this
   /// instance.
@@ -31,20 +32,29 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// connections to the same database.
   final bool closeUnderlyingWhenClosed;
 
-  final _PreparedStatementsCache _preparedStmtsCache = _PreparedStatementsCache();
-  
+  final _PreparedStatementsCache _preparedStmtsCache =
+      _PreparedStatementsCache();
+
   /// The interval at which the prepared statements cache is checked for stale entries.
-  static const Duration _preparedStatementsCacheInterval = Duration(seconds: 10);
-  
+  static const Duration _preparedStatementsCacheInterval =
+      Duration(seconds: 10);
+
   Timer? _preparedStmtsCacheTimer;
 
   /// A delegate that will call [openDatabase] to open the database.
-  Sqlite3Delegate(this._setup) : closeUnderlyingWhenClosed = true;
+  Sqlite3Delegate(
+    this._setup, {
+    required this.cachePreparedStatements,
+  }) : closeUnderlyingWhenClosed = true;
 
   /// A delegate using an underlying sqlite3 database object that has already
   /// been opened.
   Sqlite3Delegate.opened(
-      this._database, this._setup, this.closeUnderlyingWhenClosed) {
+    this._database,
+    this._setup,
+    this.closeUnderlyingWhenClosed, {
+    required this.cachePreparedStatements,
+  }) {
     _initializeDatabase();
     _initializePreparedStmtsCache();
   }
@@ -97,10 +107,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   }
 
   void _initializePreparedStmtsCache() {
-    assert(_preparedStmtsCacheTimer == null, "Prepared statements cache already initialized");
-    _preparedStmtsCacheTimer = Timer.periodic(_preparedStatementsCacheInterval, (timer) { 
-      _preparedStmtsCache.removeStale();
-    });
+    assert(_preparedStmtsCacheTimer == null,
+        "Prepared statements cache already initialized");
+    // _preparedStmtsCacheTimer =
+    //     Timer.periodic(_preparedStatementsCacheInterval, (timer) {
+    //   _preparedStmtsCache.removeStale();
+    // });
   }
 
   /// Cancels the prepared statements cache timer and clears it up.
@@ -153,17 +165,24 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   }
 
   CommonPreparedStatement _getPreparedStatement(String statement) {
-    final cached = _preparedStmtsCache._getCachedStatement(statement);
-    if (cached != null) {
-      return cached;
-    }
+    if (cachePreparedStatements) {
+      final cachedStmt = _preparedStmtsCache._getCachedStatement(statement);
 
-    final stmt = database.prepare(statement, checkNoTail: true);
-    _preparedStmtsCache.add(statement, stmt);
-    return stmt;
+      if (cachedStmt != null) {
+        return cachedStmt;
+      }
+
+      final stmt = database.prepare(statement, checkNoTail: true);
+
+      _preparedStmtsCache.add(statement, stmt);
+
+      return stmt;
+    } else {
+      final stmt = database.prepare(statement, checkNoTail: true);
+      return stmt;
+    }
   }
 }
-
 
 class _SqliteVersionDelegate extends DynamicVersionDelegate {
   final CommonDatabase database;
@@ -180,15 +199,8 @@ class _SqliteVersionDelegate extends DynamicVersionDelegate {
   }
 }
 
-class _CacheEntry {
-  DateTime lastUsed;
-  final CommonPreparedStatement stmt;
-
-  _CacheEntry(this.lastUsed, this.stmt);
-}
-
 class _PreparedStatementsCache {
-  final Map<String, _CacheEntry> _cache = {};
+  final Map<String, CommonPreparedStatement> _cache = {};
 
   /// Returns the cached prepared statement for the given [sql], or `null` if there is none.
   /// The statement is marked as used.
@@ -198,38 +210,37 @@ class _PreparedStatementsCache {
       return null;
     }
 
-    entry.lastUsed = DateTime.now();
-
-    return entry.stmt;
+    return entry;
   }
 
   /// Adds the given [stmt] to the cache.
   void add(String sql, CommonPreparedStatement stmt) {
-    final now = DateTime.now();
-    _cache[sql] = _CacheEntry(now, stmt);
+    //final now = DateTime.now();
+    _cache[sql] = stmt;
   }
 
   /// Removes the statement with the given [sql] from the cache.
   void remove(String sql) {
-    final entry = _cache.remove(sql);
-    entry?.stmt.dispose();
+    final stmt = _cache.remove(sql);
+    stmt?.dispose();
   }
 
   /// Removes all statements that haven't been used recently (10 seconds).
   void removeStale() {
-    final now = DateTime.now();
-    for (final entry in _cache.entries.toList()) {
-      final cacheEntry = entry.value;
-      if (now.difference(cacheEntry.lastUsed).inSeconds > 10) {
-        remove(entry.key);
-      }
-    }
+    return;
+    // final now = DateTime.now();
+    // for (final entry in _cache.entries.toList()) {
+    //   final cacheEntry = entry.value;
+    //   if (now.difference(cacheEntry.lastUsed).inSeconds > 10) {
+    //     remove(entry.key);
+    //   }
+    // }
   }
 
   /// Disposes all cached statements.
   void dispose() {
-    for (final entry in _cache.values) {
-      entry.stmt.dispose();
+    for (final stmt in _cache.values) {
+      stmt.dispose();
     }
     _cache.clear();
   }

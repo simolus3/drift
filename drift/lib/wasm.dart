@@ -50,9 +50,12 @@ class WasmDatabase extends DelegatedDatabase {
     WasmDatabaseSetup? setup,
     IndexedDbFileSystem? fileSystem,
     bool logStatements = false,
+    bool cachePreparedStatements = true,
   }) {
     return WasmDatabase._(
-        _WasmDelegate(sqlite3, path, setup, fileSystem), logStatements);
+      _WasmDelegate(sqlite3, path, setup, fileSystem, cachePreparedStatements),
+      logStatements,
+    );
   }
 
   /// Creates an in-memory database in the loaded [sqlite3] database.
@@ -60,9 +63,12 @@ class WasmDatabase extends DelegatedDatabase {
     CommmonSqlite3 sqlite3, {
     WasmDatabaseSetup? setup,
     bool logStatements = false,
+    bool cachePreparedStatements = true,
   }) {
     return WasmDatabase._(
-        _WasmDelegate(sqlite3, null, setup, null), logStatements);
+      _WasmDelegate(sqlite3, null, setup, null, cachePreparedStatements),
+      logStatements,
+    );
   }
 }
 
@@ -72,8 +78,15 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   final IndexedDbFileSystem? _fileSystem;
 
   _WasmDelegate(
-      this._sqlite3, this._path, WasmDatabaseSetup? setup, this._fileSystem)
-      : super(setup);
+    this._sqlite3,
+    this._path,
+    WasmDatabaseSetup? setup,
+    this._fileSystem,
+    bool cachePreparedStatements,
+  ) : super(
+          setup,
+          cachePreparedStatements: cachePreparedStatements,
+        );
 
   @override
   CommonDatabase openDatabase() {
@@ -126,7 +139,7 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   @override
   Future<void> close() async {
     super.disposePreparedStmtsCache();
-    
+
     if (closeUnderlyingWhenClosed) {
       database.dispose();
       await _flush();

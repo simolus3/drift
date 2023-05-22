@@ -17,7 +17,10 @@ class KeyValues extends Table {
 
 @DriftDatabase(tables: [KeyValues])
 class Database extends _$Database {
-  Database() : super(_obtainExecutor());
+  Database({bool cachePreparedStatements = true})
+      : super(_obtainExecutor(
+          cachePreparedStatements: cachePreparedStatements,
+        ));
 
   @override
   int get schemaVersion => 1;
@@ -25,10 +28,15 @@ class Database extends _$Database {
 
 const _uuid = Uuid();
 
-QueryExecutor _obtainExecutor() {
+QueryExecutor _obtainExecutor({
+  required bool cachePreparedStatements,
+}) {
   final file =
       File(p.join(Directory.systemTemp.path, 'drift_benchmarks', _uuid.v4()));
   file.parent.createSync();
 
-  return NativeDatabase(file);
+  return NativeDatabase(
+    file,
+    cachePreparedStatements: cachePreparedStatements,
+  );
 }
