@@ -51,7 +51,7 @@ class DiscoverStep {
     return result;
   }
 
-  Future<void> discover() async {
+  Future<void> discover({required bool warnIfFileDoesntExist}) async {
     final extension = _file.extension;
     _file.discovery = UnknownFile();
 
@@ -61,7 +61,7 @@ class DiscoverStep {
         try {
           library = await _driver.backend.readDart(_file.ownUri);
         } catch (e) {
-          if (e is! NotALibraryException) {
+          if (e is! NotALibraryException && warnIfFileDoesntExist) {
             // Backends are supposed to throw NotALibraryExceptions if the
             // library is a part file. For other exceptions, we better report
             // the error.

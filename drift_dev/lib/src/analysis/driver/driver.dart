@@ -155,12 +155,16 @@ class DriftAnalysisDriver {
   }
 
   /// Runs the first step (element discovery) on a file with the given [uri].
-  Future<FileState> prepareFileForAnalysis(Uri uri,
-      {bool needsDiscovery = true}) async {
+  Future<FileState> prepareFileForAnalysis(
+    Uri uri, {
+    bool needsDiscovery = true,
+    bool warnIfFileDoesntExist = true,
+  }) async {
     var known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
 
     if (known.discovery == null && needsDiscovery) {
-      await DiscoverStep(this, known).discover();
+      await DiscoverStep(this, known)
+          .discover(warnIfFileDoesntExist: warnIfFileDoesntExist);
       cache.postFileDiscoveryResults(known);
 
       // todo: Mark elements that need to be analyzed again
@@ -186,7 +190,10 @@ class DriftAnalysisDriver {
         }
       } else if (state is DiscoveredDartLibrary) {
         for (final import in state.importDependencies) {
-          await prepareFileForAnalysis(import);
+          // We might import a generated file that doesn't exist yet, that
+          // should not be a user-visible error. Users will notice because the
+          // import is reported as an error by the analyzer either way.
+          await prepareFileForAnalysis(import, warnIfFileDoesntExist: false);
         }
       }
     }
