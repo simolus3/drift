@@ -184,6 +184,10 @@ class DriftAnalysisDriver {
             );
           }
         }
+      } else if (state is DiscoveredDartLibrary) {
+        for (final import in state.importDependencies) {
+          await prepareFileForAnalysis(import);
+        }
       }
     }
 

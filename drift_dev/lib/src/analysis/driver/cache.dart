@@ -63,8 +63,12 @@ class DriftAnalysisCache {
       yield found;
 
       for (final imported in found.imports ?? const <Uri>[]) {
-        if (seenUris.add(imported)) {
-          pending.add(knownFiles[imported]!);
+        // We might not have a known file for all imports of a Dart file, since
+        // not all imports are drift-related there.
+        final knownImport = knownFiles[imported];
+
+        if (seenUris.add(imported) && knownImport != null) {
+          pending.add(knownImport);
         }
       }
     }

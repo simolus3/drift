@@ -77,8 +77,11 @@ class DiscoverStep {
         await finder.find();
 
         _file.errorsDuringDiscovery.addAll(finder.errors);
-        _file.discovery =
-            DiscoveredDartLibrary(library, _checkForDuplicates(finder.found));
+        _file.discovery = DiscoveredDartLibrary(
+          library,
+          _checkForDuplicates(finder.found),
+          finder.imports,
+        );
         break;
       case '.drift':
       case '.moor':
@@ -152,6 +155,8 @@ class DiscoverStep {
 class _FindDartElements extends RecursiveElementVisitor<void> {
   final DiscoverStep _discoverStep;
   final LibraryElement _library;
+
+  final List<Uri> imports = [];
 
   final TypeChecker _isTable, _isView, _isTableInfo, _isDatabase, _isDao;
 
@@ -229,6 +234,18 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     }
 
     super.visitClassElement(element);
+  }
+
+  @override
+  void visitLibraryImportElement(LibraryImportElement element) {
+    final imported = element.importedLibrary;
+
+    if (imported != null && !imported.isInSdk) {
+      _pendingWork.add(Future(() async {
+        final uri = await _discoverStep._driver.backend.uriOfDart(imported);
+        imports.add(uri);
+      }));
+    }
   }
 
   String _defaultNameForTableOrView(ClassElement definingElement) {

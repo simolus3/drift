@@ -46,6 +46,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       }
     }
 
+    final tableConstraints =
+        await _readCustomConstraints(references, columns, element);
+
     final table = DriftTable(
       discovered.ownId,
       DriftDeclaration.dartElement(element),
@@ -60,7 +63,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
           UniqueColumns(uniqueKey),
       ],
-      overrideTableConstraints: await _readCustomConstraints(columns, element),
+      overrideTableConstraints: tableConstraints,
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
     );
 
@@ -272,7 +275,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return ColumnParser(this).parse(declaration, element);
   }
 
-  Future<List<String>> _readCustomConstraints(
+  Future<List<String>> _readCustomConstraints(Set<DriftElement> references,
       List<DriftColumn> localColumns, ClassElement element) async {
     final customConstraints =
         element.lookUpGetter('customConstraints', element.library);
@@ -343,6 +346,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
             (msg) => DriftAnalysisError.inDartAst(element, source, msg));
 
         if (table != null) {
+          references.add(table);
           final missingColumns = clause.columnNames
               .map((e) => e.columnName)
               .where((e) => !table.columnBySqlName.containsKey(e));

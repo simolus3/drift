@@ -130,9 +130,16 @@ class DiscoveredDartLibrary extends DiscoveredFileState {
   final LibraryElement library;
 
   @override
+  final List<Uri> importDependencies;
+
+  @override
   bool get isValidImport => true;
 
-  DiscoveredDartLibrary(this.library, super.locallyDefinedElements);
+  DiscoveredDartLibrary(
+    this.library,
+    super.locallyDefinedElements,
+    this.importDependencies,
+  );
 }
 
 class NotADartLibrary extends DiscoveredFileState {

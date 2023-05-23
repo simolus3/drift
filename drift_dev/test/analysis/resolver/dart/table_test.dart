@@ -364,6 +364,48 @@ class WithConstraints extends Table {
     ]);
   });
 
+  test('can resolve references from import', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/topic.dart': '''
+import 'package:drift/drift.dart';
+
+import 'language.dart';
+
+class Topics extends Table {
+  IntColumn get id => integer()();
+  TextColumn get langCode => text()();
+}
+
+''',
+      'a|lib/video.dart': '''
+import 'package:drift/drift.dart';
+
+import 'topic.dart';
+
+class Videos extends Table {
+  IntColumn get id => integer()();
+
+  IntColumn get topicId => integer()();
+  TextColumn get topicLang => text()();
+
+  @override
+  List<String> get customConstraints => [
+        'FOREIGN KEY (topic_id, topic_lang) REFERENCES topics (id, lang_code)',
+      ];
+}
+''',
+    });
+
+    final state = await backend.analyze('package:a/video.dart');
+    backend.expectNoErrors();
+
+    final table = state.analyzedElements.single as DriftTable;
+    expect(
+        table.references,
+        contains(isA<DriftTable>()
+            .having((e) => e.schemaName, 'schemaName', 'topics')));
+  });
+
   test('supports autoIncrement on int64 columns', () async {
     final backend = TestBackend.inTest({
       'a|lib/a.dart': '''

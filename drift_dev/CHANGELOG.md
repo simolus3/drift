@@ -1,3 +1,8 @@
+## 2.8.3-dev
+
+- Allow Dart-defined tables to reference imported tables through SQL
+  [#2433](https://github.com/simolus3/drift/issues/2433).
+
 ## 2.8.2
 
 - Fix generated to write qualified column references for Dart components in
