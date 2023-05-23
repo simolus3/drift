@@ -420,6 +420,47 @@ void main() {
       expect(db.validateDatabaseSchema(), completes);
     });
   });
+
+  test('custom schema upgrades', () async {
+    // I promised this would work in https://github.com/simolus3/drift/discussions/2436,
+    // so we better make sure this keeps working.
+    final underlying = sqlite3.openInMemory()
+      ..execute('pragma user_version = 1;');
+    addTearDown(underlying.dispose);
+
+    const maxSchema = 10;
+    final expectedException = Exception('schema upgrade!');
+
+    for (var currentSchema = 1; currentSchema < maxSchema; currentSchema++) {
+      final db = TodoDb(NativeDatabase.opened(underlying));
+      db.schemaVersion = maxSchema;
+      db.migration = MigrationStrategy(
+        onUpgrade: expectAsync3((m, from, to) async {
+          // This upgrade callback does one step and then throws. Opening the
+          // database multiple times should run the individual migrations.
+          expect(from, currentSchema);
+          expect(to, maxSchema);
+
+          await db.customStatement('CREATE TABLE t$from (id INTEGER);');
+          await db.customStatement('pragma user_version = ${from + 1}');
+
+          if (from != to - 1) {
+            // Simulate a failed upgrade
+            throw expectedException;
+          }
+        }),
+      );
+
+      if (currentSchema != maxSchema - 1) {
+        // Opening the database should throw this exception
+        await expectLater(
+            db.customSelect('SELECT 1').get(), throwsA(expectedException));
+      } else {
+        // The last migration should work
+        await expectLater(db.customSelect('SELECT 1').get(), completes);
+      }
+    }
+  });
 }
 
 class _TestDatabase extends GeneratedDatabase {
