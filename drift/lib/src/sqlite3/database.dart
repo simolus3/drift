@@ -4,7 +4,6 @@ import 'dart:collection';
 
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
-import 'package:collection/collection.dart';
 
 import '../../backends.dart';
 import 'native_functions.dart';
@@ -36,8 +35,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// connections to the same database.
   final bool closeUnderlyingWhenClosed;
 
-  final _PreparedStatementsCache _preparedStmtsCache =
-      _PreparedStatementsCache();
+  final PreparedStatementsCache _preparedStmtsCache = PreparedStatementsCache();
 
   /// A delegate that will call [openDatabase] to open the database.
   Sqlite3Delegate(
@@ -83,7 +81,9 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
         _database?.dispose();
         _database = null;
 
-        disposePreparedStmtsCache();
+        // We can call clear instead of disposeAll because disposing the
+        // database will also dispose all prepared statements on it.
+        _preparedStmtsCache.clear();
 
         rethrow;
       }
@@ -102,10 +102,10 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     _hasInitializedDatabase = true;
   }
 
-  /// Disposes the prepared statements held in the cache.
-  @protected
-  void disposePreparedStmtsCache() {
-    _preparedStmtsCache.dispose();
+  @override
+  @mustCallSuper
+  Future<void> close() {
+    return Future(_preparedStmtsCache.disposeAll);
   }
 
   /// Synchronously prepares and runs [statements] collected from a batch.
@@ -149,21 +149,19 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     return QueryResult.fromRows(result.toList());
   }
 
-  CommonPreparedStatement _getPreparedStatement(String statement) {
+  CommonPreparedStatement _getPreparedStatement(String sql) {
     if (cachePreparedStatements) {
-      final cachedStmt = _preparedStmtsCache._getCachedStatement(statement);
-
+      final cachedStmt = _preparedStmtsCache.use(sql);
       if (cachedStmt != null) {
         return cachedStmt;
       }
 
-      final stmt = database.prepare(statement, checkNoTail: true);
-
-      _preparedStmtsCache.add(statement, stmt);
+      final stmt = database.prepare(sql, checkNoTail: true);
+      _preparedStmtsCache.addNew(sql, stmt);
 
       return stmt;
     } else {
-      final stmt = database.prepare(statement, checkNoTail: true);
+      final stmt = database.prepare(sql, checkNoTail: true);
       return stmt;
     }
   }
@@ -184,113 +182,61 @@ class _SqliteVersionDelegate extends DynamicVersionDelegate {
   }
 }
 
-class _PreparedStatementsCache {
-  final LruMap<String, CommonPreparedStatement> _cache = LruMap(
-    maximumSize: 64,
-    onItemRemoved: (k, stmt) => stmt.dispose(),
-  );
+/// A cache of prepared statements to avoid having to parse SQL statements
+/// multiple time when they're used frequently.
+@internal
+class PreparedStatementsCache {
+  /// The maximum amount of cached statements.
+  final int maxSize;
 
-  /// Returns the cached prepared statement for the given [sql], or `null` if there is none.
-  CommonPreparedStatement? _getCachedStatement(String sql) {
-    final stmt = _cache[sql];
-    return stmt;
-  }
+  // The linked map returns entries in the order in which they have been
+  // inserted (with the first insertion being reported first).
+  // So, we treat it as a LRU cache with `entries.last` being the MRU and
+  // `entries.last` being the LRU element.
+  final LinkedHashMap<String, CommonPreparedStatement> _cachedStatements =
+      LinkedHashMap();
 
-  /// Adds the given [stmt] to the cache.
-  void add(String sql, CommonPreparedStatement stmt) {
-    _cache[sql] = stmt;
-  }
+  /// Create a cache of prepared statements with a capacity of [maxSize].
+  PreparedStatementsCache({this.maxSize = 64});
 
-  /// Removes the statement with the given [sql] from the cache.
-  void remove(String sql) {
-    // the statement is disposed when it is removed from the cache
-    _cache.remove(sql);
-  }
+  /// Attempts to look up the cached [sql] statement, if it exists.
+  ///
+  /// If the statement exists, it is marked as most recently used as well.
+  CommonPreparedStatement? use(String sql) {
+    // Remove and add the statement if it was found to move it to the end,
+    // which marks it as the MRU element.
+    final foundStatement = _cachedStatements.remove(sql);
 
-  /// Disposes all cached statements.
-  void dispose() {
-    // all statements are disposed when they are removed from the cache
-    _cache.clear();
-  }
-}
-
-/// A map that keeps track of the most recently used items.
-class LruMap<K, V> {
-  /// Creates a new LRU map with the given [maximumSize].
-  LruMap({
-    required this.maximumSize,
-    this.onItemRemoved,
-  });
-
-  /// The maximum number of items to keep in the map.
-  final int maximumSize;
-
-  /// Called when an item is removed from the map.
-  final void Function(K, V)? onItemRemoved;
-
-  final LinkedHashMap<K, V> _map = LinkedHashMap();
-
-  /// Map `values` iterable
-  Iterable<V> get values => _map.values;
-
-  /// Map `keys` iterable
-  Iterable<K> get keys => _map.keys;
-
-  /// Map `entries` iterable
-  Iterable<MapEntry<K, V>> get entries => _map.entries;
-
-  /// The most recently used key in the map
-  K? get mruKey => _map.keys.lastOrNull;
-
-  /// The least recently used key in the map
-  K? get lruKey => _map.keys.firstOrNull;
-
-  /// Access the value in the map
-  V? operator [](K key) {
-    final v = _map[key];
-    if (v != null) {
-      // This effectively mark is as recently used
-      _insertAsRecentlyUsed(key, v);
-      return v;
-    } else {
-      return null;
+    if (foundStatement != null) {
+      _cachedStatements[sql] = foundStatement;
     }
+
+    return foundStatement;
   }
 
-  /// Set the value in the map
-  void operator []=(K key, V value) {
-    _insertAsRecentlyUsed(key, value);
+  /// Caches a statement that has not been cached yet for subsequent uses.
+  void addNew(String sql, CommonPreparedStatement statement) {
+    assert(!_cachedStatements.containsKey(sql));
 
-    if (_map.length > maximumSize) {
-      final keyToRemove = lruKey as K;
-      final v = _map.remove(keyToRemove) as V;
-      onItemRemoved?.call(keyToRemove, v);
+    if (_cachedStatements.length == maxSize) {
+      final lru = _cachedStatements.remove(_cachedStatements.keys.first)!;
+      lru.dispose();
     }
+
+    _cachedStatements[sql] = statement;
   }
 
-  /// Remove the value from the map
-  V? remove(K key) {
-    final removedVal = _map.remove(key);
-    if (removedVal != null) {
-      onItemRemoved?.call(key, removedVal);
+  /// Removes all cached statements.
+  void disposeAll() {
+    for (final statement in _cachedStatements.values) {
+      statement.dispose();
     }
-    return removedVal;
+
+    _cachedStatements.clear();
   }
 
-  /// Clear the map
+  /// Forgets cached statements without explicitly disposing them.
   void clear() {
-    final entries = _map.entries.toList();
-    _map.clear();
-
-    for (var entry in entries) {
-      onItemRemoved?.call(entry.key, entry.value);
-    }
-  }
-
-  void _insertAsRecentlyUsed(K key, V value) {
-    // Removing and adding the same key will move it to the end of the map
-    // and will mark it as recently used
-    _map.remove(key);
-    _map[key] = value;
+    _cachedStatements.clear();
   }
 }

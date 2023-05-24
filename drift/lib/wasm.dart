@@ -138,7 +138,7 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
 
   @override
   Future<void> close() async {
-    super.disposePreparedStmtsCache();
+    await super.close();
 
     if (closeUnderlyingWhenClosed) {
       database.dispose();
