@@ -1,9 +1,10 @@
 @internal
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
-import 'package:quiver/collection.dart';
+import 'package:collection/collection.dart';
 
 import '../../backends.dart';
 import 'native_functions.dart';
@@ -185,11 +186,9 @@ class _SqliteVersionDelegate extends DynamicVersionDelegate {
 
 class _PreparedStatementsCache {
   final LruMap<String, CommonPreparedStatement> _cache = LruMap(
-      // Currently quiver LRU doesn't return the removed entries,
-      // so we can't dispose them. Unlimited cache size until we find
-      // a solution.
-      // maximumSize: 64,
-      );
+    maximumSize: 64,
+    onItemRemoved: (k, stmt) => stmt.dispose(),
+  );
 
   /// Returns the cached prepared statement for the given [sql], or `null` if there is none.
   CommonPreparedStatement? _getCachedStatement(String sql) {
@@ -210,9 +209,85 @@ class _PreparedStatementsCache {
 
   /// Disposes all cached statements.
   void dispose() {
-    for (final stmt in _cache.values) {
-      stmt.dispose();
-    }
     _cache.clear();
+  }
+}
+
+/// A map that keeps track of the most recently used items.
+class LruMap<K, V> {
+  /// Creates a new LRU map with the given [maximumSize].
+  LruMap({
+    required this.maximumSize,
+    this.onItemRemoved,
+  });
+
+  /// The maximum number of items to keep in the map.
+  final int maximumSize;
+
+  /// Called when an item is removed from the map.
+  final void Function(K, V)? onItemRemoved;
+
+  final LinkedHashMap<K, V> _map = LinkedHashMap();
+
+  /// Map `values` iterable
+  Iterable<V> get values => _map.values;
+
+  /// Map `keys` iterable
+  Iterable<K> get keys => _map.keys;
+
+  /// Map `entries` iterable
+  Iterable<MapEntry<K, V>> get entries => _map.entries;
+
+  /// The most recently used key in the map
+  K? get mruKey => _map.keys.lastOrNull;
+
+  /// The least recently used key in the map
+  K? get lruKey => _map.keys.firstOrNull;
+
+  /// Access the value in the map
+  V? operator [](K key) {
+    final v = _map[key];
+    if (v != null) {
+      // This effectively mark is as recently used
+      _insertAsRecentlyUsed(key, v);
+      return v;
+    } else {
+      return null;
+    }
+  }
+
+  /// Set the value in the map
+  void operator []=(K key, V value) {
+    _insertAsRecentlyUsed(key, value);
+
+    if (_map.length > maximumSize) {
+      final keyToRemove = lruKey as K;
+      final v = _map.remove(keyToRemove) as V;
+      onItemRemoved?.call(keyToRemove, v);
+    }
+  }
+
+  /// Remove the value from the map
+  V? remove(K key) {
+    final removedVal = _map.remove(key);
+    if (removedVal != null) {
+      onItemRemoved?.call(key, removedVal);
+    }
+    return removedVal;
+  }
+
+  /// Clear the map
+  void clear() {
+    final entries = _map.entries.toList();
+    _map.clear();
+
+    for (var entry in entries) {
+      onItemRemoved?.call(entry.key, entry.value);
+    }
+  }
+
+  void _insertAsRecentlyUsed(K key, V value) {
+    _map.remove(key);
+    _map[key] = value;
   }
 }
