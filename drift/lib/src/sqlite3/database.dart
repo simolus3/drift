@@ -203,12 +203,13 @@ class _PreparedStatementsCache {
 
   /// Removes the statement with the given [sql] from the cache.
   void remove(String sql) {
-    final stmt = _cache.remove(sql);
-    stmt?.dispose();
+    // the statement is disposed when it is removed from the cache
+    _cache.remove(sql);
   }
 
   /// Disposes all cached statements.
   void dispose() {
+    // all statements are disposed when they are removed from the cache
     _cache.clear();
   }
 }
