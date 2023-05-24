@@ -31,6 +31,10 @@ void main() {
     ]);
     removedEntries.clear();
 
+    // Use b to promote it to mru
+    map["b"];
+    expect(map.mruKey, "b");
+
     // Remove c
     final c = map.remove("c");
     expect(c, "Charlie");
@@ -46,8 +50,8 @@ void main() {
 
     // onItemRemoved gets called
     expect(removedEntries, [
-      Entry("b", "Beta"),
       Entry("d", "Delta"),
+      Entry("b", "Beta"),
     ]);
   });
 }
@@ -67,4 +71,9 @@ class Entry<K, V> {
 
   @override
   int get hashCode => Object.hash(key, value);
+
+  @override
+  String toString() {
+    return 'Entry(key: $key, value: $value)';
+  }
 }
