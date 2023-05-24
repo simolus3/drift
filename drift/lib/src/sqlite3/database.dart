@@ -288,6 +288,8 @@ class LruMap<K, V> {
   }
 
   void _insertAsRecentlyUsed(K key, V value) {
+    // Removing and adding the same key will move it to the end of the map
+    // and will mark it as recently used
     _map.remove(key);
     _map[key] = value;
   }
