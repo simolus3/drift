@@ -1,3 +1,7 @@
+## 2.9.0-dev
+
+- Fix a deadlock after rolling back a transaction in a remote isolate.
+
 ## 2.8.0
 
 - Don't keep databases in an unusable state if the `setup` callback throws an

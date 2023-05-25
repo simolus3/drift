@@ -1,5 +1,7 @@
 @TestOn('vm')
+
 import 'package:drift/drift.dart';
+import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -8,11 +10,12 @@ import '../test_utils/database_vm.dart';
 void main() {
   preferLocalSqlite3();
 
-  test('a failing commit does not block the whole database', () async {
-    final db = _Database(NativeDatabase.memory());
-    addTearDown(db.close);
+  group('a failing commit does not block the whole database', () {
+    Future<void> testWith(QueryExecutor executor) async {
+      final db = _Database(executor);
+      addTearDown(db.close);
 
-    await db.customStatement('''
+      await db.customStatement('''
 CREATE TABLE IF NOT EXISTS todo_items (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL, content TEXT NULL,
@@ -22,27 +25,38 @@ CREATE TABLE IF NOT EXISTS todo_items (
     GENERATED ALWAYS AS (title || ' (' || content || ')') VIRTUAL
 );
 ''');
-    await db.customStatement('''
+      await db.customStatement('''
 CREATE TABLE IF NOT EXISTS todo_categories (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL
 );
 ''');
-    await db.customStatement('PRAGMA foreign_keys = ON;');
+      await db.customStatement('PRAGMA foreign_keys = ON;');
 
-    await expectLater(
-      db.transaction(() async {
-        // Thanks to the deferrable clause, this statement will only cause a
-        // failing COMMIT.
-        await db.customStatement(
-            'INSERT INTO todo_items (title, category_id) VALUES (?, ?);',
-            ['a', 100]);
-      }),
-      throwsA(isA<SqliteException>()),
-    );
+      await expectLater(
+        db.transaction(() async {
+          // Thanks to the deferrable clause, this statement will only cause a
+          // failing COMMIT.
+          await db.customStatement(
+              'INSERT INTO todo_items (title, category_id) VALUES (?, ?);',
+              ['a', 100]);
+        }),
+        throwsA(anyOf(isA<SqliteException>(), isA<DriftRemoteException>())),
+      );
 
-    expect(
-        db.customSelect('SELECT * FROM todo_items').get(), completion(isEmpty));
+      expect(db.customSelect('SELECT * FROM todo_items').get(),
+          completion(isEmpty));
+    }
+
+    test('sync client', () async {
+      await testWith(NativeDatabase.memory());
+    });
+
+    test('through isolate', () async {
+      final isolate = await DriftIsolate.spawn(NativeDatabase.memory);
+
+      await testWith(await isolate.connect(singleClientMode: true));
+    });
   });
 }
 
