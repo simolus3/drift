@@ -15,6 +15,7 @@ import 'package:drift/src/runtime/exceptions.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift/src/runtime/types/converters.dart';
 import 'package:drift/src/runtime/types/mapping.dart';
+import 'package:drift/src/utils/async_map.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 

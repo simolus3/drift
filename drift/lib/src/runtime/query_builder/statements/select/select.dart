@@ -73,7 +73,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
       key: StreamKey(query.sql, query.boundVariables),
     );
 
-    return database.createStream(fetcher).asyncMap(_mapResponse);
+    return database.createStream(fetcher).asyncMapPerSubscription(_mapResponse);
   }
 
   Future<List<Map<String, Object?>>> _getRaw(GenerationContext ctx) {

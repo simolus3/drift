@@ -304,41 +304,8 @@ class _AsyncMappedSelectable<S, T> extends Selectable<T> {
 
   @override
   Stream<List<T>> watch() {
-    final source = _source.watch();
-
-    // The easiest thing to do here would be to just
-    // `source.watch().asyncMap(_mapResults)`. However, since _source is
-    // typically a broadcast stream, asyncMap also uses a broadcast stream
-    // controller internally which will not generally call `onListen` multiple
-    // times for multiple stream subscriptions.
-    // Drift streams are broadcast streams (since they can be listened too
-    // multiple times), but also special since each subscription receives the
-    // current snapshot when it gets added. The `asyncMap` implementation in the
-    // SDK breaks this because listen events don't get forwarded.
-    //
-    // So, this small implementation of asyncMap does the same thing while making
-    // sure the stream returned by this function behaves like one would expect
-    // drift streams to behave.
-    return Stream.multi(
-      (listener) {
-        late StreamSubscription<List<S>> subscription;
-
-        void onData(List<S> original) {
-          subscription.pause();
-          _mapResults(original)
-              .then(listener.addSync, onError: listener.addErrorSync)
-              .whenComplete(subscription.resume);
-        }
-
-        subscription = source.listen(
-          onData,
-          onError: listener.addErrorSync,
-          onDone: listener.closeSync,
-          cancelOnError: false, // Determined by downstream subscription
-        );
-      },
-      isBroadcast: source.isBroadcast,
-    );
+    return AsyncMapPerSubscription(_source.watch())
+        .asyncMapPerSubscription(_mapResults);
   }
 
   Future<List<T>> _mapResults(List<S> results) async {
