@@ -61,13 +61,11 @@ class SharedDriftWorker {
   Future<SharedWorkerStatus> _startFeatureDetection() async {
     // First, let's see if this shared worker can spawn dedicated workers.
     final hasWorker = hasProperty(self, 'Worker');
-    final canUseIndexedDb = await checkIndexedDbSupport();
 
     if (!hasWorker) {
       return SharedWorkerStatus(
         canSpawnDedicatedWorkers: false,
         dedicatedWorkersCanUseOpfs: false,
-        canUseIndexedDb: canUseIndexedDb,
       );
     } else {
       final worker = _dedicatedWorker = Worker(Uri.base.toString());
@@ -83,7 +81,6 @@ class SharedDriftWorker {
           completer.complete(SharedWorkerStatus(
             canSpawnDedicatedWorkers: true,
             dedicatedWorkersCanUseOpfs: result,
-            canUseIndexedDb: canUseIndexedDb,
           ));
 
           messageSubscription?.cancel();

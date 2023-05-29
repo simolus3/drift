@@ -6,6 +6,7 @@ import 'dart:html';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/wasm.dart';
+import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
 
 import '../channel.dart';
@@ -36,6 +37,8 @@ class DedicatedDriftWorker {
         DedicatedWorkerCompatibilityResult(
           canAccessOpfs: supportsOpfs,
           supportsIndexedDb: supportsIndexedDb,
+          supportsSharedArrayBuffers:
+              hasProperty(globalThis, 'SharedArrayBuffer'),
         ).sendToClient(self);
       case ServeDriftDatabase():
         final server = _servers.putIfAbsent(message.databaseName, () {

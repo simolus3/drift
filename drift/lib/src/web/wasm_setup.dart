@@ -11,15 +11,21 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:async/async.dart';
+import 'package:drift/remote.dart';
 import 'package:drift/wasm.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
+import 'package:sqlite3/wasm.dart';
 
+import 'channel.dart';
 import 'wasm_setup/protocol.dart';
 
+/// Whether the `crossOriginIsolated` JavaScript property is true in the current
+/// context.
 @JS()
 external bool get crossOriginIsolated;
 
+/// Whether shared workers can be constructed in the current context.
 bool get supportsSharedWorkers => hasProperty(globalThis, 'SharedWorker');
 
 Future<WasmDatabaseResult> openWasmDatabase({
@@ -27,6 +33,24 @@ Future<WasmDatabaseResult> openWasmDatabase({
   required Uri driftWorkerUri,
   required String databaseName,
 }) async {
+  final missingFeatures = <MissingBrowserFeature>{};
+
+  Future<WasmDatabaseResult> connect(WasmStorageImplementation impl,
+      void Function(WasmInitializationMessage) send) async {
+    final channel = MessageChannel();
+    final local = channel.port1.channel();
+    final message = ServeDriftDatabase(
+      sqlite3WasmUri: sqlite3WasmUri,
+      port: channel.port2,
+      storage: impl,
+      databaseName: databaseName,
+    );
+    send(message);
+
+    final connection = await connectToRemoteAndInitialize(local);
+    return WasmDatabaseResult(connection, impl, missingFeatures);
+  }
+
   // First, let's see if we can spawn dedicated workers in shared workers, which
   // would enable us to efficiently share a OPFS database.
   if (supportsSharedWorkers) {
@@ -39,17 +63,47 @@ Future<WasmDatabaseResult> openWasmDatabase({
 
     // First, the shared worker will tell us which features it supports.
     final sharedFeatures = await sharedMessages.next as SharedWorkerStatus;
+
+    // Can we use the shared OPFS implementation?
+    if (sharedFeatures.canSpawnDedicatedWorkers &&
+        sharedFeatures.dedicatedWorkersCanUseOpfs) {
+      return connect(
+          WasmStorageImplementation.opfsShared, (msg) => msg.sendToPort(port));
+    } else {
+      missingFeatures.addAll(sharedFeatures.missingFeatures);
+      await sharedMessages.cancel();
+      port.close();
+    }
   } else {
-    // If we don't support shared workers, we might still have support for
-    // OPFS in dedicated workers.
-    final dedicatedWorker = Worker(driftWorkerUri.toString());
-    DedicatedWorkerCompatibilityCheck().sendToWorker(dedicatedWorker);
+    missingFeatures.add(MissingBrowserFeature.sharedWorkers);
+  }
 
-    final workerMessages = StreamQueue(
-        dedicatedWorker.onMessage.map(WasmInitializationMessage.fromJs));
+  final dedicatedWorker = Worker(driftWorkerUri.toString());
+  DedicatedWorkerCompatibilityCheck().sendToWorker(dedicatedWorker);
 
-    final status =
-        await workerMessages.next as DedicatedWorkerCompatibilityResult;
+  final workerMessages = StreamQueue(
+      dedicatedWorker.onMessage.map(WasmInitializationMessage.fromJs));
+
+  final status =
+      await workerMessages.next as DedicatedWorkerCompatibilityResult;
+  missingFeatures.addAll(status.missingFeatures);
+
+  if (status.canAccessOpfs && status.supportsSharedArrayBuffers) {
+    // todo send second worker to first one
+  } else if (status.supportsIndexedDb) {
+    return connect(WasmStorageImplementation.unsafeIndexedDb,
+        (msg) => msg.sendToWorker(dedicatedWorker));
+  } else {
+    // Nothing works on this browser, so we'll fall back to an in-memory
+    // database.
+    final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
+    sqlite3.registerVirtualFileSystem(InMemoryFileSystem());
+
+    return WasmDatabaseResult(
+      WasmDatabase(sqlite3: sqlite3, path: '/app.db'),
+      WasmStorageImplementation.inMemory,
+      missingFeatures,
+    );
   }
 
   throw 'todo';

@@ -62,12 +62,10 @@ final class SharedWorkerStatus extends WasmInitializationMessage {
 
   final bool canSpawnDedicatedWorkers;
   final bool dedicatedWorkersCanUseOpfs;
-  final bool canUseIndexedDb;
 
   SharedWorkerStatus({
     required this.canSpawnDedicatedWorkers,
     required this.dedicatedWorkersCanUseOpfs,
-    required this.canUseIndexedDb,
   });
 
   factory SharedWorkerStatus.fromJsPayload(Object payload) {
@@ -76,7 +74,6 @@ final class SharedWorkerStatus extends WasmInitializationMessage {
     return SharedWorkerStatus(
       canSpawnDedicatedWorkers: data[0],
       dedicatedWorkersCanUseOpfs: data[1],
-      canUseIndexedDb: data[2],
     );
   }
 
@@ -85,8 +82,17 @@ final class SharedWorkerStatus extends WasmInitializationMessage {
     sender.sendTyped(type, [
       canSpawnDedicatedWorkers,
       dedicatedWorkersCanUseOpfs,
-      canUseIndexedDb
     ]);
+  }
+
+  Iterable<MissingBrowserFeature> get missingFeatures sync* {
+    if (!canSpawnDedicatedWorkers) {
+      yield MissingBrowserFeature.dedicatedWorkersInSharedWorkers;
+    }
+
+    if (!dedicatedWorkersCanUseOpfs) {
+      yield MissingBrowserFeature.fileSystemAccess;
+    }
   }
 }
 
@@ -168,16 +174,20 @@ final class DedicatedWorkerCompatibilityResult
   static const type = 'DedicatedWorkerCompatibilityResult';
 
   final bool canAccessOpfs;
+  final bool supportsSharedArrayBuffers;
   final bool supportsIndexedDb;
 
   DedicatedWorkerCompatibilityResult({
     required this.canAccessOpfs,
+    required this.supportsSharedArrayBuffers,
     required this.supportsIndexedDb,
   });
 
   factory DedicatedWorkerCompatibilityResult.fromJsPayload(Object payload) {
     return DedicatedWorkerCompatibilityResult(
       canAccessOpfs: getProperty(payload, 'canAccessOpfs'),
+      supportsSharedArrayBuffers:
+          getProperty(payload, 'supportsSharedArrayBuffers'),
       supportsIndexedDb: getProperty(payload, 'supportsIndexedDb'),
     );
   }
@@ -187,8 +197,22 @@ final class DedicatedWorkerCompatibilityResult
     final object = newObject<Object>();
     setProperty(object, 'canAccessOpfs', canAccessOpfs);
     setProperty(object, 'supportsIndexedDb', supportsIndexedDb);
+    setProperty(
+        object, 'supportsSharedArrayBuffers', supportsSharedArrayBuffers);
 
     sender.sendTyped(type, object);
+  }
+
+  Iterable<MissingBrowserFeature> get missingFeatures sync* {
+    if (!canAccessOpfs) {
+      yield MissingBrowserFeature.fileSystemAccess;
+    }
+    if (!supportsSharedArrayBuffers) {
+      yield MissingBrowserFeature.sharedArrayBuffers;
+    }
+    if (!supportsIndexedDb) {
+      yield MissingBrowserFeature.indexedDb;
+    }
   }
 }
 
