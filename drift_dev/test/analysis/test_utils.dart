@@ -45,7 +45,7 @@ class TestBackend extends DriftBackend {
           for (final entry in sourceContents.entries)
             AssetId.parse(entry.key).uri.toString(): entry.value,
         } {
-    driver = DriftAnalysisDriver(this, options);
+    driver = DriftAnalysisDriver(this, options, isTesting: true);
   }
 
   factory TestBackend.inTest(

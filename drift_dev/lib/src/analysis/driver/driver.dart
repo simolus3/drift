@@ -56,6 +56,7 @@ class DriftAnalysisDriver {
   final DriftBackend backend;
   final DriftAnalysisCache cache = DriftAnalysisCache();
   final DriftOptions options;
+  final bool _isTesting;
 
   late final TypeMapping typeMapping = TypeMapping(this);
   late final ElementDeserializer deserializer = ElementDeserializer(this);
@@ -64,7 +65,8 @@ class DriftAnalysisDriver {
 
   KnownDriftTypes? _knownTypes;
 
-  DriftAnalysisDriver(this.backend, this.options);
+  DriftAnalysisDriver(this.backend, this.options, {bool isTesting = false})
+      : _isTesting = isTesting;
 
   SqlEngine newSqlEngine() {
     return SqlEngine(
@@ -218,6 +220,8 @@ class DriftAnalysisDriver {
         } catch (e, s) {
           if (e is! CouldNotResolveElementException) {
             backend.log.warning('Could not analyze ${discovered.ownId}', e, s);
+
+            if (_isTesting) rethrow;
           }
         }
       }
