@@ -100,6 +100,21 @@ END;
     });
   });
 
+  test('resolves index', () {
+    final context = engine.analyze('CREATE INDEX foo ON demo (content)');
+    context.expectNoError();
+
+    final tableReference =
+        context.root.allDescendants.whereType<TableReference>().first;
+    final columnReference = context.root.allDescendants
+        .whereType<IndexedColumn>()
+        .first
+        .expression as Reference;
+
+    expect(tableReference.resolved, demoTable);
+    expect(columnReference.resolvedColumn, isA<AvailableColumn>());
+  });
+
   test("DO UPDATE action in upsert can refer to 'exluded'", () {
     final context = engine.analyze('''
 INSERT INTO demo VALUES (?, ?)
@@ -269,5 +284,12 @@ INSERT INTO demo VALUES (?, ?)
         .analyze('WITH x AS (SELECT RoWiD FROM demo) SELECT * FROM x')
         .root as SelectStatement;
     expect(cte.resolvedColumns?.map((e) => e.name), ['RoWiD']);
+  });
+
+  test('reports error for circular reference', () {
+    final query = engine.analyze('WITH x AS (SELECT * FROM x) SELECT 1;');
+    expect(query.errors, [
+      analysisErrorWith(lexeme: 'x', type: AnalysisErrorType.circularReference),
+    ]);
   });
 }
