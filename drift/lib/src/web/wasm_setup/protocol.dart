@@ -62,10 +62,12 @@ final class SharedWorkerStatus extends WasmInitializationMessage {
 
   final bool canSpawnDedicatedWorkers;
   final bool dedicatedWorkersCanUseOpfs;
+  final bool canUseIndexedDb;
 
   SharedWorkerStatus({
     required this.canSpawnDedicatedWorkers,
     required this.dedicatedWorkersCanUseOpfs,
+    required this.canUseIndexedDb,
   });
 
   factory SharedWorkerStatus.fromJsPayload(Object payload) {
@@ -74,6 +76,7 @@ final class SharedWorkerStatus extends WasmInitializationMessage {
     return SharedWorkerStatus(
       canSpawnDedicatedWorkers: data[0],
       dedicatedWorkersCanUseOpfs: data[1],
+      canUseIndexedDb: data[2],
     );
   }
 
@@ -82,22 +85,21 @@ final class SharedWorkerStatus extends WasmInitializationMessage {
     sender.sendTyped(type, [
       canSpawnDedicatedWorkers,
       dedicatedWorkersCanUseOpfs,
+      canUseIndexedDb
     ]);
   }
 
   Iterable<MissingBrowserFeature> get missingFeatures sync* {
     if (!canSpawnDedicatedWorkers) {
       yield MissingBrowserFeature.dedicatedWorkersInSharedWorkers;
-    }
-
-    if (!dedicatedWorkersCanUseOpfs) {
+    } else if (!dedicatedWorkersCanUseOpfs) {
       yield MissingBrowserFeature.fileSystemAccess;
     }
   }
 }
 
 /// A message sent by a worker when an error occurred.
-final class WorkerError extends WasmInitializationMessage {
+final class WorkerError extends WasmInitializationMessage implements Exception {
   static const type = 'Error';
 
   final String error;
@@ -111,6 +113,11 @@ final class WorkerError extends WasmInitializationMessage {
   @override
   void _send(_PostMessage sender) {
     sender.sendTyped(type, error);
+  }
+
+  @override
+  String toString() {
+    return 'Error in worker: $error';
   }
 }
 

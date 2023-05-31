@@ -215,6 +215,8 @@ enum WasmStorageImplementation {
   /// [cross-origin isolation]: https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated
   opfsLocks,
 
+  sharedIndexedDb,
+
   /// Uses the asynchronous IndexedDB API outside of any worker to persist data.
   ///
   /// Unlike [opfsShared] or [opfsLocks], this storage implementation can't

@@ -17,7 +17,7 @@ dependencies:
     version: ^0.0.12
   # used in snippets
   http: ^0.13.5
-  sqlite3: ^1.11.0
+  sqlite3: ^2.0.0-dev
   # Fake path_provider for snippets
   path_provider:
     path: assets/path_provider

@@ -39,7 +39,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-dependency_overrides:
-  sqlite3:
-    path: /home/simon/src/sqlite3.dart/sqlite3

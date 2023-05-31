@@ -79,8 +79,6 @@ write the worker yourself and compile it to JavaScript.
 
 The worker's source could be put into `web/database_worker.dart` and have a structure like the following:
 
-{% assign worker = 'package:drift_docs/snippets/engines/new_worker.dart.excerpt.json' | readString | json_decode %}
-
 {% include "blocks/snippet" snippets = worker %}
 
 Drift will detect whether the worker is running as a shared or as a dedicated worker and call the callback to open the
@@ -118,8 +116,6 @@ when in doubt, `DriftWorkerMode.dedicatedInShared` is a good default.
 ### Using the database
 
 To spawn and connect to such a web worker, drift provides the `connectToDriftWorker` method:
-
-{% assign snippets = 'package:drift_docs/snippets/engines/new_connect.dart.excerpt.json' | readString | json_decode %}
 
 {% include "blocks/snippet" snippets = snippets name = "approach1" %}
 

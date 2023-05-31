@@ -3,21 +3,15 @@
 import 'dart:async';
 import 'dart:html';
 
-import 'package:drift/drift.dart';
-import 'package:drift/remote.dart';
-import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
 
-import '../channel.dart';
 import 'protocol.dart';
 import 'shared.dart';
 
 class DedicatedDriftWorker {
   final DedicatedWorkerGlobalScope self;
-
-  /// Running drift servers by the name of the database they're serving.
-  final Map<String, DriftServer> _servers = {};
+  final DriftServerController _servers = DriftServerController();
 
   DedicatedDriftWorker(this.self);
 
@@ -42,47 +36,12 @@ class DedicatedDriftWorker {
               hasProperty(globalThis, 'SharedArrayBuffer'),
         ).sendToClient(self);
       case ServeDriftDatabase():
-        final server = _servers.putIfAbsent(message.databaseName, () {
-          return DriftServer(LazyDatabase(() async {
-            final sqlite3 =
-                await WasmSqlite3.loadFromUrl(message.sqlite3WasmUri);
-
-            final vfs = await switch (message.storage) {
-              WasmStorageImplementation.opfsShared =>
-                SimpleOpfsFileSystem.loadFromStorage(
-                    '/drift_db/${message.databaseName}'),
-              WasmStorageImplementation.opfsLocks => _loadLockedWasmVfs(),
-              WasmStorageImplementation.unsafeIndexedDb =>
-                IndexedDbFileSystem.open(dbName: message.databaseName),
-              WasmStorageImplementation.inMemory =>
-                Future.value(InMemoryFileSystem()),
-            };
-
-            sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
-
-            return WasmDatabase(sqlite3: sqlite3, path: '/database');
-          }));
-        });
-
-        server.serve(message.port.channel());
+        _servers.serve(message);
       case StartFileSystemServer(sqlite3Options: final options):
         final worker = await VfsWorker.create(options);
         await worker.start();
       default:
         break;
     }
-  }
-
-  Future<WasmVfs> _loadLockedWasmVfs() async {
-    // Create SharedArrayBuffers to synchronize requests
-    final options = WasmVfs.createOptions();
-    final worker = Worker(Uri.base.toString());
-
-    StartFileSystemServer(options).sendToWorker(worker);
-
-    // Wait for the server worker to report that it's ready
-    await worker.onMessage.first;
-
-    return WasmVfs(workerOptions: options);
   }
 }

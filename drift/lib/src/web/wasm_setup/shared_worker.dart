@@ -6,6 +6,7 @@ import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 
 import 'protocol.dart';
+import 'shared.dart';
 
 class SharedDriftWorker {
   final SharedWorkerGlobalScope self;
@@ -14,6 +15,8 @@ class SharedDriftWorker {
   /// "shared-dedicated" worker hosting the database.
   Worker? _dedicatedWorker;
   Future<SharedWorkerStatus>? _featureDetection;
+
+  final DriftServerController _servers = DriftServerController();
 
   SharedDriftWorker(this.self);
 
@@ -30,8 +33,8 @@ class SharedDriftWorker {
     try {
       final result = await detectionFuture;
       result.sendToPort(clientPort);
-    } catch (e) {
-      WorkerError(e.toString()).sendToPort(clientPort);
+    } catch (e, s) {
+      WorkerError(e.toString() + s.toString()).sendToPort(clientPort);
     }
 
     clientPort.onMessage
@@ -43,6 +46,12 @@ class SharedDriftWorker {
       final message = WasmInitializationMessage.read(event);
 
       switch (message) {
+        case ServeDriftDatabase(
+            storage: WasmStorageImplementation.sharedIndexedDb
+          ):
+          // The shared indexed db implementation can be hosted directly in this
+          // worker.
+          _servers.serve(message);
         case ServeDriftDatabase():
           // Forward the request to the worker - this will also transfer the
           // port which means that the shared worker is not involved in the
@@ -60,17 +69,19 @@ class SharedDriftWorker {
   Future<SharedWorkerStatus> _startFeatureDetection() async {
     // First, let's see if this shared worker can spawn dedicated workers.
     final hasWorker = hasProperty(self, 'Worker');
+    final canUseIndexedDb = await checkIndexedDbSupport();
 
     if (!hasWorker) {
       return SharedWorkerStatus(
         canSpawnDedicatedWorkers: false,
         dedicatedWorkersCanUseOpfs: false,
+        canUseIndexedDb: canUseIndexedDb,
       );
     } else {
       final worker = _dedicatedWorker = Worker(Uri.base.toString());
 
       // Ask the worker about the storage implementations it can support.
-      worker.postMessage(DedicatedWorkerCompatibilityCheck());
+      DedicatedWorkerCompatibilityCheck().sendToWorker(worker);
 
       final completer = Completer<SharedWorkerStatus>();
       StreamSubscription? messageSubscription, errorSubscription;
@@ -80,6 +91,7 @@ class SharedDriftWorker {
           completer.complete(SharedWorkerStatus(
             canSpawnDedicatedWorkers: true,
             dedicatedWorkersCanUseOpfs: result,
+            canUseIndexedDb: canUseIndexedDb,
           ));
 
           messageSubscription?.cancel();

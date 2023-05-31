@@ -93,6 +93,25 @@ targets:
       - "lib/snippets/**"
       - "tool/snippets.dart"
 
+  worker:
+    dependencies: ['$default']
+    auto_apply_builders: false
+    sources:
+      - "web/worker.dart"
+    builders:
+      build_web_compilers:entrypoint:
+        options:
+          compiler: dart2js
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
+
+  dart2js_archives:
+    auto_apply_builders: false
+    dependencies: [":$default", ":worker"]
+    builders:
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: true
+
   $default:
     dependencies: [":codegen", ":syntax_highlighting"]
     builders:
@@ -100,6 +119,9 @@ targets:
         release_options:
           environment: "preview"
       build_web_compilers:entrypoint:
+        generate_for:
+          exclude:
+            - "web/worker.dart"
         release_options:
           # Turn of null assertions for release builds, it looks like this
           # makes generated code slightly smaller.
@@ -116,15 +138,18 @@ targets:
         enabled: false
       json_serializable:
         enabled: false
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
     sources:
-      - "lib/**"
-      - "pages/**"
-      - "templates/**"
-      - "web/**"
-      - "$package$"
-      - "pubspec.yaml"
-      - "theme.yaml"
-      - "website.yaml"
+      include:
+        - "lib/**"
+        - "pages/**"
+        - "templates/**"
+        - "web/**"
+        - "$package$"
+        - "pubspec.yaml"
+        - "theme.yaml"
+        - "website.yaml"
 
 # Snippets referencing public API members from this package will get dartdoc links
 # embedded in them.

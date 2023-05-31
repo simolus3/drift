@@ -6,8 +6,19 @@ template: layouts/docs/single
 path: web/
 ---
 
-You can experimentally use drift in Dart webapps. Drift web supports 
+You can experimentally use drift in Dart webapps. Drift web supports
 Flutter Web, AngularDart, plain `dart:html` or any other web framework.
+
+## Compatibility check
+
+To quickly check which storage implementation drift would chose, the drift worker is also embedded
+on this page. You can click on this button to see the results.
+
+<button class="btn btn-light" id="drift-compat-btn">Check compatibility</button>
+
+<pre id="drift-compat-results">
+Compatibility check not started yet
+</pre>
 
 ## Getting started
 
@@ -260,9 +271,6 @@ Instead, grab a sqlite3.wasm file from the [releases](https://github.com/simolus
 `sqlite3` pub package and put this file in your `web/` folder.
 
 With this setup, sqlite3 can be used on the web without an external library:
-
-{% assign snippets = 'package:drift_docs/snippets/engines/web_wasm.dart.excerpt.json' | readString | json_decode %}
-{% include "blocks/snippet" snippets = snippets %}
 
 This snippet also works in a service worker.
 

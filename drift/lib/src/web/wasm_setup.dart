@@ -63,15 +63,19 @@ Future<WasmDatabaseResult> openWasmDatabase({
         StreamQueue(port.onMessage.map(WasmInitializationMessage.read));
 
     // First, the shared worker will tell us which features it supports.
-    final sharedFeatures = await sharedMessages.next as SharedWorkerStatus;
+    final sharedFeatures =
+        await sharedMessages.nextNoError as SharedWorkerStatus;
+    missingFeatures.addAll(sharedFeatures.missingFeatures);
 
     // Can we use the shared OPFS implementation?
     if (sharedFeatures.canSpawnDedicatedWorkers &&
         sharedFeatures.dedicatedWorkersCanUseOpfs) {
       return connect(
           WasmStorageImplementation.opfsShared, (msg) => msg.sendToPort(port));
+    } else if (sharedFeatures.canUseIndexedDb) {
+      return connect(WasmStorageImplementation.sharedIndexedDb,
+          (msg) => msg.sendToPort(port));
     } else {
-      missingFeatures.addAll(sharedFeatures.missingFeatures);
       await sharedMessages.cancel();
       port.close();
     }
@@ -86,7 +90,7 @@ Future<WasmDatabaseResult> openWasmDatabase({
       dedicatedWorker.onMessage.map(WasmInitializationMessage.read));
 
   final status =
-      await workerMessages.next as DedicatedWorkerCompatibilityResult;
+      await workerMessages.nextNoError as DedicatedWorkerCompatibilityResult;
   missingFeatures.addAll(status.missingFeatures);
 
   if (status.supportsNestedWorkers &&
@@ -110,5 +114,17 @@ Future<WasmDatabaseResult> openWasmDatabase({
       WasmStorageImplementation.inMemory,
       missingFeatures,
     );
+  }
+}
+
+extension on StreamQueue<WasmInitializationMessage> {
+  Future<WasmInitializationMessage> get nextNoError {
+    return next.then((value) {
+      if (value is WorkerError) {
+        throw value;
+      }
+
+      return value;
+    });
   }
 }
