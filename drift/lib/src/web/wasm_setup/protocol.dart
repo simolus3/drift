@@ -15,7 +15,7 @@ sealed class WasmInitializationMessage {
 
   factory WasmInitializationMessage.fromJs(Object jsObject) {
     final type = getProperty<String>(jsObject, 'type');
-    final payload = getProperty<String>(jsObject, 'payload');
+    final payload = getProperty<Object>(jsObject, 'payload');
 
     return switch (type) {
       SharedWorkerStatus.type => SharedWorkerStatus.fromJsPayload(payload),
@@ -165,7 +165,7 @@ final class DedicatedWorkerCompatibilityCheck
 
   @override
   void _send(_PostMessage sender) {
-    sender.sendTyped(type, null);
+    sender.sendTyped(type, newObject());
   }
 }
 

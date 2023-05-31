@@ -11,6 +11,7 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:async/async.dart';
+import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/wasm.dart';
 import 'package:js/js.dart';
@@ -59,7 +60,7 @@ Future<WasmDatabaseResult> openWasmDatabase({
     final port = sharedWorker.port!;
 
     final sharedMessages =
-        StreamQueue(port.onMessage.map(WasmInitializationMessage.fromJs));
+        StreamQueue(port.onMessage.map(WasmInitializationMessage.read));
 
     // First, the shared worker will tell us which features it supports.
     final sharedFeatures = await sharedMessages.next as SharedWorkerStatus;
@@ -82,7 +83,7 @@ Future<WasmDatabaseResult> openWasmDatabase({
   DedicatedWorkerCompatibilityCheck().sendToWorker(dedicatedWorker);
 
   final workerMessages = StreamQueue(
-      dedicatedWorker.onMessage.map(WasmInitializationMessage.fromJs));
+      dedicatedWorker.onMessage.map(WasmInitializationMessage.read));
 
   final status =
       await workerMessages.next as DedicatedWorkerCompatibilityResult;
@@ -103,7 +104,9 @@ Future<WasmDatabaseResult> openWasmDatabase({
     sqlite3.registerVirtualFileSystem(InMemoryFileSystem());
 
     return WasmDatabaseResult(
-      WasmDatabase(sqlite3: sqlite3, path: '/app.db'),
+      DatabaseConnection(
+        WasmDatabase(sqlite3: sqlite3, path: '/app.db'),
+      ),
       WasmStorageImplementation.inMemory,
       missingFeatures,
     );

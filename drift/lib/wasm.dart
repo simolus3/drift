@@ -11,12 +11,17 @@
 @experimental
 library drift.wasm;
 
+import 'dart:html';
+
 import 'package:meta/meta.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
+import 'drift.dart';
 import 'src/sqlite3/database.dart';
 import 'src/web/wasm_setup.dart';
+import 'src/web/wasm_setup/dedicated_worker.dart';
+import 'src/web/wasm_setup/shared_worker.dart';
 
 /// Signature of a function that can perform setup work on a [database] before
 /// drift is fully ready.
@@ -75,6 +80,16 @@ class WasmDatabase extends DelegatedDatabase {
       sqlite3WasmUri: sqlite3Uri,
       driftWorkerUri: driftWorkerUri,
     );
+  }
+
+  static void workerMainForOpen() {
+    final self = WorkerGlobalScope.instance;
+
+    if (self is DedicatedWorkerGlobalScope) {
+      DedicatedDriftWorker(self).start();
+    } else if (self is SharedWorkerGlobalScope) {
+      SharedDriftWorker(self).start();
+    }
   }
 }
 
@@ -225,7 +240,7 @@ enum MissingBrowserFeature {
 }
 
 class WasmDatabaseResult {
-  final QueryExecutor resolvedExecutor;
+  final DatabaseConnection resolvedExecutor;
   final WasmStorageImplementation chosenImplementation;
   final Set<MissingBrowserFeature> missingFeatures;
 

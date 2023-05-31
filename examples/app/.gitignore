@@ -30,7 +30,7 @@
 .pub-cache/
 .pub/
 /build/
-web/shared_worker.dart.js
+web/drift_worker.js
 
 # Web related
 
