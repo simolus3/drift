@@ -35,6 +35,7 @@ class DedicatedDriftWorker {
         final supportsIndexedDb = await checkIndexedDbSupport();
 
         DedicatedWorkerCompatibilityResult(
+          supportsNestedWorkers: hasProperty(globalThis, 'Worker'),
           canAccessOpfs: supportsOpfs,
           supportsIndexedDb: supportsIndexedDb,
           supportsSharedArrayBuffers:
@@ -64,7 +65,9 @@ class DedicatedDriftWorker {
         });
 
         server.serve(message.port.channel());
-        break;
+      case StartFileSystemServer(sqlite3Options: final options):
+        final worker = await VfsWorker.create(options);
+        await worker.start();
       default:
         break;
     }

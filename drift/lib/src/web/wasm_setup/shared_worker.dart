@@ -6,7 +6,6 @@ import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 
 import 'protocol.dart';
-import 'shared.dart';
 
 class SharedDriftWorker {
   final SharedWorkerGlobalScope self;

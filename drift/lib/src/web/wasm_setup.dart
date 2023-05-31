@@ -88,8 +88,11 @@ Future<WasmDatabaseResult> openWasmDatabase({
       await workerMessages.next as DedicatedWorkerCompatibilityResult;
   missingFeatures.addAll(status.missingFeatures);
 
-  if (status.canAccessOpfs && status.supportsSharedArrayBuffers) {
-    // todo send second worker to first one
+  if (status.supportsNestedWorkers &&
+      status.canAccessOpfs &&
+      status.supportsSharedArrayBuffers) {
+    return connect(WasmStorageImplementation.opfsLocks,
+        (msg) => msg.sendToWorker(dedicatedWorker));
   } else if (status.supportsIndexedDb) {
     return connect(WasmStorageImplementation.unsafeIndexedDb,
         (msg) => msg.sendToWorker(dedicatedWorker));
@@ -105,6 +108,4 @@ Future<WasmDatabaseResult> openWasmDatabase({
       missingFeatures,
     );
   }
-
-  throw 'todo';
 }

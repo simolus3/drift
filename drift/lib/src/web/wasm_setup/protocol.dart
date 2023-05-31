@@ -173,11 +173,13 @@ final class DedicatedWorkerCompatibilityResult
     extends WasmInitializationMessage {
   static const type = 'DedicatedWorkerCompatibilityResult';
 
+  final bool supportsNestedWorkers;
   final bool canAccessOpfs;
   final bool supportsSharedArrayBuffers;
   final bool supportsIndexedDb;
 
   DedicatedWorkerCompatibilityResult({
+    required this.supportsNestedWorkers,
     required this.canAccessOpfs,
     required this.supportsSharedArrayBuffers,
     required this.supportsIndexedDb,
@@ -185,6 +187,7 @@ final class DedicatedWorkerCompatibilityResult
 
   factory DedicatedWorkerCompatibilityResult.fromJsPayload(Object payload) {
     return DedicatedWorkerCompatibilityResult(
+      supportsNestedWorkers: getProperty(payload, 'supportsNestedWorkers'),
       canAccessOpfs: getProperty(payload, 'canAccessOpfs'),
       supportsSharedArrayBuffers:
           getProperty(payload, 'supportsSharedArrayBuffers'),
@@ -195,6 +198,8 @@ final class DedicatedWorkerCompatibilityResult
   @override
   void _send(_PostMessage sender) {
     final object = newObject<Object>();
+
+    setProperty(object, 'supportsNestedWorkers', supportsNestedWorkers);
     setProperty(object, 'canAccessOpfs', canAccessOpfs);
     setProperty(object, 'supportsIndexedDb', supportsIndexedDb);
     setProperty(
