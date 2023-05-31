@@ -544,4 +544,17 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     visitChildren(e, arg);
   }
+
+  @override
+  void visitWithClause(WithClause e, void arg) {
+    if (_isInTopLevelTriggerStatement) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.synctactic,
+        relevantNode: e.withToken ?? e,
+        message: 'WITH clauses cannot appear in triggers.',
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
 }

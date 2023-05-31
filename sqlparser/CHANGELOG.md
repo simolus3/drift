@@ -1,3 +1,7 @@
+## 0.30.1
+
+- Report syntax error for `WITH` clauses in triggers.
+
 ## 0.30.0
 
 - Add `previous` and `next` fields for tokens
