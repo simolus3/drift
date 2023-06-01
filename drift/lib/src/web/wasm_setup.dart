@@ -67,7 +67,8 @@ Future<WasmDatabaseResult> openWasmDatabase({
         await sharedMessages.nextNoError as SharedWorkerStatus;
     missingFeatures.addAll(sharedFeatures.missingFeatures);
 
-    // Can we use the shared OPFS implementation?
+    // Prefer to use the shared worker to host the database if it supports the
+    // necessary APIs.
     if (sharedFeatures.canSpawnDedicatedWorkers &&
         sharedFeatures.dedicatedWorkersCanUseOpfs) {
       return connect(

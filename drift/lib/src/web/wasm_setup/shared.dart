@@ -1,4 +1,5 @@
 import 'dart:html';
+import 'dart:indexed_db';
 
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
@@ -54,7 +55,27 @@ Future<bool> checkOpfsSupport() async {
   }
 }
 
+/// Checks whether IndexedDB is working in the current browser by opening a test
+/// database.
 Future<bool> checkIndexedDbSupport() async {
+  if (!hasProperty(globalThis, 'indexedDB') ||
+      // FileReader needed to read and write blobs efficiently
+      !hasProperty(globalThis, 'FileReader')) {
+    return false;
+  }
+
+  final idb = getProperty<IdbFactory>(globalThis, 'indexedDB');
+
+  try {
+    const name = 'drift_mock_db';
+
+    final mockDb = await idb.open(name);
+    mockDb.close();
+    idb.deleteDatabase(name);
+  } catch (error) {
+    return false;
+  }
+
   return true;
 }
 
