@@ -15,7 +15,7 @@ dependencies:
   js: ^0.6.3
   meta: ^1.3.0
   stream_channel: ^2.1.0
-  sqlite3: ^1.11.0
+  sqlite3: ^1.11.2
 
 dev_dependencies:
   archive: ^3.3.1

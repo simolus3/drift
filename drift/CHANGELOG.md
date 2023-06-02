@@ -1,5 +1,6 @@
 ## 2.8.1
 
+- Performance improvement: Cache and re-use prepared statements - thanks to [@davidmartos96](https://github.com/davidmartos96/)
 - Fix a deadlock after rolling back a transaction in a remote isolate.
 - Remove unintended log messages when using `connectToDriftWorker`.
 
