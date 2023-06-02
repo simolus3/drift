@@ -110,7 +110,7 @@ Future<WasmDatabaseResult> openWasmDatabase({
 
     return WasmDatabaseResult(
       DatabaseConnection(
-        WasmDatabase(sqlite3: sqlite3, path: '/app.db'),
+        WasmDatabase(sqlite3: sqlite3, path: '/database'),
       ),
       WasmStorageImplementation.inMemory,
       missingFeatures,

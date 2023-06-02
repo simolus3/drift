@@ -79,6 +79,10 @@ Future<bool> checkIndexedDbSupport() async {
   return true;
 }
 
+String pathForOpfs(String databaseName) {
+  return '/drift_db/${databaseName}';
+}
+
 class DriftServerController {
   /// Running drift servers by the name of the database they're serving.
   final Map<String, DriftServer> _servers = {};
@@ -90,8 +94,7 @@ class DriftServerController {
 
         final vfs = await switch (message.storage) {
           WasmStorageImplementation.opfsShared =>
-            SimpleOpfsFileSystem.loadFromStorage(
-                '/drift_db/${message.databaseName}'),
+            SimpleOpfsFileSystem.loadFromStorage(message.databaseName),
           WasmStorageImplementation.opfsLocks => _loadLockedWasmVfs(),
           WasmStorageImplementation.unsafeIndexedDb ||
           WasmStorageImplementation.sharedIndexedDb =>
