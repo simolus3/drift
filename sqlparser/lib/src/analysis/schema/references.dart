@@ -45,7 +45,8 @@ abstract class ReferenceScope {
   /// This is useful to resolve qualified references (e.g. to resolve `foo.bar`
   /// the resolver would call [resolveResultSet]("foo") and then look up the
   /// `bar` column in that result set).
-  ResultSetAvailableInStatement? resolveResultSet(String name) => null;
+  ResultSetAvailableInStatement? resolveResultSetForReference(String name) =>
+      null;
 
   /// Adds an added result set to this scope.
   ///
@@ -126,8 +127,8 @@ mixin _HasParentScope on ReferenceScope {
       _parentScopeForLookups.resultSetAvailableToChildScopes;
 
   @override
-  ResultSetAvailableInStatement? resolveResultSet(String name) =>
-      _parentScopeForLookups.resolveResultSet(name);
+  ResultSetAvailableInStatement? resolveResultSetForReference(String name) =>
+      _parentScopeForLookups.resolveResultSetForReference(name);
 
   @override
   ResultSet? resolveResultSetToAdd(String name) =>
@@ -219,8 +220,8 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   }
 
   @override
-  ResultSetAvailableInStatement? resolveResultSet(String name) {
-    return resultSets[name] ?? parent.resolveResultSet(name);
+  ResultSetAvailableInStatement? resolveResultSetForReference(String name) {
+    return resultSets[name] ?? parent.resolveResultSetForReference(name);
   }
 
   @override
@@ -279,12 +280,19 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   }
 }
 
-/// A special intermediate scope used for subqueries appearing in a `FROM`
-/// clause so that the subquery can't see outer columns and tables being added.
-class SubqueryInFromScope extends ReferenceScope with _HasParentScope {
+/// A special intermediate scope used for nodes that don't see columns and
+/// tables added to the statement they're in.
+///
+/// An example for this are subqueries appearing in a `FROM` clause, which can't
+/// see outer columns and tables of the select statement.
+///
+/// Another example is the [InsertStatement.source] of an [InsertStatement],
+/// which cannot refer to columns of the table being inserted to of course.
+/// Things like `INSERT INTO tbl (col) VALUES (tbl.col)` are not allowed.
+class SourceScope extends ReferenceScope with _HasParentScope {
   final StatementScope enclosingStatement;
 
-  SubqueryInFromScope(this.enclosingStatement);
+  SourceScope(this.enclosingStatement);
 
   @override
   RootScope get rootScope => enclosingStatement.rootScope;
@@ -321,8 +329,9 @@ class MiscStatementSubScope extends ReferenceScope with _HasParentScope {
   RootScope get rootScope => parent.rootScope;
 
   @override
-  ResultSetAvailableInStatement? resolveResultSet(String name) {
-    return additionalResultSets[name] ?? parent.resolveResultSet(name);
+  ResultSetAvailableInStatement? resolveResultSetForReference(String name) {
+    return additionalResultSets[name] ??
+        parent.resolveResultSetForReference(name);
   }
 
   @override
@@ -348,7 +357,7 @@ class SingleTableReferenceScope extends ReferenceScope {
   RootScope get rootScope => parent.rootScope;
 
   @override
-  ResultSetAvailableInStatement? resolveResultSet(String name) {
+  ResultSetAvailableInStatement? resolveResultSetForReference(String name) {
     if (name == addedTableName) {
       return addedTable;
     } else {

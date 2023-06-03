@@ -125,6 +125,12 @@ INSERT INTO demo VALUES (?, ?)
     expect(context.errors, isEmpty);
   });
 
+  test('columns in an insert cannot refer to table', () {
+    engine
+        .analyze('INSERT INTO demo (content) VALUES (demo.content)')
+        .expectError('demo.content');
+  });
+
   test('columns from values statement', () {
     final context = engine.analyze("VALUES ('foo', 3), ('bar', 5)");
 
@@ -140,6 +146,33 @@ INSERT INTO demo VALUES (?, ?)
     final context = engine.analyze('SELECT Column1 FROM (VALUES (3))');
 
     expect(context.errors, isEmpty);
+  });
+
+  test('joining table with and without alias', () {
+    final context = engine.analyze('''
+      SELECT * FROM demo a
+        JOIN demo ON demo.id = a.id
+    ''');
+
+    context.expectNoError();
+  });
+
+  test("from clause can't use its own table aliases", () {
+    final context = engine.analyze('''
+      SELECT * FROM demo a
+        JOIN a b ON b.id = a.id
+    ''');
+
+    expect(context.errors, [
+      analysisErrorWith(
+          lexeme: 'a b', type: AnalysisErrorType.referencedUnknownTable),
+      analysisErrorWith(
+          lexeme: 'b.id', type: AnalysisErrorType.referencedUnknownTable),
+    ]);
+  });
+
+  test('can use columns from deleted table', () {
+    engine.analyze('DELETE FROM demo WHERE demo.id = 2').expectNoError();
   });
 
   test('gracefully handles tuples of different lengths in VALUES', () {
@@ -291,5 +324,19 @@ INSERT INTO demo VALUES (?, ?)
     expect(query.errors, [
       analysisErrorWith(lexeme: 'x', type: AnalysisErrorType.circularReference),
     ]);
+  });
+
+  test('regression test for #2453', () {
+    // https://github.com/simolus3/drift/issues/2453
+    engine
+      ..registerTableFromSql('CREATE TABLE persons (id INTEGER);')
+      ..registerTableFromSql('CREATE TABLE cars (driver INTEGER);');
+
+    final query = engine.analyze('''
+SELECT * FROM cars
+  JOIN persons second_person ON second_person.id = cars.driver
+  JOIN persons ON persons.id = cars.driver;
+''');
+    query.expectNoError();
   });
 }

@@ -26,7 +26,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   @override
   void visitCreateIndexStatement(
       CreateIndexStatement e, ColumnResolverContext arg) {
-    _resolveTableReference(e.on, arg);
+    _handle(e.on, [], arg);
     visitExcept(e, e.on, arg);
   }
 
@@ -185,12 +185,13 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
   ResultSet? _addIfResolved(
       AstNode node, TableReference ref, ColumnResolverContext arg) {
-    final table = _resolveTableReference(ref, arg);
-    if (table != null) {
-      node.statementScope.expansionOfStarColumn = table.resolvedColumns;
-    }
+    final availableColumns = <Column>[];
+    _handle(ref, availableColumns, arg);
 
-    return table;
+    final scope = node.statementScope;
+    scope.expansionOfStarColumn = availableColumns;
+
+    return ref.resultSet;
   }
 
   @override
@@ -198,11 +199,11 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);
 
-    final into = _addIfResolved(e, e.table, arg);
+    _handle(e.table, [], arg);
     for (final child in e.childNodes) {
       if (child != e.withClause) visit(child, arg);
     }
-    _resolveReturningClause(e, into, arg);
+    _resolveReturningClause(e, e.table.resultSet, arg);
   }
 
   @override
@@ -272,14 +273,32 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       }
     }
 
+    final scope = queryable.scope;
+
+    void markAvailableResultSet(
+        Queryable source, ResolvesToResultSet resultSet, String? name) {
+      final added = ResultSetAvailableInStatement(source, resultSet);
+
+      if (source is TableOrSubquery) {
+        source.availableResultSet = added;
+      }
+
+      scope.addResolvedResultSet(name, added);
+    }
+
     queryable.when(
       isTable: (table) {
         final resolved = _resolveTableReference(table, state);
+        markAvailableResultSet(
+            table, resolved ?? table, table.as ?? table.tableName);
+
         if (resolved != null) {
           addColumns(table.resultSet!.resolvedColumns!);
         }
       },
       isSelect: (select) {
+        markAvailableResultSet(select, select.statement, select.as);
+
         // Inside subqueries, references don't take the name of the referenced
         // column.
         final childState = ColumnResolverContext(
@@ -306,6 +325,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         final handler = context
             .engineOptions.addedTableFunctions[function.name.toLowerCase()];
         final resolved = handler?.resolveTableValued(context, function);
+
+        markAvailableResultSet(
+            function, resolved ?? function, function.as ?? function.name);
 
         if (resolved == null) {
           context.reportError(AnalysisError(
@@ -346,7 +368,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         Iterable<Column>? visibleColumnsForStar;
 
         if (resultColumn.tableName != null) {
-          final tableResolver = scope.resolveResultSet(resultColumn.tableName!);
+          final tableResolver =
+              scope.resolveResultSetForReference(resultColumn.tableName!);
           if (tableResolver == null) {
             context.reportError(AnalysisError(
               type: AnalysisErrorType.referencedUnknownTable,
@@ -417,7 +440,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           }
         }
       } else if (resultColumn is NestedStarResultColumn) {
-        final target = scope.resolveResultSet(resultColumn.tableName);
+        final target =
+            scope.resolveResultSetForReference(resultColumn.tableName);
 
         if (target == null) {
           context.reportError(AnalysisError(
@@ -531,18 +555,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     // Try resolving to a top-level table in the schema and to a result set that
     // may have been added to the table
     final resolvedInSchema = scope.resolveResultSetToAdd(r.tableName);
-    final resolvedInQuery = scope.resolveResultSet(r.tableName);
     final createdName = r.as;
 
-    // Prefer using a table that has already been added if this isn't the
-    // definition of the added table reference
-    if (resolvedInQuery != null && resolvedInQuery.origin != r) {
-      final resolved = resolvedInQuery.resultSet.resultSet;
-      if (resolved != null) {
-        return r.resolved =
-            createdName != null ? TableAlias(resolved, createdName) : resolved;
-      }
-    } else if (resolvedInSchema != null) {
+    if (resolvedInSchema != null) {
       return r.resolved = createdName != null
           ? TableAlias(resolvedInSchema, createdName)
           : resolvedInSchema;

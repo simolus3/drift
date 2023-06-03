@@ -19,17 +19,17 @@ void main() {
     final model = JoinModel.of(stmt)!;
     expect(
       model.isNullableTable(
-          stmt.scope.resolveResultSet('a1')!.resultSet.resultSet!),
+          stmt.scope.resolveResultSetForReference('a1')!.resultSet.resultSet!),
       isFalse,
     );
     expect(
       model.isNullableTable(
-          stmt.scope.resolveResultSet('a2')!.resultSet.resultSet!),
+          stmt.scope.resolveResultSetForReference('a2')!.resultSet.resultSet!),
       isTrue,
     );
     expect(
       model.isNullableTable(
-          stmt.scope.resolveResultSet('a3')!.resultSet.resultSet!),
+          stmt.scope.resolveResultSetForReference('a3')!.resultSet.resultSet!),
       isFalse,
     );
   });

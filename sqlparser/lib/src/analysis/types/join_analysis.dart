@@ -89,7 +89,7 @@ class JoinModel {
 }
 
 // The boolean arg indicates whether a visited queryable is needed for the
-// result to have any rows (which, in particular, mean's its non-nullable)
+// result to have any rows (which, in particular, means its non-nullable)
 class _FindNonNullableJoins extends RecursiveVisitor<bool, void> {
   final List<ResultSetAvailableInStatement> nonNullable = [];
 
