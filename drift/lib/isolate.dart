@@ -313,6 +313,11 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
   /// [computeWithDatabase] is beneficial when an an expensive work unit needs
   /// to use the database, or when creating the SQL statements itself is
   /// expensive.
+  /// In particular, note that [computeWithDatabase] does not create a second
+  /// database connection to sqlite3 - the current one is re-used. So if you're
+  /// using a synchronous database connection, using this method is unlikely to
+  /// take significant loads off the main isolate. For that reason, the use of
+  /// `NativeDatabase.createInBackground` is encouraged.
   @experimental
   Future<Ret> computeWithDatabase<Ret>({
     required FutureOr<Ret> Function(DB) computation,
