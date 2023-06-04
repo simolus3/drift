@@ -79,14 +79,22 @@ Future<bool> checkIndexedDbSupport() async {
   return true;
 }
 
+/// Constructs the path used by drift to store a database in the origin-private
+/// section of the agent's file system.
 String pathForOpfs(String databaseName) {
   return 'drift_db/$databaseName';
 }
 
+/// Manages drift servers.
+///
+/// When using a shared worker, multiple clients may want to use different drift
+/// databases. This server keeps track of drift servers by their database names
+/// to allow that.
 class DriftServerController {
   /// Running drift servers by the name of the database they're serving.
   final Map<String, DriftServer> _servers = {};
 
+  /// Serves a drift connection as requested by the [message].
   void serve(ServeDriftDatabase message) {
     final server = _servers.putIfAbsent(message.databaseName, () {
       return DriftServer(LazyDatabase(() async {

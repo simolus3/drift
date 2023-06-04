@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:drift/wasm.dart';
-import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
 import '../wasm_setup.dart';
