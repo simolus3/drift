@@ -11,6 +11,7 @@
 @experimental
 library drift.wasm;
 
+import 'dart:async';
 import 'dart:html';
 
 import 'package:meta/meta.dart';
@@ -75,11 +76,11 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri sqlite3Uri,
     required Uri driftWorkerUri,
   }) {
-    return openWasmDatabase(
+    return WasmDatabaseOpener(
       databaseName: databaseName,
       sqlite3WasmUri: sqlite3Uri,
       driftWorkerUri: driftWorkerUri,
-    );
+    ).open();
   }
 
   static void workerMainForOpen() {
@@ -233,6 +234,7 @@ enum WasmStorageImplementation {
 
 enum MissingBrowserFeature {
   sharedWorkers,
+  dedicatedWorkers,
   dedicatedWorkersInSharedWorkers,
   nestedDedicatedWorkers,
   fileSystemAccess,

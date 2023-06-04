@@ -80,7 +80,7 @@ Future<bool> checkIndexedDbSupport() async {
 }
 
 String pathForOpfs(String databaseName) {
-  return '/drift_db/${databaseName}';
+  return 'drift_db/$databaseName';
 }
 
 class DriftServerController {

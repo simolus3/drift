@@ -15,18 +15,18 @@ sealed class WasmInitializationMessage {
 
   factory WasmInitializationMessage.fromJs(Object jsObject) {
     final type = getProperty<String>(jsObject, 'type');
-    final payload = getProperty<Object>(jsObject, 'payload');
+    final payload = getProperty<Object?>(jsObject, 'payload');
 
     return switch (type) {
-      SharedWorkerStatus.type => SharedWorkerStatus.fromJsPayload(payload),
-      WorkerError.type => WorkerError.fromJsPayload(payload),
-      ServeDriftDatabase.type => ServeDriftDatabase.fromJsPayload(payload),
+      SharedWorkerStatus.type => SharedWorkerStatus.fromJsPayload(payload!),
+      WorkerError.type => WorkerError.fromJsPayload(payload!),
+      ServeDriftDatabase.type => ServeDriftDatabase.fromJsPayload(payload!),
       StartFileSystemServer.type =>
-        StartFileSystemServer.fromJsPayload(payload),
+        StartFileSystemServer.fromJsPayload(payload!),
       DedicatedWorkerCompatibilityCheck.type =>
         DedicatedWorkerCompatibilityCheck.fromJsPayload(payload),
       DedicatedWorkerCompatibilityResult.type =>
-        DedicatedWorkerCompatibilityResult.fromJsPayload(payload),
+        DedicatedWorkerCompatibilityResult.fromJsPayload(payload!),
       _ => throw ArgumentError('Unknown type $type'),
     };
   }
@@ -164,15 +164,17 @@ final class DedicatedWorkerCompatibilityCheck
     extends WasmInitializationMessage {
   static const type = 'DedicatedWorkerCompatibilityCheck';
 
-  DedicatedWorkerCompatibilityCheck();
+  final String? databaseName;
 
-  factory DedicatedWorkerCompatibilityCheck.fromJsPayload(Object payload) {
-    return DedicatedWorkerCompatibilityCheck();
+  DedicatedWorkerCompatibilityCheck(this.databaseName);
+
+  factory DedicatedWorkerCompatibilityCheck.fromJsPayload(Object? payload) {
+    return DedicatedWorkerCompatibilityCheck(payload as String?);
   }
 
   @override
   void _send(_PostMessage sender) {
-    sender.sendTyped(type, newObject());
+    sender.sendTyped(type, databaseName);
   }
 }
 
@@ -185,11 +187,19 @@ final class DedicatedWorkerCompatibilityResult
   final bool supportsSharedArrayBuffers;
   final bool supportsIndexedDb;
 
+  /// Whether an IndexedDb database under the desired name exists already.
+  final bool indexedDbExists;
+
+  /// Whether an OPFS database under the desired name exists already.
+  final bool opfsExists;
+
   DedicatedWorkerCompatibilityResult({
     required this.supportsNestedWorkers,
     required this.canAccessOpfs,
     required this.supportsSharedArrayBuffers,
     required this.supportsIndexedDb,
+    required this.indexedDbExists,
+    required this.opfsExists,
   });
 
   factory DedicatedWorkerCompatibilityResult.fromJsPayload(Object payload) {
@@ -199,6 +209,8 @@ final class DedicatedWorkerCompatibilityResult
       supportsSharedArrayBuffers:
           getProperty(payload, 'supportsSharedArrayBuffers'),
       supportsIndexedDb: getProperty(payload, 'supportsIndexedDb'),
+      indexedDbExists: getProperty(payload, 'indexedDbExists'),
+      opfsExists: getProperty(payload, 'opfsExists'),
     );
   }
 
@@ -211,6 +223,8 @@ final class DedicatedWorkerCompatibilityResult
     setProperty(object, 'supportsIndexedDb', supportsIndexedDb);
     setProperty(
         object, 'supportsSharedArrayBuffers', supportsSharedArrayBuffers);
+    setProperty(object, 'indexedDbExists', indexedDbExists);
+    setProperty(object, 'opfsExists', opfsExists);
 
     sender.sendTyped(type, object);
   }

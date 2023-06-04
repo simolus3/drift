@@ -6,7 +6,7 @@ void main() async {
   final btn = querySelector('#drift-compat-btn')!;
   final results = querySelector('#drift-compat-results')!;
 
-  await for (final click in btn.onClick) {
+  await for (final _ in btn.onClick) {
     btn.attributes['disabled'] = 'true';
     results.innerText = '';
 

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:drift/wasm.dart';
+import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
+import '../wasm_setup.dart';
 import 'protocol.dart';
 import 'shared.dart';
 
@@ -68,7 +70,7 @@ class SharedDriftWorker {
 
   Future<SharedWorkerStatus> _startFeatureDetection() async {
     // First, let's see if this shared worker can spawn dedicated workers.
-    final hasWorker = hasProperty(self, 'Worker');
+    final hasWorker = supportsWorkers;
     final canUseIndexedDb = await checkIndexedDbSupport();
 
     if (!hasWorker) {
@@ -81,7 +83,7 @@ class SharedDriftWorker {
       final worker = _dedicatedWorker = Worker(Uri.base.toString());
 
       // Ask the worker about the storage implementations it can support.
-      DedicatedWorkerCompatibilityCheck().sendToWorker(worker);
+      DedicatedWorkerCompatibilityCheck(null).sendToWorker(worker);
 
       final completer = Completer<SharedWorkerStatus>();
       StreamSubscription? messageSubscription, errorSubscription;
