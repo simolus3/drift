@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:benchmark_harness/benchmark_harness.dart' show ScoreEmitter;
 import 'package:intl/intl.dart';
 
+import 'src/moor/cache_prepared_statements.dart';
 import 'src/moor/key_value_insert.dart';
 import 'src/sqlite/bind_string.dart';
 import 'src/sqlparser/parse_drift_file.dart';
@@ -22,6 +23,9 @@ List<Reportable> allBenchmarks(ScoreEmitter emitter) {
     // sql parser
     ParseDriftFile(emitter),
     TokenizerBenchmark(emitter),
+    // prepared statements cache
+    CachedPreparedStatements(emitter),
+    NonCachedPreparedStatements(emitter),
   ];
 }
 

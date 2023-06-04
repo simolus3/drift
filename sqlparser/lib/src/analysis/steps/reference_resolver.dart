@@ -57,7 +57,7 @@ class ReferenceResolver
     if (e.entityName != null) {
       // first find the referenced table or view,
       // then use the column on that table or view.
-      final entityResolver = scope.resolveResultSet(e.entityName!);
+      final entityResolver = scope.resolveResultSetForReference(e.entityName!);
       final resultSet = entityResolver?.resultSet.resultSet;
 
       if (resultSet == null) {

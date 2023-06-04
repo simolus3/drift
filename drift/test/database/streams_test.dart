@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/api/runtime_api.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
@@ -177,13 +178,13 @@ void main() {
     await first.first; // will listen to stream, then cancel
     await pumpEventQueue(times: 1); // give cancel event time to propagate
 
-    final checkEmits =
-        expectLater(second, emitsInOrder([<Object?>[], <Object?>[]]));
+    final listener = StreamQueue(second);
+    await expectLater(listener, emits(isEmpty));
 
     db.markTablesUpdated({db.users});
-    await pumpEventQueue(times: 1);
+    await expectLater(listener, emits(isEmpty));
 
-    await checkEmits;
+    await listener.cancel();
   });
 
   test('same stream instance can be listened to multiple times', () async {

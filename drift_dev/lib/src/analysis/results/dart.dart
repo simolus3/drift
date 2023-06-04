@@ -222,7 +222,8 @@ class DartTopLevelSymbol {
 
   factory DartTopLevelSymbol.topLevelElement(Element element,
       [String? elementName]) {
-    assert(element.library?.topLevelElements.contains(element) == true);
+    assert(element.library?.topLevelElements.contains(element) == true,
+        '${element.name} is not a top-level element');
 
     // We're using this to recover the right import URI when using
     // `package:build`:
@@ -437,7 +438,7 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   _AddFromAst(this._builder, this._excluding);
 
   void _addTopLevelReference(Element? element, Token name2) {
-    if (element == null) {
+    if (element == null || (element.isSynthetic && element.library == null)) {
       _builder.addText(name2.lexeme);
     } else {
       _builder.addTopLevel(

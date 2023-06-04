@@ -1,3 +1,12 @@
+## 0.30.2
+
+- Fix false-positive "unknown table" errors when the same table is used in a
+  join with and then without an alias.
+
+## 0.30.1
+
+- Report syntax error for `WITH` clauses in triggers.
+
 ## 0.30.0
 
 - Add `previous` and `next` fields for tokens

@@ -1846,9 +1846,9 @@ class AllTodosWithCategoryResult extends CustomResultSet {
 
 mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $UsersTable get users => attachedDatabase.users;
-  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
   $CategoriesTable get categories => attachedDatabase.categories;
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
+  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
   $TodoWithCategoryViewView get todoWithCategoryView =>
       attachedDatabase.todoWithCategoryView;
   Selectable<TodoEntry> todosForUser({required int user}) {

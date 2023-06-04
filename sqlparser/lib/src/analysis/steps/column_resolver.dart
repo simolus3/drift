@@ -11,17 +11,55 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
 
   @override
   void visitSelectStatement(SelectStatement e, ColumnResolverContext arg) {
-    // visit children first so that common table expressions are resolved
-    visitChildren(e, arg);
+    e.withClause?.accept(this, arg);
     _resolveSelect(e, arg);
+
+    // We've handled the from clause in _resolveSelect, but we still need to
+    // visit other children to handle things like subquery expressions.
+    for (final child in e.childNodes) {
+      if (child != e.withClause && child != e.from) {
+        visit(child, arg);
+      }
+    }
+  }
+
+  @override
+  void visitCreateIndexStatement(
+      CreateIndexStatement e, ColumnResolverContext arg) {
+    _handle(e.on, [], arg);
+    visitExcept(e, e.on, arg);
+  }
+
+  @override
+  void visitCreateTriggerStatement(
+      CreateTriggerStatement e, ColumnResolverContext arg) {
+    final table = _resolveTableReference(e.onTable, arg);
+    if (table == null) {
+      // further analysis is not really possible without knowing the table
+      super.visitCreateTriggerStatement(e, arg);
+      return;
+    }
+
+    final scope = e.statementScope;
+
+    // Add columns of the target table for when and update of clauses
+    scope.expansionOfStarColumn = table.resolvedColumns;
+
+    if (e.target.introducesNew) {
+      scope.addAlias(e, table, 'new');
+    }
+    if (e.target.introducesOld) {
+      scope.addAlias(e, table, 'old');
+    }
+
+    visitChildren(e, arg);
   }
 
   @override
   void visitCompoundSelectStatement(
       CompoundSelectStatement e, ColumnResolverContext arg) {
-    // first, visit all children so that the compound parts have their columns
-    // resolved
-    visitChildren(e, arg);
+    e.base.accept(this, arg);
+    visitList(e.additional, arg);
 
     _resolveCompoundSelect(e);
   }
@@ -29,29 +67,75 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   @override
   void visitValuesSelectStatement(
       ValuesSelectStatement e, ColumnResolverContext arg) {
-    // visit children to resolve CTEs
-    visitChildren(e, arg);
-
+    e.withClause?.accept(this, arg);
     _resolveValuesSelect(e);
+
+    // Still visit expressions because they could have subqueries that we need
+    // to handle.
+    visitList(e.values, arg);
   }
 
   @override
   void visitCommonTableExpression(
       CommonTableExpression e, ColumnResolverContext arg) {
-    visitChildren(
-      e,
-      const ColumnResolverContext(referencesUseNameOfReferencedColumn: false),
+    // If we have a compound select statement as a CTE, resolve the initial
+    // query first because the whole CTE will have those columns in the end.
+    // This allows subsequent parts of the compound select to refer to the CTE.
+    final query = e.as;
+    final contextForFirstChild = ColumnResolverContext(
+      referencesUseNameOfReferencedColumn: false,
+      inDefinitionOfCte: [
+        ...arg.inDefinitionOfCte,
+        e.cteTableName.toLowerCase(),
+      ],
     );
 
-    final resolved = e.as.resolvedColumns;
-    final names = e.columnNames;
-    if (names != null && resolved != null && names.length != resolved.length) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.cteColumnCountMismatch,
-        message: 'This CTE declares ${names.length} columns, but its select '
-            'statement actually returns ${resolved.length}.',
-        relevantNode: e,
-      ));
+    void applyColumns(BaseSelectStatement source) {
+      final resolved = source.resolvedColumns!;
+      final names = e.columnNames;
+
+      if (names == null) {
+        e.resolvedColumns = resolved;
+      } else {
+        if (names.length != resolved.length) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.cteColumnCountMismatch,
+            message:
+                'This CTE declares ${names.length} columns, but its select '
+                'statement actually returns ${resolved.length}.',
+            relevantNode: e.tableNameToken ?? e,
+          ));
+        }
+
+        final cteColumns = names
+            .map((name) => CommonTableExpressionColumn(name)..containingSet = e)
+            .toList();
+        for (var i = 0; i < cteColumns.length; i++) {
+          if (i < resolved.length) {
+            final selectColumn = resolved[i];
+            cteColumns[i].innerColumn = selectColumn;
+          }
+        }
+        e.resolvedColumns = cteColumns;
+      }
+    }
+
+    if (query is CompoundSelectStatement) {
+      // The first nested select statement determines the columns of this CTE.
+      query.base.accept(this, contextForFirstChild);
+      applyColumns(query.base);
+
+      // Subsequent queries can refer to the CTE though.
+      final contextForOtherChildren = ColumnResolverContext(
+        referencesUseNameOfReferencedColumn: false,
+        inDefinitionOfCte: arg.inDefinitionOfCte,
+      );
+
+      visitList(query.additional, contextForOtherChildren);
+      _resolveCompoundSelect(query);
+    } else {
+      visitChildren(e, contextForFirstChild);
+      applyColumns(query);
     }
   }
 
@@ -70,10 +154,9 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   }
 
   @override
-  void visitTableReference(TableReference e, void arg) {
-    if (e.resolved == null) {
-      _resolveTableReference(e);
-    }
+  void visitForeignKeyClause(ForeignKeyClause e, ColumnResolverContext arg) {
+    _resolveTableReference(e.foreignTable, arg);
+    visitExcept(e, e.foreignTable, arg);
   }
 
   @override
@@ -100,13 +183,15 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     _resolveReturningClause(e, e.table.resultSet, arg);
   }
 
-  ResultSet? _addIfResolved(AstNode node, TableReference ref) {
-    final table = _resolveTableReference(ref);
-    if (table != null) {
-      node.statementScope.expansionOfStarColumn = table.resolvedColumns;
-    }
+  ResultSet? _addIfResolved(
+      AstNode node, TableReference ref, ColumnResolverContext arg) {
+    final availableColumns = <Column>[];
+    _handle(ref, availableColumns, arg);
 
-    return table;
+    final scope = node.statementScope;
+    scope.expansionOfStarColumn = availableColumns;
+
+    return ref.resultSet;
   }
 
   @override
@@ -114,11 +199,11 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);
 
-    final into = _addIfResolved(e, e.table);
+    _handle(e.table, [], arg);
     for (final child in e.childNodes) {
       if (child != e.withClause) visit(child, arg);
     }
-    _resolveReturningClause(e, into, arg);
+    _resolveReturningClause(e, e.table.resultSet, arg);
   }
 
   @override
@@ -126,7 +211,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);
 
-    final from = _addIfResolved(e, e.from);
+    final from = _addIfResolved(e, e.from, arg);
     for (final child in e.childNodes) {
       if (child != e.withClause) visit(child, arg);
     }
@@ -168,31 +253,10 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     stmt.returnedResultSet = CustomResultSet(columns);
   }
 
-  @override
-  void visitCreateTriggerStatement(
-      CreateTriggerStatement e, ColumnResolverContext arg) {
-    final table = _resolveTableReference(e.onTable);
-    if (table == null) {
-      // further analysis is not really possible without knowing the table
-      super.visitCreateTriggerStatement(e, arg);
-      return;
-    }
-
-    final scope = e.statementScope;
-
-    // Add columns of the target table for when and update of clauses
-    scope.expansionOfStarColumn = table.resolvedColumns;
-
-    if (e.target.introducesNew) {
-      scope.addAlias(e, table, 'new');
-    }
-    if (e.target.introducesOld) {
-      scope.addAlias(e, table, 'old');
-    }
-
-    visitChildren(e, arg);
-  }
-
+  /// Visits a [queryable] appearing in a `FROM` clause under the state [state].
+  ///
+  /// This also adds columns contributed to the resolved source to
+  /// [availableColumns], which is later used to expand `*` parameters.
   void _handle(Queryable queryable, List<Column> availableColumns,
       ColumnResolverContext state) {
     void addColumns(Iterable<Column> columns) {
@@ -209,47 +273,61 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       }
     }
 
+    final scope = queryable.scope;
+
+    void markAvailableResultSet(
+        Queryable source, ResolvesToResultSet resultSet, String? name) {
+      final added = ResultSetAvailableInStatement(source, resultSet);
+
+      if (source is TableOrSubquery) {
+        source.availableResultSet = added;
+      }
+
+      scope.addResolvedResultSet(name, added);
+    }
+
     queryable.when(
       isTable: (table) {
-        final resolved = _resolveTableReference(table);
+        final resolved = _resolveTableReference(table, state);
+        markAvailableResultSet(
+            table, resolved ?? table, table.as ?? table.tableName);
+
         if (resolved != null) {
-          // an error will be logged when resolved is null, so the != null check
-          // is fine and avoids crashes
           addColumns(table.resultSet!.resolvedColumns!);
         }
       },
       isSelect: (select) {
+        markAvailableResultSet(select, select.statement, select.as);
+
         // Inside subqueries, references don't take the name of the referenced
         // column.
-        final childState =
-            ColumnResolverContext(referencesUseNameOfReferencedColumn: false);
-
-        // the inner select statement doesn't have access to columns defined in
-        // the outer statements, which is why we use _resolveSelect instead of
-        // passing availableColumns down to a recursive call of _handle
+        final childState = ColumnResolverContext(
+          referencesUseNameOfReferencedColumn: false,
+          inDefinitionOfCte: state.inDefinitionOfCte,
+        );
         final stmt = select.statement;
-        if (stmt is CompoundSelectStatement) {
-          _resolveCompoundSelect(stmt);
-        } else if (stmt is SelectStatement) {
-          _resolveSelect(stmt, childState);
-        } else if (stmt is ValuesSelectStatement) {
-          _resolveValuesSelect(stmt);
-        } else {
-          throw AssertionError('Unknown type of select statement: $stmt');
-        }
 
+        visit(stmt, childState);
         addColumns(stmt.resolvedColumns!);
       },
-      isJoin: (join) {
-        _handle(join.primary, availableColumns, state);
-        for (final query in join.joins.map((j) => j.query)) {
-          _handle(query, availableColumns, state);
+      isJoin: (joinClause) {
+        _handle(joinClause.primary, availableColumns, state);
+        for (final join in joinClause.joins) {
+          _handle(join.query, availableColumns, state);
+
+          final constraint = join.constraint;
+          if (constraint is OnConstraint) {
+            visit(constraint.expression, state);
+          }
         }
       },
       isTableFunction: (function) {
         final handler = context
             .engineOptions.addedTableFunctions[function.name.toLowerCase()];
         final resolved = handler?.resolveTableValued(context, function);
+
+        markAvailableResultSet(
+            function, resolved ?? function, function.as ?? function.name);
 
         if (resolved == null) {
           context.reportError(AnalysisError(
@@ -290,7 +368,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         Iterable<Column>? visibleColumnsForStar;
 
         if (resultColumn.tableName != null) {
-          final tableResolver = scope.resolveResultSet(resultColumn.tableName!);
+          final tableResolver =
+              scope.resolveResultSetForReference(resultColumn.tableName!);
           if (tableResolver == null) {
             context.reportError(AnalysisError(
               type: AnalysisErrorType.referencedUnknownTable,
@@ -361,7 +440,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
           }
         }
       } else if (resultColumn is NestedStarResultColumn) {
-        final target = scope.resolveResultSet(resultColumn.tableName);
+        final target =
+            scope.resolveResultSetForReference(resultColumn.tableName);
 
         if (target == null) {
           context.reportError(AnalysisError(
@@ -458,24 +538,26 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     return span;
   }
 
-  ResultSet? _resolveTableReference(TableReference r) {
+  ResultSet? _resolveTableReference(
+      TableReference r, ColumnResolverContext state) {
+    // Check for circular references
+    if (state.inDefinitionOfCte.contains(r.tableName.toLowerCase())) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.circularReference,
+        relevantNode: r,
+        message: 'Circular reference to its own CTE',
+      ));
+      return null;
+    }
+
     final scope = r.scope;
 
     // Try resolving to a top-level table in the schema and to a result set that
     // may have been added to the table
     final resolvedInSchema = scope.resolveResultSetToAdd(r.tableName);
-    final resolvedInQuery = scope.resolveResultSet(r.tableName);
     final createdName = r.as;
 
-    // Prefer using a table that has already been added if this isn't the
-    // definition of the added table reference
-    if (resolvedInQuery != null && resolvedInQuery.origin != r) {
-      final resolved = resolvedInQuery.resultSet.resultSet;
-      if (resolved != null) {
-        return r.resolved =
-            createdName != null ? TableAlias(resolved, createdName) : resolved;
-      }
-    } else if (resolvedInSchema != null) {
+    if (resolvedInSchema != null) {
       return r.resolved = createdName != null
           ? TableAlias(resolvedInSchema, createdName)
           : resolvedInSchema;
@@ -528,6 +610,13 @@ class ColumnResolverContext {
   /// column in subqueries or CTEs.
   final bool referencesUseNameOfReferencedColumn;
 
-  const ColumnResolverContext(
-      {this.referencesUseNameOfReferencedColumn = true});
+  /// The common table expressions that are currently being defined.
+  ///
+  /// This is used to detect forbidden circular references.
+  final List<String> inDefinitionOfCte;
+
+  const ColumnResolverContext({
+    this.referencesUseNameOfReferencedColumn = true,
+    this.inDefinitionOfCte = const [],
+  });
 }

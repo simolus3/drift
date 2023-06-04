@@ -69,6 +69,7 @@ enum AnalysisErrorType {
   starColumnWithoutTable,
   compoundColumnCountMismatch,
   cteColumnCountMismatch,
+  circularReference,
   valuesSelectCountMismatch,
   viewColumnNamesMismatch,
   rowValueMisuse,

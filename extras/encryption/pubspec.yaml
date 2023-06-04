@@ -21,7 +21,3 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-
-dependency_overrides:
-  # Flutter's test packages don't support the latest analyzer yet.
-  test_api: ^0.4.16

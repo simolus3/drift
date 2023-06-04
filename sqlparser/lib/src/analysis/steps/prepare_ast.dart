@@ -20,6 +20,12 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void defaultInsertSource(InsertSource e, void arg) {
+    e.scope = SourceScope(e.parent!.statementScope);
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     final scope = e.scope = StatementScope.forStatement(context.rootScope, e);
     final knownTable = context.rootScope.knownTables[e.tableName];
@@ -52,6 +58,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     // query: "SELECT * FROM demo d1,
     //   (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
     // it won't work.
+
     final isInFROM = e.parent is Queryable;
     StatementScope scope;
 
@@ -59,7 +66,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       final surroundingSelect = e.parents
           .firstWhere((node) => node is HasFrom)
           .scope as StatementScope;
-      scope = StatementScope(SubqueryInFromScope(surroundingSelect));
+      scope = StatementScope(SourceScope(surroundingSelect));
     } else {
       scope = StatementScope.forStatement(context.rootScope, e);
     }
@@ -103,37 +110,6 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         }
       }
     }
-
-    visitChildren(e, arg);
-  }
-
-  @override
-  void defaultQueryable(Queryable e, void arg) {
-    final scope = e.scope;
-
-    e.when(
-      isTable: (table) {
-        final added = ResultSetAvailableInStatement(table, table);
-        table.availableResultSet = added;
-
-        scope.addResolvedResultSet(table.as ?? table.tableName, added);
-      },
-      isSelect: (select) {
-        final added = ResultSetAvailableInStatement(select, select.statement);
-        select.availableResultSet = added;
-        scope.addResolvedResultSet(select.as, added);
-      },
-      isJoin: (join) {
-        // the join can contain multiple tables. Luckily for us, all of them are
-        // Queryables, so we can deal with them by visiting the children and
-        // dont't need to do anything here.
-      },
-      isTableFunction: (function) {
-        final added = ResultSetAvailableInStatement(function, function);
-        function.availableResultSet = added;
-        scope.addResolvedResultSet(function.as ?? function.name, added);
-      },
-    );
 
     visitChildren(e, arg);
   }

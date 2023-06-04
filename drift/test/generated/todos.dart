@@ -216,7 +216,7 @@ class TodoDb extends _$TodoDb {
   DriftDatabaseOptions options = const DriftDatabaseOptions();
 
   @override
-  int get schemaVersion => 1;
+  int schemaVersion = 1;
 }
 
 @DriftAccessor(
