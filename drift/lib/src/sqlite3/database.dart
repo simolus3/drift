@@ -104,8 +104,8 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
   @override
   @mustCallSuper
-  Future<void> close() {
-    return Future(_preparedStmtsCache.disposeAll);
+  Future<void> close() async {
+    _preparedStmtsCache.disposeAll();
   }
 
   /// Synchronously prepares and runs [statements] collected from a batch.
