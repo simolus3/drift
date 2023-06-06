@@ -138,15 +138,24 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       database.execute(statement);
     } else {
       final stmt = _getPreparedStatement(statement);
-      stmt.execute(args);
+      try {
+        stmt.execute(args);
+      } finally {
+        _disposeStmtIfNotCached(stmt);
+      }
     }
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _getPreparedStatement(statement);
-    final result = stmt.select(args);
-    return QueryResult.fromRows(result.toList());
+
+    try {
+      final result = stmt.select(args);
+      return QueryResult.fromRows(result.toList());
+    } finally {
+      _disposeStmtIfNotCached(stmt);
+    }
   }
 
   CommonPreparedStatement _getPreparedStatement(String sql) {
@@ -163,6 +172,12 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     } else {
       final stmt = database.prepare(sql, checkNoTail: true);
       return stmt;
+    }
+  }
+
+  void _disposeStmtIfNotCached(CommonPreparedStatement stmt) {
+    if (!cachePreparedStatements) {
+      stmt.dispose();
     }
   }
 }
