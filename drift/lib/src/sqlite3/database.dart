@@ -149,7 +149,6 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _getPreparedStatement(statement);
-
     try {
       final result = stmt.select(args);
       return QueryResult.fromRows(result.toList());
