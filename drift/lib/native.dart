@@ -34,6 +34,9 @@ typedef DatabaseSetup = void Function(Database database);
 /// A drift database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
 class NativeDatabase extends DelegatedDatabase {
+  // when changing this, also update the documentation in `drift_vm_database_factory`.
+  static const _cacheStatementsByDefault = false;
+
   NativeDatabase._(DatabaseDelegate delegate, bool logStatements)
       : super(delegate, isSequential: false, logStatements: logStatements);
 
@@ -43,6 +46,12 @@ class NativeDatabase extends DelegatedDatabase {
   /// {@template drift_vm_database_factory}
   /// If [logStatements] is true (defaults to `false`), generated sql statements
   /// will be printed before executing. This can be useful for debugging.
+  ///
+  /// The [cachePreparedStatements] flag (defaults to `false`) controls whether
+  /// drift will cache prepared statement objects, which improves performance as
+  /// sqlite3 doesn't have to parse statements that are frequently used multiple
+  /// times. This will be the default in the next minor drift version.
+  ///
   /// The optional [setup] function can be used to perform a setup just after
   /// the database is opened, before drift is fully ready. This can be used to
   /// add custom user-defined sql functions or to provide encryption keys in
@@ -52,7 +61,7 @@ class NativeDatabase extends DelegatedDatabase {
     File file, {
     bool logStatements = false,
     DatabaseSetup? setup,
-    bool cachePreparedStatements = true,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
         _NativeDelegate(
@@ -80,10 +89,18 @@ class NativeDatabase extends DelegatedDatabase {
   /// __Important limitations__: If the [setup] parameter is given, it must be
   /// a static or top-level function. The reason is that it is executed on
   /// another isolate.
-  static QueryExecutor createInBackground(File file,
-      {bool logStatements = false, DatabaseSetup? setup}) {
-    return createBackgroundConnection(file,
-        logStatements: logStatements, setup: setup);
+  static QueryExecutor createInBackground(
+    File file, {
+    bool logStatements = false,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
+    DatabaseSetup? setup,
+  }) {
+    return createBackgroundConnection(
+      file,
+      logStatements: logStatements,
+      setup: setup,
+      cachePreparedStatements: cachePreparedStatements,
+    );
   }
 
   /// Like [createInBackground], except that it returns the whole
@@ -91,14 +108,23 @@ class NativeDatabase extends DelegatedDatabase {
   ///
   /// This creates a database writing data to the given [file]. The database
   /// runs in a background isolate and is stopped when closed.
-  static DatabaseConnection createBackgroundConnection(File file,
-      {bool logStatements = false, DatabaseSetup? setup}) {
+  static DatabaseConnection createBackgroundConnection(
+    File file, {
+    bool logStatements = false,
+    DatabaseSetup? setup,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
+  }) {
     return DatabaseConnection.delayed(Future.sync(() async {
       final receiveIsolate = ReceivePort();
       await Isolate.spawn(
         _NativeIsolateStartup.start,
         _NativeIsolateStartup(
-            file.absolute.path, logStatements, setup, receiveIsolate.sendPort),
+          file.absolute.path,
+          logStatements,
+          cachePreparedStatements,
+          setup,
+          receiveIsolate.sendPort,
+        ),
         debugName: 'Drift isolate worker for ${file.path}',
       );
 
@@ -115,7 +141,7 @@ class NativeDatabase extends DelegatedDatabase {
   factory NativeDatabase.memory({
     bool logStatements = false,
     DatabaseSetup? setup,
-    bool cachePreparedStatements = true,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
       _NativeDelegate(null, setup, cachePreparedStatements),
@@ -140,7 +166,7 @@ class NativeDatabase extends DelegatedDatabase {
     bool logStatements = false,
     DatabaseSetup? setup,
     bool closeUnderlyingOnClose = true,
-    bool cachePreparedStatements = true,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
         _NativeDelegate.opened(
@@ -295,17 +321,24 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
 class _NativeIsolateStartup {
   final String path;
   final bool enableLogs;
+  final bool cachePreparedStatements;
   final DatabaseSetup? setup;
   final SendPort sendServer;
 
   _NativeIsolateStartup(
-      this.path, this.enableLogs, this.setup, this.sendServer);
+    this.path,
+    this.enableLogs,
+    this.cachePreparedStatements,
+    this.setup,
+    this.sendServer,
+  );
 
   static void start(_NativeIsolateStartup startup) {
     final isolate = DriftIsolate.inCurrent(() {
       return DatabaseConnection(NativeDatabase(
         File(startup.path),
         logStatements: startup.enableLogs,
+        cachePreparedStatements: startup.cachePreparedStatements,
         setup: startup.setup,
       ));
     });

@@ -1,3 +1,8 @@
+## 2.8.2
+
+- Fix prepared statements leaking when the statement cache is disabled.
+- Disable prepared statement caching by default.
+
 ## 2.8.1
 
 - Performance improvement: Cache and re-use prepared statements - thanks to [@davidmartos96](https://github.com/davidmartos96/)

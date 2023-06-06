@@ -138,15 +138,24 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
       database.execute(statement);
     } else {
       final stmt = _getPreparedStatement(statement);
-      stmt.execute(args);
+      try {
+        stmt.execute(args);
+      } finally {
+        _returnStatement(stmt);
+      }
     }
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _getPreparedStatement(statement);
-    final result = stmt.select(args);
-    return QueryResult.fromRows(result.toList());
+
+    try {
+      final result = stmt.select(args);
+      return QueryResult.fromRows(result.toList());
+    } finally {
+      _returnStatement(stmt);
+    }
   }
 
   CommonPreparedStatement _getPreparedStatement(String sql) {
@@ -163,6 +172,14 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     } else {
       final stmt = database.prepare(sql, checkNoTail: true);
       return stmt;
+    }
+  }
+
+  void _returnStatement(CommonPreparedStatement stmt) {
+    // When using a statement cache, prepared statements are disposed as they
+    // get evicted from the cache, so we don't need to do anything.
+    if (!cachePreparedStatements) {
+      stmt.dispose();
     }
   }
 }
@@ -186,6 +203,12 @@ class _SqliteVersionDelegate extends DynamicVersionDelegate {
 /// multiple time when they're used frequently.
 @internal
 class PreparedStatementsCache {
+  /// The default amount of prepared statements to keep cached.
+  ///
+  /// This value is used in tests to verify that evicted statements get disposed.
+  @visibleForTesting
+  static const defaultSize = 64;
+
   /// The maximum amount of cached statements.
   final int maxSize;
 
@@ -197,7 +220,7 @@ class PreparedStatementsCache {
       LinkedHashMap();
 
   /// Create a cache of prepared statements with a capacity of [maxSize].
-  PreparedStatementsCache({this.maxSize = 64});
+  PreparedStatementsCache({this.maxSize = defaultSize});
 
   /// Attempts to look up the cached [sql] statement, if it exists.
   ///
