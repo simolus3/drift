@@ -110,4 +110,15 @@ void main() {
     verify(ex2.runSelect('SELECT 1', []));
     verifyNever(ex2.runSelect(any, any));
   });
+
+  test('disallows zero as a schema version', () async {
+    var db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = 0;
+    await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
+
+    db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = -1;
+    await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
+
+    db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = 1;
+    await expectLater(db.customSelect('SELECT 1').get(), completes);
+  });
 }

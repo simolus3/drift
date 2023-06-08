@@ -20,6 +20,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
+  ///
+  /// The [schemaVersion] must be positive. Typically, one starts with a value
+  /// of `1` and increments the value for each modification to the schema.
   @override
   int get schemaVersion;
 
@@ -110,6 +113,14 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   @nonVirtual
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
     return _runConnectionZoned(BeforeOpenRunner(this, executor), () async {
+      if (schemaVersion <= 0) {
+        throw StateError(
+          'The schemaVersion of your database must be positive. \n'
+          "A value of zero can't be distinguished from an uninitialized "
+          'database, which causes issues in the migrator',
+        );
+      }
+
       if (details.wasCreated) {
         final migrator = createMigrator();
         await _resolvedMigration.onCreate(migrator);

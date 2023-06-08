@@ -1,3 +1,7 @@
+## 2.8.3-dev
+
+- Forbid `schemaVersion` returning `0`, as this causes issues in the migrator.
+
 ## 2.8.2
 
 - Fix prepared statements leaking when the statement cache is disabled.
