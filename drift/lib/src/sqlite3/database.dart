@@ -215,7 +215,7 @@ class PreparedStatementsCache {
   // The linked map returns entries in the order in which they have been
   // inserted (with the first insertion being reported first).
   // So, we treat it as a LRU cache with `entries.last` being the MRU and
-  // `entries.last` being the LRU element.
+  // `entries.first` being the LRU element.
   final LinkedHashMap<String, CommonPreparedStatement> _cachedStatements =
       LinkedHashMap();
 
