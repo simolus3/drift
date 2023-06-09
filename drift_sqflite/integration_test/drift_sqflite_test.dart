@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:sqflite/sqflite.dart' show DatabaseException, getDatabasesPath;
 
 class SqfliteExecutor extends TestExecutor {
   @override
@@ -99,11 +99,19 @@ Future<void> main() async {
     await database.customStatement('CREATE TABLE y (foo INTEGER PRIMARY KEY '
         'REFERENCES x (foo) DEFERRABLE INITIALLY DEFERRED);');
 
+    // On Android, the failing commit of the transaction rolls it back implicitly,
+    // causing the drift's rollback recovery to fail. This is expected and not
+    // harmful since the end result (transaction not applied) is the same. On
+    // iOS, the transaction stays active despite the failing commit.
+    final expectedException = Platform.isAndroid
+        ? isA<CouldNotRollBackException>()
+        : isA<DatabaseException>();
+
     await expectLater(
       database.transaction(() async {
         await database.customStatement('INSERT INTO y VALUES (2);');
       }),
-      throwsA(isA<CouldNotRollBackException>()),
+      throwsA(expectedException),
     );
   });
 }
