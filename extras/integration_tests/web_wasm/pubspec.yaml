@@ -1,0 +1,23 @@
+name: web_wasm
+description: Integration tests for the drift wasm implementation
+publish_to: none
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  collection: ^1.17.2
+  drift:
+  build_daemon: ^4.0.0
+  webdriver: ^3.0.2
+  shelf: ^1.4.1
+  shelf_proxy: ^1.0.4
+  path: ^1.8.3
+  js: ^0.6.7
+
+dev_dependencies:
+  build_runner: ^2.4.5
+  build_web_compilers: ^4.0.0
+  drift_dev:
+  lints: ^2.0.0
+  test: ^1.24.3

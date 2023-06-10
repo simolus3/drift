@@ -2,9 +2,10 @@
 
 import 'dart:html';
 
-import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
+
+import 'types.dart';
 
 typedef _PostMessage = void Function(Object? msg, [List<Object>? transfer]);
 

@@ -41,8 +41,8 @@ class WasmDatabaseOpener {
   final Uri driftWorkerUri;
   final String databaseName;
 
-  final Set<MissingBrowserFeature> _missingFeatures = {};
-  final List<WasmStorageImplementation> _availableImplementations = [
+  final Set<MissingBrowserFeature> missingFeatures = {};
+  final List<WasmStorageImplementation> availableImplementations = [
     WasmStorageImplementation.inMemory,
   ];
 
@@ -58,29 +58,39 @@ class WasmDatabaseOpener {
     required this.databaseName,
   });
 
-  Future<WasmDatabaseResult> open() async {
+  Future<void> probe() async {
     await _probeShared();
     await _probeDedicated();
+  }
+
+  Future<WasmDatabaseResult> open() async {
+    await probe();
 
     // If we have an existing database in storage, we want to keep using that
     // format to avoid data loss (e.g. after a browser update that enables a
     // otherwise preferred storage implementation). In the future, we might want
     // to consider migrating between storage implementations as well.
     if (_existsInIndexedDb) {
-      _availableImplementations.removeWhere((element) =>
+      availableImplementations.removeWhere((element) =>
           element != WasmStorageImplementation.sharedIndexedDb &&
           element != WasmStorageImplementation.unsafeIndexedDb);
     } else if (_existsInOpfs) {
-      _availableImplementations.removeWhere((element) =>
+      availableImplementations.removeWhere((element) =>
           element != WasmStorageImplementation.opfsShared &&
           element != WasmStorageImplementation.opfsLocks);
     }
 
     // Enum values are ordered by preferrability, so just pick the best option
     // left.
-    _availableImplementations.sortBy<num>((element) => element.index);
-    return await _connect(_availableImplementations.firstOrNull ??
+    availableImplementations.sortBy<num>((element) => element.index);
+    return await _connect(availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory);
+  }
+
+  /// Opens a database with the given [storage] implementation, bypassing the
+  /// feature detection. Must be called after [probe].
+  Future<WasmDatabaseResult> openWith(WasmStorageImplementation storage) async {
+    return await _connect(storage);
   }
 
   void _closeSharedWorker() {
@@ -123,12 +133,12 @@ class WasmDatabaseOpener {
             WasmDatabase(sqlite3: sqlite3, path: '/database'),
           ),
           WasmStorageImplementation.inMemory,
-          _missingFeatures,
+          missingFeatures,
         );
     }
 
     final connection = await connectToRemoteAndInitialize(local);
-    return WasmDatabaseResult(connection, storage, _missingFeatures);
+    return WasmDatabaseResult(connection, storage, missingFeatures);
   }
 
   Future<void> _probeShared() async {
@@ -144,21 +154,19 @@ class WasmDatabaseOpener {
       final sharedFeatures =
           await sharedMessages.nextNoError as SharedWorkerStatus;
       await sharedMessages.cancel();
-      _missingFeatures.addAll(sharedFeatures.missingFeatures);
+      missingFeatures.addAll(sharedFeatures.missingFeatures);
 
       // Prefer to use the shared worker to host the database if it supports the
       // necessary APIs.
       if (sharedFeatures.canSpawnDedicatedWorkers &&
           sharedFeatures.dedicatedWorkersCanUseOpfs) {
-        _availableImplementations.add(WasmStorageImplementation.opfsShared);
-      } else if (sharedFeatures.canUseIndexedDb) {
-        _availableImplementations
-            .add(WasmStorageImplementation.sharedIndexedDb);
-      } else {
-        port.close();
+        availableImplementations.add(WasmStorageImplementation.opfsShared);
+      }
+      if (sharedFeatures.canUseIndexedDb) {
+        availableImplementations.add(WasmStorageImplementation.sharedIndexedDb);
       }
     } else {
-      _missingFeatures.add(MissingBrowserFeature.sharedWorkers);
+      missingFeatures.add(MissingBrowserFeature.sharedWorkers);
     }
   }
 
@@ -173,7 +181,7 @@ class WasmDatabaseOpener {
 
       final status = await workerMessages.nextNoError
           as DedicatedWorkerCompatibilityResult;
-      _missingFeatures.addAll(status.missingFeatures);
+      missingFeatures.addAll(status.missingFeatures);
 
       _existsInOpfs = status.opfsExists;
       _existsInIndexedDb = status.indexedDbExists;
@@ -181,15 +189,14 @@ class WasmDatabaseOpener {
       if (status.supportsNestedWorkers &&
           status.canAccessOpfs &&
           status.supportsSharedArrayBuffers) {
-        _availableImplementations.add(WasmStorageImplementation.opfsLocks);
+        availableImplementations.add(WasmStorageImplementation.opfsLocks);
       }
 
       if (status.supportsIndexedDb) {
-        _availableImplementations
-            .add(WasmStorageImplementation.sharedIndexedDb);
+        availableImplementations.add(WasmStorageImplementation.unsafeIndexedDb);
       }
     } else {
-      _missingFeatures.add(MissingBrowserFeature.dedicatedWorkers);
+      missingFeatures.add(MissingBrowserFeature.dedicatedWorkers);
     }
   }
 }

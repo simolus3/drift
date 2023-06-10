@@ -2,12 +2,12 @@
 import 'dart:async';
 import 'dart:html';
 
-import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 
 import '../wasm_setup.dart';
 import 'protocol.dart';
 import 'shared.dart';
+import 'types.dart';
 
 class SharedDriftWorker {
   final SharedWorkerGlobalScope self;
