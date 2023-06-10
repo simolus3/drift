@@ -1,5 +1,6 @@
-name: web
-description: Run integration tests for Moor on the web
+name: legacy_web
+description: Run integration tests for drift/web
+publish_to: none
 environment:
   sdk: '>=2.12.0 <3.0.0'
 
