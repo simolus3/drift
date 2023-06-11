@@ -22,6 +22,7 @@ import 'package:js/js_util.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/wasm.dart';
 
+import 'broadcast_stream_queries.dart';
 import 'channel.dart';
 import 'wasm_setup/protocol.dart';
 
@@ -93,14 +94,6 @@ class WasmDatabaseOpener {
     return await _connect(storage);
   }
 
-  void _closeSharedWorker() {
-    _sharedWorker?.close();
-  }
-
-  void _closeDedicatedWorker() {
-    _dedicatedWorker?.terminate();
-  }
-
   Future<WasmDatabaseResult> _connect(WasmStorageImplementation storage) async {
     final channel = MessageChannel();
     final local = channel.port1.channel();
@@ -111,17 +104,20 @@ class WasmDatabaseOpener {
       databaseName: databaseName,
     );
 
+    final sharedWorker = _sharedWorker;
+    final dedicatedWorker = _dedicatedWorker;
+
     switch (storage) {
       case WasmStorageImplementation.opfsShared:
       case WasmStorageImplementation.sharedIndexedDb:
-        message.sendToPort(_sharedWorker!);
         // These are handled by the shared worker, so we can close the dedicated
         // worker used for feature detection.
-        _closeDedicatedWorker();
+        dedicatedWorker?.terminate();
+        message.sendToPort(sharedWorker!);
       case WasmStorageImplementation.opfsLocks:
       case WasmStorageImplementation.unsafeIndexedDb:
-        _closeSharedWorker();
-        message.sendToWorker(_dedicatedWorker!);
+        sharedWorker?.close();
+        message.sendToWorker(dedicatedWorker!);
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
@@ -137,7 +133,24 @@ class WasmDatabaseOpener {
         );
     }
 
-    final connection = await connectToRemoteAndInitialize(local);
+    var connection = await connectToRemoteAndInitialize(local);
+    if (storage == WasmStorageImplementation.opfsLocks) {
+      // We want stream queries to update for writes in other tabs. For the
+      // implementations backed by a shared worker, the worker takes care of
+      // that.
+      // We don't enable this for unsafeIndexedDb since that implementation
+      // generally doesn't support a database being accessed concurrently.
+      // With the in-memory implementation, we have a tab-local database and
+      // can't share anything.
+      if (BroadcastStreamQueryStore.supported) {
+        connection = DatabaseConnection(
+          connection.executor,
+          connectionData: connection.connectionData,
+          streamQueries: BroadcastStreamQueryStore(databaseName),
+        );
+      }
+    }
+
     return WasmDatabaseResult(connection, storage, missingFeatures);
   }
 
@@ -172,7 +185,8 @@ class WasmDatabaseOpener {
 
   Future<void> _probeDedicated() async {
     if (supportsWorkers) {
-      final dedicatedWorker = Worker(driftWorkerUri.toString());
+      final dedicatedWorker =
+          _dedicatedWorker = Worker(driftWorkerUri.toString());
       DedicatedWorkerCompatibilityCheck(databaseName)
           .sendToWorker(dedicatedWorker);
 

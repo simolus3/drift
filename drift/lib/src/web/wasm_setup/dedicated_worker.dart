@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
+import 'dart:developer';
 import 'dart:html';
 import 'dart:indexed_db';
 
@@ -51,14 +52,20 @@ class DedicatedDriftWorker {
                 break;
               }
             }
-          } else if (supportsIndexedDb) {
+          }
+          if (supportsIndexedDb) {
             final indexedDb = getProperty<IdbFactory>(globalThis, 'indexedDB');
 
-            await indexedDb.open(dbName, version: 1, onUpgradeNeeded: (event) {
-              event.target.transaction!.abort();
-              indexedDbExists =
-                  event.oldVersion != null && event.oldVersion != 0;
-            });
+            try {
+              await indexedDb.open(dbName, version: 9999,
+                  onUpgradeNeeded: (event) {
+                event.target.transaction!.abort();
+                indexedDbExists =
+                    event.oldVersion != null && event.oldVersion != 0;
+              });
+            } catch (_) {
+              // May throw due to us aborting the upgrade callback.
+            }
           }
         }
 

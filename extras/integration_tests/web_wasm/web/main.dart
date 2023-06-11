@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:js_util';
 
+import 'package:async/async.dart';
+import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 // ignore: invalid_use_of_internal_member
 import 'package:drift/src/web/wasm_setup.dart';
@@ -9,10 +11,14 @@ import 'package:web_wasm/src/database.dart';
 
 const dbName = 'drift_test';
 TestDatabase? openedDatabase;
+StreamQueue<void>? tableUpdates;
 
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
   _addCallbackForWebDriver('open', _open);
+  _addCallbackForWebDriver('insert', _insert);
+  _addCallbackForWebDriver('get_rows', _getRows);
+  _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
 
   document.getElementById('selfcheck')?.onClick.listen((event) async {
     print('starting');
@@ -57,7 +63,7 @@ Future<String> _detectImplementations(String? _) async {
   });
 }
 
-Future<bool> _open(String? implementationName) async {
+Future<void> _open(String? implementationName) async {
   final opener = _opener;
   WasmDatabaseResult result;
 
@@ -74,5 +80,25 @@ Future<bool> _open(String? implementationName) async {
   // Make sure it works!
   await db.customSelect('SELECT 1').get();
 
-  return true;
+  tableUpdates = StreamQueue(db.testTable.all().watch());
+  await tableUpdates!.next;
+}
+
+Future<void> _waitForUpdate(String? _) async {
+  await tableUpdates!.next;
+}
+
+Future<void> _insert(String? _) async {
+  final db = openedDatabase!;
+  await db
+      .into(db.testTable)
+      .insert(TestTableCompanion.insert(content: DateTime.now().toString()));
+}
+
+Future<int> _getRows(String? _) async {
+  final db = openedDatabase!;
+  final count = countAll();
+
+  final query = db.selectOnly(db.testTable)..addColumns([count]);
+  return await query.map((row) => row.read(count)!).getSingle();
 }

@@ -119,4 +119,16 @@ class DriftWebDriver {
     await driver.executeAsync(
         'open(arguments[0], arguments[1])', [implementation?.name]);
   }
+
+  Future<void> insertIntoDatabase() async {
+    await driver.executeAsync('insert("", arguments[0])', []);
+  }
+
+  Future<int> get amountOfRows async {
+    return await driver.executeAsync('get_rows("", arguments[0])', []);
+  }
+
+  Future<void> waitForTableUpdate() async {
+    await driver.executeAsync('wait_for_update("", arguments[0])', []);
+  }
 }

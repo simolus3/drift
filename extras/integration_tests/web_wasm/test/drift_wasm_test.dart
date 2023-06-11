@@ -34,6 +34,9 @@ enum Browser {
       ..removeAll(unsupportedImplementations);
   }
 
+  bool supports(WasmStorageImplementation impl) =>
+      !unsupportedImplementations.contains(impl);
+
   Future<Process> spawnDriver() async {
     return switch (this) {
       firefox => Process.start('geckodriver', []),
@@ -66,7 +69,6 @@ void main() {
         );
 
         driver = DriftWebDriver(server, rawDriver);
-
         await driver.driver.get('http://localhost:8080/');
       });
 
@@ -85,10 +87,56 @@ void main() {
       group('supports', () {
         for (final entry in browser.availableImplementations) {
           test(entry.name, () async {
-            await driver.openDatabase();
+            await driver.openDatabase(entry);
+
+            await driver.insertIntoDatabase();
+            await driver.waitForTableUpdate();
+
+            if (entry != WasmStorageImplementation.unsafeIndexedDb &&
+                entry != WasmStorageImplementation.inMemory) {
+              // Test stream query updates across tabs
+              final newTabLink =
+                  await driver.driver.findElement(By.id('newtab'));
+              await newTabLink.click();
+
+              final windows = await driver.driver.windows.toList();
+              expect(windows, hasLength(2));
+              // Firefox does crazy things when setAsActive is called without
+              // this delay. I don't really understand why, Chrome works...
+              await Future.delayed(const Duration(seconds: 1));
+              await windows.last.setAsActive();
+
+              await driver.openDatabase(entry);
+              await driver.insertIntoDatabase();
+              await windows.last.close();
+
+              await windows.first.setAsActive();
+              await driver.waitForTableUpdate();
+            }
           });
         }
       });
+
+      if (browser.supports(WasmStorageImplementation.unsafeIndexedDb) &&
+          browser.supports(WasmStorageImplementation.opfsLocks)) {
+        test(
+          'keep existing IndexedDB database after OPFS becomes available',
+          () async {
+            // Open an IndexedDB database first
+            await driver
+                .openDatabase(WasmStorageImplementation.unsafeIndexedDb);
+            await driver.insertIntoDatabase();
+            await Future.delayed(const Duration(seconds: 2));
+            await driver.driver.refresh(); // Reset JS state
+
+            // Open the database again, this time without specifying a fixed
+            // implementation. Despite OPFS being available (and preferred),
+            // the existing database should be used.
+            await driver.openDatabase();
+            expect(await driver.amountOfRows, 1);
+          },
+        );
+      }
     });
   }
 }
