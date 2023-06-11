@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:build_daemon/client.dart';
 import 'package:build_daemon/constants.dart';
 import 'package:build_daemon/data/build_status.dart';
 import 'package:build_daemon/data/build_target.dart';
 import 'package:collection/collection.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_proxy/shelf_proxy.dart';
@@ -27,8 +29,13 @@ class TestAssetServer {
   }
 
   static Future<TestAssetServer> start() async {
-    final script = Platform.script.toFilePath(windows: Platform.isWindows);
-    final packageDir = p.dirname(p.dirname(script));
+    final packageConfig =
+        await loadPackageConfigUri((await Isolate.packageConfig)!);
+    final ownPackage = packageConfig['web_wasm']!.root;
+    var packageDir = ownPackage.toFilePath(windows: Platform.isWindows);
+    if (packageDir.endsWith('/')) {
+      packageDir = packageDir.substring(0, packageDir.length - 1);
+    }
 
     final buildRunner = await BuildDaemonClient.connect(
       packageDir,
@@ -92,8 +99,8 @@ class DriftWebDriver {
         Set<WasmStorageImplementation> storages,
         Set<MissingBrowserFeature> missingFeatures,
       })> probeImplementations() async {
-    final rawResult =
-        await driver.executeAsync('detectImplementations(arguments[0])', []);
+    final rawResult = await driver
+        .executeAsync('detectImplementations("", arguments[0])', []);
     final result = json.decode(rawResult);
 
     return (
@@ -106,5 +113,10 @@ class DriftWebDriver {
           MissingBrowserFeature.values.byName(entry)
       },
     );
+  }
+
+  Future<void> openDatabase([WasmStorageImplementation? implementation]) async {
+    await driver.executeAsync(
+        'open(arguments[0], arguments[1])', [implementation?.name]);
   }
 }
