@@ -55,9 +55,9 @@ Future<bool> checkOpfsSupport() async {
   }
 }
 
-/// Checks whether IndexedDB is working in the current browser by opening a test
-/// database.
-Future<bool> checkIndexedDbSupport() async {
+/// Checks whether IndexedDB is working in the current browser and, if so,
+/// whether the database with the given [databaseName] already exists.
+Future<bool> checkIndexedDbSupport(String? databaseName) async {
   if (!hasProperty(globalThis, 'indexedDB') ||
       // FileReader needed to read and write blobs efficiently
       !hasProperty(globalThis, 'FileReader')) {
@@ -79,6 +79,33 @@ Future<bool> checkIndexedDbSupport() async {
   return true;
 }
 
+/// Returns whether an drift-wasm database with the given [databaseName] exists.
+Future<bool> checkIndexedDbExists(String databaseName) async {
+  bool? indexedDbExists;
+
+  try {
+    final idb = getProperty<IdbFactory>(globalThis, 'indexedDB');
+
+    await idb.open(
+      databaseName,
+      // Current schema version used by the [IndexedDbFileSystem]
+      version: 1,
+      onUpgradeNeeded: (event) {
+        // If there's an upgrade, we're going from 0 to 1 - the database doesn't
+        // exist! Abort the transaction so that we don't create it here.
+        event.target.transaction!.abort();
+        indexedDbExists = false;
+      },
+    );
+
+    indexedDbExists ??= true;
+  } catch (_) {
+    // May throw due to us aborting in the upgrade callback.
+  }
+
+  return indexedDbExists ?? false;
+}
+
 /// Constructs the path used by drift to store a database in the origin-private
 /// section of the agent's file system.
 String pathForOpfs(String databaseName) {
@@ -92,18 +119,21 @@ String pathForOpfs(String databaseName) {
 /// to allow that.
 class DriftServerController {
   /// Running drift servers by the name of the database they're serving.
-  final Map<String, DriftServer> _servers = {};
+  final Map<String, RunningWasmServer> servers = {};
 
   /// Serves a drift connection as requested by the [message].
-  void serve(ServeDriftDatabase message) {
-    final server = _servers.putIfAbsent(message.databaseName, () {
-      return DriftServer(LazyDatabase(() async {
+  void serve(
+    ServeDriftDatabase message,
+  ) {
+    final server = servers.putIfAbsent(message.databaseName, () {
+      final server = DriftServer(LazyDatabase(() async {
         final sqlite3 = await WasmSqlite3.loadFromUrl(message.sqlite3WasmUri);
 
         final vfs = await switch (message.storage) {
           WasmStorageImplementation.opfsShared =>
             SimpleOpfsFileSystem.loadFromStorage(message.databaseName),
-          WasmStorageImplementation.opfsLocks => _loadLockedWasmVfs(),
+          WasmStorageImplementation.opfsLocks =>
+            _loadLockedWasmVfs(message.databaseName),
           WasmStorageImplementation.unsafeIndexedDb ||
           WasmStorageImplementation.sharedIndexedDb =>
             IndexedDbFileSystem.open(dbName: message.databaseName),
@@ -111,18 +141,37 @@ class DriftServerController {
             Future.value(InMemoryFileSystem()),
         };
 
+        final initPort = message.initializationPort;
+        if (vfs.xAccess('/database', 0) == 0 && initPort != null) {
+          initPort.postMessage(true);
+
+          final response =
+              await initPort.onMessage.map((e) => e.data as Uint8List?).first;
+
+          if (response != null) {
+            final (file: file, outFlags: _) = vfs.xOpen(
+                Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
+            file.xWrite(response, 0);
+            file.xClose();
+          }
+        }
+
         sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
 
         return WasmDatabase(sqlite3: sqlite3, path: '/database');
       }));
+
+      return RunningWasmServer(message.storage, server);
     });
 
-    server.serve(message.port.channel());
+    server.server.serve(message.port.channel());
   }
 
-  Future<WasmVfs> _loadLockedWasmVfs() async {
+  Future<WasmVfs> _loadLockedWasmVfs(String databaseName) async {
     // Create SharedArrayBuffers to synchronize requests
-    final options = WasmVfs.createOptions();
+    final options = WasmVfs.createOptions(
+      root: 'drift_db/$databaseName/',
+    );
     final worker = Worker(Uri.base.toString());
 
     StartFileSystemServer(options).sendToWorker(worker);
@@ -132,4 +181,41 @@ class DriftServerController {
 
     return WasmVfs(workerOptions: options);
   }
+}
+
+/// Information about a running drift server in a web worker.
+class RunningWasmServer {
+  /// The storage implementation used by the VFS of this server.
+  final WasmStorageImplementation storage;
+
+  /// The server hosting the drift database.
+  final DriftServer server;
+
+  /// Default constructor
+  RunningWasmServer(this.storage, this.server);
+}
+
+/// Reported compatibility results with IndexedDB and OPFS.
+class WasmCompatibility {
+  /// Whether IndexedDB is available.
+  final bool supportsIndexedDb;
+
+  /// Whether OPFS is available.
+  final bool supportsOpfs;
+
+  /// Default constructor
+  WasmCompatibility(this.supportsIndexedDb, this.supportsOpfs);
+}
+
+/// Internal classification of storage implementations.
+extension StorageClassification on WasmStorageImplementation {
+  /// Whether this implementation uses the OPFS filesystem API.
+  bool get isOpfsBased =>
+      this == WasmStorageImplementation.opfsShared ||
+      this == WasmStorageImplementation.opfsLocks;
+
+  /// Whether this implementation uses the IndexedDB API.
+  bool get isIndexedDbBased =>
+      this == WasmStorageImplementation.sharedIndexedDb ||
+      this == WasmStorageImplementation.unsafeIndexedDb;
 }

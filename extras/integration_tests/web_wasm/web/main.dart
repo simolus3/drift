@@ -7,11 +7,14 @@ import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 // ignore: invalid_use_of_internal_member
 import 'package:drift/src/web/wasm_setup.dart';
+import 'package:http/http.dart' as http;
 import 'package:web_wasm/src/database.dart';
 
 const dbName = 'drift_test';
 TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
+
+bool _loadFromInitializer = false;
 
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
@@ -19,6 +22,8 @@ void main() {
   _addCallbackForWebDriver('insert', _insert);
   _addCallbackForWebDriver('get_rows', _getRows);
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
+  _addCallbackForWebDriver('enable_initialization',
+      (arg) async => _loadFromInitializer = bool.parse(arg!));
 
   document.getElementById('selfcheck')?.onClick.listen((event) async {
     print('starting');
@@ -50,6 +55,12 @@ WasmDatabaseOpener get _opener {
     databaseName: dbName,
     sqlite3WasmUri: Uri.parse('/sqlite3.wasm'),
     driftWorkerUri: Uri.parse('/worker.dart.js'),
+    initializeDatabase: _loadFromInitializer
+        ? () async {
+            final response = await http.get(Uri.parse('/initial.db'));
+            return response.bodyBytes;
+          }
+        : null,
   );
 }
 

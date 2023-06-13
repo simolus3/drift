@@ -41,6 +41,7 @@ class WasmDatabaseOpener {
   final Uri sqlite3WasmUri;
   final Uri driftWorkerUri;
   final String databaseName;
+  FutureOr<Uint8List> Function()? initializeDatabase;
 
   final Set<MissingBrowserFeature> missingFeatures = {};
   final List<WasmStorageImplementation> availableImplementations = [
@@ -57,6 +58,7 @@ class WasmDatabaseOpener {
     required this.sqlite3WasmUri,
     required this.driftWorkerUri,
     required this.databaseName,
+    this.initializeDatabase,
   });
 
   Future<void> probe() async {
@@ -96,12 +98,16 @@ class WasmDatabaseOpener {
 
   Future<WasmDatabaseResult> _connect(WasmStorageImplementation storage) async {
     final channel = MessageChannel();
+    final initializer = initializeDatabase;
+    final initChannel = initializer != null ? MessageChannel() : null;
     final local = channel.port1.channel();
+
     final message = ServeDriftDatabase(
       sqlite3WasmUri: sqlite3WasmUri,
       port: channel.port2,
       storage: storage,
       databaseName: databaseName,
+      initializationPort: initChannel?.port2,
     );
 
     final sharedWorker = _sharedWorker;
@@ -122,7 +128,17 @@ class WasmDatabaseOpener {
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
         final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
-        sqlite3.registerVirtualFileSystem(InMemoryFileSystem());
+        final inMemory = InMemoryFileSystem();
+        sqlite3.registerVirtualFileSystem(inMemory);
+
+        if (initializer != null) {
+          final blob = await initializer();
+          final (file: file, outFlags: _) = inMemory.xOpen(
+              Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
+          file
+            ..xWrite(blob, 0)
+            ..xClose();
+        }
 
         return WasmDatabaseResult(
           DatabaseConnection(
@@ -132,6 +148,19 @@ class WasmDatabaseOpener {
           missingFeatures,
         );
     }
+
+    initChannel?.port1.onMessage.listen((event) async {
+      // The worker hosting the database is asking for the initial blob because
+      // the database doesn't exist.
+      Uint8List? result;
+      try {
+        result = await initializer?.call();
+      } finally {
+        initChannel.port1
+          ..postMessage(result, [if (result != null) result.buffer])
+          ..close();
+      }
+    });
 
     var connection = await connectToRemoteAndInitialize(local);
     if (storage == WasmStorageImplementation.opfsLocks) {
@@ -164,10 +193,14 @@ class WasmDatabaseOpener {
           StreamQueue(port.onMessage.map(WasmInitializationMessage.read));
 
       // First, the shared worker will tell us which features it supports.
+      RequestCompatibilityCheck(databaseName).sendToPort(port);
       final sharedFeatures =
-          await sharedMessages.nextNoError as SharedWorkerStatus;
+          await sharedMessages.nextNoError as SharedWorkerCompatibilityResult;
       await sharedMessages.cancel();
       missingFeatures.addAll(sharedFeatures.missingFeatures);
+
+      _existsInOpfs |= sharedFeatures.opfsExists;
+      _existsInIndexedDb |= sharedFeatures.indexedDbExists;
 
       // Prefer to use the shared worker to host the database if it supports the
       // necessary APIs.
@@ -187,8 +220,7 @@ class WasmDatabaseOpener {
     if (supportsWorkers) {
       final dedicatedWorker =
           _dedicatedWorker = Worker(driftWorkerUri.toString());
-      DedicatedWorkerCompatibilityCheck(databaseName)
-          .sendToWorker(dedicatedWorker);
+      RequestCompatibilityCheck(databaseName).sendToWorker(dedicatedWorker);
 
       final workerMessages = StreamQueue(
           dedicatedWorker.onMessage.map(WasmInitializationMessage.read));
@@ -197,8 +229,8 @@ class WasmDatabaseOpener {
           as DedicatedWorkerCompatibilityResult;
       missingFeatures.addAll(status.missingFeatures);
 
-      _existsInOpfs = status.opfsExists;
-      _existsInIndexedDb = status.indexedDbExists;
+      _existsInOpfs |= status.opfsExists;
+      _existsInIndexedDb |= status.indexedDbExists;
 
       if (status.supportsNestedWorkers &&
           status.canAccessOpfs &&

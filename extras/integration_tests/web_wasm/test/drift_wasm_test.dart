@@ -91,6 +91,7 @@ void main() {
 
             await driver.insertIntoDatabase();
             await driver.waitForTableUpdate();
+            expect(await driver.amountOfRows, 1);
 
             if (entry != WasmStorageImplementation.unsafeIndexedDb &&
                 entry != WasmStorageImplementation.inMemory) {
@@ -107,6 +108,7 @@ void main() {
               await windows.last.setAsActive();
 
               await driver.openDatabase(entry);
+              expect(await driver.amountOfRows, 1);
               await driver.insertIntoDatabase();
               await windows.last.close();
 
@@ -114,6 +116,32 @@ void main() {
               await driver.waitForTableUpdate();
             }
           });
+
+          test(
+            'initializing ${entry.name} from blob',
+            () async {
+              await driver.enableInitialization(true);
+              await driver.openDatabase(entry);
+
+              expect(await driver.amountOfRows, 1);
+              await driver.insertIntoDatabase();
+              expect(await driver.amountOfRows, 2);
+
+              if (entry != WasmStorageImplementation.inMemory) {
+                await Future.delayed(const Duration(seconds: 1));
+                await driver.driver.refresh();
+
+                await driver.enableInitialization(true);
+                await driver.openDatabase();
+                expect(await driver.amountOfRows, 2);
+              }
+            },
+            skip: browser == Browser.firefox &&
+                    entry == WasmStorageImplementation.opfsLocks
+                ? "This configuration fails, but the failure can't be "
+                    'reproduced by manually running the steps of this test.'
+                : null,
+          );
         }
       });
 

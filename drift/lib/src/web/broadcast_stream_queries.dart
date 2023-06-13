@@ -22,7 +22,9 @@ class BroadcastStreamQueryStore extends StreamQueryStore {
   }
 
   void _handleMessage(MessageEvent message) {
-    final data = message.data;
+    // Using getProperty to avoid dart2js structured clone that turns the
+    // anonymous object into a map.
+    final data = getProperty<Object?>(message, 'data');
     if (data is! List || data.isEmpty) return;
 
     super.handleTableUpdates({

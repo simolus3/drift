@@ -7,7 +7,7 @@ import 'package:sqlite3/wasm.dart';
 
 import 'types.dart';
 
-typedef _PostMessage = void Function(Object? msg, [List<Object>? transfer]);
+typedef PostMessage = void Function(Object? msg, [List<Object>? transfer]);
 
 /// Sealed superclass for JavaScript objects exchanged between the UI tab and
 /// workers spawned by drift to find a suitable database implementation.
@@ -19,15 +19,16 @@ sealed class WasmInitializationMessage {
     final payload = getProperty<Object?>(jsObject, 'payload');
 
     return switch (type) {
-      SharedWorkerStatus.type => SharedWorkerStatus.fromJsPayload(payload!),
       WorkerError.type => WorkerError.fromJsPayload(payload!),
       ServeDriftDatabase.type => ServeDriftDatabase.fromJsPayload(payload!),
       StartFileSystemServer.type =>
         StartFileSystemServer.fromJsPayload(payload!),
-      DedicatedWorkerCompatibilityCheck.type =>
-        DedicatedWorkerCompatibilityCheck.fromJsPayload(payload),
+      RequestCompatibilityCheck.type =>
+        RequestCompatibilityCheck.fromJsPayload(payload),
       DedicatedWorkerCompatibilityResult.type =>
         DedicatedWorkerCompatibilityResult.fromJsPayload(payload!),
+      SharedWorkerCompatibilityResult.type =>
+        SharedWorkerCompatibilityResult.fromJsPayload(payload!),
       _ => throw ArgumentError('Unknown type $type'),
     };
   }
@@ -39,54 +40,64 @@ sealed class WasmInitializationMessage {
     return WasmInitializationMessage.fromJs(rawData);
   }
 
-  void _send(_PostMessage sender);
+  void sendTo(PostMessage sender);
 
   void sendToWorker(Worker worker) {
-    _send(worker.postMessage);
+    sendTo(worker.postMessage);
   }
 
   void sendToPort(MessagePort port) {
-    _send(port.postMessage);
+    sendTo(port.postMessage);
   }
 
   void sendToClient(DedicatedWorkerGlobalScope worker) {
-    _send(worker.postMessage);
+    sendTo(worker.postMessage);
   }
 }
 
-/// A message sent by the shared worker to a connecting tab. It describes the
-/// features available from the shared worker, which the tab can use to infer
-/// a desired storage implementation, or whether the shared worker should be
-/// used at all.
-final class SharedWorkerStatus extends WasmInitializationMessage {
-  static const type = 'SharedWorkerStatus';
+/// A message used by the shared worker to report compatibility results.
+///
+/// It describes the features available from the shared worker, which the tab
+/// can use to infer a desired storage implementation, or whether the shared
+/// worker should be used at all.
+final class SharedWorkerCompatibilityResult extends WasmInitializationMessage {
+  static const type = 'SharedWorkerCompatibilityResult';
 
   final bool canSpawnDedicatedWorkers;
   final bool dedicatedWorkersCanUseOpfs;
   final bool canUseIndexedDb;
 
-  SharedWorkerStatus({
+  final bool indexedDbExists;
+  final bool opfsExists;
+
+  SharedWorkerCompatibilityResult({
     required this.canSpawnDedicatedWorkers,
     required this.dedicatedWorkersCanUseOpfs,
     required this.canUseIndexedDb,
+    required this.indexedDbExists,
+    required this.opfsExists,
   });
 
-  factory SharedWorkerStatus.fromJsPayload(Object payload) {
+  factory SharedWorkerCompatibilityResult.fromJsPayload(Object payload) {
     final data = (payload as List).cast<bool>();
 
-    return SharedWorkerStatus(
+    return SharedWorkerCompatibilityResult(
       canSpawnDedicatedWorkers: data[0],
       dedicatedWorkersCanUseOpfs: data[1],
       canUseIndexedDb: data[2],
+      indexedDbExists: data[3],
+      opfsExists: data[4],
     );
   }
 
   @override
-  void _send(_PostMessage sender) {
+  void sendTo(PostMessage sender) {
     sender.sendTyped(type, [
       canSpawnDedicatedWorkers,
       dedicatedWorkersCanUseOpfs,
-      canUseIndexedDb
+      canUseIndexedDb,
+      indexedDbExists,
+      opfsExists,
     ]);
   }
 
@@ -112,7 +123,7 @@ final class WorkerError extends WasmInitializationMessage implements Exception {
   }
 
   @override
-  void _send(_PostMessage sender) {
+  void sendTo(PostMessage sender) {
     sender.sendTyped(type, error);
   }
 
@@ -131,12 +142,14 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final MessagePort port;
   final WasmStorageImplementation storage;
   final String databaseName;
+  final MessagePort? initializationPort;
 
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
     required this.port,
     required this.storage,
     required this.databaseName,
+    required this.initializationPort,
   });
 
   factory ServeDriftDatabase.fromJsPayload(Object payload) {
@@ -146,35 +159,40 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       storage: WasmStorageImplementation.values
           .byName(getProperty(payload, 'storage')),
       databaseName: getProperty(payload, 'database'),
+      initializationPort: getProperty(payload, 'initPort'),
     );
   }
 
   @override
-  void _send(_PostMessage sender) {
+  void sendTo(PostMessage sender) {
     final object = newObject<Object>();
     setProperty(object, 'sqlite', sqlite3WasmUri.toString());
     setProperty(object, 'port', port);
     setProperty(object, 'storage', storage.name);
     setProperty(object, 'database', databaseName);
+    final initPort = initializationPort;
+    setProperty(object, 'initPort', initPort);
 
-    sender.sendTyped(type, object, [port]);
+    sender.sendTyped(type, object, [
+      port,
+      if (initPort != null) initPort,
+    ]);
   }
 }
 
-final class DedicatedWorkerCompatibilityCheck
-    extends WasmInitializationMessage {
-  static const type = 'DedicatedWorkerCompatibilityCheck';
+final class RequestCompatibilityCheck extends WasmInitializationMessage {
+  static const type = 'RequestCompatibilityCheck';
 
-  final String? databaseName;
+  final String databaseName;
 
-  DedicatedWorkerCompatibilityCheck(this.databaseName);
+  RequestCompatibilityCheck(this.databaseName);
 
-  factory DedicatedWorkerCompatibilityCheck.fromJsPayload(Object? payload) {
-    return DedicatedWorkerCompatibilityCheck(payload as String?);
+  factory RequestCompatibilityCheck.fromJsPayload(Object? payload) {
+    return RequestCompatibilityCheck(payload as String);
   }
 
   @override
-  void _send(_PostMessage sender) {
+  void sendTo(PostMessage sender) {
     sender.sendTyped(type, databaseName);
   }
 }
@@ -216,7 +234,7 @@ final class DedicatedWorkerCompatibilityResult
   }
 
   @override
-  void _send(_PostMessage sender) {
+  void sendTo(PostMessage sender) {
     final object = newObject<Object>();
 
     setProperty(object, 'supportsNestedWorkers', supportsNestedWorkers);
@@ -255,12 +273,12 @@ final class StartFileSystemServer extends WasmInitializationMessage {
   }
 
   @override
-  void _send(_PostMessage sender) {
+  void sendTo(PostMessage sender) {
     sender.sendTyped(type, sqlite3Options);
   }
 }
 
-extension on _PostMessage {
+extension on PostMessage {
   void sendTyped(String type, Object? payload, [List<Object>? transfer]) {
     final object = newObject<Object>();
     setProperty(object, 'type', type);

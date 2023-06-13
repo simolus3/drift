@@ -16,6 +16,7 @@ dependencies:
   js: ^0.6.7
   package_config: ^2.1.0
   async: ^2.11.0
+  http: ^1.0.0
 
 dev_dependencies:
   build_runner: ^2.4.5

@@ -1,9 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
-import 'dart:developer';
 import 'dart:html';
-import 'dart:indexed_db';
 
 import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
@@ -11,12 +9,16 @@ import 'package:sqlite3/wasm.dart';
 import 'package:sqlite3/src/wasm/js_interop/file_system_access.dart';
 import 'package:path/path.dart' as p;
 
+import '../../utils/synchronized.dart';
 import 'protocol.dart';
 import 'shared.dart';
 
 class DedicatedDriftWorker {
   final DedicatedWorkerGlobalScope self;
+  final Lock _checkCompatibility = Lock();
+
   final DriftServerController _servers = DriftServerController();
+  WasmCompatibility? _compatibility;
 
   DedicatedDriftWorker(this.self);
 
@@ -29,14 +31,33 @@ class DedicatedDriftWorker {
 
   Future<void> _handleMessage(WasmInitializationMessage message) async {
     switch (message) {
-      case DedicatedWorkerCompatibilityCheck(databaseName: var dbName):
-        final supportsOpfs = await checkOpfsSupport();
-        final supportsIndexedDb = await checkIndexedDbSupport();
+      case RequestCompatibilityCheck(databaseName: var dbName):
+        bool supportsOpfs = false, supportsIndexedDb = false;
 
-        var opfsExists = false;
-        var indexedDbExists = false;
+        await _checkCompatibility.synchronized(() async {
+          final knownResults = _compatibility;
 
-        if (dbName != null) {
+          if (knownResults != null) {
+            supportsOpfs = knownResults.supportsOpfs;
+            supportsIndexedDb = knownResults.supportsIndexedDb;
+          } else {
+            supportsOpfs = await checkOpfsSupport();
+            supportsIndexedDb = await checkIndexedDbSupport(null);
+            _compatibility = WasmCompatibility(supportsIndexedDb, supportsOpfs);
+          }
+        });
+
+        final existingServer = _servers.servers[dbName];
+        var indexedDbExists = false, opfsExists = false;
+
+        if (existingServer != null) {
+          indexedDbExists = existingServer.storage.isIndexedDbBased;
+          opfsExists = existingServer.storage.isOpfsBased;
+        } else {
+          if (supportsIndexedDb) {
+            indexedDbExists = await checkIndexedDbExists(dbName);
+          }
+
           if (supportsOpfs) {
             final storage = storageManager!;
             final pathSegments = p.url.split(pathForOpfs(dbName));
@@ -51,20 +72,6 @@ class DedicatedDriftWorker {
                 opfsExists = false;
                 break;
               }
-            }
-          }
-          if (supportsIndexedDb) {
-            final indexedDb = getProperty<IdbFactory>(globalThis, 'indexedDB');
-
-            try {
-              await indexedDb.open(dbName, version: 9999,
-                  onUpgradeNeeded: (event) {
-                event.target.transaction!.abort();
-                indexedDbExists =
-                    event.oldVersion != null && event.oldVersion != 0;
-              });
-            } catch (_) {
-              // May throw due to us aborting the upgrade callback.
             }
           }
         }
@@ -82,6 +89,7 @@ class DedicatedDriftWorker {
         _servers.serve(message);
       case StartFileSystemServer(sqlite3Options: final options):
         final worker = await VfsWorker.create(options);
+        self.postMessage(true);
         await worker.start();
       default:
         break;

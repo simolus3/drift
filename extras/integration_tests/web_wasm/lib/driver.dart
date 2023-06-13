@@ -131,4 +131,11 @@ class DriftWebDriver {
   Future<void> waitForTableUpdate() async {
     await driver.executeAsync('wait_for_update("", arguments[0])', []);
   }
+
+  Future<void> enableInitialization(bool enabled) async {
+    await driver.executeAsync(
+      'enable_initialization(arguments[0], arguments[1])',
+      [enabled.toString()],
+    );
+  }
 }

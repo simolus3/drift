@@ -15,7 +15,6 @@ class SharedDriftWorker {
   /// If we end up using [WasmStorageImplementation.opfsShared], this is the
   /// "shared-dedicated" worker hosting the database.
   Worker? _dedicatedWorker;
-  Future<SharedWorkerStatus>? _featureDetection;
 
   final DriftServerController _servers = DriftServerController();
 
@@ -27,17 +26,7 @@ class SharedDriftWorker {
   }
 
   void _newConnection(MessageEvent event) async {
-    // Start a feature detection run and inform the client about what we can do.
-    final detectionFuture = (_featureDetection ??= _startFeatureDetection());
     final clientPort = event.ports[0];
-
-    try {
-      final result = await detectionFuture;
-      result.sendToPort(clientPort);
-    } catch (e, s) {
-      WorkerError(e.toString() + s.toString()).sendToPort(clientPort);
-    }
-
     clientPort.onMessage
         .listen((event) => _messageFromClient(clientPort, event));
   }
@@ -47,6 +36,9 @@ class SharedDriftWorker {
       final message = WasmInitializationMessage.read(event);
 
       switch (message) {
+        case RequestCompatibilityCheck(databaseName: var dbName):
+          final result = await _startFeatureDetection(dbName);
+          result.sendToPort(client);
         case ServeDriftDatabase(
             storage: WasmStorageImplementation.sharedIndexedDb
           ):
@@ -67,32 +59,41 @@ class SharedDriftWorker {
     }
   }
 
-  Future<SharedWorkerStatus> _startFeatureDetection() async {
+  Future<SharedWorkerCompatibilityResult> _startFeatureDetection(
+      String databaseName) async {
     // First, let's see if this shared worker can spawn dedicated workers.
     final hasWorker = supportsWorkers;
-    final canUseIndexedDb = await checkIndexedDbSupport();
+    final canUseIndexedDb = await checkIndexedDbSupport(databaseName);
 
     if (!hasWorker) {
-      return SharedWorkerStatus(
+      final indexedDbExists =
+          _servers.servers[databaseName]?.storage.isIndexedDbBased ??
+              await checkIndexedDbExists(databaseName);
+
+      return SharedWorkerCompatibilityResult(
         canSpawnDedicatedWorkers: false,
         dedicatedWorkersCanUseOpfs: false,
         canUseIndexedDb: canUseIndexedDb,
+        indexedDbExists: indexedDbExists,
+        opfsExists: false,
       );
     } else {
-      final worker = _dedicatedWorker = Worker(Uri.base.toString());
+      final worker = _dedicatedWorker ??= Worker(Uri.base.toString());
 
       // Ask the worker about the storage implementations it can support.
-      DedicatedWorkerCompatibilityCheck(null).sendToWorker(worker);
+      RequestCompatibilityCheck(databaseName).sendToWorker(worker);
 
-      final completer = Completer<SharedWorkerStatus>();
+      final completer = Completer<SharedWorkerCompatibilityResult>();
       StreamSubscription? messageSubscription, errorSubscription;
 
-      void result(bool result) {
+      void result(bool opfsAvailable, bool opfsExists, bool indexedDbExists) {
         if (!completer.isCompleted) {
-          completer.complete(SharedWorkerStatus(
+          completer.complete(SharedWorkerCompatibilityResult(
             canSpawnDedicatedWorkers: true,
-            dedicatedWorkersCanUseOpfs: result,
+            dedicatedWorkersCanUseOpfs: opfsAvailable,
             canUseIndexedDb: canUseIndexedDb,
+            indexedDbExists: indexedDbExists,
+            opfsExists: opfsExists,
           ));
 
           messageSubscription?.cancel();
@@ -103,12 +104,17 @@ class SharedDriftWorker {
       messageSubscription = worker.onMessage.listen((event) {
         final data =
             WasmInitializationMessage.fromJs(getProperty(event, 'data'));
+        final compatibilityResult = data as DedicatedWorkerCompatibilityResult;
 
-        result((data as DedicatedWorkerCompatibilityResult).canAccessOpfs);
+        result(
+          compatibilityResult.canAccessOpfs,
+          compatibilityResult.opfsExists,
+          compatibilityResult.indexedDbExists,
+        );
       });
 
       errorSubscription = worker.onError.listen((event) {
-        result(false);
+        result(false, false, false);
         worker.terminate();
         _dedicatedWorker = null;
       });
