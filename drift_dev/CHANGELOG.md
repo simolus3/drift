@@ -1,3 +1,7 @@
+## 2.9.0
+
+- Add `fatal_warnings` builder option to fail the build when drift reports warnings.
+
 ## 2.8.3
 
 - Allow Dart-defined tables to reference imported tables through SQL
