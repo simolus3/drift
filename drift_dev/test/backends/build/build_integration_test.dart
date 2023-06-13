@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
+import 'package:drift_dev/src/backends/build/exception.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
@@ -379,5 +380,53 @@ q: SELECT 1;
         contains(r'Selectable<int> q()'),
       )
     }, result.dartOutputs, result);
+  });
+
+  group('reports issues', () {
+    for (final fatalWarnings in [false, true]) {
+      group('fatalWarnings: $fatalWarnings', () {
+        final options = BuilderOptions(
+          {'fatal_warnings': fatalWarnings},
+          isRoot: true,
+        );
+
+        Future<void> runTest(String source, expectedMessage) async {
+          final build = emulateDriftBuild(
+            inputs: {'a|lib/a.drift': source},
+            logger: loggerThat(emits(isA<LogRecord>()
+                .having((e) => e.message, 'message', expectedMessage))),
+            modularBuild: true,
+            options: options,
+          );
+
+          if (fatalWarnings) {
+            await expectLater(build, throwsA(isA<FatalWarningException>()));
+          } else {
+            await build;
+          }
+        }
+
+        test('syntax', () async {
+          await runTest(
+              'foo: SELECT;', contains('Could not parse this expression'));
+        });
+
+        test('semantic in analysis', () async {
+          await runTest('''
+            CREATE TABLE foo (
+              id INTEGER NOT NULL PRIMARY KEY,
+              unknown INTEGER NOT NULL REFERENCES another ("table")
+            );
+          ''', contains('could not be found in any import.'));
+        });
+
+        test('file analysis', () async {
+          await runTest(
+              r'a($x = 2): SELECT 1, 2, 3 ORDER BY $x;',
+              contains('This placeholder has a default value, which is only '
+                  'supported for expressions.'));
+        });
+      });
+    }
   });
 }

@@ -76,6 +76,8 @@ At the moment, drift supports these options:
   The possible values are  `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 * `write_to_columns_mixins`: Whether the `toColumns` method should be written as a mixin instead of being added directly to the data class.
    This is useful when using [existing row classes]({{ 'custom_row_classes.md' | pageUrl }}), as the mixin is generated for those as well.
+* `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
+  unresolved references in your Dart tables) will cause the build to fail.
 
 ## Assumed SQL environment
 

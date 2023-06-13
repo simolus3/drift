@@ -1,6 +1,5 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:drift_dev/src/writer/tables/table_writer.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../../analysis/custom_result_class.dart';
@@ -14,9 +13,11 @@ import '../../writer/drift_accessor_writer.dart';
 import '../../writer/function_stubs_writer.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/modules.dart';
+import '../../writer/tables/table_writer.dart';
 import '../../writer/tables/view_writer.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
+import 'exception.dart';
 
 class _BuilderFlags {
   bool didWarnAboutDeprecatedOptions = false;
@@ -125,6 +126,7 @@ class _DriftBuildRun {
   late Writer writer;
 
   Set<Uri> analyzedUris = {};
+  bool _didPrintWarning = false;
 
   _DriftBuildRun(this.options, this.mode, this.buildStep)
       : driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
@@ -152,6 +154,10 @@ class _DriftBuildRun {
       await _generateModular(fileResult);
     }
     await _emitCode();
+
+    if (_didPrintWarning && options.fatalWarnings) {
+      throw const FatalWarningException();
+    }
   }
 
   Future<FileState> _analyze(Uri uri, {bool isEntrypoint = false}) async {
@@ -162,8 +168,11 @@ class _DriftBuildRun {
     final printErrors =
         isEntrypoint || (mode.isMonolithic && analyzedUris.add(result.ownUri));
     if (printErrors) {
+      // Only printing errors from the fileAnalysis step here. The analyzer
+      // builder will print errors from earlier analysis steps.
       for (final error in result.fileAnalysis?.analysisErrors ?? const []) {
         log.warning(error);
+        _didPrintWarning = true;
       }
     }
 

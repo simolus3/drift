@@ -9,6 +9,7 @@ import '../../analysis/options.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
+import 'exception.dart';
 
 class DriftAnalyzer extends Builder {
   final DriftOptions options;
@@ -34,15 +35,18 @@ class DriftAnalyzer extends Builder {
     final driver = DriftAnalysisDriver(backend, options);
 
     final results = await driver.resolveElements(buildStep.inputId.uri);
+    var hadWarnings = false;
 
     for (final parseError in results.errorsDuringDiscovery) {
       log.warning(parseError.toString());
+      hadWarnings = true;
     }
 
     if (results.analysis.isNotEmpty) {
       for (final result in results.analysis.values) {
         for (final error in result.errorsDuringAnalysis) {
           log.warning(error.toString());
+          hadWarnings = true;
         }
       }
 
@@ -85,6 +89,10 @@ class DriftAnalyzer extends Builder {
 
         await buildStep.writeAsString(typesOutput, writer.writeGenerated());
       }
+    }
+
+    if (hadWarnings && options.fatalWarnings) {
+      throw const FatalWarningException();
     }
   }
 

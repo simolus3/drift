@@ -18,6 +18,7 @@ targets:
           write_from_json_string_constructor: true
           raw_result_set_data: true
           named_parameters: true
+          fatal_warnings: true
           sql:
             dialect: sqlite
             options:
@@ -33,6 +34,7 @@ targets:
     builders:
       drift_dev:
         options:
+          fatal_warnings: true
           store_date_time_values_as_text: true
           # Dart doesn't support YAML merge tags yet, https://github.com/dart-lang/yaml/issues/121
           override_hash_and_equals_in_result_sets: true
