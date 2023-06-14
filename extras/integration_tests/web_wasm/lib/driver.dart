@@ -11,6 +11,7 @@ import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_proxy/shelf_proxy.dart';
+import 'package:web_wasm/initialization_mode.dart';
 import 'package:webdriver/async_io.dart';
 // ignore: implementation_imports
 import 'package:drift/src/web/wasm_setup/types.dart';
@@ -132,10 +133,14 @@ class DriftWebDriver {
     await driver.executeAsync('wait_for_update("", arguments[0])', []);
   }
 
-  Future<void> enableInitialization(bool enabled) async {
-    await driver.executeAsync(
+  Future<void> enableInitialization(InitializationMode mode) async {
+    final result = await driver.executeAsync(
       'enable_initialization(arguments[0], arguments[1])',
-      [enabled.toString()],
+      [mode.name],
     );
+
+    if (result != true) {
+      throw 'Could not set initialization mode';
+    }
   }
 }

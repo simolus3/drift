@@ -8,13 +8,15 @@ import 'package:drift/wasm.dart';
 // ignore: invalid_use_of_internal_member
 import 'package:drift/src/web/wasm_setup.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_wasm/initialization_mode.dart';
 import 'package:web_wasm/src/database.dart';
+import 'package:sqlite3/wasm.dart';
 
 const dbName = 'drift_test';
 TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
 
-bool _loadFromInitializer = false;
+InitializationMode initializationMode = InitializationMode.none;
 
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
@@ -22,8 +24,10 @@ void main() {
   _addCallbackForWebDriver('insert', _insert);
   _addCallbackForWebDriver('get_rows', _getRows);
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
-  _addCallbackForWebDriver('enable_initialization',
-      (arg) async => _loadFromInitializer = bool.parse(arg!));
+  _addCallbackForWebDriver('enable_initialization', (arg) async {
+    initializationMode = InitializationMode.values.byName(arg!);
+    return true;
+  });
 
   document.getElementById('selfcheck')?.onClick.listen((event) async {
     print('starting');
@@ -51,16 +55,50 @@ void _addCallbackForWebDriver(String name, Future Function(String?) impl) {
 }
 
 WasmDatabaseOpener get _opener {
+  Future<Uint8List> Function()? initializeDatabase;
+
+  switch (initializationMode) {
+    case InitializationMode.loadAsset:
+      initializeDatabase = () async {
+        final response = await http.get(Uri.parse('/initial.db'));
+        return response.bodyBytes;
+      };
+    case InitializationMode.migrateCustomWasmDatabase:
+      initializeDatabase = () async {
+        // Let's first open a custom WasmDatabase, the way it would have been
+        // done before WasmDatabase.open.
+        final sqlite3 =
+            await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
+        final fs = await IndexedDbFileSystem.open(dbName: dbName);
+        sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
+
+        final wasmDb = WasmDatabase(sqlite3: sqlite3, path: '/app.db');
+        final db = TestDatabase(wasmDb);
+        await db
+            .into(db.testTable)
+            .insert(TestTableCompanion.insert(content: 'from old database'));
+        await db.close();
+
+        final (file: file, outFlags: _) =
+            fs.xOpen(Sqlite3Filename('/app.db'), 0);
+        final blob = Uint8List(file.xFileSize());
+        file.xRead(blob, 0);
+        file.xClose();
+        fs.xDelete('/app.db', 0);
+        await fs.close();
+
+        return blob;
+      };
+      break;
+    case InitializationMode.none:
+      break;
+  }
+
   return WasmDatabaseOpener(
     databaseName: dbName,
     sqlite3WasmUri: Uri.parse('/sqlite3.wasm'),
     driftWorkerUri: Uri.parse('/worker.dart.js'),
-    initializeDatabase: _loadFromInitializer
-        ? () async {
-            final response = await http.get(Uri.parse('/initial.db'));
-            return response.bodyBytes;
-          }
-        : null,
+    initializeDatabase: initializeDatabase,
   );
 }
 

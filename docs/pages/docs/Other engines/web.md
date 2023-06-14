@@ -1,18 +1,24 @@
 ---
 data:
   title: Web
-  description: Experimental support for drift and webapps.
+  description: Drift support in Flutter and Dart web apps.
 template: layouts/docs/single
 path: web/
 ---
 
-You can experimentally use drift in Dart webapps. Drift web supports
-Flutter Web, AngularDart, plain `dart:html` or any other web framework.
+{% assign snippets = "package:drift_docs/snippets/engines/web.dart.excerpt.json" | readString | json_decode %}
 
-## Compatibility check
 
-To quickly check which storage implementation drift would chose, the drift worker is also embedded
-on this page. You can click on this button to see the results.
+Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
+you can use drift databases when compiling your apps to the web.
+Just like the core drift APIs, web support is platform-agnostic:
+Drift web supports Flutter Web, AngularDart, plain `dart:html` or any other Dart web framework.
+
+{% block "blocks/alert" title="Compatibility check"  %}
+This page includes a tiny drift database compiled to JavaScript.
+You can use it to verify drift works in the Browsers you want to target.
+Clicking on the button will start a feature detection run, so you can see which file system
+implementation drift would pick on this browser and which web APIs are missing.
 
 <button class="btn btn-light" id="drift-compat-btn">Check compatibility</button>
 
@@ -20,49 +26,75 @@ on this page. You can click on this button to see the results.
 Compatibility check not started yet
 </pre>
 
+More information about these results is available [below](#storages).
+{% endblock %}
+
 ## Getting started
+
+### Prerequisites
+
+On all platforms, drift requires access to [sqlite3](https://sqlite.org/index.html), the popular
+datase system written as a C library.
+On native platforms, drift can use the sqlite3 library from your operating system. Flutter apps
+typically include a more recent version of that library with the `sqlite3_flutter_libs` package too.
+
+Web browsers don't have builtin access to the sqlite3 library, so it needs to be included with your app.
+The `sqlite3` Dart package (used by drift internally) contains a toolchain to compile sqlite3 to WebAssembly
+so that it can be used in browsers. You can grab a `sqlite3.wasm` file from [its releases page](https://github.com/simolus3/sqlite3.dart/releases).
+This file needs to be put into the `web/` directory of your app.
+
+Drift on the web also requires you to include a portion of drift as a web worker. This worker will be used to
+host your database in a background thread, improving performance of your website. In some [storage implementations](#storages),
+the worker is also responsible for sharing your database between different tabs in real-time.
+You can compile this worker yourself, [grab one from drift releases](https://github.com/simolus3/drift/releases) or take
+the [latest one powering this website]({{ '/worker.dart.js' | absUrl }}).
+
+In the end, your `web/` directory may look like this:
+
+```
+web/
+├── favicon.png
+├── index.html
+├── manifest.json
+├── drift_worker.dart.js
+└── sqlite3.wasm
+```
+
+#### Additional headers
+
+On browsers that support it, drift uses the origin-private part of the [FileSystem Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to store databases efficiently.
+As parts of that API are asynchronous, and since sqlite3 expectes a synchronous file system, we need to
+use two workers with shared memory and `Atomics.wait`/`notify`.
+Just like the official sqlite3 port to the web, __this requires your website to be served with two special headers__:
+
+- `Cross-Origin-Opener-Policy`: Needs to be set to `same-origin`.
+- `Cross-Origin-Embedder-Policy`: Needs to be set to `require-corp` or `credentialless`.
+
+For more details, see the [security requirements](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) explained by MDN, and the [documentation on web.dev](https://web.dev/coop-coep/).
+Unfortunately, there's no way (that I'm aware of) to add these headers onto `flutter run`'s web server.
+Drift will fall back to a less reliable implementation in that case (see [storages](#storages)),
+but we recommend researching and enabling these headers in production if possible.
+
+### Setup in Dart
 
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
 You can follow the [getting started guide]({{ '../Getting started/index.md' | pageUrl }}) for general
 information on using drift.
 
-Instead of using a `NativeDatabase` in your database classes, you can use a `WebDatabase` executor:
+Instead of using a `NativeDatabase` in your database classes, you can use `WasmDatabase` optimized for
+the web:
 
-```dart
-import 'package:drift/web.dart';
+{% include "blocks/snippet" snippets = snippets name = "connect" %}
 
-@DriftDatabase(tables: [Todos, Categories])
-class MyDatabase extends _$MyDatabase {
-  // here, "app" is the name of the database - you can choose any name you want
-  MyDatabase() : super(WebDatabase('app'));
-```
+When you call `WasmDatabase.open`, drift will automatically find a suitable persistence implementation
+supported by the current browser.
 
-Drift web is built on top of the [sql.js](https://github.com/sql-js/sql.js/) library, which you need to include:
-```html
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <script defer src="sql-wasm.js"></script>
-    <script defer src="main.dart.js" type="application/javascript"></script>
-</head>
-<body></body>
-</html>
-```
-You can grab the latest version of `sql-wasm.js` and `sql-wasm.wasm` [here](https://github.com/sql-js/sql.js/releases)
-and copy them into your `web` folder.
-
-A full example that works on the web (and all other platforms) is available
+A full example that works on the web (and all other platforms supported by drift) is available
 [here](https://github.com/simolus3/drift/tree/develop/examples/app).
-
-## Gotchas
-The database implementation uses WebAssembly, which needs to be supported by your browser.
-Also, make sure that your webserver serves the `.wasm` file as `application/wasm`, browsers
-won't accept it otherwise.
 
 ## Sharing code between native apps and web
 
-If you want to share your database code between native applications and webapps, just import the
+If you want to share your database code between native applications and web apps, just import the
 basic `drift/drift.dart` library into your database file.
 And instead of passing a `NativeDatabase` or `WebDatabase` to the `super` constructor, make the
 `QueryExecutor` customizable:
@@ -100,7 +132,7 @@ On the web, you can use
 import 'package:drift/web.dart';
 
 SharedDatabase constructDb() {
-  return SharedDatabase(WebDatabase('db'));
+  return SharedDatabase(connectOnWeb());
 }
 ```
 
@@ -124,10 +156,81 @@ export 'unsupported.dart'
 
 A ready example of this construct can also be found [here](https://github.com/simolus3/drift/blob/develop/examples/app/lib/database/connection/connection.dart).
 
-## Debugging
+## Supported storage implementations {#storages}
+
+When opening a database, drift determines the state of a number of web APIs in the current browser.
+It then picks a suitable database storage based on what the current browser supports.
+The following implementation strategies are supported by drift (listed in order of descending preference).
+You can view the chosen strategy via the `WasmDatabaseResult.chosenImplementation` returned by
+`WasmDatabase.open`.
+
+1. `opfsShared`: Uses the origin-private filesystem access API in a shared web worker.
+   As this API is only available in dedicated web workers, this requires shared workers to be able to
+   spawn dedicated workers. While allowed by the web standards, this is only implemented by Firefox.
+2. `opfsLocks`: Uses the origin-private filesystem access API, but without shared workers.
+   This requires the [COOP and COEP headers](#additional-headers).
+3. `sharedIndexedDb`: Uses IndexedDB to store chunks of data, the database is hosted in a shared web worker.
+4. `unsafeIndexedDb`: This also uses the IndexedDB database, but without a shared worker or another
+   means of synchronization between tabs. In this mode, __it is not safe for multiple tabs of your app
+   to access the same database__.
+   While this was the default mode used by earlier implementations of drift for the web, we now try to
+   avoid it and it will not be used on modern browsers.
+5. `inMemory`: When no persistence API is available, drift will fall back to an in-memory database.
+
+The missing browser APIs contributing to a specific implementation being chosen are available in
+`WasmDatabaseResult.missingFeatures`.
+There's nothing your app or drift could do about them. If persistence is important to your app
+and drift has chosen the `unsafeIndexedDb` or the `inMemory` implementation due to a lack of proper
+persistence support, you may want to show a warning to the user explaining that they have to upgrade
+their browser.
+
+### Migrating from existing web databases
+
+`WasmDatabase.open` is drift's stable web API, which has been built with the lessons learned from previous
+web APIs available in drift (that have always been marked as `@experimental`). You can use `WasmDatabase.open`
+to replace the following drift APIs:
+
+1. The sql.js-based implementation in `package:drift/web.dart`.
+2. Custom `WasmDatabase` constructions that manually load sqlite3.
+3. Custom worker setups created with `package:drift/web/worker.dart`.
+
+Let's start with the good news: After migrating to `WasmDatabase.open`, drift will manage workers for you.
+It automatically uses the best worker setup supported by the current browsers, enabling the use of shared
+and dedicated web workers where appropriate.
+So the migration from `package:drift/web/worker.dart` is to just stop using that API, since you get all of
+its features out of the box with `WasmDatabase.open`.
+
+#### Migrating from custom `WasmDatabase`s
+
+In older drift versios, you may have used a custom setup that loaded the WASM binary manually, created
+a `CommonSqlite3` instance with it and passed that to `WasmDatabase`.
+
+{% include "blocks/snippet" snippets = snippets name = "migrate-wasm" %}
+
+#### Migrating from `package:drift/web.dart`
+
+To migrate from a `WebDatabase` to the new setup, you can use the `initializeDatabase` callback.
+It is invoked when opening the database if no file exists yet. By loading the old database there,
+it is migrated to the new format without data loss:
+
+{% include "blocks/snippet" snippets = snippets name = "migrate-legacy" %}
+
+In that snippet, `old_db` is the name previously passed to the `WebDatabase`.
+
+## Legacy web support
+
+Drift first gained its initial web support in 2019 by wrapping the sql.js JavaScript library.
+This implementation, which is still supported today, relies on keeping an in-memory database that is periodically saved to local storage.
+In the last years, development in web browsers and the Dart ecosystem enabled more performant approaches that are
+unfortunately impossible to implement with the original drift web API.
+This is the reason the original API is still considered experimental - while it will continue to be supported, it is now obvious that the new approach by `WasmDatabase.open` is sound and more efficient
+than these implementations.
+The original APIs are still documented on this page for your reference.
+
+### Debugging
 You can see all queries sent from drift to the underlying database engine by enabling the `logStatements`
 parameter on the `WebDatabase` - they will appear in the console.
-When you have assertions enabled (e.g. in debug mode), drift will expose the underlying 
+When you have assertions enabled (e.g. in debug mode), drift will expose the underlying
 [database](https://sql.js.org/documentation/Database.html)
 object via `window.db`. If you need to quickly run a query to check the state of the database, you can use
 `db.exec(sql)`.
@@ -135,7 +238,7 @@ If you need to delete your databases, there stored using local storage. You can 
 
 Web support is experimental at the moment, so please [report all issues](https://github.com/simolus3/drift/issues/new) you find.
 
-## Using IndexedDb
+### Using IndexedDb
 
 The default `WebDatabase` uses local storage to store the raw sqlite database file. On browsers that support it, you can also
 use `IndexedDb` to store that blob. In general, browsers allow a larger size for `IndexedDb`. The implementation is also more
@@ -149,7 +252,8 @@ WebDatabase.withStorage(await DriftWebStorage.indexedDbIfSupported(name))
 
 Drift will automatically migrate data from local storage to `IndexedDb` when it is available.
 
-### Using web workers
+
+#### Using web workers
 
 You can offload the database to a background thread by using 
 [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
@@ -184,7 +288,7 @@ For more information on the `DatabaseConnection` class, see the documentation on
 A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/web_worker_example)
 in the drift repository.
 
-### Flutter
+#### Flutter
 Flutter users will have to use a different approach to compile service workers.
 Flutter web doesn't compile `.dart` files in web folder and won't use `.js` files generated by
 `build_web_compilers` either. Instead, we'll use Dart's build system to manually compile the worker to a
@@ -253,7 +357,7 @@ DatabaseConnection connectToWorker(String databaseName) {
 
 You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.
 
-## New web backend {#drift-wasm}
+### New web backend {#drift-wasm}
 
 In recent versions, drift added support for a new backend exposed by the `package:drift/wasm.dart` library.
 Unlike sql.js or the official sqlite3 WASM edition which both use Emscripten, this backend does not need any

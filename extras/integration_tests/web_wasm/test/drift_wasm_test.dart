@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/src/web/wasm_setup/types.dart';
 import 'package:test/test.dart';
 import 'package:web_wasm/driver.dart';
+import 'package:web_wasm/initialization_mode.dart';
 import 'package:webdriver/async_io.dart';
 
 enum Browser {
@@ -84,9 +85,9 @@ void main() {
         expect(result.storages, expectedImplementations);
       });
 
-      group('supports', () {
-        for (final entry in browser.availableImplementations) {
-          test(entry.name, () async {
+      for (final entry in browser.availableImplementations) {
+        group(entry.name, () {
+          test('basic', () async {
             await driver.openDatabase(entry);
 
             await driver.insertIntoDatabase();
@@ -117,24 +118,35 @@ void main() {
             }
           });
 
-          test(
-            'initializing ${entry.name} from blob',
-            () async {
-              await driver.enableInitialization(true);
-              await driver.openDatabase(entry);
+          group(
+            'initialization from ',
+            () {
+              test('static blob', () async {
+                await driver.enableInitialization(InitializationMode.loadAsset);
+                await driver.openDatabase(entry);
 
-              expect(await driver.amountOfRows, 1);
-              await driver.insertIntoDatabase();
-              expect(await driver.amountOfRows, 2);
-
-              if (entry != WasmStorageImplementation.inMemory) {
-                await Future.delayed(const Duration(seconds: 1));
-                await driver.driver.refresh();
-
-                await driver.enableInitialization(true);
-                await driver.openDatabase();
+                expect(await driver.amountOfRows, 1);
+                await driver.insertIntoDatabase();
                 expect(await driver.amountOfRows, 2);
-              }
+
+                if (entry != WasmStorageImplementation.inMemory) {
+                  await Future.delayed(const Duration(seconds: 1));
+                  await driver.driver.refresh();
+
+                  await driver
+                      .enableInitialization(InitializationMode.loadAsset);
+                  await driver.openDatabase();
+                  expect(await driver.amountOfRows, 2);
+                }
+              });
+
+              test('custom wasmdatabase', () async {
+                await driver.enableInitialization(
+                    InitializationMode.migrateCustomWasmDatabase);
+                await driver.openDatabase(entry);
+
+                expect(await driver.amountOfRows, 1);
+              });
             },
             skip: browser == Browser.firefox &&
                     entry == WasmStorageImplementation.opfsLocks
@@ -142,8 +154,8 @@ void main() {
                     'reproduced by manually running the steps of this test.'
                 : null,
           );
-        }
-      });
+        });
+      }
 
       if (browser.supports(WasmStorageImplementation.unsafeIndexedDb) &&
           browser.supports(WasmStorageImplementation.opfsLocks)) {

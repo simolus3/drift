@@ -95,7 +95,7 @@ class WasmDatabase extends DelegatedDatabase {
     required String databaseName,
     required Uri sqlite3Uri,
     required Uri driftWorkerUri,
-    FutureOr<Uint8List> Function()? initializeDatabase,
+    FutureOr<Uint8List?> Function()? initializeDatabase,
   }) {
     return WasmDatabaseOpener(
       databaseName: databaseName,

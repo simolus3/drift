@@ -41,7 +41,7 @@ class WasmDatabaseOpener {
   final Uri sqlite3WasmUri;
   final Uri driftWorkerUri;
   final String databaseName;
-  FutureOr<Uint8List> Function()? initializeDatabase;
+  FutureOr<Uint8List?> Function()? initializeDatabase;
 
   final Set<MissingBrowserFeature> missingFeatures = {};
   final List<WasmStorageImplementation> availableImplementations = [
@@ -133,11 +133,13 @@ class WasmDatabaseOpener {
 
         if (initializer != null) {
           final blob = await initializer();
-          final (file: file, outFlags: _) = inMemory.xOpen(
-              Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
-          file
-            ..xWrite(blob, 0)
-            ..xClose();
+          if (blob != null) {
+            final (file: file, outFlags: _) = inMemory.xOpen(
+                Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
+            file
+              ..xWrite(blob, 0)
+              ..xClose();
+          }
         }
 
         return WasmDatabaseResult(

@@ -97,7 +97,7 @@ targets:
     dependencies: ['$default']
     auto_apply_builders: false
     sources:
-      - "web/worker.dart"
+      - "web/drift_worker.dart"
     builders:
       build_web_compilers:entrypoint:
         options:
@@ -121,7 +121,7 @@ targets:
       build_web_compilers:entrypoint:
         generate_for:
           exclude:
-            - "web/worker.dart"
+            - "web/drift_worker.dart"
         release_options:
           # Turn of null assertions for release builds, it looks like this
           # makes generated code slightly smaller.

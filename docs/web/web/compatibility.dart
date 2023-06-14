@@ -14,7 +14,7 @@ void main() async {
       final db = await WasmDatabase.open(
         databaseName: 'test_db',
         sqlite3Uri: Uri.parse('/sqlite3.wasm'),
-        driftWorkerUri: Uri.parse('/worker.dart.js'),
+        driftWorkerUri: Uri.parse('/drift_worker.dart.js'),
       );
 
       results.innerText += '''
