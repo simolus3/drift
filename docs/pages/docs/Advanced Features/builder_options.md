@@ -49,7 +49,7 @@ At the moment, drift supports these options:
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
 * `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a
-  `.moor` (or `.drift`) file from and to json, use their sql name instead of the generated Dart getter name
+  `.drift` file from and to json, use their sql name instead of the generated Dart getter name
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   You can always override the json key by using a `JSON KEY` column constraint
   (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).

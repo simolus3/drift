@@ -7,8 +7,7 @@ template: layouts/docs/single
 
 {% block "blocks/pageinfo" %}
 Do you have a drift-related package you want to share? Awesome, please let me know!
-Contact me on [Gitter](https://gitter.im/moor-dart/community), [Twitter](https://twitter.com/dersimolus)
-or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
+[Twitter](https://twitter.com/dersimolus) or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 {% endblock %}
 
 ## Storage inspector

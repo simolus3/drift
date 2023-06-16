@@ -14,7 +14,7 @@ In some cases, you might want to customize the generated classes though.
 For instance, you might want to add a mixin, let it extend another class or interface, or use other builders like
 `json_serializable` to customize how it gets serialized to json.
 
-Starting from moor version 4.3 (and in drift), it is possible to use your own classes as data classes.
+As a solution, drift allows you to use your own classes as data classes for the database.
 
 ## Using custom classes
 

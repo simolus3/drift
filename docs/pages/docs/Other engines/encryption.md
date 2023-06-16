@@ -43,7 +43,7 @@ Finally, you can replace `SqfliteQueryExecutor` (or a `NativeDatabase`) with an 
 
 Some extra steps may have to be taken in your project so that SQLCipher works correctly. For example, the ProGuard configuration on Android for apps built for release.
 
-[Read instructions](https://pub.dev/packages/sqflite_sqlcipher) (Usage and installation instructions of the package can be ignored, as that is handled internally by `moor`)
+[Read instructions](https://pub.dev/packages/sqflite_sqlcipher) (Usage and installation instructions of the package can be ignored, as that is handled internally by `encrypted_drift`)
 
 ## Encrypted version of a `NativeDatabase`
 

@@ -283,7 +283,7 @@ Future<void> trackWord(String word) {
 {% endblock %}
 
 Note that this requires a fairly recent sqlite3 version (3.24.0) that might not
-be available on older Android devices when using `moor_flutter`. `NativeDatabases`
+be available on older Android devices when using `drift_sqflite`. `NativeDatabases`
 and `sqlite3_flutter_libs` includes the latest sqlite on Android, so consider using
 it if you want to support upserts.
 
