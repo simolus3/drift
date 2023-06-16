@@ -21,6 +21,12 @@
   status = 301
   force = true
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
 [context.production]
   environment = { BUILD_RELEASE="release" }
 

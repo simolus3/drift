@@ -1,8 +1,13 @@
 import 'dart:html';
 
 import 'package:drift/wasm.dart';
+import 'package:drift_docs/site.dart' as i0;
+import 'package:docsy/main.dart' as i1;
 
 void main() async {
+  i0.built_site_main();
+  i1.built_site_main();
+
   final btn = querySelector('#drift-compat-btn')!;
   final results = querySelector('#drift-compat-results')!;
 
