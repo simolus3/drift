@@ -19,7 +19,7 @@ dependencies:
   intl: ^0.18.0
   http: ^0.13.4 # used to load sqlite3 wasm files on the web
   sqlite3_flutter_libs: ^0.5.5
-  sqlite3: ^2.0.0-dev.0
+  sqlite3: ^2.0.0
   path_provider: ^2.0.9
   path: ^1.8.0
   riverpod: ^2.3.0
