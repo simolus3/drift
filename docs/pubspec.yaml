@@ -3,7 +3,7 @@ description: Documentation website for the drift project.
 publish_to: none
 
 environment:
-  sdk: '>=2.19.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   drift:
@@ -17,7 +17,7 @@ dependencies:
     version: ^0.0.12
   # used in snippets
   http: ^0.13.5
-  sqlite3: ^1.11.0
+  sqlite3: ^2.0.0
   # Fake path_provider for snippets
   path_provider:
     path: assets/path_provider
@@ -25,6 +25,10 @@ dependencies:
   rxdart: ^0.27.3
   yaml: ^3.1.1
   drift_dev: any
+  zap: ^0.2.0
+  picocss:
+    hosted: https://simonbinder.eu
+    version: ^1.5.10
 
 dev_dependencies:
   lints: ^2.0.0
@@ -42,6 +46,7 @@ dev_dependencies:
   source_span: ^1.9.1
   test: ^1.18.0
   sqlparser:
+  zap_dev: ^0.2.2
 
 
 dependency_overrides:

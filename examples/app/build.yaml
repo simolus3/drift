@@ -50,4 +50,4 @@ builders:
     import: 'tool/builder.dart'
     builder_factories: ["CopyCompiledJs.new"]
     build_to: source
-    build_extensions: {'web/worker.dart.js': ['web/shared_worker.dart.js']}
+    build_extensions: {'web/worker.dart.js': ['web/drift_worker.js']}

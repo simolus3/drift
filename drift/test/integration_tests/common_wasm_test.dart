@@ -5,7 +5,7 @@ import 'package:sqlite3/wasm.dart';
 import 'package:test/test.dart';
 
 class DriftWasmExecutor extends TestExecutor {
-  final FileSystem fs;
+  final InMemoryFileSystem fs;
   final WasmSqlite3 Function() sqlite3;
 
   DriftWasmExecutor(this.fs, this.sqlite3);
@@ -24,12 +24,12 @@ class DriftWasmExecutor extends TestExecutor {
 
   @override
   Future<void> deleteData() async {
-    fs.clear();
+    fs.fileData.clear();
   }
 }
 
 void main() {
-  final fs = FileSystem.inMemory();
+  final fs = InMemoryFileSystem();
   late WasmSqlite3 sqlite3;
 
   setUpAll(() async {
@@ -37,9 +37,8 @@ void main() {
     final port = await channel.stream.first as int;
 
     sqlite3 = await WasmSqlite3.loadFromUrl(
-      Uri.parse('http://localhost:$port/sqlite3.wasm'),
-      environment: SqliteEnvironment(fileSystem: fs),
-    );
+        Uri.parse('http://localhost:$port/sqlite3.wasm'));
+    sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
   });
 
   runAllTests(DriftWasmExecutor(fs, () => sqlite3));

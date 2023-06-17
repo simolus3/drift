@@ -15,4 +15,4 @@ dependencies:
   drift: ^1.1.0
   meta: ^1.3.0
   stream_channel: ^2.1.0
-  sqlite3: ^1.0.0
+  sqlite3: '>=1.0.0 <3.0.0'

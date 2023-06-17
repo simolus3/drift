@@ -26,6 +26,11 @@ targets:
               modules:
                 - json1
                 - fts5
+      build_web_compilers:entrypoint:
+        generate_for:
+          - "web/drift_worker.dart"
+        options:
+          compiler: dart2js
 
   custom:
     auto_apply_builders: false

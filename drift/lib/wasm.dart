@@ -11,12 +11,21 @@
 @experimental
 library drift.wasm;
 
+import 'dart:async';
+import 'dart:html';
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
-import 'package:sqlite3/common.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
 import 'src/sqlite3/database.dart';
+import 'src/web/wasm_setup.dart';
+import 'src/web/wasm_setup/dedicated_worker.dart';
+import 'src/web/wasm_setup/shared_worker.dart';
+import 'src/web/wasm_setup/types.dart';
+
+export 'src/web/wasm_setup/types.dart';
 
 /// Signature of a function that can perform setup work on a [database] before
 /// drift is fully ready.
@@ -45,7 +54,7 @@ class WasmDatabase extends DelegatedDatabase {
   /// to insert more than one rows, be sure you run in a transaction if
   /// possible.
   factory WasmDatabase({
-    required CommmonSqlite3 sqlite3,
+    required CommonSqlite3 sqlite3,
     required String path,
     WasmDatabaseSetup? setup,
     IndexedDbFileSystem? fileSystem,
@@ -60,7 +69,7 @@ class WasmDatabase extends DelegatedDatabase {
 
   /// Creates an in-memory database in the loaded [sqlite3] database.
   factory WasmDatabase.inMemory(
-    CommmonSqlite3 sqlite3, {
+    CommonSqlite3 sqlite3, {
     WasmDatabaseSetup? setup,
     bool logStatements = false,
     bool cachePreparedStatements = true,
@@ -70,10 +79,54 @@ class WasmDatabase extends DelegatedDatabase {
       logStatements,
     );
   }
+
+  /// Opens a database on the web.
+  ///
+  /// Drift will detect features supported by the current browser and picks an
+  /// appropriate implementation to store data based on those results.
+  ///
+  /// Using this API requires two additional file that you need to copy into the
+  /// `web/` folder of your Flutter or Dart application: A `sqlite3.wasm` file,
+  /// which you can [get here](https://github.com/simolus3/sqlite3.dart/releases),
+  /// and a drift worker, which you can [get here](https://drift.simonbinder.eu/web/#worker).
+  ///
+  /// For more detailed information, see https://drift.simonbinder.eu/web.
+  static Future<WasmDatabaseResult> open({
+    required String databaseName,
+    required Uri sqlite3Uri,
+    required Uri driftWorkerUri,
+    FutureOr<Uint8List?> Function()? initializeDatabase,
+  }) {
+    return WasmDatabaseOpener(
+      databaseName: databaseName,
+      sqlite3WasmUri: sqlite3Uri,
+      driftWorkerUri: driftWorkerUri,
+      initializeDatabase: initializeDatabase,
+    ).open();
+  }
+
+  /// The entrypoint for a web worker suitable for use with [open].
+  ///
+  /// Generally, you can grab a pre-compiled worker file from a
+  /// [drift release](https://github.com/simolus3/drift/releases) and don't need
+  /// to call this method in your app.
+  ///
+  /// If you prefer to compile the worker yourself, write a simple Dart program
+  /// that calls this method in its `main()` function and compile that with
+  /// `dart2js`.
+  static void workerMainForOpen() {
+    final self = WorkerGlobalScope.instance;
+
+    if (self is DedicatedWorkerGlobalScope) {
+      DedicatedDriftWorker(self).start();
+    } else if (self is SharedWorkerGlobalScope) {
+      SharedDriftWorker(self).start();
+    }
+  }
 }
 
 class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
-  final CommmonSqlite3 _sqlite3;
+  final CommonSqlite3 _sqlite3;
   final String? _path;
   final IndexedDbFileSystem? _fileSystem;
 

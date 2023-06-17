@@ -1,11 +1,11 @@
 import 'dart:html';
 import 'dart:indexed_db';
-import 'dart:js';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
 import 'binary_string_conversion.dart';
+import 'wasm_setup/shared.dart';
 
 /// Interface to control how drift should store data on the web.
 abstract class DriftWebStorage {
@@ -70,25 +70,7 @@ abstract class DriftWebStorage {
   /// Attempts to check whether the current browser supports the
   /// [DriftWebStorage.indexedDb] storage implementation.
   static Future<bool> supportsIndexedDb({bool inWebWorker = false}) async {
-    var isIndexedDbSupported = false;
-    if (inWebWorker && WorkerGlobalScope.instance.indexedDB != null) {
-      isIndexedDbSupported = true;
-    } else {
-      try {
-        isIndexedDbSupported = IdbFactory.supported;
-
-        if (isIndexedDbSupported) {
-          // Try opening a mock database to check if IndexedDB is really
-          // available. This avoids the problem with Firefox incorrectly
-          // reporting IndexedDB as supported in private mode.
-          final mockDb = await window.indexedDB!.open('drift_mock_db');
-          mockDb.close();
-        }
-      } catch (error) {
-        isIndexedDbSupported = false;
-      }
-    }
-    return isIndexedDbSupported && context.hasProperty('FileReader');
+    return await checkIndexedDbSupport(null);
   }
 }
 

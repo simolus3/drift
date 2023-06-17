@@ -17,10 +17,12 @@ drift features:
 
 - The [encryption] example contains a simple Flutter app using an encrypted drift
   database, powered by the `sqlcipher_flutter_libs` package.
+{% comment %}
 - [web_worker] and [flutter_web_worker] are small web-only apps using drift in
   a shared web worker, which allows for a real-time synchronization of the
   database across tabs. Of course, this pattern can only be embedded into
   multi-platform apps.
+{%- endcomment %}
 - The [migration] example makes use of advanced schema migrations and shows how
   to test migrations between different database schemas by using drift's
   [dedicated tooling][migration tooling] for this purpose.

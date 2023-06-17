@@ -267,7 +267,7 @@ class _RemoteStreamQueryStore extends StreamQueryStore {
       }, test: (e) => e is ConnectionClosedException).whenComplete(() {
         _awaitingUpdates.remove(completer);
       });
-    } else {}
+    }
   }
 
   @override
