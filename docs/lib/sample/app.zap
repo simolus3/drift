@@ -57,7 +57,7 @@ small {
       Using implementation <span class={ connection.data.chosenImplementation.fullySupported ? 'ok' : 'bad' }>{ connection.data.chosenImplementation.name }</span>.
 
       {#if connection.data.chosenImplementation.fullySupported}
-        Updates are synchronized across tabs thanks to drift.
+        Updates are transparently synchronized across tabs.
         <small>Want to try it out? Go ahead and open this website in <a href="#" target="_blank">a new tab</a>.</small>
       {:else}
         This implementation has known caveats and shouldn't be selected on recent browsers.

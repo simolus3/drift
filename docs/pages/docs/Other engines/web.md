@@ -8,15 +8,14 @@ path: web/
 
 {% assign snippets = "package:drift_docs/snippets/engines/web.dart.excerpt.json" | readString | json_decode %}
 
-
 Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
-you can use drift databases when compiling your apps to the web.
+you can use drift databases for the web version of your Flutter and Dart applications.
 Just like the core drift APIs, web support is platform-agnostic:
 Drift web supports Flutter Web, AngularDart, plain `dart:html` or any other Dart web framework.
 
 {% block "blocks/alert" title="Compatibility check"  %}
 This page includes a tiny drift database compiled to JavaScript.
-You can use it to verify drift works in the Browsers you want to target.
+You can use it to verify drift works in the browsers you want to target.
 Clicking on the button will start a feature detection run, so you can see which file system
 implementation drift would pick on this browser and which web APIs are missing.
 
@@ -40,7 +39,8 @@ typically include a more recent version of that library with the `sqlite3_flutte
 
 Web browsers don't have builtin access to the sqlite3 library, so it needs to be included with your app.
 The `sqlite3` Dart package (used by drift internally) contains a toolchain to compile sqlite3 to WebAssembly
-so that it can be used in browsers. You can grab a `sqlite3.wasm` file from [its releases page](https://github.com/simolus3/sqlite3.dart/releases).
+so that it can be used in browsers. You can grab a prebuilt `sqlite3.wasm` file from [its releases page](https://github.com/simolus3/sqlite3.dart/releases),
+or [compile it yourself](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3#compiling).
 This file needs to be put into the `web/` directory of your app.
 
 Drift on the web also requires you to include a portion of drift as a web worker. This worker will be used to
@@ -156,7 +156,18 @@ export 'unsupported.dart'
 
 A ready example of this construct can also be found [here](https://github.com/simolus3/drift/blob/develop/examples/app/lib/database/connection/connection.dart).
 
-## Supported storage implementations {#storages}
+## Examples
+
+The drift repository contains a two small web applications using drift on the web:
+
+- A tiny todo app as a showcase, [available under this website]({{ '/web/example/' | relUrl }}).
+- A cross-platform Flutter app with web support ([source code](https://github.com/simolus3/drift/tree/develop/examples/app)).
+
+If you have a cool open-source web application using drift, we'd love to list it here as well. Feel free to open a PR!
+
+## Advanced uses
+
+### Supported storage implementations {#storages}
 
 When opening a database, drift determines the state of a number of web APIs in the current browser.
 It then picks a suitable database storage based on what the current browser supports.
@@ -184,6 +195,45 @@ and drift has chosen the `unsafeIndexedDb` or the `inMemory` implementation due 
 persistence support, you may want to show a warning to the user explaining that they have to upgrade
 their browser.
 
+### Compilation
+
+Drift and the `sqlite3` Dart package provide pre-compiled versions of the worker and the WebAssembly
+module for your convenience.
+If you want to instead compile these yourself, this section describes how to do that.
+
+The web worker is written in Dart - the entrypoint is stable and part of drift's public API.
+To compile a worker suitable for `WasmDatabase.open`, create a new Dart file that calls `WasmDatabase.workerMainForOpen`:
+
+{% assign worker = "package:drift_docs/snippets/engines/stable_worker.dart.excerpt.json" | readString | json_decode %}
+{% include "blocks/snippet" snippets = worker %}
+
+The JavaScript file included in drift releases is compiled with `dart compile js -O4 web/drift_worker.dart`.
+You can use that command or a tool such as `build_web_compilers` to compile this worker.
+Be aware that `dart2js` needs to be used as a compiler. `dartdevc` generates modules which are unsuitable
+for workers without additional setup.
+
+Compiling the `sqlite3.wasm` file requires a C toolchain capable of compiling to WebAssembly.
+On Arch Linux, I'm using `clang` with the `wasi-compiler-rt` and `wasi-libc` pacakges.
+Depending on your distribution, you may have to compile the [wasi-sdk](https://github.com/WebAssembly/wasi-sdk) or
+another toolchain yourself.
+Finally, we're also using [binaryen](https://github.com/WebAssembly/binaryen) as an optimizer.
+
+The repository for the `sqlite3` package contains CMake buildscripts to compile sqlite3. Thus, you can compile
+the file like this:
+
+```
+git clone https://github.com/simolus3/sqlite3.dart.git
+cd sqlite3.dart/sqlite3
+
+cmake -S assets/wasm -B .dart_tool/sqlite3_build --toolchain toolchain.cmake
+cmake --build .dart_tool/sqlite3_build/ -t output -j
+```
+
+This will output two files to `example/web`: `sqlite3.wasm` and `sqlite3.debug.wasm`. The former is suitable
+for use in applications. The debug variant prints file system invocations to the console for debugging purposes.
+I mainly use it when working on the low-level Dart bindings, it is probably not too useful for application
+developers.
+
 ### Migrating from existing web databases
 
 `WasmDatabase.open` is drift's stable web API, which has been built with the lessons learned from previous
@@ -200,14 +250,14 @@ and dedicated web workers where appropriate.
 So the migration from `package:drift/web/worker.dart` is to just stop using that API, since you get all of
 its features out of the box with `WasmDatabase.open`.
 
-#### Migrating from custom `WasmDatabase`s
+### Migrating from custom `WasmDatabase`s
 
 In older drift versios, you may have used a custom setup that loaded the WASM binary manually, created
 a `CommonSqlite3` instance with it and passed that to `WasmDatabase`.
 
 {% include "blocks/snippet" snippets = snippets name = "migrate-wasm" %}
 
-#### Migrating from `package:drift/web.dart`
+### Migrating from `package:drift/web.dart`
 
 To migrate from a `WebDatabase` to the new setup, you can use the `initializeDatabase` callback.
 It is invoked when opening the database if no file exists yet. By loading the old database there,
