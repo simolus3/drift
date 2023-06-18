@@ -119,7 +119,7 @@ void main() {
           });
 
           group(
-            'initialization from ',
+            'initialization from',
             () {
               test('static blob', () async {
                 await driver.enableInitialization(InitializationMode.loadAsset);
@@ -177,6 +177,6 @@ void main() {
           },
         );
       }
-    });
+    }, tags: browser.name);
   }
 }

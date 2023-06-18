@@ -1,0 +1,18 @@
+platforms: [vm]
+
+tags:
+  firefox:
+  chrome:
+  edge:
+  safari:
+
+# Some webdrivers are not that stable
+retry: 2
+
+on_os:
+  windows:
+    include_tags: firefox || edge || chrome
+  mac-os:
+    include_tags: safari
+  linux:
+    include_tags: chrome || firefox

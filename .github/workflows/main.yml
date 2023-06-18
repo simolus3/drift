@@ -199,6 +199,25 @@ jobs:
         working-directory: examples/migrations_example
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/
 
+  wasm_integration_tests:
+    name: Integration tests for the WASM database
+    needs: [setup]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: melos bootstrap --scope web_wasm
+      - name: Run build
+        working-directory: extras/integration_tests/web_wasm
+        run: dart run build_runner build -d
+      - name: Test
+        run: dart test
+
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
 #    needs: [moor, sqlparser]
