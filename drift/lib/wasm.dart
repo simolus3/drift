@@ -1,21 +1,15 @@
-/// An experimental web-compatible version of drift that doesn't depend
-/// on external JavaScript sources.
+/// Web support for drift.
 ///
-/// While the implementation is tested and no API breaking changes are expected
-/// to the public interface, it is still fairly new and may have remaining bugs
-/// or issues.
-///
-/// A generally less efficient, but currently more stable backend is available
-/// through the `package:drift/web.dart` library described in the
-/// [documentation][https://drift.simonbinder.eu/web/].
-@experimental
+/// For more information about the components of this library and how to use
+/// them, see https://drift.simonbinder.eu/web/.
+/// Be aware that additional setup is necessary to use drift on the web, this
+/// is explained in the documentation.
 library drift.wasm;
 
 import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
-import 'package:meta/meta.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';

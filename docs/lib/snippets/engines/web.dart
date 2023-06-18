@@ -3,6 +3,8 @@ import 'package:drift/wasm.dart';
 import 'package:drift/web.dart';
 import 'package:sqlite3/wasm.dart';
 
+typedef _$MyWebDatabase = GeneratedDatabase;
+
 // #docregion connect
 DatabaseConnection connectOnWeb() {
   return DatabaseConnection.delayed(Future(() async {
@@ -22,6 +24,23 @@ DatabaseConnection connectOnWeb() {
 
     return result.resolvedExecutor;
   }));
+}
+
+// You can then use this method to open your database:
+class MyWebDatabase extends _$MyWebDatabase {
+  MyWebDatabase._(QueryExecutor e) : super(e);
+
+  factory MyWebDatabase() => MyWebDatabase._(connectOnWeb());
+  // ...
+  // #enddocregion connect
+
+  @override
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      throw UnimplementedError();
+
+  @override
+  int get schemaVersion => throw UnimplementedError();
+// #docregion connect
 }
 // #enddocregion connect
 

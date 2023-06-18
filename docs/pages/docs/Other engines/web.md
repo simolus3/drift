@@ -6,6 +6,12 @@ template: layouts/docs/single
 path: web/
 ---
 
+{% block "blocks/pageinfo" %}
+__Good news__: With drift 2.9.0, web support is stable and officially supported!
+The `WasmDatabase.open` API is the preferred way to run drift on the web. While older
+APIs continue to work, using the stable API will bring performance and safety benefits.
+{% endblock %}
+
 {% assign snippets = "package:drift_docs/snippets/engines/web.dart.excerpt.json" | readString | json_decode %}
 
 Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
@@ -13,10 +19,14 @@ you can use drift databases for the web version of your Flutter and Dart applica
 Just like the core drift APIs, web support is platform-agnostic:
 Drift web supports Flutter Web, AngularDart, plain `dart:html` or any other Dart web framework.
 
+While an official sqlite3 build for the web exists, it is fairly large and doesn't support most browsers.
+Drift uses a custom sqlite3 build with a Dart interface sharing a lot of code with the existing native
+platforms, which enables a fast implementation that works on more browsers.
+
 ## Supported browsers
 
 Drift uses the FileSystem Access API to store databases if it's available. Otherwise, it will fall back to
-a slower implementation based on IndexedDb. This check makes drift available on all modern browsers,
+a slower implementation based on IndexedDb in a shared worker. This makes drift available on all modern browsers,
 even ones that don't support the official sqlite3 build for the web.
 In some browsers, you need to serve your app with [additional headers](#additional-headers) for full support (but drift works without that too - the official sqlite3 build doesn't).
 
@@ -25,11 +35,17 @@ In some browsers, you need to serve your app with [additional headers](#addition
 | Firefox _(tested version 114)_ | Full | Full |
 | Chrome _(tested version 114)_ | Full | Good (slightly slower) |
 | Chrome on Android _(tested version 114)_ | Full | Limited (not with multiple tabs) |
-| Safari (_tested version 16.2_) | Limited (not with multiple tabs), due to [a WebKit bug](https://bugs.webkit.org/show_bug.cgi?id=245346) | Good |
+| Safari (_tested version 16.2_) | Good (slightly slower) | Good (slightly slower) |
 | Safari Technology Preview _(tested 172 (17.0))_ | Full | Good |
 
 Firefox does not support IndexedDB and the FileSystem Access API in private tabs,
-drift will fall back to an in-memory database in that case.
+so drift needs to fall back to an in-memory database in that case.
+
+In Chrome on Android, shared workers aren't supported. So if the [headers](#additional-headers) required
+for the preferred API are missing, there unfortunately is no way to prevent data races between tabs,
+which can lead to persistence issues. Drift informs you about the chosen storage mode, so depending on
+how critical persistence is to your app, you can instruct users to download a native app or use a different
+browser in that case.
 
 {% block "blocks/alert" title="Compatibility check"  %}
 This page includes a tiny drift database compiled to JavaScript.
@@ -58,14 +74,13 @@ typically include a more recent version of that library with the `sqlite3_flutte
 Web browsers don't have builtin access to the sqlite3 library, so it needs to be included with your app.
 The `sqlite3` Dart package (used by drift internally) contains a toolchain to compile sqlite3 to WebAssembly
 so that it can be used in browsers. You can grab a prebuilt `sqlite3.wasm` file from [its releases page](https://github.com/simolus3/sqlite3.dart/releases),
-or [compile it yourself](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3#compiling).
+or [compile it yourself](#compilation).
 This file needs to be put into the `web/` directory of your app.
 
 Drift on the web also requires you to include a portion of drift as a web worker. This worker will be used to
 host your database in a background thread, improving performance of your website. In some [storage implementations](#storages),
 the worker is also responsible for sharing your database between different tabs in real-time.
-You can compile this worker yourself, [grab one from drift releases](https://github.com/simolus3/drift/releases) or take
-the [latest one powering this website]({{ '/worker.dart.js' | absUrl }}).
+Again, you can [compile this worker yourself](#compilation) or [grab one from drift releases](https://github.com/simolus3/drift/releases).
 
 In the end, your `web/` directory may look like this:
 
@@ -90,19 +105,19 @@ Just like the official sqlite3 port to the web, __this requires your website to 
 
 For more details, see the [security requirements](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) explained by MDN, and the [documentation on web.dev](https://web.dev/coop-coep/).
 Unfortunately, there's no way (that I'm aware of) to add these headers onto `flutter run`'s web server.
-Drift will fall back to a less reliable implementation in that case (see [storages](#storages)),
+Drift will fall back to a (slightly slower) implementation in that case (see [storages](#storages)),
 but we recommend researching and enabling these headers in production if possible.
 
 Note that Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cgi?id=245346)
-preventing workers to be loaded from cache with these headers.
+preventing dedicated workers to be loaded from cache with these headers. However, shared and service workers
+are unaffected by this.
 
 ### Setup in Dart
 
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
-You can follow the [getting started guide]({{ '../Getting started/index.md' | pageUrl }}) for general
-information on using drift.
+You can follow the [getting started guide]({{ '../Getting started/index.md' | pageUrl }}) as a general setup guide.
 
-Instead of using a `NativeDatabase` in your database classes, you can use `WasmDatabase` optimized for
+Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized for
 the web:
 
 {% include "blocks/snippet" snippets = snippets name = "connect" %}
@@ -115,8 +130,8 @@ A full example that works on the web (and all other platforms supported by drift
 
 ## Sharing code between native apps and web
 
-If you want to share your database code between native applications and web apps, just import the
-basic `drift/drift.dart` library into your database file.
+If you want to share your database code between native applications and web apps, import only the
+core `package:drift/drift.dart` library into your database file.
 And instead of passing a `NativeDatabase` or `WebDatabase` to the `super` constructor, make the
 `QueryExecutor` customizable:
 
@@ -125,7 +140,7 @@ And instead of passing a `NativeDatabase` or `WebDatabase` to the `super` constr
 import 'package:drift/drift.dart';
 
 @DriftDatabase(/* ... */)
-class SharedDatabase extends _$MyDatabase {
+class SharedDatabase extends _$SharedDatabase {
     SharedDatabase(QueryExecutor e): super(e);
 }
 ```
@@ -427,26 +442,3 @@ DatabaseConnection connectToWorker(String databaseName) {
 ```
 
 You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.
-
-### New web backend {#drift-wasm}
-
-In recent versions, drift added support for a new backend exposed by the `package:drift/wasm.dart` library.
-Unlike sql.js or the official sqlite3 WASM edition which both use Emscripten, this backend does not need any
-external JavaScript sources.
-All bindings, including a virtual filesystem implementation used to store your databases, are implemented in
-Dart instead.
-
-This approach enables optimizations making this backend more efficient that the existing web version of drift.
-However, it should be noted that this backend is much newer and may potentially be less stable at the moment.
-We encourage you to use it and report any issues you may find, but please keep in mind that it may have some
-rough edges.
-
-As this version of sqlite3 was compiled with a custom VFS, you can't re-use the WebAssembly module from sql.js.
-Instead, grab a sqlite3.wasm file from the [releases](https://github.com/simolus3/sqlite3.dart/releases) of the
-`sqlite3` pub package and put this file in your `web/` folder.
-
-With this setup, sqlite3 can be used on the web without an external library:
-
-This snippet also works in a service worker.
-
-If you're running into any issues with the new backend, please post them [here](https://github.com/simolus3/sqlite3.dart/issues).
