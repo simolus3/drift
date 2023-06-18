@@ -1,6 +1,9 @@
-## 2.8.3-dev
+## 2.9.0
 
 - Forbid `schemaVersion` returning `0`, as this causes issues in the migrator.
+- Drift web support is now stable! By using a `WasmDatabase.open` factory as
+  described in https://drift.simonbinder.eu/web/, you can run a drift database
+  in modern browsers!
 
 ## 2.8.2
 
