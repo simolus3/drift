@@ -211,6 +211,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
+          use_sqlite3: false
       - run: melos bootstrap --scope web_wasm
       - name: Run build
         working-directory: extras/integration_tests/web_wasm

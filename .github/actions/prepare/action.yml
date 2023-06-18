@@ -5,6 +5,9 @@ inputs:
   dart_version:
     description: Dart version, to restore the dependency cache
     required: true
+  use_sqlite3:
+    description: Whether to load sqlite3 compiled in the earlier CI step.
+    default: "true"
 
 runs:
   using: "composite"
@@ -18,12 +21,14 @@ runs:
         name: sqlite3
         path: /tmp/sqlite/out/
     - name: Use downloaded sqlite3
+      if: ${{ inputs.use_sqlite3 }}
       shell: bash
       run: |
         chmod a+x /tmp/sqlite/out/sqlite3
         echo "/tmp/sqlite/out" >> $GITHUB_PATH
         echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
     - name: Check sqlite3 version
+      if: ${{ inputs.use_sqlite3 }}
       run: sqlite3 --version
       shell: bash
 
