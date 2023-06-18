@@ -13,6 +13,24 @@ you can use drift databases for the web version of your Flutter and Dart applica
 Just like the core drift APIs, web support is platform-agnostic:
 Drift web supports Flutter Web, AngularDart, plain `dart:html` or any other Dart web framework.
 
+## Supported browsers
+
+Drift uses the FileSystem Access API to store databases if it's available. Otherwise, it will fall back to
+a slower implementation based on IndexedDb. This check makes drift available on all modern browsers,
+even ones that don't support the official sqlite3 build for the web.
+In some browsers, you need to serve your app with [additional headers](#additional-headers) for full support (but drift works without that too - the official sqlite3 build doesn't).
+
+| Browser | Support [with headers](#additional-headers) | Support without headers |
+|---------|---------------------------------------------|-------------------------|
+| Firefox _(tested version 114)_ | Full | Full |
+| Chrome _(tested version 114)_ | Full | Good (slightly slower) |
+| Chrome on Android _(tested version 114)_ | Full | Limited (not with multiple tabs) |
+| Safari (_tested version 16.2_) | Limited (not with multiple tabs), due to [a WebKit bug](https://bugs.webkit.org/show_bug.cgi?id=245346) | Good |
+| Safari Technology Preview _(tested 172 (17.0))_ | Full | Good |
+
+Firefox does not support IndexedDB and the FileSystem Access API in private tabs,
+drift will fall back to an in-memory database in that case.
+
 {% block "blocks/alert" title="Compatibility check"  %}
 This page includes a tiny drift database compiled to JavaScript.
 You can use it to verify drift works in the browsers you want to target.
@@ -74,6 +92,9 @@ For more details, see the [security requirements](https://developer.mozilla.org/
 Unfortunately, there's no way (that I'm aware of) to add these headers onto `flutter run`'s web server.
 Drift will fall back to a less reliable implementation in that case (see [storages](#storages)),
 but we recommend researching and enabling these headers in production if possible.
+
+Note that Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cgi?id=245346)
+preventing workers to be loaded from cache with these headers.
 
 ### Setup in Dart
 

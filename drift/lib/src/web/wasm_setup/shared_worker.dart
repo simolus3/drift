@@ -63,7 +63,7 @@ class SharedDriftWorker {
       String databaseName) async {
     // First, let's see if this shared worker can spawn dedicated workers.
     final hasWorker = supportsWorkers;
-    final canUseIndexedDb = await checkIndexedDbSupport(databaseName);
+    final canUseIndexedDb = await checkIndexedDbSupport();
 
     if (!hasWorker) {
       final indexedDbExists =

@@ -42,7 +42,7 @@ class DedicatedDriftWorker {
             supportsIndexedDb = knownResults.supportsIndexedDb;
           } else {
             supportsOpfs = await checkOpfsSupport();
-            supportsIndexedDb = await checkIndexedDbSupport(null);
+            supportsIndexedDb = await checkIndexedDbSupport();
             _compatibility = WasmCompatibility(supportsIndexedDb, supportsOpfs);
           }
         });

@@ -25,6 +25,7 @@ import 'package:sqlite3/wasm.dart';
 import 'broadcast_stream_queries.dart';
 import 'channel.dart';
 import 'wasm_setup/protocol.dart';
+import 'wasm_setup/shared.dart';
 
 /// Whether the `crossOriginIsolated` JavaScript property is true in the current
 /// context.
@@ -62,8 +63,27 @@ class WasmDatabaseOpener {
   });
 
   Future<void> probe() async {
-    await _probeShared();
-    await _probeDedicated();
+    try {
+      await _probeShared();
+    } on Object {
+      _sharedWorker?.close();
+      _sharedWorker = null;
+    }
+    try {
+      await _probeDedicated();
+    } on Object {
+      _dedicatedWorker?.terminate();
+      _dedicatedWorker = null;
+    }
+
+    if (_dedicatedWorker == null) {
+      // Something is wrong with web workers, let's see if we can get things
+      // running without a worker.
+      if (await checkIndexedDbSupport()) {
+        availableImplementations.add(WasmStorageImplementation.unsafeIndexedDb);
+        _existsInIndexedDb = await checkIndexedDbExists(databaseName);
+      }
+    }
   }
 
   Future<WasmDatabaseResult> open() async {
@@ -123,32 +143,20 @@ class WasmDatabaseOpener {
       case WasmStorageImplementation.opfsLocks:
       case WasmStorageImplementation.unsafeIndexedDb:
         sharedWorker?.close();
-        message.sendToWorker(dedicatedWorker!);
+
+        if (dedicatedWorker != null) {
+          message.sendToWorker(dedicatedWorker);
+        } else {
+          // Workers seem to be broken, but we don't need them with this storage
+          // mode.
+          return _hostDatabaseLocally(
+              storage, await IndexedDbFileSystem.open(dbName: databaseName));
+        }
+
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
-        final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
-        final inMemory = InMemoryFileSystem();
-        sqlite3.registerVirtualFileSystem(inMemory);
-
-        if (initializer != null) {
-          final blob = await initializer();
-          if (blob != null) {
-            final (file: file, outFlags: _) = inMemory.xOpen(
-                Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
-            file
-              ..xWrite(blob, 0)
-              ..xClose();
-          }
-        }
-
-        return WasmDatabaseResult(
-          DatabaseConnection(
-            WasmDatabase(sqlite3: sqlite3, path: '/database'),
-          ),
-          WasmStorageImplementation.inMemory,
-          missingFeatures,
-        );
+        return _hostDatabaseLocally(storage, InMemoryFileSystem());
     }
 
     initChannel?.port1.onMessage.listen((event) async {
@@ -185,6 +193,34 @@ class WasmDatabaseOpener {
     return WasmDatabaseResult(connection, storage, missingFeatures);
   }
 
+  /// Returns a database connection that doesn't use web workers.
+  Future<WasmDatabaseResult> _hostDatabaseLocally(
+      WasmStorageImplementation storage, VirtualFileSystem vfs) async {
+    final initializer = initializeDatabase;
+
+    final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
+    sqlite3.registerVirtualFileSystem(vfs);
+
+    if (initializer != null) {
+      final blob = await initializer();
+      if (blob != null) {
+        final (file: file, outFlags: _) =
+            vfs.xOpen(Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
+        file
+          ..xWrite(blob, 0)
+          ..xClose();
+      }
+    }
+
+    return WasmDatabaseResult(
+      DatabaseConnection(
+        WasmDatabase(sqlite3: sqlite3, path: '/database'),
+      ),
+      storage,
+      missingFeatures,
+    );
+  }
+
   Future<void> _probeShared() async {
     if (supportsSharedWorkers) {
       final sharedWorker =
@@ -192,7 +228,7 @@ class WasmDatabaseOpener {
       final port = _sharedWorker = sharedWorker.port!;
 
       final sharedMessages =
-          StreamQueue(port.onMessage.map(WasmInitializationMessage.read));
+          StreamQueue(_readMessages(port.onMessage, sharedWorker.onError));
 
       // First, the shared worker will tell us which features it supports.
       RequestCompatibilityCheck(databaseName).sendToPort(port);
@@ -225,7 +261,7 @@ class WasmDatabaseOpener {
       RequestCompatibilityCheck(databaseName).sendToWorker(dedicatedWorker);
 
       final workerMessages = StreamQueue(
-          dedicatedWorker.onMessage.map(WasmInitializationMessage.read));
+          _readMessages(dedicatedWorker.onMessage, dedicatedWorker.onError));
 
       final status = await workerMessages.nextNoError
           as DedicatedWorkerCompatibilityResult;
@@ -247,6 +283,41 @@ class WasmDatabaseOpener {
       missingFeatures.add(MissingBrowserFeature.dedicatedWorkers);
     }
   }
+}
+
+Stream<WasmInitializationMessage> _readMessages(
+    Stream<MessageEvent> messages, Stream<Event> errors) {
+  final mappedMessages = messages.map(WasmInitializationMessage.read);
+
+  return Stream.multi((listener) {
+    StreamSubscription? subscription;
+
+    void stop() {
+      subscription = null;
+      listener.closeSync();
+    }
+
+    subscription = mappedMessages.listen(
+      listener.addSync,
+      onError: listener.addErrorSync,
+      onDone: stop,
+    );
+
+    errors.first.then((value) {
+      if (subscription != null) {
+        listener
+            .addSync(WorkerError('Worker emitted an error through onError.'));
+      }
+    });
+
+    listener
+      ..onCancel = () {
+        subscription?.cancel();
+        subscription = null;
+      }
+      ..onPause = subscription!.pause
+      ..onResume = subscription!.resume;
+  });
 }
 
 extension on StreamQueue<WasmInitializationMessage> {

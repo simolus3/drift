@@ -57,9 +57,8 @@ Future<bool> checkOpfsSupport() async {
   }
 }
 
-/// Checks whether IndexedDB is working in the current browser and, if so,
-/// whether the database with the given [databaseName] already exists.
-Future<bool> checkIndexedDbSupport(String? databaseName) async {
+/// Checks whether IndexedDB is working in the current browser.
+Future<bool> checkIndexedDbSupport() async {
   if (!hasProperty(globalThis, 'indexedDB') ||
       // FileReader needed to read and write blobs efficiently
       !hasProperty(globalThis, 'FileReader')) {

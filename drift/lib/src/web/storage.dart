@@ -70,7 +70,7 @@ abstract class DriftWebStorage {
   /// Attempts to check whether the current browser supports the
   /// [DriftWebStorage.indexedDb] storage implementation.
   static Future<bool> supportsIndexedDb({bool inWebWorker = false}) async {
-    return await checkIndexedDbSupport(null);
+    return await checkIndexedDbSupport();
   }
 }
 
