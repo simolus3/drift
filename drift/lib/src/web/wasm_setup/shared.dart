@@ -21,13 +21,15 @@ Future<bool> checkOpfsSupport() async {
   final storage = storageManager;
   if (storage == null) return false;
 
-  final opfsRoot = await storage.directory;
   const testFileName = '_drift_feature_detection';
 
+  FileSystemDirectoryHandle? opfsRoot;
   FileSystemFileHandle? fileHandle;
   FileSystemSyncAccessHandle? openedFile;
 
   try {
+    opfsRoot = await storage.directory;
+
     fileHandle = await opfsRoot.openFile(testFileName, create: true);
     openedFile = await fileHandle.createSyncAccessHandle();
 
@@ -49,7 +51,7 @@ Future<bool> checkOpfsSupport() async {
       openedFile.close();
     }
 
-    if (fileHandle != null) {
+    if (opfsRoot != null && fileHandle != null) {
       await opfsRoot.removeEntry(testFileName);
     }
   }
