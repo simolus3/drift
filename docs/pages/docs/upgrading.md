@@ -102,15 +102,14 @@ Also, please __create a backup of your project's files__ before running the migr
 your sources without further confirmation. When using git, it is sufficient to ensure that you have a clean state.
 
 To apply the migration, run `dart run moor_generator migrate` in your project's directory.
-When using Flutter, run `flutter pub run moor_generator migrate` instead.
 The migration tool will transform your pubspec, `build.yaml` files and Dart source files. It will also rename `.moor` files to
 `.drift` and patch imports as needed.
 
 After running the migration, please verify the changes to ensure that they match what you expect.
 Also, you may have to
 
-- Format your sources again: Run `dart format .` or `flutter format .`
-- Re-run the build: Run `dart run build_runner build` or `flutter pub run build_runner build --delete-conflicting-outputs`, respectively.
+- Format your sources again: Run `dart format .`.
+- Re-run the build: Run `dart run build_runner build -d`.
   - If you have been using generated [migration test files]({{ 'Advanced Features/migrations.md#exporting-the-schema' | pageUrl }}),
     re-generate them as well with `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`
     (you may have to adapt the command to the directories you use for schemas).

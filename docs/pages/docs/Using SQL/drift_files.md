@@ -34,7 +34,7 @@ We can now declare tables and queries in the drift file:
 
 {% include "blocks/snippet" snippets = drift_tables %}
 
-After running the build runner with `flutter pub run build_runner build`,
+After running the build runner with `dart run build_runner build`,
 drift will write the `database.g.dart`
 file which contains the `_$MyDb` superclass. Let's take a look at
 what we got:

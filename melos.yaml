@@ -24,7 +24,7 @@ scripts:
     exec: {concurrency: 1}
 
   build:
-    run: flutter pub run build_runner build --delete-conflicting-outputs
+    run: dart run build_runner build --delete-conflicting-outputs
     exec: {concurrency: 1}
     packageFilters:
       dependsOn: build_runner

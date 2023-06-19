@@ -22,7 +22,7 @@ for more details on this.
 ## Development
 
 As this app uses drift, it depends on code-generation.
-Use `flutter pub run build_runner build` to automatically build the generated
+Use `dart run build_runner build` to automatically build the generated
 code.
 
 ### Testing
@@ -47,14 +47,14 @@ incrementing your schema version. It will export the current schema of the
 database as a JSON file. You should check those generated files into source control.
 
 ```
-flutter pub run drift_dev schema dump lib/database/database.dart drift_schemas/
+dart run drift_dev schema dump lib/database/database.dart drift_schemas/
 ```
 
 Then, run the following command to automatically generate test utilities which
 you can use to write unit tests for schema migrations:
 
 ```
-flutter pub run drift_dev schema generate drift_schemas/ test/generated_migrations/
+dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
 ```
 
 An example for a schema test is in `test/migration_test.dart`.

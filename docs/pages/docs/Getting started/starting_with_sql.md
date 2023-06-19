@@ -78,7 +78,7 @@ in the previous step.
 {% include "blocks/snippet" snippets = dart_snippets name = '(full)' %}
 
 To generate the `database.g.dart` file which contains the `_$AppDb`
-superclass, run `flutter pub run build_runner build` on the command 
+superclass, run `dart run build_runner build` on the command
 line.
 
 ## What drift generates

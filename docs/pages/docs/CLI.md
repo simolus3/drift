@@ -13,10 +13,8 @@ The drift cli tool is experimental at the moment. Please report all issues you c
 ## Usage
 
 If your app depends on `drift_dev`, you're ready to use the CLI tool.
-In this article, we'll use `pub run ...` to start the tool.
-If you're using Flutter, you need to run `flutter pub run ...`.
-In either case, the tool should be run from the same folder where you keep your
-`pubspec.yaml`.
+In this article, we'll use `dart run drift_dev` to start the tool.
+The tool should be run from the same folder where you keep your `pubspec.yaml`.
 
 ## Analyze
 

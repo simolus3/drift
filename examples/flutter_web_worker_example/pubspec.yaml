@@ -13,10 +13,6 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.1.4
-  build_web_compilers: ^3.2.1
+  build_web_compilers: ^4.0.3
   flutter_lints: ^1.0.4
   drift_dev:
-
-dependency_overrides:
-  # Flutter's test packages don't support the latest analyzer yet.
-  test_api: ^0.4.16
