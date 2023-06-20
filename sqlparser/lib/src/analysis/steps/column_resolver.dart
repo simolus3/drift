@@ -58,6 +58,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   @override
   void visitCompoundSelectStatement(
       CompoundSelectStatement e, ColumnResolverContext arg) {
+    e.withClause?.accept(this, arg);
     e.base.accept(this, arg);
     visitList(e.additional, arg);
 

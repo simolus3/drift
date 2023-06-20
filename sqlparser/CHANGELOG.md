@@ -1,3 +1,7 @@
+## 0.30.3
+
+- Fix `WITH` clauses not being resolved for compound select statements.
+
 ## 0.30.2
 
 - Fix false-positive "unknown table" errors when the same table is used in a

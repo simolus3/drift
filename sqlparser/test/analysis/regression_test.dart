@@ -218,4 +218,27 @@ WHERE EXISTS(SELECT *
 
     expect(result.errors, isEmpty);
   });
+
+  test('regression test for #2492', () {
+    // https://github.com/simolus3/drift/issues/2492
+    final engine = SqlEngine()
+      ..registerTableFromSql(
+          'CREATE TABLE items (id INT NOT NULL PRIMARY KEY)');
+
+    final result = engine.analyze('''
+      WITH filtered_items AS (
+          SELECT *
+          FROM items
+          -- WHERE ...
+      )
+      select null as category
+      FROM filtered_items
+      UNION ALL
+      SELECT null as category
+      FROM filtered_items;
+''');
+
+    final select = result.root as BaseSelectStatement;
+    expect(select.resolvedColumns, hasLength(1));
+  });
 }
