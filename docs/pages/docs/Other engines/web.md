@@ -288,7 +288,7 @@ its features out of the box with `WasmDatabase.open`.
 
 ### Migrating from custom `WasmDatabase`s
 
-In older drift versios, you may have used a custom setup that loaded the WASM binary manually, created
+In older drift versions, you may have used a custom setup that loaded the WASM binary manually, created
 a `CommonSqlite3` instance with it and passed that to `WasmDatabase`.
 
 {% include "blocks/snippet" snippets = snippets name = "migrate-wasm" %}
@@ -322,7 +322,7 @@ object via `window.db`. If you need to quickly run a query to check the state of
 `db.exec(sql)`.
 If you need to delete your databases, there stored using local storage. You can clear all your data with `localStorage.clear()`.
 
-Web support is experimental at the moment, so please [report all issues](https://github.com/simolus3/drift/issues/new) you find.
+Web support is now stable, but please continue to [report all issues](https://github.com/simolus3/drift/issues/new) you find.
 
 ### Using IndexedDb
 
@@ -410,7 +410,7 @@ targets:
             - -O4
 ```
 
-Nowm, run the compiler and copy the compiled worker JS files to `web/`:
+Now, run the compiler and copy the compiled worker JS files to `web/`:
 
 ```shell
 #Debug mode
