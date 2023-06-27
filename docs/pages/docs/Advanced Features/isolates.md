@@ -1,7 +1,7 @@
 ---
 data:
   title: Isolates
-  description: Acessing drift databases on multiple isolates.
+  description: Accessing drift databases on multiple isolates.
 template: layouts/docs/single
 ---
 {% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
