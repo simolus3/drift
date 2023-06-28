@@ -13,7 +13,7 @@ import 'commands/schema.dart';
 import 'logging.dart';
 
 Future run(List<String> args) async {
-  final cli = MoorCli();
+  final cli = DriftDevCli();
   try {
     return await cli.run(args);
   } on UsageException catch (e) {
@@ -21,14 +21,14 @@ Future run(List<String> args) async {
   }
 }
 
-class MoorCli {
+class DriftDevCli {
   Logger get logger => Logger.root;
   late final CommandRunner _runner;
   late final MoorProject project;
 
   bool verbose = false;
 
-  MoorCli() {
+  DriftDevCli() {
     _runner = CommandRunner(
       'dart run drift_dev',
       'CLI utilities for the drift package, currently in an experimental state.',
@@ -72,7 +72,7 @@ class MoorCli {
 }
 
 abstract class MoorCommand extends Command {
-  final MoorCli cli;
+  final DriftDevCli cli;
 
   MoorCommand(this.cli);
 }

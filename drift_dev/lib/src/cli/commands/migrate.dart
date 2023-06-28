@@ -23,7 +23,7 @@ class MigrateCommand extends MoorCommand {
 
   late final AnalysisContext context;
 
-  MigrateCommand(MoorCli cli) : super(cli);
+  MigrateCommand(DriftDevCli cli) : super(cli);
 
   @override
   String get description => 'Migrate a project from moor to drift';

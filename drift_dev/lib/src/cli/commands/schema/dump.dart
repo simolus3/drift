@@ -24,7 +24,7 @@ class DumpSchemaCommand extends Command {
     return '${runner!.executableName} schema dump [arguments] <input> <output>';
   }
 
-  final MoorCli cli;
+  final DriftDevCli cli;
 
   DumpSchemaCommand(this.cli) {
     argParser.addSeparator("It's recommended to run this commend from the "
