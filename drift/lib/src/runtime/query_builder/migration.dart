@@ -482,6 +482,12 @@ class Migrator {
     return _db.customStatement(sql, args);
   }
 
+  /// A helper used by drift internally to implement the [step-by-step](https://drift.simonbinder.eu/docs/advanced-features/migrations/#step-by-step)
+  /// migration feature.
+  ///
+  /// This method implements an [OnUpgrade] callback by repeatedly invoking
+  /// [step] with the current version, assuming that [step] will perform an
+  /// upgrade from that version to the version returned by the callback.
   @experimental
   static OnUpgrade stepByStepHelper({
     required Future<int> Function(
@@ -493,7 +499,10 @@ class Migrator {
       final database = m._db;
 
       for (var target = from; target < to;) {
-        target = await step(target, database);
+        final newVersion = await step(target, database);
+        assert(newVersion > target);
+
+        target = newVersion;
       }
     };
   }
