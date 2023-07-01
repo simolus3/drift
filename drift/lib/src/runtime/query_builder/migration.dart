@@ -49,14 +49,22 @@ class MigrationStrategy {
 /// Runs migrations declared by a [MigrationStrategy].
 class Migrator {
   final GeneratedDatabase _db;
+  final VersionedSchema? _fixedVersion;
 
   /// Used internally by drift when opening the database.
-  Migrator(this._db);
+  Migrator(this._db, [this._fixedVersion]);
+
+  Iterable<DatabaseSchemaEntity> get _allSchemaEntities {
+    return switch (_fixedVersion) {
+      null => _db.allSchemaEntities,
+      var fixed => fixed.entities,
+    };
+  }
 
   /// Creates all tables specified for the database, if they don't exist
   @Deprecated('Use createAll() instead')
   Future<void> createAllTables() async {
-    for (final table in _db.allTables) {
+    for (final table in _allSchemaEntities.whereType<TableInfo>()) {
       await createTable(table);
     }
   }
@@ -64,7 +72,7 @@ class Migrator {
   /// Creates all tables, triggers, views, indexes and everything else defined
   /// in the database, if they don't exist.
   Future<void> createAll() async {
-    for (final entity in _db.allSchemaEntities) {
+    for (final entity in _allSchemaEntities) {
       await create(entity);
     }
   }
@@ -94,7 +102,7 @@ class Migrator {
   /// a view reads from may also warrant re-creating the view to make sure it's
   /// still valid.
   Future<void> recreateAllViews() async {
-    for (final entity in _db.allSchemaEntities) {
+    for (final entity in _allSchemaEntities) {
       if (entity is ViewInfo) {
         await drop(entity);
         await createView(entity);
@@ -119,7 +127,7 @@ class Migrator {
     return _issueCustomQuery(context.sql, context.boundVariables);
   }
 
-  /// Experimental utility method to alter columns of an existing table.
+  /// Alter columns of an existing tabe.
   ///
   /// Since sqlite does not provide a way to alter the type or constraint of an
   /// individual column, one needs to write a fairly complex migration procedure
@@ -141,7 +149,6 @@ class Migrator {
   ///
   /// [other alter]: https://www.sqlite.org/lang_altertable.html#otheralter
   /// [drift docs]: https://drift.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations
-  @experimental
   Future<void> alterTable(TableMigration migration) async {
     final foreignKeysEnabled =
         (await _db.customSelect('PRAGMA foreign_keys').getSingle())
@@ -473,6 +480,22 @@ class Migrator {
 
   Future<void> _issueCustomQuery(String sql, [List<dynamic>? args]) {
     return _db.customStatement(sql, args);
+  }
+
+  @experimental
+  static OnUpgrade stepByStepHelper({
+    required Future<int> Function(
+      int currentVersion,
+      GeneratedDatabase database,
+    ) step,
+  }) {
+    return (m, from, to) async {
+      final database = m._db;
+
+      for (var target = from; target < to;) {
+        target = await step(target, database);
+      }
+    };
   }
 }
 

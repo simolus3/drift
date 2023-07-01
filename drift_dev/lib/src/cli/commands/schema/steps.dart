@@ -18,7 +18,7 @@ class WriteVersions extends Command {
   WriteVersions(this.cli);
 
   @override
-  String get name => 'versions';
+  String get name => 'steps';
 
   @override
   String get description =>
@@ -26,7 +26,7 @@ class WriteVersions extends Command {
 
   @override
   String get invocation {
-    return '${runner!.executableName} schema versions <schema directory> <output file>';
+    return '${runner!.executableName} schema steps <schema directory> <output file>';
   }
 
   @override

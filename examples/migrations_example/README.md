@@ -20,9 +20,9 @@ Run
 dart run drift_dev schema generate drift_migrations/ test/generated/ --data-classes --companions
 ```
 
-We're also using test code inside `lib/` to run migrations with older definitions of tables.
-This isn't required for all migrations, but can be useful in some cases.
+Since we're using the step-by-step generator to make writing migrations easier, this command
+is used to generate a helper file in `lib/`:
 
 ```
-dart run drift_dev schema generate drift_migrations/ lib/src/generated
+dart run drift_dev schema steps drift_migrations/ lib/src/versions.dart
 ```

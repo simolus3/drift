@@ -6,6 +6,7 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:drift/internal/versioned_schema.dart';
 import 'package:drift/src/dsl/dsl.dart';
 import 'package:drift/src/runtime/api/options.dart';
 import 'package:drift/src/runtime/api/runtime_api.dart';

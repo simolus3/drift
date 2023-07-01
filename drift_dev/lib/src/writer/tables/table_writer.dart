@@ -598,8 +598,7 @@ class TableWriter extends TableOrViewWriter {
 
     if (table.isVirtual) {
       final stmt = table.virtualTableData!;
-      final moduleAndArgs =
-          asDartLiteral('${stmt.module}(${stmt.moduleArguments.join(', ')})');
+      final moduleAndArgs = asDartLiteral(stmt.moduleAndArgs);
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');

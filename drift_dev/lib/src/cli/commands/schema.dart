@@ -10,7 +10,7 @@ import 'schema/dump.dart';
 import 'schema/generate_utils.dart';
 
 import '../cli.dart';
-import 'schema/versions.dart';
+import 'schema/steps.dart';
 
 class SchemaCommand extends Command {
   @override
