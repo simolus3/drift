@@ -3,7 +3,7 @@ import 'dart:io';
 import '../cli.dart';
 
 class AnalyzeCommand extends MoorCommand {
-  AnalyzeCommand(MoorCli cli) : super(cli);
+  AnalyzeCommand(DriftDevCli cli) : super(cli);
 
   @override
   String get description => 'Analyze and lint drift database code';

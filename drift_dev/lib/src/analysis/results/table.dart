@@ -49,7 +49,7 @@ class DriftTable extends DriftElementWithResultSet {
   /// when creating the `CREATE TABLE` statement at runtime.
   final bool writeDefaultConstraints;
 
-  /// When non-null, the generated table class will override the
+  /// When non-empty, the generated table class will override the
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
@@ -169,21 +169,21 @@ class DriftTable extends DriftElementWithResultSet {
       '\$${className}Table';
 }
 
-abstract class DriftTableConstraint {}
+sealed class DriftTableConstraint {}
 
-class UniqueColumns extends DriftTableConstraint {
+final class UniqueColumns extends DriftTableConstraint {
   final Set<DriftColumn> uniqueSet;
 
   UniqueColumns(this.uniqueSet);
 }
 
-class PrimaryKeyColumns extends DriftTableConstraint {
+final class PrimaryKeyColumns extends DriftTableConstraint {
   final Set<DriftColumn> primaryKey;
 
   PrimaryKeyColumns(this.primaryKey);
 }
 
-class ForeignKeyTable extends DriftTableConstraint {
+final class ForeignKeyTable extends DriftTableConstraint {
   final List<DriftColumn> localColumns;
   final DriftTable otherTable;
 
@@ -213,6 +213,12 @@ class VirtualTableData {
   final List<String> moduleArguments;
 
   final RecognizedVirtualTableModule? recognized;
+
+  /// The module and the arguments in a single string, suitable for `CREATE
+  /// VIRTUAL TABLE` statements.
+  String get moduleAndArgs {
+    return '$module(${moduleArguments.join(', ')})';
+  }
 
   VirtualTableData(this.module, this.moduleArguments, this.recognized);
 }

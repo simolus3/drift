@@ -874,7 +874,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   @override
   Query? get query => null;
   @override
-  Set<String> get readTables => const {'groups', 'users'};
+  Set<String> get readTables => const {'users', 'groups'};
 }
 
 abstract class _$Database extends GeneratedDatabase {

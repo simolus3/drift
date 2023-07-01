@@ -7,7 +7,7 @@ import '../../analysis/results/results.dart';
 import '../cli.dart';
 
 class IdentifyDatabases extends MoorCommand {
-  IdentifyDatabases(MoorCli cli) : super(cli);
+  IdentifyDatabases(DriftDevCli cli) : super(cli);
 
   @override
   String get description =>

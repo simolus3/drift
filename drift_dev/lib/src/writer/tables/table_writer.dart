@@ -16,140 +16,24 @@ abstract class TableOrViewWriter {
   StringBuffer get buffer => emitter.buffer;
 
   void writeColumnGetter(DriftColumn column, bool isOverride) {
-    final isNullable = column.nullable;
-    final additionalParams = <String, String>{};
-    final expressionBuffer = StringBuffer();
-    final constraints = defaultConstraints(column);
-
-    for (final constraint in column.constraints) {
-      if (constraint is LimitingTextLength) {
-        final buffer =
-            StringBuffer(emitter.drift('GeneratedColumn.checkTextLength('));
-
-        if (constraint.minLength != null) {
-          buffer.write('minTextLength: ${constraint.minLength},');
-        }
-        if (constraint.maxLength != null) {
-          buffer.write('maxTextLength: ${constraint.maxLength}');
-        }
-        buffer.write(')');
-
-        additionalParams['additionalChecks'] = buffer.toString();
-      }
-
-      if (constraint is DartCheckExpression) {
-        final dartCheck = emitter.dartCode(constraint.dartExpression);
-        additionalParams['check'] = '() => $dartCheck';
-      }
-
-      if (constraint is ColumnGeneratedAs) {
-        final dartCode = emitter.dartCode(constraint.dartExpression);
-
-        additionalParams['generatedAs'] =
-            '${emitter.drift('GeneratedAs')}($dartCode, ${constraint.stored})';
-      }
-
-      if (constraint is PrimaryKeyColumn && constraint.isAutoIncrement) {
-        additionalParams['hasAutoIncrement'] = 'true';
-      }
-    }
-
-    additionalParams['type'] = emitter.drift(column.sqlType.toString());
+    bool? isRequiredForInsert;
 
     if (tableOrView is DriftTable) {
-      additionalParams['requiredDuringInsert'] = (tableOrView as DriftTable)
-          .isColumnRequiredForInsert(column)
-          .toString();
+      isRequiredForInsert =
+          (tableOrView as DriftTable).isColumnRequiredForInsert(column);
     }
 
-    if (column.customConstraints != null) {
-      additionalParams['\$customConstraints'] =
-          asDartLiteral(column.customConstraints!);
-    } else if (constraints.values.any((constraint) => constraint.isNotEmpty)) {
-      // Use the default constraints supported by drift
-
-      if (constraints.values.any(
-        (value) => value != constraints.values.first,
-      )) {
-        // One or more constraints are different depending on dialect, generate
-        // per-dialect constraints
-
-        final literalEntries = [
-          for (final entry in constraints.entries)
-            '${emitter.drift('SqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
-        ];
-
-        additionalParams['defaultConstraints'] =
-            '${emitter.drift('GeneratedColumn.constraintsDependsOnDialect')}({${literalEntries.join('\n')}})';
-      } else {
-        // Constraints are the same regardless of dialect, only generate one set
-        // of them
-
-        final constraint = asDartLiteral(constraints.values.first);
-
-        additionalParams['defaultConstraints'] =
-            '${emitter.drift('GeneratedColumn.constraintIsAlways')}($constraint)';
-      }
-    }
-
-    if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] =
-          emitter.dartCode(column.defaultArgument!);
-    }
-
-    if (column.clientDefaultCode != null) {
-      additionalParams['clientDefault'] =
-          emitter.dartCode(column.clientDefaultCode!);
-    }
-
-    final innerType = emitter.innerColumnType(column);
-    var type =
-        '${emitter.drift('GeneratedColumn')}<${emitter.dartCode(innerType)}>';
-    expressionBuffer
-      ..write(type)
-      ..write(
-          '(${asDartLiteral(column.nameInSql)}, aliasedName, $isNullable, ');
-
-    var first = true;
-    additionalParams.forEach((name, value) {
-      if (!first) {
-        expressionBuffer.write(', ');
-      } else {
-        first = false;
-      }
-
-      expressionBuffer
-        ..write(name)
-        ..write(': ')
-        ..write(value);
-    });
-
-    expressionBuffer.write(')');
-
-    final converter = column.typeConverter;
-    if (converter != null) {
-      // Generate a GeneratedColumnWithTypeConverter instance, as it has
-      // additional methods to check for equality against a mapped value.
-      final mappedType = emitter.dartCode(emitter.writer.dartType(column));
-
-      final converterCode = emitter.dartCode(emitter.writer
-          .readConverter(converter, forNullable: column.nullable));
-
-      type = '${emitter.drift('GeneratedColumnWithTypeConverter')}'
-          '<$mappedType, ${emitter.dartCode(innerType)}>';
-      expressionBuffer
-        ..write('.withConverter<')
-        ..write(mappedType)
-        ..write('>(')
-        ..write(converterCode)
-        ..write(')');
-    }
+    final (type, expression) = instantiateColumn(
+      column,
+      emitter,
+      isRequiredForInsert: isRequiredForInsert,
+    );
 
     writeMemoizedGetter(
       buffer: buffer,
       getterName: column.nameInDart,
       returnType: type,
-      code: expressionBuffer.toString(),
+      code: expression,
       hasOverride: isOverride,
     );
   }
@@ -275,6 +159,143 @@ abstract class TableOrViewWriter {
   void writeAsDslTable() {
     buffer.write(
         '@override\n${tableOrView.entityInfoName} get asDslTable => this;\n');
+  }
+
+  /// Returns the Dart type and the Dart expression creating a `GeneratedColumn`
+  /// instance in drift for the givne [column].
+  static (String, String) instantiateColumn(
+    DriftColumn column,
+    TextEmitter emitter, {
+    bool? isRequiredForInsert,
+  }) {
+    final isNullable = column.nullable;
+    final additionalParams = <String, String>{};
+    final expressionBuffer = StringBuffer();
+    final constraints = defaultConstraints(column);
+
+    for (final constraint in column.constraints) {
+      if (constraint is LimitingTextLength) {
+        final buffer =
+            StringBuffer(emitter.drift('GeneratedColumn.checkTextLength('));
+
+        if (constraint.minLength != null) {
+          buffer.write('minTextLength: ${constraint.minLength},');
+        }
+        if (constraint.maxLength != null) {
+          buffer.write('maxTextLength: ${constraint.maxLength}');
+        }
+        buffer.write(')');
+
+        additionalParams['additionalChecks'] = buffer.toString();
+      }
+
+      if (constraint is DartCheckExpression) {
+        final dartCheck = emitter.dartCode(constraint.dartExpression);
+        additionalParams['check'] = '() => $dartCheck';
+      }
+
+      if (constraint is ColumnGeneratedAs) {
+        final dartCode = emitter.dartCode(constraint.dartExpression);
+
+        additionalParams['generatedAs'] =
+            '${emitter.drift('GeneratedAs')}($dartCode, ${constraint.stored})';
+      }
+
+      if (constraint is PrimaryKeyColumn && constraint.isAutoIncrement) {
+        additionalParams['hasAutoIncrement'] = 'true';
+      }
+    }
+
+    additionalParams['type'] = emitter.drift(column.sqlType.toString());
+
+    if (isRequiredForInsert != null) {
+      additionalParams['requiredDuringInsert'] = isRequiredForInsert.toString();
+    }
+
+    if (column.customConstraints != null) {
+      additionalParams['\$customConstraints'] =
+          asDartLiteral(column.customConstraints!);
+    } else if (constraints.values.any((constraint) => constraint.isNotEmpty)) {
+      // Use the default constraints supported by drift
+
+      if (constraints.values.any(
+        (value) => value != constraints.values.first,
+      )) {
+        // One or more constraints are different depending on dialect, generate
+        // per-dialect constraints
+
+        final literalEntries = [
+          for (final entry in constraints.entries)
+            '${emitter.drift('SqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
+        ];
+
+        additionalParams['defaultConstraints'] =
+            '${emitter.drift('GeneratedColumn.constraintsDependsOnDialect')}({${literalEntries.join('\n')}})';
+      } else {
+        // Constraints are the same regardless of dialect, only generate one set
+        // of them
+
+        final constraint = asDartLiteral(constraints.values.first);
+
+        additionalParams['defaultConstraints'] =
+            '${emitter.drift('GeneratedColumn.constraintIsAlways')}($constraint)';
+      }
+    }
+
+    if (column.defaultArgument != null) {
+      additionalParams['defaultValue'] =
+          emitter.dartCode(column.defaultArgument!);
+    }
+
+    if (column.clientDefaultCode != null) {
+      additionalParams['clientDefault'] =
+          emitter.dartCode(column.clientDefaultCode!);
+    }
+
+    final innerType = emitter.innerColumnType(column);
+    var type =
+        '${emitter.drift('GeneratedColumn')}<${emitter.dartCode(innerType)}>';
+    expressionBuffer
+      ..write(type)
+      ..write(
+          '(${asDartLiteral(column.nameInSql)}, aliasedName, $isNullable, ');
+
+    var first = true;
+    additionalParams.forEach((name, value) {
+      if (!first) {
+        expressionBuffer.write(', ');
+      } else {
+        first = false;
+      }
+
+      expressionBuffer
+        ..write(name)
+        ..write(': ')
+        ..write(value);
+    });
+
+    expressionBuffer.write(')');
+
+    final converter = column.typeConverter;
+    if (converter != null) {
+      // Generate a GeneratedColumnWithTypeConverter instance, as it has
+      // additional methods to check for equality against a mapped value.
+      final mappedType = emitter.dartCode(emitter.writer.dartType(column));
+
+      final converterCode = emitter.dartCode(emitter.writer
+          .readConverter(converter, forNullable: column.nullable));
+
+      type = '${emitter.drift('GeneratedColumnWithTypeConverter')}'
+          '<$mappedType, ${emitter.dartCode(innerType)}>';
+      expressionBuffer
+        ..write('.withConverter<')
+        ..write(mappedType)
+        ..write('>(')
+        ..write(converterCode)
+        ..write(')');
+    }
+
+    return (type, expressionBuffer.toString());
   }
 }
 
@@ -577,8 +598,7 @@ class TableWriter extends TableOrViewWriter {
 
     if (table.isVirtual) {
       final stmt = table.virtualTableData!;
-      final moduleAndArgs =
-          asDartLiteral('${stmt.module}(${stmt.moduleArguments.join(', ')})');
+      final moduleAndArgs = asDartLiteral(stmt.moduleAndArgs);
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');

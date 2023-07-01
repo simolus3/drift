@@ -13,11 +13,13 @@ New features need new columns or tables, and outdated columns may have to be alt
 removed altogether.
 When making changes to your database schema, you need to write migrations enabling users with
 an old version of your app to convert to the database expected by the latest version.
-Drift provides a set of APIs to make writing migrations easy.
+With incorrect migrations, your database ends up in an inconsistent state which can cause crashes
+or data loss. This is why drift provides dedicated test tools and APIs to make writing migrations
+easy and safe.
 
 {% assign snippets = 'package:drift_docs/snippets/migrations/migrations.dart.excerpt.json' | readString | json_decode %}
 
-## Basics
+## Manual setup {#basics}
 
 Drift provides a migration API that can be used to gradually apply schema changes after bumping
 the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
@@ -43,7 +45,7 @@ you've actually added the column. In general, try to avoid running queries in mi
 `sqlite` can feel a bit limiting when it comes to migrations - there only are methods to create tables and columns.
 Existing columns can't be altered or removed. A workaround is described [here](https://stackoverflow.com/a/805508), it
 can be used together with `customStatement` to run the statements.
-Alternatively, [complex migrations](#complex-migrations) help automating this.
+Alternatively, [complex migrations](#complex-migrations) described on this page help automating this.
 
 ### Tips
 
@@ -59,6 +61,241 @@ Still, it can be useful to:
 With all of this combined, a migration callback can look like this:
 
 {% include "blocks/snippet" snippets = snippets name = 'structured' %}
+
+## Migration workflow
+
+While migrations can be written manually without additional help from drift, dedicated tools testing your migrations help
+to ensure that they are correct and aren't loosing any data.
+
+Drift's migration tooling consists of the following steps:
+
+1. After each change to your schema, use a tool to export the current schema into a separate file.
+2. Use a drift tool to generate test code able to verify that your migrations are bringing the database
+   into the expected schema.
+3. Use generated code to make writing schema migrations easier.
+
+### Setup
+
+As described by the first step, you can export the schema of your database into a JSON file.
+It is recommended to do this once intially, and then again each time you change your schema
+and increase the `schemaVersion` getter in the database.
+
+You should store these exported files in your repository and include them in source control.
+This guide assumes a top-level `drift_schemas/` folder in your project, like this:
+
+```
+my_app
+  .../
+  lib/
+    database/
+      database.dart
+      database.g.dart
+  test/
+    generated_migrations/
+      schema.dart
+      schema_v1.dart
+      schema_v2.dart
+  drift_schemas/
+    drift_schema_v1.json
+    drift_schema_v2.json
+  pubspec.yaml
+```
+
+Of course, you can also use another folder or a subfolder somewhere if that suits your workflow
+better.
+
+{% block "blocks/alert" title="Examples available" %}
+Exporting schemas and generating code for them can't be done with `build_runner` alone, which is
+why this setup described here is necessary.
+
+We hope it's worth it though! Verifying migrations can give you confidence that you won't run
+into issues after changing your database.
+If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
+
+Also there are two examples in the drift repository which may be useful as a reference:
+
+- A [Flutter app](https://github.com/simolus3/drift/tree/latest-release/examples/app)
+- An [example specific to migrations](https://github.com/simolus3/drift/tree/latest-release/examples/migrations_example).
+{% endblock %}
+
+#### Exporting the schema
+
+To begin, lets create the first schema representation:
+
+```
+$ mkdir drift_schemas
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/
+```
+
+This instructs the generator to look at the database defined in `lib/database/database.dart` and extract
+its schema into the new folder.
+
+After making a change to your database schema, you can run the command again. For instance, let's say we
+made a change to our tables and increased the `schemaVersion` to `2`. To dump the new schema, just run the
+command again:
+
+```
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/
+```
+
+You'll need to run this command every time you change the schema of your database and increment the `schemaVersion`.
+
+Drift will name the files in the folder `drift_schema_vX.json`, where `X` is the current `schemaVersion` of your
+database.
+If drift is unable to extract the version from your `schemaVersion` getter, provide the full path explicitly:
+
+```
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v3.json
+```
+
+{% block "blocks/alert" title='<i class="fas fa-lightbulb"></i> Dumping a database' color="success" %}
+If, instead of exporting the schema of a database class, you want to export the schema of an existing sqlite3
+database file, you can do that as well! `drift_dev schema dump` recognizes a sqlite3 database file as its first
+argument and can extract the relevant schema from there.
+{% endblock %}
+
+### Generating step-by-step migrations {#step-by-step}
+
+With all your database schemas exported into a folder, drift can generate code that makes it much
+easier to write schema migrations "step-by-step" (incrementally from each version to the next one).
+
+This code is stored in a single-file, which you can generate like this:
+
+```
+$ dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
+```
+
+The generated code contains a `stepByStep` method which you can use as a callback to the `onUpgrade`
+parameter of your `MigrationStrategy`.
+As an example, here is the [initial](#basics) migration shown at the top of this page, but rewritten using
+the generated `stepByStep` function:
+
+{% include "blocks/snippet" snippets = snippets name = 'stepbystep' %}
+
+`stepByStep` expects a callback for each schema upgrade responsible for running the partial migration.
+That callback receives two parameters: A migrator `m` (similar to the regular migrator you'd get for
+`onUpgrade` callbacks) and a `schema` parameter that gives you access to the schema at the version you're
+migrating to.
+For instance, in the `from1To2` function, `schema` provides getters for the database schema at version 2.
+The migrator passed to the function is also set up to consider that specific version by default.
+A call to `m.recreateAllViews()` would re-create views at the expected state of schema version 2, for instance.
+
+### Writing tests
+
+After you've exported the database schemas into a folder, you can generate old versions of your database class
+based on those schema files.
+For verifications, drift will generate a much smaller database implementation that can only be used to
+test migrations.
+
+You can put this test code whereever you want, but it makes sense to put it in a subfolder of `test/`.
+If we wanted to write them to `test/generated_migrations/`, we could use
+
+```
+$ dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+```
+
+After that setup, it's finally time to write some tests! For instance, a test could look like this:
+
+```dart
+import 'package:my_app/database/database.dart';
+
+import 'package:test/test.dart';
+import 'package:drift_dev/api/migrations.dart';
+
+// The generated directory from before.
+import 'generated_migrations/schema.dart';
+
+void main() {
+  late SchemaVerifier verifier;
+
+  setUpAll(() {
+    // GeneratedHelper() was generated by drift, the verifier is an api
+    // provided by drift_dev.
+    verifier = SchemaVerifier(GeneratedHelper());
+  });
+
+  test('upgrade from v1 to v2', () async {
+    // Use startAt(1) to obtain a database connection with all tables
+    // from the v1 schema.
+    final connection = await verifier.startAt(1);
+    final db = MyDatabase(connection);
+
+    // Use this to run a migration to v2 and then validate that the
+    // database has the expected schema.
+    await verifier.migrateAndValidate(db, 2);
+  });
+}
+```
+
+In general, a test looks like this:
+
+1. Use `verifier.startAt()` to obtain a [connection](https://drift.simonbinder.eu/api/drift/databaseconnection-class)
+  to a database with an initial schema.
+  This database contains all your tables, indices and triggers from that version, created by using `Migrator.createAll`.
+2. Create your application database with that connection - you can forward the `DatabaseConnection` to the
+  `GeneratedDatabase.connect()` constructor on the parent class for this.
+3. Call `verifier.migrateAndValidate(db, version)`. This will initiate a migration towards the target version (here, `2`).
+  Unlike the database created by `startAt`, this uses the migration logic you wrote for your database.
+
+`migrateAndValidate` will extract all `CREATE` statement from the `sqlite_schema` table and semantically compare them.
+If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fail your test.
+
+{% block "blocks/alert" title="Writing testable migrations" %}
+To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if your current version is `v3`),
+you're `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
+For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
+{% endblock %}
+
+#### Verifying data integrity
+
+In addition to the changes made in your table structure, its useful to ensure that data that was present before a migration
+is still there after it ran.
+You can use `schemaAt` to obtain a raw `Database` from the `sqlite3` package in addition to a connection.
+This can be used to insert data before a migration. After the migration ran, you can then check that the data is still there.
+
+Note that you can't use the regular database class from you app for this, since its data classes always expect the latest
+schema. However, you can instruct drift to generate older snapshots of your data classes and companions for this purpose.
+To enable this feature, pass the `--data-classes` and `--companions` command-line arguments to the `drift_dev schema generate`
+command:
+
+```
+$ dart run drift_dev schema generate --data-classes --companions drift_schemas/ test/generated_migrations/
+```
+
+Then, you can import the generated classes with an alias:
+
+```dart
+import 'generated_migrations/schema_v1.dart' as v1;
+import 'generated_migrations/schema_v2.dart' as v2;
+```
+
+This can then be used to manually create and verify data at a specific version:
+
+```dart
+void main() {
+  // ...
+  test('upgrade from v1 to v2', () async {
+    final schema = await verifier.schemaAt(1);
+
+    // Add some data to the users table, which only has an id column at v1
+    final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
+    await oldDb.into(oldDb.users).insert(const v1.UsersCompanion(id: Value(1)));
+    await oldDb.close();
+
+    // Run the migration and verify that it adds the name column.
+    final db = Database(schema.newConnection());
+    await verifier.migrateAndValidate(db, 2);
+    await db.close();
+
+    // Make sure the user is still here
+    final migratedDb = v2.DatabaseAtV2.connect(schema.newConnection());
+    final user = await migratedDb.select(migratedDb.users).getSingle();
+    expect(user.id, 1);
+    expect(user.name, 'no name'); // default from the migration
+    await migratedDb.close();
+  });
+}
+```
 
 ## Complex migrations
 
@@ -234,208 +471,6 @@ the database file and will re-create it when installing the app again.
 
 You can also delete and re-create all tables every time your app is opened, see [this comment](https://github.com/simolus3/drift/issues/188#issuecomment-542682912)
 on how that can be achieved.
-
-## Verifying migrations
-
-Drift contains **experimental** support to verify the integrity of your migrations in unit tests.
-
-To support this feature, drift can help you generate
-
-- a json representation of your database schema
-- test databases operating on an older schema version
-
-By using those test databases, drift can help you test migrations from and to any schema version.
-
-{% block "blocks/alert" title="Complex topic ahead" %}
-> Writing schema tests is an advanced topic that requires a fairly complex setup described here.
-  If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
-  Also, there's a working example [in the drift repository](https://github.com/simolus3/drift/tree/latest-release/examples/migrations_example).
-{% endblock %}
-
-### Setup
-
-To use this feature, drift needs to know all schemas of your database. A schema is the set of all tables, triggers
-and indices that you use in your database.
-
-You can use the [CLI tools]({{ "../CLI.md" | pageUrl }}) to export a json representation of your schema.
-In this guide, we'll assume a file layout like the following, where `my_app` is the root folder of your project:
-
-```
-my_app
-  .../
-  lib/
-    database/
-      database.dart
-      database.g.dart
-  test/
-    generated_migrations/
-      schema.dart
-      schema_v1.dart
-      schema_v2.dart
-  drift_schemas/
-    drift_schema_v1.json
-    drift_schema_v2.json
-  pubspec.yaml
-```
-
-The generated migrations implementation and the schema jsons will be generated by drift.
-To start writing schemas, create an empty folder named `drift_schemas` in your project.
-Of course, you can also choose a different name or use a nested subfolder if you want to.
-
-#### Exporting the schema
-
-To begin, let's create the first schema representation:
-
-```
-$ mkdir drift_schemas
-$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/
-```
-
-This instructs the generator to look at the database defined in `lib/database/database.dart` and extract
-its schema into the new folder.
-
-After making a change to your database schema, you can run the command again. For instance, let's say we
-made a change to our tables and increased the `schemaVersion` to `2`. To dump the new schema, just run the
-command again:
-
-```
-$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/
-```
-
-You'll need to run this command every time you change the schema of your database and increment the `schemaVersion`.
-
-Drift will name the files in the folder `drift_schema_vX.json`, where `X` is the current `schemaVersion` of your
-database.
-If drift is unable to extract the version from your `schemaVersion` getter, provide the full path explicitly:
-
-```
-$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v3.json
-```
-
-{% block "blocks/alert" title='<i class="fas fa-lightbulb"></i> Dumping a database' color="success" %}
-If, instead of exporting the schema of a database class, you want to export the schema of an existing sqlite3
-database file, you can do that as well! `drift_dev schema dump` recognizes a sqlite3 database file as its first
-argument and can extract the relevant schema from there.
-{% endblock %}
-
-#### Generating test code
-
-After you exported the database schema into a folder, you can generate old versions of your database class
-based on those schema files.
-For verifications, drift will generate a much smaller database implementation that can only be used to
-test migrations.
-
-You can put this test code whereever you want, but it makes sense to put it in a subfolder of `test/`.
-If we wanted to write them to `test/generated_migrations/`, we could use
-
-```
-$ dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
-```
-
-### Writing tests
-
-After that setup, it's finally time to write some tests! For instance, a test could look like this:
-
-```dart
-import 'package:my_app/database/database.dart';
-
-import 'package:test/test.dart';
-import 'package:drift_dev/api/migrations.dart';
-
-// The generated directory from before.
-import 'generated_migrations/schema.dart';
-
-void main() {
-  late SchemaVerifier verifier;
-
-  setUpAll(() {
-    // GeneratedHelper() was generated by drift, the verifier is an api
-    // provided by drift_dev.
-    verifier = SchemaVerifier(GeneratedHelper());
-  });
-
-  test('upgrade from v1 to v2', () async {
-    // Use startAt(1) to obtain a database connection with all tables
-    // from the v1 schema.
-    final connection = await verifier.startAt(1);
-    final db = MyDatabase.connect(connection);
-
-    // Use this to run a migration to v2 and then validate that the
-    // database has the expected schema.
-    await verifier.migrateAndValidate(db, 2);
-  });
-}
-```
-
-In general, a test looks like this:
-
-1. Use `verifier.startAt()` to obtain a [connection](https://drift.simonbinder.eu/api/drift/databaseconnection-class)
-  to a database with an initial schema.
-  This database contains all your tables, indices and triggers from that version, created by using `Migrator.createAll`.
-2. Create your application database with that connection - you can forward the `DatabaseConnection` to the
-  `GeneratedDatabase.connect()` constructor on the parent class for this.
-3. Call `verifier.migrateAndValidate(db, version)`. This will initiate a migration towards the target version (here, `2`).
-  Unlike the database created by `startAt`, this uses the migration logic you wrote for your database.
-
-`migrateAndValidate` will extract all `CREATE` statement from the `sqlite_schema` table and semantically compare them.
-If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fail your test.
-
-{% block "blocks/alert" title="Writing testable migrations" %}
-To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if your current version is `v3`),
-you're `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
-For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
-{% endblock %}
-
-#### Verifying data integrity
-
-In addition to the changes made in your table structure, its useful to ensure that data that was present before a migration
-is still there after it ran.
-You can use `schemaAt` to obtain a raw `Database` from the `sqlite3` package in addition to a connection.
-This can be used to insert data before a migration. After the migration ran, you can then check that the data is still there.
-
-Note that you can't use the regular database class from you app for this, since its data classes always expect the latest
-schema. However, you can instruct drift to generate older snapshots of your data classes and companions for this purpose.
-To enable this feature, pass the `--data-classes` and `--companions` command-line arguments to the `drift_dev schema generate`
-command:
-
-```
-$ dart run drift_dev schema generate --data-classes --companions drift_schemas/ test/generated_migrations/
-```
-
-Then, you can import the generated classes with an alias:
-
-```dart
-import 'generated_migrations/schema_v1.dart' as v1;
-import 'generated_migrations/schema_v2.dart' as v2;
-```
-
-This can then be used to manually create and verify data at a specific version:
-
-```dart
-void main() {
-  // ...
-  test('upgrade from v1 to v2', () async {
-    final schema = await verifier.schemaAt(1);
-
-    // Add some data to the users table, which only has an id column at v1
-    final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
-    await oldDb.into(oldDb.users).insert(const v1.UsersCompanion(id: Value(1)));
-    await oldDb.close();
-
-    // Run the migration and verify that it adds the name column.
-    final db = Database(schema.newConnection());
-    await verifier.migrateAndValidate(db, 2);
-    await db.close();
-
-    // Make sure the user is still here
-    final migratedDb = v2.DatabaseAtV2.connect(schema.newConnection());
-    final user = await migratedDb.select(migratedDb.users).getSingle();
-    expect(user.id, 1);
-    expect(user.name, 'no name'); // default from the migration
-    await migratedDb.close();
-  });
-}
-```
 
 ## Verifying a database schema at runtime
 

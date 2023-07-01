@@ -13,7 +13,7 @@ class TestDriftProject {
 
   Future<void> runDriftCli(Iterable<String> args) {
     return IOOverrides.runZoned(
-      () => MoorCli().run(args),
+      () => DriftDevCli().run(args),
       getCurrentDirectory: () => root,
     );
   }

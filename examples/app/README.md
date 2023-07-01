@@ -31,7 +31,7 @@ Drift databases don't depend on platform-channels or Flutter-specific features
 by default. This means that they can easily be used in unit tests.
 One such test is in `test/database_test.dart`
 
-#### Testing migrations
+### Migration
 
 After changing the structure of your database schema, for instance by adding
 new tables or altering columns, you need to write a migration to ensure that
@@ -55,6 +55,13 @@ you can use to write unit tests for schema migrations:
 
 ```
 dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+```
+
+To make migrations easier, this command updates the `lib/database/schema_versions.dart`
+file containing snapshots of older database schema:
+
+```
+dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
 ```
 
 An example for a schema test is in `test/migration_test.dart`.

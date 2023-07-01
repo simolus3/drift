@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.16.1 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -15,9 +15,8 @@ dependencies:
   file_picker: ^5.2.5
   flutter_colorpicker: ^1.0.3
   flutter_riverpod: ^2.3.0
-  go_router: ^6.2.0
+  go_router: ^9.0.0
   intl: ^0.18.0
-  http: ^0.13.4 # used to load sqlite3 wasm files on the web
   sqlite3_flutter_libs: ^0.5.5
   sqlite3: ^2.0.0
   path_provider: ^2.0.9
@@ -34,7 +33,7 @@ dev_dependencies:
   # web workers for drift AND want to compile those web workers through `build_runner`.
   # Either way, using this package with Flutter requires a delicate setup described in
   # `build.yaml`.
-  build_web_compilers: ^3.2.2
+  build_web_compilers: ^4.0.0
   build: ^2.2.1
 
 flutter:
