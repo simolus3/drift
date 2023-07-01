@@ -1,3 +1,8 @@
+## 2.10.0
+
+- Adds the `schema steps` command to `drift_dev`. It generates an API making it
+  easier to write safe schema migrations ([docs](https://drift.simonbinder.eu/docs/advanced-features/migrations/#step-by-step)).
+
 ## 2.9.0
 
 - Forbid `schemaVersion` returning `0`, as this causes issues in the migrator.
