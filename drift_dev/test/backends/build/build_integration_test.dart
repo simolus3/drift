@@ -87,7 +87,7 @@ class FooTable extends Table {
   IntColumn get fooId => integer()();
 }
 
-@DriftDatabase(include: {'queries.drift'})
+@DriftDatabase(tables: [FooTable], include: {'queries.drift'})
 class MyDatabase {}
 ''',
         'a|lib/tables.drift': '''
@@ -380,6 +380,28 @@ q: SELECT 1;
         contains(r'Selectable<int> q()'),
       )
     }, result.dartOutputs, result);
+  });
+
+  test('warns when Dart tables are included', () async {
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'b.dart'})
+class MyDatabase {}
+''',
+        'a|lib/b.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  IntColumn get id => integer().primaryKey()();
+}
+''',
+      },
+      logger: loggerThat(emits(emits(isA<LogRecord>().having((e) => e.message,
+          'message', contains('will be included in this database: MyTable'))))),
+    );
   });
 
   group('reports issues', () {

@@ -1,4 +1,3 @@
-import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../utils/entity_reference_sorter.dart';
@@ -8,6 +7,7 @@ import '../driver/state.dart';
 import '../results/file_results.dart';
 import '../results/results.dart';
 import 'dart/helper.dart';
+import 'drift/sqlparser/mapping.dart';
 import 'queries/query_analyzer.dart';
 import 'queries/required_variables.dart';
 
@@ -52,6 +52,34 @@ class FileAnalyzer {
               .followedBy(element.references)
               .transitiveClosureUnderReferences()
               .sortTopologicallyOrElse(driver.backend.log.severe);
+
+          // We will generate code for all available elements - even those only
+          // reachable through imports. If that means we're pulling in a table
+          // from a Dart file that hasn't been added to `tables`, emit a warning.
+          // https://github.com/simolus3/drift/issues/2462#issuecomment-1620107751
+          if (element is DriftDatabase) {
+            final explicitlyAdded = <DriftElementWithResultSet>{
+              ...element.declaredTables,
+              ...element.declaredViews,
+            };
+            final implicitlyAdded = availableElements
+                .whereType<DriftElementWithResultSet>()
+                .where((element) =>
+                    element.declaration.isDartDeclaration &&
+                    !explicitlyAdded.contains(element));
+
+            if (implicitlyAdded.isNotEmpty) {
+              final names = implicitlyAdded
+                  .map((e) => e.definingDartClass?.toString() ?? e.schemaName)
+                  .join(', ');
+
+              driver.backend.log.warning(
+                'Due to includes added to the database, the following Dart '
+                'tables which have not been added to `tables` or `views` will '
+                'be included in this database: $names',
+              );
+            }
+          }
 
           for (final query in element.declaredQueries) {
             final engine =
