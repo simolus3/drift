@@ -112,6 +112,9 @@ Note that Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cg
 preventing dedicated workers to be loaded from cache with these headers. However, shared and service workers
 are unaffected by this.
 
+These headers are incompatible with [Google Auth
+Popups](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#:~:text=com%2Fgsi%2F%3B-,Cross%20Origin%20Opener%20Policy,popup%20window%20or%20similar%20bugs.).
+
 ### Setup in Dart
 
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
