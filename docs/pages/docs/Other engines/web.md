@@ -108,12 +108,21 @@ Unfortunately, there's no way (that I'm aware of) to add these headers onto `flu
 Drift will fall back to a (slightly slower) implementation in that case (see [storages](#storages)),
 but we recommend researching and enabling these headers in production if possible.
 
-Note that Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cgi?id=245346)
+{% block "blocks/alert" title="Downsides of COOP and COEP" color="danger" %}
+While these headers are required for the origin-private FileSystem Access API
+and bring a security benefit, there are some known problems:
+
+- These headers are incompatible with some other packages opening popups,
+   such as the ones used for [Google Auth](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid?hl=en#cross_origin_opener_policy).
+- Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cgi?id=245346)
 preventing dedicated workers to be loaded from cache with these headers. However, shared and service workers
 are unaffected by this.
 
-These headers are incompatible with [Google Auth
-Popups](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#:~:text=com%2Fgsi%2F%3B-,Cross%20Origin%20Opener%20Policy,popup%20window%20or%20similar%20bugs.).
+Please carefully test your app with these headers to evaluate whether you might
+be affected by these limitations.
+If the headers break your app, you should not enable them - drift will fall back
+to another (potentially slower) implementation in that case.
+{% endblock %}
 
 ### Setup in Dart
 
