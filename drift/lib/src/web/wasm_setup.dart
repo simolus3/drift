@@ -93,11 +93,19 @@ class WasmDatabaseOpener {
     // format to avoid data loss (e.g. after a browser update that enables a
     // otherwise preferred storage implementation). In the future, we might want
     // to consider migrating between storage implementations as well.
-    if (_existsInIndexedDb) {
+    if (_existsInIndexedDb &&
+        (availableImplementations
+                .contains(WasmStorageImplementation.sharedIndexedDb) ||
+            availableImplementations
+                .contains(WasmStorageImplementation.unsafeIndexedDb))) {
       availableImplementations.removeWhere((element) =>
           element != WasmStorageImplementation.sharedIndexedDb &&
           element != WasmStorageImplementation.unsafeIndexedDb);
-    } else if (_existsInOpfs) {
+    } else if (_existsInOpfs &&
+        (availableImplementations
+                .contains(WasmStorageImplementation.opfsShared) ||
+            availableImplementations
+                .contains(WasmStorageImplementation.opfsLocks))) {
       availableImplementations.removeWhere((element) =>
           element != WasmStorageImplementation.opfsShared &&
           element != WasmStorageImplementation.opfsLocks);
