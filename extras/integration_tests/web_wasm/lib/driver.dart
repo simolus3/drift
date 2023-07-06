@@ -20,8 +20,6 @@ class TestAssetServer {
   final BuildDaemonClient buildRunner;
   late final HttpServer server;
 
-  bool addCoopAndCoepHeaders = true;
-
   TestAssetServer(this.buildRunner);
 
   Future<void> close() async {
@@ -69,17 +67,25 @@ class TestAssetServer {
     final proxy = proxyHandler('http://localhost:$assetServerPort/web/');
     server.server = await serve(
       (request) async {
-        final response = await proxy(request);
+        final pathSegments = request.url.pathSegments;
 
-        if (server.addCoopAndCoepHeaders) {
-          return response.change(headers: {
-            // Needed for shared array buffers to work
-            'Cross-Origin-Opener-Policy': 'same-origin',
-            'Cross-Origin-Embedder-Policy': 'require-corp'
-          });
+        if (pathSegments.isNotEmpty && pathSegments[0] == 'no-coep') {
+          // Serve stuff under /no-coep like the regular website, but without
+          // adding the security headers.
+          return await proxy(request.change(path: 'no-coep'));
+        } else {
+          final response = await proxy(request);
+
+          if (!request.url.path.startsWith('/no-coep')) {
+            return response.change(headers: {
+              // Needed for shared array buffers to work
+              'Cross-Origin-Opener-Policy': 'same-origin',
+              'Cross-Origin-Embedder-Policy': 'require-corp'
+            });
+          }
+
+          return response;
         }
-
-        return response;
       },
       'localhost',
       8080,

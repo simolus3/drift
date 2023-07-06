@@ -176,6 +176,22 @@ void main() {
             expect(await driver.amountOfRows, 1);
           },
         );
+
+        if (!browser.supports(WasmStorageImplementation.opfsShared)) {
+          test('uses indexeddb after OPFS becomes unavailable', () async {
+            // This browser only supports OPFS with the right headers. If they
+            // are ever removed, data is lost (nothing we could do about that),
+            // but drift should continue to work.
+            await driver.openDatabase(WasmStorageImplementation.opfsLocks);
+            await driver.insertIntoDatabase();
+            expect(await driver.amountOfRows, 1);
+            await Future.delayed(const Duration(seconds: 2));
+
+            await driver.driver.get('http://localhost:8080/no-coep');
+            await driver.openDatabase();
+            expect(await driver.amountOfRows, isZero);
+          });
+        }
       }
     });
   }
