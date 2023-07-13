@@ -1,3 +1,9 @@
+## 2.10.0
+
+- Add the `schema steps` command to generate help in writing step-by-step schema migrations.
+- Report a warning when Dart tables are implicitly added due to `include`. They should be
+  added to a database via `tables` or `views` explicitly.
+
 ## 2.9.0
 
 - Add `fatal_warnings` builder option to fail the build when drift reports warnings.

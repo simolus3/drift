@@ -2,6 +2,8 @@
 
 - Adds the `schema steps` command to `drift_dev`. It generates an API making it
   easier to write safe schema migrations ([docs](https://drift.simonbinder.eu/docs/advanced-features/migrations/#step-by-step)).
+- Fix drift WASM not being unusable after a previous database implementation becomes
+  unavailable in the browser.
 
 ## 2.9.0
 
