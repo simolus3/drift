@@ -83,4 +83,64 @@ void main() {
       ),
     );
   });
+
+  test('parses multiple statements with parseMultiple()', () {
+    const sql = '''
+    CREATE TABLE users (
+      id INTEGER PRIMARY KEY,
+      name TEXT,
+      email TEXT
+    );
+
+    SELECT * FROM users WHERE id = 1;
+
+    INSERT INTO users (name, email) VALUES ('John Doe', 'john@example.com');
+  ''';
+
+    final engine = SqlEngine();
+    final ast = engine.parseMultiple(sql).rootNode;
+    enforceHasSpan(ast);
+
+    enforceEqual(
+      ast,
+      SemicolonSeparatedStatements(
+        [
+          CreateTableStatement(
+            tableName: 'users',
+            columns: [
+              ColumnDefinition(
+                columnName: 'id',
+                typeName: 'INTEGER',
+                constraints: [PrimaryKeyColumn(null)],
+              ),
+              ColumnDefinition(columnName: 'name', typeName: 'TEXT'),
+              ColumnDefinition(columnName: 'email', typeName: 'TEXT'),
+            ],
+          ),
+          SelectStatement(
+            columns: [StarResultColumn()],
+            from: TableReference('users'),
+            where: BinaryExpression(
+              Reference(columnName: 'id'),
+              token(TokenType.equal),
+              NumericLiteral(1),
+            ),
+          ),
+          InsertStatement(
+            table: TableReference('users'),
+            targetColumns: [
+              Reference(columnName: 'name'),
+              Reference(columnName: 'email')
+            ],
+            source: ValuesSource([
+              Tuple(expressions: [
+                StringLiteral('John Doe'),
+                StringLiteral('john@example.com'),
+              ]),
+            ]),
+          ),
+        ],
+      ),
+    );
+  });
 }

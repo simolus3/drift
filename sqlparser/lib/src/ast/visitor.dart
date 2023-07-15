@@ -92,6 +92,7 @@ abstract class AstVisitor<A, R> {
   R visitNamedVariable(ColonNamedVariable e, A arg);
 
   R visitBlock(Block block, A arg);
+  R visitSemicolonSeparatedStatements(SemicolonSeparatedStatements e, A arg);
   R visitBeginTransaction(BeginTransactionStatement e, A arg);
   R visitCommitStatement(CommitStatement e, A arg);
 
@@ -379,6 +380,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitBlock(Block e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R? visitSemicolonSeparatedStatements(SemicolonSeparatedStatements e, A arg) {
     return defaultNode(e, arg);
   }
 

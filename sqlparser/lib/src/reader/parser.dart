@@ -185,6 +185,19 @@ class Parser {
         InvalidStatement();
   }
 
+  SemicolonSeparatedStatements safeStatements() {
+    final first = _peek;
+    final statements = <Statement>[];
+    while (!_isAtEnd) {
+      final statement = _parseAsStatement(_statementWithoutSemicolon);
+      if (statement != null) {
+        statements.add(statement);
+      }
+    }
+
+    return SemicolonSeparatedStatements(statements)..setSpan(first, _previous);
+  }
+
   /// Parses the remaining input as column constraints.
   List<ColumnConstraint> columnConstraintsUntilEnd() {
     final constraints = <ColumnConstraint>[];

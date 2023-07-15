@@ -8,6 +8,26 @@ abstract class Statement extends AstNode {
   Token? semicolon;
 }
 
+/// A list of statements, separated by semicolons.
+class SemicolonSeparatedStatements extends AstNode {
+  List<Statement> statements;
+
+  SemicolonSeparatedStatements(this.statements);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSemicolonSeparatedStatements(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => statements;
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    statements = transformer.transformChildren(statements, this, arg);
+  }
+}
+
 /// A statement that reads from an existing table structure and has an optional
 /// `WITH` clause.
 abstract class CrudStatement extends Statement {

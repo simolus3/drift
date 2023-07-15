@@ -601,6 +601,13 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitSemicolonSeparatedStatements(
+      SemicolonSeparatedStatements e, void arg) {
+    _currentAs<SemicolonSeparatedStatements>(e);
+    _checkChildren(e);
+  }
+
+  @override
   void visitSetComponent(SetComponent e, void arg) {
     _currentAs<SetComponent>(e);
     _checkChildren(e);

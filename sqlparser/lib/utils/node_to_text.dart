@@ -1047,6 +1047,16 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitSemicolonSeparatedStatements(
+      SemicolonSeparatedStatements e, void arg) {
+    for (final stmt in e.statements) {
+      visit(stmt, arg);
+      buffer.writeln(';');
+      needsSpace = false;
+    }
+  }
+
+  @override
   void visitSetComponent(SetComponent e, void arg) {
     visit(e.column, arg);
     symbol('=', spaceBefore: true, spaceAfter: true);

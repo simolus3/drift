@@ -1,3 +1,7 @@
+## 0.31.0-dev
+
+- Add `SqlEngine.parseMultiple` to parse multiple statements into one AST.
+
 ## 0.30.3
 
 - Fix `WITH` clauses not being resolved for compound select statements.

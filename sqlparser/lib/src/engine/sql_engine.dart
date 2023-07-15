@@ -143,6 +143,18 @@ class SqlEngine {
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
   }
 
+  /// Parses multiple [sql] statements, separated by a semicolon.
+  ///
+  /// You can use the [AstNode.children] of the returned [ParseResult.rootNode]
+  /// to inspect the returned statements.
+  ParseResult parseMultiple(String sql) {
+    final tokens = tokenize(sql);
+    final parser = _createParser(tokens);
+
+    final ast = parser.safeStatements();
+    return ParseResult._(ast, tokens, parser.errors, sql, null);
+  }
+
   /// Parses [sql] as a list of column constraints.
   ///
   /// The [ParseResult.rootNode] will be a [ColumnDefinition] with the parsed
