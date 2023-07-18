@@ -188,8 +188,10 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
       _StatementBasedTransactionExecutor this._parent, int depth)
       : _delegate = _parent._delegate,
         _startCommand = 'SAVEPOINT s$depth',
-        _commitCommand = 'RELEASE s$depth',
-        _rollbackCommand = 'ROLLBACK TO s$depth',
+        _commitCommand = _parent._db.dialect == SqlDialect.mariadb
+            ? 'RELEASE SAVEPOINT s$depth' : 'RELEASE s$depth',
+        _rollbackCommand = _parent._db.dialect == SqlDialect.mariadb
+            ? 'ROLLBACK TO SAVEPOINT s$depth' : 'ROLLBACK TO s$depth',
         super(_parent._db);
 
   @override
