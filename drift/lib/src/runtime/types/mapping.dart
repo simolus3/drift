@@ -321,22 +321,40 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
     // ignore: unnecessary_cast
     switch (this as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return dialect == SqlDialect.sqlite ? 'INTEGER' : 'boolean';
+        return dialect == SqlDialect.sqlite
+            ? 'INTEGER'
+            : dialect == SqlDialect.mariadb
+                ? 'BOOL'
+                : 'boolean';
       case DriftSqlType.string:
-        return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
+        return dialect == SqlDialect.sqlite || dialect == SqlDialect.mariadb
+            ? 'TEXT'
+            : 'text';
       case DriftSqlType.bigInt:
       case DriftSqlType.int:
-        return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
+        return dialect == SqlDialect.sqlite
+            ? 'INTEGER'
+            : dialect == SqlDialect.mariadb
+                ? 'INT'
+                : 'bigint';
       case DriftSqlType.dateTime:
         if (context.typeMapping.storeDateTimesAsText) {
-          return dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
+          return dialect == SqlDialect.sqlite || dialect == SqlDialect.mariadb
+              ? 'TEXT'
+              : 'text';
         } else {
           return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
         }
       case DriftSqlType.blob:
-        return dialect == SqlDialect.sqlite ? 'BLOB' : 'bytea';
+        return dialect == SqlDialect.sqlite || dialect == SqlDialect.mariadb
+            ? 'BLOB'
+            : 'bytea';
       case DriftSqlType.double:
-        return dialect == SqlDialect.sqlite ? 'REAL' : 'float8';
+        return dialect == SqlDialect.sqlite
+            ? 'REAL'
+            : dialect == SqlDialect.mariadb
+                ? 'DOUBLE'
+                : 'float8';
       case DriftSqlType.any:
         return 'ANY';
     }
