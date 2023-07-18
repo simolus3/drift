@@ -273,26 +273,30 @@ class InsertStatement<T extends Table, D> {
   ) {
     void writeOnConflictConstraint(
         List<Column<Object>>? target, Expression<bool>? where) {
-      ctx.buffer.write(' ON CONFLICT(');
+      if (ctx.dialect == SqlDialect.mariadb) {
+        ctx.buffer.write(' ON DUPLICATE');
+      } else {
+        ctx.buffer.write(' ON CONFLICT(');
 
-      final conflictTarget = target ?? table.$primaryKey.toList();
+        final conflictTarget = target ?? table.$primaryKey.toList();
 
-      if (conflictTarget.isEmpty) {
-        throw ArgumentError(
-            'Table has no primary key, so a conflict target is needed.');
+        if (conflictTarget.isEmpty) {
+          throw ArgumentError(
+              'Table has no primary key, so a conflict target is needed.');
+        }
+
+        var first = true;
+        for (final target in conflictTarget) {
+          if (!first) ctx.buffer.write(', ');
+
+          // Writing the escaped name directly because it should not have a table
+          // name in front of it.
+          ctx.buffer.write(target.escapedName);
+          first = false;
+        }
+
+        ctx.buffer.write(')');
       }
-
-      var first = true;
-      for (final target in conflictTarget) {
-        if (!first) ctx.buffer.write(', ');
-
-        // Writing the escaped name directly because it should not have a table
-        // name in front of it.
-        ctx.buffer.write(target.escapedName);
-        first = false;
-      }
-
-      ctx.buffer.write(')');
 
       if (where != null) {
         Where(where).writeInto(ctx);
@@ -325,7 +329,11 @@ class InsertStatement<T extends Table, D> {
           mode == InsertMode.insertOrIgnore) {
         ctx.buffer.write(' DO NOTHING ');
       } else {
-        ctx.buffer.write(' DO UPDATE SET ');
+        if (ctx.dialect == SqlDialect.mariadb) {
+          ctx.buffer.write(' KEY UPDATE ');
+        } else {
+          ctx.buffer.write(' DO UPDATE SET ');
+        }
 
         var first = true;
         for (final update in updateSet.entries) {
