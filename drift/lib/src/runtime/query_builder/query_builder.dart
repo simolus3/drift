@@ -100,4 +100,7 @@ enum SqlDialect {
 
   /// PostgreSQL (currently supported in an experimental state)
   postgres,
+
+  /// MariaDB (currently supported in an experimental state)
+  mariadb,
 }
