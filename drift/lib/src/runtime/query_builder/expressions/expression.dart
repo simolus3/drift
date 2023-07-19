@@ -142,12 +142,18 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
   Expression<bool> isIn(Iterable<D> values) {
+    if (values.isEmpty) {
+      return Constant(false);
+    }
     return _InExpression(this, values.toList(), false);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
   Expression<bool> isNotIn(Iterable<D> values) {
+    if (values.isEmpty) {
+      return Constant(true);
+    }
     return _InExpression(this, values.toList(), true);
   }
 
