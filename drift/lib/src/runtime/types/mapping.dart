@@ -321,40 +321,23 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
     // ignore: unnecessary_cast
     switch (this as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return dialect == SqlDialect.sqlite
-            ? 'INTEGER'
-            : dialect == SqlDialect.mariadb
-                ? 'BOOL'
-                : 'boolean';
+        return dialect.booleanType ?? dialect.integerType;
       case DriftSqlType.string:
-        return dialect == SqlDialect.sqlite || dialect == SqlDialect.mariadb
-            ? 'TEXT'
-            : 'text';
+        return dialect.textType;
       case DriftSqlType.bigInt:
+        return dialect.bigIntType ?? dialect.integerType;
       case DriftSqlType.int:
-        return dialect == SqlDialect.sqlite
-            ? 'INTEGER'
-            : dialect == SqlDialect.mariadb
-                ? 'INT'
-                : 'bigint';
+        return dialect.integerType;
       case DriftSqlType.dateTime:
         if (context.typeMapping.storeDateTimesAsText) {
-          return dialect == SqlDialect.sqlite || dialect == SqlDialect.mariadb
-              ? 'TEXT'
-              : 'text';
+          return dialect.textType;
         } else {
-          return dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
+          return dialect.integerType;
         }
       case DriftSqlType.blob:
-        return dialect == SqlDialect.sqlite || dialect == SqlDialect.mariadb
-            ? 'BLOB'
-            : 'bytea';
+        return dialect.blobType;
       case DriftSqlType.double:
-        return dialect == SqlDialect.sqlite
-            ? 'REAL'
-            : dialect == SqlDialect.mariadb
-                ? 'DOUBLE'
-                : 'float8';
+        return dialect.realType;
       case DriftSqlType.any:
         return 'ANY';
     }

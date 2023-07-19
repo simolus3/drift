@@ -93,14 +93,54 @@ void _writeCommaSeparated(
 enum SqlDialect {
   /// Use sqlite's sql dialect. This is the default option and the only
   /// officially supported dialect at the moment.
-  sqlite,
+  sqlite(
+    textType: 'TEXT',
+    integerType: 'INTEGER',
+    realType: 'REAL',
+    blobType: 'BLOB',
+  ),
 
   /// (currently unsupported)
-  mysql,
+  mysql(
+    booleanType: '',
+    textType: '',
+    integerType: '',
+    blobType: '',
+    realType: '',
+  ),
 
   /// PostgreSQL (currently supported in an experimental state)
-  postgres,
+  postgres(
+    booleanType: 'boolean',
+    textType: 'text',
+    integerType: 'bigint',
+    blobType: 'bytea',
+    realType: 'float8',
+  ),
 
   /// MariaDB (currently supported in an experimental state)
-  mariadb,
+  mariadb(
+    booleanType: 'BOOLEAN',
+    textType: 'TEXT',
+    bigIntType: 'BIGINT',
+    integerType: 'INT',
+    blobType: 'BLOB',
+    realType: 'DOUBLE',
+  );
+
+  final String? booleanType;
+  final String textType;
+  final String? bigIntType;
+  final String integerType;
+  final String realType;
+  final String blobType;
+
+  const SqlDialect({
+    required this.textType,
+    required this.integerType,
+    required this.realType,
+    required this.blobType,
+    this.booleanType,
+    this.bigIntType,
+  });
 }
