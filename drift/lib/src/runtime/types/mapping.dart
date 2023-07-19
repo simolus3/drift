@@ -325,7 +325,6 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
       case DriftSqlType.string:
         return dialect.textType;
       case DriftSqlType.bigInt:
-        return dialect.bigIntType ?? dialect.integerType;
       case DriftSqlType.int:
         return dialect.integerType;
       case DriftSqlType.dateTime:

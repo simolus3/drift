@@ -122,15 +122,13 @@ enum SqlDialect {
   mariadb(
     booleanType: 'BOOLEAN',
     textType: 'TEXT',
-    bigIntType: 'BIGINT',
-    integerType: 'INT',
+    integerType: 'BIGINT',
     blobType: 'BLOB',
     realType: 'DOUBLE',
   );
 
   final String? booleanType;
   final String textType;
-  final String? bigIntType;
   final String integerType;
   final String realType;
   final String blobType;
@@ -141,6 +139,5 @@ enum SqlDialect {
     required this.realType,
     required this.blobType,
     this.booleanType,
-    this.bigIntType,
   });
 }
