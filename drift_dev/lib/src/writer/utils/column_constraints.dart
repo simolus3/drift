@@ -16,9 +16,19 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
   for (final feature in column.constraints) {
     if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
-        defaultConstraints.add(feature.isAutoIncrement
-            ? 'PRIMARY KEY AUTOINCREMENT'
-            : 'PRIMARY KEY');
+        if (feature.isAutoIncrement) {
+          for (final dialect in SqlDialect.values) {
+            if (dialect == SqlDialect.mariadb) {
+              dialectSpecificConstraints[dialect]!
+                  .add('PRIMARY KEY AUTO_INCREMENT');
+            } else {
+              dialectSpecificConstraints[dialect]!
+                  .add('PRIMARY KEY AUTOINCREMENT');
+            }
+          }
+        } else {
+          defaultConstraints.add('PRIMARY KEY');
+        }
 
         wrotePkConstraint = true;
         break;
