@@ -393,6 +393,8 @@ String escapeIfNeeded(String s, [SqlDialect dialect = SqlDialect.sqlite]) {
     isKeyword |= additionalMariaDBKeywords.contains(inUpperCase);
   }
 
-  if (isKeyword || _notInKeyword.hasMatch(s)) return '"$s"';
+  if (isKeyword || _notInKeyword.hasMatch(s)) {
+    return dialect == SqlDialect.mariadb ? '`$s`' : '"$s"';
+  }
   return s;
 }

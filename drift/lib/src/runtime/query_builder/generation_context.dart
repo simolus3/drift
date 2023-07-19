@@ -87,6 +87,8 @@ class GenerationContext {
   void writeWhitespace() => buffer.write(' ');
 
   /// Turns [columnName] into a safe SQL identifier by wrapping it in double
-  /// quotes.
-  String identifier(String columnName) => '"$columnName"';
+  /// quotes, or backticks depending on the dialect.
+  String identifier(String columnName) {
+    return dialect == SqlDialect.mariadb ? '`$columnName`' : '"$columnName"';
+  }
 }
