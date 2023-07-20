@@ -8,12 +8,14 @@ typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 ///
 /// Users are not allowed to extend, implement or mix-in this class.
 @sealed
-abstract class BaseSelectStatement extends Component {
-  int get _returnedColumnCount;
+abstract class BaseSelectStatement<Row> extends Component {
+  Iterable<(Expression, String)> get _expandedColumns;
 
   /// The name for the given [expression] in the result set, or `null` if
   /// [expression] was not added as a column to this select statement.
   String? _nameForColumn(Expression expression);
+
+  FutureOr<Row> _mapRow(Map<String, Object?> fromDatabase);
 }
 
 /// A select statement that doesn't use joins.
@@ -21,7 +23,7 @@ abstract class BaseSelectStatement extends Component {
 /// For more information, see [DatabaseConnectionUser.select].
 class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D>
-    implements BaseSelectStatement {
+    implements BaseSelectStatement<D> {
   /// Whether duplicate rows should be eliminated from the result (this is a
   /// `SELECT DISTINCT` statement in sql). Defaults to false.
   final bool distinct;
@@ -39,7 +41,8 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
   Set<ResultSetImplementation> get watchedTables => {table};
 
   @override
-  int get _returnedColumnCount => table.$columns.length;
+  Iterable<(Expression, String)> get _expandedColumns =>
+      table.$columns.map((e) => (e, e.name));
 
   @override
   String? _nameForColumn(Expression expression) {
@@ -54,8 +57,8 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
   void writeStartPart(GenerationContext ctx) {
     ctx.buffer
       ..write(_beginOfSelect(distinct))
-      ..write(' * FROM ${table.tableWithAlias}');
-    ctx.watchedTables.add(table);
+      ..write(' * FROM ');
+    ctx.writeResultSet(table);
   }
 
   @override
@@ -82,8 +85,13 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     });
   }
 
+  @override
+  FutureOr<D> _mapRow(Map<String, Object?> row) {
+    return table.map(row);
+  }
+
   Future<List<D>> _mapResponse(List<Map<String, Object?>> rows) {
-    return rows.mapAsyncAndAwait(table.map);
+    return rows.mapAsyncAndAwait(_mapRow);
   }
 
   /// Creates a select statement that operates on more than one table by

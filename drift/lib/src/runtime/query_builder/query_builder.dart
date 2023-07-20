@@ -23,8 +23,10 @@ import 'package:meta/meta.dart';
 import '../../utils/async.dart';
 // New files should not be part of this mega library, which we're trying to
 // split up.
+
 import 'expressions/case_when.dart';
 import 'expressions/internal.dart';
+import 'helpers.dart';
 
 export 'expressions/bitwise.dart';
 export 'expressions/case_when.dart';
@@ -34,6 +36,7 @@ part 'components/group_by.dart';
 part 'components/join.dart';
 part 'components/limit.dart';
 part 'components/order_by.dart';
+part 'components/subquery.dart';
 part 'components/where.dart';
 part 'expressions/aggregate.dart';
 part 'expressions/algebra.dart';

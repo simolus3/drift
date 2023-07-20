@@ -58,8 +58,7 @@ class Join<T extends HasResultSet, D> extends Component {
     context.buffer.write(' JOIN ');
 
     final resultSet = table as ResultSetImplementation<T, D>;
-    context.buffer.write(resultSet.tableWithAlias);
-    context.watchedTables.add(resultSet);
+    context.writeResultSet(resultSet);
 
     if (_type != _JoinType.cross) {
       context.buffer.write(' ON ');

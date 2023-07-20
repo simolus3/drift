@@ -503,7 +503,7 @@ class FunctionCallExpression<R extends Object> extends Expression<R> {
 }
 
 void _checkSubquery(BaseSelectStatement statement) {
-  final columns = statement._returnedColumnCount;
+  final columns = statement._expandedColumns.length;
   if (columns != 1) {
     throw ArgumentError.value(statement, 'statement',
         'Must return exactly one column (actually returns $columns)');

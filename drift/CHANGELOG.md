@@ -1,3 +1,7 @@
+## 2.11.0
+
+- Add support for subqueries in the Dart query builder.
+
 ## 2.10.0
 
 - Adds the `schema steps` command to `drift_dev`. It generates an API making it

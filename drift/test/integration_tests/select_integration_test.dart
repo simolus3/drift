@@ -50,4 +50,52 @@ void main() {
 
     expect(await db.users.all().get(), [user]);
   });
+
+  test('subqueries', () async {
+    await db.batch((batch) {
+      batch.insertAll(db.categories, [
+        CategoriesCompanion.insert(description: 'a'),
+        CategoriesCompanion.insert(description: 'b'),
+      ]);
+
+      batch.insertAll(
+        db.todosTable,
+        [
+          TodosTableCompanion.insert(content: 'aaaaa', category: Value(1)),
+          TodosTableCompanion.insert(content: 'aa', category: Value(1)),
+          TodosTableCompanion.insert(content: 'bbbbbb', category: Value(2)),
+        ],
+      );
+    });
+
+    // Now write a query returning the amount of content chars in each
+    // category (written using subqueries).
+    final subqueryContentLength = db.todosTable.content.length.sum();
+    final subquery = Subquery(
+        db.selectOnly(db.todosTable)
+          ..addColumns([db.todosTable.category, subqueryContentLength])
+          ..groupBy([db.todosTable.category]),
+        's');
+
+    final readableLength = subquery.ref(subqueryContentLength);
+    final query = db.selectOnly(db.categories)
+      ..addColumns([db.categories.id, readableLength])
+      ..join([
+        innerJoin(subquery,
+            subquery.ref(db.todosTable.category).equalsExp(db.categories.id))
+      ])
+      ..orderBy([OrderingTerm.asc(db.categories.id)]);
+
+    final rows = await query.get();
+    expect(rows, hasLength(2));
+
+    final first = rows[0];
+    final second = rows[1];
+
+    expect(first.read(db.categories.id), 1);
+    expect(first.read(readableLength), 7);
+
+    expect(second.read(db.categories.id), 2);
+    expect(second.read(readableLength), 6);
+  });
 }

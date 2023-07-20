@@ -243,6 +243,11 @@ any rows. For instance, we could use this to find empty categories:
 
 {% include "blocks/snippet" snippets = snippets name = 'emptyCategories' %}
 
+### Full subqueries
+
+Drift also supports subqueries that appear in `JOIN`s, which are described in the
+[documentation for joins]({{ 'joins.md#subqueries' | pageUrl }}).
+
 ## Custom expressions
 If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.
 It takes a `sql` parameter that lets you write custom expressions:

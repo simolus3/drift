@@ -214,4 +214,30 @@ void main() {
     await pumpEventQueue();
     db.markTablesUpdated([db.categories]);
   });
+
+  test('select from subquery', () async {
+    final data = [
+      {
+        'id': 10,
+        'title': null,
+        'content': 'Content',
+        'category': null,
+      }
+    ];
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value(data));
+
+    final subquery = Subquery(db.todosTable.select(), 's');
+    final rows = await db.select(subquery).get();
+
+    expect(rows, [
+      TodoEntry(
+        id: 10,
+        title: null,
+        content: 'Content',
+        category: null,
+      )
+    ]);
+
+    verify(executor.runSelect('SELECT * FROM (SELECT * FROM "todos") s;', []));
+  });
 }

@@ -203,3 +203,17 @@ select statement.
 In the example, the `newDescription` expression as added as a column to the query.
 Then, the map entry `categories.description: newDescription` is used so that the `description` column
 for new category rows gets set to that expression.
+
+## Subqueries
+
+Starting from drift 2.11, you can use `Subquery` to use an existing select statement as part of more
+complex join.
+
+This snippet uses `Subquery` to count how many of the top-10 todo items (by length of their title) are
+in each category.
+It does this by first creating a select statement for the top-10 items (but not executing it), and then
+joining this select statement onto a larger one grouping by category:
+
+{% include "blocks/snippet" snippets = snippets name = 'subquery' %}
+
+Any statement can be used as a subquery. But be aware that, unlike [subquery expressions]({{ 'expressions.md#scalar-subqueries' | pageUrl }}), full subqueries can't use tables from the outer select statement.
