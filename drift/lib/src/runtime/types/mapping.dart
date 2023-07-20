@@ -321,7 +321,7 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
     // ignore: unnecessary_cast
     switch (this as DriftSqlType<Object>) {
       case DriftSqlType.bool:
-        return dialect.booleanType ?? dialect.integerType;
+        return dialect.booleanType;
       case DriftSqlType.string:
         return dialect.textType;
       case DriftSqlType.bigInt:

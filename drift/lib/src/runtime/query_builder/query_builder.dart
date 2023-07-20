@@ -94,6 +94,7 @@ enum SqlDialect {
   /// Use sqlite's sql dialect. This is the default option and the only
   /// officially supported dialect at the moment.
   sqlite(
+    booleanType: 'INTEGER',
     textType: 'TEXT',
     integerType: 'INTEGER',
     realType: 'REAL',
@@ -127,17 +128,17 @@ enum SqlDialect {
     realType: 'DOUBLE',
   );
 
-  final String? booleanType;
+  final String booleanType;
   final String textType;
   final String integerType;
   final String realType;
   final String blobType;
 
   const SqlDialect({
+    required this.booleanType,
     required this.textType,
     required this.integerType,
     required this.realType,
     required this.blobType,
-    this.booleanType,
   });
 }
