@@ -23,6 +23,8 @@ enum KeyAction {
 
   /// No special action is taken when the parent key is modified or deleted from
   /// the database.
+  ///
+  /// For [SqlDialect.mariadb] this is synonym for [restrict].
   noAction,
 }
 
