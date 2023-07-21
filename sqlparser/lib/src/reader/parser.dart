@@ -189,9 +189,14 @@ class Parser {
     final first = _peek;
     final statements = <Statement>[];
     while (!_isAtEnd) {
+      final firstForStatement = _peek;
       final statement = _parseAsStatement(_statementWithoutSemicolon);
+
       if (statement != null) {
         statements.add(statement);
+      } else {
+        statements
+            .add(InvalidStatement()..setSpan(firstForStatement, _previous));
       }
     }
 
