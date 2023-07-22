@@ -36,8 +36,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.amber,
           typography: Typography.material2018(),
         ),
-        routeInformationParser: _router.routeInformationParser,
-        routerDelegate: _router.routerDelegate,
+        routerConfig: _router,
       ),
     );
   }
