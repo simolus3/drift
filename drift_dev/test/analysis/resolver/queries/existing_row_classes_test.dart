@@ -2,6 +2,7 @@ import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
+import 'utils.dart';
 
 void main() {
   test('recognizes existing row classes', () async {
@@ -287,7 +288,12 @@ class MyRow {
           type: 'MyRow',
           positional: [
             scalarColumn('a'),
-            nestedTableColumm('b'),
+            structedFromNested(
+              isExistingRowType(
+                type: 'TblData',
+                singleValue: isA<MatchingDriftTable>(),
+              ),
+            ),
           ],
         ),
       );
@@ -323,14 +329,16 @@ class MyRow {
           type: 'MyRow',
           positional: [
             scalarColumn('a'),
-            isExistingRowType(
-              type: '(String, int)',
-              positional: [scalarColumn('foo'), scalarColumn('bar')],
+            structedFromNested(
+              isExistingRowType(
+                type: '(String, int)',
+                positional: [scalarColumn('foo'), scalarColumn('bar')],
+              ),
             ),
           ],
         ),
       );
-    }, skip: 'Blocked by https://github.com/simolus3/drift/issues/2233');
+    });
 
     test('nested - custom result set with class', () async {
       final state = TestBackend.inTest({
@@ -536,7 +544,12 @@ class MyRow {
         isExistingRowType(type: 'MyRow', positional: [
           scalarColumn('name'),
         ], named: {
-          'otherUser': nestedTableColumm('otherUser'),
+          'otherUser': structedFromNested(
+            isExistingRowType(
+              type: 'MyUser',
+              singleValue: isA<MatchingDriftTable>(),
+            ),
+          ),
           'nested': nestedListQuery(
             'nested',
             isExistingRowType(
@@ -722,47 +735,4 @@ class MyRow {
       },
     );
   });
-}
-
-TypeMatcher<ScalarResultColumn> scalarColumn(String name) =>
-    isA<ScalarResultColumn>().having((e) => e.name, 'name', name);
-
-TypeMatcher nestedTableColumm(String name) =>
-    isA<NestedResultTable>().having((e) => e.name, 'name', name);
-
-TypeMatcher<MappedNestedListQuery> nestedListQuery(
-    String columnName, TypeMatcher<ExistingQueryRowType> nestedType) {
-  return isA<MappedNestedListQuery>()
-      .having((e) => e.column.filedName(), 'column', columnName)
-      .having((e) => e.nestedType, 'nestedType', nestedType);
-}
-
-TypeMatcher<ExistingQueryRowType> isExistingRowType({
-  String? type,
-  String? constructorName,
-  Object? singleValue,
-  Object? positional,
-  Object? named,
-}) {
-  var matcher = isA<ExistingQueryRowType>();
-
-  if (type != null) {
-    matcher = matcher.having((e) => e.rowType.toString(), 'rowType', type);
-  }
-  if (constructorName != null) {
-    matcher = matcher.having(
-        (e) => e.constructorName, 'constructorName', constructorName);
-  }
-  if (singleValue != null) {
-    matcher = matcher.having((e) => e.singleValue, 'singleValue', singleValue);
-  }
-  if (positional != null) {
-    matcher = matcher.having(
-        (e) => e.positionalArguments, 'positionalArguments', positional);
-  }
-  if (named != null) {
-    matcher = matcher.having((e) => e.namedArguments, 'namedArguments', named);
-  }
-
-  return matcher;
 }

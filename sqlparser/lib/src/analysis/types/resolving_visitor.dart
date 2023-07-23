@@ -50,6 +50,13 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           currentColumnIndex += child.scope.expansionOfStarColumn?.length ?? 1;
         } else if (child is NestedQueryColumn) {
           visit(child.select, arg);
+        } else if (child is NestedStarResultColumn) {
+          final columns = child.resultSet?.resolvedColumns;
+          if (columns != null) {
+            for (final column in columns) {
+              _handleColumn(column, child);
+            }
+          }
         }
       } else {
         visit(child, arg);

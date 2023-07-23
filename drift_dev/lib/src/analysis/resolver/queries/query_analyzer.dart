@@ -330,6 +330,7 @@ class QueryAnalyzer {
 
         if (column is NestedStarResultColumn) {
           final resolved = _resolveNestedResultTable(queryContext, column);
+
           if (resolved != null) {
             // The single table optimization doesn't make sense when nested result
             // sets are present.
@@ -439,19 +440,37 @@ class QueryAnalyzer {
       _QueryHandlerContext queryContext, NestedStarResultColumn column) {
     final originalResult = column.resultSet;
     final result = originalResult?.unalias();
-    if (result is! Table && result is! View) {
-      return null;
-    }
+    final rawColumns = result?.resolvedColumns;
 
-    final driftTable = _lookupReference<DriftElementWithResultSet>(
-        (result as NamedResultSet).name);
+    if (result == null || rawColumns == null) return null;
+
+    final driftResultSet = _inferResultSet(
+      _QueryHandlerContext(
+        foundElements: queryContext.foundElements,
+        root: queryContext.root,
+        queryName: queryContext.queryName,
+        nestedScope: queryContext.nestedScope,
+        sourceForFixedName: queryContext.sourceForFixedName,
+        // Remove desired result class, if any. It will be resolved by the
+        // parent _inferResultSet call.
+      ),
+      rawColumns,
+      null,
+    );
+
     final analysis = JoinModel.of(column);
     final isNullable =
         analysis == null || analysis.isNullableTable(originalResult!);
+
+    final queryIndex = nestedQueryCounter++;
+    final resultClassName =
+        '${ReCase(queryContext.queryName).pascalCase}NestedColumn$queryIndex';
+
     return NestedResultTable(
-      column,
-      column.as ?? column.tableName,
-      driftTable,
+      from: column,
+      name: column.as ?? column.tableName,
+      innerResultSet: driftResultSet,
+      nameForGeneratedRowClass: resultClassName,
       isNullable: isNullable,
     );
   }

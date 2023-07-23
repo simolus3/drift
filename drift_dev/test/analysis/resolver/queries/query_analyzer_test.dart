@@ -5,7 +5,7 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
-import 'existing_row_classes_test.dart';
+import 'utils.dart';
 
 void main() {
   test('respects explicit type arguments', () async {
@@ -90,10 +90,22 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
     final query = file.fileAnalysis!.resolvedQueries.values.single;
 
     expect(query.resultSet!.nestedResults, hasLength(2));
+
+    final isFromView = isExistingRowType(
+      type: 'MyViewData',
+      singleValue: isA<MatchingDriftTable>()
+          .having((e) => e.table.schemaName, 'table.schemaName', 'my_view'),
+    );
+
     expect(
-        query.resultSet!.nestedResults,
-        everyElement(isA<NestedResultTable>()
-            .having((e) => e.table.schemaName, 'table.schemName', 'my_view')));
+      query.resultSet!.mappingToRowClass('', const DriftOptions.defaults()),
+      isExistingRowType(
+        named: {
+          'foo': isFromView,
+          'bar': isFromView,
+        },
+      ),
+    );
   });
 
   for (final dateTimeAsText in [false, true]) {
@@ -178,7 +190,7 @@ FROM routes
     expect(
       resultSet.nestedResults
           .cast<NestedResultTable>()
-          .map((e) => e.table.schemaName),
+          .map((e) => e.innerResultSet.matchingTable!.table.schemaName),
       ['points', 'points'],
     );
   });

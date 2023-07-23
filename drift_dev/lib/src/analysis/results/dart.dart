@@ -171,6 +171,11 @@ class AnnotatedDartCodeBuilder {
           'This query (${query.name}) does not have a result set');
     }
 
+    addResultSetRowType(resultSet, resultSet.resultClassName!);
+  }
+
+  void addResultSetRowType(
+      InferredResultSet resultSet, String resultClassName) {
     if (resultSet.existingRowType != null) {
       return addCode(resultSet.existingRowType!.rowType);
     }
@@ -183,12 +188,13 @@ class AnnotatedDartCodeBuilder {
       return addDriftType(resultSet.scalarColumns.single);
     }
 
-    return addText(query.resultClassName);
+    return addText(resultClassName);
   }
 
   void addTypeOfNestedResult(NestedResult nested) {
     if (nested is NestedResultTable) {
-      return addElementRowType(nested.table);
+      return addResultSetRowType(
+          nested.innerResultSet, nested.nameForGeneratedRowClass);
     } else if (nested is NestedResultQuery) {
       addSymbol('List', AnnotatedDartCode.dartCore);
       addText('<');

@@ -194,14 +194,14 @@ class SqlWriter extends NodeSqlBuilder {
       // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
       var isFirst = true;
 
-      for (final column in result.table.columns) {
+      for (final column in result.innerResultSet.scalarColumns) {
         if (isFirst) {
           isFirst = false;
         } else {
           _out.write(', ');
         }
 
-        final columnName = column.nameInSql;
+        final columnName = column.name;
         _out.write('"$table"."$columnName" AS "$prefix.$columnName"');
       }
     } else if (e is DartPlaceholder) {

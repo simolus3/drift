@@ -35,7 +35,7 @@ class MatchExistingTypeForQuery {
     }
   }
 
-  ExistingQueryRowType? _findRowType(
+  QueryRowType? _findRowType(
     InferredResultSet resultSet,
     dynamic /*DartType|RequestedQueryResultType*/ requestedType,
     _ErrorReporter reportError,
@@ -52,8 +52,8 @@ class MatchExistingTypeForQuery {
           'Must be a DartType of a RequestedQueryResultType');
     }
 
-    final positionalColumns = <ArgumentForExistingQueryRowType>[];
-    final namedColumns = <String, ArgumentForExistingQueryRowType>{};
+    final positionalColumns = <ArgumentForQueryRowType>[];
+    final namedColumns = <String, ArgumentForQueryRowType>{};
 
     final unmatchedColumnsByName = {
       for (final column in resultSet.columns)
@@ -94,10 +94,9 @@ class MatchExistingTypeForQuery {
         addEntry(name, () => transformedTypeBuilder.addDartType(type));
       }
 
-      void addCheckedType(
-          ArgumentForExistingQueryRowType type, DartType originalType,
+      void addCheckedType(ArgumentForQueryRowType type, DartType originalType,
           {String? name}) {
-        if (type is ExistingQueryRowType) {
+        if (type is QueryRowType) {
           addEntry(name, () => transformedTypeBuilder.addCode(type.rowType));
         } else if (type is MappedNestedListQuery) {
           addEntry(name, () {
@@ -171,7 +170,7 @@ class MatchExistingTypeForQuery {
         final verified = _verifyArgument(resultSet.scalarColumns.single,
             desiredType, 'Single column', (ignore) {});
         if (verified != null) {
-          return ExistingQueryRowType(
+          return QueryRowType(
             rowType: AnnotatedDartCode.type(desiredType),
             singleValue: verified,
             positionalArguments: const [],
@@ -184,7 +183,7 @@ class MatchExistingTypeForQuery {
         final verified =
             _verifyMatchingDriftTable(resultSet.matchingTable!, desiredType);
         if (verified != null) {
-          return ExistingQueryRowType(
+          return QueryRowType(
             rowType: AnnotatedDartCode.build((builder) =>
                 builder.addElementRowType(resultSet.matchingTable!.table)),
             singleValue: verified,
@@ -237,7 +236,7 @@ class MatchExistingTypeForQuery {
       }
     }
 
-    return ExistingQueryRowType(
+    return QueryRowType(
       rowType: annotatedTypeCode,
       constructorName: constructorName ?? '',
       isRecord: desiredType is RecordType,
@@ -249,13 +248,13 @@ class MatchExistingTypeForQuery {
 
   /// Returns the default record type chosen by drift when a user declares the
   /// generic `Record` type as a desired result type.
-  ExistingQueryRowType _defaultRecord(InferredResultSet resultSet) {
+  QueryRowType _defaultRecord(InferredResultSet resultSet) {
     // If there's only a single scalar column, or if we're mapping this result
     // set to an existing table, then there's only a single value in the end.
     // Singleton records are forbidden, so we just return the inner type
     // directly.
     if (resultSet.singleColumn) {
-      return ExistingQueryRowType(
+      return QueryRowType(
         rowType: AnnotatedDartCode.build(
             (builder) => builder.addDriftType(resultSet.scalarColumns.single)),
         singleValue: resultSet.scalarColumns.single,
@@ -264,7 +263,7 @@ class MatchExistingTypeForQuery {
       );
     } else if (resultSet.matchingTable != null) {
       final table = resultSet.matchingTable!;
-      return ExistingQueryRowType(
+      return QueryRowType(
         rowType: AnnotatedDartCode.build(
             (builder) => builder.addElementRowType(table.table)),
         singleValue: table,
@@ -273,7 +272,7 @@ class MatchExistingTypeForQuery {
       );
     }
 
-    final namedArguments = <String, ArgumentForExistingQueryRowType>{};
+    final namedArguments = <String, ArgumentForQueryRowType>{};
 
     final type = AnnotatedDartCode.build((builder) {
       builder.addText('({');
@@ -288,8 +287,10 @@ class MatchExistingTypeForQuery {
           builder.addDriftType(column);
           namedArguments[fieldName] = column;
         } else if (column is NestedResultTable) {
-          builder.addElementRowType(column.table);
-          namedArguments[fieldName] = column;
+          final innerRecord = _defaultRecord(column.innerResultSet);
+          builder.addCode(innerRecord.rowType);
+          namedArguments[fieldName] =
+              StructuredFromNestedColumn(column, innerRecord);
         } else if (column is NestedResultQuery) {
           final nestedResultSet = column.query.resultSet;
 
@@ -310,7 +311,7 @@ class MatchExistingTypeForQuery {
       builder.addText('})');
     });
 
-    return ExistingQueryRowType(
+    return QueryRowType(
       rowType: type,
       singleValue: null,
       positionalArguments: const [],
@@ -319,7 +320,14 @@ class MatchExistingTypeForQuery {
     );
   }
 
-  ArgumentForExistingQueryRowType? _verifyArgument(
+  /// Finds a way to map the [column] into the desired [existingTypeForColumn],
+  /// which is represented as a [ArgumentForExistingQueryRowType].
+  ///
+  /// If this doesn't succeed (mainly due to incompatible types), reports a
+  /// error through [reportError] and returns `null`.
+  /// [name] is used in error messages to inform the user about the field name
+  /// in their existing Dart class that is causing the problem.
+  ArgumentForQueryRowType? _verifyArgument(
     ResultColumn column,
     DartType existingTypeForColumn,
     String name,
@@ -339,25 +347,15 @@ class MatchExistingTypeForQuery {
 
       if (matches) return column;
     } else if (column is NestedResultTable) {
-      final table = column.table;
+      final foundInnerType = _findRowType(
+        column.innerResultSet,
+        existingTypeForColumn,
+        (msg) => reportError('For $name: $msg'),
+      );
 
-      // Usually, the table is about to be generated by drift - so we can't
-      // verify the existing type. If there's an existing row class though, we
-      // can compare against that.
-      if (table.hasExistingRowClass) {
-        final existingType = table.existingRowClass!.targetType;
-        if (column.isNullable) {
-          existingTypeForColumn =
-              typeSystem.promoteToNonNull(existingTypeForColumn);
-        }
-
-        if (!typeSystem.isAssignableTo(existingType, existingTypeForColumn)) {
-          reportError('$name must accept '
-              '${existingType.getDisplayString(withNullability: true)}');
-        }
+      if (foundInnerType != null) {
+        return StructuredFromNestedColumn(column, foundInnerType);
       }
-
-      return column;
     } else if (column is NestedResultQuery) {
       // A nested query has its own type, which we can recursively try to
       // structure in the existing type.
@@ -378,13 +376,14 @@ class MatchExistingTypeForQuery {
         return MappedNestedListQuery(column, innerExistingType);
       }
     }
+
     return null;
   }
 
   /// Allows using a matching drift table from a result set as an argument if
   /// the the [existingTypeForColumn] matches the table's type (either the
   /// existing result type or `dynamic` if it's drift-generated).
-  ArgumentForExistingQueryRowType? _verifyMatchingDriftTable(
+  ArgumentForQueryRowType? _verifyMatchingDriftTable(
       MatchingDriftTable match, DartType existingTypeForColumn) {
     final table = match.table;
     if (table.hasExistingRowClass) {
