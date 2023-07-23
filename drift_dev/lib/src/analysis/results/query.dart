@@ -172,13 +172,19 @@ abstract class SqlQuery {
     return false;
   }
 
+  bool get _useResultClassName {
+    final resultSet = this.resultSet!;
+
+    return resultSet.matchingTable == null && !resultSet.singleColumn;
+  }
+
   String get resultClassName {
     final resultSet = this.resultSet;
     if (resultSet == null) {
       throw StateError('This query ($name) does not have a result set');
     }
 
-    if (resultSet.matchingTable != null || resultSet.singleColumn) {
+    if (!_useResultClassName) {
       throw UnsupportedError('This result set does not introduce a class, '
           'either because it has a matching table or because it only returns '
           'one column.');
@@ -216,7 +222,7 @@ abstract class SqlQuery {
     }
 
     return resultSet.mappingToRowClass(
-        resultSet.needsOwnClass ? resultClassName : null, options);
+        _useResultClassName ? resultClassName : null, options);
   }
 }
 

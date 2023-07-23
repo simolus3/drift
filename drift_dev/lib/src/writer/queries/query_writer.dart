@@ -125,7 +125,7 @@ class QueryWriter {
       case StructuredFromNestedColumn():
         final prefix = resultSet.nestedPrefixFor(argument.table);
         _writeArgumentExpression(
-          argument,
+          argument.nestedType,
           resultSet,
           (sqlPrefix: prefix, isNullable: argument.nullable),
         );
@@ -250,8 +250,6 @@ class QueryWriter {
           ..write(asDartLiteral(alias.value.nameInSql))
           ..write(', ');
       }
-
-      _emitter.write('}');
 
       _emitter.write('})');
     }

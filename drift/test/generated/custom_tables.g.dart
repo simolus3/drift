@@ -1678,12 +1678,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config,
-        }).asyncMap((QueryRow row) => config.mapFromRowWithAlias(row, const {
-          'ck': 'config_key',
-          'cf': 'config_value',
-          'cs1': 'sync_state',
-          'cs2': 'sync_state_implicit',
-        }));
+        }).asyncMap(
+        (QueryRow row) async => config.mapFromRowWithAlias(row, const {
+              'ck': 'config_key',
+              'cf': 'config_value',
+              'cs1': 'sync_state',
+              'cs2': 'sync_state_implicit',
+            }));
   }
 
   Selectable<Config> readMultiple(List<String> var1,
@@ -1754,26 +1755,20 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {
           config,
-        }).map((QueryRow row) {
-      return JsonResult(
-        row: row,
-        key: row.read<String>('key'),
-        value: row.readNullable<String>('value'),
-      );
-    });
+        }).map((QueryRow row) => JsonResult(
+          raw: row,
+          key: row.read<String>('key'),
+          value: row.readNullable<String>('value'),
+        ));
   }
 
   Selectable<JsonResult> another() {
-    return customSelect(
-        'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
-        variables: [],
-        readsFrom: {}).map((QueryRow row) {
-      return JsonResult(
-        row: row,
-        key: row.read<String>('key'),
-        value: row.readNullable<String>('value'),
-      );
-    });
+    return customSelect('SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value', variables: [], readsFrom: {})
+        .map((QueryRow row) => JsonResult(
+              raw: row,
+              key: row.read<String>('key'),
+              value: row.readNullable<String>('value'),
+            ));
   }
 
   Selectable<MultipleResult> multiple({required Multiple$predicate predicate}) {
@@ -1793,14 +1788,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           withDefaults,
           withConstraints,
           ...generatedpredicate.watchedTables,
-        }).asyncMap((QueryRow row) async {
-      return MultipleResult(
-        row: row,
-        a: row.readNullable<String>('a'),
-        b: row.readNullable<int>('b'),
-        c: await withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
-      );
-    });
+        }).asyncMap((QueryRow row) async => MultipleResult(
+          raw: row,
+          a: row.readNullable<String>('a'),
+          b: row.readNullable<int>('b'),
+          c: withConstraints.mapFromRow(row),
+        ));
   }
 
   Selectable<EMail> searchEmails({required String? term}) {
@@ -1827,20 +1820,18 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedexpr.watchedTables,
-        }).map((QueryRow row) {
-      return ReadRowIdResult(
-        row: row,
-        rowid: row.read<int>('rowid'),
-        configKey: row.read<String>('config_key'),
-        configValue: row.readNullable<DriftAny>('config_value'),
-        syncState: NullAwareTypeConverter.wrapFromSql(
-            ConfigTable.$convertersyncState,
-            row.readNullable<int>('sync_state')),
-        syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
-            ConfigTable.$convertersyncStateImplicit,
-            row.readNullable<int>('sync_state_implicit')),
-      );
-    });
+        }).map((QueryRow row) => ReadRowIdResult(
+          raw: row,
+          rowid: row.read<int>('rowid'),
+          configKey: row.read<String>('config_key'),
+          configValue: row.readNullable<DriftAny>('config_value'),
+          syncState: NullAwareTypeConverter.wrapFromSql(
+              ConfigTable.$convertersyncState,
+              row.readNullable<int>('sync_state')),
+          syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
+              ConfigTable.$convertersyncStateImplicit,
+              row.readNullable<int>('sync_state_implicit')),
+        ));
   }
 
   Selectable<MyViewData> readView({ReadView$where? where}) {
@@ -1895,21 +1886,19 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           withConstraints,
           withDefaults,
-        }).asyncMap((QueryRow row) async {
-      return NestedResult(
-        row: row,
-        defaults: await withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
-        nestedQuery0: await customSelect(
-            'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
-            variables: [
-              Variable<int>(row.read('\$n_0'))
-            ],
-            readsFrom: {
-              withConstraints,
-              withDefaults,
-            }).asyncMap(withConstraints.mapFromRow).get(),
-      );
-    });
+        }).asyncMap((QueryRow row) async => NestedResult(
+          raw: row,
+          defaults: withDefaults.mapFromRow(row),
+          nestedQuery1: await customSelect(
+              'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
+              variables: [
+                Variable<int>(row.read('\$n_0'))
+              ],
+              readsFrom: {
+                withConstraints,
+                withDefaults,
+              }).map((QueryRow row) => withConstraints.mapFromRow(row)).get(),
+        ));
   }
 
   Selectable<MyCustomResultClass> customResult() {
@@ -1925,8 +1914,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           syncState: NullAwareTypeConverter.wrapFromSql(
               ConfigTable.$convertersyncState,
               row.readNullable<int>('sync_state')),
-          config: await config.mapFromRow(row, tablePrefix: 'nested_0'),
-          noIds: await noIds.mapFromRow(row, tablePrefix: 'nested_1'),
+          config: config.mapFromRow(row, tablePrefix: 'nested_0'),
+          noIds: noIds.mapFromRow(row, tablePrefix: 'nested_1'),
           nested: await customSelect('SELECT * FROM no_ids',
                   variables: [],
                   readsFrom: {
@@ -2081,25 +2070,25 @@ typedef ReadView$where = Expression<bool> Function(MyView my_view);
 
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;
-  final List<WithConstraint> nestedQuery0;
+  final List<WithConstraint> nestedQuery1;
   NestedResult({
     required QueryRow row,
     required this.defaults,
-    required this.nestedQuery0,
+    required this.nestedQuery1,
   }) : super(row);
   @override
-  int get hashCode => Object.hash(defaults, nestedQuery0);
+  int get hashCode => Object.hash(defaults, nestedQuery1);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is NestedResult &&
           other.defaults == this.defaults &&
-          other.nestedQuery0 == this.nestedQuery0);
+          other.nestedQuery1 == this.nestedQuery1);
   @override
   String toString() {
     return (StringBuffer('NestedResult(')
           ..write('defaults: $defaults, ')
-          ..write('nestedQuery0: $nestedQuery0')
+          ..write('nestedQuery1: $nestedQuery1')
           ..write(')'))
         .toString();
   }

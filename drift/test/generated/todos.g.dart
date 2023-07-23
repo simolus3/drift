@@ -1714,21 +1714,19 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           categories,
           todosTable,
-        }).map((QueryRow row) {
-      return AllTodosWithCategoryResult(
-        row: row,
-        id: row.read<int>('id'),
-        title: row.readNullable<String>('title'),
-        content: row.read<String>('content'),
-        targetDate: row.readNullable<DateTime>('target_date'),
-        category: row.readNullable<int>('category'),
-        status: NullAwareTypeConverter.wrapFromSql(
-            $TodosTableTable.$converterstatus,
-            row.readNullable<String>('status')),
-        catId: row.read<int>('catId'),
-        catDesc: row.read<String>('catDesc'),
-      );
-    });
+        }).map((QueryRow row) => AllTodosWithCategoryResult(
+          raw: row,
+          id: row.read<int>('id'),
+          title: row.readNullable<String>('title'),
+          content: row.read<String>('content'),
+          targetDate: row.readNullable<DateTime>('target_date'),
+          category: row.readNullable<int>('category'),
+          status: NullAwareTypeConverter.wrapFromSql(
+              $TodosTableTable.$converterstatus,
+              row.readNullable<String>('status')),
+          catId: row.read<int>('catId'),
+          catDesc: row.read<String>('catDesc'),
+        ));
   }
 
   Future<int> deleteTodoById(int var1) {
