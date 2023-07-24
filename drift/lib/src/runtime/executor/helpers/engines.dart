@@ -187,11 +187,9 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   _StatementBasedTransactionExecutor.nested(
       _StatementBasedTransactionExecutor this._parent, int depth)
       : _delegate = _parent._delegate,
-        _startCommand = 'SAVEPOINT s$depth',
-        _commitCommand = _parent._db.dialect == SqlDialect.mariadb
-            ? 'RELEASE SAVEPOINT s$depth' : 'RELEASE s$depth',
-        _rollbackCommand = _parent._db.dialect == SqlDialect.mariadb
-            ? 'ROLLBACK TO SAVEPOINT s$depth' : 'ROLLBACK TO s$depth',
+        _startCommand = _parent._delegate.savepoint(depth),
+        _commitCommand = _parent._delegate.release(depth),
+        _rollbackCommand = _parent._delegate.rollbackToSavepoint(depth),
         super(_parent._db);
 
   @override
