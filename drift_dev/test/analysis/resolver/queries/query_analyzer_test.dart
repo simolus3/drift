@@ -101,8 +101,8 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
       query.resultSet!.mappingToRowClass('', const DriftOptions.defaults()),
       isExistingRowType(
         named: {
-          'foo': isFromView,
-          'bar': isFromView,
+          'foo': structedFromNested(isFromView),
+          'bar': structedFromNested(isFromView),
         },
       ),
     );
@@ -126,13 +126,13 @@ query: SELECT 1 AS a, b.** FROM (SELECT 2 AS b, 3 AS c) AS b;
         type: 'Row',
         named: {
           'a': scalarColumn('a'),
-          'b': isExistingRowType(
+          'b': structedFromNested(isExistingRowType(
             type: 'QueryNestedColumn0',
             named: {
               'b': scalarColumn('b'),
               'c': scalarColumn('c'),
             },
-          )
+          )),
         },
       ),
     );
