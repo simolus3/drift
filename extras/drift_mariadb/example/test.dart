@@ -5,14 +5,14 @@ import 'package:mysql_client/mysql_client.dart';
 
 void main() async {
   final mariadb = MariaDBDatabase(
-    endpoint: MySQLConnectionPool(
-      host: '127.0.0.1',
+    pool: MySQLConnectionPool(
+      host: 'localhost',
       port: 3306,
       userName: 'root',
-      password: 'Password123!',
-      databaseName: 'mdb',
-      maxConnections: 10,
-      secure: false, // if true - TLS will be used, if false - ordinary TCL
+      password: 'password',
+      databaseName: 'database',
+      maxConnections: 1,
+      secure: false,
     ),
     logStatements: true,
   );

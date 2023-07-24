@@ -1,17 +1,16 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:drift/backends.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 /// A drift database implementation that talks to a mariadb database.
 class MariaDBDatabase extends DelegatedDatabase {
   MariaDBDatabase({
-    required MySQLConnectionPool endpoint,
+    required MySQLConnectionPool pool,
     bool isSequential = true,
     bool logStatements = false,
   }) : super(
-          _MariaDelegate(() => endpoint, true),
+          _MariaDelegate(() => pool, true),
           isSequential: isSequential,
           logStatements: logStatements,
         );
@@ -40,7 +39,7 @@ class _MariaDelegate extends DatabaseDelegate {
   MySQLConnectionPool? _openedSession;
 
   @override
-  TransactionDelegate get transactionDelegate => const NoTransactionDelegate(
+  TransactionDelegate get transactionDelegate => NoTransactionDelegate(
         start: 'START TRANSACTION',
         commit: 'COMMIT',
         rollback: 'ROLLBACK',

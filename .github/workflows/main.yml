@@ -166,6 +166,13 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      mariadb:
+        image: mariadb
+        env:
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_DATABASE: database
+        ports:
+          - 3306:3306
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/prepare

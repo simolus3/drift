@@ -6,6 +6,12 @@ dart pub upgrade
 dart test
 popd
 
+pushd extras/drift_mariadb
+echo "Running integration tests with MariaDb"
+dart pub upgrade
+dart test
+popd
+
 pushd examples/with_built_value
 echo "Running build runner in with_built_value"
 dart pub upgrade
