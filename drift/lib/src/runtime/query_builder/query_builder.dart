@@ -99,6 +99,7 @@ enum SqlDialect {
     integerType: 'INTEGER',
     realType: 'REAL',
     blobType: 'BLOB',
+    escapeChar: '"',
   ),
 
   /// (currently unsupported)
@@ -108,6 +109,7 @@ enum SqlDialect {
     integerType: '',
     blobType: '',
     realType: '',
+    escapeChar: '',
   ),
 
   /// PostgreSQL (currently supported in an experimental state)
@@ -117,6 +119,7 @@ enum SqlDialect {
     integerType: 'bigint',
     blobType: 'bytea',
     realType: 'float8',
+    escapeChar: '"',
   ),
 
   /// MariaDB (currently supported in an experimental state)
@@ -126,6 +129,7 @@ enum SqlDialect {
     integerType: 'BIGINT',
     blobType: 'BLOB',
     realType: 'DOUBLE',
+    escapeChar: '`',
   );
 
   final String booleanType;
@@ -133,6 +137,10 @@ enum SqlDialect {
   final String integerType;
   final String realType;
   final String blobType;
+  final String escapeChar;
+
+  /// Escapes [identifier] by wrapping it in [escapeChar].
+  String escape(String identifier) => '$escapeChar$identifier$escapeChar';
 
   const SqlDialect({
     required this.booleanType,
@@ -140,5 +148,6 @@ enum SqlDialect {
     required this.integerType,
     required this.realType,
     required this.blobType,
+    required this.escapeChar,
   });
 }

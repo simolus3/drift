@@ -88,7 +88,5 @@ class GenerationContext {
 
   /// Turns [columnName] into a safe SQL identifier by wrapping it in double
   /// quotes, or backticks depending on the dialect.
-  String identifier(String columnName) {
-    return dialect == SqlDialect.mariadb ? '`$columnName`' : '"$columnName"';
-  }
+  String identifier(String columnName) => dialect.escape(columnName);
 }

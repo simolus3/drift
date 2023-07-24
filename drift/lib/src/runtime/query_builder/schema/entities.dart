@@ -148,12 +148,12 @@ extension NameWithAlias on ResultSetImplementation<dynamic, dynamic> {
   /// for a table called users that has been aliased as "u".
   String get tableWithAlias {
     var dialect = attachedDatabase.executor.dialect;
+    var entityNameEscaped = dialect.escape(entityName);
+    var aliasedNameEscaped = dialect.escape(aliasedName);
     if (aliasedName == entityName) {
-      return dialect == SqlDialect.mariadb ? '`$entityName`' : '"$entityName"';
+      return entityNameEscaped;
     } else {
-      return dialect == SqlDialect.mariadb
-          ? '`$entityName` `$aliasedName`'
-          : '"$entityName" "$aliasedName"';
+      return '$entityNameEscaped $aliasedNameEscaped';
     }
   }
 }
