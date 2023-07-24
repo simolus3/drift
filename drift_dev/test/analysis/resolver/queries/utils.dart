@@ -33,6 +33,7 @@ TypeMatcher<QueryRowType> isExistingRowType({
   Object? singleValue,
   Object? positional,
   Object? named,
+  Object? isRecord,
 }) {
   var matcher = isA<QueryRowType>();
 
@@ -52,6 +53,9 @@ TypeMatcher<QueryRowType> isExistingRowType({
   }
   if (named != null) {
     matcher = matcher.having((e) => e.namedArguments, 'namedArguments', named);
+  }
+  if (isRecord != null) {
+    matcher = matcher.having((e) => e.isRecord, 'isRecord', isRecord);
   }
 
   return matcher;

@@ -75,22 +75,6 @@ q: SELECT * FROM t WHERE i IN ?1;
     expect(result.allErrors, isEmpty);
   });
 
-  test('warns when nested results refer to table-valued functions', () async {
-    final result = await TestBackend.analyzeSingle(
-      "a: SELECT json_each.** FROM json_each('');",
-      options: DriftOptions.defaults(modules: [SqlModule.json1]),
-    );
-
-    expect(
-      result.allErrors,
-      [
-        isDriftError(
-                contains('Nested star columns must refer to a table directly.'))
-            .withSpan('json_each.**')
-      ],
-    );
-  });
-
   test('warns about default values outside of expressions', () async {
     final state = TestBackend.inTest({
       'foo|lib/a.drift': r'''

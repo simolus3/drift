@@ -130,20 +130,39 @@ class QueryWriter {
           (sqlPrefix: prefix, isNullable: argument.nullable),
         );
       case MappedNestedListQuery():
-        final queryRow = _emitter.drift('QueryRow');
-
         _buffer.write('await ');
-        _writeCustomSelectStatement(argument.column.query,
-            includeMappingToDart: false);
-        _buffer.write('.map(');
-        _buffer.write('($queryRow row) => ');
-        _writeArgumentExpression(argument.nestedType, resultSet, context);
-        _buffer.write(').get()');
+        final query = argument.column.query;
+        _writeCustomSelectStatement(query);
+        _buffer.write('.get()');
       case QueryRowType():
         final singleValue = argument.singleValue;
         if (singleValue != null) {
           return _writeArgumentExpression(singleValue, resultSet, context);
         }
+
+        if (context.isNullable) {
+          // If this structed type is nullable, it's coming from an OUTER join
+          // which means that, even if the individual components making up the
+          // structure are non-nullable, they might all be null in SQL. We
+          // detect this case by looking for a non-nullable column and, if it's
+          // null, return null directly instead of creating the structured type.
+          for (final arg in argument.positionalArguments
+              .followedBy(argument.namedArguments.values)
+              .whereType<ScalarResultColumn>()) {
+            if (!arg.nullable) {
+              final keyInMap = context.applyPrefix(arg.name);
+              _buffer.write(
+                  'row.data[${asDartLiteral(keyInMap)}] == null ? null : ');
+            }
+          }
+        }
+
+        final _ArgumentContext childContext = (
+          sqlPrefix: context.sqlPrefix,
+          // Individual fields making up this query row type aren't covered by
+          // the outer nullability.
+          isNullable: false,
+        );
 
         if (!argument.isRecord) {
           // We're writing a constructor, so let's start with the class name.
@@ -159,12 +178,12 @@ class QueryWriter {
 
         _buffer.write('(');
         for (final positional in argument.positionalArguments) {
-          _writeArgumentExpression(positional, resultSet, context);
+          _writeArgumentExpression(positional, resultSet, childContext);
           _buffer.write(', ');
         }
         argument.namedArguments.forEach((name, parameter) {
           _buffer.write('$name: ');
-          _writeArgumentExpression(parameter, resultSet, context);
+          _writeArgumentExpression(parameter, resultSet, childContext);
           _buffer.write(', ');
         });
 
@@ -179,7 +198,12 @@ class QueryWriter {
     final specialName = _transformer.newNameFor(column.sqlParserColumn!);
     final isNullable = context.isNullable || column.nullable;
 
-    final dartLiteral = asDartLiteral(specialName ?? column.name);
+    var name = specialName ?? column.name;
+    if (context.sqlPrefix != null) {
+      name = '${context.sqlPrefix}.$name';
+    }
+
+    final dartLiteral = asDartLiteral(name);
     final method = isNullable ? 'readNullable' : 'read';
     final rawDartType =
         _emitter.dartCode(AnnotatedDartCode([dartTypeNames[column.sqlType]!]));
@@ -213,22 +237,20 @@ class QueryWriter {
           context.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
       final sqlPrefix = context.sqlPrefix;
 
-      _emitter.write('${table.dbGetterName}.$mappingMethod(row');
+      _emitter.write('await ${table.dbGetterName}.$mappingMethod(row');
       if (sqlPrefix != null) {
         _emitter.write(', tablePrefix: ${asDartLiteral(sqlPrefix)}');
       }
 
       _emitter.write(')');
     } else {
-      final sqlPrefix = context.sqlPrefix;
-
       // If the entire table can be nullable, we can check whether a non-nullable
       // column from the table is null. If it is, the entire table is null. This
       // can happen when the table comes from an outer join.
       if (context.isNullable) {
         for (final MapEntry(:key, :value) in match.aliasToColumn.entries) {
           if (!value.nullable) {
-            final mapKey = sqlPrefix == null ? key : '$sqlPrefix.$key';
+            final mapKey = context.applyPrefix(key);
 
             _emitter
                 .write('row.data[${asDartLiteral(mapKey)}] == null ? null : ');
@@ -239,13 +261,8 @@ class QueryWriter {
       _emitter.write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
 
       for (final alias in match.aliasToColumn.entries) {
-        var sqlKey = alias.key;
-        if (sqlPrefix != null) {
-          sqlKey = '$sqlPrefix.';
-        }
-
         _emitter
-          ..write(asDartLiteral(sqlKey))
+          ..write(asDartLiteral(context.applyPrefix(alias.key)))
           ..write(': ')
           ..write(asDartLiteral(alias.value.nameInSql))
           ..write(', ');
@@ -280,23 +297,19 @@ class QueryWriter {
     _buffer.write(';\n}\n');
   }
 
-  void _writeCustomSelectStatement(SqlSelectQuery select,
-      {bool includeMappingToDart = true}) {
+  void _writeCustomSelectStatement(SqlSelectQuery select) {
     _buffer.write(' customSelect(${_queryCode(select)}, ');
     _writeVariables(select);
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    if (includeMappingToDart) {
-      if (select.needsAsyncMapping) {
-        _buffer.write(').asyncMap(');
-      } else {
-        _buffer.write(').map(');
-      }
-
-      _writeMappingLambda(select);
+    if (select.needsAsyncMapping) {
+      _buffer.write(').asyncMap(');
+    } else {
+      _buffer.write(').map(');
     }
 
+    _writeMappingLambda(select);
     _buffer.write(')');
   }
 
@@ -809,5 +822,14 @@ String? _defaultForDartPlaceholder(
   } else {
     assert(!placeholder.hasDefaultOrImplicitFallback);
     return null;
+  }
+}
+
+extension on _ArgumentContext {
+  String applyPrefix(String originalName) {
+    return switch (sqlPrefix) {
+      null => originalName,
+      var s => '$s.$originalName',
+    };
   }
 }

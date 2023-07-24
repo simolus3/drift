@@ -561,8 +561,11 @@ class InferredResultSet {
   ) {
     return switch (column) {
       ScalarResultColumn() => column,
-      NestedResultTable() => column.innerResultSet
-          .mappingToRowClass(column.nameForGeneratedRowClass, options),
+      NestedResultTable() => StructuredFromNestedColumn(
+          column,
+          column.innerResultSet
+              .mappingToRowClass(column.nameForGeneratedRowClass, options),
+        ),
       NestedResultQuery() => MappedNestedListQuery(
           column,
           column.query.queryRowType(options),

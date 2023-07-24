@@ -108,6 +108,36 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
     );
   });
 
+  test('infers nested result sets for custom result sets', () async {
+    final state = TestBackend.inTest({
+      'foo|lib/main.drift': r'''
+query: SELECT 1 AS a, b.** FROM (SELECT 2 AS b, 3 AS c) AS b;
+      ''',
+    });
+
+    final file = await state.analyze('package:foo/main.drift');
+    state.expectNoErrors();
+
+    final query = file.fileAnalysis!.resolvedQueries.values.single;
+
+    expect(
+      query.resultSet!.mappingToRowClass('Row', const DriftOptions.defaults()),
+      isExistingRowType(
+        type: 'Row',
+        named: {
+          'a': scalarColumn('a'),
+          'b': isExistingRowType(
+            type: 'QueryNestedColumn0',
+            named: {
+              'b': scalarColumn('b'),
+              'c': scalarColumn('c'),
+            },
+          )
+        },
+      ),
+    );
+  });
+
   for (final dateTimeAsText in [false, true]) {
     test('analyzing date times (stored as text: $dateTimeAsText)', () async {
       final state = TestBackend.inTest(
