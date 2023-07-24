@@ -1,3 +1,9 @@
+## 2.11.0
+
+- [Nested result columns](https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results)
+  in drift files can now refer to any result set (e.g. a table-valued function or a subquery).
+  They were restricted to direct table references before.
+
 ## 2.10.0
 
 - Add the `schema steps` command to generate help in writing step-by-step schema migrations.

@@ -228,12 +228,10 @@ class RoutesWithNestedPointsResult {
 Great! This class matches our intent much better than the flat result class
 from before.
 
-At the moment, there are some limitations with this approach:
-
-- `**` is not yet supported in compound select statements
-- you can only use `table.**` if table is an actual table or a reference to it.
-  In particular, it doesn't work for result sets from `WITH` clauses or table-
-  valued functions.
+These nested result columns (`**`) can appear in top-level select statements
+only, they're not supported in compound select statements or subqueries yet.
+However, they can refer to any result set in SQL that has been joined to the
+select statement - including subqueries table-valued functions.
 
 You might be wondering how `**` works under the hood, since it's not valid sql.
 At build time, drift's generator will transform `**` into a list of all columns
