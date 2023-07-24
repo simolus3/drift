@@ -1756,7 +1756,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
         }).map((QueryRow row) => JsonResult(
-          raw: row,
+          row: row,
           key: row.read<String>('key'),
           value: row.readNullable<String>('value'),
         ));
@@ -1765,7 +1765,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<JsonResult> another() {
     return customSelect('SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value', variables: [], readsFrom: {})
         .map((QueryRow row) => JsonResult(
-              raw: row,
+              row: row,
               key: row.read<String>('key'),
               value: row.readNullable<String>('value'),
             ));
@@ -1789,10 +1789,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           withConstraints,
           ...generatedpredicate.watchedTables,
         }).asyncMap((QueryRow row) async => MultipleResult(
-          raw: row,
+          row: row,
           a: row.readNullable<String>('a'),
           b: row.readNullable<int>('b'),
-          c: withConstraints.mapFromRow(row),
+          c: await withConstraints.mapFromRowOrNull(row,
+              tablePrefix: 'nested_0'),
         ));
   }
 
@@ -1821,7 +1822,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           config,
           ...generatedexpr.watchedTables,
         }).map((QueryRow row) => ReadRowIdResult(
-          raw: row,
+          row: row,
           rowid: row.read<int>('rowid'),
           configKey: row.read<String>('config_key'),
           configValue: row.readNullable<DriftAny>('config_value'),
@@ -1887,8 +1888,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           withConstraints,
           withDefaults,
         }).asyncMap((QueryRow row) async => NestedResult(
-          raw: row,
-          defaults: withDefaults.mapFromRow(row),
+          row: row,
+          defaults: await withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
           nestedQuery1: await customSelect(
               'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
               variables: [
@@ -1897,7 +1898,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
               readsFrom: {
                 withConstraints,
                 withDefaults,
-              }).map((QueryRow row) => withConstraints.mapFromRow(row)).get(),
+              }).asyncMap(withConstraints.mapFromRow).get(),
         ));
   }
 
@@ -1914,8 +1915,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           syncState: NullAwareTypeConverter.wrapFromSql(
               ConfigTable.$convertersyncState,
               row.readNullable<int>('sync_state')),
-          config: config.mapFromRow(row, tablePrefix: 'nested_0'),
-          noIds: noIds.mapFromRow(row, tablePrefix: 'nested_1'),
+          config: await config.mapFromRow(row, tablePrefix: 'nested_0'),
+          noIds: await noIds.mapFromRow(row, tablePrefix: 'nested_1'),
           nested: await customSelect('SELECT * FROM no_ids',
                   variables: [],
                   readsFrom: {

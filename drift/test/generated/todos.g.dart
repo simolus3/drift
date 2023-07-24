@@ -1715,7 +1715,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
           categories,
           todosTable,
         }).map((QueryRow row) => AllTodosWithCategoryResult(
-          raw: row,
+          row: row,
           id: row.read<int>('id'),
           title: row.readNullable<String>('title'),
           content: row.read<String>('content'),

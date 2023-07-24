@@ -161,17 +161,6 @@ abstract class SqlQuery {
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
   }
 
-  bool get needsAsyncMapping {
-    final result = resultSet;
-    if (result != null) {
-      // Mapping to tables is asynchronous
-      if (result.matchingTable != null) return true;
-      if (result.nestedResults.any((e) => e is NestedResultTable)) return true;
-    }
-
-    return false;
-  }
-
   bool get _useResultClassName {
     final resultSet = this.resultSet!;
 
@@ -244,9 +233,6 @@ class SqlSelectQuery extends SqlQuery {
   /// Whether this query contains nested queries or not
   bool get hasNestedQuery =>
       resultSet.nestedResults.any((e) => e is NestedResultQuery);
-
-  @override
-  bool get needsAsyncMapping => hasNestedQuery || super.needsAsyncMapping;
 
   SqlSelectQuery(
     String name,
@@ -547,7 +533,7 @@ class InferredResultSet {
         singleValue: null,
         positionalArguments: const [],
         namedArguments: {
-          if (options.rawResultSetData) 'raw': RawQueryRow(),
+          if (options.rawResultSetData) 'row': RawQueryRow(),
           for (final column in columns)
             dartNameFor(column): _columnAsArgument(column, options),
         },
@@ -597,6 +583,19 @@ class QueryRowType implements ArgumentForQueryRowType {
     this.isRecord = false,
   });
 
+  Iterable<ArgumentForQueryRowType> get allArguments sync* {
+    if (singleValue != null) {
+      yield singleValue!;
+    } else {
+      yield* positionalArguments;
+      yield* namedArguments.values;
+    }
+  }
+
+  @override
+  bool get requiresAsynchronousContext =>
+      allArguments.any((arg) => arg.requiresAsynchronousContext);
+
   @override
   String toString() {
     return 'ExistingQueryRowType(type: $rowType, singleValue: $singleValue, '
@@ -604,13 +603,20 @@ class QueryRowType implements ArgumentForQueryRowType {
   }
 }
 
-sealed class ArgumentForQueryRowType {}
+sealed class ArgumentForQueryRowType {
+  /// Whether the code constructing this argument may need to be in an async
+  /// context.
+  bool get requiresAsynchronousContext;
+}
 
 /// An argument that just maps the raw query row.
 ///
 /// This is used for generated query classes which can optionally hold a
 /// reference to the raw result set.
-class RawQueryRow extends ArgumentForQueryRowType {}
+class RawQueryRow extends ArgumentForQueryRowType {
+  @override
+  bool get requiresAsynchronousContext => false;
+}
 
 class StructuredFromNestedColumn extends ArgumentForQueryRowType {
   final NestedResultTable table;
@@ -619,6 +625,10 @@ class StructuredFromNestedColumn extends ArgumentForQueryRowType {
   bool get nullable => table.isNullable;
 
   StructuredFromNestedColumn(this.table, this.nestedType);
+
+  @override
+  bool get requiresAsynchronousContext =>
+      nestedType.requiresAsynchronousContext;
 }
 
 class MappedNestedListQuery extends ArgumentForQueryRowType {
@@ -626,6 +636,10 @@ class MappedNestedListQuery extends ArgumentForQueryRowType {
   final QueryRowType nestedType;
 
   MappedNestedListQuery(this.column, this.nestedType);
+
+  // List queries run another statement and always need an asynchronous mapping.
+  @override
+  bool get requiresAsynchronousContext => true;
 }
 
 /// Information about a matching table. A table matches a query if a query
@@ -637,6 +651,11 @@ class MatchingDriftTable implements ArgumentForQueryRowType {
   final Map<String, DriftColumn> aliasToColumn;
 
   MatchingDriftTable(this.table, this.aliasToColumn);
+
+  @override
+  // Mapping from tables is currently asynchronous because the existing data
+  // class could be an asynchronous factory.
+  bool get requiresAsynchronousContext => true;
 
   /// Whether the column alias can be ignored.
   ///
@@ -679,6 +698,9 @@ final class ScalarResultColumn extends ResultColumn
 
   @override
   bool get isArray => false;
+
+  @override
+  bool get requiresAsynchronousContext => false;
 
   @override
   String dartGetterName(Iterable<String> existingNames) {

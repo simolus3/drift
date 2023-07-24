@@ -84,22 +84,19 @@ class QueryWriter {
 
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a query.
-  void _writeMappingLambda(SqlQuery query) {
-    final resultSet = query.resultSet!;
-    final rowClass = query.queryRowType(options);
-
+  void _writeMappingLambda(InferredResultSet resultSet, QueryRowType rowClass) {
     final queryRow = _emitter.drift('QueryRow');
-    final asyncModifier = query.needsAsyncMapping ? 'async' : '';
+    final asyncModifier = rowClass.requiresAsynchronousContext ? 'async' : '';
 
     // We can write every available mapping as a Dart expression via
     // _writeArgumentExpression. This can be turned into a lambda by appending
     // it with `(QueryRow row) => $expression`. That's also what we're doing,
     // but if we'll just call mapFromRow in there, we can just tear that method
     // off instead. This is just an optimization.
-    final matchingTable = resultSet.matchingTable;
-    if (matchingTable != null && matchingTable.effectivelyNoAlias) {
+    final singleValue = rowClass.singleValue;
+    if (singleValue is MatchingDriftTable && singleValue.effectivelyNoAlias) {
       // Tear-off mapFromRow method on table
-      _emitter.write('${matchingTable.table.dbGetterName}.mapFromRow');
+      _emitter.write('${singleValue.table.dbGetterName}.mapFromRow');
     } else {
       // In all other cases, we're off to write the expression.
       _emitter.write('($queryRow row) $asyncModifier => ');
@@ -132,7 +129,7 @@ class QueryWriter {
       case MappedNestedListQuery():
         _buffer.write('await ');
         final query = argument.column.query;
-        _writeCustomSelectStatement(query);
+        _writeCustomSelectStatement(query, argument.nestedType);
         _buffer.write('.get()');
       case QueryRowType():
         final singleValue = argument.singleValue;
@@ -297,19 +294,23 @@ class QueryWriter {
     _buffer.write(';\n}\n');
   }
 
-  void _writeCustomSelectStatement(SqlSelectQuery select) {
+  void _writeCustomSelectStatement(SqlSelectQuery select,
+      [QueryRowType? resultType]) {
     _buffer.write(' customSelect(${_queryCode(select)}, ');
     _writeVariables(select);
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    if (select.needsAsyncMapping) {
+    final resultSet = select.resultSet;
+    resultType ??= select.queryRowType(options);
+
+    if (resultType.requiresAsynchronousContext) {
       _buffer.write(').asyncMap(');
     } else {
       _buffer.write(').map(');
     }
 
-    _writeMappingLambda(select);
+    _writeMappingLambda(resultSet, resultType);
     _buffer.write(')');
   }
 
@@ -335,13 +336,17 @@ class QueryWriter {
     _writeCommonUpdateParameters(update);
 
     _buffer.write(').then((rows) => ');
-    if (update.needsAsyncMapping) {
+
+    final resultSet = update.resultSet!;
+    final rowType = update.queryRowType(options);
+
+    if (rowType.requiresAsynchronousContext) {
       _buffer.write('Future.wait(rows.map(');
-      _writeMappingLambda(update);
+      _writeMappingLambda(resultSet, rowType);
       _buffer.write('))');
     } else {
       _buffer.write('rows.map(');
-      _writeMappingLambda(update);
+      _writeMappingLambda(resultSet, rowType);
       _buffer.write(').toList()');
     }
     _buffer.write(');\n}');
