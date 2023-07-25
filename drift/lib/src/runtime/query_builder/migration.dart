@@ -15,6 +15,7 @@ typedef OnUpgrade = Future<void> Function(Migrator m, int from, int to);
 typedef OnBeforeOpen = Future<void> Function(OpeningDetails details);
 
 Future<void> _defaultOnCreate(Migrator m) => m.createAll();
+
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
     throw Exception("You've bumped the schema version for your drift database "
         "but didn't provide a strategy for schema updates. Please do that by "
@@ -150,15 +151,38 @@ class Migrator {
   /// [other alter]: https://www.sqlite.org/lang_altertable.html#otheralter
   /// [drift docs]: https://drift.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations
   Future<void> alterTable(TableMigration migration) async {
-    final foreignKeysEnabled =
-        (await _db.customSelect('PRAGMA foreign_keys').getSingle())
-            .read<bool>('foreign_keys');
-    final legacyAlterTable =
-        (await _db.customSelect('PRAGMA legacy_alter_table').getSingle())
+    final dialect = _db.executor.dialect;
+    bool foreignKeysEnabled;
+
+    if (dialect == SqlDialect.sqlite) {
+      foreignKeysEnabled =
+          (await _db.customSelect('PRAGMA foreign_keys').getSingle())
+              .read<bool>('foreign_keys');
+    } else if (dialect == SqlDialect.mariadb) {
+      foreignKeysEnabled = (await _db
+              .customSelect(
+                  'SELECT @@SESSION.foreign_key_checks as foreign_keys')
+              .getSingle())
+          .read<bool>('foreign_keys');
+    } else {
+      foreignKeysEnabled =
+          (await _db.customSelect('PRAGMA foreign_keys').getSingle())
+              .read<bool>('foreign_keys');
+    }
+
+    final legacyAlterTable = dialect == SqlDialect.mariadb
+        ? null
+        : (await _db.customSelect('PRAGMA legacy_alter_table').getSingle())
             .read<bool>('legacy_alter_table');
 
     if (foreignKeysEnabled) {
-      await _db.customStatement('PRAGMA foreign_keys = OFF;');
+      if (dialect == SqlDialect.sqlite) {
+        await _db.customStatement('PRAGMA foreign_keys = OFF;');
+      } else if (dialect == SqlDialect.mariadb) {
+        await _db.customStatement('SET FOREIGN_KEY_CHECKS = OFF;');
+      } else {
+        await _db.customStatement('PRAGMA foreign_keys = OFF;');
+      }
     }
 
     final table = migration.affectedTable;
@@ -250,16 +274,26 @@ class Migrator {
       // we've just dropped the original table), we need to enable the legacy
       // option which skips the integrity check.
       // See also: https://sqlite.org/forum/forumpost/0e2390093fbb8fd6
-      if (!legacyAlterTable) {
+      if (legacyAlterTable == false) {
         await _issueCustomQuery('pragma legacy_alter_table = 1;');
       }
 
       // Step 7: Rename the new table to the old name
-      await _issueCustomQuery(
-          'ALTER TABLE ${context.identifier(temporaryName)} '
-          'RENAME TO ${context.identifier(tableName)}');
+      if (dialect == SqlDialect.sqlite) {
+        await _issueCustomQuery(
+            'ALTER TABLE ${context.identifier(temporaryName)} '
+            'RENAME TO ${context.identifier(tableName)}');
+      } else if (dialect == SqlDialect.mariadb) {
+        await _issueCustomQuery(
+            'RENAME TABLE ${context.identifier(temporaryName)} '
+            'TO ${context.identifier(tableName)}');
+      } else {
+        await _issueCustomQuery(
+            'ALTER TABLE ${context.identifier(temporaryName)} '
+            'RENAME TO ${context.identifier(tableName)}');
+      }
 
-      if (!legacyAlterTable) {
+      if (legacyAlterTable == false) {
         await _issueCustomQuery('pragma legacy_alter_table = 0;');
       }
 
@@ -273,7 +307,13 @@ class Migrator {
 
     // Finally, re-enable foreign keys if they were enabled originally.
     if (foreignKeysEnabled) {
-      await _db.customStatement('PRAGMA foreign_keys = ON;');
+      if (dialect == SqlDialect.sqlite) {
+        await _db.customStatement('PRAGMA foreign_keys = ON;');
+      } else if (dialect == SqlDialect.mariadb) {
+        await _db.customStatement('SET FOREIGN_KEY_CHECKS = ON;');
+      } else {
+        await _db.customStatement('PRAGMA foreign_keys = ON;');
+      }
     }
   }
 
@@ -447,7 +487,8 @@ class Migrator {
   /// in sqlite version 3.25.0, released on 2018-09-15. When you're using
   /// Flutter and depend on `sqlite3_flutter_libs`, you're guaranteed to have
   /// that version. Otherwise, please ensure that you only use [renameColumn] if
-  /// you know you'll run on sqlite 3.20.0 or later.
+  /// you know you'll run on sqlite 3.20.0 or later. In MariaDB support for that
+  /// same syntax was added in MariaDB version 10.5.2, released on 2020-03-26.
   Future<void> renameColumn(
       TableInfo table, String oldName, GeneratedColumn column) async {
     final context = _createContext();
@@ -467,8 +508,17 @@ class Migrator {
   /// databases.
   Future<void> renameTable(TableInfo table, String oldName) async {
     final context = _createContext();
-    context.buffer.write('ALTER TABLE ${context.identifier(oldName)} '
-        'RENAME TO ${context.identifier(table.actualTableName)};');
+    final dialect = context.dialect;
+    if (dialect == SqlDialect.sqlite) {
+      context.buffer.write('ALTER TABLE ${context.identifier(oldName)} '
+          'RENAME TO ${context.identifier(table.actualTableName)};');
+    } else if (dialect == SqlDialect.mariadb) {
+      context.buffer.write('RENAME TABLE ${context.identifier(oldName)} '
+          'TO ${context.identifier(table.actualTableName)};');
+    } else {
+      context.buffer.write('ALTER TABLE ${context.identifier(oldName)} '
+          'RENAME TO ${context.identifier(table.actualTableName)};');
+    }
     return _issueCustomQuery(context.sql);
   }
 
