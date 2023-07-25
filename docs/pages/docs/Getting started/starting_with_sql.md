@@ -12,35 +12,8 @@ declaring both tables and queries in Dart. This version will focus on how to use
 A complete cross-platform Flutter app using drift is also available [here](https://github.com/simolus3/drift/tree/develop/examples/app).
 
 ## Adding the dependency
-First, lets add drift to your project's `pubspec.yaml`.
-At the moment, the current version of `drift` is [![Drift version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift)
-and the latest version of `drift_dev` is [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev).
 
-{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
-
-```yaml
-dependencies:
-  drift: ^{{ versions.drift }}
-  sqlite3_flutter_libs: ^0.5.0
-  path_provider: ^2.0.0
-  path: ^{{ versions.path }}
-
-dev_dependencies:
-  drift_dev: ^{{ versions.drift_dev }}
-  build_runner: ^{{ versions.build_runner }}
-```
-
-If you're wondering why so many packages are necessary, here's a quick overview over what each package does:
-
-- `drift`: This is the core package defining most apis
-- `sqlite3_flutter_libs`: Ships the latest `sqlite3` version with your Android or iOS app. This is not required when you're _not_ using Flutter,
-  but then you need to take care of including `sqlite3` yourself.
-  For an overview on other platforms, see [platforms]({{ '../platforms.md' | pageUrl }}).
-- `path_provider` and `path`: Used to find a suitable location to store the database. Maintained by the Flutter and Dart team
-- `drift_dev`: This development-only dependency generates query code based on your tables. It will not be included in your final app.
-- `build_runner`: Common tool for code-generation, maintained by the Dart team
-
-{% include "partials/changed_to_ffi" %}
+{% include "partials/dependencies" %}
 
 ## Declaring tables and queries
 
