@@ -75,18 +75,29 @@ class ViewWriter extends TableOrViewWriter {
       ..write('@override\n String get entityName=>'
           ' ${asDartLiteral(view.schemaName)};\n');
 
+    emitter
+      ..writeln('@override')
+      ..write('Map<${emitter.drift('SqlDialect')}, String>')
+      ..write(source is! SqlViewSource ? '?' : '')
+      ..write('get createViewStatements => ');
     if (source is SqlViewSource) {
       final astNode = source.parsedStatement;
 
-      emitter.write('@override\nString get createViewStmt =>');
       if (astNode != null) {
-        emitter.writeSqlAsDartLiteral(astNode);
+        emitter.writeSqlByDialectMap(astNode);
       } else {
-        emitter.write(asDartLiteral(source.sqlCreateViewStmt));
+        final firstDialect = scope.options.supportedDialects.first;
+
+        emitter
+          ..write('{')
+          ..writeDriftRef('SqlDialect')
+          ..write('.${firstDialect.name}: ')
+          ..write(asDartLiteral(source.sqlCreateViewStmt))
+          ..write('}');
       }
       buffer.writeln(';');
     } else {
-      buffer.write('@override\n String? get createViewStmt => null;\n');
+      buffer.writeln('null;');
     }
 
     writeAsDslTable();

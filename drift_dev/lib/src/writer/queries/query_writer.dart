@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
@@ -495,7 +496,45 @@ class QueryWriter {
   /// been expanded. For instance, 'SELECT * FROM t WHERE x IN ?' will be turned
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode(SqlQuery query) {
-    return SqlWriter(scope.options, query: query).write();
+    final dialectForCode = <String, List<SqlDialect>>{};
+
+    for (final dialect in scope.options.supportedDialects) {
+      final code =
+          SqlWriter(scope.options, dialect: dialect, query: query).write();
+
+      dialectForCode.putIfAbsent(code, () => []).add(dialect);
+    }
+
+    if (dialectForCode.length == 1) {
+      // All supported dialects use the same SQL syntax, so we can just use that
+      return dialectForCode.keys.single;
+    } else {
+      // Create a switch expression matching over the dialect of the database
+      // we're connected to.
+      final buffer = StringBuffer('switch (executor.dialect) {');
+      final dialectEnum = scope.drift('SqlDialect');
+
+      var index = 0;
+      for (final MapEntry(key: code, value: dialects)
+          in dialectForCode.entries) {
+        index++;
+
+        buffer
+            .write(dialects.map((e) => '$dialectEnum.${e.name}').join(' || '));
+        if (index == dialectForCode.length) {
+          // In the last branch, match all dialects as a fallback
+          buffer.write(' || _ ');
+        }
+
+        buffer
+          ..write(' => ')
+          ..write(code)
+          ..write(', ');
+      }
+
+      buffer.writeln('}');
+      return buffer.toString();
+    }
   }
 
   void _writeReadsFrom(SqlSelectQuery select) {
@@ -818,9 +857,14 @@ String? _defaultForDartPlaceholder(
   if (kind is ExpressionDartPlaceholderType && kind.defaultValue != null) {
     // Wrap the default expression in parentheses to avoid issues with
     // the surrounding precedence in SQL.
-    final sql = SqlWriter(scope.options)
-        .writeNodeIntoStringLiteral(Parentheses(kind.defaultValue!));
-    return 'const ${scope.drift('CustomExpression')}($sql)';
+    final (sql, dialectSpecific) =
+        scope.sqlByDialect(Parentheses(kind.defaultValue!));
+
+    if (dialectSpecific) {
+      return 'const ${scope.drift('CustomExpression')}.dialectSpecific($sql)';
+    } else {
+      return 'const ${scope.drift('CustomExpression')}($sql)';
+    }
   } else if (kind is SimpleDartPlaceholderType &&
       kind.kind == SimpleDartPlaceholderKind.orderBy) {
     return 'const ${scope.drift('OrderBy')}.nothing()';

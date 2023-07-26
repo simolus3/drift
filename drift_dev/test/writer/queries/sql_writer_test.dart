@@ -6,14 +6,18 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  void check(String sql, String expectedDart,
-      {DriftOptions options = const DriftOptions.defaults()}) {
+  void check(
+    String sql,
+    String expectedDart, {
+    DriftOptions options = const DriftOptions.defaults(),
+    SqlDialect dialect = SqlDialect.sqlite,
+  }) {
     final engine = SqlEngine();
     final context = engine.analyze(sql);
     final query = SqlSelectQuery('name', context, context.root, [], [],
         InferredResultSet(null, []), null, null);
 
-    final result = SqlWriter(options, query: query).write();
+    final result = SqlWriter(options, dialect: dialect, query: query).write();
 
     expect(result, expectedDart);
   }
@@ -33,7 +37,6 @@ void main() {
   test('escapes postgres keywords', () {
     check('SELECT * FROM user', "'SELECT * FROM user'");
     check('SELECT * FROM user', "'SELECT * FROM \"user\"'",
-        options: DriftOptions.defaults(
-            dialect: DialectOptions(SqlDialect.postgres, null)));
+        dialect: SqlDialect.postgres);
   });
 }

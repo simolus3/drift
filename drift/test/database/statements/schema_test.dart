@@ -259,6 +259,32 @@ void main() {
       ));
     });
   });
+
+  group('dialect-specific', () {
+    Map<SqlDialect, String> statements(String base) {
+      return {
+        for (final dialect in SqlDialect.values) dialect: '$base $dialect',
+      };
+    }
+
+    for (final dialect in [SqlDialect.sqlite, SqlDialect.postgres]) {
+      test('with dialect $dialect', () async {
+        final executor = MockExecutor();
+        when(executor.dialect).thenReturn(dialect);
+
+        final db = TodoDb(executor);
+        final migrator = db.createMigrator();
+
+        await migrator.create(Trigger.byDialect('a', statements('trigger')));
+        await migrator.create(Index.byDialect('a', statements('index')));
+        await migrator.create(OnCreateQuery.byDialect(statements('@')));
+
+        verify(executor.runCustom('trigger $dialect', []));
+        verify(executor.runCustom('index $dialect', []));
+        verify(executor.runCustom('@ $dialect', []));
+      });
+    }
+  });
 }
 
 final class _FakeSchemaVersion extends VersionedSchema {

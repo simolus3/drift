@@ -1,4 +1,5 @@
 import 'package:build_test/build_test.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/queries/query_writer.dart';
@@ -11,14 +12,16 @@ import '../../utils.dart';
 
 void main() {
   Future<String> generateForQueryInDriftFile(String driftFile,
-      {DriftOptions options = const DriftOptions.defaults()}) async {
+      {DriftOptions options = const DriftOptions.defaults(
+        generateNamedParameters: true,
+      )}) async {
     final state =
         TestBackend.inTest({'a|lib/main.drift': driftFile}, options: options);
     final file = await state.analyze('package:a/main.drift');
     state.expectNoErrors();
 
     final writer = Writer(
-      const DriftOptions.defaults(generateNamedParameters: true),
+      options,
       generationOptions: GenerationOptions(
         imports: ImportManagerForPartFiles(),
       ),
@@ -527,5 +530,27 @@ class ADrift extends i1.ModularAccessor {
   }
 }'''))
     }, outputs.dartOutputs, outputs);
+  });
+
+  test('creates dialect-specific query code', () async {
+    final result = await generateForQueryInDriftFile(
+      r'''
+query (:foo AS TEXT): SELECT :foo;
+''',
+      options: const DriftOptions.defaults(
+        dialect: DialectOptions(
+            null, [SqlDialect.sqlite, SqlDialect.postgres], null),
+      ),
+    );
+
+    expect(
+      result,
+      contains(
+        'switch (executor.dialect) {'
+        "SqlDialect.sqlite => 'SELECT ?1 AS _c0', "
+        "SqlDialect.postgres || _  => 'SELECT \\\$1 AS _c0', "
+        '}',
+      ),
+    );
   });
 }

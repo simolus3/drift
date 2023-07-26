@@ -534,7 +534,7 @@ class $TodoCategoryItemCountView
   @override
   String get entityName => 'todo_category_item_count';
   @override
-  String? get createViewStmt => null;
+  Map<SqlDialect, String>? get createViewStatements => null;
   @override
   $TodoCategoryItemCountView get asDslTable => this;
   @override
@@ -639,7 +639,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   @override
   String get entityName => 'customViewName';
   @override
-  String? get createViewStmt => null;
+  Map<SqlDialect, String>? get createViewStatements => null;
   @override
   $TodoItemWithCategoryNameViewView get asDslTable => this;
   @override

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show SqlDialect;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -110,7 +111,8 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
       query: stmt.query,
       // Remove drift-specific syntax
       driftTableName: null,
-    ).toSqlWithoutDriftSpecificSyntax(resolver.driver.options);
+    ).toSqlWithoutDriftSpecificSyntax(
+        resolver.driver.options, SqlDialect.sqlite);
 
     return DriftView(
       discovered.ownId,

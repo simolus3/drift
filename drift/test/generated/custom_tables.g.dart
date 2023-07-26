@@ -1600,8 +1600,10 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   @override
   String get entityName => 'my_view';
   @override
-  String get createViewStmt =>
-      'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2';
+  Map<SqlDialect, String> get createViewStatements => {
+        SqlDialect.sqlite:
+            'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2',
+      };
   @override
   MyView get asDslTable => this;
   @override
