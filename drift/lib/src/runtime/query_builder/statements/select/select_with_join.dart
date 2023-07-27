@@ -128,11 +128,12 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         chosenAlias = _columnAliases[column]!;
       }
 
+      final chosenAliasEscaped = ctx.dialect.escape(chosenAlias);
+
       column.writeInto(ctx);
       ctx.buffer
-        ..write(' AS "')
-        ..write(chosenAlias)
-        ..write('"');
+        ..write(' AS ')
+        ..write(chosenAliasEscaped);
     }
 
     ctx.buffer.write(' FROM ');
