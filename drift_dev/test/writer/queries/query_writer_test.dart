@@ -1,8 +1,10 @@
 import 'package:build_test/build_test.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/queries/query_writer.dart';
 import 'package:drift_dev/src/writer/writer.dart';
+import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../../analysis/test_utils.dart';
@@ -10,13 +12,16 @@ import '../../utils.dart';
 
 void main() {
   Future<String> generateForQueryInDriftFile(String driftFile,
-      {DriftOptions options = const DriftOptions.defaults()}) async {
+      {DriftOptions options = const DriftOptions.defaults(
+        generateNamedParameters: true,
+      )}) async {
     final state =
         TestBackend.inTest({'a|lib/main.drift': driftFile}, options: options);
     final file = await state.analyze('package:a/main.drift');
+    state.expectNoErrors();
 
     final writer = Writer(
-      const DriftOptions.defaults(generateNamedParameters: true),
+      options,
       generationOptions: GenerationOptions(
         imports: ImportManagerForPartFiles(),
       ),
@@ -55,32 +60,112 @@ void main() {
     );
   });
 
-  test('generates correct name for renamed nested star columns', () async {
-    final generated = await generateForQueryInDriftFile('''
+  group('nested star column', () {
+    test('get renamed in SQL', () async {
+      final generated = await generateForQueryInDriftFile('''
         CREATE TABLE tbl (
           id INTEGER NULL
         );
 
         query: SELECT t.** AS tableName FROM tbl AS t;
       ''');
-    expect(
-      generated,
-      allOf(
-        contains('SELECT"t"."id" AS "nested_0.id"'),
-        contains('final TblData tableName;'),
-      ),
-    );
+      expect(
+        generated,
+        allOf(
+          contains('SELECT"t"."id" AS "nested_0.id"'),
+          contains('final TblData tableName;'),
+        ),
+      );
+    });
+
+    test('makes single columns nullable if from outer join', () async {
+      final generated = await generateForQueryInDriftFile('''
+        query: SELECT 1 AS r, joined.** FROM (SELECT 1)
+            LEFT OUTER JOIN (SELECT 2 AS b) joined;
+      ''');
+
+      expect(
+        generated,
+        allOf(
+          contains("joined: row.readNullable<int>('nested_0.b')"),
+          contains('final int? joined;'),
+        ),
+      );
+    });
+
+    test('checks for nullable column in nested table', () async {
+      final generated = await generateForQueryInDriftFile('''
+        CREATE TABLE tbl (
+          id INTEGER NULL
+        );
+
+        query: SELECT 1 AS a, tbl.** FROM (SELECT 1) LEFT OUTER JOIN tbl;
+      ''');
+
+      expect(
+        generated,
+        allOf(
+          contains(
+              "tbl: await tbl.mapFromRowOrNull(row, tablePrefix: 'nested_0')"),
+          contains('final TblData? tbl;'),
+        ),
+      );
+    });
+
+    test('checks for nullable column in nested table with alias', () async {
+      final generated = await generateForQueryInDriftFile('''
+        CREATE TABLE tbl (
+          id INTEGER NULL,
+          col TEXT NOT NULL
+        );
+
+        query: SELECT 1 AS a, tbl.** FROM (SELECT 1) LEFT OUTER JOIN (SELECT id AS a, col AS b from tbl) tbl;
+      ''');
+
+      expect(
+        generated,
+        allOf(
+          contains("tbl: row.data['nested_0.b'] == null ? null : "
+              'tbl.mapFromRowWithAlias(row'),
+          contains('final TblData? tbl;'),
+        ),
+      );
+    });
+
+    test('checks for nullable column in nested result set', () async {
+      final generated = await generateForQueryInDriftFile('''
+        query: SELECT 1 AS r, joined.** FROM (SELECT 1)
+            LEFT OUTER JOIN (SELECT NULL AS b, 3 AS c) joined;
+      ''');
+
+      expect(
+        generated,
+        allOf(
+          contains("joined: row.data['nested_0.c'] == null ? null : "
+              "QueryNestedColumn0(b: row.readNullable<String>('nested_0.b'), "
+              "c: row.read<int>('nested_0.c'), )"),
+          contains('final QueryNestedColumn0? joined;'),
+        ),
+      );
+    });
   });
 
   test('generates correct returning mapping', () async {
-    final generated = await generateForQueryInDriftFile('''
+    final generated = await generateForQueryInDriftFile(
+      '''
         CREATE TABLE tbl (
           id INTEGER,
           text TEXT
         );
 
         query: INSERT INTO tbl (id, text) VALUES(10, 'test') RETURNING id;
-      ''');
+      ''',
+      options: const DriftOptions.defaults(
+        sqliteAnalysisOptions:
+            // Assuming 3.35 because dso that returning works.
+            SqliteAnalysisOptions(version: SqliteVersion.v3(35)),
+      ),
+    );
     expect(generated, contains('.toList()'));
   });
 
@@ -346,20 +431,19 @@ failQuery:
         ],
         readsFrom: {
           t,
-        }).asyncMap((i0.QueryRow row) async {
-      return FailQueryResult(
-        a: row.readNullable<double>('a'),
-        b: row.readNullable<int>('b'),
-        nestedQuery0: await customSelect(
-            'SELECT * FROM t AS x WHERE x.b = b OR x.b = ?1',
-            variables: [
-              i0.Variable<int>(inB)
-            ],
-            readsFrom: {
-              t,
-            }).asyncMap(t.mapFromRow).get(),
-      );
-    });
+        }).asyncMap((i0.QueryRow row) async => FailQueryResult(
+          a: row.readNullable<double>('a'),
+          b: row.readNullable<int>('b'),
+          nestedQuery0: await customSelect(
+              'SELECT * FROM t AS x WHERE x.b = b OR x.b = ?1',
+              variables: [
+                i0.Variable<int>(inB)
+              ],
+              readsFrom: {
+                t,
+              }).asyncMap(t.mapFromRow).get(),
+        ));
+  }
 '''))
     }, outputs.dartOutputs, outputs);
   });
@@ -446,5 +530,27 @@ class ADrift extends i1.ModularAccessor {
   }
 }'''))
     }, outputs.dartOutputs, outputs);
+  });
+
+  test('creates dialect-specific query code', () async {
+    final result = await generateForQueryInDriftFile(
+      r'''
+query (:foo AS TEXT): SELECT :foo;
+''',
+      options: const DriftOptions.defaults(
+        dialect: DialectOptions(
+            null, [SqlDialect.sqlite, SqlDialect.postgres], null),
+      ),
+    );
+
+    expect(
+      result,
+      contains(
+        'switch (executor.dialect) {'
+        "SqlDialect.sqlite => 'SELECT ?1 AS _c0', "
+        "SqlDialect.postgres || _  => 'SELECT \\\$1 AS _c0', "
+        '}',
+      ),
+    );
   });
 }

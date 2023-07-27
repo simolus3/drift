@@ -198,18 +198,6 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
           relevantNode: e,
         ));
       }
-
-      // check that it actually refers to a table
-      final result = e.resultSet?.unalias();
-      if (result is! Table && result is! View) {
-        linter.sqlParserErrors.add(AnalysisError(
-          type: AnalysisErrorType.other,
-          message: 'Nested star columns must refer to a table directly. They '
-              "can't refer to a table-valued function or another select "
-              'statement.',
-          relevantNode: e,
-        ));
-      }
     }
 
     if (e is NestedQueryColumn) {

@@ -11,6 +11,8 @@ class CustomExpression<D extends Object> extends Expression<D> {
   /// The SQL of this expression
   final String content;
 
+  final Map<SqlDialect, String>? _dialectSpecificContent;
+
   /// Additional tables that this expression is watching.
   ///
   /// When this expression is used in a stream query, the stream will update
@@ -24,11 +26,25 @@ class CustomExpression<D extends Object> extends Expression<D> {
 
   /// Constructs a custom expression by providing the raw sql [content].
   const CustomExpression(this.content,
-      {this.watchedTables = const [], this.precedence = Precedence.unknown});
+      {this.watchedTables = const [], this.precedence = Precedence.unknown})
+      : _dialectSpecificContent = null;
+
+  /// Constructs a custom expression providing the raw SQL in [content] depending
+  /// on the SQL dialect when this expression is built.
+  const CustomExpression.dialectSpecific(Map<SqlDialect, String> content,
+      {this.watchedTables = const [], this.precedence = Precedence.unknown})
+      : _dialectSpecificContent = content,
+        content = '';
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write(content);
+    final dialectSpecific = _dialectSpecificContent;
+
+    if (dialectSpecific != null) {
+    } else {
+      context.buffer.write(content);
+    }
+
     context.watchedTables.addAll(watchedTables);
   }
 

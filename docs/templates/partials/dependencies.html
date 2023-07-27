@@ -1,0 +1,39 @@
+{% block "blocks/markdown" %}
+
+First, lets add drift to your project's `pubspec.yaml`.
+At the moment, the current version of `drift` is [![Drift version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift)
+and the latest version of `drift_dev` is [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev).
+
+{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+
+```yaml
+dependencies:
+  drift: ^{{ versions.drift }}
+  sqlite3_flutter_libs: ^0.5.0
+  path_provider: ^2.0.0
+  path: ^{{ versions.path }}
+
+dev_dependencies:
+  drift_dev: ^{{ versions.drift_dev }}
+  build_runner: ^{{ versions.build_runner }}
+```
+
+If you're wondering why so many packages are necessary, here's a quick overview over what each package does:
+
+- `drift`: This is the core package defining the APIs you use to access drift databases.
+- `sqlite3_flutter_libs`: Ships the latest `sqlite3` version with your Android or iOS app. This is not required when you're _not_ using Flutter,
+  but then you need to take care of including `sqlite3` yourself.
+  For an overview on other platforms, see [platforms]({{ '../platforms.md' | pageUrl }}).
+  Note that the `sqlite3_flutter_libs` package will include the native sqlite3 library for the following
+  architectures: `armv8`, `armv7`, `x86` and `x86_64`.
+  Most Flutter apps don't run on 32-bit x86 devices without further setup, so you should
+  [add a snippet](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3_flutter_libs#included-platforms)
+  to your `build.gradle` if you don't need `x86` builds.
+  Otherwise, the Play Store might allow users on `x86` devices to install your app even though it is not
+  supported.
+  In Flutter's current native build system, drift unfortunately can't do that for you.
+- `path_provider` and `path`: Used to find a suitable location to store the database. Maintained by the Flutter and Dart team.
+- `drift_dev`: This development-only dependency generates query code based on your tables. It will not be included in your final app.
+- `build_runner`: Common tool for code-generation, maintained by the Dart team.
+
+{% endblock %}

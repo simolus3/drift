@@ -224,7 +224,7 @@ void main() {
           'c.desc': 'Description',
           'c.description_in_upper_case': 'DESCRIPTION',
           'c.priority': 1,
-          'c4': 11
+          'c0': 11
         }
       ];
     });
@@ -234,7 +234,7 @@ void main() {
     verify(executor.runSelect(
       'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
       '"c"."priority" AS "c.priority", "c"."description_in_upper_case" AS '
-      '"c.description_in_upper_case", LENGTH("c"."desc") AS "c4" '
+      '"c.description_in_upper_case", LENGTH("c"."desc") AS "c0" '
       'FROM "categories" "c";',
       [],
     ));
@@ -273,7 +273,7 @@ void main() {
           'c.desc': 'Description',
           'c.description_in_upper_case': 'DESCRIPTION',
           'c.priority': 1,
-          'c4': 11,
+          'c0': 11,
         },
       ];
     });
@@ -283,7 +283,7 @@ void main() {
     verify(executor.runSelect(
       'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", "c"."priority" AS "c.priority"'
       ', "c"."description_in_upper_case" AS "c.description_in_upper_case", '
-      'LENGTH("c"."desc") AS "c4" '
+      'LENGTH("c"."desc") AS "c0" '
       'FROM "categories" "c" '
       'INNER JOIN "todos" "t" ON "c"."id" = "t"."category";',
       [],
@@ -328,7 +328,7 @@ void main() {
           'c.id': 3,
           'c.desc': 'desc',
           'c.priority': 0,
-          'c4': 10,
+          'c0': 10,
           'c.description_in_upper_case': 'DESC',
         }
       ];
@@ -340,7 +340,7 @@ void main() {
         'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
         '"c"."priority" AS "c.priority", '
         '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
-        'COUNT("t"."id") AS "c4" '
+        'COUNT("t"."id") AS "c0" '
         'FROM "categories" "c" INNER JOIN "todos" "t" ON "t"."category" = "c"."id" '
         'GROUP BY "c"."id" HAVING COUNT("t"."id") >= ?;',
         [10]));
@@ -473,5 +473,73 @@ void main() {
       db.select(t1).join([crossJoin(t2)]).get(),
       throwsA(isNot(isA<DriftWrappedException>())),
     );
+  });
+
+  group('subquery', () {
+    test('can be joined', () async {
+      final subquery = Subquery(
+        db.select(db.todosTable)
+          ..orderBy([(row) => OrderingTerm.desc(row.title.length)])
+          ..limit(10),
+        's',
+      );
+
+      final query = db.selectOnly(db.categories)
+        ..addColumns([db.categories.id])
+        ..join([
+          innerJoin(subquery,
+              subquery.ref(db.todosTable.category).equalsExp(db.categories.id))
+        ]);
+      await query.get();
+
+      verify(
+        executor.runSelect(
+          'SELECT "categories"."id" AS "categories.id" FROM "categories" '
+          'INNER JOIN (SELECT * FROM "todos" '
+          'ORDER BY LENGTH("todos"."title") DESC LIMIT 10) s '
+          'ON "s"."category" = "categories"."id";',
+          argThat(isEmpty),
+        ),
+      );
+    });
+
+    test('use column from subquery', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) {
+        return Future.value([
+          {'c0': 42}
+        ]);
+      });
+
+      final sumOfTitleLength = db.todosTable.title.length.sum();
+      final subquery = Subquery(
+          db.selectOnly(db.todosTable)
+            ..addColumns([db.todosTable.category, sumOfTitleLength])
+            ..groupBy([db.todosTable.category]),
+          's');
+
+      final readableLength = subquery.ref(sumOfTitleLength);
+      final query = db.selectOnly(db.categories)
+        ..addColumns([readableLength])
+        ..join([
+          innerJoin(subquery,
+              subquery.ref(db.todosTable.category).equalsExp(db.categories.id))
+        ]);
+
+      final row = await query.getSingle();
+
+      verify(
+        executor.runSelect(
+          'SELECT "s"."c1" AS "c0" FROM "categories" '
+          'INNER JOIN ('
+          'SELECT "todos"."category" AS "todos.category", '
+          'SUM(LENGTH("todos"."title")) AS "c1" FROM "todos" '
+          'GROUP BY "todos"."category") s '
+          'ON "s"."todos.category" = "categories"."id";',
+          argThat(isEmpty),
+        ),
+      );
+
+      expect(row.read(readableLength), 42);
+    });
   });
 }

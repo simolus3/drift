@@ -151,7 +151,7 @@ extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   /// Drift would generate code to call this method with `'c1': 'foo'` and
   /// `'c2': 'bar'` in [alias].
   Future<D> mapFromRowWithAlias(QueryRow row, Map<String, String> alias) async {
-    return map({
+    return await map({
       for (final entry in row.data.entries) alias[entry.key]!: entry.value,
     });
   }

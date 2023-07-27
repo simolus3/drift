@@ -26,8 +26,9 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 }
 
 extension ToSqlText on AstNode {
-  String toSqlWithoutDriftSpecificSyntax(DriftOptions options) {
-    final writer = SqlWriter(options, escapeForDart: false);
+  String toSqlWithoutDriftSpecificSyntax(
+      DriftOptions options, SqlDialect dialect) {
+    final writer = SqlWriter(options, dialect: dialect, escapeForDart: false);
     return writer.writeSql(this);
   }
 }
@@ -36,17 +37,19 @@ class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
   final SqlQuery? query;
   final DriftOptions options;
+  final SqlDialect dialect;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
-  bool get _isPostgres => options.effectiveDialect == SqlDialect.postgres;
+  bool get _isPostgres => dialect == SqlDialect.postgres;
 
-  SqlWriter._(this.query, this.options, this._starColumnToResolved,
-      StringBuffer out, bool escapeForDart)
+  SqlWriter._(this.query, this.options, this.dialect,
+      this._starColumnToResolved, StringBuffer out, bool escapeForDart)
       : _out = out,
         super(escapeForDart ? _DartEscapingSink(out) : out);
 
   factory SqlWriter(
     DriftOptions options, {
+    required SqlDialect dialect,
     SqlQuery? query,
     bool escapeForDart = true,
     StringBuffer? buffer,
@@ -61,7 +64,7 @@ class SqlWriter extends NodeSqlBuilder {
           if (nestedResult is NestedResultTable) nestedResult.from: nestedResult
       };
     }
-    return SqlWriter._(query, options, doubleStarColumnToResolvedTable,
+    return SqlWriter._(query, options, dialect, doubleStarColumnToResolvedTable,
         buffer ?? StringBuffer(), escapeForDart);
   }
 
@@ -84,7 +87,7 @@ class SqlWriter extends NodeSqlBuilder {
 
   @override
   bool isKeyword(String lexeme) {
-    switch (options.effectiveDialect) {
+    switch (dialect) {
       case SqlDialect.postgres:
         return isKeywordLexeme(lexeme) || isPostgresKeywordLexeme(lexeme);
       default:
@@ -194,14 +197,14 @@ class SqlWriter extends NodeSqlBuilder {
       // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
       var isFirst = true;
 
-      for (final column in result.table.columns) {
+      for (final column in result.innerResultSet.scalarColumns) {
         if (isFirst) {
           isFirst = false;
         } else {
           _out.write(', ');
         }
 
-        final columnName = column.nameInSql;
+        final columnName = column.name;
         _out.write('"$table"."$columnName" AS "$prefix.$columnName"');
       }
     } else if (e is DartPlaceholder) {

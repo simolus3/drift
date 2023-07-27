@@ -179,11 +179,16 @@ DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
       ($checkedConvert) {
         $checkKeys(
           json,
-          allowedKeys: const ['dialect', 'options'],
+          allowedKeys: const ['dialect', 'dialects', 'options'],
         );
         final val = DialectOptions(
           $checkedConvert(
-              'dialect', (v) => $enumDecode(_$SqlDialectEnumMap, v)),
+              'dialect', (v) => $enumDecodeNullable(_$SqlDialectEnumMap, v)),
+          $checkedConvert(
+              'dialects',
+              (v) => (v as List<dynamic>?)
+                  ?.map((e) => $enumDecode(_$SqlDialectEnumMap, e))
+                  .toList()),
           $checkedConvert(
               'options',
               (v) =>
@@ -195,7 +200,9 @@ DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
 
 Map<String, dynamic> _$DialectOptionsToJson(DialectOptions instance) =>
     <String, dynamic>{
-      'dialect': _$SqlDialectEnumMap[instance.dialect]!,
+      'dialect': _$SqlDialectEnumMap[instance.dialect],
+      'dialects':
+          instance.dialects?.map((e) => _$SqlDialectEnumMap[e]!).toList(),
       'options': instance.options?.toJson(),
     };
 

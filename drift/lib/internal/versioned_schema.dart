@@ -158,6 +158,10 @@ class VersionedView implements ViewInfo<HasResultSet, QueryRow>, HasResultSet {
   final String createViewStmt;
 
   @override
+  Map<SqlDialect, String>? get createViewStatements =>
+      {SqlDialect.sqlite: createViewStmt};
+
+  @override
   final List<GeneratedColumn> $columns;
 
   @override

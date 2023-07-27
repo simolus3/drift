@@ -88,7 +88,7 @@ class Migrator {
     } else if (entity is Index) {
       await createIndex(entity);
     } else if (entity is OnCreateQuery) {
-      await _issueCustomQuery(entity.sql, const []);
+      await _issueQueryByDialect(entity.sqlByDialect);
     } else if (entity is ViewInfo) {
       await createView(entity);
     } else {
@@ -403,19 +403,19 @@ class Migrator {
 
   /// Executes the `CREATE TRIGGER` statement that created the [trigger].
   Future<void> createTrigger(Trigger trigger) {
-    return _issueCustomQuery(trigger.createTriggerStmt, const []);
+    return _issueQueryByDialect(trigger.createStatementsByDialect);
   }
 
   /// Executes a `CREATE INDEX` statement to create the [index].
   Future<void> createIndex(Index index) {
-    return _issueCustomQuery(index.createIndexStmt, const []);
+    return _issueQueryByDialect(index.createStatementsByDialect);
   }
 
   /// Executes a `CREATE VIEW` statement to create the [view].
   Future<void> createView(ViewInfo view) async {
-    final stmt = view.createViewStmt;
-    if (stmt != null) {
-      await _issueCustomQuery(stmt, const []);
+    final stmts = view.createViewStatements;
+    if (stmts != null) {
+      await _issueQueryByDialect(stmts);
     } else if (view.query != null) {
       final context = GenerationContext.fromDb(_db, supportsVariables: false);
       final columnNames = view.$columns.map((e) => e.escapedName).join(', ');
@@ -526,6 +526,11 @@ class Migrator {
   @Deprecated('Use customStatement in the database class')
   Future<void> issueCustomQuery(String sql, [List<dynamic>? args]) {
     return _issueCustomQuery(sql, args);
+  }
+
+  Future<void> _issueQueryByDialect(Map<SqlDialect, String> sql) {
+    final context = _createContext();
+    return _issueCustomQuery(context.pickForDialect(sql), const []);
   }
 
   Future<void> _issueCustomQuery(String sql, [List<dynamic>? args]) {

@@ -307,7 +307,7 @@ TypeConverter<Object, int> myConverter() => throw UnimplementedError();
         'a|lib/a.drift.dart': decodedMatches(
           allOf(
             contains(
-                ''''CREATE VIEW my_view AS SELECT CAST(1 AS INT) AS c1, CAST(\\'bar\\' AS TEXT) AS c2, 1 AS c3, NULLIF(1, 2) AS c4';'''),
+                ''''CREATE VIEW my_view AS SELECT CAST(1 AS INT) AS c1, CAST(\\'bar\\' AS TEXT) AS c2, 1 AS c3, NULLIF(1, 2) AS c4','''),
             contains(r'$converterc1 ='),
             contains(r'$converterc2 ='),
             contains(r'$converterc3 ='),

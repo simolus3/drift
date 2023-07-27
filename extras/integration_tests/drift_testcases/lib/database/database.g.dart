@@ -336,7 +336,6 @@ class $FriendshipsTable extends Friendships
           requiredDuringInsert: false,
           defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
             SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
-            SqlDialect.mysql: '',
             SqlDialect.postgres: '',
           }),
           defaultValue: const Constant(false));
@@ -554,7 +553,13 @@ abstract class _$Database extends GeneratedDatabase {
   late final $FriendshipsTable friendships = $FriendshipsTable(this);
   Selectable<User> mostPopularUsers(int amount) {
     return customSelect(
-        'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT \$1',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT ?1',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT \$1',
+        },
         variables: [
           Variable<int>(amount)
         ],
@@ -566,7 +571,13 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<int> amountOfGoodFriends(int user) {
     return customSelect(
-        'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = \$1 OR f.second_user = \$1)',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = ?1 OR f.second_user = ?1)',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = \$1 OR f.second_user = \$1)',
+        },
         variables: [
           Variable<int>(user)
         ],
@@ -577,19 +588,23 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
-        'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS "user" ON "user".id IN (f.first_user, f.second_user) AND "user".id != \$1 WHERE(f.first_user = \$1 OR f.second_user = \$1)',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS user ON user.id IN (f.first_user, f.second_user) AND user.id != ?1 WHERE(f.first_user = ?1 OR f.second_user = ?1)',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS "user" ON "user".id IN (f.first_user, f.second_user) AND "user".id != \$1 WHERE(f.first_user = \$1 OR f.second_user = \$1)',
+        },
         variables: [
           Variable<int>(user)
         ],
         readsFrom: {
           friendships,
           users,
-        }).asyncMap((QueryRow row) async {
-      return FriendshipsOfResult(
-        reallyGoodFriends: row.read<bool>('really_good_friends'),
-        user: await users.mapFromRow(row, tablePrefix: 'nested_0'),
-      );
-    });
+        }).asyncMap((QueryRow row) async => FriendshipsOfResult(
+          reallyGoodFriends: row.read<bool>('really_good_friends'),
+          user: await users.mapFromRow(row, tablePrefix: 'nested_0'),
+        ));
   }
 
   Selectable<int> userCount() {
@@ -601,7 +616,13 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<Preferences?> settingsFor(int user) {
-    return customSelect('SELECT preferences FROM users WHERE id = \$1',
+    return customSelect(
+        switch (executor.dialect) {
+          SqlDialect.sqlite => 'SELECT preferences FROM users WHERE id = ?1',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT preferences FROM users WHERE id = \$1',
+        },
         variables: [
           Variable<int>(user)
         ],
@@ -626,7 +647,13 @@ abstract class _$Database extends GeneratedDatabase {
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
     return customWriteReturning(
-        'INSERT INTO friendships VALUES (\$1, \$2, \$3) RETURNING *',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'INSERT INTO friendships VALUES (?1, ?2, ?3) RETURNING *',
+          SqlDialect.postgres ||
+          _ =>
+            'INSERT INTO friendships VALUES (\$1, \$2, \$3) RETURNING *',
+        },
         variables: [
           Variable<int>(var1),
           Variable<int>(var2),

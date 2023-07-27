@@ -76,7 +76,8 @@ SELECT rowid, highlight(example_table_search, 0, '[match]', '[match]') name,
       {'a|lib/a.drift': 'CREATE VIRTUAL TABLE demo USING spellfix1;'},
       options: DriftOptions.defaults(
         dialect: DialectOptions(
-          SqlDialect.sqlite,
+          null,
+          [SqlDialect.sqlite],
           SqliteAnalysisOptions(
             modules: [SqlModule.spellfix1],
           ),

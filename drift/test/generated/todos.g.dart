@@ -641,16 +641,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   static const VerificationMeta _isAwesomeMeta =
       const VerificationMeta('isAwesome');
   @override
-  late final GeneratedColumn<bool> isAwesome =
-      GeneratedColumn<bool>('is_awesome', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
-            SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
-            SqlDialect.mysql: '',
-            SqlDialect.postgres: '',
-          }),
-          defaultValue: const Constant(true));
+  late final GeneratedColumn<bool> isAwesome = GeneratedColumn<bool>(
+      'is_awesome', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_awesome" IN (0, 1))'),
+      defaultValue: const Constant(true));
   static const VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
@@ -1549,7 +1546,7 @@ class $CategoryTodoCountViewView
   @override
   String get entityName => 'category_todo_count_view';
   @override
-  String? get createViewStmt => null;
+  Map<SqlDialect, String>? get createViewStatements => null;
   @override
   $CategoryTodoCountViewView get asDslTable => this;
   @override
@@ -1660,7 +1657,7 @@ class $TodoWithCategoryViewView
   @override
   String get entityName => 'todo_with_category_view';
   @override
-  String? get createViewStmt => null;
+  Map<SqlDialect, String>? get createViewStatements => null;
   @override
   $TodoWithCategoryViewView get asDslTable => this;
   @override
@@ -1714,21 +1711,19 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           categories,
           todosTable,
-        }).map((QueryRow row) {
-      return AllTodosWithCategoryResult(
-        row: row,
-        id: row.read<int>('id'),
-        title: row.readNullable<String>('title'),
-        content: row.read<String>('content'),
-        targetDate: row.readNullable<DateTime>('target_date'),
-        category: row.readNullable<int>('category'),
-        status: NullAwareTypeConverter.wrapFromSql(
-            $TodosTableTable.$converterstatus,
-            row.readNullable<String>('status')),
-        catId: row.read<int>('catId'),
-        catDesc: row.read<String>('catDesc'),
-      );
-    });
+        }).map((QueryRow row) => AllTodosWithCategoryResult(
+          row: row,
+          id: row.read<int>('id'),
+          title: row.readNullable<String>('title'),
+          content: row.read<String>('content'),
+          targetDate: row.readNullable<DateTime>('target_date'),
+          category: row.readNullable<int>('category'),
+          status: NullAwareTypeConverter.wrapFromSql(
+              $TodosTableTable.$converterstatus,
+              row.readNullable<String>('status')),
+          catId: row.read<int>('catId'),
+          catDesc: row.read<String>('catDesc'),
+        ));
   }
 
   Future<int> deleteTodoById(int var1) {

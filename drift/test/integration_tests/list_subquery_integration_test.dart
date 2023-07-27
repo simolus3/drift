@@ -30,6 +30,6 @@ void main() {
 
     final result = results.single;
     expect(result.defaults, defaults);
-    expect(result.nestedQuery0, [constraints]);
+    expect(result.nestedQuery1, [constraints]);
   });
 }

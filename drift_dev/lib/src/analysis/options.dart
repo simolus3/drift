@@ -124,7 +124,7 @@ class DriftOptions {
     this.modules = const [],
     this.sqliteAnalysisOptions,
     this.storeDateTimeValuesAsText = false,
-    this.dialect = const DialectOptions(SqlDialect.sqlite, null),
+    this.dialect = const DialectOptions(null, [SqlDialect.sqlite], null),
     this.caseFromDartToSql = CaseFromDartToSql.snake,
     this.writeToColumnsMixins = false,
     this.fatalWarnings = false,
@@ -189,7 +189,18 @@ class DriftOptions {
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => effectiveModules.contains(module);
 
-  SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;
+  List<SqlDialect> get supportedDialects {
+    final dialects = dialect?.dialects;
+    final singleDialect = dialect?.dialect;
+
+    if (dialects != null) {
+      return dialects;
+    } else if (singleDialect != null) {
+      return [singleDialect];
+    } else {
+      return const [SqlDialect.sqlite];
+    }
+  }
 
   /// The assumed sqlite version used when analyzing queries.
   SqliteVersion get sqliteVersion {
@@ -201,10 +212,11 @@ class DriftOptions {
 
 @JsonSerializable()
 class DialectOptions {
-  final SqlDialect dialect;
+  final SqlDialect? dialect;
+  final List<SqlDialect>? dialects;
   final SqliteAnalysisOptions? options;
 
-  const DialectOptions(this.dialect, this.options);
+  const DialectOptions(this.dialect, this.dialects, this.options);
 
   factory DialectOptions.fromJson(Map json) => _$DialectOptionsFromJson(json);
 

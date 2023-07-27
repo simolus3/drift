@@ -5,20 +5,23 @@ import '../writer.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
 class ResultSetWriter {
-  final SqlQuery query;
+  final InferredResultSet resultSet;
+  final String resultClassName;
   final Scope scope;
 
-  ResultSetWriter(this.query, this.scope);
+  ResultSetWriter(SqlQuery query, this.scope)
+      : resultSet = query.resultSet!,
+        resultClassName = query.resultClassName;
+
+  ResultSetWriter.fromResultSetAndClassName(
+      this.resultSet, this.resultClassName, this.scope);
 
   void write() {
-    final className = query.resultClassName;
     final fields = <EqualityField>[];
     final nonNullableFields = <String>{};
     final into = scope.leaf();
 
-    final resultSet = query.resultSet!;
-
-    into.write('class $className ');
+    into.write('class $resultClassName ');
     if (scope.options.rawResultSetData) {
       into.write('extends CustomResultSet {\n');
     } else {
@@ -39,6 +42,12 @@ class ResultSetWriter {
         fields.add(EqualityField(fieldName, isList: column.isUint8ListInDart));
         if (!column.nullable) nonNullableFields.add(fieldName);
       } else if (column is NestedResultTable) {
+        if (column.innerResultSet.needsOwnClass) {
+          ResultSetWriter.fromResultSetAndClassName(
+                  column.innerResultSet, column.nameForGeneratedRowClass, scope)
+              .write();
+        }
+
         into
           ..write('$modifier ')
           ..writeDart(
@@ -66,9 +75,9 @@ class ResultSetWriter {
 
     // write the constructor
     if (scope.options.rawResultSetData) {
-      into.write('$className({required QueryRow row,');
+      into.write('$resultClassName({required QueryRow row,');
     } else {
-      into.write('$className({');
+      into.write('$resultClassName({');
     }
 
     for (final column in fields) {
@@ -90,9 +99,9 @@ class ResultSetWriter {
       writeHashCode(fields, into);
       into.write(';\n');
 
-      overrideEquals(fields, className, into);
+      overrideEquals(fields, resultClassName, into);
       overrideToString(
-          className, fields.map((f) => f.lexeme).toList(), into.buffer);
+          resultClassName, fields.map((f) => f.lexeme).toList(), into.buffer);
     }
 
     into.write('}\n');

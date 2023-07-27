@@ -162,7 +162,7 @@ abstract class TableOrViewWriter {
   }
 
   /// Returns the Dart type and the Dart expression creating a `GeneratedColumn`
-  /// instance in drift for the givne [column].
+  /// instance in drift for the given [column].
   static (String, String) instantiateColumn(
     DriftColumn column,
     TextEmitter emitter, {
@@ -172,6 +172,10 @@ abstract class TableOrViewWriter {
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
     final constraints = defaultConstraints(column);
+
+    // Remove dialect-specific constraints for dialects we don't care about.
+    constraints.removeWhere(
+        (key, _) => !emitter.writer.options.supportedDialects.contains(key));
 
     for (final constraint in column.constraints) {
       if (constraint is LimitingTextLength) {

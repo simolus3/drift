@@ -17,7 +17,14 @@ abstract class ViewInfo<Self extends HasResultSet, Row>
   /// The `CREATE VIEW` sql statement that can be used to create this view.
   ///
   /// This will be null if the view was defined in Dart.
-  String? get createViewStmt;
+  @Deprecated('Use createViewStatements instead')
+  String? get createViewStmt => createViewStatements?.values.first;
+
+  /// The `CREATE VIEW` sql statement that can be used to create this view,
+  /// depending on the dialect used by the current database.
+  ///
+  /// This will be null if the view was defined in Dart.
+  Map<SqlDialect, String>? get createViewStatements;
 
   /// Predefined query from `View.as()`
   ///

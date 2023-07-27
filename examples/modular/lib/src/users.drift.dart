@@ -602,8 +602,10 @@ class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
   @override
   String get entityName => 'popular_users';
   @override
-  String get createViewStmt =>
-      'CREATE VIEW popular_users AS SELECT * FROM users ORDER BY (SELECT count(*) FROM follows WHERE followed = users.id)';
+  Map<i0.SqlDialect, String> get createViewStatements => {
+        i0.SqlDialect.sqlite:
+            'CREATE VIEW popular_users AS SELECT * FROM users ORDER BY (SELECT count(*) FROM follows WHERE followed = users.id)',
+      };
   @override
   PopularUsers get asDslTable => this;
   @override

@@ -110,6 +110,36 @@ in 3.34, so an error would be reported.
 Currently, the generator can't provide compatibility checks for versions below 3.34, which is the
 minimum version needed in options.
 
+### Multi-dialect code generation
+
+Thanks to community contributions, drift has in-progress support for Postgres and MariaDB.
+You can change the `dialect` option to `postgres` or `mariadb` to generate code for those
+database management systems.
+
+In some cases, your generated code might have to support more than one DBMS. For instance,
+you might want to share database code between your backend and a Flutter app. Or maybe
+you're writing a server that should be able to talk to both MariaDB and Postgres, depending
+on what the operator prefers.
+Drift can generate code for multiple dialects - in that case, the right SQL will be chosen
+at runtime when it makes a difference.
+
+To enable this feature, remove the `dialect` option in the `sql` block and replace it with
+a list of `dialects`:
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialect:
+              - sqlite
+              - postgres
+            options:
+              version: "3.34"
+```
+
 ### Available extensions
 
 __Note__: This enables extensions in the analyzer for custom queries only. For instance, when the `json1` extension is

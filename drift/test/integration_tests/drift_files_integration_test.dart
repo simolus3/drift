@@ -136,7 +136,7 @@ void main() {
       contains(
         isA<NestedResult>()
             .having((e) => e.defaults, 'defaults', first)
-            .having((e) => e.nestedQuery0, 'nested', hasLength(2)),
+            .having((e) => e.nestedQuery1, 'nested', hasLength(2)),
       ),
     );
 
@@ -145,7 +145,7 @@ void main() {
       contains(
         isA<NestedResult>()
             .having((e) => e.defaults, 'defaults', second)
-            .having((e) => e.nestedQuery0, 'nested', hasLength(1)),
+            .having((e) => e.nestedQuery1, 'nested', hasLength(1)),
       ),
     );
   });

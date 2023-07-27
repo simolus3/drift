@@ -75,7 +75,7 @@ class MyDatabase extends _$MyDatabase {
   // ...
 ```
 
-## Exporting a databasee
+## Exporting a database
 
 To export a sqlite3 database into a file, you can use the `VACUUM INTO` statement.
 Inside your database class, this could look like the following:

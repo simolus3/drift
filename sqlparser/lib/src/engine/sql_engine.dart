@@ -145,7 +145,7 @@ class SqlEngine {
 
   /// Parses multiple [sql] statements, separated by a semicolon.
   ///
-  /// You can use the [AstNode.children] of the returned [ParseResult.rootNode]
+  /// You can use the [AstNode.childNodes] of the returned [ParseResult.rootNode]
   /// to inspect the returned statements.
   ParseResult parseMultiple(String sql) {
     final tokens = tokenize(sql);

@@ -143,4 +143,35 @@ void main() {
       ),
     );
   });
+
+  test('parseMultiple reports spans for invalid statements', () {
+    const sql = '''
+UPDATE users SET foo = bar;
+ALTER TABLE this syntax is not yet supported;
+SELECT * FROM users;
+''';
+
+    final engine = SqlEngine();
+    final ast = engine.parseMultiple(sql).rootNode;
+    enforceHasSpan(ast);
+
+    final statements = ast.childNodes.toList();
+    expect(statements, hasLength(3));
+
+    expect(
+      statements[0],
+      isA<UpdateStatement>()
+          .having((e) => e.span?.text, 'span', 'UPDATE users SET foo = bar;'),
+    );
+    expect(
+      statements[1],
+      isA<InvalidStatement>().having((e) => e.span?.text, 'span',
+          'ALTER TABLE this syntax is not yet supported;'),
+    );
+    expect(
+      statements[2],
+      isA<SelectStatement>()
+          .having((e) => e.span?.text, 'span', 'SELECT * FROM users;'),
+    );
+  });
 }

@@ -1,7 +1,10 @@
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
+import 'utils.dart';
 
 void main() {
   test('recognizes existing row classes', () async {
@@ -224,78 +227,124 @@ class MyQueryRow {
       );
     });
 
-    test('nested - single column type', () async {
-      final state = TestBackend.inTest({
-        'a|lib/a.drift': '''
+    group('nested column', () {
+      test('single column into field', () async {
+        final state = TestBackend.inTest({
+          'a|lib/a.drift': '''
 import 'a.dart';
 
-foo WITH MyQueryRow: SELECT 1 a, LIST(SELECT 2 AS b) c;
+foo WITH MyQueryRow: SELECT 1 AS a, b.** FROM (SELECT 2 AS b) b;
 ''',
-        'a|lib/a.dart': '''
+          'a|lib/a.dart': '''
 class MyQueryRow {
-  MyQueryRow(int a, List<int> c);
+  MyQueryRow(int a, int b);
 }
 ''',
+        });
+
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
+
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyQueryRow',
+            positional: [
+              scalarColumn('a'),
+              structedFromNested(
+                isExistingRowType(
+                  singleValue: scalarColumn('b'),
+                ),
+              ),
+            ],
+          ),
+        );
       });
 
-      final file = await state.analyze('package:a/a.drift');
-      state.expectNoErrors();
-
-      final query = file.fileAnalysis!.resolvedQueries.values.single;
-      expect(
-        query.resultSet?.existingRowType,
-        isExistingRowType(
-          type: 'MyQueryRow',
-          positional: [
-            scalarColumn('a'),
-            nestedListQuery(
-              'c',
-              isExistingRowType(
-                type: 'int',
-                singleValue: scalarColumn('b'),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-
-    test('nested - table', () async {
-      final state = TestBackend.inTest({
-        'a|lib/a.drift': '''
+      test('single column into single-element record', () async {
+        final state = TestBackend.inTest({
+          'a|lib/a.drift': '''
 import 'a.dart';
 
-CREATE TABLE tbl (foo TEXT, bar INT);
-
-foo WITH MyRow: SELECT 1 AS a, b.** FROM tbl
-  INNER JOIN tbl b ON TRUE;
+foo WITH MyQueryRow: SELECT 1 AS a, b.** FROM (SELECT 2 AS b) b;
 ''',
-        'a|lib/a.dart': '''
-class MyRow {
-  MyRow(int a, TblData b);
+          'a|lib/a.dart': '''
+class MyQueryRow {
+  MyQueryRow(int a, (int) b);
 }
 ''',
+        });
+
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
+
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyQueryRow',
+            positional: [
+              scalarColumn('a'),
+              structedFromNested(
+                isExistingRowType(
+                  positional: [scalarColumn('b')],
+                  isRecord: isTrue,
+                ),
+              ),
+            ],
+          ),
+        );
       });
 
-      final file = await state.analyze('package:a/a.drift');
-      state.expectNoErrors();
+      test('custom result set', () async {
+        final state = TestBackend.inTest(
+          {
+            'a|lib/a.drift': '''
+import 'a.dart';
 
-      final query = file.fileAnalysis!.resolvedQueries.values.single;
-      expect(
-        query.resultSet?.existingRowType,
-        isExistingRowType(
-          type: 'MyRow',
-          positional: [
-            scalarColumn('a'),
-            nestedTableColumm('b'),
-          ],
-        ),
-      );
-    });
+foo WITH MyQueryRow: SELECT 1 AS id, j.** FROM json_each('') AS j;
+''',
+            'a|lib/a.dart': '''
+class MyQueryRow {
+  MyQueryRow(int id, JsonStructure j);
+}
 
-    test('nested - table as alternative to row class', () async {
-      final state = TestBackend.inTest(
-        {
+class JsonStructure {
+  JsonStructure(DriftAny key, DriftAny value, String type);
+}
+''',
+          },
+          options: const DriftOptions.defaults(
+            sqliteAnalysisOptions: SqliteAnalysisOptions(
+              // Make sure json_each is supported
+              version: SqliteVersion.v3(38),
+            ),
+          ),
+        );
+
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
+
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyQueryRow',
+            positional: [
+              scalarColumn('id'),
+              structedFromNested(
+                isExistingRowType(
+                  type: 'JsonStructure',
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+
+      test('table', () async {
+        final state = TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -306,42 +355,121 @@ foo WITH MyRow: SELECT 1 AS a, b.** FROM tbl
 ''',
           'a|lib/a.dart': '''
 class MyRow {
+  MyRow(int a, TblData b);
+}
+''',
+        });
+
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
+
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyRow',
+            positional: [
+              scalarColumn('a'),
+              structedFromNested(
+                isExistingRowType(
+                  type: 'TblData',
+                  singleValue: isA<MatchingDriftTable>(),
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+
+      test('table as alternative to row class', () async {
+        final state = TestBackend.inTest(
+          {
+            'a|lib/a.drift': '''
+import 'a.dart';
+
+CREATE TABLE tbl (foo TEXT, bar INT);
+
+foo WITH MyRow: SELECT 1 AS a, b.** FROM tbl
+  INNER JOIN tbl b ON TRUE;
+''',
+            'a|lib/a.dart': '''
+class MyRow {
   MyRow(int a, (String, int) b);
 }
 ''',
-        },
-        analyzerExperiments: ['records'],
-      );
+          },
+          analyzerExperiments: ['records'],
+        );
 
-      final file = await state.analyze('package:a/a.drift');
-      state.expectNoErrors();
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
 
-      final query = file.fileAnalysis!.resolvedQueries.values.single;
-      expect(
-        query.resultSet?.existingRowType,
-        isExistingRowType(
-          type: 'MyRow',
-          positional: [
-            scalarColumn('a'),
-            isExistingRowType(
-              type: '(String, int)',
-              positional: [scalarColumn('foo'), scalarColumn('bar')],
-            ),
-          ],
-        ),
-      );
-    }, skip: 'Blocked by https://github.com/simolus3/drift/issues/2233');
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyRow',
+            positional: [
+              scalarColumn('a'),
+              structedFromNested(
+                isExistingRowType(
+                  type: '(String, int)',
+                  positional: [scalarColumn('foo'), scalarColumn('bar')],
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+    });
 
-    test('nested - custom result set with class', () async {
-      final state = TestBackend.inTest({
-        'a|lib/a.drift': '''
+    group('nested LIST query', () {
+      test('single column type', () async {
+        final state = TestBackend.inTest({
+          'a|lib/a.drift': '''
+import 'a.dart';
+
+foo WITH MyQueryRow: SELECT 1 a, LIST(SELECT 2 AS b) c;
+''',
+          'a|lib/a.dart': '''
+class MyQueryRow {
+  MyQueryRow(int a, List<int> c);
+}
+''',
+        });
+
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
+
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyQueryRow',
+            positional: [
+              scalarColumn('a'),
+              nestedListQuery(
+                'c',
+                isExistingRowType(
+                  type: 'int',
+                  singleValue: scalarColumn('b'),
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+
+      test('custom result set with class', () async {
+        final state = TestBackend.inTest({
+          'a|lib/a.drift': '''
 import 'a.dart';
 
 CREATE TABLE tbl (foo TEXT, bar INT);
 
 foo WITH MyRow: SELECT 1 AS a, LIST(SELECT * FROM tbl) AS b FROM tbl;
 ''',
-        'a|lib/a.dart': '''
+          'a|lib/a.dart': '''
 class MyRow {
   MyRow(int a, List<MyNestedTable> b);
 }
@@ -350,69 +478,70 @@ class MyNestedTable {
   MyNestedTable(String foo, int bar)
 }
 ''',
+        });
+
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
+
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyRow',
+            positional: [
+              scalarColumn('a'),
+              nestedListQuery(
+                'b',
+                isExistingRowType(
+                  type: 'MyNestedTable',
+                  positional: [scalarColumn('foo'), scalarColumn('bar')],
+                ),
+              ),
+            ],
+          ),
+        );
       });
 
-      final file = await state.analyze('package:a/a.drift');
-      state.expectNoErrors();
-
-      final query = file.fileAnalysis!.resolvedQueries.values.single;
-      expect(
-        query.resultSet?.existingRowType,
-        isExistingRowType(
-          type: 'MyRow',
-          positional: [
-            scalarColumn('a'),
-            nestedListQuery(
-              'b',
-              isExistingRowType(
-                type: 'MyNestedTable',
-                positional: [scalarColumn('foo'), scalarColumn('bar')],
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-
-    test('nested - custom result set with record', () async {
-      final state = TestBackend.inTest(
-        {
-          'a|lib/a.drift': '''
+      test('custom result set with record', () async {
+        final state = TestBackend.inTest(
+          {
+            'a|lib/a.drift': '''
 import 'a.dart';
 
 CREATE TABLE tbl (foo TEXT, bar INT);
 
 foo WITH MyRow: SELECT 1 AS a, LIST(SELECT * FROM tbl) AS b FROM tbl;
 ''',
-          'a|lib/a.dart': '''
+            'a|lib/a.dart': '''
 class MyRow {
   MyRow(int a, List<(String, int)> b);
 }
 ''',
-        },
-        analyzerExperiments: ['records'],
-      );
+          },
+          analyzerExperiments: ['records'],
+        );
 
-      final file = await state.analyze('package:a/a.drift');
-      state.expectNoErrors();
+        final file = await state.analyze('package:a/a.drift');
+        state.expectNoErrors();
 
-      final query = file.fileAnalysis!.resolvedQueries.values.single;
-      expect(
-        query.resultSet?.existingRowType,
-        isExistingRowType(
-          type: 'MyRow',
-          positional: [
-            scalarColumn('a'),
-            nestedListQuery(
-              'b',
-              isExistingRowType(
-                type: '(String, int)',
-                positional: [scalarColumn('foo'), scalarColumn('bar')],
+        final query = file.fileAnalysis!.resolvedQueries.values.single;
+        expect(
+          query.resultSet?.existingRowType,
+          isExistingRowType(
+            type: 'MyRow',
+            positional: [
+              scalarColumn('a'),
+              nestedListQuery(
+                'b',
+                isExistingRowType(
+                  type: '(String, int)',
+                  positional: [scalarColumn('foo'), scalarColumn('bar')],
+                ),
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      });
     });
 
     test('into record', () async {
@@ -536,7 +665,12 @@ class MyRow {
         isExistingRowType(type: 'MyRow', positional: [
           scalarColumn('name'),
         ], named: {
-          'otherUser': nestedTableColumm('otherUser'),
+          'otherUser': structedFromNested(
+            isExistingRowType(
+              type: 'MyUser',
+              singleValue: isA<MatchingDriftTable>(),
+            ),
+          ),
           'nested': nestedListQuery(
             'nested',
             isExistingRowType(
@@ -722,47 +856,4 @@ class MyRow {
       },
     );
   });
-}
-
-TypeMatcher<ScalarResultColumn> scalarColumn(String name) =>
-    isA<ScalarResultColumn>().having((e) => e.name, 'name', name);
-
-TypeMatcher nestedTableColumm(String name) =>
-    isA<NestedResultTable>().having((e) => e.name, 'name', name);
-
-TypeMatcher<MappedNestedListQuery> nestedListQuery(
-    String columnName, TypeMatcher<ExistingQueryRowType> nestedType) {
-  return isA<MappedNestedListQuery>()
-      .having((e) => e.column.filedName(), 'column', columnName)
-      .having((e) => e.nestedType, 'nestedType', nestedType);
-}
-
-TypeMatcher<ExistingQueryRowType> isExistingRowType({
-  String? type,
-  String? constructorName,
-  Object? singleValue,
-  Object? positional,
-  Object? named,
-}) {
-  var matcher = isA<ExistingQueryRowType>();
-
-  if (type != null) {
-    matcher = matcher.having((e) => e.rowType.toString(), 'rowType', type);
-  }
-  if (constructorName != null) {
-    matcher = matcher.having(
-        (e) => e.constructorName, 'constructorName', constructorName);
-  }
-  if (singleValue != null) {
-    matcher = matcher.having((e) => e.singleValue, 'singleValue', singleValue);
-  }
-  if (positional != null) {
-    matcher = matcher.having(
-        (e) => e.positionalArguments, 'positionalArguments', positional);
-  }
-  if (named != null) {
-    matcher = matcher.having((e) => e.namedArguments, 'namedArguments', named);
-  }
-
-  return matcher;
 }

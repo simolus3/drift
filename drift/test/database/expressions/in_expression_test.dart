@@ -23,6 +23,26 @@ void main() {
     });
   });
 
+  group('expressions', () {
+    test('in', () {
+      final isInExpression = innerExpression.isInExp([
+        CustomExpression('a'),
+        CustomExpression('b'),
+      ]);
+
+      expect(isInExpression, generates('name IN (a, b)'));
+    });
+
+    test('not in', () {
+      final isNotInExpression = innerExpression.isNotInExp([
+        CustomExpression('a'),
+        CustomExpression('b'),
+      ]);
+
+      expect(isNotInExpression, generates('name NOT IN (a, b)'));
+    });
+  });
+
   group('subquery', () {
     test('in expressions are generated', () {
       final isInExpression = innerExpression

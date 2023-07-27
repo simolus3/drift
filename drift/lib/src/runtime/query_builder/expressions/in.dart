@@ -1,6 +1,6 @@
 part of '../query_builder.dart';
 
-abstract class _BaseInExpression extends Expression<bool> {
+sealed class _BaseInExpression extends Expression<bool> {
   final Expression _expression;
   final bool _not;
 
@@ -25,8 +25,8 @@ abstract class _BaseInExpression extends Expression<bool> {
   void _writeValues(GenerationContext context);
 }
 
-class _InExpression<T extends Object> extends _BaseInExpression {
-  final List<T> _values;
+final class _InExpression<T extends Object> extends _BaseInExpression {
+  final List<Expression<T>> _values;
 
   _InExpression(Expression expression, this._values, bool not)
       : super(expression, not);
@@ -35,15 +35,13 @@ class _InExpression<T extends Object> extends _BaseInExpression {
   void _writeValues(GenerationContext context) {
     var first = true;
     for (final value in _values) {
-      final variable = Variable<T>(value);
-
       if (first) {
         first = false;
       } else {
         context.buffer.write(', ');
       }
 
-      variable.writeInto(context);
+      value.writeInto(context);
     }
   }
 
@@ -59,7 +57,7 @@ class _InExpression<T extends Object> extends _BaseInExpression {
   }
 }
 
-class _InSelectExpression extends _BaseInExpression {
+final class _InSelectExpression extends _BaseInExpression {
   final BaseSelectStatement _select;
 
   _InSelectExpression(this._select, Expression expression, bool not)

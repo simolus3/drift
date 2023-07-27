@@ -142,19 +142,37 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
   Expression<bool> isIn(Iterable<D> values) {
-    if (values.isEmpty) {
-      return Constant(false);
-    }
-    return _InExpression(this, values.toList(), false);
+    return isInExp([for (final value in values) Variable<D>(value)]);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
   Expression<bool> isNotIn(Iterable<D> values) {
-    if (values.isEmpty) {
+    return isNotInExp([for (final value in values) Variable<D>(value)]);
+  }
+
+  /// An expression that evaluates to `true` if this expression resolves to a
+  /// value that one of the [expressions] resolve to as well.
+  ///
+  /// For an "is in" comparison with values, use [isIn].
+  Expression<bool> isInExp(List<Expression<D>> expressions) {
+    if (expressions.isEmpty) {
       return Constant(true);
     }
-    return _InExpression(this, values.toList(), true);
+
+    return _InExpression(this, expressions, false);
+  }
+
+  /// An expression that evaluates to `true` if this expression does not resolve
+  /// to any value that the [expressions] resolve to.
+  ///
+  /// For an "is not in" comparison with values, use [isNotIn].
+  Expression<bool> isNotInExp(List<Expression<D>> expressions) {
+    if (expressions.isEmpty) {
+      return Constant(true);
+    }
+
+    return _InExpression(this, expressions, true);
   }
 
   /// An expression checking whether `this` is included in any row of the
@@ -509,7 +527,7 @@ class FunctionCallExpression<R extends Object> extends Expression<R> {
 }
 
 void _checkSubquery(BaseSelectStatement statement) {
-  final columns = statement._returnedColumnCount;
+  final columns = statement._expandedColumns.length;
   if (columns != 1) {
     throw ArgumentError.value(statement, 'statement',
         'Must return exactly one column (actually returns $columns)');
