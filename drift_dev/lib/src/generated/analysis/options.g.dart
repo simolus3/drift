@@ -210,6 +210,7 @@ const _$SqlDialectEnumMap = {
   SqlDialect.sqlite: 'sqlite',
   SqlDialect.mysql: 'mysql',
   SqlDialect.postgres: 'postgres',
+  SqlDialect.mariadb: 'mariadb',
 };
 
 SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>

@@ -26,8 +26,8 @@ class MariaDbExecutor extends TestExecutor {
 
   @override
   Future clearDatabaseAndClose(Database db) async {
-    await db.customStatement('DROP DATABASE database;');
-    await db.customStatement('CREATE DATABASE database;');
+    await db.customStatement('DROP DATABASE `database`;');
+    await db.customStatement('CREATE DATABASE `database`;');
 
     await db.close();
   }

@@ -1,6 +1,8 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show SqlDialect;
+// ignore: deprecated_member_use
+import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 
@@ -87,12 +89,18 @@ class SqlWriter extends NodeSqlBuilder {
 
   @override
   bool isKeyword(String lexeme) {
-    switch (dialect) {
-      case SqlDialect.postgres:
-        return isKeywordLexeme(lexeme) || isPostgresKeywordLexeme(lexeme);
-      default:
-        return isKeywordLexeme(lexeme);
-    }
+    return isKeywordLexeme(lexeme) ||
+        switch (dialect) {
+          SqlDialect.postgres => isPostgresKeywordLexeme(lexeme),
+          SqlDialect.mariadb =>
+            additionalMariaDBKeywords.contains(lexeme.toUpperCase()),
+          _ => false,
+        };
+  }
+
+  @override
+  String escapeIdentifier(String identifier) {
+    return dialect.escape(identifier);
   }
 
   FoundVariable? _findMoorVar(Variable target) {
@@ -105,7 +113,10 @@ class SqlWriter extends NodeSqlBuilder {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
       final mark = _isPostgres ? '\\\$' : '?';
-      _writeRawInSpaces('$mark${variable.index}');
+      final syntax =
+          dialect.supportsIndexedParameters ? '$mark${variable.index}' : mark;
+
+      _writeRawInSpaces(syntax);
     }
   }
 
@@ -205,7 +216,12 @@ class SqlWriter extends NodeSqlBuilder {
         }
 
         final columnName = column.name;
-        _out.write('"$table"."$columnName" AS "$prefix.$columnName"');
+
+        final escapedTable = escapeIdentifier(table);
+        final escapedColumn = escapeIdentifier(columnName);
+        final escapedAlias = escapeIdentifier('$prefix.$columnName');
+
+        _out.write('$escapedTable.$escapedColumn AS $escapedAlias');
       }
     } else if (e is DartPlaceholder) {
       final moorPlaceholder =

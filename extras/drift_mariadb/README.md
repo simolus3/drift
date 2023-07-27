@@ -21,7 +21,7 @@ To connect your drift database class to mariadb, use a `MariaDBDatabase` from `p
 To test this package, first run
 
 ```
-docker run -p 127.0.0.1:3306:3306  --name mdb -e MARIADB_ROOT_PASSWORD=Password123! -d mariadb:latest
+docker run -p 3306:3306 -e MARIADB_ROOT_PASSWORD=password -e MARIADB_DATABASE=database mariadb:latest
 ```
 
 It can then be tested with `dart test`.

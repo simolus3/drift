@@ -102,17 +102,16 @@ enum SqlDialect {
     integerType: 'INTEGER',
     realType: 'REAL',
     blobType: 'BLOB',
-    escapeChar: '"',
   ),
 
   /// (currently unsupported)
+  @Deprecated('Use mariadb instead, even when talking to a MySQL database')
   mysql(
     booleanType: '',
     textType: '',
     integerType: '',
     blobType: '',
     realType: '',
-    escapeChar: '',
   ),
 
   /// PostgreSQL (currently supported in an experimental state)
@@ -122,7 +121,6 @@ enum SqlDialect {
     integerType: 'bigint',
     blobType: 'bytea',
     realType: 'float8',
-    escapeChar: '"',
   ),
 
   /// MariaDB (currently supported in an experimental state)
@@ -133,6 +131,7 @@ enum SqlDialect {
     blobType: 'BLOB',
     realType: 'DOUBLE',
     escapeChar: '`',
+    supportsIndexedParameters: false,
   );
 
   final String booleanType;
@@ -140,7 +139,22 @@ enum SqlDialect {
   final String integerType;
   final String realType;
   final String blobType;
+
+  /// The character used to wrap identifiers to distinguish them from keywords.
+  ///
+  /// This is a double quote character in ANSI SQL, but MariaDB uses backticks
+  /// by default.
   final String escapeChar;
+
+  /// Whether this dialect supports indexed parameters.
+  ///
+  /// For dialects that support this features, an explicit index can be given
+  /// for parameters, even if it doesn't match the order of occurences in the
+  /// given statement (e.g. `INSERT INTO foo VALUES (?1, ?2, ?3, ?4)`).
+  /// In dialects without this feature, every syntactic occurence of a variable
+  /// introduces a new logical variable with a new index, variables also can't
+  /// be re-used.
+  final bool supportsIndexedParameters;
 
   /// Escapes [identifier] by wrapping it in [escapeChar].
   String escape(String identifier) => '$escapeChar$identifier$escapeChar';
@@ -151,6 +165,7 @@ enum SqlDialect {
     required this.integerType,
     required this.realType,
     required this.blobType,
-    required this.escapeChar,
+    this.escapeChar = '"',
+    this.supportsIndexedParameters = true,
   });
 }

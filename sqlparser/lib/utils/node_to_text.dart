@@ -28,6 +28,10 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     return isKeywordLexeme(lexeme);
   }
 
+  String escapeIdentifier(String identifier) {
+    return '"$identifier"';
+  }
+
   @override
   void visitAggregateFunctionInvocation(
       AggregateFunctionInvocation e, void arg) {
@@ -1343,7 +1347,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   void identifier(String identifier,
       {bool spaceBefore = true, bool spaceAfter = true}) {
     if (isKeyword(identifier) || _notAKeywordRegex.hasMatch(identifier)) {
-      identifier = '"$identifier"';
+      identifier = escapeIdentifier(identifier);
     }
 
     symbol(identifier, spaceBefore: spaceBefore, spaceAfter: spaceAfter);

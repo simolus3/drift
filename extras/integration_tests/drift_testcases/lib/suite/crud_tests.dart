@@ -33,9 +33,16 @@ void crudTests(TestExecutor executor) {
     final db = Database(executor.createConnection());
 
     await expectLater(
-        db.into(db.users).insert(marcell),
-        throwsA(toString(
-            matches(RegExp(r'unique constraint', caseSensitive: false)))));
+      db.into(db.users).insert(marcell),
+      throwsA(
+        toString(anyOf(
+          // sqlite3 and postgres
+          matches(RegExp(r'unique constraint', caseSensitive: false)),
+          // mariadb
+          matches(RegExp(r'duplicate entry', caseSensitive: false)),
+        )),
+      ),
+    );
     await executor.clearDatabaseAndClose(db);
   });
 
