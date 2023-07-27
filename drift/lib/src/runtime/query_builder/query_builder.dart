@@ -149,9 +149,9 @@ enum SqlDialect {
   /// Whether this dialect supports indexed parameters.
   ///
   /// For dialects that support this features, an explicit index can be given
-  /// for parameters, even if it doesn't match the order of occurences in the
+  /// for parameters, even if it doesn't match the order of occurrences in the
   /// given statement (e.g. `INSERT INTO foo VALUES (?1, ?2, ?3, ?4)`).
-  /// In dialects without this feature, every syntactic occurence of a variable
+  /// In dialects without this feature, every syntactic occurrence of a variable
   /// introduces a new logical variable with a new index, variables also can't
   /// be re-used.
   final bool supportsIndexedParameters;
