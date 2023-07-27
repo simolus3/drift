@@ -3,6 +3,7 @@
 - [Nested result columns](https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results)
   in drift files can now refer to any result set (e.g. a table-valued function or a subquery).
   They were restricted to direct table references before.
+- Add the `dialects` builder option to generate code supporting multiple SQL dialects.
 
 ## 2.10.0
 
