@@ -33,6 +33,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'store_date_time_values_as_text',
             'case_from_dart_to_sql',
             'write_to_columns_mixins',
+            'preamble',
             'fatal_warnings'
           ],
         );
@@ -89,6 +90,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'write_to_columns_mixins', (v) => v as bool? ?? false),
           fatalWarnings:
               $checkedConvert('fatal_warnings', (v) => v as bool? ?? false),
+          preamble: $checkedConvert('preamble', (v) => v as String?),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
         );
@@ -151,6 +153,7 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'case_from_dart_to_sql':
           _$CaseFromDartToSqlEnumMap[instance.caseFromDartToSql]!,
       'write_to_columns_mixins': instance.writeToColumnsMixins,
+      'preamble': instance.preamble,
       'fatal_warnings': instance.fatalWarnings,
     };
 

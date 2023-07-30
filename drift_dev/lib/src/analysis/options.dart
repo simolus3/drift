@@ -102,6 +102,8 @@ class DriftOptions {
   @JsonKey(name: 'write_to_columns_mixins', defaultValue: false)
   final bool writeToColumnsMixins;
 
+  final String? preamble;
+
   @JsonKey(name: 'fatal_warnings', defaultValue: false)
   final bool fatalWarnings;
 
@@ -126,6 +128,7 @@ class DriftOptions {
     this.storeDateTimeValuesAsText = false,
     this.dialect = const DialectOptions(null, [SqlDialect.sqlite], null),
     this.caseFromDartToSql = CaseFromDartToSql.snake,
+    this.preamble,
     this.writeToColumnsMixins = false,
     this.fatalWarnings = false,
   });
@@ -151,6 +154,7 @@ class DriftOptions {
     required this.caseFromDartToSql,
     required this.writeToColumnsMixins,
     required this.fatalWarnings,
+    required this.preamble,
     this.dialect,
   }) {
     // ignore: deprecated_member_use_from_same_package

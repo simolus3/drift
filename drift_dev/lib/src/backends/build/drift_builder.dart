@@ -55,6 +55,11 @@ enum DriftGenerationMode {
 
   const DriftGenerationMode(this.isMonolithic, this.isPartFile);
 
+  /// Whether the user-visible outputs for this builder will be written by the
+  /// combining builder defined in the `source_gen` package.
+  bool get appliesCombiningBuilderFromSourceGen =>
+      this == DriftGenerationMode.monolithicSharedPart;
+
   /// Whether the analysis happens in the generating build step.
   ///
   /// For most generation modes, we run analysis work in a previous build step.
@@ -190,6 +195,15 @@ class _DriftBuildRun {
           'option is no longer necessary in drift 2.5, as a '
           '`DatabaseConnection` can now be passed to the default constructor '
           'for generated databases. Consider removing this option.',
+        );
+      }
+
+      if (mode.appliesCombiningBuilderFromSourceGen &&
+          options.preamble != null) {
+        log.warning(
+          'The `preamble` builder option has no effect on `drift_dev`. Apply '
+          'it to `source_gen:combining_builder` instead: '
+          'https://pub.dev/packages/source_gen#preamble',
         );
       }
 
@@ -386,6 +400,14 @@ class _DriftBuildRun {
 
   Future<void> _emitCode() {
     final output = StringBuffer();
+
+    if (!mode.appliesCombiningBuilderFromSourceGen) {
+      final preamble = options.preamble;
+      if (preamble != null) {
+        output.writeln(preamble);
+      }
+    }
+
     output.writeln('// ignore_for_file: type=lint');
 
     if (mode == DriftGenerationMode.monolithicPart) {

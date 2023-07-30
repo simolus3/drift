@@ -78,6 +78,9 @@ At the moment, drift supports these options:
    This is useful when using [existing row classes]({{ 'custom_row_classes.md' | pageUrl }}), as the mixin is generated for those as well.
 * `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
   unresolved references in your Dart tables) will cause the build to fail.
+* `preamble`: This option is useful when using drift [as a standalone part builder](#using-drift-classes-in-other-builders) or when running a
+  [modular build](#modular-code-generation). In these setups, the `preamble` option defined by the [source_gen package](https://pub.dev/packages/source_gen#preamble)
+  would have no effect, which is why it has been added as an option for the drift builders.
 
 ## Assumed SQL environment
 

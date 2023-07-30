@@ -4,6 +4,8 @@
   in drift files can now refer to any result set (e.g. a table-valued function or a subquery).
   They were restricted to direct table references before.
 - Add the `dialects` builder option to generate code supporting multiple SQL dialects.
+- Add the `preamble` option for non-shared or modular build setups to mirror the `preamble`
+  option from `source_gen:combining_builder`.
 
 ## 2.10.0
 
