@@ -14,7 +14,7 @@ void main() {
   }) {
     final engine = SqlEngine();
     final context = engine.analyze(sql);
-    final query = SqlSelectQuery('name', context, context.root, [], [],
+    final query = SqlSelectQuery('name', context, context.root, [], [], [],
         InferredResultSet(null, []), null, null);
 
     final result = SqlWriter(options, dialect: dialect, query: query).write();

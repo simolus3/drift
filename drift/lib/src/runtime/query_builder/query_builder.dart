@@ -168,4 +168,24 @@ enum SqlDialect {
     this.escapeChar = '"',
     this.supportsIndexedParameters = true,
   });
+
+  /// For dialects that don't support named or explicitly-indexed variables,
+  /// translates a variable assignment to avoid using that feature.
+  ///
+  /// For instance, the SQL snippet `WHERE x = :a OR y = :a` would be translated
+  /// to `WHERE x = ? OR y = ?`. Then, [original] would contain the value for
+  /// the single variable and [syntacticOccurences] would contain two values
+  /// (`1` and `1`) referencing the original variable.
+  List<Variable> desugarDuplicateVariables(
+    List<Variable> original,
+    List<int> syntacticOccurences,
+  ) {
+    if (supportsIndexedParameters) return original;
+
+    return [
+      for (final occurence in syntacticOccurences)
+        // Variables in SQL are 1-indexed
+        original[occurence - 1],
+    ];
+  }
 }

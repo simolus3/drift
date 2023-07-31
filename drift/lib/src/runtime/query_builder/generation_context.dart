@@ -58,6 +58,15 @@ class GenerationContext {
   /// Gets the generated sql statement
   String get sql => buffer.toString();
 
+  /// The variable indices occupied by this generation context.
+  ///
+  /// SQL variables are 1-indexed, so a context with three variables would
+  /// cover the variables `1`, `2` and `3` by default.
+  Iterable<int> get variableIndices {
+    final start = explicitVariableIndex ?? 1;
+    return Iterable.generate(amountOfVariables, (i) => start + i);
+  }
+
   /// Constructs a [GenerationContext] by copying the relevant fields from the
   /// database.
   GenerationContext.fromDb(DatabaseConnectionUser this.executor,

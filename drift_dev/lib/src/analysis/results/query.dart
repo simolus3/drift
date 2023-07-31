@@ -103,6 +103,13 @@ enum QueryMode {
   atCreate,
 }
 
+///A reference to a [FoundElement] occuring in the SQL query.
+class SyntacticElementReference {
+  final FoundElement referencedElement;
+
+  SyntacticElementReference(this.referencedElement);
+}
+
 /// A fully-resolved and analyzed SQL query.
 abstract class SqlQuery {
   final String name;
@@ -143,22 +150,44 @@ abstract class SqlQuery {
   ///    if their index is lower than that of the array (e.g `a = ?2 AND b IN ?
   ///    AND c IN ?1`. In other words, we can expand an array without worrying
   ///    about the variables that appear after that array.
-  late List<FoundVariable> variables;
+  late final List<FoundVariable> variables =
+      elements.whereType<FoundVariable>().toList();
 
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
   /// [ExpressionDartPlaceholderType] and [DriftSqlType.bool]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
-  late List<FoundDartPlaceholder> placeholders;
+  late final List<FoundDartPlaceholder> placeholders =
+      elements.whereType<FoundDartPlaceholder>().toList();
 
   /// Union of [variables] and [placeholders], but in the order in which they
   /// appear inside the query.
   final List<FoundElement> elements;
 
-  SqlQuery(this.name, this.elements) {
-    variables = elements.whereType<FoundVariable>().toList();
-    placeholders = elements.whereType<FoundDartPlaceholder>().toList();
+  /// All references to any [FoundElement] in [elements], but in the order in
+  /// which they appear in the query.
+  ///
+  /// This is very similar to [elements] itself, except that elements referenced
+  /// multiple times are also in this list multiple times. For instance, the
+  /// query `SELECT * FROM foo WHERE ?1 ORDER BY $order LIMIT ?1` would have two
+  /// elements (the variable and the Dart template, in that order), but three
+  /// references (the variable, the template, and then the variable again).
+  final List<SyntacticElementReference> elementSources;
+
+  SqlQuery(this.name, this.elements, this.elementSources);
+
+  /// Whether any element in [elements] has more than one definite
+  /// [elementSources] pointing to it.
+  bool get referencesAnyElementMoreThanOnce {
+    final found = <FoundElement>{};
+    for (final source in elementSources) {
+      if (!found.add(source.referencedElement)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   bool get _useResultClassName {
@@ -239,11 +268,12 @@ class SqlSelectQuery extends SqlQuery {
     this.fromContext,
     this.root,
     List<FoundElement> elements,
+    List<SyntacticElementReference> elementSources,
     this.readsFrom,
     this.resultSet,
     this.requestedResultClass,
     this.nestedContainer,
-  ) : super(name, elements);
+  ) : super(name, elements, elementSources);
 
   Set<DriftTable> get readsFromTables {
     return {
@@ -264,6 +294,7 @@ class SqlSelectQuery extends SqlQuery {
       fromContext,
       root,
       elements,
+      elementSources,
       readsFrom,
       resultSet,
       null,
@@ -372,10 +403,11 @@ class UpdatingQuery extends SqlQuery {
     this.fromContext,
     this.root,
     List<FoundElement> elements,
+    List<SyntacticElementReference> elementSources,
     this.updates, {
     this.isInsert = false,
     this.resultSet,
-  }) : super(name, elements);
+  }) : super(name, elements, elementSources);
 }
 
 /// A special kind of query running multiple inner queries in a transaction.
@@ -383,7 +415,11 @@ class InTransactionQuery extends SqlQuery {
   final List<SqlQuery> innerQueries;
 
   InTransactionQuery(this.innerQueries, String name)
-      : super(name, [for (final query in innerQueries) ...query.elements]);
+      : super(
+          name,
+          [for (final query in innerQueries) ...query.elements],
+          [for (final query in innerQueries) ...query.elementSources],
+        );
 
   @override
   InferredResultSet? get resultSet => null;
@@ -831,7 +867,7 @@ final class NestedResultQuery extends NestedResult {
 
 /// Something in the query that needs special attention when generating code,
 /// such as variables or Dart placeholders.
-abstract class FoundElement {
+sealed class FoundElement {
   String get dartParameterName;
 
   /// The name of this element as declared in the query
@@ -875,10 +911,8 @@ class FoundVariable extends FoundElement implements HasType {
   @override
   final bool nullable;
 
-  /// The first [Variable] in the sql statement that has this [index].
-  // todo: Do we really need to expose this? We only use [resolvedIndex], which
-  // should always be equal to [index].
-  final Variable variable;
+  @override
+  final AstNode syntacticOrigin;
 
   /// Whether this variable is an array, which will be expanded into multiple
   /// variables at runtime. We only accept queries where no explicitly numbered
@@ -900,38 +934,36 @@ class FoundVariable extends FoundElement implements HasType {
     required this.index,
     required this.name,
     required this.sqlType,
-    required this.variable,
+    required Variable variable,
     this.nullable = false,
     this.isArray = false,
     this.isRequired = false,
     this.typeConverter,
   })  : hidden = false,
-        forCaptured = null,
-        assert(variable.resolvedIndex == index);
+        syntacticOrigin = variable,
+        forCaptured = null;
 
   FoundVariable.nestedQuery({
     required this.index,
     required this.name,
     required this.sqlType,
-    required this.variable,
+    required Variable variable,
     required this.forCaptured,
   })  : typeConverter = null,
         nullable = false,
         isArray = false,
         isRequired = true,
-        hidden = true;
+        hidden = true,
+        syntacticOrigin = variable;
 
   @override
   String get dartParameterName {
     if (name != null) {
       return dartNameForSqlColumn(name!);
     } else {
-      return 'var${variable.resolvedIndex}';
+      return 'var$index';
     }
   }
-
-  @override
-  AstNode get syntacticOrigin => variable;
 }
 
 abstract class DartPlaceholderType {}

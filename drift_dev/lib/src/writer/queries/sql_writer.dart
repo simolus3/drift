@@ -104,8 +104,8 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   FoundVariable? _findMoorVar(Variable target) {
-    return query!.variables.firstWhereOrNull(
-        (f) => f.variable.resolvedIndex == target.resolvedIndex);
+    return query!.variables
+        .firstWhereOrNull((f) => f.index == target.resolvedIndex);
   }
 
   void _writeMoorVariable(FoundVariable variable) {

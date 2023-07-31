@@ -755,9 +755,40 @@ class _ExpandedVariableWriter {
   _ExpandedVariableWriter(this.query, this._emitter);
 
   void writeVariables() {
-    _buffer.write('variables: [');
-    _writeNewVariables();
-    _buffer.write(']');
+    _buffer.write('variables: ');
+
+    // Some dialects don't support variables with an explicit index. In that
+    // case, we have to desugar them by duplicating variables, e.g. `:a AND :a`
+    // would be transformed to `? AND ?` with us binding the value to both
+    // variables.
+    if (_emitter.writer.options.supportedDialects
+            .any((e) => !e.supportsIndexedParameters) &&
+        query.referencesAnyElementMoreThanOnce) {
+      _buffer.write('executor.dialect.desugarDuplicateVariables([');
+      _writeNewVariables();
+      _buffer.write('],');
+
+      // Every time a variable is used in the generated SQL text, we have to
+      // track the variable's index in the second list
+      _buffer.write('[');
+      for (final source in query.elementSources) {
+        switch (source.referencedElement) {
+          case FoundVariable variable:
+            _buffer.write('${variable.index}, ');
+            break;
+          case FoundDartPlaceholder placeholder:
+            final context = placeholderContextName(placeholder);
+            _buffer.write('...$context.variableIndices');
+            break;
+        }
+      }
+
+      _buffer.write('])');
+    } else {
+      _buffer.write('[');
+      _writeNewVariables();
+      _buffer.write(']');
+    }
   }
 
   void _writeNewVariables() {

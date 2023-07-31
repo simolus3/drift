@@ -22,6 +22,7 @@ import 'required_variables.dart';
 /// class is simply there to bundle the data.
 class _QueryHandlerContext {
   final List<FoundElement> foundElements;
+  final List<SyntacticElementReference> elementReferences;
   final AstNode root;
   final NestedQueriesContainer? nestedScope;
   final String queryName;
@@ -32,13 +33,15 @@ class _QueryHandlerContext {
 
   _QueryHandlerContext({
     required List<FoundElement> foundElements,
+    required List<SyntacticElementReference> elementReferences,
     required this.root,
     required this.queryName,
     required this.nestedScope,
     this.requestedResultClass,
     this.requestedResultType,
     this.sourceForFixedName,
-  }) : foundElements = List.unmodifiable(foundElements);
+  })  : foundElements = List.unmodifiable(foundElements),
+        elementReferences = List.unmodifiable(elementReferences);
 }
 
 /// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this
@@ -103,7 +106,7 @@ class QueryAnalyzer {
       nestedScope = nestedAnalyzer.analyzeRoot(context.root as SelectStatement);
     }
 
-    final foundElements = _extractElements(
+    final (foundElements, references) = _extractElements(
       ctx: context,
       root: context.root,
       required: requiredVariables,
@@ -120,6 +123,7 @@ class QueryAnalyzer {
 
     final query = _mapToDrift(_QueryHandlerContext(
       foundElements: foundElements,
+      elementReferences: references,
       queryName: declaration.name,
       requestedResultClass: requestedResultClass,
       requestedResultType: requestedResultType,
@@ -209,6 +213,7 @@ class QueryAnalyzer {
       context,
       root,
       queryContext.foundElements,
+      queryContext.elementReferences,
       updatedFinder.writtenTables
           .map((write) {
             final table = _lookupReference<DriftTable?>(write.table.name);
@@ -265,6 +270,7 @@ class QueryAnalyzer {
       context,
       queryContext.root,
       queryContext.foundElements,
+      queryContext.elementReferences,
       driftEntities,
       _inferResultSet(queryContext, resolvedColumns, syntacticColumns),
       queryContext.requestedResultClass,
@@ -447,6 +453,7 @@ class QueryAnalyzer {
     final driftResultSet = _inferResultSet(
       _QueryHandlerContext(
         foundElements: queryContext.foundElements,
+        elementReferences: queryContext.elementReferences,
         root: queryContext.root,
         queryName: queryContext.queryName,
         nestedScope: queryContext.nestedScope,
@@ -484,7 +491,7 @@ class QueryAnalyzer {
       _QueryHandlerContext queryContext, NestedQueryColumn column) {
     final childScope = queryContext.nestedScope?.nestedQueries[column];
 
-    final foundElements = _extractElements(
+    final (foundElements, references) = _extractElements(
       ctx: context,
       root: column.select,
       required: requiredVariables,
@@ -511,6 +518,7 @@ class QueryAnalyzer {
         requestedResultClass: resultClassName,
         root: column.select,
         foundElements: foundElements,
+        elementReferences: references,
         nestedScope: childScope,
       )),
     );
@@ -564,7 +572,7 @@ class QueryAnalyzer {
   ///    a Dart placeholder, its indexed is LOWER than that element. This means
   ///    that elements can be expanded into multiple variables without breaking
   ///    variables that appear after them.
-  List<FoundElement> _extractElements({
+  (List<FoundElement>, List<SyntacticElementReference>) _extractElements({
     required AnalysisContext ctx,
     required AstNode root,
     NestedQueriesContainer? nestedScope,
@@ -581,6 +589,8 @@ class QueryAnalyzer {
     final merged = _mergeVarsAndPlaceholders(variables, placeholders);
 
     final foundElements = <FoundElement>[];
+    final references = <SyntacticElementReference>[];
+
     // we don't allow variables with an explicit index after an array. For
     // instance: SELECT * FROM t WHERE id IN ? OR id = ?2. The reason this is
     // not allowed is that we expand the first arg into multiple vars at runtime
@@ -589,9 +599,15 @@ class QueryAnalyzer {
     var maxIndex = 999;
     var currentIndex = 0;
 
+    void addNewElement(FoundElement element) {
+      foundElements.add(element);
+      references.add(SyntacticElementReference(element));
+    }
+
     for (final used in merged) {
       if (used is Variable) {
         if (used.resolvedIndex == currentIndex) {
+          references.add(SyntacticElementReference(foundElements.last));
           continue; // already handled, we only report a single variable / index
         }
 
@@ -624,7 +640,7 @@ class QueryAnalyzer {
         final type = driver.typeMapping.sqlTypeToDrift(internalType.type);
 
         if (forCapture != null) {
-          foundElements.add(FoundVariable.nestedQuery(
+          addNewElement(FoundVariable.nestedQuery(
             index: currentIndex,
             name: name,
             sqlType: type,
@@ -657,7 +673,7 @@ class QueryAnalyzer {
           converter = (internalType.type!.hint as TypeConverterHint).converter;
         }
 
-        foundElements.add(FoundVariable(
+        addNewElement(FoundVariable(
           index: currentIndex,
           name: name,
           sqlType: type,
@@ -684,10 +700,10 @@ class QueryAnalyzer {
         // we don't what index this placeholder has, so we can't allow _any_
         // explicitly indexed variables coming after this
         maxIndex = 0;
-        foundElements.add(_extractPlaceholder(ctx, used));
+        addNewElement(_extractPlaceholder(ctx, used));
       }
     }
-    return foundElements;
+    return (foundElements, references);
   }
 
   FoundDartPlaceholder _extractPlaceholder(
