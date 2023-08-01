@@ -31,6 +31,16 @@ export 'package:sqlite3/sqlite3.dart' show SqliteException;
 /// implementations.
 typedef DatabaseSetup = void Function(Database database);
 
+/// Signature of a function that can perform setup work on the isolate before
+/// opening the database.
+///
+/// This could be used to override libraries.
+/// For example:
+/// ```
+/// open.overrideFor(OperatingSystem.android, openCipherOnAndroid)
+/// ```
+typedef IsolateSetup = void Function();
+
 /// A drift database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
 class NativeDatabase extends DelegatedDatabase {
@@ -94,11 +104,13 @@ class NativeDatabase extends DelegatedDatabase {
     bool logStatements = false,
     bool cachePreparedStatements = _cacheStatementsByDefault,
     DatabaseSetup? setup,
+    IsolateSetup? isolateSetup,
   }) {
     return createBackgroundConnection(
       file,
       logStatements: logStatements,
       setup: setup,
+      isolateSetup: isolateSetup,
       cachePreparedStatements: cachePreparedStatements,
     );
   }
@@ -112,6 +124,7 @@ class NativeDatabase extends DelegatedDatabase {
     File file, {
     bool logStatements = false,
     DatabaseSetup? setup,
+    IsolateSetup? isolateSetup,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return DatabaseConnection.delayed(Future.sync(() async {
@@ -123,6 +136,7 @@ class NativeDatabase extends DelegatedDatabase {
           logStatements,
           cachePreparedStatements,
           setup,
+          isolateSetup,
           receiveIsolate.sendPort,
         ),
         debugName: 'Drift isolate worker for ${file.path}',
@@ -323,6 +337,7 @@ class _NativeIsolateStartup {
   final bool enableLogs;
   final bool cachePreparedStatements;
   final DatabaseSetup? setup;
+  final IsolateSetup? isolateSetup;
   final SendPort sendServer;
 
   _NativeIsolateStartup(
@@ -330,10 +345,12 @@ class _NativeIsolateStartup {
     this.enableLogs,
     this.cachePreparedStatements,
     this.setup,
+    this.isolateSetup,
     this.sendServer,
   );
 
   static void start(_NativeIsolateStartup startup) {
+    startup.isolateSetup?.call();
     final isolate = DriftIsolate.inCurrent(() {
       return DatabaseConnection(NativeDatabase(
         File(startup.path),
