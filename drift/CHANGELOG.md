@@ -3,6 +3,7 @@
 - Add support for subqueries in the Dart query builder.
 - Add `isInExp` and `isNotInExp` to construct `IS IN` expressions with arbitrary
   expressions.
+- Add `isolateSetup` to `NativeDatabase.createInBackground()` to override libraries.
 
 ## 2.10.0
 
