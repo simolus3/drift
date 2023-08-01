@@ -894,7 +894,26 @@ class FoundVariable extends FoundElement implements HasType {
   /// three [Variable]s in its AST, but only two [FoundVariable]s, where the
   /// `?` will have index 1 and (both) `:xyz` variables will have index 2. We
   /// only report one [FoundVariable] per index.
+  ///
+  /// This [index] might change in the generator as variables are moved around.
+  /// See [originalIndex] for the original index and a further discussion of
+  /// this.
   int index;
+
+  /// The original index this variable had in the SQL string written by the
+  /// user.
+  ///
+  /// In the generator, we might have to shuffle variable indices around a bit
+  /// to support array variables which occupy a dynamic amount of variable
+  /// indices at runtime.
+  /// For instance, consider `SELECT * FROM foo WHERE a = :a OR b IN :b OR c = :c`.
+  /// Here, `:c` will have an original index of 3. Since `:b` is an array
+  /// variable though, the actual query sent to the database system at runtime
+  /// will look like `SELECT * FROM foo WHERE a = ?1 OR b IN (?3, ?4) OR c = ?2`
+  /// when a size-2 list is passed for `b`. All non-array variables have been
+  /// given indices that appear before the array to support this, so the [index]
+  /// of `c` would then be `2`.
+  final int originalIndex;
 
   /// The name of this variable, or null if it's not a named variable.
   @override
@@ -939,7 +958,8 @@ class FoundVariable extends FoundElement implements HasType {
     this.isArray = false,
     this.isRequired = false,
     this.typeConverter,
-  })  : hidden = false,
+  })  : originalIndex = index,
+        hidden = false,
         syntacticOrigin = variable,
         forCaptured = null;
 
@@ -949,7 +969,8 @@ class FoundVariable extends FoundElement implements HasType {
     required this.sqlType,
     required Variable variable,
     required this.forCaptured,
-  })  : typeConverter = null,
+  })  : originalIndex = index,
+        typeConverter = null,
         nullable = false,
         isArray = false,
         isRequired = true,

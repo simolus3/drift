@@ -103,12 +103,12 @@ class SqlWriter extends NodeSqlBuilder {
     return dialect.escape(identifier);
   }
 
-  FoundVariable? _findMoorVar(Variable target) {
+  FoundVariable? _findVariable(Variable target) {
     return query!.variables
-        .firstWhereOrNull((f) => f.index == target.resolvedIndex);
+        .firstWhereOrNull((f) => f.originalIndex == target.resolvedIndex);
   }
 
-  void _writeMoorVariable(FoundVariable variable) {
+  void _writeAnalyzedVariable(FoundVariable variable) {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
@@ -175,9 +175,9 @@ class SqlWriter extends NodeSqlBuilder {
 
   @override
   void visitNamedVariable(ColonNamedVariable e, void arg) {
-    final moor = _findMoorVar(e);
-    if (moor != null) {
-      _writeMoorVariable(moor);
+    final found = _findVariable(e);
+    if (found != null) {
+      _writeAnalyzedVariable(found);
     } else {
       super.visitNamedVariable(e, arg);
     }
@@ -185,9 +185,9 @@ class SqlWriter extends NodeSqlBuilder {
 
   @override
   void visitNumberedVariable(NumberedVariable e, void arg) {
-    final moor = _findMoorVar(e);
-    if (moor != null) {
-      _writeMoorVariable(moor);
+    final found = _findVariable(e);
+    if (found != null) {
+      _writeAnalyzedVariable(found);
     } else {
       super.visitNumberedVariable(e, arg);
     }
