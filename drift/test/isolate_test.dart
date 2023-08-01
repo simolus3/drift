@@ -129,7 +129,7 @@ void main() {
 
     await Isolate.spawn(_createBackground, spawned.sendPort,
         onExit: done.sendPort);
-    // The isolate shold eventually exit!
+    // The isolate should eventually exit!
     expect(done.first, completion(anything));
 
     final drift = await spawned.first as DriftIsolate;
@@ -142,7 +142,7 @@ void main() {
 
     await Isolate.spawn(_createBackground, spawned.sendPort,
         onExit: done.sendPort);
-    // The isolate shold eventually exit!
+    // The isolate should eventually exit!
     expect(done.first, completion(anything));
 
     final drift = await spawned.first as DriftIsolate;
