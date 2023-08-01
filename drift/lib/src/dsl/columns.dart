@@ -45,7 +45,8 @@ abstract class Column<T extends Object> extends Expression<T> {
   /// In the past, this getter only used to add double-quotes when that is
   /// really needed (for instance because [name] is also a reserved keyword).
   /// For performance reasons, we unconditionally escape names now.
-  String get escapedName => '`$name`'; // mariadb backtick escape DOT NOT MERGE STILL
+  String get escapedName =>
+      '`$name`'; // mariadb backtick escape DOT NOT MERGE STILL
 }
 
 /// A column that stores int values.
