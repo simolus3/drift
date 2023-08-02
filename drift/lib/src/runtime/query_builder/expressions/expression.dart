@@ -480,10 +480,35 @@ class _CastInSqlExpression<D1 extends Object, D2 extends Object>
   @override
   void writeInto(GenerationContext context) {
     final type = DriftSqlType.forType<D2>();
+    if (type == DriftSqlType.any) {
+      inner.writeInto(context); // No need to cast
+    }
+
+    final String typeName;
+
+    if (context.dialect == SqlDialect.mariadb) {
+      // MariaDB has a weird cast syntax that uses different type names than the
+      // ones used in a create table statement.
+
+      // ignore: unnecessary_cast
+      typeName = switch (type as DriftSqlType<Object>) {
+        DriftSqlType.int ||
+        DriftSqlType.bigInt ||
+        DriftSqlType.bool =>
+          'INTEGER',
+        DriftSqlType.string => 'CHAR',
+        DriftSqlType.double => 'DOUBLE',
+        DriftSqlType.blob => 'BINARY',
+        DriftSqlType.dateTime => 'DATETIME',
+        DriftSqlType.any => '',
+      };
+    } else {
+      typeName = type.sqlTypeName(context);
+    }
 
     context.buffer.write('CAST(');
     inner.writeInto(context);
-    context.buffer.write(' AS ${type.sqlTypeName(context)})');
+    context.buffer.write(' AS $typeName)');
   }
 }
 

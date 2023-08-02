@@ -105,15 +105,16 @@ void crudTests(TestExecutor executor) {
     final db = Database(executor.createConnection());
 
     // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-    if (db.executor.dialect == SqlDialect.postgres) {
-      await db.customStatement(
-          'INSERT INTO friendships (first_user, second_user) VALUES (@1, @2)',
-          <int>[1, 2]);
-    } else {
-      await db.customStatement(
-          'INSERT INTO friendships (first_user, second_user) VALUES (?1, ?2)',
-          <int>[1, 2]);
-    }
+    await db.customStatement(
+        switch (db.executor.dialect) {
+          SqlDialect.postgres =>
+            r'INSERT INTO friendships (first_user, second_user) VALUES ($1, $2)',
+          SqlDialect.mariadb =>
+            r'INSERT INTO friendships (first_user, second_user) VALUES (?, ?)',
+          _ =>
+            r'INSERT INTO friendships (first_user, second_user) VALUES (?1, ?2)',
+        },
+        <int>[1, 2]);
 
     expect(await db.friendsOf(1).get(), isNotEmpty);
     await executor.clearDatabaseAndClose(db);
@@ -127,7 +128,8 @@ void crudTests(TestExecutor executor) {
 
     Future<T?> evaluate<T extends Object>(Expression<T> expr) async {
       late final Expression<T> effectiveExpr;
-      if (database.executor.dialect == SqlDialect.postgres) {
+      final dialect = database.executor.dialect;
+      if (dialect == SqlDialect.postgres || dialect == SqlDialect.mariadb) {
         // 'SELECT'ing values that don't come from a table return as String
         // by default, so we need to explicitly cast it to the expected type
         // https://www.postgresql.org/docs/current/typeconv-select.html

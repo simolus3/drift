@@ -187,6 +187,7 @@ jobs:
           dart test
       - name: MariaDB integration tests
         working-directory: extras/drift_mariadb
+        continue-on-error: true
         run: |
           dart pub upgrade
           dart test

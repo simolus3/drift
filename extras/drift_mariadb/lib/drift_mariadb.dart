@@ -1,4 +1,4 @@
-/// MariaDB
+/// Experimental Drift integration for MariaDB.
 @experimental
 library drift.mariadb;
 
