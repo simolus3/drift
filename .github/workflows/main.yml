@@ -180,7 +180,32 @@ jobs:
           dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: melos bootstrap --no-flutter
         working-directory: .
-      - run: tool/misc_integration_test.sh
+      - name: Postgres integration tests
+        working-directory: extras/drift_postgres
+        run: |
+          dart pub upgrade
+          dart test
+      - name: MariaDB integration tests
+        working-directory: extras/drift_mariadb
+        run: |
+          dart pub upgrade
+          dart test
+      - name: Integration test with built_value
+        working-directory: examples/with_built_value
+        run: |
+          dart pub upgrade
+          dart run build_runner build --delete-conflicting-outputs
+      - name: Integration test with modular generation
+        working-directory: examples/modular
+        run: |
+          dart pub upgrade
+          dart run build_runner build --delete-conflicting-outputs
+          dart run bin/example.dart
+      - name: Integration test for migrations example
+        working-directory: examples/migrations_example
+        run: |
+          dart pub upgrade
+          dart test
 
   migration_integration_tests:
     name: "Integration tests for migration tooling"
