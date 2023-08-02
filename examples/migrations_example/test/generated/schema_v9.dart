@@ -735,8 +735,10 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   @override
   String get entityName => 'group_count';
   @override
-  String get createViewStmt =>
-      'CREATE VIEW group_count AS SELECT\n    users.*,\n    (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count\n  FROM users;';
+  Map<SqlDialect, String> get createViewStatements => {
+        SqlDialect.sqlite:
+            'CREATE VIEW group_count AS SELECT\n    users.*,\n    (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count\n  FROM users;'
+      };
   @override
   GroupCount get asDslTable => this;
   @override
