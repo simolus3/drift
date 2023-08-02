@@ -1,6 +1,7 @@
 @TestOn('vm')
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -35,6 +36,25 @@ void main() {
       await db.close();
 
       await d.file('test.db', anything).validate();
+    });
+
+    test('isolateSetup', () async {
+      final receivePort = ReceivePort();
+      final sendPort = receivePort.sendPort;
+      final file = File(d.path('test.db'));
+
+      const message = 'hi there';
+      final db = TodoDb(
+        NativeDatabase.createInBackground(
+          file,
+          isolateSetup: () => sendPort.send(message),
+        ),
+      );
+      await db.todosTable.select().get(); // Open the database
+      await db.close();
+
+      await d.file('test.db', anything).validate();
+      expect(receivePort, emits(message));
     });
   });
 
