@@ -9,6 +9,7 @@
 /// For more information other platforms, see [other engines](https://drift.simonbinder.eu/docs/other-engines/vm/).
 library drift.ffi;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -39,7 +40,7 @@ typedef DatabaseSetup = void Function(Database database);
 /// ```
 /// open.overrideFor(OperatingSystem.android, openCipherOnAndroid)
 /// ```
-typedef IsolateSetup = void Function();
+typedef IsolateSetup = FutureOr<void> Function();
 
 /// A drift database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
@@ -349,8 +350,8 @@ class _NativeIsolateStartup {
     this.sendServer,
   );
 
-  static void start(_NativeIsolateStartup startup) {
-    startup.isolateSetup?.call();
+  static Future<void> start(_NativeIsolateStartup startup) async {
+    await startup.isolateSetup?.call();
     final isolate = DriftIsolate.inCurrent(() {
       return DatabaseConnection(NativeDatabase(
         File(startup.path),
