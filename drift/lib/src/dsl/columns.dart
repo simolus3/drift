@@ -36,7 +36,7 @@ abstract class Column<T extends Object> extends Expression<T> {
 
   /// The (unescaped) name of this column.
   ///
-  /// Use [escapedName] to access a name that's escaped in double quotes if
+  /// Use [escapedNameFor] to access a name that's escaped in double quotes if
   /// needed.
   String get name;
 
@@ -45,8 +45,14 @@ abstract class Column<T extends Object> extends Expression<T> {
   /// In the past, this getter only used to add double-quotes when that is
   /// really needed (for instance because [name] is also a reserved keyword).
   /// For performance reasons, we unconditionally escape names now.
-  String get escapedName =>
-      '`$name`'; // mariadb backtick escape DOT NOT MERGE STILL
+  @Deprecated('Use escapedNameFor with the current dialect')
+  String get escapedName => '"$name"';
+
+  /// [name], but wrapped in double quotes or the DBMS-specific escape
+  /// identifier.
+  String escapedNameFor(SqlDialect dialect) {
+    return dialect.escape(name);
+  }
 }
 
 /// A column that stores int values.

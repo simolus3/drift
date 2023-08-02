@@ -291,7 +291,7 @@ class InsertStatement<T extends Table, D> {
 
           // Writing the escaped name directly because it should not have a table
           // name in front of it.
-          ctx.buffer.write(target.escapedName);
+          ctx.buffer.write(target.escapedNameFor(ctx.dialect));
           first = false;
         }
 

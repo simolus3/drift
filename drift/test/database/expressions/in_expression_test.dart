@@ -73,8 +73,8 @@ void main() {
       // it and replace it with the direct constant (since nothing can be a
       // member of the empty set). sqlite3 seems to do the same thing, as
       // `NULL IN ()` is `0` and not `NULL`.
-      expect(innerExpression.isIn([]), generates('FALSE'));
-      expect(innerExpression.isNotIn([]), generates('TRUE'));
+      expect(innerExpression.isIn([]), generates('0'));
+      expect(innerExpression.isNotIn([]), generates('1'));
     });
   });
 }

@@ -134,10 +134,21 @@ enum SqlDialect {
     supportsIndexedParameters: false,
   );
 
+  /// The type to use in `CAST`s and column definitions to store booleans.
   final String booleanType;
+
+  /// The type to use in `CAST`s and column definitions to store strings.
   final String textType;
+
+  /// The type to use in `CAST`s and column definitions to store 64-bit
+  /// integers.
   final String integerType;
+
+  /// The type to use in `CAST`s and column definitions to store doubles.
   final String realType;
+
+  /// The type to use in `CAST`s and column definitions to store blobs (as
+  /// a [Uint8List] in Dart).
   final String blobType;
 
   /// The character used to wrap identifiers to distinguish them from keywords.

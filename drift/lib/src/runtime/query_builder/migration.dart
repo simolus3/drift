@@ -251,7 +251,7 @@ class Migrator {
           expressionsForSelect.add(expression);
 
           if (!first) context.buffer.write(', ');
-          context.buffer.write(column.escapedName);
+          context.buffer.write(column.escapedNameFor(dialect));
           first = false;
         }
       }
@@ -348,7 +348,7 @@ class Migrator {
         for (var i = 0; i < pkList.length; i++) {
           final column = pkList[i];
 
-          context.buffer.write(column.escapedName);
+          context.buffer.write(column.escapedNameFor(context.dialect));
 
           if (i != pkList.length - 1) context.buffer.write(', ');
         }
@@ -362,7 +362,7 @@ class Migrator {
           for (var i = 0; i < uqList.length; i++) {
             final column = uqList[i];
 
-            context.buffer.write(column.escapedName);
+            context.buffer.write(column.escapedNameFor(context.dialect));
 
             if (i != uqList.length - 1) context.buffer.write(', ');
           }
@@ -418,7 +418,9 @@ class Migrator {
       await _issueQueryByDialect(stmts);
     } else if (view.query != null) {
       final context = GenerationContext.fromDb(_db, supportsVariables: false);
-      final columnNames = view.$columns.map((e) => e.escapedName).join(', ');
+      final columnNames = view.$columns
+          .map((e) => e.escapedNameFor(context.dialect))
+          .join(', ');
 
       context.generatingForView = view.entityName;
       context.buffer.write('CREATE VIEW IF NOT EXISTS '
@@ -495,7 +497,7 @@ class Migrator {
     context.buffer
       ..write('ALTER TABLE ${context.identifier(table.aliasedName)} ')
       ..write('RENAME COLUMN ${context.identifier(oldName)} ')
-      ..write('TO ${column.escapedName};');
+      ..write('TO ${column.escapedNameFor(context.dialect)};');
 
     return _issueCustomQuery(context.sql);
   }

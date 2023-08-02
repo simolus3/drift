@@ -157,7 +157,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// For an "is in" comparison with values, use [isIn].
   Expression<bool> isInExp(List<Expression<D>> expressions) {
     if (expressions.isEmpty) {
-      return Constant(true);
+      return Constant(false);
     }
 
     return _InExpression(this, expressions, false);
