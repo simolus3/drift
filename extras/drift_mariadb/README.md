@@ -1,5 +1,7 @@
 An experimental mariadb backend for Drift.
 
+Note that the backend is currently experimental and not fully functional yet.
+
 ## Using this
 
 For general notes on using drift, see [this guide](https://drift.simonbinder.eu/getting-started/).
