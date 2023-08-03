@@ -169,9 +169,8 @@ void main() {
     expect(generated, contains('.toList()'));
   });
 
-  group('generates correct code for expanded arrays', () {
-    Future<void> runTest(DriftOptions options, Matcher expectation) async {
-      final result = await generateForQueryInDriftFile('''
+  test('generates correct code for expanded arrays', () async {
+    final result = await generateForQueryInDriftFile('''
 CREATE TABLE tbl (
   a TEXT,
   b TEXT,
@@ -179,22 +178,17 @@ CREATE TABLE tbl (
 );
 
 query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
-''', options: options);
-      expect(result, expectation);
-    }
-
-    test('with the new query generator', () {
-      return runTest(
-        const DriftOptions.defaults(),
-        allOf(
-          contains(r'var $arrayStartIndex = 3;'),
-          contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
-              'AND c = ?2'),
-          contains(r'variables: [Variable<String>(a), Variable<String>(c), '
-              r'for (var $ in b) Variable<String>($)], readsFrom: {tbl'),
-        ),
-      );
-    });
+''');
+    expect(
+      result,
+      allOf(
+        contains(r'var $arrayStartIndex = 3;'),
+        contains(r'SELECT * FROM tbl WHERE a = ?1 AND b IN ($expandedb) '
+            'AND c = ?2'),
+        contains(r'variables: [Variable<String>(a), Variable<String>(c), '
+            r'for (var $ in b) Variable<String>($)], readsFrom: {tbl'),
+      ),
+    );
   });
 
   test(

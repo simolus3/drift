@@ -177,10 +177,13 @@ extension NameWithAlias on ResultSetImplementation<dynamic, dynamic> {
   /// can be used in select statements, as it returns something like "users u"
   /// for a table called users that has been aliased as "u".
   String get tableWithAlias {
+    var dialect = attachedDatabase.executor.dialect;
+    var entityNameEscaped = dialect.escape(entityName);
+    var aliasedNameEscaped = dialect.escape(aliasedName);
     if (aliasedName == entityName) {
-      return '"$entityName"';
+      return entityNameEscaped;
     } else {
-      return '"$entityName" "$aliasedName"';
+      return '$entityNameEscaped $aliasedNameEscaped';
     }
   }
 }

@@ -115,6 +115,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// buffer.
   void writeColumnDefinition(GenerationContext into) {
     final isSerial = into.dialect == SqlDialect.postgres && hasAutoIncrement;
+    final escapedName = escapedNameFor(into.dialect);
 
     if (isSerial) {
       into.buffer.write('$escapedName bigserial PRIMARY KEY NOT NULL');
@@ -177,7 +178,8 @@ class GeneratedColumn<T extends Object> extends Column<T> {
           ..write(context.identifier(tableName))
           ..write('.');
       }
-      context.buffer.write(ignoreEscape ? $name : escapedName);
+      context.buffer
+          .write(ignoreEscape ? $name : escapedNameFor(context.dialect));
     }
   }
 

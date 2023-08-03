@@ -16,9 +16,19 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
   for (final feature in column.constraints) {
     if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
-        defaultConstraints.add(feature.isAutoIncrement
-            ? 'PRIMARY KEY AUTOINCREMENT'
-            : 'PRIMARY KEY');
+        if (feature.isAutoIncrement) {
+          for (final dialect in SqlDialect.values) {
+            if (dialect == SqlDialect.mariadb) {
+              dialectSpecificConstraints[dialect]!
+                  .add('PRIMARY KEY AUTO_INCREMENT');
+            } else {
+              dialectSpecificConstraints[dialect]!
+                  .add('PRIMARY KEY AUTOINCREMENT');
+            }
+          }
+        } else {
+          defaultConstraints.add('PRIMARY KEY');
+        }
 
         wrotePkConstraint = true;
         break;
@@ -63,9 +73,11 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
   }
 
   if (column.sqlType == DriftSqlType.bool) {
-    final name = '"${column.nameInSql}"';
+    final name = column.nameInSql;
     dialectSpecificConstraints[SqlDialect.sqlite]!
-        .add('CHECK ($name IN (0, 1))');
+        .add('CHECK (${SqlDialect.sqlite.escape(name)} IN (0, 1))');
+    dialectSpecificConstraints[SqlDialect.mariadb]!
+        .add('CHECK (${SqlDialect.mariadb.escape(name)} IN (0, 1))');
   }
 
   for (final constraints in dialectSpecificConstraints.values) {

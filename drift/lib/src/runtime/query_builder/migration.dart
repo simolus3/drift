@@ -15,6 +15,7 @@ typedef OnUpgrade = Future<void> Function(Migrator m, int from, int to);
 typedef OnBeforeOpen = Future<void> Function(OpeningDetails details);
 
 Future<void> _defaultOnCreate(Migrator m) => m.createAll();
+
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
     throw Exception("You've bumped the schema version for your drift database "
         "but didn't provide a strategy for schema updates. Please do that by "
@@ -227,7 +228,7 @@ class Migrator {
           expressionsForSelect.add(expression);
 
           if (!first) context.buffer.write(', ');
-          context.buffer.write(column.escapedName);
+          context.buffer.write(column.escapedNameFor(context.dialect));
           first = false;
         }
       }
@@ -308,7 +309,7 @@ class Migrator {
         for (var i = 0; i < pkList.length; i++) {
           final column = pkList[i];
 
-          context.buffer.write(column.escapedName);
+          context.buffer.write(column.escapedNameFor(context.dialect));
 
           if (i != pkList.length - 1) context.buffer.write(', ');
         }
@@ -322,7 +323,7 @@ class Migrator {
           for (var i = 0; i < uqList.length; i++) {
             final column = uqList[i];
 
-            context.buffer.write(column.escapedName);
+            context.buffer.write(column.escapedNameFor(context.dialect));
 
             if (i != uqList.length - 1) context.buffer.write(', ');
           }
@@ -378,7 +379,9 @@ class Migrator {
       await _issueQueryByDialect(stmts);
     } else if (view.query != null) {
       final context = GenerationContext.fromDb(_db, supportsVariables: false);
-      final columnNames = view.$columns.map((e) => e.escapedName).join(', ');
+      final columnNames = view.$columns
+          .map((e) => e.escapedNameFor(context.dialect))
+          .join(', ');
 
       context.generatingForView = view.entityName;
       context.buffer.write('CREATE VIEW IF NOT EXISTS '
@@ -447,14 +450,15 @@ class Migrator {
   /// in sqlite version 3.25.0, released on 2018-09-15. When you're using
   /// Flutter and depend on `sqlite3_flutter_libs`, you're guaranteed to have
   /// that version. Otherwise, please ensure that you only use [renameColumn] if
-  /// you know you'll run on sqlite 3.20.0 or later.
+  /// you know you'll run on sqlite 3.20.0 or later. In MariaDB support for that
+  /// same syntax was added in MariaDB version 10.5.2, released on 2020-03-26.
   Future<void> renameColumn(
       TableInfo table, String oldName, GeneratedColumn column) async {
     final context = _createContext();
     context.buffer
       ..write('ALTER TABLE ${context.identifier(table.aliasedName)} ')
       ..write('RENAME COLUMN ${context.identifier(oldName)} ')
-      ..write('TO ${column.escapedName};');
+      ..write('TO ${column.escapedNameFor(context.dialect)};');
 
     return _issueCustomQuery(context.sql);
   }
@@ -467,8 +471,13 @@ class Migrator {
   /// databases.
   Future<void> renameTable(TableInfo table, String oldName) async {
     final context = _createContext();
-    context.buffer.write('ALTER TABLE ${context.identifier(oldName)} '
-        'RENAME TO ${context.identifier(table.actualTableName)};');
+    context.buffer.write(switch (context.dialect) {
+      SqlDialect.mariadb => 'RENAME TABLE ${context.identifier(oldName)} '
+          'TO ${context.identifier(table.actualTableName)};',
+      _ => 'ALTER TABLE ${context.identifier(oldName)} '
+          'RENAME TO ${context.identifier(table.actualTableName)};',
+    });
+
     return _issueCustomQuery(context.sql);
   }
 

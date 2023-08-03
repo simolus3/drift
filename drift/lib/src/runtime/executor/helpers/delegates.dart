@@ -3,6 +3,12 @@ import 'dart:async' show FutureOr;
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/helpers/results.dart';
 
+String _defaultSavepoint(int depth) => 'SAVEPOINT s$depth';
+
+String _defaultRelease(int depth) => 'RELEASE s$depth';
+
+String _defaultRollbackToSavepoint(int depth) => 'ROLLBACK TO s$depth';
+
 /// An interface that supports sending database queries. Used as a backend for
 /// drift.
 ///
@@ -132,6 +138,18 @@ class NoTransactionDelegate extends TransactionDelegate {
   /// database engine.
   final String rollback;
 
+  /// The statement that will create a savepoint for a given depth of a transaction
+  /// on this database engine.
+  final String Function(int depth) savepoint;
+
+  /// The statement that will release a savepoint for a given depth of a transaction
+  /// on this database engine.
+  final String Function(int depth) release;
+
+  /// The statement that will perform a rollback to a savepoint for a given depth
+  /// of a transaction on this database engine.
+  final String Function(int depth) rollbackToSavepoint;
+
   /// Construct a transaction delegate indicating that native transactions
   /// aren't supported and need to be emulated by issuing statements and
   /// locking the database.
@@ -139,6 +157,9 @@ class NoTransactionDelegate extends TransactionDelegate {
     this.start = 'BEGIN TRANSACTION',
     this.commit = 'COMMIT TRANSACTION',
     this.rollback = 'ROLLBACK TRANSACTION',
+    this.savepoint = _defaultSavepoint,
+    this.release = _defaultRelease,
+    this.rollbackToSavepoint = _defaultRollbackToSavepoint,
   });
 }
 

@@ -9,7 +9,12 @@ targets:
           raw_result_set_data: false
           named_parameters: false
           sql:
-            dialects: [sqlite, postgres]
+            # Generate multi-dialect code so that the tests can run on each DBMS we're
+            # working on (even though only sqlite is supported officially).
+            dialects:
+              - sqlite
+              - postgres
+              - mariadb
             options:
               version: "3.37"
               modules:

@@ -9,6 +9,7 @@ packages:
  - sqlparser
  - examples/*
  - extras/benchmarks
+ - extras/drift_mariadb
  - extras/drift_postgres
  - extras/encryption
  - extras/integration_tests/*
