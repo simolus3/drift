@@ -76,6 +76,7 @@ class SharedDriftWorker {
         canUseIndexedDb: canUseIndexedDb,
         indexedDbExists: indexedDbExists,
         opfsExists: false,
+        existingDatabases: const [],
       );
     } else {
       final worker = _dedicatedWorker ??= Worker(Uri.base.toString());
@@ -86,7 +87,12 @@ class SharedDriftWorker {
       final completer = Completer<SharedWorkerCompatibilityResult>();
       StreamSubscription? messageSubscription, errorSubscription;
 
-      void result(bool opfsAvailable, bool opfsExists, bool indexedDbExists) {
+      void result(
+        bool opfsAvailable,
+        bool opfsExists,
+        bool indexedDbExists,
+        List<ExistingDatabase> databases,
+      ) {
         if (!completer.isCompleted) {
           completer.complete(SharedWorkerCompatibilityResult(
             canSpawnDedicatedWorkers: true,
@@ -94,6 +100,7 @@ class SharedDriftWorker {
             canUseIndexedDb: canUseIndexedDb,
             indexedDbExists: indexedDbExists,
             opfsExists: opfsExists,
+            existingDatabases: databases,
           ));
 
           messageSubscription?.cancel();
@@ -110,11 +117,12 @@ class SharedDriftWorker {
           compatibilityResult.canAccessOpfs,
           compatibilityResult.opfsExists,
           compatibilityResult.indexedDbExists,
+          compatibilityResult.existingDatabases,
         );
       });
 
       errorSubscription = worker.onError.listen((event) {
-        result(false, false, false);
+        result(false, false, false, const []);
         worker.terminate();
         _dedicatedWorker = null;
       });

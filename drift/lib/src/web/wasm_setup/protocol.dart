@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:html';
+import 'dart:js';
 
 import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
@@ -55,38 +56,65 @@ sealed class WasmInitializationMessage {
   }
 }
 
+sealed class CompatibilityResult extends WasmInitializationMessage {
+  /// All existing databases.
+  ///
+  /// This list is only reported by the drift worker shipped with drift 2.11.
+  /// When an older worker is used, only [indexedDbExists] and [opfsExists] can
+  /// be used to check whether the database exists.
+  final List<(DatabaseLocation, String)> existingDatabases;
+
+  final bool indexedDbExists;
+  final bool opfsExists;
+
+  Iterable<MissingBrowserFeature> get missingFeatures;
+
+  CompatibilityResult({
+    required this.existingDatabases,
+    required this.indexedDbExists,
+    required this.opfsExists,
+  });
+}
+
 /// A message used by the shared worker to report compatibility results.
 ///
 /// It describes the features available from the shared worker, which the tab
 /// can use to infer a desired storage implementation, or whether the shared
 /// worker should be used at all.
-final class SharedWorkerCompatibilityResult extends WasmInitializationMessage {
+final class SharedWorkerCompatibilityResult extends CompatibilityResult {
   static const type = 'SharedWorkerCompatibilityResult';
 
   final bool canSpawnDedicatedWorkers;
   final bool dedicatedWorkersCanUseOpfs;
   final bool canUseIndexedDb;
 
-  final bool indexedDbExists;
-  final bool opfsExists;
-
   SharedWorkerCompatibilityResult({
     required this.canSpawnDedicatedWorkers,
     required this.dedicatedWorkersCanUseOpfs,
     required this.canUseIndexedDb,
-    required this.indexedDbExists,
-    required this.opfsExists,
+    required super.indexedDbExists,
+    required super.opfsExists,
+    required super.existingDatabases,
   });
 
   factory SharedWorkerCompatibilityResult.fromJsPayload(Object payload) {
-    final data = (payload as List).cast<bool>();
+    final asList = payload as List;
+    final asBooleans = asList.cast<bool>();
+
+    final List<(DatabaseLocation, String)> existingDatabases;
+    if (asList.length > 5) {
+      existingDatabases = EncodeLocations.readFromJs(asList[5] as JsArray);
+    } else {
+      existingDatabases = const [];
+    }
 
     return SharedWorkerCompatibilityResult(
-      canSpawnDedicatedWorkers: data[0],
-      dedicatedWorkersCanUseOpfs: data[1],
-      canUseIndexedDb: data[2],
-      indexedDbExists: data[3],
-      opfsExists: data[4],
+      canSpawnDedicatedWorkers: asBooleans[0],
+      dedicatedWorkersCanUseOpfs: asBooleans[1],
+      canUseIndexedDb: asBooleans[2],
+      indexedDbExists: asBooleans[3],
+      opfsExists: asBooleans[4],
+      existingDatabases: existingDatabases,
     );
   }
 
@@ -98,9 +126,11 @@ final class SharedWorkerCompatibilityResult extends WasmInitializationMessage {
       canUseIndexedDb,
       indexedDbExists,
       opfsExists,
+      existingDatabases.encodeToJs(),
     ]);
   }
 
+  @override
   Iterable<MissingBrowserFeature> get missingFeatures sync* {
     if (!canSpawnDedicatedWorkers) {
       yield MissingBrowserFeature.dedicatedWorkersInSharedWorkers;
@@ -183,6 +213,10 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
 final class RequestCompatibilityCheck extends WasmInitializationMessage {
   static const type = 'RequestCompatibilityCheck';
 
+  /// The database name to check when reporting whether it exists already.
+  ///
+  /// Older versions of the drif worker only support checking a single database
+  /// name. On newer workers, this field is ignored.
   final String databaseName;
 
   RequestCompatibilityCheck(this.databaseName);
@@ -197,8 +231,7 @@ final class RequestCompatibilityCheck extends WasmInitializationMessage {
   }
 }
 
-final class DedicatedWorkerCompatibilityResult
-    extends WasmInitializationMessage {
+final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
   static const type = 'DedicatedWorkerCompatibilityResult';
 
   final bool supportsNestedWorkers;
@@ -206,22 +239,24 @@ final class DedicatedWorkerCompatibilityResult
   final bool supportsSharedArrayBuffers;
   final bool supportsIndexedDb;
 
-  /// Whether an IndexedDb database under the desired name exists already.
-  final bool indexedDbExists;
-
-  /// Whether an OPFS database under the desired name exists already.
-  final bool opfsExists;
-
   DedicatedWorkerCompatibilityResult({
     required this.supportsNestedWorkers,
     required this.canAccessOpfs,
     required this.supportsSharedArrayBuffers,
     required this.supportsIndexedDb,
-    required this.indexedDbExists,
-    required this.opfsExists,
+    required super.indexedDbExists,
+    required super.opfsExists,
+    required super.existingDatabases,
   });
 
   factory DedicatedWorkerCompatibilityResult.fromJsPayload(Object payload) {
+    final existingDatabases = <(DatabaseLocation, String)>[];
+
+    if (hasProperty(payload, 'existing')) {
+      existingDatabases
+          .addAll(EncodeLocations.readFromJs(getProperty(payload, 'existing')));
+    }
+
     return DedicatedWorkerCompatibilityResult(
       supportsNestedWorkers: getProperty(payload, 'supportsNestedWorkers'),
       canAccessOpfs: getProperty(payload, 'canAccessOpfs'),
@@ -230,6 +265,7 @@ final class DedicatedWorkerCompatibilityResult
       supportsIndexedDb: getProperty(payload, 'supportsIndexedDb'),
       indexedDbExists: getProperty(payload, 'indexedDbExists'),
       opfsExists: getProperty(payload, 'opfsExists'),
+      existingDatabases: existingDatabases,
     );
   }
 
@@ -244,10 +280,12 @@ final class DedicatedWorkerCompatibilityResult
         object, 'supportsSharedArrayBuffers', supportsSharedArrayBuffers);
     setProperty(object, 'indexedDbExists', indexedDbExists);
     setProperty(object, 'opfsExists', opfsExists);
+    setProperty(object, 'existing', existingDatabases.encodeToJs());
 
     sender.sendTyped(type, object);
   }
 
+  @override
   Iterable<MissingBrowserFeature> get missingFeatures sync* {
     if (!canAccessOpfs) {
       yield MissingBrowserFeature.fileSystemAccess;
@@ -258,6 +296,34 @@ final class DedicatedWorkerCompatibilityResult
     if (!supportsIndexedDb) {
       yield MissingBrowserFeature.indexedDb;
     }
+  }
+}
+
+extension EncodeLocations on List<(DatabaseLocation, String)> {
+  static List<(DatabaseLocation, String)> readFromJs(JsArray object) {
+    final existing = <(DatabaseLocation, String)>[];
+
+    for (final entry in object) {
+      existing.add((
+        DatabaseLocation.byName[getProperty(entry as Object, 'l')]!,
+        getProperty(entry, 'n'),
+      ));
+    }
+
+    return existing;
+  }
+
+  Object encodeToJs() {
+    final existing = JsArray<Object>();
+    for (final entry in this) {
+      final object = newObject<Object>();
+      setProperty(object, 'l', entry.$1.name);
+      setProperty(object, 'n', entry.$2);
+
+      existing.add(object);
+    }
+
+    return existing;
   }
 }
 

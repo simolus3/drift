@@ -113,6 +113,25 @@ String pathForOpfs(String databaseName) {
   return 'drift_db/$databaseName';
 }
 
+/// Collects all drift OPFS databases.
+Future<List<String>> opfsDatabases() async {
+  final storage = storageManager;
+  if (storage == null) return const [];
+
+  var directory = await storage.directory;
+  try {
+    directory = await directory.getDirectory('drift_db');
+  } on Object {
+    // The drift_db folder doesn't exist, so there aren't any databases.
+    return const [];
+  }
+
+  return [
+    await for (final entry in directory.list())
+      if (entry.isDirectory) entry.name,
+  ];
+}
+
 /// Manages drift servers.
 ///
 /// When using a shared worker, multiple clients may want to use different drift

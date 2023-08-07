@@ -10,6 +10,7 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
@@ -90,14 +91,56 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri sqlite3Uri,
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
-  }) {
-    return WasmDatabaseOpener(
-      databaseName: databaseName,
-      sqlite3WasmUri: sqlite3Uri,
-      driftWorkerUri: driftWorkerUri,
-      initializeDatabase: initializeDatabase,
-    ).open();
+  }) async {
+    final probed =
+        await probe(sqlite3Uri: sqlite3Uri, driftWorkerUri: driftWorkerUri);
+
+    // If we have an existing database in storage, we want to keep using that
+    // format to avoid data loss (e.g. after a browser update that enables a
+    // otherwise preferred storage implementation). In the future, we might want
+    // to consider migrating between storage implementations as well.
+    final availableImplementations = probed.availableStorages.toList();
+
+    checkExisting:
+    for (final (location, name) in probed.existingDatabases) {
+      if (name == databaseName) {
+        final implementationsForStorage = switch (location) {
+          DatabaseLocation.indexedDb => const [
+              WasmStorageImplementation.sharedIndexedDb,
+              WasmStorageImplementation.unsafeIndexedDb
+            ],
+          DatabaseLocation.opfs => const [
+              WasmStorageImplementation.opfsShared,
+              WasmStorageImplementation.opfsLocks,
+            ],
+        };
+
+        // If any of the implementations for this location is still availalable,
+        // we want to use it instead of another location.
+        if (implementationsForStorage.any(availableImplementations.contains)) {
+          availableImplementations
+              .removeWhere((i) => !implementationsForStorage.contains(i));
+          break checkExisting;
+        }
+      }
+    }
+
+    // Enum values are ordered by preferrability, so just pick the best option
+    // left.
+    availableImplementations.sortBy<num>((element) => element.index);
+
+    final bestImplementation = availableImplementations.firstOrNull ??
+        WasmStorageImplementation.inMemory;
+    final connection = await probed.open(bestImplementation, databaseName);
+
+    return WasmDatabaseResult(
+        connection, bestImplementation, probed.missingFeatures);
   }
+
+  static Future<WasmProbeResult> probe({
+    required Uri sqlite3Uri,
+    required Uri driftWorkerUri,
+  }) {}
 
   /// The entrypoint for a web worker suitable for use with [open].
   ///

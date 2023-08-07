@@ -38,6 +38,124 @@ bool get supportsSharedWorkers => hasProperty(globalThis, 'SharedWorker');
 /// Whether dedicated workers can be constructed in the current context.
 bool get supportsWorkers => hasProperty(globalThis, 'Worker');
 
+class WasmDatabaseOpener2 {
+  final Uri sqlite3WasmUri;
+  final Uri driftWorkerUri;
+
+  final String? databaseName;
+
+  final Set<MissingBrowserFeature> missingFeatures = {};
+  final List<WasmStorageImplementation> availableImplementations = [
+    WasmStorageImplementation.inMemory,
+  ];
+  final Set<(DatabaseLocation, String)> existingDatabases = {};
+
+  MessagePort? _sharedWorker;
+  Worker? _dedicatedWorker;
+
+  WasmDatabaseOpener2(
+    this.sqlite3WasmUri,
+    this.driftWorkerUri,
+    this.databaseName,
+  );
+
+  RequestCompatibilityCheck _createCompatibilityCheck() {
+    return RequestCompatibilityCheck(databaseName ?? 'driftCompatibilityCheck');
+  }
+
+  void _handleCompatibilityResult(CompatibilityResult result) {
+    missingFeatures.addAll(result.missingFeatures);
+
+    final databaseName = this.databaseName;
+
+    // Note that existingDatabases are only sent from workers shipped with drift
+    // 2.11 or later. Later drift versions need to be able to talk to newer
+    // workers though.
+    if (result.existingDatabases.isNotEmpty) {
+      existingDatabases.addAll(result.existingDatabases);
+    }
+
+    if (databaseName != null) {
+      // If this opener has been created for WasmDatabase.open, we have a
+      // database name and can interpret the opfsExists and indexedDbExists
+      // fields we're getting from older workers accordingly.
+      if (result.opfsExists) {
+        existingDatabases.add((DatabaseLocation.opfs, databaseName));
+      }
+      if (result.indexedDbExists) {
+        existingDatabases.add((DatabaseLocation.indexedDb, databaseName));
+      }
+    }
+  }
+
+  Future<WasmProbeResult> probe() async {
+    await _probeDedicated();
+  }
+
+  Future<void> _probeDedicated() async {
+    if (supportsWorkers) {
+      final dedicatedWorker =
+          _dedicatedWorker = Worker(driftWorkerUri.toString());
+      _createCompatibilityCheck().sendToWorker(dedicatedWorker);
+
+      final workerMessages = StreamQueue(
+          _readMessages(dedicatedWorker.onMessage, dedicatedWorker.onError));
+
+      final status = await workerMessages.nextNoError
+          as DedicatedWorkerCompatibilityResult;
+
+      _handleCompatibilityResult(status);
+
+      if (status.supportsNestedWorkers &&
+          status.canAccessOpfs &&
+          status.supportsSharedArrayBuffers) {
+        availableImplementations.add(WasmStorageImplementation.opfsLocks);
+      }
+
+      if (status.supportsIndexedDb) {
+        availableImplementations.add(WasmStorageImplementation.unsafeIndexedDb);
+      }
+    } else {
+      missingFeatures.add(MissingBrowserFeature.dedicatedWorkers);
+    }
+  }
+}
+
+final class _ProbeResult extends WasmProbeResult {
+  @override
+  final List<WasmStorageImplementation> availableStorages;
+
+  @override
+  final List<(DatabaseLocation, String)> existingDatabases;
+
+  @override
+  final Set<MissingBrowserFeature> missingFeatures;
+
+  final WasmDatabaseOpener2 opener;
+
+  _ProbeResult(
+    this.availableStorages,
+    this.existingDatabases,
+    this.missingFeatures,
+    this.opener,
+  );
+
+  @override
+  Future<DatabaseConnection> open(
+      WasmStorageImplementation implementation, String name,
+      {FutureOr<Uint8List?> Function()? initializeDatabase}) async {
+    // TODO: implement open
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteDatabase(
+      DatabaseLocation implementation, String name) async {
+    // TODO: implement deleteDatabase
+    throw UnimplementedError();
+  }
+}
+
 class WasmDatabaseOpener {
   final Uri sqlite3WasmUri;
   final Uri driftWorkerUri;
@@ -104,7 +222,7 @@ class WasmDatabaseOpener {
     } else if (_existsInOpfs &&
         (availableImplementations
                 .contains(WasmStorageImplementation.opfsShared) ||
-            availableImplementations
+            availableImplementatioobjectns
                 .contains(WasmStorageImplementation.opfsLocks))) {
       availableImplementations.removeWhere((element) =>
           element != WasmStorageImplementation.opfsShared &&
