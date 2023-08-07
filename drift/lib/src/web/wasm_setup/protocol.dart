@@ -103,7 +103,8 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
 
     final List<(DatabaseLocation, String)> existingDatabases;
     if (asList.length > 5) {
-      existingDatabases = EncodeLocations.readFromJs(asList[5] as JsArray);
+      existingDatabases =
+          EncodeLocations.readFromJs(asList[5] as List<dynamic>);
     } else {
       existingDatabases = const [];
     }
@@ -300,7 +301,7 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
 }
 
 extension EncodeLocations on List<(DatabaseLocation, String)> {
-  static List<(DatabaseLocation, String)> readFromJs(JsArray object) {
+  static List<(DatabaseLocation, String)> readFromJs(List<Object?> object) {
     final existing = <(DatabaseLocation, String)>[];
 
     for (final entry in object) {
