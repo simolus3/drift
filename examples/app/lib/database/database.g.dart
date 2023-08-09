@@ -650,15 +650,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         readsFrom: {
           todoEntries,
           categories,
-        }).map((QueryRow row) {
-      return CategoriesWithCountResult(
-        id: row.readNullable<int>('id'),
-        name: row.readNullable<String>('name'),
-        color: NullAwareTypeConverter.wrapFromSql(
-            $CategoriesTable.$convertercolor, row.readNullable<int>('color')),
-        amount: row.read<int>('amount'),
-      );
-    });
+        }).map((QueryRow row) => CategoriesWithCountResult(
+          id: row.readNullable<int>('id'),
+          name: row.readNullable<String>('name'),
+          color: NullAwareTypeConverter.wrapFromSql(
+              $CategoriesTable.$convertercolor, row.readNullable<int>('color')),
+          amount: row.read<int>('amount'),
+        ));
   }
 
   Selectable<SearchResult> _search(String query) {
@@ -671,12 +669,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
           textEntries,
           todoEntries,
           categories,
-        }).asyncMap((QueryRow row) async {
-      return SearchResult(
-        todos: await todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
-        cat: await categories.mapFromRowOrNull(row, tablePrefix: 'nested_1'),
-      );
-    });
+        }).asyncMap((QueryRow row) async => SearchResult(
+          todos: await todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
+          cat: await categories.mapFromRowOrNull(row, tablePrefix: 'nested_1'),
+        ));
   }
 
   @override
