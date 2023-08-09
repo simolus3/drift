@@ -161,6 +161,10 @@ class WasmDatabase extends DelegatedDatabase {
   /// with that name exists in IndexedDb and whether it is a drift database.
   /// Drift is always able to list databases stored in OPFS, regardless of
   /// whether [databaseName] is passed or not.
+  ///
+  /// Note that this method is only fully supported when using the drift worker
+  /// shipped with the drift 2.11 release. Older workers are only supported when
+  /// [databaseName] is non-null.
   static Future<WasmProbeResult> probe({
     required Uri sqlite3Uri,
     required Uri driftWorkerUri,

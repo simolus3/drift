@@ -182,6 +182,10 @@ abstract interface class WasmProbeResult {
   ///
   /// This method should not be called while a connection to the database is
   /// opened.
+  ///
+  /// This method is only supported when using the drift worker shipped with the
+  /// drift 2.11 release or later. This method will not work when using an older
+  /// worker.
   Future<void> deleteDatabase(ExistingDatabase database);
 }
 
