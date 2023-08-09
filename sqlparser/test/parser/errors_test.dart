@@ -1,6 +1,8 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   test('WITH without following statement', () {
     expectError('WITH foo AS (SELECT * FROM bar)',
@@ -12,7 +14,7 @@ void main() {
       expectError('SELECT replace(a, b, c);', [
         isParsingError(
           message: contains('Did you mean to call a function?'),
-          lexeme: 'replace',
+          span: 'replace',
         ),
       ]);
     });
@@ -21,14 +23,22 @@ void main() {
       expectError('SELECT group FROM foo;', [
         isParsingError(
           message: contains('Did you mean to use it as a column?'),
-          lexeme: 'group',
+          span: 'group',
         ),
       ]);
 
       expectError('CREATE TABLE x (table TEXT NOT NULL, foo INTEGER);', [
         isParsingError(
           message: 'Expected a column name (got keyword TABLE)',
-          lexeme: 'table',
+          span: 'table',
+        ),
+      ]);
+    });
+
+    test('recovers from invalid comma after table reference', () {
+      expectError('SELECT * FROM table_name,', [
+        isParsingError(
+          message: 'Expected a table name or a nested select statement',
         ),
       ]);
     });
@@ -39,18 +49,4 @@ void expectError(String sql, errorsMatcher) {
   final parsed = SqlEngine().parse(sql);
 
   expect(parsed.errors, errorsMatcher);
-}
-
-TypeMatcher<ParsingError> isParsingError({message, lexeme}) {
-  var matcher = isA<ParsingError>();
-
-  if (lexeme != null) {
-    matcher = matcher.having((e) => e.token.lexeme, 'token.lexeme', lexeme);
-  }
-
-  if (message != null) {
-    matcher = matcher.having((e) => e.message, 'message', message);
-  }
-
-  return matcher;
 }

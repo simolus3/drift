@@ -62,7 +62,12 @@ class Parser {
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens[_current];
-  Token get _peekNext => tokens[_current + 1];
+  Token? get _peekNext {
+    if (_isAtEnd) return null;
+
+    return tokens[_current + 1];
+  }
+
   Token get _previous => tokens[_current - 1];
 
   bool _match(Iterable<TokenType> types) {
@@ -96,14 +101,14 @@ class Parser {
   /// "NOT" followed by [type]. Does not consume any tokens.
   bool _checkWithNot(TokenType type) {
     if (_check(type)) return true;
-    if (_check(TokenType.not) && _peekNext.type == type) return true;
+    if (_check(TokenType.not) && _peekNext?.type == type) return true;
     return false;
   }
 
   /// Like [_checkWithNot], but with more than one token type.
   bool _checkAnyWithNot(List<TokenType> types) {
     if (types.any(_check)) return true;
-    if (_check(TokenType.not) && types.contains(_peekNext.type)) return true;
+    if (_check(TokenType.not) && types.contains(_peekNext?.type)) return true;
     return false;
   }
 
@@ -866,7 +871,7 @@ class Parser {
     if (_peek is KeywordToken) {
       // Improve error messages for possible function calls, https://github.com/simolus3/drift/discussions/2277
       if (tokens.length > _current + 1 &&
-          _peekNext.type == TokenType.leftParen) {
+          _peekNext?.type == TokenType.leftParen) {
         _error(
           'Expected an expression here, but got a reserved keyword. Did you '
           'mean to call a function? Try wrapping the keyword in double quotes.',
@@ -1346,6 +1351,7 @@ class Parser {
     // Can either be a list of <TableOrSubquery> or a join. Joins also start
     // with a TableOrSubquery, so let's first parse that.
     final start = _tableOrSubquery();
+
     // parse join, if there is one
     return _joinClause(start) ?? start;
   }
@@ -1399,7 +1405,7 @@ class Parser {
     final joins = <Join>[];
 
     while (operator != null) {
-      final first = _peekNext;
+      final first = _peek;
 
       final subquery = _tableOrSubquery();
       final constraint = _joinConstraint();
@@ -2786,10 +2792,8 @@ class Parser {
 
     DeferrableClause? deferrable;
     if (_checkWithNot(TokenType.deferrable)) {
-      final first = _peekNext;
-
-      final not = _matchOne(TokenType.not);
-      _consume(TokenType.deferrable);
+      final not = _matchOneAndGet(TokenType.not);
+      final deferrableToken = _consume(TokenType.deferrable);
 
       InitialDeferrableMode? mode;
       if (_matchOne(TokenType.initially)) {
@@ -2802,7 +2806,8 @@ class Parser {
         }
       }
 
-      deferrable = DeferrableClause(not, mode)..setSpan(first, _previous);
+      deferrable = DeferrableClause(not != null, mode)
+        ..setSpan(not ?? deferrableToken, _previous);
     }
 
     return ForeignKeyClause(
