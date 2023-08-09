@@ -48,11 +48,11 @@ class DedicatedDriftWorker {
         final existingServer = _servers.servers[dbName];
 
         var indexedDbExists = false, opfsExists = false;
-        final existingDatabases = <(DatabaseLocation, String)>[];
+        final existingDatabases = <ExistingDatabase>[];
 
         if (supportsOpfs) {
           for (final database in await opfsDatabases()) {
-            existingDatabases.add((DatabaseLocation.opfs, database));
+            existingDatabases.add((WebStorageApi.opfs, database));
 
             if (database == dbName) {
               opfsExists = true;
@@ -83,6 +83,22 @@ class DedicatedDriftWorker {
         final worker = await VfsWorker.create(options);
         self.postMessage(true);
         await worker.start();
+      case DeleteDatabase(database: (final storage, final name)):
+        try {
+          switch (storage) {
+            case WebStorageApi.indexedDb:
+              await deleteDatabaseInIndexedDb(name);
+            case WebStorageApi.opfs:
+              await deleteDatabaseInOpfs(name);
+          }
+
+          // Send the request back to indicate a successful delete.
+          message.sendToClient(self);
+        } catch (e) {
+          WorkerError(e.toString()).sendToClient(self);
+        }
+
+        break;
       default:
         break;
     }

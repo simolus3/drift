@@ -108,11 +108,11 @@ class WasmDatabase extends DelegatedDatabase {
     for (final (location, name) in probed.existingDatabases) {
       if (name == databaseName) {
         final implementationsForStorage = switch (location) {
-          DatabaseLocation.indexedDb => const [
+          WebStorageApi.indexedDb => const [
               WasmStorageImplementation.sharedIndexedDb,
               WasmStorageImplementation.unsafeIndexedDb
             ],
-          DatabaseLocation.opfs => const [
+          WebStorageApi.opfs => const [
               WasmStorageImplementation.opfsShared,
               WasmStorageImplementation.opfsLocks,
             ],

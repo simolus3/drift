@@ -30,6 +30,7 @@ sealed class WasmInitializationMessage {
         DedicatedWorkerCompatibilityResult.fromJsPayload(payload!),
       SharedWorkerCompatibilityResult.type =>
         SharedWorkerCompatibilityResult.fromJsPayload(payload!),
+      DeleteDatabase.type => DeleteDatabase.fromJsPayload(payload!),
       _ => throw ArgumentError('Unknown type $type'),
     };
   }
@@ -62,7 +63,7 @@ sealed class CompatibilityResult extends WasmInitializationMessage {
   /// This list is only reported by the drift worker shipped with drift 2.11.
   /// When an older worker is used, only [indexedDbExists] and [opfsExists] can
   /// be used to check whether the database exists.
-  final List<(DatabaseLocation, String)> existingDatabases;
+  final List<ExistingDatabase> existingDatabases;
 
   final bool indexedDbExists;
   final bool opfsExists;
@@ -101,7 +102,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
     final asList = payload as List;
     final asBooleans = asList.cast<bool>();
 
-    final List<(DatabaseLocation, String)> existingDatabases;
+    final List<ExistingDatabase> existingDatabases;
     if (asList.length > 5) {
       existingDatabases =
           EncodeLocations.readFromJs(asList[5] as List<dynamic>);
@@ -251,7 +252,7 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
   });
 
   factory DedicatedWorkerCompatibilityResult.fromJsPayload(Object payload) {
-    final existingDatabases = <(DatabaseLocation, String)>[];
+    final existingDatabases = <ExistingDatabase>[];
 
     if (hasProperty(payload, 'existing')) {
       existingDatabases
@@ -300,13 +301,51 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
   }
 }
 
-extension EncodeLocations on List<(DatabaseLocation, String)> {
-  static List<(DatabaseLocation, String)> readFromJs(List<Object?> object) {
-    final existing = <(DatabaseLocation, String)>[];
+final class StartFileSystemServer extends WasmInitializationMessage {
+  static const type = 'StartFileSystemServer';
+
+  final WorkerOptions sqlite3Options;
+
+  StartFileSystemServer(this.sqlite3Options);
+
+  factory StartFileSystemServer.fromJsPayload(Object payload) {
+    return StartFileSystemServer(payload as WorkerOptions);
+  }
+
+  @override
+  void sendTo(PostMessage sender) {
+    sender.sendTyped(type, sqlite3Options);
+  }
+}
+
+final class DeleteDatabase extends WasmInitializationMessage {
+  static const type = 'DeleteDatabase';
+
+  final ExistingDatabase database;
+
+  DeleteDatabase(this.database);
+
+  factory DeleteDatabase.fromJsPayload(Object payload) {
+    final asList = payload as List<Object?>;
+    return DeleteDatabase((
+      WebStorageApi.byName[asList[0] as String]!,
+      asList[1] as String,
+    ));
+  }
+
+  @override
+  void sendTo(PostMessage sender) {
+    sender.sendTyped(type, [database.$1.name, database.$2]);
+  }
+}
+
+extension EncodeLocations on List<ExistingDatabase> {
+  static List<ExistingDatabase> readFromJs(List<Object?> object) {
+    final existing = <ExistingDatabase>[];
 
     for (final entry in object) {
       existing.add((
-        DatabaseLocation.byName[getProperty(entry as Object, 'l')]!,
+        WebStorageApi.byName[getProperty(entry as Object, 'l')]!,
         getProperty(entry, 'n'),
       ));
     }
@@ -325,23 +364,6 @@ extension EncodeLocations on List<(DatabaseLocation, String)> {
     }
 
     return existing;
-  }
-}
-
-final class StartFileSystemServer extends WasmInitializationMessage {
-  static const type = 'StartFileSystemServer';
-
-  final WorkerOptions sqlite3Options;
-
-  StartFileSystemServer(this.sqlite3Options);
-
-  factory StartFileSystemServer.fromJsPayload(Object payload) {
-    return StartFileSystemServer(payload as WorkerOptions);
-  }
-
-  @override
-  void sendTo(PostMessage sender) {
-    sender.sendTyped(type, sqlite3Options);
   }
 }
 

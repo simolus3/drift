@@ -29,6 +29,18 @@ void main() {
     initializationMode = InitializationMode.values.byName(arg!);
     return true;
   });
+  _addCallbackForWebDriver('delete_database', (arg) async {
+    final result = await WasmDatabase.probe(
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+    );
+
+    final decoded = json.decode(arg!);
+
+    await result.deleteDatabase(
+      (WebStorageApi.byName[decoded[0] as String]!, decoded[1] as String),
+    );
+  });
 
   document.getElementById('selfcheck')?.onClick.listen((event) async {
     print('starting');
@@ -104,6 +116,7 @@ Future<String> _detectImplementations(String? _) async {
   return json.encode({
     'impls': result.availableStorages.map((r) => r.name).toList(),
     'missing': result.missingFeatures.map((r) => r.name).toList(),
+    'existing': result.existingDatabases.map((r) => [r.$1.name, r.$2]).toList(),
   });
 }
 

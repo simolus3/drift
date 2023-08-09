@@ -82,11 +82,17 @@ enum WasmStorageImplementation {
   inMemory,
 }
 
-enum DatabaseLocation {
+/// The storage API used by drift to store a database.
+enum WebStorageApi {
+  /// The database is stored in the origin-private section of the user's file
+  /// system via the FileSystem Access API.
   opfs,
+
+  /// The database is stored in IndexedDb.
   indexedDb;
 
-  static final byName = DatabaseLocation.values.asNameMap();
+  /// Cached [EnumByName.asNameMap] for [values].
+  static final byName = WebStorageApi.values.asNameMap();
 }
 
 /// An enumeration of features not supported by the current browsers.
@@ -127,8 +133,20 @@ enum MissingBrowserFeature {
   sharedArrayBuffers,
 }
 
-typedef ExistingDatabase = (DatabaseLocation, String);
+/// Information about an existing web database, consisting of its
+/// storage API ([WebStorageApi]) and its name.
+typedef ExistingDatabase = (WebStorageApi, String);
 
+/// The result of probing the current browser for wasm compatibility.
+///
+/// This reports available storage implementations ([availableStorages]) and
+/// [missingFeatures] that contributed to some storage implementations not being
+/// available.
+///
+/// In addition, [existingDatabases] reports a list of existing databases. Note
+/// that databases stored in IndexedDb can't be listed reliably. Only databases
+/// with the name given in [WasmDatabase.probe] are listed. Databases stored in
+/// OPFS are always listed.
 abstract interface class WasmProbeResult {
   /// All available [WasmStorageImplementation]s supported by the current
   /// browsing context.
@@ -150,13 +168,21 @@ abstract interface class WasmProbeResult {
   /// Missing browser features limit the available storage implementations.
   Set<MissingBrowserFeature> get missingFeatures;
 
+  /// Opens a connection to a database via the chosen [implementation].
+  ///
+  /// When this database doesn't exist, [initializeDatabase] is invoked to
+  /// optionally return the initial bytes of the database.
   Future<DatabaseConnection> open(
     WasmStorageImplementation implementation,
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
   });
 
-  Future<void> deleteDatabase(DatabaseLocation implementation, String name);
+  /// Deletes an [ExistingDatabase] from storage.
+  ///
+  /// This method should not be called while a connection to the database is
+  /// opened.
+  Future<void> deleteDatabase(ExistingDatabase database);
 }
 
 /// The result of opening a WASM database with default options.

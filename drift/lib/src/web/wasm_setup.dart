@@ -23,6 +23,7 @@ import 'package:sqlite3/wasm.dart';
 
 import 'broadcast_stream_queries.dart';
 import 'channel.dart';
+import 'wasm_setup/shared.dart';
 import 'wasm_setup/protocol.dart';
 
 /// Whether the `crossOriginIsolated` JavaScript property is true in the current
@@ -46,10 +47,9 @@ class WasmDatabaseOpener {
   final List<WasmStorageImplementation> availableImplementations = [
     WasmStorageImplementation.inMemory,
   ];
-  final Set<(DatabaseLocation, String)> existingDatabases = {};
+  final Set<ExistingDatabase> existingDatabases = {};
 
-  MessagePort? _sharedWorker;
-  Worker? _dedicatedWorker;
+  _DriftWorker? _sharedWorker, _dedicatedWorker;
 
   WasmDatabaseOpener(
     this.sqlite3WasmUri,
@@ -78,10 +78,10 @@ class WasmDatabaseOpener {
       // database name and can interpret the opfsExists and indexedDbExists
       // fields we're getting from older workers accordingly.
       if (result.opfsExists) {
-        existingDatabases.add((DatabaseLocation.opfs, databaseName));
+        existingDatabases.add((WebStorageApi.opfs, databaseName));
       }
       if (result.indexedDbExists) {
-        existingDatabases.add((DatabaseLocation.indexedDb, databaseName));
+        existingDatabases.add((WebStorageApi.indexedDb, databaseName));
       }
     }
   }
@@ -96,7 +96,7 @@ class WasmDatabaseOpener {
     try {
       await _probeDedicated();
     } on Object {
-      _dedicatedWorker?.terminate();
+      _dedicatedWorker?.close();
       _dedicatedWorker = null;
     }
 
@@ -106,14 +106,11 @@ class WasmDatabaseOpener {
 
   Future<void> _probeDedicated() async {
     if (supportsWorkers) {
-      final dedicatedWorker =
-          _dedicatedWorker = Worker(driftWorkerUri.toString());
-      _createCompatibilityCheck().sendToWorker(dedicatedWorker);
+      final dedicatedWorker = _dedicatedWorker =
+          _DriftWorker.dedicated(Worker(driftWorkerUri.toString()));
+      _createCompatibilityCheck().sendTo(dedicatedWorker.send);
 
-      final workerMessages = StreamQueue(
-          _readMessages(dedicatedWorker.onMessage, dedicatedWorker.onError));
-
-      final status = await workerMessages.nextNoError
+      final status = await dedicatedWorker.workerMessages.nextNoError
           as DedicatedWorkerCompatibilityResult;
 
       _handleCompatibilityResult(status);
@@ -136,16 +133,13 @@ class WasmDatabaseOpener {
     if (supportsSharedWorkers) {
       final sharedWorker =
           SharedWorker(driftWorkerUri.toString(), 'drift worker');
-      final port = _sharedWorker = sharedWorker.port!;
-
-      final sharedMessages =
-          StreamQueue(_readMessages(port.onMessage, sharedWorker.onError));
+      final port = sharedWorker.port!;
+      final shared = _sharedWorker = _DriftWorker.shared(sharedWorker, port);
 
       // First, the shared worker will tell us which features it supports.
       _createCompatibilityCheck().sendToPort(port);
-      final sharedFeatures =
-          await sharedMessages.nextNoError as SharedWorkerCompatibilityResult;
-      await sharedMessages.cancel();
+      final sharedFeatures = await shared.workerMessages.nextNoError
+          as SharedWorkerCompatibilityResult;
 
       _handleCompatibilityResult(sharedFeatures);
 
@@ -164,12 +158,50 @@ class WasmDatabaseOpener {
   }
 }
 
+final class _DriftWorker {
+  final AbstractWorker worker;
+
+  /// The message port to communicate with the worker, if it's a shared worker.
+  final MessagePort? portForShared;
+
+  final StreamQueue<WasmInitializationMessage> workerMessages;
+
+  _DriftWorker.dedicated(Worker this.worker)
+      : portForShared = null,
+        workerMessages =
+            StreamQueue(_readMessages(worker.onMessage, worker.onError));
+
+  _DriftWorker.shared(SharedWorker this.worker, this.portForShared)
+      : workerMessages =
+            StreamQueue(_readMessages(worker.port!.onMessage, worker.onError));
+
+  void send(Object? msg, [List<Object>? transfer]) {
+    switch (worker) {
+      case final Worker worker:
+        worker.postMessage(msg, transfer);
+      case SharedWorker():
+        portForShared!.postMessage(msg, transfer);
+    }
+  }
+
+  void close() {
+    workerMessages.cancel();
+
+    switch (worker) {
+      case final Worker dedicated:
+        dedicated.terminate();
+      case SharedWorker():
+        portForShared!.close();
+    }
+  }
+}
+
 final class _ProbeResult implements WasmProbeResult {
   @override
   final List<WasmStorageImplementation> availableStorages;
 
   @override
-  final List<(DatabaseLocation, String)> existingDatabases;
+  final List<ExistingDatabase> existingDatabases;
 
   @override
   final Set<MissingBrowserFeature> missingFeatures;
@@ -208,16 +240,12 @@ final class _ProbeResult implements WasmProbeResult {
     switch (implementation) {
       case WasmStorageImplementation.opfsShared:
       case WasmStorageImplementation.sharedIndexedDb:
-        // These are handled by the shared worker, so we can close the dedicated
-        // worker used for feature detection.
-        dedicatedWorker?.terminate();
-        message.sendToPort(sharedWorker!);
+        // Forward connection request to shared worker.
+        message.sendTo(sharedWorker!.send);
       case WasmStorageImplementation.opfsLocks:
       case WasmStorageImplementation.unsafeIndexedDb:
-        sharedWorker?.close();
-
         if (dedicatedWorker != null) {
-          message.sendToWorker(dedicatedWorker);
+          message.sendTo(dedicatedWorker.send);
         } else {
           // Workers seem to be broken, but we don't need them with this storage
           // mode.
@@ -291,10 +319,21 @@ final class _ProbeResult implements WasmProbeResult {
   }
 
   @override
-  Future<void> deleteDatabase(
-      DatabaseLocation implementation, String name) async {
-    // TODO: implement deleteDatabase
-    throw UnimplementedError();
+  Future<void> deleteDatabase(ExistingDatabase database) async {
+    switch (database.$1) {
+      case WebStorageApi.indexedDb:
+        await deleteDatabaseInIndexedDb(database.$2);
+      case WebStorageApi.opfs:
+        final dedicated = opener._dedicatedWorker;
+        if (dedicated != null) {
+          DeleteDatabase(database).sendTo(dedicated.send);
+
+          await dedicated.workerMessages.nextNoError;
+        } else {
+          throw StateError(
+              'No dedicated worker available to delete OPFS database');
+        }
+    }
   }
 }
 
