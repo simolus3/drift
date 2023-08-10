@@ -1,7 +1,7 @@
 ---
 data:
   title: Getting started
-  description: Simple guide to get a drift project up and running
+  description: Simple guide to get a drift project up and running.
   weight: 1
   hide_section_index: true
 template: layouts/docs/list
@@ -9,12 +9,15 @@ aliases:
   - /getting-started/  # Used to have this url
 ---
 
-_Note:_ If you prefer a tutorial video, Reso Coder has made a detailed video explaining
-how to get started. You can watch it [here](https://youtu.be/zpWsedYMczM).
+In addition to this document, other resources on how to use drift also exist.
+For instance, [this playlist](https://www.youtube.com/watch?v=8ESbEFC0z5Y&list=PLztm2TugcV9Tn6J_H5mtxYIBN40uMAZgO)
+or [this older video by Reso Coder](https://www.youtube.com/watch?v=zpWsedYMczM&t=281s) might be for you
+if you prefer a tutorial video.
 
-A complete cross-platform Flutter app using drift is also available [here](https://github.com/simolus3/drift/tree/develop/examples/app).
+If you want to look at an example app instead, a cross-platform Flutter app using drift is available
+[as part of the drift repository](https://github.com/simolus3/drift/tree/develop/examples/app).
 
-## Adding the dependency
+## Project setup
 
 {% include "partials/dependencies" %}
 
@@ -38,9 +41,23 @@ examples. Otherwise, the generator won't be able to know what's going on.
 Drift integrates with Dart's `build` system, so you can generate all the code needed with
 `dart run build_runner build`. If you want to continuously rebuild the generated code
 where you change your code, run `dart run build_runner watch` instead.
-After running either command once, drift's generator will have created a class for your
-database and data classes for your entities. To use it, change the `MyDatabase` class
-defined in the earlier snippet as follows:
+After running either command, drift's generator will have created the following classes for
+you:
+
+1. The `_$MyDatabase` class that your database is defined to extend. It provides access to all
+   tables and core drift APIs.
+2. A data class, `Todo` (for `Todos`) and `Category` (for `Categories`) for each table. It is
+   used to hold the result of selecting rows from the table.
+3. A class which drift calls a "companion" class (`TodosCompanion` and `CategoriesCompanion`
+   in this example here).
+   These classes are used to write inserts and updates into the table. These classes make drift
+   a great match for Dart's null safety feature: In a data class, columns (including those using
+   auto-incremented integers) can be non-nullable since they're coming from a select.
+   Since you don't know the value before running an insert though, the companion class makes these
+   columns optional.
+
+With the generated code in place, the database can be opened by passing a connection to the superclass,
+like this:
 
 {% include "blocks/snippet" snippets = snippets name = "open" %}
 
@@ -73,9 +90,7 @@ to know to write selects, updates and inserts in drift!
 {% endblock %}
 
 - The articles on [writing queries]({{ 'writing_queries.md' | pageUrl }}) and [Dart tables]({{ 'advanced_dart_tables.md' | pageUrl }}) introduce important concepts of the Dart API used to write queries.
-- The setup shown here uses the `sqlite3` package to run queries synchronously on the main isolate.
- With a bit of additional setup, drift can transparently run in a background isolate without
- you having to adapt your query code. See [Isolates]({{ '../Advanced Features/isolates.md' | pageUrl }}) for more on that.
+- You can use the same drift database on multiple isolates concurrently - see [Isolates]({{ '../Advanced Features/isolates.md' | pageUrl }}) for more on that.
 - Drift has excellent support for custom SQL statements, including a static analyzer and code-generation tools. See [Getting started with sql]({{ 'starting_with_sql.md' | pageUrl }})
   or [Using SQL]({{ '../Using SQL/index.md' | pageUrl }}) for everything there is to know about using drift's SQL-based APIs.
 - Something to keep in mind for later: When you change the schema of your database and write migrations, drift can help you make sure they're
