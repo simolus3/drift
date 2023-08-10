@@ -48,4 +48,9 @@ void main() {
       });
     });
   });
+
+  test('substr', () {
+    expect(expression.substr(10), generates('SUBSTR(col, 10)'));
+    expect(expression.substr(10, 2), generates('SUBSTR(col, 10, 2)'));
+  });
 }

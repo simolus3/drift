@@ -128,6 +128,21 @@ extension StringExpressionOperators on Expression<String> {
   Expression<String> trimRight() {
     return FunctionCallExpression('RTRIM', [this]);
   }
+
+  /// Calls the [`substr`](https://sqlite.org/lang_corefunc.html#substr)
+  /// function on this string.
+  ///
+  /// Note that the function has different semantics than the [String.substring]
+  /// method for Dart strings - for instance, the [start] index starts at one
+  /// and [length] can be negative to return a section of the string before
+  /// [start].
+  Expression<String> substr(int start, [int? length]) {
+    return FunctionCallExpression('SUBSTR', [
+      this,
+      Constant<int>(start),
+      if (length != null) Constant<int>(length),
+    ]);
+  }
 }
 
 /// A `text LIKE pattern` expression that will be true if the first expression

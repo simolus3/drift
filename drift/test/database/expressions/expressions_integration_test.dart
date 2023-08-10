@@ -123,6 +123,10 @@ void main() {
         const literal = Constant('  hello world    ');
         expect(eval(literal.trimRight()), completion('  hello world'));
       });
+
+      test('substring', () {
+        expect(eval(Constant('hello world').substr(7)), completion('world'));
+      });
     });
 
     test('coalesce', () async {
