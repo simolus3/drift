@@ -105,6 +105,7 @@ class DriftWebDriver {
       ({
         Set<WasmStorageImplementation> storages,
         Set<MissingBrowserFeature> missingFeatures,
+        List<ExistingDatabase> existing,
       })> probeImplementations() async {
     final rawResult = await driver
         .executeAsync('detectImplementations("", arguments[0])', []);
@@ -119,6 +120,13 @@ class DriftWebDriver {
         for (final entry in result['missing'])
           MissingBrowserFeature.values.byName(entry)
       },
+      existing: <ExistingDatabase>[
+        for (final entry in result['existing'])
+          (
+            WebStorageApi.byName[entry[0] as String]!,
+            entry[1] as String,
+          ),
+      ],
     );
   }
 
@@ -148,5 +156,11 @@ class DriftWebDriver {
     if (result != true) {
       throw 'Could not set initialization mode';
     }
+  }
+
+  Future<void> deleteDatabase(WebStorageApi storageApi, String name) async {
+    await driver.executeAsync('delete_database(arguments[0], arguments[1])', [
+      json.encode([storageApi.name, name]),
+    ]);
   }
 }

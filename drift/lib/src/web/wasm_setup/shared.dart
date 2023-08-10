@@ -87,7 +87,7 @@ Future<bool> checkIndexedDbExists(String databaseName) async {
   try {
     final idb = getProperty<IdbFactory>(globalThis, 'indexedDB');
 
-    await idb.open(
+    final database = await idb.open(
       databaseName,
       // Current schema version used by the [IndexedDbFileSystem]
       version: 1,
@@ -100,6 +100,7 @@ Future<bool> checkIndexedDbExists(String databaseName) async {
     );
 
     indexedDbExists ??= true;
+    database.close();
   } catch (_) {
     // May throw due to us aborting in the upgrade callback.
   }
@@ -107,10 +108,53 @@ Future<bool> checkIndexedDbExists(String databaseName) async {
   return indexedDbExists ?? false;
 }
 
+/// Deletes a database from IndexedDb if supported.
+Future<void> deleteDatabaseInIndexedDb(String databaseName) async {
+  final idb = window.indexedDB;
+  if (idb != null) {
+    await idb.deleteDatabase(databaseName);
+  }
+}
+
 /// Constructs the path used by drift to store a database in the origin-private
 /// section of the agent's file system.
 String pathForOpfs(String databaseName) {
   return 'drift_db/$databaseName';
+}
+
+/// Collects all drift OPFS databases.
+Future<List<String>> opfsDatabases() async {
+  final storage = storageManager;
+  if (storage == null) return const [];
+
+  var directory = await storage.directory;
+  try {
+    directory = await directory.getDirectory('drift_db');
+  } on Object {
+    // The drift_db folder doesn't exist, so there aren't any databases.
+    return const [];
+  }
+
+  return [
+    await for (final entry in directory.list())
+      if (entry.isDirectory) entry.name,
+  ];
+}
+
+/// Deletes the OPFS folder storing a database with the given [databaseName] if
+/// such folder exists.
+Future<void> deleteDatabaseInOpfs(String databaseName) async {
+  final storage = storageManager;
+  if (storage == null) return;
+
+  var directory = await storage.directory;
+  try {
+    directory = await directory.getDirectory('drift_db');
+    await directory.removeEntry(databaseName, recursive: true);
+  } on Object {
+    // fine, an error probably means that the database didn't exist in the first
+    // place.
+  }
 }
 
 /// Manages drift servers.
@@ -132,7 +176,8 @@ class DriftServerController {
 
         final vfs = await switch (message.storage) {
           WasmStorageImplementation.opfsShared =>
-            SimpleOpfsFileSystem.loadFromStorage(message.databaseName),
+            SimpleOpfsFileSystem.loadFromStorage(
+                pathForOpfs(message.databaseName)),
           WasmStorageImplementation.opfsLocks =>
             _loadLockedWasmVfs(message.databaseName),
           WasmStorageImplementation.unsafeIndexedDb ||
@@ -171,7 +216,7 @@ class DriftServerController {
   Future<WasmVfs> _loadLockedWasmVfs(String databaseName) async {
     // Create SharedArrayBuffers to synchronize requests
     final options = WasmVfs.createOptions(
-      root: 'drift_db/$databaseName/',
+      root: pathForOpfs(databaseName),
     );
     final worker = Worker(Uri.base.toString());
 

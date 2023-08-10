@@ -4,6 +4,8 @@
 /// integration tests on a Dart VM (`extras/integration_tests/web_wasm`).
 library;
 
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 
 /// The storage implementation used by the `drift` and `sqlite3` packages to
@@ -80,6 +82,19 @@ enum WasmStorageImplementation {
   inMemory,
 }
 
+/// The storage API used by drift to store a database.
+enum WebStorageApi {
+  /// The database is stored in the origin-private section of the user's file
+  /// system via the FileSystem Access API.
+  opfs,
+
+  /// The database is stored in IndexedDb.
+  indexedDb;
+
+  /// Cached [EnumByName.asNameMap] for [values].
+  static final byName = WebStorageApi.values.asNameMap();
+}
+
 /// An enumeration of features not supported by the current browsers.
 ///
 /// While this information may not be useful to end users, it can be used to
@@ -118,8 +133,64 @@ enum MissingBrowserFeature {
   sharedArrayBuffers,
 }
 
-/// The result of opening a WASM database.
-class WasmDatabaseResult {
+/// Information about an existing web database, consisting of its
+/// storage API ([WebStorageApi]) and its name.
+typedef ExistingDatabase = (WebStorageApi, String);
+
+/// The result of probing the current browser for wasm compatibility.
+///
+/// This reports available storage implementations ([availableStorages]) and
+/// [missingFeatures] that contributed to some storage implementations not being
+/// available.
+///
+/// In addition, [existingDatabases] reports a list of existing databases. Note
+/// that databases stored in IndexedDb can't be listed reliably. Only databases
+/// with the name given in [WasmDatabase.probe] are listed. Databases stored in
+/// OPFS are always listed.
+abstract interface class WasmProbeResult {
+  /// All available [WasmStorageImplementation]s supported by the current
+  /// browsing context.
+  ///
+  /// Depending on the features available in the browser your app runs on and
+  /// whether your app is served with the required headers for shared array
+  /// buffers, different implementations might be available.
+  ///
+  /// You can see the [WasmStorageImplementation]s and
+  /// [the web documentation](https://drift.simonbinder.eu/web/#storages) to
+  /// learn more about which implementations drift can use.
+  List<WasmStorageImplementation> get availableStorages;
+
+  /// For every storage found, drift also reports existing drift databases.
+  List<ExistingDatabase> get existingDatabases;
+
+  /// An enumeration of missing browser features probed by drift.
+  ///
+  /// Missing browser features limit the available storage implementations.
+  Set<MissingBrowserFeature> get missingFeatures;
+
+  /// Opens a connection to a database via the chosen [implementation].
+  ///
+  /// When this database doesn't exist, [initializeDatabase] is invoked to
+  /// optionally return the initial bytes of the database.
+  Future<DatabaseConnection> open(
+    WasmStorageImplementation implementation,
+    String name, {
+    FutureOr<Uint8List?> Function()? initializeDatabase,
+  });
+
+  /// Deletes an [ExistingDatabase] from storage.
+  ///
+  /// This method should not be called while a connection to the database is
+  /// opened.
+  ///
+  /// This method is only supported when using the drift worker shipped with the
+  /// drift 2.11 release or later. This method will not work when using an older
+  /// worker.
+  Future<void> deleteDatabase(ExistingDatabase database);
+}
+
+/// The result of opening a WASM database with default options.
+final class WasmDatabaseResult {
   /// The drift database connection to pass to the [GeneratedDatabase.new]
   /// constructor of your database class to use the opened database.
   final DatabaseConnection resolvedExecutor;

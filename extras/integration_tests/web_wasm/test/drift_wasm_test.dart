@@ -118,6 +118,29 @@ void main() {
             }
           });
 
+          if (entry != WasmStorageImplementation.inMemory) {
+            test('delete', () async {
+              final impl = await driver.probeImplementations();
+              expect(impl.existing, isEmpty);
+
+              await driver.openDatabase(entry);
+              await driver.insertIntoDatabase();
+              await driver.waitForTableUpdate();
+
+              await driver.driver.refresh(); // Reset JS state
+
+              final newImpls = await driver.probeImplementations();
+              expect(newImpls.existing, hasLength(1));
+              final existing = newImpls.existing[0];
+              await driver.deleteDatabase(existing.$1, existing.$2);
+
+              await driver.driver.refresh();
+
+              final finalImpls = await driver.probeImplementations();
+              expect(finalImpls.existing, isEmpty);
+            });
+          }
+
           group(
             'initialization from ',
             () {
