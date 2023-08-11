@@ -5,9 +5,10 @@
   expressions.
 - Add the `substr` extension on `Expression<String>` to call the sqlite3 function from
   the Dart API.
-- Add `isolateSetup` to `NativeDatabase.createInBackground()` to override libraries.
+- Add `isolateSetup` to `NativeDatabase.createInBackground()` to override native libraries
+  or perform other database-unrelated setup work.
 - Add `WasmDatabase.probe()`, a method probing for available implementations and existing
-  databases without opening one directly.
+  databases on the web without opening one directly.
 
 ## 2.10.0
 

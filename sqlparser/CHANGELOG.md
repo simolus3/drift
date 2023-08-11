@@ -1,4 +1,4 @@
-## 0.31.0-dev
+## 0.31.0
 
 - Add `SqlEngine.parseMultiple` to parse multiple statements into one AST.
 
