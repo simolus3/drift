@@ -2061,7 +2061,8 @@ class Parser {
       return _createView();
     }
 
-    return null;
+    _error(
+        'Expected a TABLE, TRIGGER, INDEX or VIEW to be defined after the CREATE keyword.');
   }
 
   /// Parses a `CREATE TABLE` statement, assuming that the `CREATE` token has

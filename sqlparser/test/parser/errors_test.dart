@@ -9,6 +9,16 @@ void main() {
         [isParsingError(message: contains('to follow this WITH clause'))]);
   });
 
+  test('CREATE without following statement', () {
+    expectError('CREATE', [
+      isParsingError(message: contains('after the CREATE keyword')),
+    ]);
+
+    expectError('create from table_name', [
+      isParsingError(message: contains('after the CREATE keyword')),
+    ]);
+  });
+
   group('when using keywords', () {
     test('for function calls', () {
       expectError('SELECT replace(a, b, c);', [
