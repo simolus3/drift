@@ -51,7 +51,7 @@ class DriftDiscover extends Builder {
                 'kind': entry.kind.name,
                 'name': entry.ownId.name,
                 if (entry is DiscoveredDartElement)
-                  'dart_name:': entry.dartElement.name,
+                  'dart_name': entry.dartElement.name,
               }
           ]
         }),
@@ -88,6 +88,10 @@ class DriftAnalyzer extends Builder {
     final results = await driver.resolveElements(buildStep.inputId.uri);
     var hadWarnings = false;
 
+    // The discovery builder is just here to accelerate builds and doesn't
+    // print errors found during discovery. To ensure that we're starting a
+    // fresh discovery run here, call it explicitly.
+    await driver.discoverIfNecessary(results);
     for (final parseError in results.errorsDuringDiscovery) {
       log.warning(parseError.toString());
       hadWarnings = true;

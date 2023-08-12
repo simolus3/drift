@@ -331,7 +331,7 @@ class MyRow {
 '''))
       },
       result.dartOutputs,
-      result,
+      result.writer,
     );
   });
 
@@ -391,7 +391,7 @@ getTest WITH TestCustom:
           '          testTwoText: row.read<String>(\'test_two_text\'),\n'
           '        ));\n'
           '  }')),
-    }, result.dartOutputs, result);
+    }, result.dartOutputs, result.writer);
   });
 
   test('generates correct code for variables in LIST subquery', () async {
@@ -439,7 +439,7 @@ failQuery:
         ));
   }
 '''))
-    }, outputs.dartOutputs, outputs);
+    }, outputs.dartOutputs, outputs.writer);
   });
 
   test('supports Dart component in HAVING', () async {
@@ -523,7 +523,7 @@ class ADrift extends i1.ModularAccessor {
             ));
   }
 }'''))
-    }, outputs.dartOutputs, outputs);
+    }, outputs.dartOutputs, outputs.writer);
   });
 
   test('creates dialect-specific query code', () async {

@@ -44,7 +44,7 @@ foo: SELECT foo FROM my_table;
             contains(r'i2.MyTable.$converterfoo'),
           ),
         )
-      }, result.dartOutputs, result);
+      }, result.dartOutputs, result.writer);
     });
   });
 
@@ -86,6 +86,6 @@ class Database {}
     );
 '''),
       ))
-    }, result.dartOutputs, result);
+    }, result.dartOutputs, result.writer);
   }, skip: requireDart('3.0.0-dev'));
 }

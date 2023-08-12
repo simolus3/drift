@@ -1,3 +1,8 @@
+## 2.11.1-dev
+
+- Reduce the amount of assets read by drift, improving build performance and enabling faster
+  incremental rebuilds.
+
 ## 2.11.0
 
 - [Nested result columns](https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results)

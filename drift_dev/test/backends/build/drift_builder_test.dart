@@ -47,7 +47,7 @@ class Database {}
         'foo|lib/a.drift.dart': decodedMatches(contains('// @dart=2.13')),
       },
       writer.dartOutputs,
-      writer,
+      writer.writer,
     );
   });
 }

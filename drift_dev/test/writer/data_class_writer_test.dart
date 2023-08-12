@@ -38,7 +38,7 @@ class Database extends _$Database {}
         'a|lib/main.drift.dart': _GeneratesConstDataClasses(
           {'User', 'UsersCompanion'},
         ),
-      }, writer.dartOutputs, writer);
+      }, writer.dartOutputs, writer.writer);
     },
     tags: 'analyzer',
   );
@@ -87,7 +87,7 @@ class Database extends _$Database {}
     );
   }
 ''')),
-      }, writer.dartOutputs, writer);
+      }, writer.dartOutputs, writer.writer);
     },
     tags: 'analyzer',
   );
@@ -120,7 +120,7 @@ class Database extends _$Database {}
         'a|lib/main.drift.dart': decodedMatches(contains(r'''
   static JsonTypeConverter2<Priority, String, String> $converterpriority =
       const EnumNameConverter<Priority>(Priority.values);''')),
-      }, writer.dartOutputs, writer);
+      }, writer.dartOutputs, writer.writer);
     },
     tags: 'analyzer',
   );
@@ -173,7 +173,7 @@ mixin PostsToColumns implements i1.Insertable<i2.Post> {
   }
 }
 ''')),
-    }, writer.dartOutputs, writer);
+    }, writer.dartOutputs, writer.writer);
   });
 
   test('generates correct fromJson for nullable converters', () async {
@@ -210,7 +210,7 @@ class MyTable extends Table {
           .fromJson(serializer.fromJson<String?>(json['invoiceContact'])),
     );
   }''')),
-    }, result.dartOutputs, result);
+    }, result.dartOutputs, result.writer);
   });
 }
 

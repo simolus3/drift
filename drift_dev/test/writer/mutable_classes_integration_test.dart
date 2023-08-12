@@ -41,7 +41,7 @@ class Database extends _$Database {}
         ),
       },
       writer.dartOutputs,
-      writer,
+      writer.writer,
     );
   }, tags: 'analyzer');
 }

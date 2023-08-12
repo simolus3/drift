@@ -1,3 +1,5 @@
+import 'package:analyzer/dart/element/element.dart';
+
 import '../results/element.dart';
 import 'state.dart';
 
@@ -5,9 +7,11 @@ import 'state.dart';
 ///
 /// At the moment, the cache is not set up to handle changing files.
 class DriftAnalysisCache {
-  final Map<Uri, CachedSerializationResult> serializationCache = {};
+  final Map<Uri, CachedSerializationResult?> serializationCache = {};
   final Map<Uri, FileState> knownFiles = {};
   final Map<DriftElementId, DriftElementKind> discoveredElements = {};
+
+  final Map<Uri, LibraryElement?> typeHelperLibraries = {};
 
   FileState stateForUri(Uri uri) {
     return knownFiles[uri] ?? notifyFileChanged(uri);

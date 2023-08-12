@@ -9,7 +9,7 @@ void main() {
     final logger = Logger.detached('driftBuild');
 
     expect(logger.onRecord, neverEmits(anything));
-    final writer = await emulateDriftBuild(
+    final build = await emulateDriftBuild(
       inputs: {
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
@@ -37,7 +37,7 @@ sql:
       logger: logger,
     );
 
-    checkOutputs(
+    build.checkDartOutputs(
       {
         'a|lib/a.drift.dart': decodedMatches(
           contains('''
@@ -68,8 +68,6 @@ extension DefineFunctions on i3.CommonDatabase {
         ),
         'a|lib/queries.drift.dart': anything,
       },
-      writer.dartOutputs,
-      writer,
     );
   });
 }
