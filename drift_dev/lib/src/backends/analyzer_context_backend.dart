@@ -152,6 +152,40 @@ class AnalysisContextBackend extends DriftBackend {
   }
 
   @override
+  Future<Element?> resolveTopLevelElement(
+      Uri context, String reference, Iterable<Uri> imports) async {
+    // Create a fake file next to the content
+    final path = _pathOfUri(context)!;
+    final pathContext = provider.pathContext;
+    final pathForTemp = pathContext.join(
+        pathContext.dirname(path), 'moor_temp_${imports.hashCode}.dart');
+
+    final content = StringBuffer();
+    for (final import in imports) {
+      content.writeln('import "$import";');
+    }
+
+    provider.setOverlay(
+      pathForTemp,
+      content: content.toString(),
+      modificationStamp: DateTime.now().millisecondsSinceEpoch,
+    );
+
+    try {
+      final result =
+          await this.context.currentSession.getResolvedLibrary(pathForTemp);
+
+      if (result is ResolvedLibraryResult) {
+        return result.element.scope.lookup(reference).getter;
+      }
+    } finally {
+      provider.removeOverlay(path);
+    }
+
+    return null;
+  }
+
+  @override
   Uri resolveUri(Uri base, String uriString) {
     final resolved = base.resolve(uriString);
     final uriConverter = context.currentSession.uriConverter;

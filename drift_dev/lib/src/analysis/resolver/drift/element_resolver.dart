@@ -67,19 +67,8 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
         // are available.
         .followedBy([AnnotatedDartCode.dartCore]);
 
-    for (final import in dartImports) {
-      LibraryElement library;
-      try {
-        library = await resolver.driver.backend.readDart(import);
-      } on NotALibraryException {
-        continue;
-      }
-
-      final foundElement = library.exportNamespace.get(identifier);
-      if (foundElement != null) return foundElement;
-    }
-
-    return null;
+    return await resolver.driver.backend
+        .resolveTopLevelElement(file.ownUri, identifier, dartImports);
   }
 
   /// Resolves [identifier] to a Dart element declaring a type, or reports an

@@ -89,11 +89,12 @@ class KnownDriftTypes {
   }
 
   static Future<KnownDriftTypes> resolve(DriftAnalysisDriver driver) async {
-    final library = await driver.backend
-        .readDart(Uri.parse('package:drift/src/drift_dev_helper.dart'));
+    final library = await driver.backend.readDart(uri);
 
     return KnownDriftTypes._fromLibrary(library);
   }
+
+  static final Uri uri = Uri.parse('package:drift/src/drift_dev_helper.dart');
 }
 
 Expression? returnExpressionOfMethod(MethodDeclaration method) {
