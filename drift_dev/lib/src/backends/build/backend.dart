@@ -126,11 +126,14 @@ class BuildCacheReader implements AnalysisResultCacheReader {
       return CachedDiscoveryResults(
         results['valid_import'] as bool,
         [for (final import in rawImports) Uri.parse(import as String)],
-        {
+        [
           for (final element in rawElements)
-            (element['name'] as String):
-                DriftElementKind.byName[element['kind']]!,
-        },
+            ExistingDriftElement(
+              ownId: DriftElementId(uri, element['name'] as String),
+              kind: DriftElementKind.byName[element['kind']]!,
+              dartElementName: element['dart_name'] as String?,
+            ),
+        ],
       );
     }
 

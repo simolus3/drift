@@ -40,19 +40,16 @@ class FileState {
     return analyzedElements.any((e) => e is BaseDriftAccessor);
   }
 
-  Iterable<(DriftElementId, DriftElementKind)> get definedElements sync* {
+  Iterable<ExistingDriftElement> get definedElements {
     final discovery = this.discovery;
     final cached = cachedDiscovery;
 
     if (discovery != null) {
-      for (final element in discovery.locallyDefinedElements) {
-        yield (element.ownId, element.kind);
-      }
+      return discovery.locallyDefinedElements;
     } else if (cached != null) {
-      for (final MapEntry(:key, :value)
-          in cached.locallyDefinedElements.entries) {
-        yield (id(key), value);
-      }
+      return cached.locallyDefinedElements;
+    } else {
+      return const Iterable.empty();
     }
   }
 
@@ -114,7 +111,7 @@ class FileState {
 class CachedDiscoveryResults {
   final bool isValidImport;
   final List<Uri> imports;
-  final Map<String, DriftElementKind> locallyDefinedElements;
+  final List<ExistingDriftElement> locallyDefinedElements;
 
   CachedDiscoveryResults(
     this.isValidImport,
@@ -187,8 +184,30 @@ class UnknownFile extends DiscoveredFileState {
   UnknownFile() : super(const []);
 }
 
-abstract class DiscoveredElement {
+class ExistingDriftElement {
   final DriftElementId ownId;
+  final DriftElementKind kind;
+
+  /// When this element was defined via a Dart class, the name of that class.
+  ///
+  /// Together with the [DriftElementId.libraryUri] of the [id], this can be
+  /// used to find the Drift element for an [Element] without resolving all
+  /// available imports multiple times.
+  final String? dartElementName;
+
+  ExistingDriftElement({
+    required this.ownId,
+    required this.kind,
+    this.dartElementName,
+  });
+}
+
+/// Information about the syntax of a known drift element which can be used to
+/// fully resolve it.
+abstract class DiscoveredElement implements ExistingDriftElement {
+  @override
+  final DriftElementId ownId;
+  @override
   DriftElementKind get kind;
 
   DiscoveredElement(this.ownId);

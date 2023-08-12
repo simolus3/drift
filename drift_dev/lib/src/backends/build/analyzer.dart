@@ -6,6 +6,7 @@ import 'package:package_config/package_config.dart';
 
 import '../../analysis/driver/driver.dart';
 import '../../analysis/options.dart';
+import '../../analysis/resolver/intermediate_state.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
@@ -49,6 +50,8 @@ class DriftDiscover extends Builder {
               {
                 'kind': entry.kind.name,
                 'name': entry.ownId.name,
+                if (entry is DiscoveredDartElement)
+                  'dart_name:': entry.dartElement.name,
               }
           ]
         }),

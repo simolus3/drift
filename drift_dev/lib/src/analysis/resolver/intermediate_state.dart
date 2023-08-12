@@ -12,6 +12,9 @@ class DiscoveredDriftElement<AST extends AstNode> extends DiscoveredElement {
   @override
   final DriftElementKind kind;
 
+  @override
+  String? get dartElementName => null;
+
   DiscoveredDriftElement(super.ownId, this.kind, this.sqlNode);
 }
 
@@ -24,6 +27,9 @@ typedef DiscoveredDriftStatement = DiscoveredDriftElement<DeclaredStatement>;
 abstract class DiscoveredDartElement<DE extends Element>
     extends DiscoveredElement {
   final DE dartElement;
+
+  @override
+  String? get dartElementName => dartElement.name;
 
   DiscoveredDartElement(super.ownId, this.dartElement);
 }

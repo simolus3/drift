@@ -140,14 +140,12 @@ class DriftResolver {
       DriftElementId owner, Element element) async {
     final uri = await driver.backend.uriOfDart(element.library!);
     final state = driver.cache.stateForUri(uri);
-    await driver.discoverIfNecessary(driver.cache.stateForUri(uri));
 
-    final discovered = state.discovery?.locallyDefinedElements
-        .whereType<DiscoveredDartElement>()
-        .firstWhereOrNull((c) => c.dartElement == element);
+    final existing = state.definedElements.firstWhereOrNull(
+        (existing) => existing.dartElementName == element.name);
 
-    if (discovered != null) {
-      return resolveReferencedElement(owner, discovered.ownId);
+    if (existing != null) {
+      return resolveReferencedElement(owner, existing.ownId);
     } else {
       return InvalidReferenceResult(
         InvalidReferenceError.noElementWichSuchName,
@@ -170,7 +168,7 @@ class DriftResolver {
     for (final available in driver.cache.crawl(file)) {
       final localElementIds = {
         ...available.analysis.keys,
-        ...available.definedElements.map((e) => e.$1),
+        ...available.definedElements.map((e) => e.ownId),
       };
 
       for (final definedLocally in localElementIds) {

@@ -140,7 +140,7 @@ class DriftAnalysisDriver {
 
     final cachedImports = cache.serializationCache[state.ownUri]?.cachedImports;
     if (cachedImports != null && state.discovery == null) {
-      state.cachedDiscovery ??= CachedDiscoveryResults(true, cachedImports, {});
+      state.cachedDiscovery ??= CachedDiscoveryResults(true, cachedImports, []);
 
       for (final import in cachedImports) {
         final found = cache.stateForUri(import);
@@ -191,7 +191,7 @@ class DriftAnalysisDriver {
       if (cached == null && reader.findsLocalElementsReliably) {
         // There are no locally defined elements, since otherwise the reader
         // would have found them.
-        cached = CachedDiscoveryResults(false, const [], const {});
+        cached = CachedDiscoveryResults(false, const [], const []);
       }
     }
 

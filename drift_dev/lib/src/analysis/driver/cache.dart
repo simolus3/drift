@@ -29,8 +29,8 @@ class DriftAnalysisCache {
   void knowsLocalElements(FileState state) {
     discoveredElements.removeWhere((key, _) => key.libraryUri == state.ownUri);
 
-    for (final (id, kind) in state.definedElements) {
-      discoveredElements[id] = kind;
+    for (final defined in state.definedElements) {
+      discoveredElements[defined.ownId] = defined.kind;
     }
   }
 
