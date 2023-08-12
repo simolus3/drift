@@ -19,7 +19,12 @@ class PhysicalDriftDriver {
 
   PhysicalDriftDriver(this.driver, this._backend);
 
-  Uri uriFromPath(String path) => _backend.provider.pathContext.toUri(path);
+  Uri uriFromPath(String path) {
+    final pathUri = _backend.provider.pathContext.toUri(path);
+
+    // Normalize to package URI if necessary.
+    return _backend.resolveUri(pathUri, '');
+  }
 
   Future<FileState> analyzeElementsForPath(String path) {
     return driver.resolveElements(uriFromPath(path));
