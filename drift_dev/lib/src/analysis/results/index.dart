@@ -28,6 +28,9 @@ class DriftIndex extends DriftSchemaElement {
   });
 
   @override
+  DriftElementKind get kind => DriftElementKind.dbIndex;
+
+  @override
   String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
 
   @override

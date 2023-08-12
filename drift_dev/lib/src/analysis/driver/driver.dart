@@ -107,7 +107,7 @@ class DriftAnalysisDriver {
     final reader = cacheReader;
     if (reader == null) return null;
 
-    final found = await reader.readCacheFor(uri);
+    final found = await reader.readElementCacheFor(uri);
     if (found == null) return null;
 
     final parsed = json.decode(found) as Map<String, Object?>;
@@ -140,7 +140,8 @@ class DriftAnalysisDriver {
 
     final cachedImports = cache.serializationCache[state.ownUri]?.cachedImports;
     if (cachedImports != null && state.discovery == null) {
-      state.cachedImports = cachedImports;
+      state.cachedDiscovery ??= CachedDiscoveryResults(true, cachedImports, {});
+
       for (final import in cachedImports) {
         final found = cache.stateForUri(import);
 
@@ -156,51 +157,91 @@ class DriftAnalysisDriver {
     return allRecovered;
   }
 
-  /// Runs the first step (element discovery) on a file with the given [uri].
-  Future<FileState> prepareFileForAnalysis(
-    Uri uri, {
-    bool needsDiscovery = true,
+  Future<void> discoverIfNecessary(
+    FileState file, {
     bool warnIfFileDoesntExist = true,
   }) async {
-    var known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
-
-    if (known.discovery == null && needsDiscovery) {
-      await DiscoverStep(this, known)
+    if (file.discovery == null) {
+      await DiscoverStep(this, file)
           .discover(warnIfFileDoesntExist: warnIfFileDoesntExist);
-      cache.postFileDiscoveryResults(known);
+      cache.knowsLocalElements(file);
+    }
+  }
 
-      // todo: Mark elements that need to be analyzed again
+  /// Runs the first step (discovering local elements) on a file with the given
+  /// [uri].
+  Future<FileState> findLocalElements(
+    Uri uri, {
+    bool warnIfFileDoesntExist = true,
+  }) async {
+    final known = cache.knownFiles[uri] ?? cache.notifyFileChanged(uri);
 
-      // To analyze a drift file, we also need to be able to analyze imports.
-      final state = known.discovery;
-      if (state is DiscoveredDriftFile) {
-        for (final import in state.imports) {
-          // todo: We shouldn't unconditionally crawl files like this. The build
-          // backend should emit prepared file results in a previous step which
-          // should be used here.
-          final file = await prepareFileForAnalysis(import.importedUri);
+    if (known.cachedDiscovery != null || known.discovery != null) {
+      // We already know local elements.
+      return known;
+    }
 
-          if (file.discovery?.isValidImport != true) {
-            known.errorsDuringDiscovery.add(
-              DriftAnalysisError.inDriftFile(
-                import.ast,
-                'The imported file, `${import.importedUri}`, does not exist or '
-                "can't be imported.",
-              ),
-            );
-          }
-        }
-      } else if (state is DiscoveredDartLibrary) {
-        for (final import in state.importDependencies) {
-          // We might import a generated file that doesn't exist yet, that
-          // should not be a user-visible error. Users will notice because the
-          // import is reported as an error by the analyzer either way.
-          await prepareFileForAnalysis(import, warnIfFileDoesntExist: false);
-        }
+    // First, try to read cached results.
+    final reader = cacheReader;
+    CachedDiscoveryResults? cached;
+
+    if (reader != null) {
+      cached = await reader.readDiscovery(uri);
+
+      if (cached == null && reader.findsLocalElementsReliably) {
+        // There are no locally defined elements, since otherwise the reader
+        // would have found them.
+        cached = CachedDiscoveryResults(false, const [], const {});
       }
     }
 
+    if (cached != null) {
+      known.cachedDiscovery = cached;
+      cache.knowsLocalElements(known);
+    } else {
+      await discoverIfNecessary(
+        known,
+        warnIfFileDoesntExist: warnIfFileDoesntExist,
+      );
+    }
+
     return known;
+  }
+
+  Future<void> _findLocalElementsInAllImports(FileState known) async {
+    // To analyze references in elements, we also need to know locally defined
+    // elements in all imports.
+    final state = known.discovery;
+    if (state is DiscoveredDriftFile) {
+      for (final import in state.imports) {
+        // todo: We shouldn't unconditionally crawl files like this. The build
+        // backend should emit prepared file results in a previous step which
+        // should be used here.
+        final file = await findLocalElements(import.importedUri);
+
+        if (file.isValidImport != true) {
+          known.errorsDuringDiscovery.add(
+            DriftAnalysisError.inDriftFile(
+              import.ast,
+              'The imported file, `${import.importedUri}`, does not exist or '
+              "can't be imported.",
+            ),
+          );
+        } else {
+          await _findLocalElementsInAllImports(file);
+        }
+      }
+    } else {
+      for (final import in known.imports ?? const <Uri>[]) {
+        await findLocalElements(
+          import,
+          // We might import a generated file that doesn't exist yet, that
+          // should not be a user-visible error. Users will notice because the
+          // import is reported as an error by the analyzer either way.
+          warnIfFileDoesntExist: false,
+        );
+      }
+    }
   }
 
   /// Runs the second analysis step (element analysis) on a file.
@@ -232,8 +273,6 @@ class DriftAnalysisDriver {
   /// necessary work up until that point.
   Future<FileState> resolveElements(Uri uri) async {
     var known = cache.stateForUri(uri);
-    await prepareFileForAnalysis(uri, needsDiscovery: false);
-
     if (known.isFullyAnalyzed) {
       // Well, there's nothing to do now.
       return known;
@@ -247,8 +286,10 @@ class DriftAnalysisDriver {
     }
 
     // We couldn't recover all analyzed elements. Let's run an analysis run
-    // now then.
-    await prepareFileForAnalysis(uri, needsDiscovery: true);
+    // then.
+    await discoverIfNecessary(known);
+    await _findLocalElementsInAllImports(known);
+
     await _analyzePrepared(known);
     return known;
   }
@@ -299,8 +340,19 @@ class DriftAnalysisDriver {
 /// This class is responsible for recovering both assets in a subsequent build-
 /// step.
 abstract class AnalysisResultCacheReader {
+  /// Whether [readDiscovery] only returns `null` when the file under the URI
+  /// is not relevant to drift.
+  bool get findsLocalElementsReliably;
+
+  /// Whether [readElementCacheFor] is guaranteed to return all elements defined
+  /// in the supplied `uri`, or whether it could be that we just didn't analyze
+  /// that file yet.
+  bool get findsResolvedElementsReliably;
+
+  Future<CachedDiscoveryResults?> readDiscovery(Uri uri);
+
   Future<LibraryElement?> readTypeHelperFor(Uri uri);
-  Future<String?> readCacheFor(Uri uri);
+  Future<String?> readElementCacheFor(Uri uri);
 }
 
 /// Thrown by a local element resolver when an element could not be resolved and

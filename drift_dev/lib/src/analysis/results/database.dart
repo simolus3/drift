@@ -66,6 +66,9 @@ class DriftDatabase extends BaseDriftAccessor {
     this.schemaVersion,
     this.accessors = const [],
   });
+
+  @override
+  DriftElementKind get kind => DriftElementKind.database;
 }
 
 /// A Dart class with a similar API to a database, providing a view over a
@@ -86,6 +89,9 @@ class DatabaseAccessor extends BaseDriftAccessor {
     required this.databaseClass,
     required this.ownType,
   });
+
+  @override
+  DriftElementKind get kind => DriftElementKind.databaseAccessor;
 }
 
 /// A query defined on a [BaseDriftAccessor].

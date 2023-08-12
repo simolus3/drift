@@ -208,6 +208,10 @@ class TestBackend extends DriftBackend {
 
   Future<void> dispose() async {}
 
+  Future<FileState> discoverLocalElements(String uriString) {
+    return driver.findLocalElements(Uri.parse(uriString));
+  }
+
   Future<FileState> analyze(String uriString) {
     return driver.fullyAnalyze(Uri.parse(uriString));
   }

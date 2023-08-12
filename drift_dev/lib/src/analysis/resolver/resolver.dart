@@ -114,7 +114,12 @@ class DriftResolver {
       _currentDependencyPath.add(reference);
 
       try {
-        final resolved = await resolveDiscovered(pending);
+        final owningFile = driver.cache.stateForUri(reference.libraryUri);
+        await driver.discoverIfNecessary(owningFile);
+        final discovered = owningFile.discovery!.locallyDefinedElements
+            .firstWhere((e) => e.ownId == reference);
+
+        final resolved = await resolveDiscovered(discovered);
         return ResolvedReferenceFound(resolved);
       } catch (e, s) {
         driver.backend.log.warning('Could not analze $reference', e, s);
@@ -134,7 +139,8 @@ class DriftResolver {
   Future<ResolveReferencedElementResult> resolveDartReference(
       DriftElementId owner, Element element) async {
     final uri = await driver.backend.uriOfDart(element.library!);
-    final state = await driver.prepareFileForAnalysis(uri);
+    final state = driver.cache.stateForUri(uri);
+    await driver.discoverIfNecessary(driver.cache.stateForUri(uri));
 
     final discovered = state.discovery?.locallyDefinedElements
         .whereType<DiscoveredDartElement>()
@@ -164,7 +170,7 @@ class DriftResolver {
     for (final available in driver.cache.crawl(file)) {
       final localElementIds = {
         ...available.analysis.keys,
-        ...?available.discovery?.locallyDefinedElements.map((e) => e.ownId),
+        ...available.definedElements.map((e) => e.$1),
       };
 
       for (final definedLocally in localElementIds) {

@@ -78,6 +78,8 @@ abstract class DriftElement {
   final DriftElementId id;
   final DriftDeclaration declaration;
 
+  DriftElementKind get kind;
+
   /// All elements referenced by this element.
   ///
   /// References include the following:
@@ -102,6 +104,18 @@ abstract class DriftElement {
   }
 
   DriftElement(this.id, this.declaration);
+}
+
+enum DriftElementKind {
+  table,
+  view,
+  dbIndex,
+  trigger,
+  database,
+  databaseAccessor,
+  definedQuery;
+
+  static Map<String, DriftElementKind> byName = values.asNameMap();
 }
 
 abstract class DriftSchemaElement extends DriftElement {

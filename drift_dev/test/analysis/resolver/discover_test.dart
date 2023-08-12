@@ -17,7 +17,7 @@ CREATE VIEW my_view AS SELECT whatever FROM unknown_table;
       });
 
       final uri = Uri.parse('package:a/main.drift');
-      final state = await backend.driver.prepareFileForAnalysis(uri);
+      final state = await backend.driver.findLocalElements(uri);
       final discovered = state.discovery;
 
       DriftElementId id(String name) => DriftElementId(uri, name);
@@ -51,8 +51,7 @@ CREATE TABLE valid_2 (bar INTEGER);
 ''',
       });
 
-      final state = await backend.driver
-          .prepareFileForAnalysis(Uri.parse('package:a/main.drift'));
+      final state = await backend.discoverLocalElements('package:a/main.drift');
       expect(state.errorsDuringDiscovery, [
         isDriftError(contains('Expected a table name')),
       ]);
@@ -72,8 +71,7 @@ CREATE VIEW a AS VALUES(1,2,3);
 ''',
       });
 
-      final state = await backend.driver
-          .prepareFileForAnalysis(Uri.parse('package:a/main.drift'));
+      final state = await backend.discoverLocalElements('package:a/main.drift');
       expect(state.errorsDuringDiscovery, [
         isDriftError(contains('already defines an element named `a`')),
       ]);
@@ -89,8 +87,7 @@ CREATE VIEW a AS VALUES(1,2,3);
           'a|lib/b.drift': "CREATE TABLE foo (bar INTEGER);",
         });
 
-        final state = await backend.driver
-            .prepareFileForAnalysis(Uri.parse('package:a/a.drift'));
+        final state = await backend.discoverLocalElements('package:a/a.drift');
         expect(state, hasNoErrors);
         expect(
           state.discovery,
@@ -100,10 +97,11 @@ CREATE VIEW a AS VALUES(1,2,3);
             [Uri.parse('package:a/b.drift')],
           ),
         );
+
         expect(
           backend.driver.cache.knownFiles[Uri.parse('package:a/b.drift')],
-          isNotNull,
-          reason: 'Import should have been prepared as well',
+          isNull,
+          reason: 'Discovering local elements should not prepare other files',
         );
       });
 
@@ -113,22 +111,8 @@ CREATE VIEW a AS VALUES(1,2,3);
           'a|lib/b.drift': "import 'a.drift';",
         });
 
-        final state = await backend.driver
-            .prepareFileForAnalysis(Uri.parse('package:a/a.drift'));
+        final state = await backend.discoverLocalElements('package:a/a.drift');
         expect(state, hasNoErrors);
-      });
-
-      test('emits warning on invalid import', () async {
-        final backend = TestBackend.inTest({
-          'a|lib/a.drift': "import 'b.drift';",
-        });
-
-        final state = await backend.driver
-            .prepareFileForAnalysis(Uri.parse('package:a/a.drift'));
-        expect(state.errorsDuringDiscovery, [
-          isDriftError(contains(
-              'The imported file, `package:a/b.drift`, does not exist'))
-        ]);
       });
     });
   });
@@ -145,7 +129,7 @@ part 'a.dart';
       });
 
       final uri = Uri.parse('package:a/a.dart');
-      final state = await backend.driver.prepareFileForAnalysis(uri);
+      final state = await backend.driver.findLocalElements(uri);
 
       expect(state, hasNoErrors);
       expect(state.discovery, isA<NotADartLibrary>());
@@ -169,7 +153,7 @@ class Groups extends Table {
       });
 
       final uri = Uri.parse('package:a/a.dart');
-      final state = await backend.driver.prepareFileForAnalysis(uri);
+      final state = await backend.driver.findLocalElements(uri);
 
       expect(state, hasNoErrors);
       expect(
@@ -207,7 +191,7 @@ abstract class BaseRelationTable extends Table {
       });
 
       final uri = Uri.parse('package:a/a.dart');
-      final state = await backend.driver.prepareFileForAnalysis(uri);
+      final state = await backend.driver.findLocalElements(uri);
 
       expect(state, hasNoErrors);
       expect(
@@ -244,8 +228,7 @@ class InvalidGetter extends Table {
       });
 
       for (final source in backend.sourceContents.keys) {
-        final state =
-            await backend.driver.prepareFileForAnalysis(Uri.parse(source));
+        final state = await backend.driver.findLocalElements(Uri.parse(source));
 
         expect(
           state.errorsDuringDiscovery,
@@ -274,8 +257,8 @@ class B extends Table {
 ''',
       });
 
-      final state = await backend.driver
-          .prepareFileForAnalysis(Uri.parse('package:a/a.dart'));
+      final state =
+          await backend.driver.findLocalElements(Uri.parse('package:a/a.dart'));
 
       expect(state.errorsDuringDiscovery, [
         isDriftError(contains('already defines an element named `tbl`')),

@@ -15,7 +15,7 @@ class FileState {
   final Uri ownUri;
 
   DiscoveredFileState? discovery;
-  List<Uri>? cachedImports;
+  CachedDiscoveryResults? cachedDiscovery;
 
   final List<DriftAnalysisError> errorsDuringDiscovery = [];
 
@@ -26,13 +26,34 @@ class FileState {
 
   FileState(this.ownUri);
 
-  Iterable<Uri>? get imports => discovery?.importDependencies ?? cachedImports;
+  bool get isValidImport {
+    return (cachedDiscovery?.isValidImport ?? discovery?.isValidImport) == true;
+  }
+
+  Iterable<Uri>? get imports =>
+      discovery?.importDependencies ?? cachedDiscovery?.imports;
 
   String get extension => url.extension(ownUri.path);
 
   /// Whether this file contains a drift database or a drift accessor / DAO.
   bool get containsDatabaseAccessor {
     return analyzedElements.any((e) => e is BaseDriftAccessor);
+  }
+
+  Iterable<(DriftElementId, DriftElementKind)> get definedElements sync* {
+    final discovery = this.discovery;
+    final cached = cachedDiscovery;
+
+    if (discovery != null) {
+      for (final element in discovery.locallyDefinedElements) {
+        yield (element.ownId, element.kind);
+      }
+    } else if (cached != null) {
+      for (final MapEntry(:key, :value)
+          in cached.locallyDefinedElements.entries) {
+        yield (id(key), value);
+      }
+    }
   }
 
   /// All analyzed [DriftElement]s found in this library.
@@ -88,6 +109,18 @@ class FileState {
       return e._definesQuery;
     });
   }
+}
+
+class CachedDiscoveryResults {
+  final bool isValidImport;
+  final List<Uri> imports;
+  final Map<String, DriftElementKind> locallyDefinedElements;
+
+  CachedDiscoveryResults(
+    this.isValidImport,
+    this.imports,
+    this.locallyDefinedElements,
+  );
 }
 
 abstract class DiscoveredFileState {
@@ -156,6 +189,7 @@ class UnknownFile extends DiscoveredFileState {
 
 abstract class DiscoveredElement {
   final DriftElementId ownId;
+  DriftElementKind get kind;
 
   DiscoveredElement(this.ownId);
 

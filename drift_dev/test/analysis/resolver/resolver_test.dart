@@ -170,4 +170,16 @@ END;
       });
     });
   });
+
+  test('emits warning on invalid import', () async {
+    final backend = TestBackend.inTest({
+      'a|lib/a.drift': "import 'b.drift';",
+    });
+
+    final state = await backend.analyze('package:a/a.drift');
+    expect(state.errorsDuringDiscovery, [
+      isDriftError(
+          contains('The imported file, `package:a/b.drift`, does not exist'))
+    ]);
+  });
 }

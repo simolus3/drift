@@ -4,11 +4,15 @@ import 'package:drift/drift.dart' show DriftView;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../driver/state.dart';
+import '../results/element.dart';
 
 class DiscoveredDriftElement<AST extends AstNode> extends DiscoveredElement {
   final AST sqlNode;
 
-  DiscoveredDriftElement(super.ownId, this.sqlNode);
+  @override
+  final DriftElementKind kind;
+
+  DiscoveredDriftElement(super.ownId, this.kind, this.sqlNode);
 }
 
 typedef DiscoveredDriftTable = DiscoveredDriftElement<TableInducingStatement>;
@@ -25,6 +29,9 @@ abstract class DiscoveredDartElement<DE extends Element>
 }
 
 class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
+  @override
+  DriftElementKind get kind => DriftElementKind.table;
+
   DiscoveredDartTable(super.ownId, super.dartElement);
 }
 
@@ -32,12 +39,20 @@ class DiscoveredDartView extends DiscoveredDartElement<ClassElement> {
   /// The [DriftView] annotation on this class, if there is any.
   DartObject? viewAnnotation;
 
+  @override
+  DriftElementKind get kind => DriftElementKind.view;
+
   DiscoveredDartView(super.ownId, super.dartElement, this.viewAnnotation);
 }
 
 class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {
   final bool isDatabase;
   final DartObject annotation;
+
+  @override
+  DriftElementKind get kind => isAccessor
+      ? DriftElementKind.databaseAccessor
+      : DriftElementKind.database;
 
   bool get isAccessor => !isDatabase;
 

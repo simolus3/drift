@@ -66,6 +66,9 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
     }
   }
 
+  @override
+  DriftElementKind get kind => DriftElementKind.definedQuery;
+
   /// All in-line Dart source code literals embedded into the query.
   final List<String> dartTokens;
 

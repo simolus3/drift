@@ -11,6 +11,52 @@ import '../../writer/writer.dart';
 import 'backend.dart';
 import 'exception.dart';
 
+class DriftDiscover extends Builder {
+  final DriftOptions options;
+
+  DriftDiscover(BuilderOptions options)
+      : options = DriftOptions.fromJson(options.config);
+
+  @override
+  Map<String, List<String>> get buildExtensions => const {
+        '.drift': [
+          '.drift.drift_elements.json',
+        ],
+        '.dart': [
+          '.dart.drift_elements.json',
+        ],
+      };
+
+  @override
+  Future<void> build(BuildStep buildStep) async {
+    final backend = DriftBuildBackend(buildStep);
+    final driver = DriftAnalysisDriver(backend, options);
+
+    final prepared = await driver.findLocalElements(buildStep.inputId.uri);
+    final discovery = prepared.discovery;
+
+    if (discovery != null) {
+      await buildStep.writeAsString(
+        buildStep.allowedOutputs.single,
+        json.encode({
+          'valid_import': discovery.isValidImport,
+          'imports': [
+            for (final import in discovery.importDependencies)
+              import.toString(),
+          ],
+          'elements': [
+            for (final entry in discovery.locallyDefinedElements)
+              {
+                'kind': entry.kind.name,
+                'name': entry.ownId.name,
+              }
+          ]
+        }),
+      );
+    }
+  }
+}
+
 class DriftAnalyzer extends Builder {
   final DriftOptions options;
 
@@ -32,7 +78,9 @@ class DriftAnalyzer extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     final backend = DriftBuildBackend(buildStep);
-    final driver = DriftAnalysisDriver(backend, options);
+    final driver = DriftAnalysisDriver(backend, options)
+      ..cacheReader =
+          BuildCacheReader(buildStep, findsLocalElementsReliably: true);
 
     final results = await driver.resolveElements(buildStep.inputId.uri);
     var hadWarnings = false;

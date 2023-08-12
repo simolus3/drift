@@ -23,7 +23,7 @@ builders:
   # Regular build flow, emitting a shared part file for source_gen to pick up
   drift_dev:
     import: "package:drift_dev/integrations/build.dart"
-    builder_factories: ["analyzer", "driftBuilder"]
+    builder_factories: ["discover", "analyzer", "driftBuilder"]
     build_extensions:
       ".dart": [".drift.g.part", ".dart.drift_module.json"]
       ".drift": [".drift.drift_module.json"]
@@ -54,7 +54,7 @@ builders:
     applies_builders: [":analyzer"]
   analyzer:
     import: "package:drift_dev/integrations/build.dart"
-    builder_factories: ["analyzer"]
+    builder_factories: ["discover", "analyzer"]
     build_extensions:
       ".dart": [".dart.drift_module.json"]
       ".drift": [".drift.drift_module.json"]

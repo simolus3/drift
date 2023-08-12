@@ -7,7 +7,7 @@ import 'state.dart';
 class DriftAnalysisCache {
   final Map<Uri, CachedSerializationResult> serializationCache = {};
   final Map<Uri, FileState> knownFiles = {};
-  final Map<DriftElementId, DiscoveredElement> discoveredElements = {};
+  final Map<DriftElementId, DriftElementKind> discoveredElements = {};
 
   FileState stateForUri(Uri uri) {
     return knownFiles[uri] ?? notifyFileChanged(uri);
@@ -26,15 +26,11 @@ class DriftAnalysisCache {
 
   void notifyFileDeleted(Uri uri) {}
 
-  void postFileDiscoveryResults(FileState state) {
+  void knowsLocalElements(FileState state) {
     discoveredElements.removeWhere((key, _) => key.libraryUri == state.ownUri);
 
-    final discovery = state.discovery;
-    if (discovery != null) {
-      discoveredElements.addAll({
-        for (final definedHere in discovery.locallyDefinedElements)
-          definedHere.ownId: definedHere,
-      });
+    for (final (id, kind) in state.definedElements) {
+      discoveredElements[id] = kind;
     }
   }
 

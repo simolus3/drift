@@ -44,6 +44,7 @@ Future<RecordingAssetWriter> emulateDriftBuild({
   ]);
 
   final stages = [
+    discover(options),
     preparingBuilder(options),
     analyzer(options),
     modularBuild ? modular(options) : driftBuilderNotShared(options),

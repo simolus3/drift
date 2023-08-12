@@ -116,17 +116,17 @@ class DiscoverStep {
 
             imports.add(DriftFileImport(node, uri));
           } else if (node is TableInducingStatement) {
-            pendingElements
-                .add(DiscoveredDriftTable(_id(node.createdName), node));
+            pendingElements.add(DiscoveredDriftTable(
+                _id(node.createdName), DriftElementKind.table, node));
           } else if (node is CreateViewStatement) {
-            pendingElements
-                .add(DiscoveredDriftView(_id(node.createdName), node));
+            pendingElements.add(DiscoveredDriftView(
+                _id(node.createdName), DriftElementKind.view, node));
           } else if (node is CreateIndexStatement) {
-            pendingElements
-                .add(DiscoveredDriftIndex(_id(node.indexName), node));
+            pendingElements.add(DiscoveredDriftIndex(
+                _id(node.indexName), DriftElementKind.dbIndex, node));
           } else if (node is CreateTriggerStatement) {
-            pendingElements
-                .add(DiscoveredDriftTrigger(_id(node.triggerName), node));
+            pendingElements.add(DiscoveredDriftTrigger(
+                _id(node.triggerName), DriftElementKind.trigger, node));
           } else if (node is DeclaredStatement) {
             String name;
 
@@ -137,7 +137,8 @@ class DiscoverStep {
               name = '\$drift_${specialQueryNameCount++}';
             }
 
-            pendingElements.add(DiscoveredDriftStatement(_id(name), node));
+            pendingElements.add(DiscoveredDriftStatement(
+                _id(name), DriftElementKind.definedQuery, node));
           }
         }
 
