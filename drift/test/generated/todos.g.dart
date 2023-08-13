@@ -1287,9 +1287,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
 
 class _$CustomRowClassInsertable implements Insertable<CustomRowClass> {
   CustomRowClass _object;
-
   _$CustomRowClassInsertable(this._object);
-
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     return TableWithoutPKCompanion(
