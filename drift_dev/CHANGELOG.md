@@ -2,6 +2,8 @@
 
 - Reduce the amount of assets read by drift, improving build performance and enabling faster
   incremental rebuilds.
+- Fix missing import references around `@UseRowClass` with `generateInsertable: true` when
+  modular code generation is enabled.
 
 ## 2.11.0
 

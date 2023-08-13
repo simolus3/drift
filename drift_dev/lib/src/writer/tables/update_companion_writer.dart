@@ -223,7 +223,7 @@ class UpdateCompanionWriter {
 
   void _writeToString() {
     overrideToString(
-      _emitter.dartCode(_emitter.companionType(table)),
+      _emitter.companionType(table).toString(),
       [for (final column in columns) column.nameInDart],
       _buffer,
     );
@@ -235,17 +235,31 @@ class UpdateCompanionWriter {
     final info = table.existingRowClass;
     if (info == null) return;
 
-    final rowClass = _emitter.rowClass(table).toString();
-    final rowType = _emitter.dartCode(_emitter.rowType(table));
+    final rowClass = _emitter.rowClass(table);
     final insertableClass = '_\$${rowClass}Insertable';
 
-    _buffer.write('class $insertableClass implements '
-        'Insertable<$rowType> {\n'
-        '$rowType _object;\n\n'
-        '$insertableClass(this._object);\n\n'
-        '@override\n'
-        'Map<String, Expression> toColumns(bool nullToAbsent) {\n'
-        'return $_companionType(\n');
+    _emitter
+      // Class _$RowInsertable implements Insertable<RowClass> {
+      ..write('class $insertableClass implements ')
+      ..writeDriftRef('Insertable')
+      ..write('<')
+      ..writeDart(rowClass)
+      ..writeln('> {')
+      // Field to RowClass and constructor
+      ..writeDart(rowClass)
+      ..writeln(' _object;')
+      ..writeln('$insertableClass(this._object);')
+      // Map<String, Expression> toColumns(bool nullToAbsent) {
+      ..writeln('@override')
+      ..writeUriRef(AnnotatedDartCode.dartCore, 'Map')
+      ..write('<')
+      ..writeUriRef(AnnotatedDartCode.dartCore, 'String')
+      ..write(', ')
+      ..writeUriRef(AnnotatedDartCode.drift, 'Expression')
+      ..write('> toColumns(')
+      ..writeUriRef(AnnotatedDartCode.dartCore, 'bool')
+      ..writeln(' nullToAbsent) {')
+      ..writeln('return $_companionType(');
 
     final columns = info.positionalColumns.followedBy(info.namedColumns.values);
     for (final columnName in columns) {
@@ -254,14 +268,18 @@ class UpdateCompanionWriter {
 
       if (column != null && !column.isGenerated) {
         final dartName = column.nameInDart;
-        _buffer.write('$dartName: Value (_object.$dartName),\n');
+        _emitter
+          ..write('$dartName: ')
+          ..writeDriftRef('Value')
+          ..writeln('(_object.$dartName),');
       }
     }
 
-    _buffer
+    _emitter
       ..write(').toColumns(false);\n}\n}\n\n')
-      ..write('extension ${rowClass}ToInsertable '
-          'on $rowType {')
+      ..write('extension ${rowClass}ToInsertable on ')
+      ..writeDart(rowClass)
+      ..writeln('{')
       ..write('$insertableClass toInsertable() {\n')
       ..write('return $insertableClass(this);\n')
       ..write('}\n}\n');

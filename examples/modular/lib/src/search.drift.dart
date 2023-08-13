@@ -194,7 +194,7 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.SearchInPostsCompanion(')
+    return (StringBuffer('SearchInPostsCompanion(')
           ..write('author: $author, ')
           ..write('content: $content, ')
           ..write('rowid: $rowid')
