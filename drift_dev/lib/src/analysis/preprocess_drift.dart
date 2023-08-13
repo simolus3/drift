@@ -118,6 +118,10 @@ class DriftPreprocessor {
           }
         }
       }
+    } else {
+      // If there aren't any expressions to resolve we don't need to crawl and
+      // just use the direct imports.
+      seenFiles.addAll(queue);
     }
 
     final importedDartFiles =
