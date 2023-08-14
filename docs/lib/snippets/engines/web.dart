@@ -10,8 +10,8 @@ DatabaseConnection connectOnWeb() {
   return DatabaseConnection.delayed(Future(() async {
     final result = await WasmDatabase.open(
       databaseName: 'my_app_db', // prefer to only use valid identifiers here
-      sqlite3Uri: Uri.parse('/sqlite3.wasm'),
-      driftWorkerUri: Uri.parse('/drift_worker.dart.js'),
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
     );
 
     if (result.missingFeatures.isNotEmpty) {
@@ -64,8 +64,8 @@ DatabaseConnection migrateAndConnect() {
     // Then you can migrate like this
     final result = await WasmDatabase.open(
       databaseName: 'my_app',
-      sqlite3Uri: Uri.parse('/sqlite3.wasm'),
-      driftWorkerUri: Uri.parse('/drift_worker.dart.js'),
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
       initializeDatabase: () async {
         // Manually open the file system previously used
         final fs = await IndexedDbFileSystem.open(dbName: 'my_app');
@@ -101,8 +101,8 @@ DatabaseConnection migrateFromLegacy() {
     // #docregion migrate-legacy
     final result = await WasmDatabase.open(
       databaseName: 'my_app',
-      sqlite3Uri: Uri.parse('/sqlite3.wasm'),
-      driftWorkerUri: Uri.parse('/drift_worker.dart.js'),
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
       initializeDatabase: () async {
         final storage = await DriftWebStorage.indexedDbIfSupported('old_db');
         await storage.open();
