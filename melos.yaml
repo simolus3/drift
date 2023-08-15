@@ -11,6 +11,7 @@ packages:
  - extras/benchmarks
  - extras/drift_mariadb
  - extras/drift_postgres
+ - extras/drift_network_bridge
  - extras/encryption
  - extras/integration_tests/*
  - extras/plugin_example
