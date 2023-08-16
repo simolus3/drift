@@ -1,3 +1,8 @@
+## 0.31.1-dev
+
+- Add the `sqlite3_schema` table to the builtin tables supported by every
+  `SqlEngine` instance.
+
 ## 0.31.0
 
 - Add `SqlEngine.parseMultiple` to parse multiple statements into one AST.

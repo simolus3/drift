@@ -156,12 +156,19 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   }
 
   Future<List<DriftElement>> resolveTableReferences(AstNode stmt) async {
-    final references =
-        resolver.driver.newSqlEngine().findReferencedSchemaTables(stmt);
+    final engine = resolver.driver.newSqlEngine();
+    final references = engine.findReferencedSchemaTables(stmt);
     final found = <DriftElement>[];
     final missingNames = <String, ResolveReferencedElementResult>{};
 
     for (final table in references) {
+      // If this is a reference to a table the empty engine already knows, it
+      // must be a table builtin to sqlite3, not a drift reference.
+      if (engine.knownResultSets
+          .any((e) => e.name.toLowerCase() == table.toLowerCase())) {
+        continue;
+      }
+
       final result = await resolver.resolveReference(discovered.ownId, table);
 
       if (result is ResolvedReferenceFound) {

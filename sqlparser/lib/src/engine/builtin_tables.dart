@@ -23,3 +23,12 @@ Table get sqliteMaster {
     resolvedColumns: [type, name, tblName, rootPage, sql],
   );
 }
+
+/// Constructs the "sqlite_schema" table, which is identical to "sqlite_master"
+/// after sqlite version 3.33.0
+Table get sqliteSchema {
+  return Table(
+    name: 'sqlite_schema',
+    resolvedColumns: sqliteMaster.resolvedColumns,
+  );
+}

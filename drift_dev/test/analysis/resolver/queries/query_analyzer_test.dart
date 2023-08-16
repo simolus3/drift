@@ -28,6 +28,20 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
         [DriftSqlType.string, DriftSqlType.bool]);
   });
 
+  test('can read from builtin tables', () async {
+    final state = TestBackend.inTest({
+      'a|lib/main.drift': '''
+testQuery: SELECT * FROM sqlite_schema;
+      ''',
+    });
+
+    final file = await state.analyze('package:a/main.drift');
+    state.expectNoErrors();
+
+    final query = file.fileAnalysis!.resolvedQueries.values.single;
+    expect(query, const TypeMatcher<SqlSelectQuery>());
+  });
+
   test('reads REQUIRED syntax', () async {
     final state = TestBackend.inTest({
       'foo|lib/main.drift': '''

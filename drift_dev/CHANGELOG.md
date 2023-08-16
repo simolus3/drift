@@ -4,6 +4,7 @@
   incremental rebuilds.
 - Fix missing import references around `@UseRowClass` with `generateInsertable: true` when
   modular code generation is enabled.
+- Support references to builtin sqlite3 tables in drift files.
 
 ## 2.11.0
 
