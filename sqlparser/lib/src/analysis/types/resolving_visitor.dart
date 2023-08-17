@@ -578,6 +578,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'sqlite_compileoption_set':
       case 'sqlite_version':
       case 'typeof':
+      case 'timediff':
         return _textType;
       case 'datetime':
         return _textType.copyWith(hint: const IsDateTime(), nullable: true);
@@ -591,6 +592,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'rank':
       case 'dense_rank':
       case 'ntile':
+      case 'octet_length':
         return _intType;
       case 'instr':
       case 'length':
@@ -697,6 +699,19 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           final param = params[i];
           if (param is Expression) {
             visit(param, _expectString);
+            visited.add(param);
+          }
+        }
+      case 'timediff':
+        for (var i = 0; i < min(2, params.length); i++) {
+          final param = params[i];
+          if (param is Expression) {
+            visit(
+                param,
+                const ExactTypeExpectation(ResolvedType(
+                  type: BasicType.text,
+                  hint: IsDateTime(),
+                )));
             visited.add(param);
           }
         }

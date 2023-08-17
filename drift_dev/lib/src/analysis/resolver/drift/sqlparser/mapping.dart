@@ -179,7 +179,7 @@ class TypeConverterHint extends TypeHint {
   TypeConverterHint(this.converter);
 }
 
-class _SimpleColumn extends Column with ColumnWithType {
+class _SimpleColumn extends Column implements ColumnWithType {
   @override
   final String name;
   @override

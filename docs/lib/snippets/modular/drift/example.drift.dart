@@ -248,7 +248,7 @@ class TodosCompanion extends i0.UpdateCompanion<i1.Todo> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.TodosCompanion(')
+    return (StringBuffer('TodosCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
@@ -426,7 +426,7 @@ class CategoriesCompanion extends i0.UpdateCompanion<i1.Category> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.CategoriesCompanion(')
+    return (StringBuffer('CategoriesCompanion(')
           ..write('id: $id, ')
           ..write('description: $description')
           ..write(')'))
