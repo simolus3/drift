@@ -93,7 +93,7 @@ Future<Uint8List?> _initializeDatabase() async {
           .insert(TestTableCompanion.insert(content: 'from old database'));
       await db.close();
 
-      final (file: file, outFlags: _) = fs.xOpen(Sqlite3Filename('app.db'), 0);
+      final (file: file, outFlags: _) = fs.xOpen(Sqlite3Filename('/app.db'), 0);
       final blob = Uint8List(file.xFileSize());
       file.xRead(blob, 0);
       file.xClose();
