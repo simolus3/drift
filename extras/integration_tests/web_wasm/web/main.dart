@@ -11,8 +11,8 @@ import 'package:web_wasm/src/database.dart';
 import 'package:sqlite3/wasm.dart';
 
 const dbName = 'drift_test';
-final sqlite3WasmUri = Uri.parse('/sqlite3.wasm');
-final driftWorkerUri = Uri.parse('/worker.dart.js');
+final sqlite3WasmUri = Uri.parse('sqlite3.wasm');
+final driftWorkerUri = Uri.parse('worker.dart.js');
 
 TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
@@ -82,11 +82,11 @@ Future<Uint8List?> _initializeDatabase() async {
 
       // Let's first open a custom WasmDatabase, the way it would have been
       // done before WasmDatabase.open.
-      final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
+      final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('sqlite3.wasm'));
       final fs = await IndexedDbFileSystem.open(dbName: dbName);
       sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
 
-      final wasmDb = WasmDatabase(sqlite3: sqlite3, path: '/app.db');
+      final wasmDb = WasmDatabase(sqlite3: sqlite3, path: 'app.db');
       final db = TestDatabase(wasmDb);
       await db
           .into(db.testTable)

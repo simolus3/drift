@@ -86,8 +86,8 @@ class Database extends _$Database {
 Future<WasmDatabaseResult> connect() async {
   final result = await WasmDatabase.open(
     databaseName: 'todo_example',
-    sqlite3Uri: Uri.parse('/sqlite3.wasm'),
-    driftWorkerUri: Uri.parse('/drift_worker.dart.js'),
+    sqlite3Uri: Uri.parse('sqlite3.wasm'),
+    driftWorkerUri: Uri.parse('drift_worker.dart.js'),
   );
 
   if (!result.chosenImplementation.fullySupported) {
