@@ -585,7 +585,7 @@ i1.GeneratedColumn<int> _column_17(String aliasedName) =>
     i1.GeneratedColumn<int>('owner', aliasedName, false,
         type: i1.DriftSqlType.int,
         $customConstraints: 'NOT NULL REFERENCES users(id)');
-i1.OnUpgrade stepByStep({
+i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, _S2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, _S3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, _S4 schema) from3To4,
@@ -595,7 +595,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, _S8 schema) from7To8,
   required Future<void> Function(i1.Migrator m, _S9 schema) from8To9,
 }) {
-  return i1.Migrator.stepByStepHelper(step: (currentVersion, database) async {
+  return (currentVersion, database) async {
     switch (currentVersion) {
       case 1:
         final schema = _S2(database: database);
@@ -640,5 +640,27 @@ i1.OnUpgrade stepByStep({
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
-  });
+  };
 }
+
+i1.OnUpgrade stepByStep({
+  required Future<void> Function(i1.Migrator m, _S2 schema) from1To2,
+  required Future<void> Function(i1.Migrator m, _S3 schema) from2To3,
+  required Future<void> Function(i1.Migrator m, _S4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, _S5 schema) from4To5,
+  required Future<void> Function(i1.Migrator m, _S6 schema) from5To6,
+  required Future<void> Function(i1.Migrator m, _S7 schema) from6To7,
+  required Future<void> Function(i1.Migrator m, _S8 schema) from7To8,
+  required Future<void> Function(i1.Migrator m, _S9 schema) from8To9,
+}) =>
+    i0.VersionedSchema.stepByStepHelper(
+        step: migrationSteps(
+      from1To2: from1To2,
+      from2To3: from2To3,
+      from3To4: from3To4,
+      from4To5: from4To5,
+      from5To6: from5To6,
+      from6To7: from6To7,
+      from7To8: from7To8,
+      from8To9: from8To9,
+    ));
