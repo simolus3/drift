@@ -38,8 +38,9 @@ In some browsers, you need to serve your app with [additional headers](#addition
 | Safari (_tested version 16.2_) | Good (slightly slower) | Good (slightly slower) |
 | Safari Technology Preview _(tested 172 (17.0))_ | Full | Good |
 
-Firefox does not support IndexedDB and the FileSystem Access API in private tabs,
-so drift needs to fall back to an in-memory database in that case.
+Firefox currently doesn't support the FileSystem Access API in private browsing windows
+(IndexedDB is supported from version 115). So drift will fall back to an IndexedDb-based
+or an in-memory database in private tabs.
 
 In Chrome on Android, shared workers aren't supported. So if the [headers](#additional-headers) required
 for the preferred API are missing, there unfortunately is no way to prevent data races between tabs,
