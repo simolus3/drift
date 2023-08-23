@@ -44,14 +44,28 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   Set<ResultSetImplementation> get watchedTables => _queriedTables().toSet();
 
   @override
-  Iterable<(Expression<Object>, String)> get _expandedColumns sync* {
-    for (final column in _selectedColumns) {
-      yield (column, _columnAliases[column]!);
-    }
+  Iterable<(Expression<Object>, String)> get _expandedColumns =>
+      _columnsWithName(null);
 
+  Iterable<(Expression<Object>, String)> _columnsWithName(
+      String? generatingForView) sync* {
     for (final table in _queriedTables(true)) {
       for (final column in table.$columns) {
-        yield (column, _nameForTableColumn(column));
+        yield (
+          column,
+          _nameForTableColumn(column, generatingForView: generatingForView)
+        );
+      }
+    }
+
+    for (final column in _selectedColumns) {
+      if (column is GeneratedColumn) {
+        yield (
+          column,
+          _nameForTableColumn(column, generatingForView: generatingForView)
+        );
+      } else {
+        yield (column, _columnAliases[column]!);
       }
     }
   }
@@ -105,31 +119,19 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
   @override
   void writeStartPart(GenerationContext ctx) {
-    // use all columns across all tables as result column for this query
-    _selectedColumns.insertAll(
-        0, _queriedTables(true).expand((t) => t.$columns).cast<Expression>());
-
     ctx.hasMultipleTables = true;
     ctx.buffer
       ..write(_beginOfSelect(distinct))
       ..write(' ');
 
-    for (var i = 0; i < _selectedColumns.length; i++) {
-      if (i != 0) {
+    var first = true;
+    for (final (column, name) in _columnsWithName(ctx.generatingForView)) {
+      if (!first) {
         ctx.buffer.write(', ');
       }
+      first = false;
 
-      final column = _selectedColumns[i];
-      String chosenAlias;
-      if (column is GeneratedColumn) {
-        chosenAlias = _nameForTableColumn(column,
-            generatingForView: ctx.generatingForView);
-      } else {
-        chosenAlias = _columnAliases[column]!;
-      }
-
-      final chosenAliasEscaped = ctx.dialect.escape(chosenAlias);
-
+      final chosenAliasEscaped = ctx.dialect.escape(name);
       column.writeInto(ctx);
       ctx.buffer
         ..write(' AS ')
@@ -292,7 +294,15 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
     final driftRow = QueryRow(row, database);
     return TypedResult(
-        readTables, driftRow, _LazyExpressionMap(_columnAliases, driftRow));
+      readTables,
+      driftRow,
+      _LazyExpressionMap(
+        {
+          for (final (expr, alias) in _expandedColumns) expr: alias,
+        },
+        driftRow,
+      ),
+    );
   }
 
   Future<List<TypedResult>> _mapResponse(List<Map<String, Object?>> rows) {

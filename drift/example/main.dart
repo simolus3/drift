@@ -115,9 +115,14 @@ Future<void> main() async {
   await db.into(db.todoItems).insert(TodoItemsCompanion.insert(
       title: 'Another entry added later', categoryId: categoryId));
 
-  (await db.select(db.customViewName).get()).forEach(print);
-  (await db.select(db.todoCategoryItemCount).get()).forEach(print);
+  final query = db.select(db.todoItems).join([
+    innerJoin(db.todoCategories,
+        db.todoCategories.id.equalsExp(db.todoItems.categoryId))
+  ]);
 
-  // Delete all todo items
-  await db.delete(db.todoItems).go();
+  for (final row in await query.get()) {
+    print('has row');
+    print(row.read(db.todoItems.categoryId));
+    print(row.read(db.todoCategories.name));
+  }
 }
