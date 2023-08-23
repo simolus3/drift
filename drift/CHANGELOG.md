@@ -1,3 +1,8 @@
+## 2.11.1
+
+- Allow using `.read()` for a column added to a join from the table, fixing a
+  regression in drift 2.11.0.
+
 ## 2.11.0
 
 - Add support for subqueries in the Dart query builder.
