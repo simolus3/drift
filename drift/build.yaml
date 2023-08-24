@@ -10,6 +10,8 @@ targets:
     sources:
       exclude:
         - "test/generated/custom_tables.dart"
+    dependencies:
+      - :custom
     builders:
       drift_dev:
         options:
