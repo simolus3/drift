@@ -91,7 +91,6 @@ abstract base class VersionedSchema {
   ///  await customStatement('PRAGMA foreign_keys = ON;');
   /// },
   /// ```
-
   static Future<void> runMigrationSteps({
     required Migrator migrator,
     required int from,

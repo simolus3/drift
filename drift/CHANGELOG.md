@@ -2,6 +2,7 @@
 
 - Allow using `.read()` for a column added to a join from the table, fixing a
   regression in drift 2.11.0.
+- Make step-by-step migrations easier to customize with `Migrator.runMigrationSteps`.
 
 ## 2.11.0
 
