@@ -1,4 +1,4 @@
-## 2.11.1-dev
+## 2.11.1
 
 - Reduce the amount of assets read by drift, improving build performance and enabling faster
   incremental rebuilds.

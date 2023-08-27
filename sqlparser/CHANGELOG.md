@@ -1,9 +1,8 @@
-## 0.31.1-dev
+## 0.31.1
 
 - Add the `sqlite3_schema` table to the builtin tables supported by every
   `SqlEngine` instance.
-- Support the `timediff` and `octet_length` function which will be released in
-  sqlite 3.43.0.
+- Support the `timediff` and `octet_length` functions from sqlite 3.43.0.
 
 ## 0.31.0
 
