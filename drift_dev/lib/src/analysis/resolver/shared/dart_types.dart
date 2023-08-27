@@ -357,9 +357,9 @@ AppliedTypeConverter readEnumConverter(
     }
     builder
       ..addText('<')
-      ..addDartType(dartEnumType)
+      ..addTopLevelElement(dartEnumType.element!)
       ..addText('>(')
-      ..addDartType(dartEnumType)
+      ..addTopLevelElement(dartEnumType.element!)
       ..addText('.values)');
   });
 

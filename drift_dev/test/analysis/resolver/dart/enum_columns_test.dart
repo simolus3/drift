@@ -17,10 +17,15 @@ void main() {
           apple, orange, banana
         }
 
+        enum FruitsWithGeneric<T> {
+          apple, orange, banana
+        }
+
         class NotAnEnum {}
 
         class ValidUsage extends Table {
           IntColumn get intFruit => intEnum<Fruits>()();
+          IntColumn get intFruitsWithGeneric => intEnum<FruitsWithGeneric>()();
           TextColumn get textFruit => textEnum<Fruits>()();
         }
 
