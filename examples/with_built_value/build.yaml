@@ -7,15 +7,17 @@ targets:
       drift_dev:not_shared:
         enabled: true
 
-      # Run built_value_generator when drift is done!
+      # Run built_value_generator when drift is done (so after this target)
       built_value_generator:built_value:
         enabled: false
 
   run_built_value:
-    dependencies: ['with_built_value']
+    dependencies: ['$default']
     builders:
       # Disable all auto-applied builders from drift
       drift_dev:
         enabled: false
       drift_dev:preparing_builder:
+        enabled: false
+      build_resolvers:transitive_digests:
         enabled: false

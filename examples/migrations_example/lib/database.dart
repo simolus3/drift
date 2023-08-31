@@ -11,7 +11,10 @@ part 'database.g.dart';
 /// just use the constant defined in the Flutter SDK.
 const kDebugMode = true;
 
-@DriftDatabase(include: {'tables.drift'})
+@DriftDatabase(
+  tables: [Users],
+  include: {'tables.drift'},
+)
 class Database extends _$Database {
   static const latestSchemaVersion = 9;
 
