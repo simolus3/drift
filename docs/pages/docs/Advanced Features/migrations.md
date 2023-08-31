@@ -246,12 +246,14 @@ void main() {
 In general, a test looks like this:
 
 1. Use `verifier.startAt()` to obtain a [connection](https://drift.simonbinder.eu/api/drift/databaseconnection-class)
-  to a database with an initial schema.
-  This database contains all your tables, indices and triggers from that version, created by using `Migrator.createAll`.
-2. Create your application database with that connection - you can forward the `DatabaseConnection` to the
-  `GeneratedDatabase.connect()` constructor on the parent class for this.
+   to a database with an initial schema.
+   This database contains all your tables, indices and triggers from that version, created by using `Migrator.createAll`.
+2. Create your application database with that connection. For this, create a constructor in your database class that
+   accepts a `QueryExecutor` and forwards it to the super constructor in `GeneratedDatabase`.
+   Then, you can pass the result of calling `newConnection()` to that constructor to create a test instance of your
+   datbaase.
 3. Call `verifier.migrateAndValidate(db, version)`. This will initiate a migration towards the target version (here, `2`).
-  Unlike the database created by `startAt`, this uses the migration logic you wrote for your database.
+   Unlike the database created by `startAt`, this uses the migration logic you wrote for your database.
 
 `migrateAndValidate` will extract all `CREATE` statement from the `sqlite_schema` table and semantically compare them.
 If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fail your test.
@@ -294,7 +296,7 @@ void main() {
     final schema = await verifier.schemaAt(1);
 
     // Add some data to the users table, which only has an id column at v1
-    final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
+    final oldDb = v1.DatabaseAtV1(schema.newConnection());
     await oldDb.into(oldDb.users).insert(const v1.UsersCompanion(id: Value(1)));
     await oldDb.close();
 
@@ -304,7 +306,7 @@ void main() {
     await db.close();
 
     // Make sure the user is still here
-    final migratedDb = v2.DatabaseAtV2.connect(schema.newConnection());
+    final migratedDb = v2.DatabaseAtV2(schema.newConnection());
     final user = await migratedDb.select(migratedDb.users).getSingle();
     expect(user.id, 1);
     expect(user.name, 'no name'); // default from the migration

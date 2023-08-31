@@ -194,7 +194,7 @@ class InitializedSchema {
   ///
   ///   // Insert some data from the view of the old database on an independent
   ///   // connection!
-  ///   final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
+  ///   final oldDb = v1.DatabaseAtV1(schema.newConnection());
   ///   await oldDb.into(oldDb.users).insert(v1.UsersCompanion(id: Value(1)));
   ///   await oldDb.close();
   ///
@@ -204,7 +204,7 @@ class InitializedSchema {
   ///   await dbForMigration.close();
   ///
   ///   // Make sure the user is still here with a new database at v2
-  ///   final checkDb = v2.DatabaseAtV2.connect(schema.newConnection());
+  ///   final checkDb = v2.DatabaseAtV2(schema.newConnection());
   ///   final user = await checkDb.select(checkDb.users).getSingle();
   ///   expect(user.id, 1);
   ///   expect(user.name, 'default name from migration');
