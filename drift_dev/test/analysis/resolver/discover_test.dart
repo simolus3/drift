@@ -94,7 +94,7 @@ CREATE VIEW a AS VALUES(1,2,3);
           isA<DiscoveredDriftFile>().having(
             (e) => e.importDependencies,
             'importDependencies',
-            [Uri.parse('package:a/b.drift')],
+            [(uri: Uri.parse('package:a/b.drift'), transitive: true)],
           ),
         );
 

@@ -431,6 +431,43 @@ class MyDatabase {}
     }, outputs.dartOutputs, outputs.writer);
   });
 
+  test('crawl imports through export', () async {
+    final outputs = await emulateDriftBuild(
+      inputs: {
+        'a|lib/table.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+''',
+        'a|lib/barrel.dart': '''
+export 'table.dart';
+''',
+        'a|lib/database.dart': r'''
+import 'package:drift/drift.dart';
+
+import 'barrel.dart';
+
+@DriftDatabase(tables: [MyTable])
+class AppDatabase extends $AppDatabase {
+  AppDatabase(super.e);
+
+  @override
+  int get schemaVersion => 1;
+}
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/table.drift.dart': anything,
+      'a|lib/database.drift.dart': decodedMatches(contains('myTable')),
+    }, outputs.dartOutputs, outputs.writer);
+  });
+
   test('does not read unecessary files', () async {
     final inputs = <String, String>{
       'a|lib/groups.drift': '''

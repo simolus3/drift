@@ -32,7 +32,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
         file.ownUri,
         code,
         file.discovery!.importDependencies
-            .map((e) => e.toString())
+            .map((e) => e.uri.toString())
             .where((e) => e.endsWith('.dart')),
       );
     } on CannotReadExpressionException catch (e) {
@@ -62,6 +62,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
   Future<Element?> _findInDart(String identifier) async {
     final dartImports = file.discovery!.importDependencies
+        .map((e) => e.uri)
         .where((importUri) => importUri.path.endsWith('.dart'))
         // Also add `dart:core` as a default import so that types like `Record`
         // are available.

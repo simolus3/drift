@@ -157,7 +157,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   final DiscoverStep _discoverStep;
   final LibraryElement _library;
 
-  final List<Uri> imports = [];
+  final List<DriftImport> imports = [];
 
   final TypeChecker _isTable, _isView, _isTableInfo, _isDatabase, _isDao;
 
@@ -237,16 +237,23 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     super.visitClassElement(element);
   }
 
-  @override
-  void visitLibraryImportElement(LibraryImportElement element) {
-    final imported = element.importedLibrary;
-
+  void _handleImportOrExport(LibraryElement? imported, bool isExported) {
     if (imported != null && !imported.isInSdk) {
       _pendingWork.add(Future(() async {
         final uri = await _discoverStep._driver.backend.uriOfDart(imported);
-        imports.add(uri);
+        imports.add((uri: uri, transitive: isExported));
       }));
     }
+  }
+
+  @override
+  void visitLibraryExportElement(LibraryExportElement element) {
+    _handleImportOrExport(element.exportedLibrary, true);
+  }
+
+  @override
+  void visitLibraryImportElement(LibraryImportElement element) {
+    _handleImportOrExport(element.importedLibrary, false);
   }
 
   String _defaultNameForTableOrView(ClassElement definingElement) {

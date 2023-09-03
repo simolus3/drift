@@ -11,6 +11,8 @@ import '../results/query.dart';
 import 'driver.dart';
 import 'error.dart';
 
+typedef DriftImport = ({Uri uri, bool transitive});
+
 class FileState {
   final Uri ownUri;
 
@@ -30,7 +32,7 @@ class FileState {
     return (cachedDiscovery?.isValidImport ?? discovery?.isValidImport) == true;
   }
 
-  Iterable<Uri>? get imports =>
+  Iterable<DriftImport>? get imports =>
       discovery?.importDependencies ?? cachedDiscovery?.imports;
 
   String get extension => url.extension(ownUri.path);
@@ -110,7 +112,7 @@ class FileState {
 
 class CachedDiscoveryResults {
   final bool isValidImport;
-  final List<Uri> imports;
+  final List<DriftImport> imports;
   final List<ExistingDriftElement> locallyDefinedElements;
 
   CachedDiscoveryResults(
@@ -125,7 +127,7 @@ abstract class DiscoveredFileState {
 
   bool get isValidImport => false;
 
-  Iterable<Uri> get importDependencies => const [];
+  Iterable<DriftImport> get importDependencies => const [];
 
   DiscoveredFileState(this.locallyDefinedElements);
 }
@@ -139,7 +141,12 @@ class DiscoveredDriftFile extends DiscoveredFileState {
   bool get isValidImport => true;
 
   @override
-  Iterable<Uri> get importDependencies => imports.map((e) => e.importedUri);
+  Iterable<DriftImport> get importDependencies => imports.map((e) => (
+        uri: e.importedUri,
+        // Imports in drift files are always transitive (visible to files
+        // importing this drift file).
+        transitive: true,
+      ));
 
   DiscoveredDriftFile({
     required this.originalSource,
@@ -160,7 +167,7 @@ class DiscoveredDartLibrary extends DiscoveredFileState {
   final LibraryElement library;
 
   @override
-  final List<Uri> importDependencies;
+  final List<DriftImport> importDependencies;
 
   @override
   bool get isValidImport => true;

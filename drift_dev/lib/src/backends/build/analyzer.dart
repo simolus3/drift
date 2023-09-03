@@ -43,7 +43,10 @@ class DriftDiscover extends Builder {
           'valid_import': discovery.isValidImport,
           'imports': [
             for (final import in discovery.importDependencies)
-              import.toString(),
+              {
+                'uri': import.uri.toString(),
+                'transitive': import.transitive,
+              }
           ],
           'elements': [
             for (final entry in discovery.locallyDefinedElements)

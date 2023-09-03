@@ -150,7 +150,13 @@ class BuildCacheReader implements AnalysisResultCacheReader {
 
       return CachedDiscoveryResults(
         results['valid_import'] as bool,
-        [for (final import in rawImports) Uri.parse(import as String)],
+        [
+          for (final import in rawImports.cast<Map<String, Object?>>())
+            (
+              uri: Uri.parse(import['uri'] as String),
+              transitive: import['transitive'] as bool,
+            )
+        ],
         [
           for (final element in rawElements)
             ExistingDriftElement(

@@ -247,12 +247,11 @@ class DriftAnalysisDriver {
         warnIfFileDoesntExist: true,
       );
 
-      // Drift file imports are transitive, Dart imports aren't.
-      if (file == known.ownUri || fileState.extension == '.drift') {
-        for (final dependency in fileState.imports ?? const <Uri>[]) {
-          if (!seen.contains(dependency)) {
-            pending.add(dependency);
-          }
+      for (final dependency in fileState.imports ?? const <DriftImport>[]) {
+        final considerImport = file == known.ownUri || dependency.transitive;
+
+        if (considerImport && !seen.contains(dependency.uri)) {
+          pending.add(dependency.uri);
         }
       }
     }
@@ -289,7 +288,7 @@ class DriftAnalysisDriver {
     final imports = state.discovery?.importDependencies;
     if (imports != null) {
       data.serializedData['imports'] = [
-        for (final import in imports) import.toString()
+        for (final import in imports) import.uri.toString()
       ];
     }
 

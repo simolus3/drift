@@ -1,3 +1,7 @@
+## 2.11.2-dev
+
+- Follow `export` directives when looking for table imports.
+
 ## 2.11.1
 
 - Reduce the amount of assets read by drift, improving build performance and enabling faster

@@ -62,12 +62,12 @@ class DriftAnalysisCache {
       final found = pending.removeLast();
       yield found;
 
-      for (final imported in found.imports ?? const <Uri>[]) {
+      for (final imported in found.imports ?? const <DriftImport>[]) {
         // We might not have a known file for all imports of a Dart file, since
         // not all imports are drift-related there.
-        final knownImport = knownFiles[imported];
+        final knownImport = knownFiles[imported.uri];
 
-        if (seenUris.add(imported) && knownImport != null) {
+        if (seenUris.add(imported.uri) && knownImport != null) {
           pending.add(knownImport);
         }
       }
