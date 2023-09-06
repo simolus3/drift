@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/extensions/json1.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -239,5 +240,20 @@ void main() {
     ]);
 
     verify(executor.runSelect('SELECT * FROM (SELECT * FROM "todos") s;', []));
+  });
+
+  test('select from table-valued function', () async {
+    final each = db.todosTable.content.jsonEach(db, r'$.foo');
+
+    final query = db
+        .select(db.todosTable)
+        .join([innerJoin(each, each.atom.isNotNull(), useColumns: false)]);
+
+    await query.get();
+
+    verify(executor.runSelect(
+      'SELECT "todos"."id" AS "todos.id", "todos"."title" AS "todos.title", "todos"."content" AS "todos.content", "todos"."target_date" AS "todos.target_date", "todos"."category" AS "todos.category", "todos"."status" AS "todos.status" FROM "todos" INNER JOIN json_each("todos"."content", ?) ON "json_each"."atom" IS NOT NULL;',
+      [r'$.foo'],
+    ));
   });
 }

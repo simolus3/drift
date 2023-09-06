@@ -1,3 +1,8 @@
+## 2.12.0-dev
+
+- Add support for table-valued functions in the Dart query builder.
+- Support `json_each` and `json_tree`.
+
 ## 2.11.1
 
 - Allow using `.read()` for a column added to a join from the table, fixing a

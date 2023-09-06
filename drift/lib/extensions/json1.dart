@@ -53,4 +53,119 @@ extension JsonExtensions on Expression<String> {
       Variable.withString(path),
     ]).dartCast<T>();
   }
+
+  /// Calls the `json_each` table-valued function on `this` string, optionally
+  /// using [path] as the root path.
+  ///
+  /// This can be used to join every element in a JSON structure to a drift
+  /// query.
+  ///
+  /// See also: The [sqlite3 documentation](https://sqlite.org/json1.html#jeach)
+  /// and [JsonTableFunction].
+  JsonTableFunction jsonEach(DatabaseConnectionUser database, [String? path]) {
+    return JsonTableFunction._(database, functionName: 'json_each', arguments: [
+      this,
+      if (path != null) Variable(path),
+    ]);
+  }
+
+  /// Calls the `json_tree` table-valued function on `this` string, optionally
+  /// using [path] as the root path.
+  ///
+  /// This can be used to join every element in a JSON structure to a drift
+  /// query.
+  ///
+  /// See also: The [sqlite3 documentation](https://sqlite.org/json1.html#jeach)
+  /// and [JsonTableFunction].
+  JsonTableFunction jsonTree(DatabaseConnectionUser database, [String? path]) {
+    return JsonTableFunction._(database, functionName: 'json_tree', arguments: [
+      this,
+      if (path != null) Variable(path),
+    ]);
+  }
+}
+
+/// Calls [json table-valued functions](https://sqlite.org/json1.html#jeach) in
+/// drift.
+///
+/// With [JsonExtensions.jsonEach] and [JsonExtensions.jsonTree], a JSON value
+/// can be used a table-like structure available in queries and joins.
+///
+/// For an example and more details, see the [drift documentation](https://drift.simonbinder.eu/docs/advanced-features/joins/#json-support)
+final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
+  JsonTableFunction._(
+    super.attachedDatabase, {
+    required super.functionName,
+    required super.arguments,
+    super.alias,
+  }) : super(
+          columns: [
+            GeneratedColumn<DriftAny>('key', alias ?? functionName, true,
+                type: DriftSqlType.any),
+            GeneratedColumn<DriftAny>('value', alias ?? functionName, true,
+                type: DriftSqlType.any),
+            GeneratedColumn<String>('type', alias ?? functionName, true,
+                type: DriftSqlType.string),
+            GeneratedColumn<DriftAny>('atom', alias ?? functionName, true,
+                type: DriftSqlType.any),
+            GeneratedColumn<int>('id', alias ?? functionName, true,
+                type: DriftSqlType.int),
+            GeneratedColumn<int>('parent', alias ?? functionName, true,
+                type: DriftSqlType.int),
+            GeneratedColumn<String>('fullkey', alias ?? functionName, true,
+                type: DriftSqlType.string),
+            GeneratedColumn<String>('path', alias ?? functionName, true,
+                type: DriftSqlType.string),
+          ],
+        );
+
+  Expression<T> _col<T extends Object>(String name) {
+    return columnsByName[name]! as Expression<T>;
+  }
+
+  /// The JSON key under which this element can be found in its parent, or
+  /// `null` if this is the root element.
+  ///
+  /// Child elements of objects have a string key, elements in arrays are
+  /// represented by their index.
+  Expression<DriftAny> get key => _col('key');
+
+  /// The value for the current value.
+  ///
+  /// Scalar values are returned directly, objects and arrays are returned as
+  /// JSON strings.
+  Expression<DriftAny> get value => _col('value');
+
+  /// The result of calling [`sqlite3_type`](https://sqlite.org/json1.html#the_json_type_function)
+  /// on this JSON element.
+  Expression<String> get type => _col('type');
+
+  /// The [value], or `null` if this is not a scalar value (so either an object
+  /// or an array).
+  Expression<DriftAny> get atom => _col('atom');
+
+  /// An id uniquely identifying this element in the original JSON tree.
+  Expression<int> get id => _col('id');
+
+  /// The [id] of the parent of this element.
+  Expression<int> get parent => _col('parent');
+
+  /// The JSON key that can be passed to functions like
+  /// [JsonExtensions.jsonExtract] to find this value.
+  Expression<String> get fullKey => _col('fullkey');
+
+  /// Similar to [fullKey], but relative to the `root` argument passed to
+  /// [JsonExtensions.jsonEach] or [JsonExtensions.jsonTree].
+  Expression<String> get path => _col('path');
+
+  @override
+  ResultSetImplementation<JsonTableFunction, TypedResult> createAlias(
+      String alias) {
+    return JsonTableFunction._(
+      attachedDatabase,
+      functionName: entityName,
+      arguments: arguments,
+      alias: alias,
+    );
+  }
 }
