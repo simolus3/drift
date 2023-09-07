@@ -5,6 +5,8 @@ data:
 template: layouts/docs/single
 ---
 
+{% assign snippets = 'package:drift_docs/snippets/encryption.dart.excerpt.json' | readString | json_decode %}
+
 There are two ways to use drift on encrypted databases.
 The `encrypted_drift` package is similar to `drift_sqflite` and uses a platform plugin written in
 Java.
@@ -67,15 +69,7 @@ as they both provide a (different) set of `sqlite3` native apis.
 On Android, you also need to adapt the opening behavior of the `sqlite3` package to use the encrypted library instead
 of the regular `libsqlite3.so`:
 
-```dart
-import 'package:sqlite3/open.dart';
-
-// call this method before using drift
-void setupSqlCipher() {
-  open.overrideFor(
-      OperatingSystem.android, () => DynamicLibrary.open('libsqlcipher.so'));
-}
-```
+{% include "blocks/snippet" snippets = snippets name = "setup" %}
 
 When using drift on a background database, you need to call `setupSqlCipher` on the background isolate
 as well.
@@ -97,14 +91,7 @@ To actually encrypt a database, you must set an encryption key before using it.
 A good place to do that in drift is the `setup` parameter of `NativeDatabase`, which runs before drift
 is using the database in any way:
 
-```dart
-NativeDatabase(
-  File(...),
-  setup: (rawDb) {
-    rawDb.execute("PRAGMA key = 'passphrase';");
-  }
-);
-```
+{% include "blocks/snippet" snippets = snippets name = "encrypted1" %}
 
 ### Important notice
 
@@ -115,23 +102,11 @@ you could still be getting the regular `sqlite3` library without support for enc
 
 For this reason, it is recommended that you check that the `cipher_version` pragma is available at runtime:
 
-```dart
-bool _debugCheckHasCipher(Database database) {
-  return database.select('PRAGMA cipher_version;').isNotEmpty;
-}
-```
+{% include "blocks/snippet" snippets = snippets name = "check_cipher" %}
 
 Next, add an `assert(_debugCheckHasCipher(database))` before using the database. A suitable place is the
 `setup` parameter to a `NativeDatabase`:
 
-```dart
-NativeDatabase(
-  File(...),
-  setup: (rawDb) {
-    assert(_debugCheckHasCipher());
-    rawDb.execute("PRAGMA key = 'passphrase';");
-  }
-);
-```
+{% include "blocks/snippet" snippets = snippets name = "encrypted2" %}
 
 If this check reveals that the encrypted variant is not available, please see [the documentation here](https://github.com/simolus3/sqlite3.dart/tree/master/sqlcipher_flutter_libs#incompatibilities-with-sqlite3-on-ios-and-macos) for advice.

@@ -136,7 +136,7 @@ targets:
       drift_dev:
         options:
           sql:
-            dialect:
+            dialects:
               - sqlite
               - postgres
             options:

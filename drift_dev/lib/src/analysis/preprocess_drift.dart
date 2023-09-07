@@ -81,15 +81,13 @@ class DriftPreprocessor {
         .map((token) => token.dartCode)
         .toList();
 
-    var dartHelperFile = '';
     final codeToField = <String, String>{};
+    final seenFiles = <Uri>{uri};
+    final queue = [...directImports];
 
     if (dartLexemes.isNotEmpty) {
       // Imports in drift files are transitive, so we need to find all
       // transitive Dart sources to import into the generated helper file.
-      final seenFiles = <Uri>{uri};
-      final queue = [...directImports];
-
       while (queue.isNotEmpty) {
         final foundImport = queue.removeLast();
 
@@ -120,27 +118,29 @@ class DriftPreprocessor {
           }
         }
       }
+    } else {
+      // If there aren't any expressions to resolve we don't need to crawl and
+      // just use the direct imports.
+      seenFiles.addAll(queue);
+    }
 
-      final importedDartFiles =
-          seenFiles.where((uri) => url.extension(uri.path) == '.dart');
+    final importedDartFiles =
+        seenFiles.where((uri) => url.extension(uri.path) == '.dart');
 
-      // to analyze the expressions, generate a fake Dart file that declares each
-      // expression in a `var`, we can then read the static type when resolving
-      // file later.
+    // to analyze the expressions, generate a fake Dart file that declares each
+    // expression in a `var`, we can then read the static type when resolving
+    // file later.
 
-      final dartBuffer = StringBuffer();
-      for (final import in importedDartFiles) {
-        final importUri = import.toString();
-        dartBuffer.writeln('import ${asDartLiteral(importUri)};');
-      }
+    final dartBuffer = StringBuffer();
+    for (final import in importedDartFiles) {
+      final importUri = import.toString();
+      dartBuffer.writeln('import ${asDartLiteral(importUri)};');
+    }
 
-      for (var i = 0; i < dartLexemes.length; i++) {
-        final name = 'expr_$i';
-        dartBuffer.writeln('var $name = ${dartLexemes[i]};');
-        codeToField[dartLexemes[i]] = name;
-      }
-
-      dartHelperFile = dartBuffer.toString();
+    for (var i = 0; i < dartLexemes.length; i++) {
+      final name = 'expr_$i';
+      dartBuffer.writeln('var $name = ${dartLexemes[i]};');
+      codeToField[dartLexemes[i]] = name;
     }
 
     final declaredTablesAndViews = <String>[];
@@ -158,6 +158,6 @@ class DriftPreprocessor {
       directImports.toList(),
     );
 
-    return DriftPreprocessor._(result, dartHelperFile);
+    return DriftPreprocessor._(result, dartBuffer.toString());
   }
 }

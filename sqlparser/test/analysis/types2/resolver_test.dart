@@ -176,21 +176,37 @@ void main() {
     expect(escapedType, const ResolvedType(type: BasicType.text));
   });
 
-  test('handles nth_value', () {
-    final resolver = obtainResolver("SELECT nth_value('string', ?1) = ?2");
-    final variables = resolver.session.context.root.allDescendants
-        .whereType<Variable>()
-        .iterator;
-    variables.moveNext();
-    final firstVar = variables.current;
-    variables.moveNext();
-    final secondVar = variables.current;
+  group('function', () {
+    test('timediff', () {
+      final resultType = resolveResultColumn('SELECT timediff(?, ?)');
+      final argType = resolveFirstVariable('SELECT timediff(?, ?)');
 
-    expect(resolver.session.typeOf(firstVar),
-        equals(const ResolvedType(type: BasicType.int)));
+      expect(resultType, const ResolvedType(type: BasicType.text));
+      expect(argType,
+          const ResolvedType(type: BasicType.text, hint: IsDateTime()));
+    });
 
-    expect(resolver.session.typeOf(secondVar),
-        equals(const ResolvedType(type: BasicType.text)));
+    test('octet_length', () {
+      expect(resolveResultColumn('SELECT octet_length(?)'),
+          equals(const ResolvedType(type: BasicType.int)));
+    });
+
+    test('nth_value', () {
+      final resolver = obtainResolver("SELECT nth_value('string', ?1) = ?2");
+      final variables = resolver.session.context.root.allDescendants
+          .whereType<Variable>()
+          .iterator;
+      variables.moveNext();
+      final firstVar = variables.current;
+      variables.moveNext();
+      final secondVar = variables.current;
+
+      expect(resolver.session.typeOf(firstVar),
+          equals(const ResolvedType(type: BasicType.int)));
+
+      expect(resolver.session.typeOf(secondVar),
+          equals(const ResolvedType(type: BasicType.text)));
+    });
   });
 
   group('case expressions', () {

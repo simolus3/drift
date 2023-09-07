@@ -113,7 +113,7 @@ getTitlesWithGroupOther AS GroupWithTitles: SELECT group_name, LIST(SELECT title
         'contains one GroupWithTitles class',
         hasLength(1),
       )),
-    }, results.dartOutputs, results);
+    }, results.dartOutputs, results.writer);
   });
 
   test('supports query with two list columns', () async {

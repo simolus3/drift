@@ -297,6 +297,16 @@ class SchemaVersionWriter {
     return name;
   }
 
+  void _writeCallbackArgsForStep(TextEmitter text) {
+    for (final (current, next) in versions.withNext) {
+      text
+        ..write('required Future<void> Function(')
+        ..writeDriftRef('Migrator')
+        ..write(' m, _S${next.version} schema)')
+        ..writeln('from${current.version}To${next.version},');
+    }
+  }
+
   void write() {
     libraryScope.leaf()
       ..writeln('// ignore_for_file: type=lint,unused_import')
@@ -337,31 +347,21 @@ class SchemaVersionWriter {
       versionScope.leaf().writeln('}');
     }
 
-    // Write a stepByStep migration function that takes a callback doing a step
-    // for each schema to the next. We supply a special migrator that only
-    // considers entities from that version, as well as a typed reference to the
-    // _S<x> class used to lookup elements.
-    final stepByStep = libraryScope.leaf()
-      ..writeDriftRef('OnUpgrade')
-      ..write(' stepByStep({');
-
-    for (final (current, next) in versions.withNext) {
-      stepByStep
-        ..write('required Future<void> Function(')
-        ..writeDriftRef('Migrator')
-        ..write(' m, _S${next.version} schema)')
-        ..writeln('from${current.version}To${next.version},');
-    }
-
-    stepByStep
+    // Write a MigrationStepWithVersion factory that takes a callback doing a
+    // step for each schema to to the next. We supply a special migrator that
+    // only considers entities from that version, as well as a typed reference
+    // to the _S<x> class used to lookup elements.
+    final steps = libraryScope.leaf()
+      ..writeUriRef(_schemaLibrary, 'MigrationStepWithVersion')
+      ..write(' migrationSteps({');
+    _writeCallbackArgsForStep(steps);
+    steps
       ..writeln('}) {')
-      ..write('return ')
-      ..writeDriftRef('Migrator')
-      ..writeln('.stepByStepHelper(step: (currentVersion, database) async {')
+      ..writeln('return (currentVersion, database) async {')
       ..writeln('switch (currentVersion) {');
 
     for (final (current, next) in versions.withNext) {
-      stepByStep
+      steps
         ..writeln('case ${current.version}:')
         ..write('final schema = _S${next.version}(database: database);')
         ..write('final migrator = ')
@@ -372,13 +372,29 @@ class SchemaVersionWriter {
         ..writeln('return ${next.version};');
     }
 
-    stepByStep
+    steps
       ..writeln(
           r"default: throw ArgumentError.value('Unknown migration from $currentVersion');")
       ..writeln('}') // End of switch
-      ..writeln('}') // End of stepByStepHelper function
-      ..writeln(');') // End of stepByStepHelper call
-      ..writeln('}'); // End of method
+      ..writeln('};') // End of function literal
+      ..writeln('}'); // End of migrationSteps method
+
+    final stepByStep = libraryScope.leaf()
+      ..writeDriftRef('OnUpgrade')
+      ..write(' stepByStep({');
+    _writeCallbackArgsForStep(stepByStep);
+    stepByStep
+      ..writeln('}) => ')
+      ..writeUriRef(_schemaLibrary, 'VersionedSchema')
+      ..write('.stepByStepHelper(step: migrationSteps(');
+
+    for (final (current, next) in versions.withNext) {
+      final name = 'from${current.version}To${next.version}';
+
+      stepByStep.writeln('$name: $name,');
+    }
+
+    stepByStep.writeln('));');
   }
 }
 

@@ -32,6 +32,9 @@ class DriftTrigger extends DriftSchemaElement {
   });
 
   @override
+  DriftElementKind get kind => DriftElementKind.trigger;
+
+  @override
   String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
 
   /// The parsed `CREATE VIEW` statement from [createView].

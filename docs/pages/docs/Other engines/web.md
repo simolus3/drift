@@ -38,8 +38,9 @@ In some browsers, you need to serve your app with [additional headers](#addition
 | Safari (_tested version 16.2_) | Good (slightly slower) | Good (slightly slower) |
 | Safari Technology Preview _(tested 172 (17.0))_ | Full | Good |
 
-Firefox does not support IndexedDB and the FileSystem Access API in private tabs,
-so drift needs to fall back to an in-memory database in that case.
+Firefox currently doesn't support the FileSystem Access API in private browsing windows
+(IndexedDB is supported from version 115). So drift will fall back to an IndexedDb-based
+or an in-memory database in private tabs.
 
 In Chrome on Android, shared workers aren't supported. So if the [headers](#additional-headers) required
 for the preferred API are missing, there unfortunately is no way to prevent data races between tabs,
@@ -67,7 +68,7 @@ More information about these results is available [below](#storages).
 ### Prerequisites
 
 On all platforms, drift requires access to [sqlite3](https://sqlite.org/index.html), the popular
-datase system written as a C library.
+database system written as a C library.
 On native platforms, drift can use the sqlite3 library from your operating system. Flutter apps
 typically include a more recent version of that library with the `sqlite3_flutter_libs` package too.
 

@@ -16,5 +16,6 @@ dart run build_runner serve web:8080 --live-reload
 To build the website into a directory `out`, use:
 
 ```
+dart run drift_dev schema steps lib/snippets/migrations/exported_eschema/ lib/database/schema_versions.dart
 dart run build_runner build --release --output web:out
 ```

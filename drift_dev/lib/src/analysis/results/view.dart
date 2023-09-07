@@ -43,6 +43,9 @@ class DriftView extends DriftElementWithResultSet {
   @override
   String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
 
+  @override
+  DriftElementKind get kind => DriftElementKind.view;
+
   /// Obtains all tables transitively referenced by the declaration of this
   /// view.
   ///

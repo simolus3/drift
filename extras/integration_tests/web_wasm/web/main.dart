@@ -5,14 +5,15 @@ import 'dart:js_util';
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
-// ignore: invalid_use_of_internal_member
-import 'package:drift/src/web/wasm_setup.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_wasm/initialization_mode.dart';
 import 'package:web_wasm/src/database.dart';
 import 'package:sqlite3/wasm.dart';
 
 const dbName = 'drift_test';
+final sqlite3WasmUri = Uri.parse('sqlite3.wasm');
+final driftWorkerUri = Uri.parse('worker.dart.js');
+
 TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
 
@@ -28,10 +29,27 @@ void main() {
     initializationMode = InitializationMode.values.byName(arg!);
     return true;
   });
+  _addCallbackForWebDriver('delete_database', (arg) async {
+    final result = await WasmDatabase.probe(
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+    );
+
+    final decoded = json.decode(arg!);
+
+    await result.deleteDatabase(
+      (WebStorageApi.byName[decoded[0] as String]!, decoded[1] as String),
+    );
+  });
 
   document.getElementById('selfcheck')?.onClick.listen((event) async {
     print('starting');
-    final database = await _opener.open();
+    final database = await WasmDatabase.open(
+      databaseName: dbName,
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+      initializeDatabase: _initializeDatabase,
+    );
 
     print('selected storage: ${database.chosenImplementation}');
     print('missing features: ${database.missingFeatures}');
@@ -54,77 +72,81 @@ void _addCallbackForWebDriver(String name, Future Function(String?) impl) {
   }));
 }
 
-WasmDatabaseOpener get _opener {
-  Future<Uint8List> Function()? initializeDatabase;
-
+Future<Uint8List?> _initializeDatabase() async {
   switch (initializationMode) {
     case InitializationMode.loadAsset:
-      initializeDatabase = () async {
-        final response = await http.get(Uri.parse('/initial.db'));
-        return response.bodyBytes;
-      };
+      final response = await http.get(Uri.parse('/initial.db'));
+      return response.bodyBytes;
+
     case InitializationMode.migrateCustomWasmDatabase:
-      initializeDatabase = () async {
-        // Let's first open a custom WasmDatabase, the way it would have been
-        // done before WasmDatabase.open.
-        final sqlite3 =
-            await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
-        final fs = await IndexedDbFileSystem.open(dbName: dbName);
-        sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
 
-        final wasmDb = WasmDatabase(sqlite3: sqlite3, path: '/app.db');
-        final db = TestDatabase(wasmDb);
-        await db
-            .into(db.testTable)
-            .insert(TestTableCompanion.insert(content: 'from old database'));
-        await db.close();
+      // Let's first open a custom WasmDatabase, the way it would have been
+      // done before WasmDatabase.open.
+      final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('sqlite3.wasm'));
+      final fs = await IndexedDbFileSystem.open(dbName: dbName);
+      sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
 
-        final (file: file, outFlags: _) =
-            fs.xOpen(Sqlite3Filename('/app.db'), 0);
-        final blob = Uint8List(file.xFileSize());
-        file.xRead(blob, 0);
-        file.xClose();
-        fs.xDelete('/app.db', 0);
-        await fs.close();
+      final wasmDb = WasmDatabase(sqlite3: sqlite3, path: 'app.db');
+      final db = TestDatabase(wasmDb);
+      await db
+          .into(db.testTable)
+          .insert(TestTableCompanion.insert(content: 'from old database'));
+      await db.close();
 
-        return blob;
-      };
-      break;
+      final (file: file, outFlags: _) = fs.xOpen(Sqlite3Filename('/app.db'), 0);
+      final blob = Uint8List(file.xFileSize());
+      file.xRead(blob, 0);
+      file.xClose();
+      fs.xDelete('/app.db', 0);
+      await fs.close();
+
+      return blob;
     case InitializationMode.none:
-      break;
+      return null;
   }
-
-  return WasmDatabaseOpener(
-    databaseName: dbName,
-    sqlite3WasmUri: Uri.parse('/sqlite3.wasm'),
-    driftWorkerUri: Uri.parse('/worker.dart.js'),
-    initializeDatabase: initializeDatabase,
-  );
 }
 
 Future<String> _detectImplementations(String? _) async {
-  final opener = _opener;
-  await opener.probe();
+  final result = await WasmDatabase.probe(
+    sqlite3Uri: sqlite3WasmUri,
+    driftWorkerUri: driftWorkerUri,
+    databaseName: dbName,
+  );
 
   return json.encode({
-    'impls': opener.availableImplementations.map((r) => r.name).toList(),
-    'missing': opener.missingFeatures.map((r) => r.name).toList(),
+    'impls': result.availableStorages.map((r) => r.name).toList(),
+    'missing': result.missingFeatures.map((r) => r.name).toList(),
+    'existing': result.existingDatabases.map((r) => [r.$1.name, r.$2]).toList(),
   });
 }
 
 Future<void> _open(String? implementationName) async {
-  final opener = _opener;
-  WasmDatabaseResult result;
+  DatabaseConnection connection;
 
   if (implementationName != null) {
-    await opener.probe();
-    result = await opener
-        .openWith(WasmStorageImplementation.values.byName(implementationName));
+    final probeResult = await WasmDatabase.probe(
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+      databaseName: dbName,
+    );
+
+    connection = await probeResult.open(
+      WasmStorageImplementation.values.byName(implementationName),
+      dbName,
+      initializeDatabase: _initializeDatabase,
+    );
   } else {
-    result = await opener.open();
+    final result = await WasmDatabase.open(
+      databaseName: dbName,
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+      initializeDatabase: _initializeDatabase,
+    );
+
+    connection = result.resolvedExecutor;
   }
 
-  final db = openedDatabase = TestDatabase(result.resolvedExecutor);
+  final db = openedDatabase = TestDatabase(connection);
 
   // Make sure it works!
   await db.customSelect('SELECT 1').get();

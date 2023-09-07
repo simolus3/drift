@@ -5,6 +5,8 @@ import 'package:drift_dev/src/backends/build/preprocess_builder.dart';
 
 Builder preparingBuilder(BuilderOptions options) => PreprocessBuilder();
 
+Builder discover(BuilderOptions options) => DriftDiscover(options);
+
 Builder analyzer(BuilderOptions options) => DriftAnalyzer(options);
 
 Builder driftBuilder(BuilderOptions options) =>

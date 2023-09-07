@@ -84,6 +84,9 @@ class DriftTable extends DriftElementWithResultSet {
 
   late final DriftColumn? rowid = _findRowId();
 
+  @override
+  DriftElementKind get kind => DriftElementKind.table;
+
   /// Whether this is a virtual table, created with a `CREATE VIRTUAL TABLE`
   /// statement in SQL.
   bool get isVirtual => virtualTableData != null;

@@ -358,20 +358,21 @@ class ElementSerializer {
 
 /// Deserializes the element structure emitted by [ElementSerializer].
 class ElementDeserializer {
-  final Map<Uri, LibraryElement?> _typeHelperLibraries = {};
-  final List<DriftElementId> _currentlyReading = [];
+  final List<DriftElementId> _currentlyReading;
 
   final DriftAnalysisDriver driver;
 
-  ElementDeserializer(this.driver);
+  ElementDeserializer(this.driver, this._currentlyReading);
 
   Future<DartType> _readDartType(Uri import, int typeId) async {
     LibraryElement? element;
-    if (_typeHelperLibraries.containsKey(import)) {
-      element = _typeHelperLibraries[import];
+    final helpers = driver.cache.typeHelperLibraries;
+
+    if (helpers.containsKey(import)) {
+      element = helpers[import];
     } else {
-      element = _typeHelperLibraries[import] =
-          await driver.cacheReader!.readTypeHelperFor(import);
+      element =
+          helpers[import] = await driver.cacheReader!.readTypeHelperFor(import);
     }
 
     if (element == null) {
@@ -383,11 +384,28 @@ class ElementDeserializer {
     return typedef.aliasedType;
   }
 
-  Future<DriftElement> _readElementReference(Map json) {
-    return readDriftElement(DriftElementId.fromJson(json));
+  Future<DriftElement> _readElementReference(Map json) async {
+    final id = DriftElementId.fromJson(json);
+
+    if (_currentlyReading.contains(id)) {
+      throw StateError(
+          'Circular error when deserializing drift modules. This is a '
+          'bug in drift_dev!');
+    }
+
+    _currentlyReading.add(id);
+
+    try {
+      return await readDriftElement(DriftElementId.fromJson(json));
+    } finally {
+      final lastId = _currentlyReading.removeLast();
+      assert(lastId == id);
+    }
   }
 
   Future<DriftElement> readDriftElement(DriftElementId id) async {
+    assert(_currentlyReading.last == id);
+
     final state = driver.cache.stateForUri(id.libraryUri).analysis[id] ??=
         ElementAnalysisState(id);
     if (state.result != null && state.isUpToDate) {
@@ -397,18 +415,10 @@ class ElementDeserializer {
     final data = await driver.readStoredAnalysisResult(id.libraryUri);
     if (data == null) {
       throw CouldNotDeserializeException(
-          'Analysis data for ${id..libraryUri} not found');
-    }
-
-    if (_currentlyReading.contains(id)) {
-      throw StateError(
-          'Circular error when deserializing drift modules. This is a '
-          'bug in drift_dev!');
+          'Analysis data for ${id.libraryUri} not found');
     }
 
     try {
-      _currentlyReading.add(id);
-
       final result = await _readDriftElement(data[id.name] as Map);
       state
         ..result = result
@@ -419,9 +429,6 @@ class ElementDeserializer {
 
       throw CouldNotDeserializeException(
           'Internal error while deserializing $id: $e at \n$s');
-    } finally {
-      final lastId = _currentlyReading.removeLast();
-      assert(lastId == id);
     }
   }
 
@@ -665,7 +672,7 @@ class ElementDeserializer {
             schemaVersion: json['schema_version'] as int?,
             accessors: [
               for (final dao in json.list('daos'))
-                await readDriftElement(DriftElementId.fromJson(dao as Map))
+                await _readElementReference(dao as Map<String, Object?>)
                     as DatabaseAccessor,
             ],
           );

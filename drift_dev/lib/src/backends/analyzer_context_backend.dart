@@ -19,7 +19,12 @@ class PhysicalDriftDriver {
 
   PhysicalDriftDriver(this.driver, this._backend);
 
-  Uri uriFromPath(String path) => _backend.provider.pathContext.toUri(path);
+  Uri uriFromPath(String path) {
+    final pathUri = _backend.provider.pathContext.toUri(path);
+
+    // Normalize to package URI if necessary.
+    return _backend.resolveUri(pathUri, '');
+  }
 
   Future<FileState> analyzeElementsForPath(String path) {
     return driver.resolveElements(uriFromPath(path));
@@ -144,6 +149,40 @@ class AnalysisContextBackend extends DriftBackend {
     } finally {
       provider.removeOverlay(pathForTemp);
     }
+  }
+
+  @override
+  Future<Element?> resolveTopLevelElement(
+      Uri context, String reference, Iterable<Uri> imports) async {
+    // Create a fake file next to the content
+    final path = _pathOfUri(context)!;
+    final pathContext = provider.pathContext;
+    final pathForTemp = pathContext.join(
+        pathContext.dirname(path), 'moor_temp_${imports.hashCode}.dart');
+
+    final content = StringBuffer();
+    for (final import in imports) {
+      content.writeln('import "$import";');
+    }
+
+    provider.setOverlay(
+      pathForTemp,
+      content: content.toString(),
+      modificationStamp: DateTime.now().millisecondsSinceEpoch,
+    );
+
+    try {
+      final result =
+          await this.context.currentSession.getResolvedLibrary(pathForTemp);
+
+      if (result is ResolvedLibraryResult) {
+        return result.element.scope.lookup(reference).getter;
+      }
+    } finally {
+      provider.removeOverlay(path);
+    }
+
+    return null;
   }
 
   @override

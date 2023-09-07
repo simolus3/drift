@@ -6,10 +6,62 @@ import 'package:package_config/package_config.dart';
 
 import '../../analysis/driver/driver.dart';
 import '../../analysis/options.dart';
+import '../../analysis/resolver/intermediate_state.dart';
 import '../../writer/import_manager.dart';
 import '../../writer/writer.dart';
 import 'backend.dart';
 import 'exception.dart';
+
+class DriftDiscover extends Builder {
+  final DriftOptions options;
+
+  DriftDiscover(BuilderOptions options)
+      : options = DriftOptions.fromJson(options.config);
+
+  @override
+  Map<String, List<String>> get buildExtensions => const {
+        '.drift': [
+          '.drift.drift_elements.json',
+        ],
+        '.dart': [
+          '.dart.drift_elements.json',
+        ],
+      };
+
+  @override
+  Future<void> build(BuildStep buildStep) async {
+    final backend = DriftBuildBackend(buildStep);
+    final driver = DriftAnalysisDriver(backend, options);
+
+    final prepared = await driver.findLocalElements(buildStep.inputId.uri);
+    final discovery = prepared.discovery;
+
+    if (discovery != null) {
+      await buildStep.writeAsString(
+        buildStep.allowedOutputs.single,
+        json.encode({
+          'valid_import': discovery.isValidImport,
+          'imports': [
+            for (final import in discovery.importDependencies)
+              {
+                'uri': import.uri.toString(),
+                'transitive': import.transitive,
+              }
+          ],
+          'elements': [
+            for (final entry in discovery.locallyDefinedElements)
+              {
+                'kind': entry.kind.name,
+                'name': entry.ownId.name,
+                if (entry is DiscoveredDartElement)
+                  'dart_name': entry.dartElement.name,
+              }
+          ]
+        }),
+      );
+    }
+  }
+}
 
 class DriftAnalyzer extends Builder {
   final DriftOptions options;
@@ -32,11 +84,17 @@ class DriftAnalyzer extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     final backend = DriftBuildBackend(buildStep);
-    final driver = DriftAnalysisDriver(backend, options);
+    final driver = DriftAnalysisDriver(backend, options)
+      ..cacheReader =
+          BuildCacheReader(buildStep, findsLocalElementsReliably: true);
 
     final results = await driver.resolveElements(buildStep.inputId.uri);
     var hadWarnings = false;
 
+    // The discovery builder is just here to accelerate builds and doesn't
+    // print errors found during discovery. To ensure that we're starting a
+    // fresh discovery run here, call it explicitly.
+    await driver.discoverIfNecessary(results);
     for (final parseError in results.errorsDuringDiscovery) {
       log.warning(parseError.toString());
       hadWarnings = true;

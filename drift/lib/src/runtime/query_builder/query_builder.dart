@@ -21,6 +21,7 @@ import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
 import '../../utils/async.dart';
+import '../utils.dart';
 // New files should not be part of this mega library, which we're trying to
 // split up.
 
@@ -28,6 +29,7 @@ import 'expressions/case_when.dart';
 import 'expressions/internal.dart';
 import 'helpers.dart';
 
+export 'components/table_valued_function.dart';
 export 'expressions/bitwise.dart';
 export 'expressions/case_when.dart';
 export 'on_table.dart';

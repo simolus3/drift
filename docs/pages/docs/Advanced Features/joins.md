@@ -217,3 +217,37 @@ joining this select statement onto a larger one grouping by category:
 {% include "blocks/snippet" snippets = snippets name = 'subquery' %}
 
 Any statement can be used as a subquery. But be aware that, unlike [subquery expressions]({{ 'expressions.md#scalar-subqueries' | pageUrl }}), full subqueries can't use tables from the outer select statement.
+
+## JSON support
+
+{% assign json_snippet = 'package:drift_docs/snippets/queries/json.dart.excerpt.json' | readString | json_decode %}
+
+sqlite3 has great support for [JSON operators](https://sqlite.org/json1.html) that are also available
+in drift (under the additional `'package:drift/extensions/json1.dart'` import).
+JSON support is helpful when storing a dynamic structure that is best represented with JSON, or when
+you have an existing structure (perhaps because you're migrating from a document-based storage)
+that you need to support.
+
+As an example, consider a contact book application that started with a JSON structure to store
+contacts:
+
+{% include "blocks/snippet" snippets = json_snippet name = 'existing' %}
+
+To easily store this contact representation in a drift database, one could use a JSON column:
+
+{% include "blocks/snippet" snippets = json_snippet name = 'contacts' %}
+
+Note the `name` column as well: It uses `generatedAs` with the `jsonExtract` function to
+extract the `name` field from the JSON value on the fly.
+The full syntax for JSON path arguments is explained on the [sqlite3 website](https://sqlite.org/json1.html#path_arguments).
+
+To make the example more complex, let's look at another table storing a log of phone calls:
+
+{% include "blocks/snippet" snippets = json_snippet name = 'calls' %}
+
+Let's say we wanted to find the contact for each call, if there is any with a matching phone number.
+For this to be expressible in SQL, each `contacts` row would somehow have to be expanded into a row
+for each stored phone number.
+Luckily, the `json_each` function in sqlite3 can do exactly that, and drift exposes it:
+
+{% include "blocks/snippet" snippets = json_snippet name = 'calls-with-contacts' %}

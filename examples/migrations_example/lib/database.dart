@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift/internal/versioned_schema.dart';
 import 'package:drift_dev/api/migrations.dart';
 
 import 'tables.dart';
@@ -6,7 +7,14 @@ import 'src/versions.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(include: {'tables.drift'})
+/// This isn't a Flutter app, so we have to define the constant. In a real app,
+/// just use the constant defined in the Flutter SDK.
+const kDebugMode = true;
+
+@DriftDatabase(
+  tables: [Users],
+  include: {'tables.drift'},
+)
 class Database extends _$Database {
   static const latestSchemaVersion = 9;
 
@@ -18,7 +26,28 @@ class Database extends _$Database {
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      onUpgrade: _upgrade,
+      onUpgrade: (m, from, to) async {
+        // Following the advice from https://drift.simonbinder.eu/docs/advanced-features/migrations/#tips
+        await customStatement('PRAGMA foreign_keys = OFF');
+
+        await transaction(
+          () => VersionedSchema.runMigrationSteps(
+            migrator: m,
+            from: from,
+            to: to,
+            steps: _upgrade,
+          ),
+        );
+
+        if (kDebugMode) {
+          final wrongForeignKeys =
+              await customSelect('PRAGMA foreign_key_check').get();
+          assert(wrongForeignKeys.isEmpty,
+              '${wrongForeignKeys.map((e) => e.data)}');
+        }
+
+        await customStatement('PRAGMA foreign_keys = ON');
+      },
       beforeOpen: (details) async {
         // For Flutter apps, this should be wrapped in an if (kDebugMode) as
         // suggested here: https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-a-database-schema-at-runtime
@@ -27,7 +56,7 @@ class Database extends _$Database {
     );
   }
 
-  static final _upgrade = stepByStep(
+  static final _upgrade = migrationSteps(
     from1To2: (m, schema) async {
       // Migration from 1 to 2: Add name column in users. Use "no name"
       // as a default value.

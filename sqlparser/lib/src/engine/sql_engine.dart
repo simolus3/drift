@@ -25,6 +25,11 @@ class SqlEngine {
     }
 
     registerTable(sqliteMaster);
+    // sqlite3_schema has been added in sqlite 3.33.0 as an alias to the master
+    // table. Since 3.34.0 is the first version for which we have feature flags,
+    // we just add it unconditionally.
+    registerTable(sqliteSchema);
+
     registerTable(sqliteSequence);
   }
 

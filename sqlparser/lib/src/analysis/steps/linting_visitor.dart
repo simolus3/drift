@@ -258,44 +258,39 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       options.addedFunctions[lowercaseCall]!.reportErrors(e, context);
     }
 
-    switch (e.name.toLowerCase()) {
-      case 'format':
-      case 'unixepoch':
-        // These were added in sqlite3 version 3.38
-        if (options.version < SqliteVersion.v3_38) {
-          context.reportError(
-            AnalysisError(
-              type: AnalysisErrorType.notSupportedInDesiredVersion,
-              message: 'The `${e.name}` function requires sqlite 3.38 or later',
-              relevantNode: e,
-            ),
-          );
-        }
-        break;
-      case 'printf':
-        // `printf` was renamed to `format` in sqlite3 version 3.38
-        if (options.version >= SqliteVersion.v3_38) {
-          context.reportError(
-            AnalysisError(
-              type: AnalysisErrorType.hint,
-              message: '`printf` was renamed to `format()`, consider using '
-                  'that function instead.',
-              relevantNode: e,
-            ),
-          );
-        }
-        break;
-      case 'unhex':
-        if (options.version < SqliteVersion.v3_41) {
-          context.reportError(
-            AnalysisError(
-              type: AnalysisErrorType.notSupportedInDesiredVersion,
-              message: '`unhex` requires sqlite 3.41',
-              relevantNode: e.nameToken ?? e,
-            ),
-          );
-        }
-        break;
+    final lowerCaseName = e.name.toLowerCase();
+    if (lowerCaseName == 'printf' && options.version >= SqliteVersion.v3_38) {
+      // `printf` was renamed to `format` in sqlite3 version 3.38
+      if (options.version >= SqliteVersion.v3_38) {
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.hint,
+            message: '`printf` was renamed to `format()`, consider using '
+                'that function instead.',
+            relevantNode: e,
+          ),
+        );
+      }
+    }
+
+    // Warn when newer functions are used in an unsupported sqlite3 version.
+    final minimumVersion = switch (lowerCaseName) {
+      'format' || 'unixepoch' => SqliteVersion.v3_38,
+      'unhex' => SqliteVersion.v3_41,
+      'timediff' || 'octet_length' => SqliteVersion.v3_43,
+      _ => null,
+    };
+
+    if (minimumVersion != null && options.version < minimumVersion) {
+      final versionStr = '${minimumVersion.major}.${minimumVersion.minor}';
+
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+          message: '`${e.name}` requires sqlite $versionStr or later',
+          relevantNode: e.nameToken ?? e,
+        ),
+      );
     }
 
     visitChildren(e, arg);

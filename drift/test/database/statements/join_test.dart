@@ -97,6 +97,10 @@ void main() {
       ),
     );
 
+    // Also make sure we can read individual columns
+    expect(row.read(todos.id), 5);
+    expect(row.read(categories.description), 'description');
+
     verify(executor.runSelect(argThat(contains('DISTINCT')), any));
   });
 

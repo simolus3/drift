@@ -24,14 +24,19 @@ var expr_0 = const MyConverter();
 ''');
   });
 
-  test('does not emit Dart file if no Dart expressions are used', () async {
+  test('only includes direct imports if no Dart expressions are used',
+      () async {
     final backend = TestBackend.inTest({
       'a|lib/main.drift': '''
 import 'foo.dart';
+import '2.drift';
 
 CREATE TABLE foo (
   bar INTEGER NOT NULL
 );
+''',
+      'a|lib/2.drift': '''
+import 'bar.dart';
 ''',
     });
 
@@ -39,7 +44,7 @@ CREATE TABLE foo (
         backend, Uri.parse('package:a/main.drift'));
 
     expect(result.result.declaredTablesAndViews, ['foo']);
-    expect(result.temporaryDartFile, isEmpty);
+    expect(result.temporaryDartFile, "import 'package:a/foo.dart';\n");
   });
 
   test('finds nested dart imports', () async {

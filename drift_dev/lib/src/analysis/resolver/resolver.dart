@@ -6,6 +6,7 @@ import '../driver/error.dart';
 import '../driver/state.dart';
 import '../results/element.dart';
 
+import '../serializer.dart';
 import 'dart/accessor.dart' as dart_accessor;
 import 'dart/table.dart' as dart_table;
 import 'dart/view.dart' as dart_view;
@@ -25,10 +26,38 @@ class DriftResolver {
   /// This path is used to detect and prevent circular references.
   final List<DriftElementId> _currentDependencyPath = [];
 
+  late final ElementDeserializer _deserializer =
+      ElementDeserializer(driver, _currentDependencyPath);
+
   DriftResolver(this.driver);
 
+  Future<DriftElement> resolveEntrypoint(DriftElementId element) async {
+    assert(_currentDependencyPath.isEmpty);
+    _currentDependencyPath.add(element);
+
+    return await _restoreOrResolve(element);
+  }
+
+  Future<DriftElement> _restoreOrResolve(DriftElementId element) async {
+    try {
+      if (await driver.readStoredAnalysisResult(element.libraryUri) != null) {
+        return await _deserializer.readDriftElement(element);
+      }
+    } on CouldNotDeserializeException catch (e, s) {
+      driver.backend.log.fine('Could not deserialize $element', e, s);
+    }
+
+    // We can't resolve the element from cache, so we need to resolve it.
+    final owningFile = driver.cache.stateForUri(element.libraryUri);
+    await driver.discoverIfNecessary(owningFile);
+    final discovered = owningFile.discovery!.locallyDefinedElements
+        .firstWhere((e) => e.ownId == element);
+
+    return _resolveDiscovered(discovered);
+  }
+
   /// Resolves a discovered element by analyzing it and its dependencies.
-  Future<DriftElement> resolveDiscovered(DiscoveredElement discovered) async {
+  Future<DriftElement> _resolveDiscovered(DiscoveredElement discovered) async {
     LocalElementResolver resolver;
 
     final fileState = driver.cache.knownFiles[discovered.ownId.libraryUri]!;
@@ -111,13 +140,14 @@ class DriftResolver {
 
     final pending = driver.cache.discoveredElements[reference];
     if (pending != null) {
+      // We know the element exists, but we haven't resolved it yet.
       _currentDependencyPath.add(reference);
 
       try {
-        final resolved = await resolveDiscovered(pending);
+        final resolved = await _restoreOrResolve(reference);
         return ResolvedReferenceFound(resolved);
       } catch (e, s) {
-        driver.backend.log.warning('Could not analze $reference', e, s);
+        driver.backend.log.warning('Could not analyze $reference', e, s);
         return ReferencedElementCouldNotBeResolved();
       } finally {
         final removed = _currentDependencyPath.removeLast();
@@ -134,14 +164,13 @@ class DriftResolver {
   Future<ResolveReferencedElementResult> resolveDartReference(
       DriftElementId owner, Element element) async {
     final uri = await driver.backend.uriOfDart(element.library!);
-    final state = await driver.prepareFileForAnalysis(uri);
+    final state = driver.cache.stateForUri(uri);
 
-    final discovered = state.discovery?.locallyDefinedElements
-        .whereType<DiscoveredDartElement>()
-        .firstWhereOrNull((c) => c.dartElement == element);
+    final existing = state.definedElements.firstWhereOrNull(
+        (existing) => existing.dartElementName == element.name);
 
-    if (discovered != null) {
-      return resolveReferencedElement(owner, discovered.ownId);
+    if (existing != null) {
+      return resolveReferencedElement(owner, existing.ownId);
     } else {
       return InvalidReferenceResult(
         InvalidReferenceError.noElementWichSuchName,
@@ -164,7 +193,7 @@ class DriftResolver {
     for (final available in driver.cache.crawl(file)) {
       final localElementIds = {
         ...available.analysis.keys,
-        ...?available.discovery?.locallyDefinedElements.map((e) => e.ownId),
+        ...available.definedElements.map((e) => e.ownId),
       };
 
       for (final definedLocally in localElementIds) {

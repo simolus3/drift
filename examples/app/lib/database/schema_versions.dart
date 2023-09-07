@@ -179,11 +179,11 @@ i1.GeneratedColumn<int> _column_7(String aliasedName) =>
         type: i1.DriftSqlType.int,
         defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
             'REFERENCES categories (id)'));
-i1.OnUpgrade stepByStep({
+i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, _S2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, _S3 schema) from2To3,
 }) {
-  return i1.Migrator.stepByStepHelper(step: (currentVersion, database) async {
+  return (currentVersion, database) async {
     switch (currentVersion) {
       case 1:
         final schema = _S2(database: database);
@@ -198,5 +198,15 @@ i1.OnUpgrade stepByStep({
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
-  });
+  };
 }
+
+i1.OnUpgrade stepByStep({
+  required Future<void> Function(i1.Migrator m, _S2 schema) from1To2,
+  required Future<void> Function(i1.Migrator m, _S3 schema) from2To3,
+}) =>
+    i0.VersionedSchema.stepByStepHelper(
+        step: migrationSteps(
+      from1To2: from1To2,
+      from2To3: from2To3,
+    ));

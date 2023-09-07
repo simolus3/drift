@@ -205,7 +205,7 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.PostsCompanion(')
+    return (StringBuffer('PostsCompanion(')
           ..write('id: $id, ')
           ..write('author: $author, ')
           ..write('content: $content')
@@ -393,7 +393,7 @@ class LikesCompanion extends i0.UpdateCompanion<i1.Like> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.LikesCompanion(')
+    return (StringBuffer('LikesCompanion(')
           ..write('post: $post, ')
           ..write('likedBy: $likedBy, ')
           ..write('rowid: $rowid')

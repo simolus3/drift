@@ -88,7 +88,7 @@ class ModularAccessorWriter {
       final file = driver.cache.knownFiles[import];
 
       if (file != null && file.needsModularAccessor(driver)) {
-        final moduleClass = restOfClass.modularAccessor(import);
+        final moduleClass = restOfClass.modularAccessor(import.uri);
         final getterName = ReCase(moduleClass.toString()).camelCase;
 
         restOfClass

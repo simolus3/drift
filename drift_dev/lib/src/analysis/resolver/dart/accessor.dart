@@ -91,9 +91,9 @@ class DartAccessorResolver
       } else {
         includes.add(import);
 
-        final resolved = await resolver.driver.prepareFileForAnalysis(
-            discovered.ownId.libraryUri.resolveUri(import));
-        if (resolved.discovery?.isValidImport != true) {
+        final resolved = await resolver.driver
+            .findLocalElements(discovered.ownId.libraryUri.resolveUri(import));
+        if (!resolved.isValidImport) {
           reportError(
             DriftAnalysisError.forDartElement(
                 element, '`$value` could not be imported'),

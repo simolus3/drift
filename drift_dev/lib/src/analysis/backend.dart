@@ -44,6 +44,10 @@ abstract class DriftBackend {
   /// resolved.
   Future<Expression> resolveExpression(
       Uri context, String dartExpression, Iterable<String> imports);
+
+  /// Resolves the Dart element named [reference] in the [imports] of [context].
+  Future<Element?> resolveTopLevelElement(
+      Uri context, String reference, Iterable<Uri> imports);
 }
 
 /// Thrown when attempting to read a Dart library from a file that's not a

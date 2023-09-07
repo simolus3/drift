@@ -1,4 +1,10 @@
-## 0.31.0-dev
+## 0.31.1
+
+- Add the `sqlite3_schema` table to the builtin tables supported by every
+  `SqlEngine` instance.
+- Support the `timediff` and `octet_length` functions from sqlite 3.43.0.
+
+## 0.31.0
 
 - Add `SqlEngine.parseMultiple` to parse multiple statements into one AST.
 

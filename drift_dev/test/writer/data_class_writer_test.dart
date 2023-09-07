@@ -38,7 +38,7 @@ class Database extends _$Database {}
         'a|lib/main.drift.dart': _GeneratesConstDataClasses(
           {'User', 'UsersCompanion'},
         ),
-      }, writer.dartOutputs, writer);
+      }, writer.dartOutputs, writer.writer);
     },
     tags: 'analyzer',
   );
@@ -87,7 +87,7 @@ class Database extends _$Database {}
     );
   }
 ''')),
-      }, writer.dartOutputs, writer);
+      }, writer.dartOutputs, writer.writer);
     },
     tags: 'analyzer',
   );
@@ -120,7 +120,7 @@ class Database extends _$Database {}
         'a|lib/main.drift.dart': decodedMatches(contains(r'''
   static JsonTypeConverter2<Priority, String, String> $converterpriority =
       const EnumNameConverter<Priority>(Priority.values);''')),
-      }, writer.dartOutputs, writer);
+      }, writer.dartOutputs, writer.writer);
     },
     tags: 'analyzer',
   );
@@ -173,7 +173,7 @@ mixin PostsToColumns implements i1.Insertable<i2.Post> {
   }
 }
 ''')),
-    }, writer.dartOutputs, writer);
+    }, writer.dartOutputs, writer.writer);
   });
 
   test('generates correct fromJson for nullable converters', () async {
@@ -210,7 +210,62 @@ class MyTable extends Table {
           .fromJson(serializer.fromJson<String?>(json['invoiceContact'])),
     );
   }''')),
-    }, result.dartOutputs, result);
+    }, result.dartOutputs, result.writer);
+  });
+
+  test('generates correct companions for modular row classes', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(Item, generateInsertable: true)
+class ItemTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+class Item {
+  final int id;
+  Item(this.id);
+}
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            // The toString() definition for companions was broken and included
+            // the import prefix of the companion.
+            contains("StringBuffer('ItemTableCompanion(')"),
+
+            // The extension should also reference the row class correctly
+            contains(r'''
+class _$ItemInsertable implements i0.Insertable<i1.Item> {
+  i1.Item _object;
+  _$ItemInsertable(this._object);
+  @override
+  Map<String, i0.Expression> toColumns(bool nullToAbsent) {
+    return i2.ItemTableCompanion(
+      id: i0.Value(_object.id),
+    ).toColumns(false);
+  }
+}
+
+extension ItemToInsertable on i1.Item {
+  _$ItemInsertable toInsertable() {
+    return _$ItemInsertable(this);
+  }
+}
+'''),
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
   });
 }
 

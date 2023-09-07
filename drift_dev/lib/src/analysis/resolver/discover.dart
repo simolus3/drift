@@ -116,17 +116,17 @@ class DiscoverStep {
 
             imports.add(DriftFileImport(node, uri));
           } else if (node is TableInducingStatement) {
-            pendingElements
-                .add(DiscoveredDriftTable(_id(node.createdName), node));
+            pendingElements.add(DiscoveredDriftTable(
+                _id(node.createdName), DriftElementKind.table, node));
           } else if (node is CreateViewStatement) {
-            pendingElements
-                .add(DiscoveredDriftView(_id(node.createdName), node));
+            pendingElements.add(DiscoveredDriftView(
+                _id(node.createdName), DriftElementKind.view, node));
           } else if (node is CreateIndexStatement) {
-            pendingElements
-                .add(DiscoveredDriftIndex(_id(node.indexName), node));
+            pendingElements.add(DiscoveredDriftIndex(
+                _id(node.indexName), DriftElementKind.dbIndex, node));
           } else if (node is CreateTriggerStatement) {
-            pendingElements
-                .add(DiscoveredDriftTrigger(_id(node.triggerName), node));
+            pendingElements.add(DiscoveredDriftTrigger(
+                _id(node.triggerName), DriftElementKind.trigger, node));
           } else if (node is DeclaredStatement) {
             String name;
 
@@ -137,7 +137,8 @@ class DiscoverStep {
               name = '\$drift_${specialQueryNameCount++}';
             }
 
-            pendingElements.add(DiscoveredDriftStatement(_id(name), node));
+            pendingElements.add(DiscoveredDriftStatement(
+                _id(name), DriftElementKind.definedQuery, node));
           }
         }
 
@@ -156,7 +157,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   final DiscoverStep _discoverStep;
   final LibraryElement _library;
 
-  final List<Uri> imports = [];
+  final List<DriftImport> imports = [];
 
   final TypeChecker _isTable, _isView, _isTableInfo, _isDatabase, _isDao;
 
@@ -236,16 +237,23 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     super.visitClassElement(element);
   }
 
-  @override
-  void visitLibraryImportElement(LibraryImportElement element) {
-    final imported = element.importedLibrary;
-
+  void _handleImportOrExport(LibraryElement? imported, bool isExported) {
     if (imported != null && !imported.isInSdk) {
       _pendingWork.add(Future(() async {
         final uri = await _discoverStep._driver.backend.uriOfDart(imported);
-        imports.add(uri);
+        imports.add((uri: uri, transitive: isExported));
       }));
     }
+  }
+
+  @override
+  void visitLibraryExportElement(LibraryExportElement element) {
+    _handleImportOrExport(element.exportedLibrary, true);
+  }
+
+  @override
+  void visitLibraryImportElement(LibraryImportElement element) {
+    _handleImportOrExport(element.importedLibrary, false);
   }
 
   String _defaultNameForTableOrView(ClassElement definingElement) {

@@ -9,7 +9,10 @@ targets:
   $default:
     sources:
       exclude:
+        # Exlude sources used for the drift-file based generation source
         - "test/generated/custom_tables.dart"
+        - "test/generated/data_classes.dart"
+        - "test/generated/tables.drift*"
     builders:
       drift_dev:
         options:
@@ -36,6 +39,8 @@ targets:
     auto_apply_builders: false
     sources:
      - "test/generated/custom_tables.dart"
+     - "test/generated/data_classes.dart"
+     - "test/generated/tables.drift*"
     builders:
       drift_dev:
         options:

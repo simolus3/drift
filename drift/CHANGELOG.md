@@ -1,9 +1,25 @@
+## 2.12.0-dev
+
+- Add support for table-valued functions in the Dart query builder.
+- Support `json_each` and `json_tree`.
+
+## 2.11.1
+
+- Allow using `.read()` for a column added to a join from the table, fixing a
+  regression in drift 2.11.0.
+- Make step-by-step migrations easier to customize with `Migrator.runMigrationSteps`.
+
 ## 2.11.0
 
 - Add support for subqueries in the Dart query builder.
 - Add `isInExp` and `isNotInExp` to construct `IS IN` expressions with arbitrary
   expressions.
-- Add `isolateSetup` to `NativeDatabase.createInBackground()` to override libraries.
+- Add the `substr` extension on `Expression<String>` to call the sqlite3 function from
+  the Dart API.
+- Add `isolateSetup` to `NativeDatabase.createInBackground()` to override native libraries
+  or perform other database-unrelated setup work.
+- Add `WasmDatabase.probe()`, a method probing for available implementations and existing
+  databases on the web without opening one directly.
 
 ## 2.10.0
 

@@ -7,7 +7,7 @@ abstract class ResolvesToResultSet with Referencable {
 }
 
 /// Something that returns a set of columns when evaluated.
-abstract class ResultSet implements ResolvesToResultSet {
+abstract mixin class ResultSet implements ResolvesToResultSet {
   /// The columns that will be returned when evaluating this query.
   List<Column>? get resolvedColumns;
 

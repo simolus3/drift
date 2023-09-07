@@ -302,7 +302,7 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.UsersCompanion(')
+    return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('biography: $biography, ')
@@ -500,7 +500,7 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
 
   @override
   String toString() {
-    return (StringBuffer('i1.FollowsCompanion(')
+    return (StringBuffer('FollowsCompanion(')
           ..write('followed: $followed, ')
           ..write('follower: $follower, ')
           ..write('rowid: $rowid')

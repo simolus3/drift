@@ -31,6 +31,6 @@ class Tags extends Table {
           contains('class MyTag extends i0.MyBaseDataClass'),
         ),
       ),
-    }, result.dartOutputs, result);
+    }, result.dartOutputs, result.writer);
   });
 }

@@ -93,7 +93,7 @@ void main() {
   test('warns about using unixepoch before 3.38', () {
     const sql = "SELECT unixepoch('')";
 
-    minimumEngine.analyze(sql).expectError("unixepoch('')",
+    minimumEngine.analyze(sql).expectError('unixepoch',
         type: AnalysisErrorType.notSupportedInDesiredVersion);
     currentEngine.analyze(sql).expectNoError();
   });
@@ -101,7 +101,7 @@ void main() {
   test('warns about using format before 3.38', () {
     const sql = "SELECT format('', 0, 'foo')";
 
-    minimumEngine.analyze(sql).expectError("format('', 0, 'foo')",
+    minimumEngine.analyze(sql).expectError('format',
         type: AnalysisErrorType.notSupportedInDesiredVersion);
     currentEngine.analyze(sql).expectNoError();
   });
@@ -110,6 +110,22 @@ void main() {
     const sql = "SELECT unhex('abcd')";
 
     minimumEngine.analyze(sql).expectError('unhex',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    currentEngine.analyze(sql).expectNoError();
+  });
+
+  test('warns about timediff before 3.43', () {
+    const sql = "SELECT timediff(?, ?)";
+
+    minimumEngine.analyze(sql).expectError('timediff',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    currentEngine.analyze(sql).expectNoError();
+  });
+
+  test('warns about octet_length before 3.43', () {
+    const sql = "SELECT octet_length('abcd')";
+
+    minimumEngine.analyze(sql).expectError('octet_length',
         type: AnalysisErrorType.notSupportedInDesiredVersion);
     currentEngine.analyze(sql).expectNoError();
   });

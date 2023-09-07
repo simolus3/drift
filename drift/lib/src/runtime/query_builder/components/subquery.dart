@@ -121,15 +121,6 @@ class Subquery<Row> extends ResultSetImplementation<Subquery, Row>
 
   @override
   FutureOr<Row> map(Map<String, dynamic> data, {String? tablePrefix}) {
-    if (tablePrefix == null) {
-      return select._mapRow(data);
-    } else {
-      final withoutPrefix = {
-        for (final MapEntry(:key, :value) in columnsByName.entries)
-          key: data['$tablePrefix.$value']
-      };
-
-      return select._mapRow(withoutPrefix);
-    }
+    return select._mapRow(data.withoutPrefix(tablePrefix));
   }
 }

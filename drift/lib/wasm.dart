@@ -10,11 +10,12 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
+import 'package:drift/src/web/wasm_setup.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
 import 'src/sqlite3/database.dart';
-import 'src/web/wasm_setup.dart';
 import 'src/web/wasm_setup/dedicated_worker.dart';
 import 'src/web/wasm_setup/shared_worker.dart';
 import 'src/web/wasm_setup/types.dart';
@@ -90,13 +91,87 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri sqlite3Uri,
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
-  }) {
-    return WasmDatabaseOpener(
-      databaseName: databaseName,
-      sqlite3WasmUri: sqlite3Uri,
+  }) async {
+    final probed = await probe(
+      sqlite3Uri: sqlite3Uri,
       driftWorkerUri: driftWorkerUri,
-      initializeDatabase: initializeDatabase,
-    ).open();
+      databaseName: databaseName,
+    );
+
+    // If we have an existing database in storage, we want to keep using that
+    // format to avoid data loss (e.g. after a browser update that enables a
+    // otherwise preferred storage implementation). In the future, we might want
+    // to consider migrating between storage implementations as well.
+    final availableImplementations = probed.availableStorages.toList();
+
+    checkExisting:
+    for (final (location, name) in probed.existingDatabases) {
+      if (name == databaseName) {
+        final implementationsForStorage = switch (location) {
+          WebStorageApi.indexedDb => const [
+              WasmStorageImplementation.sharedIndexedDb,
+              WasmStorageImplementation.unsafeIndexedDb
+            ],
+          WebStorageApi.opfs => const [
+              WasmStorageImplementation.opfsShared,
+              WasmStorageImplementation.opfsLocks,
+            ],
+        };
+
+        // If any of the implementations for this location is still availalable,
+        // we want to use it instead of another location.
+        if (implementationsForStorage.any(availableImplementations.contains)) {
+          availableImplementations
+              .removeWhere((i) => !implementationsForStorage.contains(i));
+          break checkExisting;
+        }
+      }
+    }
+
+    // Enum values are ordered by preferrability, so just pick the best option
+    // left.
+    availableImplementations.sortBy<num>((element) => element.index);
+
+    final bestImplementation = availableImplementations.firstOrNull ??
+        WasmStorageImplementation.inMemory;
+    final connection = await probed.open(bestImplementation, databaseName);
+
+    return WasmDatabaseResult(
+        connection, bestImplementation, probed.missingFeatures);
+  }
+
+  /// Probes for:
+  ///
+  /// - available storage implementations based on supported web APIs.
+  /// - APIs not currently supported by the browser.
+  /// - existing drift databases in the current browsing context.
+  ///
+  /// This information can be used to control whether to open a drift database,
+  /// or whether the current browser is unsuitable for the persistence
+  /// requirements of your app.
+  /// For most apps, using [open] directly is easier. It calls [probe]
+  /// internally and uses the best storage implementation available.
+  ///
+  /// The [databaseName] option is not strictly required. But drift can't list
+  /// databases stored in IndexedDb, they are not part of
+  /// [WasmProbeResult.existingDatabases] by default. This is because drift
+  /// databases can't be distinguished from other IndexedDb databases without
+  /// opening them, which might disturb the running operation of them. When a
+  /// [databaseName] is passed, drift will explicitly probe whether a database
+  /// with that name exists in IndexedDb and whether it is a drift database.
+  /// Drift is always able to list databases stored in OPFS, regardless of
+  /// whether [databaseName] is passed or not.
+  ///
+  /// Note that this method is only fully supported when using the drift worker
+  /// shipped with the drift 2.11 release. Older workers are only supported when
+  /// [databaseName] is non-null.
+  static Future<WasmProbeResult> probe({
+    required Uri sqlite3Uri,
+    required Uri driftWorkerUri,
+    String? databaseName,
+  }) async {
+    return await WasmDatabaseOpener(sqlite3Uri, driftWorkerUri, databaseName)
+        .probe();
   }
 
   /// The entrypoint for a web worker suitable for use with [open].

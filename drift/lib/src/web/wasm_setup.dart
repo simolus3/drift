@@ -13,7 +13,6 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:async/async.dart';
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/wasm.dart';
@@ -24,8 +23,8 @@ import 'package:sqlite3/wasm.dart';
 
 import 'broadcast_stream_queries.dart';
 import 'channel.dart';
-import 'wasm_setup/protocol.dart';
 import 'wasm_setup/shared.dart';
+import 'wasm_setup/protocol.dart';
 
 /// Whether the `crossOriginIsolated` JavaScript property is true in the current
 /// context.
@@ -41,28 +40,53 @@ bool get supportsWorkers => hasProperty(globalThis, 'Worker');
 class WasmDatabaseOpener {
   final Uri sqlite3WasmUri;
   final Uri driftWorkerUri;
-  final String databaseName;
-  FutureOr<Uint8List?> Function()? initializeDatabase;
+
+  final String? databaseName;
 
   final Set<MissingBrowserFeature> missingFeatures = {};
   final List<WasmStorageImplementation> availableImplementations = [
     WasmStorageImplementation.inMemory,
   ];
+  final Set<ExistingDatabase> existingDatabases = {};
 
-  bool _existsInIndexedDb = false;
-  bool _existsInOpfs = false;
+  _DriftWorker? _sharedWorker, _dedicatedWorker;
 
-  MessagePort? _sharedWorker;
-  Worker? _dedicatedWorker;
+  WasmDatabaseOpener(
+    this.sqlite3WasmUri,
+    this.driftWorkerUri,
+    this.databaseName,
+  );
 
-  WasmDatabaseOpener({
-    required this.sqlite3WasmUri,
-    required this.driftWorkerUri,
-    required this.databaseName,
-    this.initializeDatabase,
-  });
+  RequestCompatibilityCheck _createCompatibilityCheck() {
+    return RequestCompatibilityCheck(databaseName ?? 'driftCompatibilityCheck');
+  }
 
-  Future<void> probe() async {
+  void _handleCompatibilityResult(CompatibilityResult result) {
+    missingFeatures.addAll(result.missingFeatures);
+
+    final databaseName = this.databaseName;
+
+    // Note that existingDatabases are only sent from workers shipped with drift
+    // 2.11 or later. Later drift versions need to be able to talk to newer
+    // workers though.
+    if (result.existingDatabases.isNotEmpty) {
+      existingDatabases.addAll(result.existingDatabases);
+    }
+
+    if (databaseName != null) {
+      // If this opener has been created for WasmDatabase.open, we have a
+      // database name and can interpret the opfsExists and indexedDbExists
+      // fields we're getting from older workers accordingly.
+      if (result.opfsExists) {
+        existingDatabases.add((WebStorageApi.opfs, databaseName));
+      }
+      if (result.indexedDbExists) {
+        existingDatabases.add((WebStorageApi.indexedDb, databaseName));
+      }
+    }
+  }
+
+  Future<WasmProbeResult> probe() async {
     try {
       await _probeShared();
     } on Object {
@@ -72,99 +96,167 @@ class WasmDatabaseOpener {
     try {
       await _probeDedicated();
     } on Object {
-      _dedicatedWorker?.terminate();
+      _dedicatedWorker?.close();
       _dedicatedWorker = null;
     }
 
-    if (_dedicatedWorker == null) {
-      // Something is wrong with web workers, let's see if we can get things
-      // running without a worker.
-      if (await checkIndexedDbSupport()) {
-        availableImplementations.add(WasmStorageImplementation.unsafeIndexedDb);
-        _existsInIndexedDb = await checkIndexedDbExists(databaseName);
+    return _ProbeResult(availableImplementations, existingDatabases.toList(),
+        missingFeatures, this);
+  }
+
+  Future<void> _probeDedicated() async {
+    if (supportsWorkers) {
+      final dedicatedWorker = _dedicatedWorker =
+          _DriftWorker.dedicated(Worker(driftWorkerUri.toString()));
+      _createCompatibilityCheck().sendTo(dedicatedWorker.send);
+
+      final status = await dedicatedWorker.workerMessages.nextNoError
+          as DedicatedWorkerCompatibilityResult;
+
+      _handleCompatibilityResult(status);
+
+      if (status.supportsNestedWorkers &&
+          status.canAccessOpfs &&
+          status.supportsSharedArrayBuffers) {
+        availableImplementations.add(WasmStorageImplementation.opfsLocks);
       }
+
+      if (status.supportsIndexedDb) {
+        availableImplementations.add(WasmStorageImplementation.unsafeIndexedDb);
+      }
+    } else {
+      missingFeatures.add(MissingBrowserFeature.dedicatedWorkers);
     }
   }
 
-  Future<WasmDatabaseResult> open() async {
-    await probe();
+  Future<void> _probeShared() async {
+    if (supportsSharedWorkers) {
+      final sharedWorker =
+          SharedWorker(driftWorkerUri.toString(), 'drift worker');
+      final port = sharedWorker.port!;
+      final shared = _sharedWorker = _DriftWorker.shared(sharedWorker, port);
 
-    // If we have an existing database in storage, we want to keep using that
-    // format to avoid data loss (e.g. after a browser update that enables a
-    // otherwise preferred storage implementation). In the future, we might want
-    // to consider migrating between storage implementations as well.
-    if (_existsInIndexedDb &&
-        (availableImplementations
-                .contains(WasmStorageImplementation.sharedIndexedDb) ||
-            availableImplementations
-                .contains(WasmStorageImplementation.unsafeIndexedDb))) {
-      availableImplementations.removeWhere((element) =>
-          element != WasmStorageImplementation.sharedIndexedDb &&
-          element != WasmStorageImplementation.unsafeIndexedDb);
-    } else if (_existsInOpfs &&
-        (availableImplementations
-                .contains(WasmStorageImplementation.opfsShared) ||
-            availableImplementations
-                .contains(WasmStorageImplementation.opfsLocks))) {
-      availableImplementations.removeWhere((element) =>
-          element != WasmStorageImplementation.opfsShared &&
-          element != WasmStorageImplementation.opfsLocks);
+      // First, the shared worker will tell us which features it supports.
+      _createCompatibilityCheck().sendToPort(port);
+      final sharedFeatures = await shared.workerMessages.nextNoError
+          as SharedWorkerCompatibilityResult;
+
+      _handleCompatibilityResult(sharedFeatures);
+
+      // Prefer to use the shared worker to host the database if it supports the
+      // necessary APIs.
+      if (sharedFeatures.canSpawnDedicatedWorkers &&
+          sharedFeatures.dedicatedWorkersCanUseOpfs) {
+        availableImplementations.add(WasmStorageImplementation.opfsShared);
+      }
+      if (sharedFeatures.canUseIndexedDb) {
+        availableImplementations.add(WasmStorageImplementation.sharedIndexedDb);
+      }
+    } else {
+      missingFeatures.add(MissingBrowserFeature.sharedWorkers);
     }
+  }
+}
 
-    // Enum values are ordered by preferrability, so just pick the best option
-    // left.
-    availableImplementations.sortBy<num>((element) => element.index);
-    return await _connect(availableImplementations.firstOrNull ??
-        WasmStorageImplementation.inMemory);
+final class _DriftWorker {
+  final AbstractWorker worker;
+
+  /// The message port to communicate with the worker, if it's a shared worker.
+  final MessagePort? portForShared;
+
+  final StreamQueue<WasmInitializationMessage> workerMessages;
+
+  _DriftWorker.dedicated(Worker this.worker)
+      : portForShared = null,
+        workerMessages =
+            StreamQueue(_readMessages(worker.onMessage, worker.onError));
+
+  _DriftWorker.shared(SharedWorker this.worker, this.portForShared)
+      : workerMessages =
+            StreamQueue(_readMessages(worker.port!.onMessage, worker.onError));
+
+  void send(Object? msg, [List<Object>? transfer]) {
+    switch (worker) {
+      case final Worker worker:
+        worker.postMessage(msg, transfer);
+      case SharedWorker():
+        portForShared!.postMessage(msg, transfer);
+    }
   }
 
-  /// Opens a database with the given [storage] implementation, bypassing the
-  /// feature detection. Must be called after [probe].
-  Future<WasmDatabaseResult> openWith(WasmStorageImplementation storage) async {
-    return await _connect(storage);
-  }
+  void close() {
+    workerMessages.cancel();
 
-  Future<WasmDatabaseResult> _connect(WasmStorageImplementation storage) async {
+    switch (worker) {
+      case final Worker dedicated:
+        dedicated.terminate();
+      case SharedWorker():
+        portForShared!.close();
+    }
+  }
+}
+
+final class _ProbeResult implements WasmProbeResult {
+  @override
+  final List<WasmStorageImplementation> availableStorages;
+
+  @override
+  final List<ExistingDatabase> existingDatabases;
+
+  @override
+  final Set<MissingBrowserFeature> missingFeatures;
+
+  final WasmDatabaseOpener opener;
+
+  _ProbeResult(
+    this.availableStorages,
+    this.existingDatabases,
+    this.missingFeatures,
+    this.opener,
+  );
+
+  @override
+  Future<DatabaseConnection> open(
+    WasmStorageImplementation implementation,
+    String name, {
+    FutureOr<Uint8List?> Function()? initializeDatabase,
+  }) async {
     final channel = MessageChannel();
     final initializer = initializeDatabase;
     final initChannel = initializer != null ? MessageChannel() : null;
     final local = channel.port1.channel();
 
     final message = ServeDriftDatabase(
-      sqlite3WasmUri: sqlite3WasmUri,
+      sqlite3WasmUri: opener.sqlite3WasmUri,
       port: channel.port2,
-      storage: storage,
-      databaseName: databaseName,
+      storage: implementation,
+      databaseName: name,
       initializationPort: initChannel?.port2,
     );
 
-    final sharedWorker = _sharedWorker;
-    final dedicatedWorker = _dedicatedWorker;
+    final sharedWorker = opener._sharedWorker;
+    final dedicatedWorker = opener._dedicatedWorker;
 
-    switch (storage) {
+    switch (implementation) {
       case WasmStorageImplementation.opfsShared:
       case WasmStorageImplementation.sharedIndexedDb:
-        // These are handled by the shared worker, so we can close the dedicated
-        // worker used for feature detection.
-        dedicatedWorker?.terminate();
-        message.sendToPort(sharedWorker!);
+        // Forward connection request to shared worker.
+        message.sendTo(sharedWorker!.send);
       case WasmStorageImplementation.opfsLocks:
       case WasmStorageImplementation.unsafeIndexedDb:
-        sharedWorker?.close();
-
         if (dedicatedWorker != null) {
-          message.sendToWorker(dedicatedWorker);
+          message.sendTo(dedicatedWorker.send);
         } else {
           // Workers seem to be broken, but we don't need them with this storage
           // mode.
-          return _hostDatabaseLocally(
-              storage, await IndexedDbFileSystem.open(dbName: databaseName));
+          return _hostDatabaseLocally(implementation,
+              await IndexedDbFileSystem.open(dbName: name), initializeDatabase);
         }
-
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
-        return _hostDatabaseLocally(storage, InMemoryFileSystem());
+        return _hostDatabaseLocally(
+            implementation, InMemoryFileSystem(), initializeDatabase);
     }
 
     initChannel?.port1.onMessage.listen((event) async {
@@ -181,7 +273,7 @@ class WasmDatabaseOpener {
     });
 
     var connection = await connectToRemoteAndInitialize(local);
-    if (storage == WasmStorageImplementation.opfsLocks) {
+    if (implementation == WasmStorageImplementation.opfsLocks) {
       // We want stream queries to update for writes in other tabs. For the
       // implementations backed by a shared worker, the worker takes care of
       // that.
@@ -193,20 +285,21 @@ class WasmDatabaseOpener {
         connection = DatabaseConnection(
           connection.executor,
           connectionData: connection.connectionData,
-          streamQueries: BroadcastStreamQueryStore(databaseName),
+          streamQueries: BroadcastStreamQueryStore(name),
         );
       }
     }
 
-    return WasmDatabaseResult(connection, storage, missingFeatures);
+    return connection;
   }
 
   /// Returns a database connection that doesn't use web workers.
-  Future<WasmDatabaseResult> _hostDatabaseLocally(
-      WasmStorageImplementation storage, VirtualFileSystem vfs) async {
-    final initializer = initializeDatabase;
-
-    final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
+  Future<DatabaseConnection> _hostDatabaseLocally(
+    WasmStorageImplementation storage,
+    VirtualFileSystem vfs,
+    FutureOr<Uint8List?> Function()? initializer,
+  ) async {
+    final sqlite3 = await WasmSqlite3.loadFromUrl(opener.sqlite3WasmUri);
     sqlite3.registerVirtualFileSystem(vfs);
 
     if (initializer != null) {
@@ -220,75 +313,26 @@ class WasmDatabaseOpener {
       }
     }
 
-    return WasmDatabaseResult(
-      DatabaseConnection(
-        WasmDatabase(sqlite3: sqlite3, path: '/database'),
-      ),
-      storage,
-      missingFeatures,
+    return DatabaseConnection(
+      WasmDatabase(sqlite3: sqlite3, path: '/database'),
     );
   }
 
-  Future<void> _probeShared() async {
-    if (supportsSharedWorkers) {
-      final sharedWorker =
-          SharedWorker(driftWorkerUri.toString(), 'drift worker');
-      final port = _sharedWorker = sharedWorker.port!;
+  @override
+  Future<void> deleteDatabase(ExistingDatabase database) async {
+    switch (database.$1) {
+      case WebStorageApi.indexedDb:
+        await deleteDatabaseInIndexedDb(database.$2);
+      case WebStorageApi.opfs:
+        final dedicated = opener._dedicatedWorker;
+        if (dedicated != null) {
+          DeleteDatabase(database).sendTo(dedicated.send);
 
-      final sharedMessages =
-          StreamQueue(_readMessages(port.onMessage, sharedWorker.onError));
-
-      // First, the shared worker will tell us which features it supports.
-      RequestCompatibilityCheck(databaseName).sendToPort(port);
-      final sharedFeatures =
-          await sharedMessages.nextNoError as SharedWorkerCompatibilityResult;
-      await sharedMessages.cancel();
-      missingFeatures.addAll(sharedFeatures.missingFeatures);
-
-      _existsInOpfs |= sharedFeatures.opfsExists;
-      _existsInIndexedDb |= sharedFeatures.indexedDbExists;
-
-      // Prefer to use the shared worker to host the database if it supports the
-      // necessary APIs.
-      if (sharedFeatures.canSpawnDedicatedWorkers &&
-          sharedFeatures.dedicatedWorkersCanUseOpfs) {
-        availableImplementations.add(WasmStorageImplementation.opfsShared);
-      }
-      if (sharedFeatures.canUseIndexedDb) {
-        availableImplementations.add(WasmStorageImplementation.sharedIndexedDb);
-      }
-    } else {
-      missingFeatures.add(MissingBrowserFeature.sharedWorkers);
-    }
-  }
-
-  Future<void> _probeDedicated() async {
-    if (supportsWorkers) {
-      final dedicatedWorker =
-          _dedicatedWorker = Worker(driftWorkerUri.toString());
-      RequestCompatibilityCheck(databaseName).sendToWorker(dedicatedWorker);
-
-      final workerMessages = StreamQueue(
-          _readMessages(dedicatedWorker.onMessage, dedicatedWorker.onError));
-
-      final status = await workerMessages.nextNoError
-          as DedicatedWorkerCompatibilityResult;
-      missingFeatures.addAll(status.missingFeatures);
-
-      _existsInOpfs |= status.opfsExists;
-      _existsInIndexedDb |= status.indexedDbExists;
-
-      if (status.supportsNestedWorkers &&
-          status.canAccessOpfs &&
-          status.supportsSharedArrayBuffers) {
-        availableImplementations.add(WasmStorageImplementation.opfsLocks);
-      }
-
-      if (status.supportsIndexedDb) {
-        availableImplementations.add(WasmStorageImplementation.unsafeIndexedDb);
-      }
-    } else {
-      missingFeatures.add(MissingBrowserFeature.dedicatedWorkers);
+          await dedicated.workerMessages.nextNoError;
+        } else {
+          throw StateError(
+              'No dedicated worker available to delete OPFS database');
+        }
     }
   }
 }

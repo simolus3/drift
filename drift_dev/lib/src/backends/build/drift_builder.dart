@@ -135,7 +135,14 @@ class _DriftBuildRun {
 
   _DriftBuildRun(this.options, this.mode, this.buildStep)
       : driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
-          ..cacheReader = BuildCacheReader(buildStep);
+          ..cacheReader = BuildCacheReader(
+            buildStep,
+            // The discovery and analyzer builders will have emitted IR for
+            // every relevant file in a previous build step that this builder
+            // has a dependency on.
+            findsResolvedElementsReliably: !mode.embeddedAnalyzer,
+            findsLocalElementsReliably: !mode.embeddedAnalyzer,
+          );
 
   Future<void> run() async {
     await _warnAboutDeprecatedOptions();
@@ -214,12 +221,10 @@ class _DriftBuildRun {
   /// Checks if the input file contains elements drift should generate code for.
   Future<bool> _checkForElementsToBuild() async {
     if (mode.embeddedAnalyzer) {
-      // Run the discovery step, which we'll have to run either way, to check if
-      // there are any elements to generate code for.
-      final state = await driver.prepareFileForAnalysis(buildStep.inputId.uri,
-          needsDiscovery: true);
-
-      return state.discovery?.locallyDefinedElements.isNotEmpty == true;
+      // Check if there are any elements defined locally that would need code
+      // to be generated for this file.
+      final state = await driver.findLocalElements(buildStep.inputId.uri);
+      return state.definedElements.isNotEmpty;
     } else {
       // An analysis step should have already run for this asset. If we can't
       // pick up results from that, there is no code for drift to generate.
@@ -237,8 +242,8 @@ class _DriftBuildRun {
         buildStep.inputId.extension != '.dart') {
       // For modular drift file generation, we need to know about imports which
       // are only available when discovery ran.
-      await driver.prepareFileForAnalysis(buildStep.inputId.uri,
-          needsDiscovery: true);
+      final state = driver.cache.stateForUri(buildStep.inputId.uri);
+      await driver.discoverIfNecessary(state);
     }
 
     return true;

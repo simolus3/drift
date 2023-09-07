@@ -103,6 +103,12 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   }
 
   @override
+  Future<Element?> resolveTopLevelElement(
+      Uri context, String reference, Iterable<Uri> imports) {
+    _noAnalyzer();
+  }
+
+  @override
   Uri resolveUri(Uri base, String uriString) {
     return uri;
   }

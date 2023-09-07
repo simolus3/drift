@@ -3,11 +3,9 @@
 import 'dart:async';
 import 'dart:html';
 
+import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
-// ignore: implementation_imports
-import 'package:sqlite3/src/wasm/js_interop/file_system_access.dart';
-import 'package:path/path.dart' as p;
 
 import '../../utils/synchronized.dart';
 import 'protocol.dart';
@@ -48,32 +46,25 @@ class DedicatedDriftWorker {
         });
 
         final existingServer = _servers.servers[dbName];
+
         var indexedDbExists = false, opfsExists = false;
+        final existingDatabases = <ExistingDatabase>[];
+
+        if (supportsOpfs) {
+          for (final database in await opfsDatabases()) {
+            existingDatabases.add((WebStorageApi.opfs, database));
+
+            if (database == dbName) {
+              opfsExists = true;
+            }
+          }
+        }
 
         if (existingServer != null) {
           indexedDbExists = existingServer.storage.isIndexedDbBased;
           opfsExists = existingServer.storage.isOpfsBased;
-        } else {
-          if (supportsIndexedDb) {
-            indexedDbExists = await checkIndexedDbExists(dbName);
-          }
-
-          if (supportsOpfs) {
-            final storage = storageManager!;
-            final pathSegments = p.url.split(pathForOpfs(dbName));
-
-            var directory = await storage.directory;
-            opfsExists = true;
-
-            for (final segment in pathSegments) {
-              try {
-                directory = await directory.getDirectory(segment);
-              } on Object {
-                opfsExists = false;
-                break;
-              }
-            }
-          }
+        } else if (supportsIndexedDb) {
+          indexedDbExists = await checkIndexedDbExists(dbName);
         }
 
         DedicatedWorkerCompatibilityResult(
@@ -84,6 +75,7 @@ class DedicatedDriftWorker {
               hasProperty(globalThis, 'SharedArrayBuffer'),
           opfsExists: opfsExists,
           indexedDbExists: indexedDbExists,
+          existingDatabases: existingDatabases,
         ).sendToClient(self);
       case ServeDriftDatabase():
         _servers.serve(message);
@@ -91,6 +83,22 @@ class DedicatedDriftWorker {
         final worker = await VfsWorker.create(options);
         self.postMessage(true);
         await worker.start();
+      case DeleteDatabase(database: (final storage, final name)):
+        try {
+          switch (storage) {
+            case WebStorageApi.indexedDb:
+              await deleteDatabaseInIndexedDb(name);
+            case WebStorageApi.opfs:
+              await deleteDatabaseInOpfs(name);
+          }
+
+          // Send the request back to indicate a successful delete.
+          message.sendToClient(self);
+        } catch (e) {
+          WorkerError(e.toString()).sendToClient(self);
+        }
+
+        break;
       default:
         break;
     }
