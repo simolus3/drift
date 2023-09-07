@@ -1,4 +1,4 @@
-## 2.11.2-dev
+## 2.11.2
 
 - Follow `export` directives when looking for table imports.
 
