@@ -14,11 +14,12 @@ dependencies:
   stream_channel:
   uuid:
   typed_data:
+  mqtt_client:
+  async:
 
 dev_dependencies:
   lints: ^2.0.0
   test: ^1.18.0
-  mqtt_client:
   drift_testcases:
     path: ../integration_tests/drift_testcases
   json_annotation:

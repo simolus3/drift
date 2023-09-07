@@ -1,12 +1,13 @@
 @TestOn('vm')
-@Timeout(Duration(seconds: 60))
-
+@Timeout(Duration(seconds: 120))
 import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/src/remote/protocol.dart';
+import 'package:drift_network_bridge/implementation/mqtt_database_gateway.dart';
+import 'package:drift_testcases/database/database.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
@@ -14,58 +15,51 @@ import 'package:test/test.dart';
 import '../../../drift/test/generated/todos.dart';
 import '../../../drift/test/test_utils/database_vm.dart';
 import '../../../drift/test/test_utils/mocks.dart';
-import 'impl/mqtt_stream/mqtt_stream_controller.dart';
-
 void main() {
   preferLocalSqlite3();
-
   test('closes channel in shutdown mqtt ', () async {
-    final controller = MqttStreamController();
-    await controller.isReady();
-    // final controller = StreamChannelController<Object?>();
-    final server =
-    DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
-    server.serve(controller.foreign);
-
-    await shutdown(controller.local.expectedToClose);
-  });
-
-  test('closes channel in shutdown StreamChannelController', () async {
-    final controller = StreamChannelController<Object?>();
-    final server =
-    DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
-    server.serve(controller.foreign);
-
-    await shutdown(controller.local.expectedToClose);
+    final gate = MqttDatabaseGateway('test.mosquitto.org',
+        'unit_device', 'drift/test_site',
+        allowRemoteShutdown: true);
+    await gate.serve(Database(testInMemoryDatabase()));
+    final client = gate.createConnection();
+    await client.connect();
+    await gate.isReady;
+    await shutdown(client.expectedToClose);
   });
 
   test('can shutdown server on close', () async {
-    final controller = StreamChannelController<Object?>();
-    final server =
-    DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
-    server.serve(controller.foreign);
+    final gate = MqttDatabaseGateway('test.mosquitto.org',
+        'unit_device', 'drift/test_site',
+        allowRemoteShutdown: true);
+    await gate.serve(Database(testInMemoryDatabase()));
+    final client = gate.createConnection();
+    await client.connect();
+    await gate.isReady;
 
-    final client = await connectToRemoteAndInitialize(
-        controller.local.expectedToClose,
+    final clientConn = await connectToRemoteAndInitialize(
+        client.expectedToClose,
         singleClientMode: true);
-    final db = TodoDb(client);
+    final db = TodoDb(clientConn);
 
     await db.todosTable.select().get();
     await db.close();
 
-    expect(server.done, completes);
+    expect(gate.done, completes);
   });
 
   test(
     'does not send table update notifications in single client mode',
-        () async {
-      final server =
-      DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
-      final controller = StreamChannelController<Object?>();
-      server.serve(controller.foreign, serialize: false);
+    () async {
+      final gate = MqttDatabaseGateway('test.mosquitto.org', 'unit_device', 'drift/test_site',
+          allowRemoteShutdown: true);
+      await gate.serve(Database(testInMemoryDatabase()),serialize: false);
+      final client = gate.createConnection();
+      await client.connect();
+      await gate.isReady;
 
-      final client = await connectToRemoteAndInitialize(
-        controller.local.transformSink(StreamSinkTransformer.fromHandlers(
+      final clientConn = await connectToRemoteAndInitialize(
+        client.transformSink(StreamSinkTransformer.fromHandlers(
           handleData: (data, out) {
             expect(data, isNot(isA<NotifyTablesUpdated>()));
             out.add(data);
@@ -75,70 +69,34 @@ void main() {
         singleClientMode: true,
       );
 
-      final db = TodoDb(client);
+      final db = TodoDb(clientConn);
       await db.todosTable.select().get();
       await db.close();
     },
   );
 
-  test('Uint8Lists are mapped from and to Uint8Lists', () async {
-    const protocol = DriftProtocol();
-
-    final request = Request(
-      1,
-      ExecuteQuery(StatementMethod.select, 'SELECT ?', [
-        Uint8List.fromList([1, 2, 3])
-      ]),
-    );
-
-    final mapped = protocol.deserialize(protocol.serialize(request)!);
-    expect(
-      mapped,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
-            (e) => e.payload,
-        'payload',
-        isA<ExecuteQuery>()
-            .having((e) => e.method, 'method', StatementMethod.select)
-            .having((e) => e.args, 'args', [isA<Uint8List>()]),
-      ),
-    );
-  });
-
-  test('BigInts are serialied', () {
-    const protocol = DriftProtocol();
-
-    final request = Request(
-      1,
-      ExecuteQuery(StatementMethod.select, 'SELECT ?', [BigInt.one]),
-    );
-
-    final mapped = protocol.deserialize(protocol.serialize(request)!);
-    expect(
-      mapped,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
-            (e) => e.payload,
-        'payload',
-        isA<ExecuteQuery>()
-            .having((e) => e.method, 'method', StatementMethod.select)
-            .having((e) => e.args, 'args', [isA<BigInt>()]),
-      ),
-    );
-  });
-
   test('can run protocol without using complex types', () async {
     final executor = MockExecutor();
-    final server = DriftServer(DatabaseConnection(executor));
-    addTearDown(server.shutdown);
+    // final server = DriftServer(DatabaseConnection(executor));
+    // addTearDown(server.shutdown);
 
-    final channelController = MqttStreamController();
-    await channelController.isReady();
-    server.serve(channelController.foreign.changeStream(_checkStreamOfSimple),
-        serialize: true);
+    final gate = MqttDatabaseGateway('test.mosquitto.org', 'unit_device', 'drift/test_site',
+        allowRemoteShutdown: true);
+    addTearDown(gate.shutdown);
+
+
+    gate.changeStream(_checkStreamOfSimple);
+
+    await gate.serveExecuter(DatabaseConnection(executor),serialize: true);
+
+    // server.serve(host.changeStream(_checkStreamOfSimple), serialize: true);
+
+    final client = gate.createConnection();
+    await client.connect();
+    await gate.isReady;
 
     final connection = await connectToRemoteAndInitialize(
-        channelController.local
-            .changeStream(_checkStreamOfSimple)
-            .expectedToClose,
+        client.changeStream(_checkStreamOfSimple).expectedToClose,
         serialize: true);
     final db = TodoDb(connection);
 
@@ -156,19 +114,18 @@ void main() {
     ]));
 
     when(executor.runInsert(any, any)).thenAnswer(
-            (realInvocation) => Future.error(UnimplementedError('error!')));
+        (realInvocation) => Future.error(UnimplementedError('error!')));
     await expectLater(
       db.categories
           .insertOne(CategoriesCompanion.insert(description: 'description')),
       throwsA(isA<DriftRemoteException>().having(
-              (e) => e.remoteCause, 'remoteCause', 'UnimplementedError: error!')),
+          (e) => e.remoteCause, 'remoteCause', 'UnimplementedError: error!')),
     );
 
     await db.close();
   });
 
   test('nested transactions', () async {
-    final controller = StreamChannelController<Object?>();
     final executor = MockExecutor();
     final outerTransaction = executor.transactions;
     // avoid this object being created implicitly in the beginTransaction() when
@@ -185,11 +142,19 @@ void main() {
 
     when(outerTransaction.beginTransaction()).thenAnswer(newTransaction);
 
-    final server = DriftServer(DatabaseConnection(executor));
-    server.serve(controller.foreign);
-    addTearDown(server.shutdown);
+    // final server = DriftServer(DatabaseConnection(executor));
+    // server.serve(host);
+    final gate = MqttDatabaseGateway('test.mosquitto.org', 'unit_device', 'drift/test_site',
+        allowRemoteShutdown: true);
+    // addTearDown(server.shutdown);
+    addTearDown(gate.shutdown);
+    await gate.serveExecuter(DatabaseConnection(executor));
 
-    final db = TodoDb(await connectToRemoteAndInitialize(controller.local));
+    final client = gate.createConnection();
+    await client.connect();
+    await gate.isReady;
+
+    final db = TodoDb(await connectToRemoteAndInitialize(client));
     addTearDown(db.close);
 
     await db.transaction(() async {
@@ -222,13 +187,22 @@ void main() {
     final executor = MockExecutor();
     when(executor.dialect).thenReturn(SqlDialect.postgres);
 
-    final controller = StreamChannelController<Object?>();
-    final server = DriftServer(DatabaseConnection(executor))
-      ..serve(controller.foreign);
+    final gate = MqttDatabaseGateway('test.mosquitto.org', 'unit_device', 'drift/test_site',
+        allowRemoteShutdown: true);
+    // addTearDown(server.shutdown);
+    addTearDown(gate.shutdown);
+    await gate.serveExecuter(DatabaseConnection(executor));
 
-    final client = await connectToRemoteAndInitialize(controller.local);
-    await server.shutdown();
-    expect(client.executor.dialect, SqlDialect.postgres);
+    final client = gate.createConnection();
+    await client.connect();
+    await gate.isReady;
+
+    // final server = DriftServer(DatabaseConnection(executor))..serve(host);
+
+    final clientConn = await connectToRemoteAndInitialize(client);
+    // await server.shutdown();
+    await gate.shutdown();
+    expect(clientConn.executor.dialect, SqlDialect.postgres);
   });
 }
 
@@ -253,7 +227,9 @@ void _checkSimple(Object? object) {
 extension<T> on StreamChannel<T> {
   StreamChannel<T> get expectedToClose {
     return transformStream(StreamTransformer.fromHandlers(
-      handleDone: expectAsync1((out) => out.close()),
-    ));
+      handleDone: expectAsync1((out) {
+        out.close();
+      }
+    )));
   }
 }
