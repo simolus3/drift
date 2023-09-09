@@ -198,19 +198,19 @@ in debug modes.
 
 #### Moving to step-by-step migrations
 
-If you've been using drift before `stepByStep` was added to the library, or if you've never exported a schema, 
-you can move to step-by-step migrations by pinning the `from` value in `Migrator.runMigrationSteps` to a known 
+If you've been using drift before `stepByStep` was added to the library, or if you've never exported a schema,
+you can move to step-by-step migrations by pinning the `from` value in `Migrator.runMigrationSteps` to a known
 starting point.
 
-This allows you to perform all prior migration work to get the database to the "starting" point for 
+This allows you to perform all prior migration work to get the database to the "starting" point for
 `stepByStep` migrations, and then use `stepByStep` migrations beyond that schema version.
 
 {% include "blocks/snippet" snippets = snippets name = 'stepbystep3' %}
 
-Here, we give a "floor" to the `from` value of `3`, since we've performed all other migration work to get to 
+Here, we give a "floor" to the `from` value of `2`, since we've performed all other migration work to get to
 this point. From now on, you can generate step-by-step migrations for each schema change.
 
-If you did not do this, a user migrating from schema 1 directly to schema 4 would not properly walk migrations
+If you did not do this, a user migrating from schema 1 directly to schema 3 would not properly walk migrations
 and apply all migration changes required.
 
 ### Writing tests

@@ -168,7 +168,7 @@ extension StepByStep2 on GeneratedDatabase {
   }
 }
 
-extension StepByStep3 on GeneratedDatabase {
+extension StepByStep3 on Example {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
@@ -180,26 +180,25 @@ extension StepByStep3 on GeneratedDatabase {
         // (https://drift.simonbinder.eu/docs/advanced-features/migrations/#tips)
         await customStatement('PRAGMA foreign_keys = OFF');
 
+        // Manually running migrations up to schema version 2, after which we've
+        // enabled step-by-step migrations.
         if (from < 2) {
           // we added the dueDate property in the change from version 1 to
-          // version 2
-          await m.addColumn(schema.todos, schema.todos.dueDate);
-        }
-
-        if (from < 3) {
-          // we added the priority property in the change from version 1 or 2
-          // to version 3
-          await m.addColumn(schema.todos, schema.todos.priority);
+          // version 2 - before switching to step-by-step migrations.
+          await m.addColumn(todos, todos.dueDate);
         }
 
         // At this point, we should be migrated to schema 3. For future schema
         // changes, we will "start" at schema 3.
         await m.runMigrationSteps(
-          from: math.max(3, from),
+          from: math.max(2, from),
           to: to,
+          // ignore: missing_required_argument
           steps: migrationSteps(
-            from3To4: (m, schema) async {
-              // Perform schema migrations for schema 4
+            from2To3: (m, schema) async {
+              // we added the priority property in the change from version 1 or
+              // 2 to version 3
+              await m.addColumn(schema.todos, schema.todos.priority);
             },
           ),
         );
