@@ -525,7 +525,9 @@ class FooData {
           'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
-@UseRowClass((id: int, name: String, birthday: DateTime))
+typedef MyRecord = ({int id, String name, DateTime birthday});
+
+@UseRowClass(MyRecord)
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();

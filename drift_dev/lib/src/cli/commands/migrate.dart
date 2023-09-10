@@ -4,14 +4,17 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:io/ansi.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:sqlparser/sqlparser.dart' hide AnalysisContext, StringLiteral;
+import 'package:sqlparser/sqlparser.dart'
+    hide AnalysisContext, StringLiteral, SyntacticEntity, AstNode;
 import 'package:yaml/yaml.dart';
 
 import '../cli.dart';
@@ -386,23 +389,22 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     _writer.replace(uri.offset, uri.length, asDartLiteral(newImport));
   }
 
-  @override
-  void visitSimpleIdentifier(SimpleIdentifier node) {
+  void _transformIdentifier(
+      SyntacticEntity identifier, String name, Element? element) {
     String? newIdentifier;
 
-    if (node.name == 'FlutterQueryExecutor') {
+    if (name == 'FlutterQueryExecutor') {
       newIdentifier = 'SqfliteQueryExecutor';
     } else {
-      var element = node.staticElement;
-      if (element == null) {
+      if (element == null && identifier is AstNode) {
         // It looks like left-hand identifiers of assignments don't have a
         // static element, infer from parent.
-        if (node.parent is AssignmentExpression) {
-          element = (node.parent as AssignmentExpression).writeElement;
+        if (identifier.parent is AssignmentExpression) {
+          element = (identifier.parent as AssignmentExpression).writeElement;
         }
-
-        if (element == null) return;
       }
+
+      if (element == null) return;
 
       for (final annotation in element.metadata) {
         final value = annotation.computeConstantValue();
@@ -423,8 +425,19 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     }
 
     if (newIdentifier != null) {
-      _writer.replace(node.offset, node.length, newIdentifier);
+      _writer.replace(identifier.offset, name.length, newIdentifier);
     }
+  }
+
+  @override
+  void visitSimpleIdentifier(SimpleIdentifier node) {
+    _transformIdentifier(node, node.name, node.staticElement);
+  }
+
+  @override
+  void visitNamedType(NamedType node) {
+    _transformIdentifier(node.name2, node.name2.lexeme, node.element);
+    super.visitNamedType(node);
   }
 
   @override
