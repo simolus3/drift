@@ -11,12 +11,12 @@ dependencies:
   json_annotation: ^4.8.1
   docsy:
     hosted: https://simonbinder.eu
-    version: ^0.2.2
+    version: ^0.2.3
   code_snippets:
     hosted: https://simonbinder.eu
-    version: ^0.0.12
+    version: ^0.0.13
   # used in snippets
-  http: ^0.13.5
+  http: ^1.1.0
   sqlite3: ^2.0.0
   # Fake path_provider for snippets
   path_provider:
@@ -38,16 +38,14 @@ dev_dependencies:
   build_web_compilers: ^4.0.0
   built_site:
     hosted: https://simonbinder.eu
-    version: ^0.2.15
-  linkcheck: ^3.0.0
+    version: ^0.2.16
   json_serializable: ^6.1.6
   shelf: ^1.2.0
   shelf_static: ^1.1.0
   source_span: ^1.9.1
   test: ^1.18.0
   sqlparser:
-  zap_dev: ^0.2.2
-
+  zap_dev: ^0.2.3+1
 
 dependency_overrides:
   # todo: Remove after https://github.com/dart-lang/mime/pull/43
@@ -55,10 +53,3 @@ dependency_overrides:
     git:
       url: https://github.com/simolus3/mime.git
       ref: woff2
-  # The bootstrap_sass on pub.dev doesn't support null safety, so I'm hosting
-  # https://github.com/dart-league/bootstrap_sass/pull/13.
-  # Hopefully this can change soon once docsy migrates to bootstrap 5
-  bootstrap_sass:
-    hosted:
-      url: https://simonbinder.eu
-    version: "4.6.0"

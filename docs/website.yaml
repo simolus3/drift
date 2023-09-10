@@ -16,9 +16,9 @@ site:
       - name: "Contact me via e-mail"
         url: "mailto:oss@simonbinder.eu"
         icon: "fa fa-envelope"
-      - name: "Room in gitter"
-        url: "https://gitter.im/moor-dart/community"
-        icon: "fab fa-gitter"
+#      - name: "Room in gitter"
+#        url: "https://gitter.im/moor-dart/community"
+#        icon: "fab fa-gitter"
       - name: "Project on GitHub"
         url: "https://github.com/simolus3/drift"
         icon: "fab fa-github"
@@ -29,8 +29,10 @@ site:
         url: "/docs/"
       - name: "Pub"
         url: "https://pub.dev/packages/drift"
+        external: true
       - name: "GitHub"
         url: "https://github.com/simolus3/drift/"
+        external: true
       - name: "API docs"
         url: "/api/"
 

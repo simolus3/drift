@@ -34,8 +34,8 @@ the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
 
 {% block "blocks/alert" title="Caution with equality" color="warning" %}
-> If your converter returns an object that is not comparable by value, the generated dataclass will not
-  be comparable by value.
+If your converter returns an object that is not comparable by value, the generated dataclass will not
+be comparable by value.
 {% endblock %}
 
 ### Implicit enum converters
@@ -59,23 +59,23 @@ class Tasks extends Table {
 ```
 
 {% block "blocks/alert" title="Caution with enums" color="warning" %}
-> It can be easy to accidentally invalidate your database by introducing another enum value.
-  For instance, let's say we inserted a `Task` into the database in the above example and set its
-  `Status` to `running` (index = 1).
-  Now we modify `Status` enum to include another entry:
-  ```dart
-  enum Status {
-    none,
-    starting, // new!
-    running,
-    stopped,
-    paused
-  }
-  ```
-  When selecting the task, it will now report as `starting`, as that's the new value at index 1.
-  For this reason, it's best to add new values at the end of the enumeration, where they can't conflict
-  with existing values. Otherwise you'd need to bump your schema version and run a custom update statement
-  to fix this.
+It can be easy to accidentally invalidate your database by introducing another enum value.
+For instance, let's say we inserted a `Task` into the database in the above example and set its
+`Status` to `running` (index = 1).
+Now we modify `Status` enum to include another entry:
+```dart
+enum Status {
+  none,
+  starting, // new!
+  running,
+  stopped,
+  paused
+}
+```
+When selecting the task, it will now report as `starting`, as that's the new value at index 1.
+For this reason, it's best to add new values at the end of the enumeration, where they can't conflict
+with existing values. Otherwise you'd need to bump your schema version and run a custom update statement
+to fix this.
 {% endblock %}
 
 If you prefer to store the enum as a text, you can use `textEnum` instead.
@@ -95,21 +95,21 @@ class Tasks extends Table {
 ```
 
 {% block "blocks/alert" title="Caution with enums" color="warning" %}
-> It can be easy to accidentally invalidate your database by renaming your enum values.
-  For instance, let's say we inserted a `Task` into the database in the above example and set its
-  `Status` to `running`.
-  Now we modify `Status` enum to rename `running` into `processing`:
-  ```dart
-  enum Status {
-    none,
-    processing,
-    stopped,
-    paused
-  }
-  ```
-  When selecting the task, it won't be able to find the enum value `running` anymore, and will throw an error. 
+It can be easy to accidentally invalidate your database by renaming your enum values.
+For instance, let's say we inserted a `Task` into the database in the above example and set its
+`Status` to `running`.
+Now we modify `Status` enum to rename `running` into `processing`:
+```dart
+enum Status {
+  none,
+  processing,
+  stopped,
+  paused
+}
+```
+When selecting the task, it won't be able to find the enum value `running` anymore, and will throw an error. 
 
-  For this reason, it's best to not modify the name of your enum values. Otherwise you'd need to bump your schema version and run a custom update statement to fix this.
+For this reason, it's best to not modify the name of your enum values. Otherwise you'd need to bump your schema version and run a custom update statement to fix this.
 {% endblock %}
 
 Also note that you can't apply another type converter on a column declared with an enum converter.

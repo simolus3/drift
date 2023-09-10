@@ -1,29 +1,29 @@
 {% assign links = site.links %}
-<footer class="bg-dark py-5 row d-print-none">
-  <div class="container-fluid mx-sm-5">
-    <div class="row">
+<footer class="td-footer row d-print-none">
+  <div class="container-fluid">
+    <div class="row mx-md-2">
       <div class="col-6 col-sm-4 text-xs-center order-sm-2">
         {% if links.user %}
           {% assign links = links.user %}
           {% include "partials/footer-links-block.html" %}
         {% endif %}
       </div>
-      <div class="col-6 col-sm-4 text-right text-xs-center order-sm-3">
+      <div class="col-6 col-sm-4 text-end text-xs-center order-sm-3">
         {% if links.developer %}
           {% assign links = links.developer %}
           {% include "partials/footer-links-block.html" %}
         {% endif %}
       </div>
-      <div class="col-12 col-sm-4 text-center py-2 order-sm-2">
+      <div class="td-footer__copyright-etc col-12 col-sm-4 text-center py-2 order-sm-2">
         {% if site.copyright %}
-        <small class="text-white"><div>&copy; {{ site.copyright }}</div>
-          Except where otherwise noted, content on this site is licensed under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="license noopener noreferrer">CC BY 4.0</a> license.
-          Code snippets are marked with <a href="http://creativecommons.org/publicdomain/zero/1.0" target="_blank" rel="license noopener noreferrer">CC0 1.0</a>,
-          drift itself is <a href="https://github.com/simolus3/drift/blob/develop/LICENSE" rel="license" target="_blank">MIT-licensed</a>.
-        </small>
+          <span><div>&copy; {{ site.copyright }}</div>
+            Except where otherwise noted, content on this site is licensed under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="license noopener noreferrer">CC BY 4.0</a> license.
+            Code snippets are marked with <a href="http://creativecommons.org/publicdomain/zero/1.0" target="_blank" rel="license noopener noreferrer">CC0 1.0</a>,
+            drift itself is <a href="https://github.com/simolus3/drift/blob/develop/LICENSE" rel="license" target="_blank">MIT-licensed</a>.
+          </span>
         {% endif %}
         {% if site.privacy_policy %}
-          <small class="ml-1"><a href="{{ site.privacy_policy }}" target="_blank">{{ "footer_privacy_policy" | i18n }}</a></small>
+          <span class="ml-1"><a href="{{ site.privacy_policy }}" target="_blank">{{ "footer_privacy_policy" | i18n }}</a></span>
         {% endif %}
       </div>
     </div>

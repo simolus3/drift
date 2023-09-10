@@ -54,22 +54,22 @@ class MyDatabase extends _$MyDatabase {
 We can't distribute an sqlite installation as a pub package (at least
 not as something that works outside of a Flutter build), so you need
 to ensure that you have the sqlite3 shared library installed on your
-system. 
+system.
 
 On macOS, it's installed by default.
 
-On Linux, you can use the `libsqlite3-dev` package on Ubuntu and the 
+On Linux, you can use the `libsqlite3-dev` package on Ubuntu and the
 `sqlite3` package on Arch (other distros will have similar packages).
 
 On Windows, you can [download 'Precompiled Binaries for Windows'](https://www.sqlite.org/download.html)
-and extract `sqlite3.dll` into a folder that's in your `PATH` 
+and extract `sqlite3.dll` into a folder that's in your `PATH`
 environment variable. Then restart your device to ensure that
 all apps will run with this `PATH` change.
 {% endblock %}
 
 ## Writing tests
 
-We can create an in-memory version of the database by using a 
+We can create an in-memory version of the database by using a
 `NativeDatabase.memory()` instead of a `FlutterQueryExecutor` or other implementations. A good
 place to open the database is the `setUp` and `tearDown` methods from
 `package:test`:
@@ -77,7 +77,7 @@ place to open the database is the `setUp` and `tearDown` methods from
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 // the file defined above, you can test any drift database of course
-import 'database.dart'; 
+import 'database.dart';
 
 void main() {
   MyDatabase database;

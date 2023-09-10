@@ -56,19 +56,19 @@ It only applies to your full Flutter app though, it can't override the sqlite3 v
 with `flutter test`.
 
 {% block "blocks/alert" title="A note on ffi and Android" %}
-> `package:drift/native.dart` is the recommended drift implementation for new Android apps.
-  However, there are some smaller issues on some devices that you should be aware of:
+`package:drift/native.dart` is the recommended drift implementation for new Android apps.
+However, there are some smaller issues on some devices that you should be aware of:
 
-  - Using `sqlite3_flutter_libs` will include prebuilt binaries for 32-bit `x86` devices which you
-    probably won't need. You can apply a [filter](https://github.com/simolus3/sqlite3.dart/tree/master/sqlite3_flutter_libs#included-platforms)
-    in your `build.gradle` to remove those binaries.
-  - Opening `libsqlite3.so` fails on some Android 6.0.1 devices. This can be fixed by setting
-    `android.bundle.enableUncompressedNativeLibs=false` in your `gradle.properties` file.
-    Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/drift/issues/895#issuecomment-720195005)
-    for details.
-  - Out of memory errors for very complex queries: Since the regular tmp directory isn't available on Android, you need to inform
-    sqlite3 about the right directory to store temporary data. See [this comment](https://github.com/simolus3/drift/issues/876#issuecomment-710013503)
-    for an example on how to do that.
+- Using `sqlite3_flutter_libs` will include prebuilt binaries for 32-bit `x86` devices which you
+  probably won't need. You can apply a [filter](https://github.com/simolus3/sqlite3.dart/tree/master/sqlite3_flutter_libs#included-platforms)
+  in your `build.gradle` to remove those binaries.
+- Opening `libsqlite3.so` fails on some Android 6.0.1 devices. This can be fixed by setting
+  `android.bundle.enableUncompressedNativeLibs=false` in your `gradle.properties` file.
+  Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/drift/issues/895#issuecomment-720195005)
+  for details.
+- Out of memory errors for very complex queries: Since the regular tmp directory isn't available on Android, you need to inform
+  sqlite3 about the right directory to store temporary data. See [this comment](https://github.com/simolus3/drift/issues/876#issuecomment-710013503)
+  for an example on how to do that.
 {% endblock %}
 
 ## Web
