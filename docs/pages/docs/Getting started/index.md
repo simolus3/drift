@@ -4,9 +4,10 @@ data:
   description: Simple guide to get a drift project up and running.
   weight: 1
   hide_section_index: true
+path: /docs/getting-started-old
 template: layouts/docs/list
 aliases:
-  - /getting-started/  # Used to have this url
+  - /getting-started-old/  # Used to have this url
 ---
 
 In addition to this document, other resources on how to use drift also exist.

@@ -1,10 +1,11 @@
 ---
 data:
   title: "Transactions"
-  weight: 70
+  weight: 4
   description: Run multiple statements atomically
 
 template: layouts/docs/single
+path: /docs/transactions/
 aliases:
   - /transactions/
 ---

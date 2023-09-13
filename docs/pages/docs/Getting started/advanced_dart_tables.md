@@ -3,6 +3,7 @@ data:
   title: "Dart tables"
   description: "Further information on defining tables in Dart. This page describes advanced features like constraints, nullability, references and views"
   weight: 150
+path: /old-tables
 template: layouts/docs/single
 ---
 

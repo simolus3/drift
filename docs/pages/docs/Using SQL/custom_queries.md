@@ -63,7 +63,7 @@ name you specified.
 {% endblock %}
 
 You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for
-[daos]({{ "../Advanced Features/daos.md" | pageUrl }}),
+[daos]({{ "../Dart API/daos.md" | pageUrl }}),
 and it perfectly integrates with auto-updating streams by analyzing what tables you're reading from or
 writing to.
 

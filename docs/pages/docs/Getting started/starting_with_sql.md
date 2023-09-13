@@ -86,7 +86,7 @@ Now that you know how to use drift together with sql, here are some
 further guides to help you learn more:
 
 - The [SQL IDE]({{ "../Using SQL/sql_ide.md" | pageUrl }}) that provides feedback on sql queries right in your editor.
-- [Transactions]({{ "../transactions.md" | pageUrl }})
+- [Transactions]({{ "../Dart API/transactions.md" | pageUrl }})
 - [Schema migrations]({{ "../Advanced Features/migrations.md" | pageUrl }})
 - Writing [queries]({{ "writing_queries.md" | pageUrl }}) and
   [expressions]({{ "../Advanced Features/expressions.md" | pageUrl }}) in Dart
