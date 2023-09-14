@@ -51,6 +51,21 @@ class DiscoveredDartView extends DiscoveredDartElement<ClassElement> {
   DiscoveredDartView(super.ownId, super.dartElement, this.viewAnnotation);
 }
 
+class DiscoveredDartIndex extends DiscoveredDartElement<ClassElement> {
+  final DriftElementId onTable;
+
+  ElementAnnotation annotation;
+
+  @override
+  DriftElementKind get kind => DriftElementKind.dbIndex;
+
+  @override
+  String? get dartElementName => null;
+
+  DiscoveredDartIndex(
+      super.ownId, super.dartElement, this.onTable, this.annotation);
+}
+
 class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {
   final bool isDatabase;
   final DartObject annotation;

@@ -2,6 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
+import 'package:drift/drift.dart' show TableIndex;
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
 
@@ -159,7 +160,12 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
 
   final List<DriftImport> imports = [];
 
-  final TypeChecker _isTable, _isView, _isTableInfo, _isDatabase, _isDao;
+  final TypeChecker _isTable,
+      _isTableIndex,
+      _isView,
+      _isTableInfo,
+      _isDatabase,
+      _isDao;
 
   final List<Future<void>> _pendingWork = [];
 
@@ -169,6 +175,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   _FindDartElements(
       this._discoverStep, this._library, KnownDriftTypes knownTypes)
       : _isTable = TypeChecker.fromStatic(knownTypes.tableType),
+        _isTableIndex = TypeChecker.fromStatic(knownTypes.tableIndexType),
         _isView = TypeChecker.fromStatic(knownTypes.viewType),
         _isTableInfo = TypeChecker.fromStatic(knownTypes.tableInfoType),
         _isDatabase = TypeChecker.fromStatic(knownTypes.driftDatabase),
@@ -209,8 +216,11 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
         _pendingWork.add(Future.sync(() async {
           final name = await _sqlNameOfTable(element);
           final id = _discoverStep._id(name);
-
           found.add(DiscoveredDartTable(id, element));
+
+          for (final (annotation, indexId) in _tableIndexAnnotation(element)) {
+            found.add(DiscoveredDartIndex(indexId, element, id, annotation));
+          }
         }));
       }
     } else if (_isDslView(element)) {
@@ -259,6 +269,24 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   String _defaultNameForTableOrView(ClassElement definingElement) {
     return _discoverStep._driver.options.caseFromDartToSql
         .apply(definingElement.name);
+  }
+
+  /// Finds a [TableIndex] annotations on the [table].
+  Iterable<(ElementAnnotation, DriftElementId)> _tableIndexAnnotation(
+      ClassElement table) sync* {
+    for (final annotation in table.metadata) {
+      final computed = annotation.computeConstantValue();
+      final type = computed?.type;
+
+      if (computed != null &&
+          type != null &&
+          _isTableIndex.isExactlyType(type)) {
+        yield (
+          annotation,
+          _discoverStep._id(computed.getField('name')?.toStringValue() ?? '')
+        );
+      }
+    }
   }
 
   DartObject? _driftViewAnnotation(ClassElement view) {

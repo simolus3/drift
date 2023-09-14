@@ -67,6 +67,10 @@ class ElementSerializer {
       additionalInformation = {
         'type': 'index',
         'sql': element.createStmt,
+        'columns': [
+          for (final column in element.indexedColumns) column.nameInSql,
+        ],
+        'unique': element.unique,
       };
     } else if (element is DefinedSqlQuery) {
       final existingDartType = element.existingDartType;
@@ -531,11 +535,18 @@ class ElementDeserializer {
 
         return table;
       case 'index':
+        final onTable = references.whereType<DriftTable>().firstOrNull;
+
         return DriftIndex(
           id,
           declaration,
-          table: references.whereType<DriftTable>().firstOrNull,
-          createStmt: json['sql'] as String,
+          table: onTable,
+          createStmt: json['sql'] as String?,
+          indexedColumns: [
+            for (final entry in json['columns'] as List)
+              onTable!.columnBySqlName[entry as String]!,
+          ],
+          unique: json['unique'] as bool,
         );
       case 'query':
         final types = <String, DartType>{};

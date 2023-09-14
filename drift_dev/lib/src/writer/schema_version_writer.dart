@@ -5,6 +5,7 @@ import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../analysis/results/results.dart';
 import '../utils/string_escaper.dart';
+import 'database_writer.dart';
 import 'tables/table_writer.dart';
 import 'writer.dart';
 
@@ -274,21 +275,15 @@ class SchemaVersionWriter {
       final index = definition.drift('Index');
 
       definition
-        ..write('final $index $name = $index(')
-        ..write(asDartLiteral(element.schemaName))
-        ..write(',')
-        ..write(asDartLiteral(element.createStmt))
-        ..write(')');
+        ..write('final $index $name = ')
+        ..writeln(DatabaseWriter.createIndex(definition.parent!, element));
     } else if (element is DriftTrigger) {
       name = element.dbGetterName;
       final trigger = definition.drift('Trigger');
 
       definition
-        ..write('final $trigger $name = $trigger(')
-        ..write(asDartLiteral(element.createStmt))
-        ..write(',')
-        ..write(asDartLiteral(element.schemaName))
-        ..write(')');
+        ..write('final $trigger $name = ')
+        ..writeln(DatabaseWriter.createTrigger(definition.parent!, element));
     } else {
       throw ArgumentError('Unhandled element type $element');
     }

@@ -22,6 +22,7 @@ class KnownDriftTypes {
   final LibraryElement helperLibrary;
   final ClassElement tableElement;
   final InterfaceType tableType;
+  final InterfaceType tableIndexType;
   final InterfaceType viewType;
   final InterfaceType tableInfoType;
   final InterfaceType driftDatabase;
@@ -35,6 +36,7 @@ class KnownDriftTypes {
     this.helperLibrary,
     this.tableElement,
     this.tableType,
+    this.tableIndexType,
     this.viewType,
     this.tableInfoType,
     this.typeConverter,
@@ -57,6 +59,7 @@ class KnownDriftTypes {
       helper,
       tableElement,
       tableElement.defaultInstantiation,
+      (exportNamespace.get('TableIndex') as InterfaceElement).thisType,
       (exportNamespace.get('View') as InterfaceElement).thisType,
       (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
       exportNamespace.get('TypeConverter') as InterfaceElement,
@@ -207,7 +210,7 @@ class DataClassInformation {
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
-      final annotationClass = computed!.type!.nameIfInterfaceType;
+      final annotationClass = computed?.type?.nameIfInterfaceType;
 
       if (annotationClass == 'DataClassName') {
         dataClassName = computed;

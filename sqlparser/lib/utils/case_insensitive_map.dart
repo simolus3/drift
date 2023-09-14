@@ -4,6 +4,17 @@ import 'dart:collection';
 class CaseInsensitiveMap<K extends String?, T> extends MapBase<K, T> {
   final Map<K, T> _normalized = {};
 
+  CaseInsensitiveMap();
+
+  factory CaseInsensitiveMap.of(Map<K, T> other) {
+    final map = CaseInsensitiveMap<K, T>();
+    other.forEach((key, value) {
+      map[key] = value;
+    });
+
+    return map;
+  }
+
   @override
   T? operator [](Object? key) {
     if (key is String?) {

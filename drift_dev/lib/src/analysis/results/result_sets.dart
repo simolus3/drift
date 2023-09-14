@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/type.dart';
+import 'package:sqlparser/utils/case_insensitive_map.dart';
 
 import 'element.dart';
 import 'column.dart';
@@ -27,9 +28,9 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
   String get nameOfRowClass;
 
   /// All [columns] of this table, indexed by their name in SQL.
-  late final Map<String, DriftColumn> columnBySqlName = {
+  late final Map<String, DriftColumn> columnBySqlName = CaseInsensitiveMap.of({
     for (final column in columns) column.nameInSql: column,
-  };
+  });
 
   /// All type converter applied to columns on this table.
   Iterable<AppliedTypeConverter> get appliedConverters sync* {

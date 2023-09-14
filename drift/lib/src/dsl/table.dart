@@ -238,6 +238,25 @@ abstract class View extends HasResultSet {
   Query as();
 }
 
+@Target({TargetKind.classType})
+final class TableIndex {
+  /// The name of the index in SQL.
+  final String name;
+
+  /// Whether this index is `UNIQUE`, meaning that the database will forbid
+  /// multiple rows in the annotated table from having the same values in the
+  /// indexed columns.
+  final bool unique;
+
+  final Set<Symbol> columns;
+
+  const TableIndex({
+    required this.name,
+    required this.columns,
+    this.unique = false,
+  });
+}
+
 /// A class to be used as an annotation on [Table] classes to customize the
 /// name for the data class that will be generated for the table class. The data
 /// class is a dart object that will be used to represent a row in the table.
@@ -295,7 +314,6 @@ class DataClassName {
 
 /// An annotation specifying an existing class to be used as a data class.
 @Target({TargetKind.classType})
-@experimental
 class UseRowClass {
   /// The existing class
   ///

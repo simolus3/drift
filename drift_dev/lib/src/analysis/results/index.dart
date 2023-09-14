@@ -1,7 +1,6 @@
 import 'package:sqlparser/sqlparser.dart';
 
-import 'element.dart';
-import 'table.dart';
+import 'results.dart';
 
 /// An index on a drift table.
 ///
@@ -13,17 +12,25 @@ class DriftIndex extends DriftSchemaElement {
   /// This may be null if the table couldn't be resolved.
   DriftTable? table;
 
-  /// The `CREATE INDEX` SQL statement creating this index, as written down by
-  /// the user.
+  /// Columns of [table] that have been indexed.
+  List<DriftColumn> indexedColumns;
+
+  /// Whethet the index has been declared to be unique.
+  final bool unique;
+
+  /// For indices created in drift files, the `CREATE INDEX` SQL statements as
+  /// written by the user in the drift file.
   ///
-  /// In generated code, another step will reforma this string to strip out
+  /// In generated code, another step will reformat this string to strip out
   /// comments and unncecessary whitespace.
-  final String createStmt;
+  final String? createStmt;
 
   DriftIndex(
     super.id,
     super.declaration, {
     required this.table,
+    required this.indexedColumns,
+    required this.unique,
     required this.createStmt,
   });
 
@@ -42,3 +49,5 @@ class DriftIndex extends DriftSchemaElement {
   /// analysis.
   CreateIndexStatement? parsedStatement;
 }
+
+sealed class DriftIndexDefintion {}

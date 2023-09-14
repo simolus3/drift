@@ -8,6 +8,7 @@ import '../results/element.dart';
 
 import '../serializer.dart';
 import 'dart/accessor.dart' as dart_accessor;
+import 'dart/index.dart' as dart_index;
 import 'dart/table.dart' as dart_table;
 import 'dart/view.dart' as dart_view;
 import 'drift/index.dart' as drift_index;
@@ -58,14 +59,13 @@ class DriftResolver {
 
   /// Resolves a discovered element by analyzing it and its dependencies.
   Future<DriftElement> _resolveDiscovered(DiscoveredElement discovered) async {
-    LocalElementResolver resolver;
-
     final fileState = driver.cache.knownFiles[discovered.ownId.libraryUri]!;
     final elementState = fileState.analysis.putIfAbsent(
         discovered.ownId, () => ElementAnalysisState(discovered.ownId));
 
     elementState.errorsDuringAnalysis.clear();
 
+    LocalElementResolver resolver;
     if (discovered is DiscoveredDriftTable) {
       resolver = drift_table.DriftTableResolver(
           fileState, discovered, this, elementState);
@@ -87,6 +87,9 @@ class DriftResolver {
     } else if (discovered is DiscoveredDartView) {
       resolver =
           dart_view.DartViewResolver(fileState, discovered, this, elementState);
+    } else if (discovered is DiscoveredDartIndex) {
+      resolver = dart_index.DartIndexResolver(
+          fileState, discovered, this, elementState);
     } else if (discovered is DiscoveredBaseAccessor) {
       resolver = dart_accessor.DartAccessorResolver(
           fileState, discovered, this, elementState);
@@ -239,7 +242,7 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     DriftAnalysisError Function(String msg) createError,
   ) async {
     final result = await resolver.resolveReference(discovered.ownId, reference);
-    return _handleReferenceResult(result, createError);
+    return handleReferenceResult(result, createError);
   }
 
   Future<E?> resolveDartReferenceOrReportError<E extends DriftElement>(
@@ -248,10 +251,10 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
   ) async {
     final result =
         await resolver.resolveDartReference(discovered.ownId, reference);
-    return _handleReferenceResult(result, createError);
+    return handleReferenceResult(result, createError);
   }
 
-  E? _handleReferenceResult<E extends DriftElement>(
+  E? handleReferenceResult<E extends DriftElement>(
     ResolveReferencedElementResult result,
     DriftAnalysisError Function(String msg) createError,
   ) {
