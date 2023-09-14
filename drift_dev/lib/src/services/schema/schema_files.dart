@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType, SqlDialect, UpdateKind;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
 
@@ -8,7 +9,16 @@ import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
 import '../../writer/utils/column_constraints.dart';
 
-const _infoVersion = '1.0.0';
+class _ExportedSchemaVersion {
+  static final Version current = Version(1, 1, 0);
+  static final Version _supportDartIndex = Version(1, 1, 0);
+
+  final Version version;
+
+  _ExportedSchemaVersion(this.version);
+
+  bool get supportsDartIndex => version >= _supportDartIndex;
+}
 
 /// Utilities to transform moor schema entities to json.
 class SchemaWriter {
@@ -29,7 +39,7 @@ class SchemaWriter {
       '_meta': {
         'description': 'This file contains a serialized version of schema '
             'entities for drift.',
-        'version': _infoVersion,
+        'version': _ExportedSchemaVersion.current.toString(),
       },
       'options': _serializeOptions(),
       'entities': elements.map(_entityToJson).whereType<Map>().toList(),
@@ -68,6 +78,10 @@ class SchemaWriter {
         'on': _idOf(entity.table!),
         'name': entity.schemaName,
         'sql': entity.createStmt,
+        'unique': entity.unique,
+        'columns': [
+          for (final column in entity.indexedColumns) column.nameInSql,
+        ],
       };
     } else if (entity is DriftView) {
       final source = entity.source;
@@ -182,6 +196,9 @@ class SchemaWriter {
 class SchemaReader {
   static final Uri elementUri = Uri.parse('drift:hidden');
 
+  // The format version of the exported schema we're reading.
+  late final _ExportedSchemaVersion _version;
+
   final Map<int, DriftElement> _entitiesById = {};
   final Map<int, Map<String, dynamic>> _rawById = {};
 
@@ -199,6 +216,9 @@ class SchemaReader {
   Iterable<DriftElement> get entities => _entitiesById.values;
 
   void _read(Map<String, dynamic> json) {
+    final meta = json['_meta'] as Map<String, Object?>;
+    _version = _ExportedSchemaVersion(Version.parse(meta['version'] as String));
+
     // Read drift options if they are part of the schema file.
     final optionsInJson = json['options'] as Map<String, Object?>?;
     options = optionsInJson ??
@@ -273,10 +293,43 @@ class SchemaReader {
   DriftIndex _readIndex(Map<String, dynamic> content) {
     final on = _existingEntity<DriftTable>(content['on']);
     final name = content['name'] as String;
-    final sql = content['sql'] as String;
+    final sql = content['sql'] as String?;
 
-    return DriftIndex(_id(name), _declaration, table: on, createStmt: sql)
-      ..parsedStatement = _engine.parse(sql).rootNode as CreateIndexStatement;
+    if (_version.supportsDartIndex) {
+      final index = DriftIndex(
+        _id(name),
+        _declaration,
+        table: on,
+        indexedColumns: [
+          for (final col in content['columns'] as List)
+            on.columnBySqlName[col]!,
+        ],
+        unique: content['unique'] as bool,
+        createStmt: sql,
+      );
+
+      if (sql != null) {
+        index.parsedStatement =
+            _engine.parse(sql).rootNode as CreateIndexStatement;
+      }
+
+      return index;
+    } else {
+      // In older versions, we always had an SQL statement!
+      final stmt = _engine.parse(sql!).rootNode as CreateIndexStatement;
+
+      return DriftIndex(
+        _id(name),
+        _declaration,
+        table: on,
+        createStmt: sql,
+        unique: stmt.unique,
+        indexedColumns: [
+          for (final column in stmt.columns)
+            on.columnBySqlName[(column.expression as Reference).columnName]!,
+        ],
+      )..parsedStatement = stmt;
+    }
   }
 
   DriftTrigger _readTrigger(Map<String, dynamic> content) {
