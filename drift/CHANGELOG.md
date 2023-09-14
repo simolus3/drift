@@ -1,6 +1,8 @@
 ## 2.12.0-dev
 
 - Add support for table-valued functions in the Dart query builder.
+- Add the `@TableIndex` annotation for table classes to add an index to the
+  table.
 - Support `json_each` and `json_tree`.
 
 ## 2.11.1
