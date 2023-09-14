@@ -16,7 +16,7 @@ const kDebugMode = true;
   include: {'tables.drift'},
 )
 class Database extends _$Database {
-  static const latestSchemaVersion = 9;
+  static const latestSchemaVersion = 10;
 
   @override
   int get schemaVersion => latestSchemaVersion;
@@ -99,6 +99,10 @@ class Database extends _$Database {
     from8To9: (m, schema) async {
       // Added a check to the users table
       await m.alterTable(TableMigration(schema.users));
+    },
+    from9To10: (m, schema) async {
+      // Added an index to the users table
+      await m.create(schema.userName);
     },
   );
 }

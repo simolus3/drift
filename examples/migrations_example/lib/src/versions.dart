@@ -585,6 +585,84 @@ i1.GeneratedColumn<int> _column_17(String aliasedName) =>
     i1.GeneratedColumn<int>('owner', aliasedName, false,
         type: i1.DriftSqlType.int,
         $customConstraints: 'NOT NULL REFERENCES users(id)');
+
+final class _S10 extends i0.VersionedSchema {
+  _S10({required super.database}) : super(version: 10);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    users,
+    groups,
+    notes,
+    groupCount,
+    userName,
+  ];
+  late final Shape4 users = Shape4(
+      source: i0.VersionedTable(
+        entityName: 'users',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'UNIQUE(name, birthday)',
+          'CHECK (LENGTH(name) < 10)',
+        ],
+        columns: [
+          _column_0,
+          _column_6,
+          _column_11,
+          _column_7,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape1 groups = Shape1(
+      source: i0.VersionedTable(
+        entityName: 'groups',
+        withoutRowId: false,
+        isStrict: false,
+        tableConstraints: [
+          'PRIMARY KEY(id)',
+        ],
+        columns: [
+          _column_2,
+          _column_3,
+          _column_16,
+          _column_17,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape6 notes = Shape6(
+      source: i0.VersionedVirtualTable(
+        entityName: 'notes',
+        moduleAndArgs:
+            'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")',
+        columns: [
+          _column_12,
+          _column_13,
+          _column_14,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape5 groupCount = Shape5(
+      source: i0.VersionedView(
+        entityName: 'group_count',
+        createViewStmt:
+            'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users;',
+        columns: [
+          _column_8,
+          _column_1,
+          _column_11,
+          _column_9,
+          _column_10,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  final i1.Index userName =
+      i1.Index('user_name', 'CREATE INDEX user_name ON users (name)');
+}
+
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, _S2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, _S3 schema) from2To3,
@@ -594,6 +672,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, _S7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, _S8 schema) from7To8,
   required Future<void> Function(i1.Migrator m, _S9 schema) from8To9,
+  required Future<void> Function(i1.Migrator m, _S10 schema) from9To10,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -637,6 +716,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from8To9(migrator, schema);
         return 9;
+      case 9:
+        final schema = _S10(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from9To10(migrator, schema);
+        return 10;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -652,6 +736,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, _S7 schema) from6To7,
   required Future<void> Function(i1.Migrator m, _S8 schema) from7To8,
   required Future<void> Function(i1.Migrator m, _S9 schema) from8To9,
+  required Future<void> Function(i1.Migrator m, _S10 schema) from9To10,
 }) =>
     i0.VersionedSchema.stepByStepHelper(
         step: migrationSteps(
@@ -663,4 +748,5 @@ i1.OnUpgrade stepByStep({
       from6To7: from6To7,
       from7To8: from7To8,
       from8To9: from8To9,
+      from9To10: from9To10,
     ));

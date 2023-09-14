@@ -54,7 +54,7 @@ class DriftDiscover extends Builder {
                 'kind': entry.kind.name,
                 'name': entry.ownId.name,
                 if (entry is DiscoveredDartElement)
-                  'dart_name': entry.dartElement.name,
+                  'dart_name': entry.dartElementName,
               }
           ]
         }),

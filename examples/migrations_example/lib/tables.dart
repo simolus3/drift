@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+// This index on the user table has been added in schema version 10
+@TableIndex(name: 'user_name', columns: {#name})
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
 

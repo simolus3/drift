@@ -265,7 +265,7 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
       } else {
         // todo: Better type description in error message
         reportError(
-            createError('Expected a $T, but got a ${element.runtimeType}'));
+            createError('Expected a $E, but got a ${element.runtimeType}'));
       }
     } else {
       reportErrorForUnresolvedReference(result, createError);

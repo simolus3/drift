@@ -34,7 +34,7 @@ void main() {
 {
   "_meta": {
     "description": "This file contains a serialized version of schema entities for drift.",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "options": {
     "store_date_time_values_as_text": false
