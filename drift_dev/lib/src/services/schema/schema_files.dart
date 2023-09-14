@@ -311,6 +311,8 @@ class SchemaReader {
       if (sql != null) {
         index.parsedStatement =
             _engine.parse(sql).rootNode as CreateIndexStatement;
+      } else {
+        index.createStatementForDartDefinition();
       }
 
       return index;

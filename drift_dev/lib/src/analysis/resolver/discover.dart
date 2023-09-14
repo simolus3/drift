@@ -216,11 +216,14 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
         _pendingWork.add(Future.sync(() async {
           final name = await _sqlNameOfTable(element);
           final id = _discoverStep._id(name);
-          found.add(DiscoveredDartTable(id, element));
+          final attachedIndices = <DriftElementId>[];
 
           for (final (annotation, indexId) in _tableIndexAnnotation(element)) {
+            attachedIndices.add(indexId);
             found.add(DiscoveredDartIndex(indexId, element, id, annotation));
           }
+
+          found.add(DiscoveredDartTable(id, element, attachedIndices));
         }));
       }
     } else if (_isDslView(element)) {

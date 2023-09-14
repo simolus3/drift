@@ -53,6 +53,14 @@ class DriftTable extends DriftElementWithResultSet {
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
+  /// The names of indices that have been attached to this table using the
+  /// `@TableIndex` annotation in drift.
+  ///
+  /// This field only has the purpose of implicitly adding these indices to each
+  /// database adding this table, so that code for that index will get generated
+  /// without an explicit reference.
+  final List<String> attachedIndices;
+
   DriftColumn? _rowIdColumn;
 
   DriftTable(
@@ -71,6 +79,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.virtualTableData,
     this.writeDefaultConstraints = true,
     this.overrideTableConstraints = const [],
+    this.attachedIndices = const [],
   }) {
     _rowIdColumn = DriftColumn(
       sqlType: DriftSqlType.int,

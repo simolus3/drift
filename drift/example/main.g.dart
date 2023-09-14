@@ -689,10 +689,17 @@ abstract class _$Database extends GeneratedDatabase {
       $TodoCategoryItemCountView(this);
   late final $TodoItemWithCategoryNameViewView customViewName =
       $TodoItemWithCategoryNameViewView(this);
+  late final Index itemTitle =
+      Index('item_title', 'CREATE INDEX item_title ON todo_items (title)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [todoCategories, todoItems, todoCategoryItemCount, customViewName];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        todoCategories,
+        todoItems,
+        todoCategoryItemCount,
+        customViewName,
+        itemTitle
+      ];
 }

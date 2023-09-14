@@ -62,6 +62,7 @@ class ElementSerializer {
           'virtual': _serializeVirtualTableData(element.virtualTableData!),
         'write_default_constraints': element.writeDefaultConstraints,
         'custom_constraints': element.overrideTableConstraints,
+        'attached_indices': element.attachedIndices,
       };
     } else if (element is DriftIndex) {
       additionalInformation = {
@@ -516,6 +517,7 @@ class ElementDeserializer {
           overrideTableConstraints: json['custom_constraints'] != null
               ? (json['custom_constraints'] as List).cast()
               : const [],
+          attachedIndices: (json['attached_indices'] as List).cast(),
         );
 
         for (final column in columns) {

@@ -42,14 +42,34 @@ class FileAnalyzer {
             await driver.resolveElements(import.ownUri);
           }
 
+          final availableByDefault = <DriftSchemaElement>{
+            ...element.declaredTables,
+            ...element.declaredViews,
+          };
+
+          // For indices added to tables via an annotation, the index should
+          // also be available.
+          for (final table in element.declaredTables) {
+            final fileState = driver.cache.knownFiles[table.id.libraryUri]!;
+
+            for (final attachedIndex in table.attachedIndices) {
+              final index =
+                  fileState.analysis[fileState.id(attachedIndex)]?.result;
+              if (index is DriftIndex) {
+                availableByDefault.add(index);
+              }
+            }
+          }
+
           final availableElements = imported
               .expand((reachable) {
                 final elementAnalysis = reachable.analysis.values;
+
                 return elementAnalysis.map((e) => e.result).where(
                     (e) => e is DefinedSqlQuery || e is DriftSchemaElement);
               })
               .whereType<DriftElement>()
-              .followedBy(element.references)
+              .followedBy(availableByDefault)
               .transitiveClosureUnderReferences()
               .sortTopologicallyOrElse(driver.backend.log.severe);
 
@@ -58,15 +78,11 @@ class FileAnalyzer {
           // from a Dart file that hasn't been added to `tables`, emit a warning.
           // https://github.com/simolus3/drift/issues/2462#issuecomment-1620107751
           if (element is DriftDatabase) {
-            final explicitlyAdded = <DriftElementWithResultSet>{
-              ...element.declaredTables,
-              ...element.declaredViews,
-            };
             final implicitlyAdded = availableElements
                 .whereType<DriftElementWithResultSet>()
                 .where((element) =>
                     element.declaration.isDartDeclaration &&
-                    !explicitlyAdded.contains(element));
+                    !availableByDefault.contains(element));
 
             if (implicitlyAdded.isNotEmpty) {
               final names = implicitlyAdded
@@ -97,6 +113,9 @@ class FileAnalyzer {
 
           result.resolvedDatabases[element.id] =
               ResolvedDatabaseAccessor(queries, imports, availableElements);
+        } else if (element is DriftIndex) {
+          // We need the SQL AST for each index to create them in code
+          element.createStatementForDartDefinition();
         }
       }
     } else if (state.extension == '.drift' || state.extension == '.moor') {

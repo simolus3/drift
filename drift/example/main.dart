@@ -12,6 +12,7 @@ class TodoCategories extends Table {
   TextColumn get name => text()();
 }
 
+@TableIndex(name: 'item_title', columns: {#title})
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();

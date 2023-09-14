@@ -48,6 +48,27 @@ class DriftIndex extends DriftSchemaElement {
   /// This node is not serialized and only set in the late-state, local file
   /// analysis.
   CreateIndexStatement? parsedStatement;
+
+  /// At the moment, the index implementation in the generator writes the
+  /// `CREATE INDEX` definition as a string into the generated code. This
+  /// requires [parsedStatement] to be available when generating code. To ensure
+  /// this for Dart-based index declarations, this method creates a suitable AST
+  /// for a create index statement based on the information available in our
+  /// element model.
+  ///
+  /// Note that Dart index definitions are less expressive than the ones in SQL,
+  /// so this method should not be used for indices defined with SQL.
+  void createStatementForDartDefinition() {
+    parsedStatement = CreateIndexStatement(
+      indexName: id.name,
+      on: TableReference(table?.id.name ?? ''),
+      unique: unique,
+      columns: [
+        for (final column in indexedColumns)
+          IndexedColumn(Reference(columnName: column.nameInSql))
+      ],
+    );
+  }
 }
 
 sealed class DriftIndexDefintion {}

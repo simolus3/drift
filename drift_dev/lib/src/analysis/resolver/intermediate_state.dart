@@ -38,7 +38,15 @@ class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
   @override
   DriftElementKind get kind => DriftElementKind.table;
 
-  DiscoveredDartTable(super.ownId, super.dartElement);
+  /// The element ids of [DiscoveredDartIndex] entries that have been added to
+  /// this table with a `@TableIndex` annotation on the table class.
+  final List<DriftElementId> attachedIndices;
+
+  DiscoveredDartTable(
+    super.ownId,
+    super.dartElement,
+    this.attachedIndices,
+  );
 }
 
 class DiscoveredDartView extends DiscoveredDartElement<ClassElement> {

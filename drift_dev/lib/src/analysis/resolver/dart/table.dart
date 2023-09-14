@@ -65,6 +65,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       ],
       overrideTableConstraints: tableConstraints,
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
+      attachedIndices: [
+        for (final id in discovered.attachedIndices) id.name,
+      ],
     );
 
     if (primaryKey != null &&
