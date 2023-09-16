@@ -111,6 +111,9 @@ void main() {
 
       @DriftDatabase(tables: [Foo, DoesNotExist])
       class Database {}
+
+      @DriftAccessor(tables: [DoesNotExist])
+      class Accessor {}
       ''',
       'a|lib/invalid_constraints.dart': '''
       import 'package:drift/drift.dart';
@@ -283,18 +286,22 @@ void main() {
     );
   });
 
-  test('reports errors for unknown classes in UseMoor', () async {
+  test('reports errors for unknown classes', () async {
     final uri = Uri.parse('package:a/invalid_reference.dart');
     final file = await backend.driver.fullyAnalyze(uri);
 
     expect(
       file.allErrors,
-      contains(
+      containsAll([
         isDriftError(allOf(
           contains('Could not read tables from @DriftDatabase annotation!'),
           contains('Please make sure that all table classes exist.'),
         )),
-      ),
+        isDriftError(allOf(
+          contains('Could not read tables from @DriftAccessor annotation!'),
+          contains('Please make sure that all table classes exist.'),
+        )),
+      ]),
     );
   });
 
