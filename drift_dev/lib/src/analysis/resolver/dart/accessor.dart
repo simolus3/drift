@@ -25,9 +25,12 @@ class DartAccessorResolver
 
     final rawTablesOrNull = annotation.getField('tables')?.toListValue();
     if (rawTablesOrNull == null) {
+      final annotationName =
+          annotation.type?.nameIfInterfaceType ?? 'DriftDatabase';
+
       reportError(DriftAnalysisError.forDartElement(
         element,
-        'Could not read tables from @DriftDatabase annotation! \n'
+        'Could not read tables from @$annotationName annotation! \n'
         'Please make sure that all table classes exist.',
       ));
     }
