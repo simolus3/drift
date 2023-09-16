@@ -60,8 +60,8 @@ Let's take a look at what drift generated during the build:
 
 - Generated data classes (`Todo` and `Category`) - these hold a single
   row from the respective table.
-- Companion versions of these classes. Those are only relevant when 
-  using the Dart apis of drift, you can [learn more here]({{ "writing_queries.md#inserts" | pageUrl }}).
+- Companion versions of these classes. Those are only relevant when
+  using the Dart apis of drift, you can [learn more here]({{ "../Dart API/writes.md#inserts" | pageUrl }}).
 - A `CountEntriesResult` class, it holds the result rows when running the
   `countEntries` query.
 - A `_$AppDb` superclass. It takes care of creating the tables when
@@ -88,8 +88,8 @@ further guides to help you learn more:
 - The [SQL IDE]({{ "../Using SQL/sql_ide.md" | pageUrl }}) that provides feedback on sql queries right in your editor.
 - [Transactions]({{ "../Dart API/transactions.md" | pageUrl }})
 - [Schema migrations]({{ "../Advanced Features/migrations.md" | pageUrl }})
-- Writing [queries]({{ "writing_queries.md" | pageUrl }}) and
-  [expressions]({{ "../Advanced Features/expressions.md" | pageUrl }}) in Dart
+- Writing [queries]({{ "../Dart API/select.md" | pageUrl }}) and
+  [expressions]({{ "../Dart API/expressions.md" | pageUrl }}) in Dart
 - A more [in-depth guide]({{ "../Using SQL/drift_files.md" | pageUrl }})
   on `drift` files, which explains `import` statements and the Dart-SQL interop.
 

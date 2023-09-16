@@ -128,7 +128,7 @@ Drift supports two approaches of storing `DateTime` values in SQL:
 The mode can be changed with the `store_date_time_values_as_text` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}).
 
 Regardless of the option used, drift's builtin support for
-[date and time functions]({{ '../Advanced Features/expressions.md#date-and-time' | pageUrl }})
+[date and time functions]({{ 'expressions.md#date-and-time' | pageUrl }})
 return an equivalent values. Drift internally inserts the `unixepoch`
 [modifier](https://sqlite.org/lang_datefunc.html#modifiers) when unix timestamps
 are used to make the date functions work. When comparing dates stored as text,

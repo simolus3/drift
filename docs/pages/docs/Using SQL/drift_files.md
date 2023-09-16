@@ -303,7 +303,7 @@ can be used to construct dynamic filters at runtime:
 This lets you write a single SQL query and dynamically apply a predicate at runtime!
 This feature works for
 
-- [expressions]({{ "../Advanced Features/expressions.md" | pageUrl }}), as you've seen in the example above
+- [expressions]({{ "../Dart API/expressions.md" | pageUrl }}), as you've seen in the example above
 - single ordering terms: `SELECT * FROM todos ORDER BY $term, id ASC`
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`

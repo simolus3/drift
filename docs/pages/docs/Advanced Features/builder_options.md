@@ -44,7 +44,7 @@ At the moment, drift supports these options:
   of inserted data and report detailed errors when the integrity is violated. If you're only using
   inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
   generated code.
-* `use_data_class_name_for_companions`: By default, the name for [companion classes]({{ "../Getting started/writing_queries.md#updates-and-deletes" | pageUrl }})
+* `use_data_class_name_for_companions`: By default, the name for [companion classes]({{ "../Dart API/writes.md#updates-and-deletes" | pageUrl }})
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).

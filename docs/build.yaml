@@ -56,7 +56,9 @@ targets:
               version: "3.39"
         generate_for:
           include: &modular
+            - "lib/snippets/_shared/**"
             - "lib/snippets/modular/**"
+            - "lib/snippets/drift_files/custom_queries.*"
       drift_dev:modular:
         enabled: true
         options: *options

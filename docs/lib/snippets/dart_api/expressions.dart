@@ -1,12 +1,13 @@
 import 'package:drift/drift.dart';
 
-import 'tables/filename.dart';
+import '../_shared/todo_tables.dart';
+import '../_shared/todo_tables.drift.dart';
 
-extension Expressions on MyDatabase {
+extension Snippets on CanUseCommonTables {
   // #docregion emptyCategories
   Future<List<Category>> emptyCategories() {
-    final hasNoTodo = notExistsQuery(
-        select(todos)..where((row) => row.category.equalsExp(categories.id)));
+    final hasNoTodo = notExistsQuery(select(todoItems)
+      ..where((row) => row.category.equalsExp(categories.id)));
     return (select(categories)..where((row) => hasNoTodo)).get();
   }
   // #enddocregion emptyCategories

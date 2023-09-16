@@ -2,7 +2,7 @@
 data:
   title: "DAOs"
   description: Keep your database code modular with DAOs
-path: /docs/advanced-features/daos
+path: /docs/advanced-features/daos/
 aliases:
   - /daos/
 template: layouts/docs/single

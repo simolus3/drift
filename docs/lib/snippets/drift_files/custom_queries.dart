@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 
-import '../tables/filename.dart';
-
-part 'custom_queries.g.dart';
+import '../_shared/todo_tables.dart';
+import '../_shared/todo_tables.drift.dart';
+import 'custom_queries.drift.dart';
 
 // #docregion manual
 class CategoryWithCount {
@@ -16,14 +16,14 @@ class CategoryWithCount {
 
 // #docregion setup
 @DriftDatabase(
-  tables: [Todos, Categories],
+  tables: [TodoItems, Categories],
   queries: {
     'categoriesWithCount': 'SELECT *, '
-        '(SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" '
+        '(SELECT COUNT(*) FROM todo_items WHERE category = c.id) AS "amount" '
         'FROM categories c;'
   },
 )
-class MyDatabase extends _$MyDatabase {
+class MyDatabase extends $MyDatabase {
   // rest of class stays the same
   // #enddocregion setup
   @override
@@ -52,7 +52,7 @@ class MyDatabase extends _$MyDatabase {
       'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount"'
       ' FROM categories c;',
       // used for the stream: the stream will update when either table changes
-      readsFrom: {todos, categories},
+      readsFrom: {todoItems, categories},
     ).watch().map((rows) {
       // we get list of rows here. We just have to turn the raw data from the
       // row into a CategoryWithCount instnace. As we defined the Category table
