@@ -72,7 +72,7 @@ abstract class Table extends HasResultSet {
   /// ```dart
   /// class IngredientInRecipes extends Table {
   ///  @override
-  ///  Set<Column> get uniqueKeys =>
+  ///  List<Set<Column>> get uniqueKeys =>
   ///     [{recipe, ingredient}, {recipe, amountInGrams}];
   ///
   ///  IntColumn get recipe => integer()();

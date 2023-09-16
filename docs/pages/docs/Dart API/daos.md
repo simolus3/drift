@@ -9,8 +9,9 @@ template: layouts/docs/single
 ---
 
 When you have a lot of queries, putting them all into one class might become
-tedious. You can avoid this by extracting some queries into classes that are 
+tedious. You can avoid this by extracting some queries into classes that are
 available from your main database class. Consider the following code:
+
 ```dart
 part 'todos_dao.g.dart';
 
@@ -33,5 +34,6 @@ class TodosDao extends DatabaseAccessor<MyDatabase> with _$TodosDaoMixin {
   }
 }
 ```
+
 If we now change the annotation on the `MyDatabase` class to `@DriftDatabase(tables: [Todos, Categories], daos: [TodosDao])`
 and re-run the code generation, a generated getter `todosDao` can be used to access the instance of that dao.

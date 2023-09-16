@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:drift_docs/snippets/migrations/datetime_conversion.dart';
+import 'package:drift_docs/snippets/dart_api/datetime_conversion.dart';
 import 'package:drift_docs/snippets/modular/schema_inspection.dart';
 import 'package:test/test.dart';
 
