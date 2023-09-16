@@ -54,7 +54,7 @@ class DriftResolver {
     final discovered = owningFile.discovery!.locallyDefinedElements
         .firstWhere((e) => e.ownId == element);
 
-    return _resolveDiscovered(discovered);
+    return await _resolveDiscovered(discovered);
   }
 
   /// Resolves a discovered element by analyzing it and its dependencies.
