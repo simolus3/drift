@@ -155,7 +155,7 @@ __Note__: We're using `selectOnly` instead of `select` because we're not interes
 ### Counting
 
 Sometimes, it's useful to count how many rows are present in a group. By using the
-[table layout from the example]({{ "../Getting started/index.md" | pageUrl }}), this
+[table layout from the example]({{ "../setup.md" | pageUrl }}), this
 query will report how many todo entries are associated to each category:
 
 ```dart

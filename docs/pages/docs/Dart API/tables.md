@@ -374,3 +374,13 @@ on columns, you can add those by overriding `customConstraints`:
 {% include "blocks/snippet" snippets = snippets name="custom-constraint-table" %}
 
 ## Index
+
+An [index](https://sqlite.org/lang_createindex.html) on columns in a table allows rows identified
+by these columns to be identified more easily.
+In drift, you can apply an index to a table with the `@TableIndex` annotation. More than one
+index can be applied to the same table by repeating the annotation:
+
+{% include "blocks/snippet" snippets = snippets name="index" %}
+
+Each index needs to have its own unique name. Typically, the name of the table is part of the
+index' name to ensure unique names.

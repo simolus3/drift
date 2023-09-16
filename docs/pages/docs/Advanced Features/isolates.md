@@ -10,7 +10,7 @@ As sqlite3 is a synchronous C library, accessing the database from the main isol
 can cause blocking IO operations that lead to reduced responsiveness of your
 application.
 To resolve this problem, drift can spawn a long-running isolate to run SQL statements.
-When following the recommended [getting started guide]({{ '../Getting started/index.md' | pageUrl }})
+When following the recommended [getting started guide]({{ '../setup.md' | pageUrl }})
 and using `NativeDatabase.createInBackground`, you automatically benefit from an isolate
 drift manages for you without needing additional setup.
 This page describes when advanced isolate setups are necessary, and how to approach them.

@@ -11,7 +11,7 @@ Drift is a reactive persistence library for Dart and Flutter applications. It's 
 of database libraries like [the sqlite3 package](https://pub.dev/packages/sqlite3), [sqflite](https://pub.dev/packages/sqflite) or [sql.js](https://github.com/sql-js/sql.js/)
 and provides additional features, like:
 
-- __Type safety__: Instead of writing sql queries manually and parsing the `List<Map<String, dynamic>>` that they 
+- __Type safety__: Instead of writing sql queries manually and parsing the `List<Map<String, dynamic>>` that they
 return, drift turns rows into objects of your choice.
 - __Stream queries__: Drift lets you "watch" your queries with zero additional effort. Any query can be turned into
  an auto-updating stream that emits new items when the underlying data changes.

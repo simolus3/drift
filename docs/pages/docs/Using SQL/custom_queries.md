@@ -72,7 +72,7 @@ If you don't want to use the statements with an generated api, you can
 still send custom queries by calling `customSelect` for a one-time query or
 `customSelectStream` for a query stream that automatically emits a new set of items when
 the underlying data changes. Using the todo example introduced in the
-[getting started guide]({{ "../Getting started/index.md" | pageUrl }}), we can
+[getting started guide]({{ "../setup.md" | pageUrl }}), we can
 write this query which will load the amount of todo entries in each category:
 
 {% include "blocks/snippet" snippets = snippets name = "manual" %}

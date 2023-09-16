@@ -128,7 +128,7 @@ to another (potentially slower) implementation in that case.
 ### Setup in Dart
 
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
-You can follow the [getting started guide]({{ '../Getting started/index.md' | pageUrl }}) as a general setup guide.
+You can follow the [getting started guide]({{ '../setup.md' | pageUrl }}) as a general setup guide.
 
 Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized for
 the web:

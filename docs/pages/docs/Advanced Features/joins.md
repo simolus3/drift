@@ -15,7 +15,7 @@ template: layouts/docs/single
 Drift supports sql joins to write queries that operate on more than one table. To use that feature, start
 a select regular select statement with `select(table)` and then add a list of joins using `.join()`. For
 inner and left outer joins, a `ON` expression needs to be specified. Here's an example using the tables
-defined in the [example]({{ "../Getting started/index.md" | pageUrl }}).
+defined in the [example]({{ "../setup.md" | pageUrl }}).
 
 {% include "blocks/snippet" snippets = snippets name = 'joinIntro' %}
 

@@ -143,7 +143,7 @@ Instead of using an integer mapping enums by their index, you can also store the
 by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
 For details on all supported types, and information on how to switch between the
-datetime modes, see [this section]({{ '../Getting started/advanced_dart_tables.md#supported-column-types' | pageUrl }}).
+datetime modes, see [this section]({{ '../Dart API/tables.md#supported-column-types' | pageUrl }}).
 
 The additional drift-specific types (`BOOLEAN`, `DATETIME`, `ENUM` and `ENUMNAME`) are also supported in `CAST`
 expressions, which is helpful for views:

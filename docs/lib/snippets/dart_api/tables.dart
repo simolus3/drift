@@ -76,5 +76,9 @@ class TableWithCustomConstraints extends Table {
 // #enddocregion custom-constraint-table
 
 // #docregion index
-class Users extends Table {}
+@TableIndex(name: 'user_name', columns: {#name})
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
 // #enddocregion index

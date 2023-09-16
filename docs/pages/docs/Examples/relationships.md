@@ -16,7 +16,7 @@ queries in drift. First, we need to store some items that can be bought:
 
 We're going to define two tables for shopping carts: One for the cart
 itself, and another one to store the entries in the cart.
-The latter uses [references]({{ '../Getting started/advanced_dart_tables.md#references' | pageUrl }})
+The latter uses [references]({{ '../Dart API/tables.md#references' | pageUrl }})
 to express the foreign key constraints of referencing existing shopping
 carts or product items.
 

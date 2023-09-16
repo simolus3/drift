@@ -10,7 +10,7 @@ template: layouts/docs/single
 ---
 
 {% block "blocks/pageinfo" %}
-__Note__: This assumes that you've already completed [the setup]({{ "index.md" | pageUrl }}).
+__Note__: This assumes that you've already completed [the setup]({{ "../setup.md" | pageUrl }}).
 {% endblock %}
 
 For each table you've specified in the `@DriftDatabase` annotation on your database class,
@@ -297,7 +297,7 @@ generated.
 
 __Note:__ This uses the `RETURNING` syntax added in sqlite3 version 3.35, which is not available on most operating systems by default. When using this method, make sure that you have a recent sqlite3 version available. This is the case with `sqlite3_flutter_libs`.
 
-For instance, consider this snippet using the tables from the [getting started guide]({{ 'index.md' | pageUrl }}):
+For instance, consider this snippet using the tables from the [getting started guide]({{ '../setup.md' | pageUrl }}):
 
 ```dart
 final row = await into(todos).insertReturning(TodosCompanion.insert(

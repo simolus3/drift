@@ -47,7 +47,7 @@ is maintaned and supported too.
 ### using `drift/native`
 
 The new `package:drift/native.dart` implementation uses `dart:ffi` to bind to sqlite3's native C apis.
-This is the recommended approach for newer projects as described in the [getting started]({{ "Getting started/index.md" | pageUrl }}) guide.
+This is the recommended approach for newer projects as described in the [getting started]({{ "setup.md" | pageUrl }}) guide.
 
 To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
 package when using `package:drift/native.dart`!

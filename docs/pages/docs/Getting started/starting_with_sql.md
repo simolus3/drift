@@ -6,7 +6,7 @@ data:
 template: layouts/docs/single
 ---
 
-The regular [getting started guide]({{ "index.md" | pageUrl }}) explains how to get started with drift by
+The regular [getting started guide]({{ "../setup.md" | pageUrl }}) explains how to get started with drift by
 declaring both tables and queries in Dart. This version will focus on how to use drift with SQL instead.
 
 A complete cross-platform Flutter app using drift is also available [here](https://github.com/simolus3/drift/tree/develop/examples/app).
