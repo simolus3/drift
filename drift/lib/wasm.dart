@@ -63,6 +63,19 @@ class WasmDatabase extends DelegatedDatabase {
   }
 
   /// Creates an in-memory database in the loaded [sqlite3] database.
+  ///
+  /// If an in-memory database is all you need, it can be created more easily
+  /// than going through the path with [open]. In particular, you probably don't
+  /// need a web worker hosting the database.
+  ///
+  /// To create an in-memory database without workers, one can use:
+  ///
+  /// ```dart
+  /// final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
+  /// sqlite3.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+  ///
+  /// WasmDatabase.inMemory(sqlite3);
+  /// ```
   factory WasmDatabase.inMemory(
     CommonSqlite3 sqlite3, {
     WasmDatabaseSetup? setup,
