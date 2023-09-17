@@ -87,7 +87,7 @@ further guides to help you learn more:
 
 - The [SQL IDE]({{ "../Using SQL/sql_ide.md" | pageUrl }}) that provides feedback on sql queries right in your editor.
 - [Transactions]({{ "../Dart API/transactions.md" | pageUrl }})
-- [Schema migrations]({{ "../Advanced Features/migrations.md" | pageUrl }})
+- [Schema migrations]({{ "../Migrations/index.md" | pageUrl }})
 - Writing [queries]({{ "../Dart API/select.md" | pageUrl }}) and
   [expressions]({{ "../Dart API/expressions.md" | pageUrl }}) in Dart
 - A more [in-depth guide]({{ "../Using SQL/drift_files.md" | pageUrl }})

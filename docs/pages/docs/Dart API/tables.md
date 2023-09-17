@@ -232,7 +232,7 @@ should happen when the target row gets updated or deleted.
 
 Be aware that, in sqlite3, foreign key references aren't enabled by default.
 They need to be enabled with `PRAGMA foreign_keys = ON`.
-A suitable place to issue that pragma with drift is in a [post-migration callback]({{ '../Advanced Features/migrations.md#post-migration-callbacks' | pageUrl }}).
+A suitable place to issue that pragma with drift is in a [post-migration callback]({{ '../Migrations/index.md#post-migration-callbacks' | pageUrl }}).
 
 ## Default values
 
@@ -286,7 +286,7 @@ In Dart, the `check` method on the column builder adds a check constraint to the
 ```
 
 Note that these `CHECK` constraints are part of the `CREATE TABLE` statement.
-If you want to change or remove a `check` constraint, write a [schema migration]({{ '../Advanced Features/migrations.md#changing-column-constraints' | pageUrl }}) to re-create the table without the constraint.
+If you want to change or remove a `check` constraint, write a [schema migration]({{ '../Migrations/api.md#changing-column-constraints' | pageUrl }}) to re-create the table without the constraint.
 
 ### Unique column
 

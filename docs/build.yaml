@@ -122,6 +122,8 @@ targets:
           environment: "preview"
       build_web_compilers:entrypoint:
         generate_for:
+          include:
+            - "web/**"
           exclude:
             - "web/drift_worker.dart"
         release_options:

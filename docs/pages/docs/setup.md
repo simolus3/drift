@@ -113,14 +113,11 @@ started with drift:
 - Writing queries: Drift-generated classes support writing the most common SQL statements, like
   [selects]({{ 'Dart API/select.md' | pageUrl }}) or [inserts, updates and deletes]({{ 'Dart API/writes.md' | pageUrl }}).
 - General [notes on how to integrate drift with your app's architecture]({{ 'Dart API/architecture.md' | pageUrl }}).
-- Something to keep in mind for later: When you change the schema of your database and write migrations, drift can help you make sure they're
-  correct. Use [runtime checks], which don't require additional setup, or more involved [test utilities] if you want to test migrations between
-  any schema versions.
+- Something to keep in mind for later: When changing the database, for instance by adding new columns
+  or tables, you need to write a migration so that existing databases are transformed to the new
+  format. Drift's extensive [migration tools]({{ 'Migrations/index.md' | pageUrl }}) help with that.
 
 Once you're familiar with the basics, the [overview here]({{ 'index.md' | pageUrl }}) shows what
 more drift has to offer.
 This includes transactions, automated tooling to help with migrations, multi-platform support
 and more.
-
-[runtime checks]: {{ 'Advanced Features/migrations.md#verifying-a-database-schema-at-runtime' | pageUrl }}
-[test utilities]: {{ 'Advanced Features/migrations.md#verifying-migrations' | pageUrl }}

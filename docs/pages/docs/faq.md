@@ -55,7 +55,7 @@ in your favorite dependency injection framework for flutter hence solves this pr
 
 ## Why am I getting no such table errors?
 
-If you add another table after your app has already been installed, you need to write a [migration]({{ "Advanced Features/migrations.md" | pageUrl }})
+If you add another table after your app has already been installed, you need to write a [migration]({{ "Migrations/index.md" | pageUrl }})
 that covers creating that table. If you're in the process of developing your app and want to use un- and reinstall your app
 instead of writing migrations, that's fine too. Please note that your apps data might be backed up on Android, so
 manually deleting your app's data instead of a reinstall is necessary on some devices.
@@ -80,7 +80,7 @@ you can set to `true`. When enabled, drift will print the statements it runs.
 
 ## How do I insert data on the first app start?
 
-You can populate the database on the first start of your app with a custom [migration strategy]({{ 'Advanced Features/migrations.md' | pageUrl }}).
+You can populate the database on the first start of your app with a custom [migration strategy]({{ 'Migrations/index.md' | pageUrl }}).
 To insert data when the database is created (which usually happens when the app is first run), you can use this:
 
 ```dart
