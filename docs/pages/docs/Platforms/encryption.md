@@ -78,7 +78,7 @@ On iOS and macOS, no additional setup is necessary - simply depend on `sqlcipher
 
 On Windows and Linux, you currently have to include a version of SQLCipher manually when you distribute
 your app.
-For more information on this, you can use the documentation [here]({{ '../platforms.md#bundling-sqlite-with-your-app' | pageUrl }}).
+For more information on this, you can use the documentation [here]({{ '../Platforms/index.md#bundling-sqlite-with-your-app' | pageUrl }}).
 Instead of including `sqlite3.dll` or `libsqlite3.so`, you'd include the respective versions
 of SQLCipher.
 

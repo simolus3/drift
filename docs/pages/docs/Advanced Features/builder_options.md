@@ -174,7 +174,7 @@ We currently support the following extensions:
   Enabling this option is safe when using a `NativeDatabase` with `sqlite3_flutter_libs`,
   which compiles sqlite3 with the R*Tree extension enabled.
 - `moor_ffi`: Enables support for functions that are only available when using a `NativeDatabase`. This contains `pow`, `sqrt` and a variety
-  of trigonometric functions. Details on those functions are available [here]({{ "../Other engines/vm.md#moor-only-functions" | pageUrl }}).
+  of trigonometric functions. Details on those functions are available [here]({{ "../Platforms/vm.md#moor-only-functions" | pageUrl }}).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
   This module is largely incompatible with the `moor_ffi` module.
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)

@@ -2,7 +2,7 @@
 data:
   title: "Supported platforms"
   description: All platforms supported by drift, and how to use them
-template: layouts/docs/single
+template: layouts/docs/list
 ---
 
 Being built on top of the sqlite3 database, drift can run on almost every Dart platform.
@@ -14,7 +14,8 @@ To achieve platform independence, drift separates its core apis from a platform-
 database implementation. The core apis are pure-Dart and run on all Dart platforms, even
 outside of Flutter. When writing drift apps, prefer to mainly use the apis in
 `package:drift/drift.dart` as they are guaranteed to work across all platforms.
-Depending on your platform, you can choose a different `QueryExecutor`.
+Depending on your platform, you can choose a different `QueryExecutor` - the interface
+binding the core drift library with native databases.
 
 ## Overview
 
@@ -23,8 +24,8 @@ This table list all supported drift implementations and on which platforms they 
 | Implementation | Supported platforms | Notes |
 |----------------|---------------------|-------|
 | `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter` |
-| `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}) is recommended. Formerly known as `package:moor/ffi.dart`. |
-| `WasmDatabase` from `package:drift/wasm.dart` | Web | Works with or without Flutter. A bit of [additional setup]({{ 'Other engines/web.md' | pageUrl }}) is required. |
+| `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate]({{ '../Advanced Features/isolates.md' | pageUrl }}) is recommended. Formerly known as `package:moor/ffi.dart`. |
+| `WasmDatabase` from `package:drift/wasm.dart` | Web | Works with or without Flutter. A bit of [additional setup]({{ 'web.md' | pageUrl }}) is required. |
 | `WebDatabase` from `package:drift/web.dart` | Web | Deprecated in favor of `WasmDatabase`. |
 
 To support all platforms in a shared codebase, you only need to change how you open your database, all other usages can stay the same.
@@ -47,7 +48,7 @@ is maintaned and supported too.
 ### using `drift/native`
 
 The new `package:drift/native.dart` implementation uses `dart:ffi` to bind to sqlite3's native C apis.
-This is the recommended approach for newer projects as described in the [getting started]({{ "setup.md" | pageUrl }}) guide.
+This is the recommended approach for newer projects as described in the [getting started]({{ "../setup.md" | pageUrl }}) guide.
 
 To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
 package when using `package:drift/native.dart`!
@@ -73,12 +74,12 @@ However, there are some smaller issues on some devices that you should be aware 
 
 ## Web
 
-_Main article: [Web]({{ "Other engines/web.md" | pageUrl }})_
+_Main article: [Web]({{ "web.md" | pageUrl }})_
 
-For apps that run on the web, you can use drift's experimental web implementation, located
-in `package:drift/web.dart`.
-As it binds to [sql.js](https://github.com/sql-js/sql.js), special setup is required. Please
-read the main article for details.
+Drift runs on the web by compiling sqlite3 to a WebAssembly module. This database
+can be accessed using a `WasmDatabase` in `package:drift/wasm.dart`.
+For optimal support across different browsers, a worker script and some additional
+setup is required. The main article explains how to set up drift to work on the web.
 
 ## Desktop
 
@@ -142,7 +143,7 @@ lives next to your application:
 {% include "blocks/snippet" snippets = snippets %}
 
 Be sure to use drift _after_ you set the platform-specific overrides.
-When you use drift in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
+When you use drift in [another isolate]({{ '../Advanced Features/isolates.md' | pageUrl }}),
 you'll also need to apply the opening overrides on that background isolate.
 You can call them in the isolate's entrypoint before using any drift apis.
 
