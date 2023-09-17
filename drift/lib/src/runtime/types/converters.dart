@@ -9,7 +9,7 @@ import '../data_class.dart';
 /// Dart currently supports [DateTime], [double], [int], [Uint8List], [bool]
 /// and [String] for [S].
 ///
-/// Using a type converter does impact the way drift serializes data classes to
+/// Using a type converter does not impact the way drift serializes data classes to
 /// JSON by default. To control that, use a [JsonTypeConverter] or a custom
 /// [ValueSerializer].
 ///
