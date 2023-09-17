@@ -12,7 +12,7 @@ The `WasmDatabase.open` API is the preferred way to run drift on the web. While 
 APIs continue to work, using the stable API will bring performance and safety benefits.
 {% endblock %}
 
-{% assign snippets = "package:drift_docs/snippets/engines/web.dart.excerpt.json" | readString | json_decode %}
+{% assign snippets = "package:drift_docs/snippets/platforms/web.dart.excerpt.json" | readString | json_decode %}
 
 Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
 you can use drift databases for the web version of your Flutter and Dart applications.
@@ -253,7 +253,7 @@ If you want to instead compile these yourself, this section describes how to do 
 The web worker is written in Dart - the entrypoint is stable and part of drift's public API.
 To compile a worker suitable for `WasmDatabase.open`, create a new Dart file that calls `WasmDatabase.workerMainForOpen`:
 
-{% assign worker = "package:drift_docs/snippets/engines/stable_worker.dart.excerpt.json" | readString | json_decode %}
+{% assign worker = "package:drift_docs/snippets/platforms/stable_worker.dart.excerpt.json" | readString | json_decode %}
 {% include "blocks/snippet" snippets = worker %}
 
 The JavaScript file included in drift releases is compiled with `dart compile js -O4 web/drift_worker.dart`.
@@ -354,7 +354,7 @@ Drift will automatically migrate data from local storage to `IndexedDb` when it 
 
 #### Using web workers
 
-You can offload the database to a background thread by using 
+You can offload the database to a background thread by using
 [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 Drift also supports [shared workers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker),
 which allows you to seamlessly synchronize query-streams and updates across multiple tabs!
@@ -369,7 +369,7 @@ A Flutter port of this example is [part of the drift repository](https://github.
 To write a web worker that will serve requests for drift, create a file called `worker.dart` in
 the `web/` folder of your app. It could have the following content:
 
-{% assign workers = 'package:drift_docs/snippets/engines/workers.dart.excerpt.json' | readString | json_decode %}
+{% assign workers = 'package:drift_docs/snippets/platforms/workers.dart.excerpt.json' | readString | json_decode %}
 
 {% include "blocks/snippet" snippets = workers name = "worker" %}
 

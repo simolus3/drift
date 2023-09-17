@@ -2,13 +2,18 @@
 data:
   title: "Supported sqlite extensions"
   weight: 10
-  description: Information on json1 and fts5 support in the generator
+  description: Information on json1 and fts5 support in drift files
 template: layouts/docs/single
 ---
 
-_Note_: Since `drift_sqflite` and `moor_flutter` uses the sqlite version shipped on the device, these extensions might not
-be available on all devices. When using these extensions, using a `NativeDatabase` is strongly recommended.
-This enables the extensions listed here on all Android and iOS devices.
+When analyzing `.drift` files, the generator can consider sqlite3 extensions
+that might be present.
+The generator can't know about the sqlite3 library your database is talking to
+though, so it makes a pessimistic assumption of using an old sqlite3 version
+without any enabled extensions by default.
+When using a package like `sqlite3_flutter_libs`, you get the latest sqlite3
+version with the json1 and fts5 extensions enabled. You can inform the generator
+about this by using [build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}).
 
 ## json1
 
@@ -42,7 +47,7 @@ class Database extends _$Database {
         return phoneNumber.equals(number);
       })
     ).get();
-  } 
+  }
 }
 ```
 

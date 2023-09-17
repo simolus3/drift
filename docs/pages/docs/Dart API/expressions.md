@@ -259,4 +259,4 @@ select(users)..where((u) => inactive);
 _Note_: It's easy to write invalid queries by using `CustomExpressions` too much. If you feel like
 you need to use them because a feature you use is not available in drift, consider creating an issue
 to let us know. If you just prefer sql, you could also take a look at
-[compiled sql]({{ "../Using SQL/custom_queries.md" | pageUrl }}) which is typesafe to use.
+[compiled sql]({{ "../SQL API/custom_queries.md" | pageUrl }}) which is typesafe to use.

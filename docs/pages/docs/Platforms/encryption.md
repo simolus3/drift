@@ -5,7 +5,7 @@ data:
 template: layouts/docs/single
 ---
 
-{% assign snippets = 'package:drift_docs/snippets/encryption.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/platforms/encryption.dart.excerpt.json' | readString | json_decode %}
 
 There are two ways to use drift on encrypted databases.
 The `encrypted_drift` package is similar to `drift_sqflite` and uses a platform plugin written in

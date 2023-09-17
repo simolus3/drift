@@ -67,7 +67,7 @@ At the moment, drift supports these options:
   to `null`.
 * `named_parameters`: Generates named parameters for named variables in SQL queries.
 * `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
-* `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders]({{ '../Using SQL/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
+* `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders]({{ '../SQL API/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
 * `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.

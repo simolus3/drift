@@ -142,7 +142,7 @@ result of your queries.
 ### floor
 Floor also has a lot of convenience features like auto-updating queries and schema migrations. Similar to drift, you
 define the structure of your database in Dart. Then, you have write queries in sql - the mapping code if generated
-by floor. Drift has a [similar feature]({{ "Using SQL/custom_queries.md" | pageUrl }}), but it can also verify that your queries are valid at compile time. Drift
+by floor. Drift has a [similar feature]({{ "SQL API/custom_queries.md" | pageUrl }}), but it can also verify that your queries are valid at compile time. Drift
 additionally has an api that lets you write some queries in Dart instead of sql.
 
 A difference between these two is that Floor lets you write your own classes and generates mapping code around that.
