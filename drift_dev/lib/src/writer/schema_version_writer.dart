@@ -71,21 +71,6 @@ class SchemaVersionWriter {
   final Map<String, String> _columnCodeToFactory = {};
   final Map<_TableShape, String> _shapes = {};
 
-  // A list of member names already in use in the generated class. This is used
-  // to prevent table getters from conflicting with other class members.
-  final Set<String> _usedNames = {};
-
-  void _resetUsedNames() {
-    _usedNames.clear();
-    _usedNames.addAll([
-      'database',
-      'entities',
-      'version',
-      'stepByStepHelper',
-      'runMigrationSteps',
-    ]);
-  }
-
   SchemaVersionWriter(this.versions, this.libraryScope) {
     assert(versions.isSortedBy<num>((element) => element.version));
   }
@@ -173,15 +158,6 @@ class SchemaVersionWriter {
     });
   }
 
-  String _getNonCollidingGetterName(DriftSchemaElement element) {
-    var name = element.dbGetterName!;
-    while (_usedNames.contains(name)) {
-      name = '$name${_suffixForElement(element)}';
-    }
-    _usedNames.add(name);
-    return name;
-  }
-
   String _suffixForElement(DriftSchemaElement element) => switch (element) {
         DriftTable() => 'Table',
         DriftView() => 'View',
@@ -191,8 +167,10 @@ class SchemaVersionWriter {
       };
 
   String _writeWithResultSet(
-      DriftElementWithResultSet entity, TextEmitter writer) {
-    final getterName = _getNonCollidingGetterName(entity);
+    String getterName,
+    DriftElementWithResultSet entity,
+    TextEmitter writer,
+  ) {
     final shape = _shapeClass(entity);
     writer
       ..write('late final $shape $getterName = ')
@@ -298,19 +276,20 @@ class SchemaVersionWriter {
     required DriftSchemaElement element,
     required TextEmitter definition,
   }) {
-    String name;
+    final name = definition.parent!.getNonConflictingName(
+      element.dbGetterName!,
+      (name) => name + _suffixForElement(element),
+    );
 
     if (element is DriftElementWithResultSet) {
-      name = _writeWithResultSet(element, definition);
+      _writeWithResultSet(name, element, definition);
     } else if (element is DriftIndex) {
-      name = _getNonCollidingGetterName(element);
       final index = definition.drift('Index');
 
       definition
         ..write('final $index $name = ')
         ..writeln(DatabaseWriter.createIndex(definition.parent!, element));
     } else if (element is DriftTrigger) {
-      name = _getNonCollidingGetterName(element);
       final trigger = definition.drift('Trigger');
 
       definition
@@ -345,7 +324,14 @@ class SchemaVersionWriter {
       final versionNo = version.version;
       final versionClass = '_S$versionNo';
       final versionScope = libraryScope.child();
-      _resetUsedNames();
+
+      versionScope.reserveNames([
+        'database',
+        'entities',
+        'version',
+        'stepByStepHelper',
+        'runMigrationSteps',
+      ]);
 
       // Write an _S<x> class for each schema version x.
       versionScope.leaf()
