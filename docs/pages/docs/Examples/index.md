@@ -1,7 +1,7 @@
 ---
 data:
   title: "Examples"
-  weight: 3
+  weight: 30
   description: Example apps using drift
 template: layouts/docs/list
 ---

@@ -1,7 +1,7 @@
 ---
 data:
   title: "Frequently asked questions"
-
+  weight: 25
 path: faq/
 template: layouts/docs/single
 ---
@@ -148,7 +148,7 @@ additionally has an api that lets you write some queries in Dart instead of sql.
 A difference between these two is that Floor lets you write your own classes and generates mapping code around that.
 By default, drift generates most classes for you, which can make it easier to use, but makes the api less flexible in some
 instances.
-Drift can also be used with [custom row classes]({{ 'Advanced Features/custom_row_classes.md' | pageUrl }}) though.
+Drift can also be used with [custom row classes]({{ 'custom_row_classes.md' | pageUrl }}) though.
 
 ### firebase
 Both the Realtime Database and Cloud Datastore are easy to use persistence libraries that can sync across devices while

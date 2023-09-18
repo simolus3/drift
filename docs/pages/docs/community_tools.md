@@ -1,6 +1,7 @@
 ---
 data:
   title: "Community"
+  weight: 50
   description: Packages contributed by the community
 template: layouts/docs/single
 ---

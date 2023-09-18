@@ -382,7 +382,7 @@ you can connect like this:
 
 You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on
-[isolates]({{ "../Advanced Features/isolates.md" | pageUrl }}).
+[isolates]({{ "../isolates.md" | pageUrl }}).
 
 A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/web_worker_example)
 in the drift repository.

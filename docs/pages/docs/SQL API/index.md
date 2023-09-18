@@ -1,7 +1,7 @@
 ---
 data:
-  title: SQL API
-  description: Define your database and queries in SQL instead.
+  title: Verified SQL
+  description: Define your database and queries in SQL without giving up on type-safety.
   weight: 3
 template: layouts/docs/list
 ---

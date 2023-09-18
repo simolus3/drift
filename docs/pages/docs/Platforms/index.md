@@ -2,6 +2,7 @@
 data:
   title: "Supported platforms"
   description: All platforms supported by drift, and how to use them
+  weight: 8
 template: layouts/docs/list
 ---
 
@@ -24,7 +25,7 @@ This table list all supported drift implementations and on which platforms they 
 | Implementation | Supported platforms | Notes |
 |----------------|---------------------|-------|
 | `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter` |
-| `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate]({{ '../Advanced Features/isolates.md' | pageUrl }}) is recommended. Formerly known as `package:moor/ffi.dart`. |
+| `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate]({{ '../isolates.md' | pageUrl }}) is recommended. Formerly known as `package:moor/ffi.dart`. |
 | `WasmDatabase` from `package:drift/wasm.dart` | Web | Works with or without Flutter. A bit of [additional setup]({{ 'web.md' | pageUrl }}) is required. |
 | `WebDatabase` from `package:drift/web.dart` | Web | Deprecated in favor of `WasmDatabase`. |
 
@@ -139,11 +140,11 @@ install the dynamic library for `sqlite` next to your application executable.
 This example shows how to do that on Linux, by using a custom `sqlite3.so` that we assume
 lives next to your application:
 
-{% assign snippets = 'package:drift_docs/snippets/platforms.dart.excerpt.json' | readString | json_decode %}
+{% assign snippets = 'package:drift_docs/snippets/platforms/platforms.dart.excerpt.json' | readString | json_decode %}
 {% include "blocks/snippet" snippets = snippets %}
 
 Be sure to use drift _after_ you set the platform-specific overrides.
-When you use drift in [another isolate]({{ '../Advanced Features/isolates.md' | pageUrl }}),
+When you use drift in [another isolate]({{ '../isolates.md' | pageUrl }}),
 you'll also need to apply the opening overrides on that background isolate.
 You can call them in the isolate's entrypoint before using any drift apis.
 

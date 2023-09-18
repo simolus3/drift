@@ -1,9 +1,11 @@
 ---
 data:
   title: "Type converters"
+  weight: 5
   description: Store more complex data in columns with type converters
 aliases:
  - /type_converters
+path: /docs/advanced_features/type_converters/
 template: layouts/docs/single
 ---
 
@@ -131,7 +133,7 @@ CREATE TABLE users (
 );
 ```
 
-When using type converters in drift files, we recommend the [`apply_converters_on_variables`]({{ "builder_options.md" | pageUrl }})
+When using type converters in drift files, we recommend the [`apply_converters_on_variables`]({{ "Generation options/index.md" | pageUrl }})
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 

@@ -2,6 +2,7 @@
 data:
   title: "Command line tools for drift"
   description: A set of CLI tools to interact with drift projects
+  weight: 20
 path: /cli/
 template: layouts/docs/single
 ---

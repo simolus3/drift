@@ -191,7 +191,7 @@ If you opt for a rename, also update your imports and `include:` parameters in d
 
 #### Build configuration
 
-When configuring moor builders for [options]({{ 'Advanced Features/builder_options.md' | pageUrl }}), you have to update your `build.yaml` files to reflect the new builder keys:
+When configuring moor builders for [options]({{ 'Generation options/index.md' | pageUrl }}), you have to update your `build.yaml` files to reflect the new builder keys:
 
 | Moor builder key                            | Drift builder key              |
 | ------------------------------------------- | ------------------------------ |

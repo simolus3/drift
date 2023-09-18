@@ -82,3 +82,17 @@ class Users extends Table {
   TextColumn get name => text()();
 }
 // #enddocregion index
+
+// #docregion custom-type
+typedef Category = ({int id, String name});
+
+@UseRowClass(Category)
+class Categories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  // #enddocregion custom-type
+  @override
+  String get tableName => 'categories2';
+  // #docregion custom-type
+}
+// #enddocregion custom-type

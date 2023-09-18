@@ -1,11 +1,11 @@
 ---
 data:
   title: "Custom row classes"
+  weight: 6
   description: >-
     Use your own classes as data classes for drift tables
 template: layouts/docs/single
 ---
-
 
 For each table declared in Dart or in a drift file, `drift_dev` generates a row class (sometimes also referred to as _data class_)
 to hold a full row and a companion class for updates and inserts.
@@ -167,10 +167,10 @@ For your convenience, drift is using different generation strategies even for qu
 an existing row class. It is helpful to enumerate them because they affect the allowed type for
 fields in existing types as well.
 
-1. Nested tables: When the [`SELECT table.**` syntax]({{ '../SQL API/drift_files.md#nested-results' | pageUrl }})
+1. Nested tables: When the [`SELECT table.**` syntax]({{ 'SQL API/drift_files.md#nested-results' | pageUrl }})
    is used in a query, drift will pack columns  from `table` into a nested object instead of generating fields
    for every column.
-2. Nested list results: The [`LIST()` macro]({{ '../SQL API/drift_files.md#list-subqueries' | pageUrl }})
+2. Nested list results: The [`LIST()` macro]({{ 'SQL API/drift_files.md#list-subqueries' | pageUrl }})
    can be used to expose results of a subquery as a list.
 3. Single-table results: When a select statement reads all columns from a table (and no additional columns),
    like in `SELECT * FROM table`, drift will use the data class of the table instead of generating a new one.

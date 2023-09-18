@@ -112,7 +112,7 @@ The chosen options help reduce binary size by removing features not used by drif
 - __SQLITE_DQS=0__: This will make sqlite not accept double-quoted strings (and instead parse them as identifiers). This matches
   the behavior of drift and compiled queries
 - __SQLITE_THREADSAFE=0__: Since the majority of Flutter apps only use one isolate, thread safety is turned off. Note that you
-  can still use the [isolate api]({{"../Advanced Features/isolates.md" | pageUrl}}) for background operations. As long as all
+  can still use the [isolate api]({{"../isolates.md" | pageUrl}}) for background operations. As long as all
   database accesses happen from the same thread, there's no problem.
 - SQLITE_DEFAULT_MEMSTATUS=0: The `sqlite3_status()` interfaces are not exposed by drift, so there's no point of having them.
 - SQLITE_MAX_EXPR_DEPTH=0: Disables maximum depth when sqlite parses expressions, which can make the parser faster.
@@ -141,8 +141,8 @@ The `NativeDatabase` includes additional sql functions not available in standard
 
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
 
-When enabling the `moor_ffi` module in your [build options]({{ "../Advanced Features/builder_options.md#available-extensions" | pageUrl }}),
-the generator will allow you to use those functions in drift files or compiled queries. 
+When enabling the `moor_ffi` module in your [build options]({{ "../Generation options/index.md#available-extensions" | pageUrl }}),
+the generator will allow you to use those functions in drift files or compiled queries.
 
 To use those methods from Dart, you need to import `package:drift/extensions/native.dart`.
 You can then use the additional functions like this:

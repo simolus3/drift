@@ -28,10 +28,10 @@ In the example above, `IntColumn get category => integer().nullable()();` define
 holding nullable integer values named `category`.
 This section describes all the options available when declaring columns.
 
-## Supported column types
+### Supported column types
 
 Drift supports a variety of column types out of the box. You can store custom classes in columns by using
-[type converters]({{ "../Advanced Features/type_converters.md" | pageUrl }}).
+[type converters]({{ "../type_converters.md" | pageUrl }}).
 
 | Dart type    | Column        | Corresponding SQLite type                           |
 |--------------|---------------|-----------------------------------------------------|
@@ -42,14 +42,25 @@ Drift supports a variety of column types out of the box. You can store custom cl
 | `String`     | `text()`      | `TEXT`                                              |
 | `DateTime`   | `dateTime()`  | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)               |
 | `Uint8List`  | `blob()`      | `BLOB`                                              |
-| `Enum`       | `intEnum()`   | `INTEGER` (more information available [here]({{ "../Advanced Features/type_converters.md#implicit-enum-converters" | pageUrl }})). |
-| `Enum`       | `textEnum()`   | `TEXT` (more information available [here]({{ "../Advanced Features/type_converters.md#implicit-enum-converters" | pageUrl }})). |
+| `Enum`       | `intEnum()`   | `INTEGER` (more information available [here]({{ "../type_converters.md#implicit-enum-converters" | pageUrl }})). |
+| `Enum`       | `textEnum()`  | `TEXT` (more information available [here]({{ "../type_converters.md#implicit-enum-converters" | pageUrl }})). |
 
 Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
 the database.
 They don't affect JSON serialization at all. For instance, `boolean` values are expected as `true` or `false`
 in the `fromJson` factory, even though they would be saved as `0` or `1` in the database.
 If you want a custom mapping for JSON, you need to provide your own [`ValueSerializer`](https://pub.dev/documentation/drift/latest/drift/ValueSerializer-class.html).
+
+### Custom column types
+
+While is constrained by the types supported by sqlite3, it supports type converters
+to store arbitrary Dart types in SQL.
+
+{% assign type_converters = 'package:drift_docs/snippets/type_converters/converters.dart.excerpt.json' | readString | json_decode %}
+{% include "blocks/snippet" snippets = type_converters name = 'table' %}
+
+For more information about type converters, see the page on [type converters]({{ "../type_converters.md#implicit-enum-converters" | pageUrl }})
+on this website.
 
 ### `BigInt` support
 
@@ -125,7 +136,7 @@ Drift supports two approaches of storing `DateTime` values in SQL:
    This behavior works well with the date functions in sqlite3 while also
    preserving "UTC-ness" for stored values.
 
-The mode can be changed with the `store_date_time_values_as_text` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}).
+The mode can be changed with the `store_date_time_values_as_text` [build option]({{ '../Generation options/index.md' | pageUrl }}).
 
 Regardless of the option used, drift's builtin support for
 [date and time functions]({{ 'expressions.md#date-and-time' | pageUrl }})
@@ -217,7 +228,7 @@ If you do want to make a column nullable, just use `nullable()`:
 
 {% include "blocks/snippet" snippets = snippets name = 'nnbd' %}
 
-## References
+### References
 
 [Foreign key references](https://www.sqlite.org/foreignkeys.html) can be expressed
 in Dart tables with the `references()` method when building a column:
@@ -234,7 +245,7 @@ Be aware that, in sqlite3, foreign key references aren't enabled by default.
 They need to be enabled with `PRAGMA foreign_keys = ON`.
 A suitable place to issue that pragma with drift is in a [post-migration callback]({{ '../Migrations/index.md#post-migration-callbacks' | pageUrl }}).
 
-## Default values
+### Default values
 
 You can set a default value for a column. When not explicitly set, the default value will
 be used when inserting a new row. To set a constant default value, use `withDefault`:
@@ -339,6 +350,18 @@ You can change the name of the generated data class too. By default, drift will 
 That doesn't work in all cases though. With the `EnabledCategories` class from above, we'd get
 a `EnabledCategorie` data class. In those cases, you can use the [`@DataClassName`](https://pub.dev/documentation/drift/latest/drift/DataClassName-class.html)
 annotation to set the desired name.
+
+## Existing row classes
+
+By default, drift generates a row class for each table. This row class can be used to access all columns, it also
+implements `hashCode`, `operator==` and a few other useful operators.
+When you want to use your own type hierarchy, or have more control over the generated classes, you can
+also tell drift to your own class or type:
+
+{% include "blocks/snippet" snippets = snippets name="custom-type" %}
+
+Drift verifies that the type is suitable for storing a row of that table.
+More details about this feature are [described here]({{ '../custom_row_classes.md' | pageUrl }}).
 
 ## Table options
 

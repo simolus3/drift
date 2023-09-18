@@ -2,6 +2,7 @@
 data:
   title: Migrations
   description: Tooling and APIs to safely change the schema of your database.
+  weight: 4
 template: layouts/docs/list
 aliases:
   - /migrations

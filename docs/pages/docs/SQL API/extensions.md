@@ -13,12 +13,12 @@ though, so it makes a pessimistic assumption of using an old sqlite3 version
 without any enabled extensions by default.
 When using a package like `sqlite3_flutter_libs`, you get the latest sqlite3
 version with the json1 and fts5 extensions enabled. You can inform the generator
-about this by using [build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}).
+about this by using [build options]({{ "../Generation options/index.md" | pageUrl }}).
 
 ## json1
 
 To enable the json1 extension in drift files and compiled queries, modify your
-[build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}) to include
+[build options]({{ "../Generation options/index.md" | pageUrl }}) to include
 `json1` in the `sqlite_module` section.
 
 The sqlite extension doesn't require any special tables and works on all text columns. In drift
@@ -56,8 +56,8 @@ You can learn more about the json1 extension on [sqlite.org](https://www.sqlite.
 ## fts5
 
 The fts5 extension provides full-text search capabilities in sqlite tables.
-To enable the fts5 extension in drift files and compiled queries, modify the 
-[build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}) to include 
+To enable the fts5 extension in drift files and compiled queries, modify the
+[build options]({{ "../Generation options/index.md" | pageUrl }}) to include
 `fts5` in the `sqlite_module` section.
 
 Just like you'd expect when using sqlite, you can create a fts5 table in a drift file

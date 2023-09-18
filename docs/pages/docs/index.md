@@ -26,4 +26,11 @@ return, drift turns rows into objects of your choice.
 And much more! Drift validates data before inserting it, so you can get helpful error messages instead of just an
 sql error code. Of course, it supports transactions. And DAOs. And efficient batched insert statements. The list goes on.
 
-Check out these in-depth articles to learn about drift and how to use its features.
+## Getting started
+
+To get started with drift, follow the [setup guide]({{ 'setup.md' | pageUrl }}).
+It explains everything from setting up the dependencies to writing database classes
+and generating code.
+
+It also links a few pages intended for developers getting started with drift, so
+that you can explore the areas you're most interested in first.

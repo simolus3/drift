@@ -81,7 +81,7 @@ named parameters. To do so, add a `REQUIRED` keyword:
 {% include "blocks/snippet" snippets = small name = "q3" %}
 
 Note that this only has an effect when the `named_parameters`
-[build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}) is
+[build option]({{ '../Generation options/index.md' | pageUrl }}) is
 enabled. Further, non-nullable variables are required by default.
 
 ### Arrays
@@ -138,7 +138,7 @@ CREATE TABLE tasks (
 );
 ```
 
-More information on storing enums is available [in the page on type converters]({{ '../Advanced Features/type_converters.md#using-converters-in-moor' | pageUrl }}).
+More information on storing enums is available [in the page on type converters]({{ '../type_converters.md#using-converters-in-moor' | pageUrl }}).
 Instead of using an integer mapping enums by their index, you can also store them
 by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
@@ -320,7 +320,7 @@ default SQL value (here, `TRUE`) when not explicitly set.
 
 ### Type converters
 
-You can import and use [type converters]({{ "../Advanced Features/type_converters.md" | pageUrl }})
+You can import and use [type converters]({{ "../type_converters.md" | pageUrl }})
 written in Dart in a drift file. Importing a Dart file works with a regular `import` statement.
 To apply a type converter on a column definition, you can use the `MAPPED BY` column constraints:
 
@@ -346,9 +346,9 @@ FROM users;
 ```
 
 More details on type converts in drift files are available
-[here]({{ "../Advanced Features/type_converters.md#using-converters-in-moor" | pageUrl }}).
+[here]({{ "../type_converters.md#using-converters-in-moor" | pageUrl }}).
 
-When using type converters, we recommend the [`apply_converters_on_variables`]({{ "../Advanced Features/builder_options.md" | pageUrl }})
+When using type converters, we recommend the [`apply_converters_on_variables`]({{ "../Generation options/index.md" | pageUrl }})
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
@@ -380,7 +380,7 @@ CREATE TABLE users (
 
 When using custom row classes defined in another Dart file, you also need to import that file into the file where you define
 the database.
-For more general information on this feature, please check [this page]({{ '../Advanced Features/custom_row_classes.md' | pageUrl }}).
+For more general information on this feature, please check [this page]({{ '../custom_row_classes.md' | pageUrl }}).
 
 Custom row classes can be applied to `SELECT` queries defined a `.drift` file. To use a custom row class, the `WITH` syntax
 can be added after the name of the query.
@@ -421,7 +421,7 @@ Internally, drift will then generate query code to map the row to an instance of
 `UserWithFriends` class.
 
 For a more complete overview of using custom row classes for queries, see
-[the section for queries]({{ '../Advanced Features/custom_row_classes.md#queries' | pageUrl }}).
+[the section for queries]({{ '../custom_row_classes.md#queries' | pageUrl }}).
 
 ### Dart documentation comments
 

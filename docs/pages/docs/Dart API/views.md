@@ -20,7 +20,7 @@ Inside a Dart view, use
   The columns referenced in `select` may refer to two kinds of columns:
    - Columns defined on the view itself (like `itemCount` in the example above).
    - Columns defined on referenced tables (like `categories.description` in the example).
-     For these references, advanced drift features like [type converters]({{ '../Advanced Features/type_converters.md' | pageUrl }})
+     For these references, advanced drift features like [type converters]({{ '../type_converters.md' | pageUrl }})
      used in the column's definition from the table are also applied to the view's column.
 
    Both kind of columns will be added to the data class for the view when selected.
