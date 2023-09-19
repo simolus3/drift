@@ -325,6 +325,9 @@ class SchemaVersionWriter {
       final versionClass = '_S$versionNo';
       final versionScope = libraryScope.child();
 
+      // Reserve all the names already in use in [VersionedSchema] and its
+      // superclasses. Without this certain table names would cause us to
+      // generate invalid code.
       versionScope.reserveNames([
         'database',
         'entities',
