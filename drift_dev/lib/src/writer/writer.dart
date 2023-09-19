@@ -298,7 +298,7 @@ class Scope extends _Node {
   /// This can be used to generated methods which must have a unique name-
   int counter = 0;
 
-  /// The set of names already used in this scope. Used by methos like
+  /// The set of names already used in this scope. Used by methods like
   /// [getNonConflictingName] to prevent name collisions.
   final Set<String> _usedNames = {};
 
