@@ -1,10 +1,10 @@
 import 'package:drift/drift.dart';
+import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
-import 'package:path/path.dart' show url;
 
-import '../analysis/results/results.dart';
 import '../analysis/options.dart';
+import '../analysis/results/results.dart';
 import 'import_manager.dart';
 import 'queries/sql_writer.dart';
 
@@ -298,6 +298,10 @@ class Scope extends _Node {
   /// This can be used to generated methods which must have a unique name-
   int counter = 0;
 
+  /// The set of names already used in this scope. Used by methods like
+  /// [getNonConflictingName] to prevent name collisions.
+  final Set<String> _usedNames = {};
+
   Scope({required Scope? parent, Writer? writer})
       : writer = writer ?? parent!.writer,
         super(parent);
@@ -324,6 +328,28 @@ class Scope extends _Node {
     final child = TextEmitter(this);
     _children.add(child);
     return child;
+  }
+
+  /// Reserve a collection of names in this scope. See [getNonConflictingName]
+  /// for more information.
+  void reserveNames(Iterable<String> names) {
+    _usedNames.addAll(names);
+  }
+
+  /// Returns a variation of [name] that does not conflict with any names
+  /// already in use in this [Scope].
+  ///
+  /// If [name] does not conflict with any existing names then it is returned
+  /// unmodified. If a conflict is detected then [name] is repeatedly passed to
+  /// [modify] until the result no longer conflicts. Each result returned from
+  /// this method is recorded in an internal set, so subsequent calls with the
+  /// same name will produce a different, non-conflicting result.
+  String getNonConflictingName(String name, String Function(String) modify) {
+    while (_usedNames.contains(name)) {
+      name = modify(name);
+    }
+    _usedNames.add(name);
+    return name;
   }
 }
 
