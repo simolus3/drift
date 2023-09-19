@@ -4,6 +4,8 @@
 - Add the `@TableIndex` annotation for table classes to add an index to the
   table.
 - Support `json_each` and `json_tree`.
+- Add `TypedResult.readWithConverter` to read a column with a type converter
+  from a join result row.
 
 ## 2.11.1
 

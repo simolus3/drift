@@ -62,6 +62,7 @@ void main() {
           't.content': 'content',
           't.target_date': date.millisecondsSinceEpoch ~/ 1000,
           't.category': 3,
+          't.status': 'workInProgress',
           'c.id': 3,
           'c.desc': 'description',
           'c.description_in_upper_case': 'DESCRIPTION',
@@ -85,6 +86,7 @@ void main() {
           content: 'content',
           targetDate: date,
           category: 3,
+          status: TodoStatus.workInProgress,
         ));
 
     expect(
@@ -100,6 +102,9 @@ void main() {
     // Also make sure we can read individual columns
     expect(row.read(todos.id), 5);
     expect(row.read(categories.description), 'description');
+
+    expect(row.read(todos.status), 'workInProgress');
+    expect(row.readWithConverter(todos.status), TodoStatus.workInProgress);
 
     verify(executor.runSelect(argThat(contains('DISTINCT')), any));
   });
