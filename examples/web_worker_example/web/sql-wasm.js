@@ -1,1 +1,1 @@
-../../../extras/integration_tests/web/test/sql-wasm.js
+../../../extras/integration_tests/legacy_web/test/sql-wasm.js
