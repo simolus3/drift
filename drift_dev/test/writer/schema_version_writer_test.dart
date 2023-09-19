@@ -77,8 +77,6 @@ void main() {
 
     final output = writer.writeGenerated();
 
-    print(output);
-
     // Tables without conflicting names shouldn't be modified.
     expect(output, matches(containsTableRegex(normalTable.baseDartName)));
 
