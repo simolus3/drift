@@ -2,6 +2,7 @@
 data:
   title: Encryption
   description: Use drift on encrypted databases
+  weight: 10
 template: layouts/docs/single
 ---
 
@@ -72,7 +73,8 @@ of the regular `libsqlite3.so`:
 {% include "blocks/snippet" snippets = snippets name = "setup" %}
 
 When using drift on a background database, you need to call `setupSqlCipher` on the background isolate
-as well.
+as well. With `NativeDatabase.createInBackground`, which are using isolates internally, you can use
+the `setupIsolate` callback to do this - the examples on this page use this as well.
 
 On iOS and macOS, no additional setup is necessary - simply depend on `sqlcipher_flutter_libs`.
 

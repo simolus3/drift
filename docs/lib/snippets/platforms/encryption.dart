@@ -23,8 +23,9 @@ void databases() {
   final myDatabaseFile = File('/dev/null');
 
   // #docregion encrypted1
-  NativeDatabase(
+  NativeDatabase.createInBackground(
     myDatabaseFile,
+    isolateSetup: setupSqlCipher,
     setup: (rawDb) {
       rawDb.execute("PRAGMA key = 'passphrase';");
     },
@@ -32,8 +33,9 @@ void databases() {
   // #enddocregion encrypted1
 
   // #docregion encrypted2
-  NativeDatabase(
+  NativeDatabase.createInBackground(
     myDatabaseFile,
+    isolateSetup: setupSqlCipher,
     setup: (rawDb) {
       assert(_debugCheckHasCipher(rawDb));
       rawDb.execute("PRAGMA key = 'passphrase';");

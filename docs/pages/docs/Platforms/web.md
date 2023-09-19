@@ -2,6 +2,7 @@
 data:
   title: Web
   description: Drift support in Flutter and Dart web apps.
+  weight: 2
 template: layouts/docs/single
 path: web/
 ---
