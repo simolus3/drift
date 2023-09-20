@@ -33,6 +33,7 @@ class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
   String get aliasedName => _alias ?? 'posts';
   @override
   String get actualTableName => 'posts';
+  static String get actualTableNameStatic => 'posts';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Post> instance,
       {bool isInserting = false}) {
@@ -239,6 +240,7 @@ class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
   String get aliasedName => _alias ?? 'likes';
   @override
   String get actualTableName => 'likes';
+  static String get actualTableNameStatic => 'likes';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Like> instance,
       {bool isInserting = false}) {

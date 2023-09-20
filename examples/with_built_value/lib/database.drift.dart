@@ -25,6 +25,7 @@ class Users extends Table with TableInfo<Users, User> {
   String get aliasedName => _alias ?? 'users';
   @override
   String get actualTableName => 'users';
+  static String get actualTableNameStatic => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {

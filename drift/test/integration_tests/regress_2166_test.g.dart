@@ -29,6 +29,7 @@ class $_SomeTableTable extends _SomeTable
   String get aliasedName => _alias ?? 'some_table';
   @override
   String get actualTableName => 'some_table';
+  static String get actualTableNameStatic => 'some_table';
   @override
   VerificationContext validateIntegrity(Insertable<_SomeTableData> instance,
       {bool isInserting = false}) {

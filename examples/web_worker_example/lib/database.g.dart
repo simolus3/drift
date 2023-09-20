@@ -26,6 +26,7 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   String get aliasedName => _alias ?? 'entries';
   @override
   String get actualTableName => 'entries';
+  static String get actualTableNameStatic => 'entries';
   @override
   VerificationContext validateIntegrity(Insertable<Entrie> instance,
       {bool isInserting = false}) {

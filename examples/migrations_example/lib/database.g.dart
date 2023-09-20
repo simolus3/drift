@@ -45,6 +45,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   String get aliasedName => _alias ?? 'users';
   @override
   String get actualTableName => 'users';
+  static String get actualTableNameStatic => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -295,6 +296,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
   String get aliasedName => _alias ?? 'groups';
   @override
   String get actualTableName => 'groups';
+  static String get actualTableNameStatic => 'groups';
   @override
   VerificationContext validateIntegrity(Insertable<Group> instance,
       {bool isInserting = false}) {
@@ -545,6 +547,7 @@ class Notes extends Table
   String get aliasedName => _alias ?? 'notes';
   @override
   String get actualTableName => 'notes';
+  static String get actualTableNameStatic => 'notes';
   @override
   VerificationContext validateIntegrity(Insertable<Note> instance,
       {bool isInserting = false}) {

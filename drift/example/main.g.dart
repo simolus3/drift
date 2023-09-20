@@ -29,6 +29,7 @@ class $TodoCategoriesTable extends TodoCategories
   String get aliasedName => _alias ?? 'todo_categories';
   @override
   String get actualTableName => 'todo_categories';
+  static String get actualTableNameStatic => 'todo_categories';
   @override
   VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
       {bool isInserting = false}) {
@@ -228,6 +229,7 @@ class $TodoItemsTable extends TodoItems
   String get aliasedName => _alias ?? 'todo_items';
   @override
   String get actualTableName => 'todo_items';
+  static String get actualTableNameStatic => 'todo_items';
   @override
   VerificationContext validateIntegrity(Insertable<TodoItem> instance,
       {bool isInserting = false}) {

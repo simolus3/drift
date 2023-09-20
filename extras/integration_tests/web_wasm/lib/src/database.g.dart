@@ -30,6 +30,7 @@ class $TestTableTable extends TestTable
   String get aliasedName => _alias ?? 'test_table';
   @override
   String get actualTableName => 'test_table';
+  static String get actualTableNameStatic => 'test_table';
   @override
   VerificationContext validateIntegrity(Insertable<TestTableData> instance,
       {bool isInserting = false}) {

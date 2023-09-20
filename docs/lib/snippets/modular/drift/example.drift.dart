@@ -42,6 +42,7 @@ class Todos extends i0.Table with i0.TableInfo<Todos, i1.Todo> {
   String get aliasedName => _alias ?? 'todos';
   @override
   String get actualTableName => 'todos';
+  static String get actualTableNameStatic => 'todos';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Todo> instance,
       {bool isInserting = false}) {
@@ -283,6 +284,7 @@ class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {
   String get aliasedName => _alias ?? 'categories';
   @override
   String get actualTableName => 'categories';
+  static String get actualTableNameStatic => 'categories';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Category> instance,
       {bool isInserting = false}) {

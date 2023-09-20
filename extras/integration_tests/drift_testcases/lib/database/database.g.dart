@@ -51,6 +51,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   String get aliasedName => _alias ?? 'users';
   @override
   String get actualTableName => 'users';
+  static String get actualTableNameStatic => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -350,6 +351,7 @@ class $FriendshipsTable extends Friendships
   String get aliasedName => _alias ?? 'friendships';
   @override
   String get actualTableName => 'friendships';
+  static String get actualTableNameStatic => 'friendships';
   @override
   VerificationContext validateIntegrity(Insertable<Friendship> instance,
       {bool isInserting = false}) {

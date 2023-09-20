@@ -32,6 +32,7 @@ class SearchInPosts extends i0.Table
   String get aliasedName => _alias ?? 'search_in_posts';
   @override
   String get actualTableName => 'search_in_posts';
+  static String get actualTableNameStatic => 'search_in_posts';
   @override
   i0.VerificationContext validateIntegrity(
       i0.Insertable<i1.SearchInPost> instance,

@@ -50,6 +50,7 @@ class $CategoriesTable extends Categories
   String get aliasedName => _alias ?? 'categories';
   @override
   String get actualTableName => 'categories';
+  static String get actualTableNameStatic => 'categories';
   @override
   VerificationContext validateIntegrity(Insertable<Category> instance,
       {bool isInserting = false}) {
@@ -321,6 +322,7 @@ class $TodosTableTable extends TodosTable
   String get aliasedName => _alias ?? 'todos';
   @override
   String get actualTableName => 'todos';
+  static String get actualTableNameStatic => 'todos';
   @override
   VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
       {bool isInserting = false}) {
@@ -670,6 +672,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   String get aliasedName => _alias ?? 'users';
   @override
   String get actualTableName => 'users';
+  static String get actualTableNameStatic => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -938,6 +941,7 @@ class $SharedTodosTable extends SharedTodos
   String get aliasedName => _alias ?? 'shared_todos';
   @override
   String get actualTableName => 'shared_todos';
+  static String get actualTableNameStatic => 'shared_todos';
   @override
   VerificationContext validateIntegrity(Insertable<SharedTodo> instance,
       {bool isInserting = false}) {
@@ -1142,6 +1146,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   String get aliasedName => _alias ?? 'table_without_p_k';
   @override
   String get actualTableName => 'table_without_p_k';
+  static String get actualTableNameStatic => 'table_without_p_k';
   @override
   VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
       {bool isInserting = false}) {
@@ -1323,6 +1328,7 @@ class $PureDefaultsTable extends PureDefaults
   String get aliasedName => _alias ?? 'pure_defaults';
   @override
   String get actualTableName => 'pure_defaults';
+  static String get actualTableNameStatic => 'pure_defaults';
   @override
   VerificationContext validateIntegrity(Insertable<PureDefault> instance,
       {bool isInserting = false}) {

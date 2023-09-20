@@ -25,6 +25,7 @@ class $KeyValuesTable extends KeyValues
   String get aliasedName => _alias ?? 'key_values';
   @override
   String get actualTableName => 'key_values';
+  static String get actualTableNameStatic => 'key_values';
   @override
   VerificationContext validateIntegrity(Insertable<KeyValue> instance,
       {bool isInserting = false}) {

@@ -23,6 +23,7 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   String get aliasedName => _alias ?? 'foos';
   @override
   String get actualTableName => 'foos';
+  static String get actualTableNameStatic => 'foos';
   @override
   VerificationContext validateIntegrity(Insertable<Foo> instance,
       {bool isInserting = false}) {
@@ -160,6 +161,7 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   String get aliasedName => _alias ?? 'bars';
   @override
   String get actualTableName => 'bars';
+  static String get actualTableNameStatic => 'bars';
   @override
   VerificationContext validateIntegrity(Insertable<Bar> instance,
       {bool isInserting = false}) {

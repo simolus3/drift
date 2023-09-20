@@ -21,6 +21,7 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   String get aliasedName => _alias ?? 'no_ids';
   @override
   String get actualTableName => 'no_ids';
+  static String get actualTableNameStatic => 'no_ids';
   @override
   VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
       {bool isInserting = false}) {
@@ -121,6 +122,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   String get aliasedName => _alias ?? 'with_defaults';
   @override
   String get actualTableName => 'with_defaults';
+  static String get actualTableNameStatic => 'with_defaults';
   @override
   VerificationContext validateIntegrity(Insertable<WithDefault> instance,
       {bool isInserting = false}) {
@@ -317,6 +319,7 @@ class WithConstraints extends Table
   String get aliasedName => _alias ?? 'with_constraints';
   @override
   String get actualTableName => 'with_constraints';
+  static String get actualTableNameStatic => 'with_constraints';
   @override
   VerificationContext validateIntegrity(Insertable<WithConstraint> instance,
       {bool isInserting = false}) {
@@ -560,6 +563,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   String get aliasedName => _alias ?? 'config';
   @override
   String get actualTableName => 'config';
+  static String get actualTableNameStatic => 'config';
   @override
   VerificationContext validateIntegrity(Insertable<Config> instance,
       {bool isInserting = false}) {
@@ -858,6 +862,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   String get aliasedName => _alias ?? 'mytable';
   @override
   String get actualTableName => 'mytable';
+  static String get actualTableNameStatic => 'mytable';
   @override
   VerificationContext validateIntegrity(Insertable<MytableData> instance,
       {bool isInserting = false}) {
@@ -1120,6 +1125,7 @@ class Email extends Table
   String get aliasedName => _alias ?? 'email';
   @override
   String get actualTableName => 'email';
+  static String get actualTableNameStatic => 'email';
   @override
   VerificationContext validateIntegrity(Insertable<EMail> instance,
       {bool isInserting = false}) {
@@ -1344,6 +1350,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   String get aliasedName => _alias ?? 'Expression';
   @override
   String get actualTableName => 'Expression';
+  static String get actualTableNameStatic => 'Expression';
   @override
   VerificationContext validateIntegrity(Insertable<WeirdData> instance,
       {bool isInserting = false}) {
