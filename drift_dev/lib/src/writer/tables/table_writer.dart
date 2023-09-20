@@ -409,7 +409,9 @@ class TableWriter extends TableOrViewWriter {
       ..write('@override\nString get aliasedName => '
           '_alias ?? \'${table.id.name}\';\n')
       ..write(
-          '@override\n String get actualTableName => \'${table.id.name}\';\n');
+          '@override\n String get actualTableName => \'${table.id.name}\';\n')
+      ..write(
+          'static String get actualTableNameStatic => \'${table.id.name}\';\n');
 
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
