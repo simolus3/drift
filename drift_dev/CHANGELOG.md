@@ -1,6 +1,6 @@
 ## 2.12.0-dev
 
-- Adds the static getter `actualTableNameStatic` to generated table classes.
+- Adds the static getter `$name` to generated table classes.
 
 ## 2.11.2
 
