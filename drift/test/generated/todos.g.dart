@@ -47,10 +47,10 @@ class $CategoriesTable extends Categories
   List<GeneratedColumn> get $columns =>
       [id, description, priority, descriptionInUpperCase];
   @override
-  String get aliasedName => _alias ?? 'categories';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'categories';
-  static String get actualTableNameStatic => 'categories';
+  String get actualTableName => $name;
+  static const String $name = 'categories';
   @override
   VerificationContext validateIntegrity(Insertable<Category> instance,
       {bool isInserting = false}) {
@@ -319,10 +319,10 @@ class $TodosTableTable extends TodosTable
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category, status];
   @override
-  String get aliasedName => _alias ?? 'todos';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todos';
-  static String get actualTableNameStatic => 'todos';
+  String get actualTableName => $name;
+  static const String $name = 'todos';
   @override
   VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
       {bool isInserting = false}) {
@@ -669,10 +669,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   List<GeneratedColumn> get $columns =>
       [id, name, isAwesome, profilePicture, creationTime];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'users';
-  static String get actualTableNameStatic => 'users';
+  String get actualTableName => $name;
+  static const String $name = 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -938,10 +938,10 @@ class $SharedTodosTable extends SharedTodos
   @override
   List<GeneratedColumn> get $columns => [todo, user];
   @override
-  String get aliasedName => _alias ?? 'shared_todos';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'shared_todos';
-  static String get actualTableNameStatic => 'shared_todos';
+  String get actualTableName => $name;
+  static const String $name = 'shared_todos';
   @override
   VerificationContext validateIntegrity(Insertable<SharedTodo> instance,
       {bool isInserting = false}) {
@@ -1143,10 +1143,10 @@ class $TableWithoutPKTable extends TableWithoutPK
   List<GeneratedColumn> get $columns =>
       [notReallyAnId, someFloat, webSafeInt, custom];
   @override
-  String get aliasedName => _alias ?? 'table_without_p_k';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'table_without_p_k';
-  static String get actualTableNameStatic => 'table_without_p_k';
+  String get actualTableName => $name;
+  static const String $name = 'table_without_p_k';
   @override
   VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
       {bool isInserting = false}) {
@@ -1325,10 +1325,10 @@ class $PureDefaultsTable extends PureDefaults
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override
-  String get aliasedName => _alias ?? 'pure_defaults';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'pure_defaults';
-  static String get actualTableNameStatic => 'pure_defaults';
+  String get actualTableName => $name;
+  static const String $name = 'pure_defaults';
   @override
   VerificationContext validateIntegrity(Insertable<PureDefault> instance,
       {bool isInserting = false}) {

@@ -42,10 +42,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'users';
-  static String get actualTableNameStatic => 'users';
+  String get actualTableName => $name;
+  static const String $name = 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -293,10 +293,10 @@ class Groups extends Table with TableInfo<Groups, Group> {
   @override
   List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
-  String get aliasedName => _alias ?? 'groups';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'groups';
-  static String get actualTableNameStatic => 'groups';
+  String get actualTableName => $name;
+  static const String $name = 'groups';
   @override
   VerificationContext validateIntegrity(Insertable<Group> instance,
       {bool isInserting = false}) {
@@ -544,10 +544,10 @@ class Notes extends Table
   @override
   List<GeneratedColumn> get $columns => [title, content, searchTerms];
   @override
-  String get aliasedName => _alias ?? 'notes';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'notes';
-  static String get actualTableNameStatic => 'notes';
+  String get actualTableName => $name;
+  static const String $name = 'notes';
   @override
   VerificationContext validateIntegrity(Insertable<Note> instance,
       {bool isInserting = false}) {
