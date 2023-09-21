@@ -407,9 +407,9 @@ class TableWriter extends TableOrViewWriter {
     writeGetColumnsOverride();
     buffer
       ..write('@override\nString get aliasedName => '
-          '_alias ?? \'${table.id.name}\';\n')
-      ..write(
-          '@override\n String get actualTableName => \'${table.id.name}\';\n');
+          '_alias ?? actualTableName;\n')
+      ..write('@override\n String get actualTableName => \$name;\n')
+      ..write('static const String \$name = \'${table.id.name}\';\n');
 
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();

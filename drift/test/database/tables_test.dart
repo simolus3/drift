@@ -67,4 +67,7 @@ void main() {
       ),
     );
   });
+  test('Table classes expose the name of the sql table', () {
+    expect($TodosTableTable.$name, 'todos');
+  });
 }

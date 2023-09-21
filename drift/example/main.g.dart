@@ -26,9 +26,10 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
-  String get aliasedName => _alias ?? 'todo_categories';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todo_categories';
+  String get actualTableName => $name;
+  static const String $name = 'todo_categories';
   @override
   VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
       {bool isInserting = false}) {
@@ -225,9 +226,10 @@ class $TodoItemsTable extends TodoItems
   List<GeneratedColumn> get $columns =>
       [id, title, content, categoryId, generatedText];
   @override
-  String get aliasedName => _alias ?? 'todo_items';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todo_items';
+  String get actualTableName => $name;
+  static const String $name = 'todo_items';
   @override
   VerificationContext validateIntegrity(Insertable<TodoItem> instance,
       {bool isInserting = false}) {

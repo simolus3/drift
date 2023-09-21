@@ -48,9 +48,10 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
   List<i0.GeneratedColumn> get $columns =>
       [id, name, biography, preferences, profilePicture];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => $name;
+  static const String $name = 'users';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.User> instance,
       {bool isInserting = false}) {
@@ -338,9 +339,10 @@ class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
   @override
   List<i0.GeneratedColumn> get $columns => [followed, follower];
   @override
-  String get aliasedName => _alias ?? 'follows';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'follows';
+  String get actualTableName => $name;
+  static const String $name = 'follows';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Follow> instance,
       {bool isInserting = false}) {

@@ -48,9 +48,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => $name;
+  static const String $name = 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -347,9 +348,10 @@ class $FriendshipsTable extends Friendships
   List<GeneratedColumn> get $columns =>
       [firstUser, secondUser, reallyGoodFriends];
   @override
-  String get aliasedName => _alias ?? 'friendships';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'friendships';
+  String get actualTableName => $name;
+  static const String $name = 'friendships';
   @override
   VerificationContext validateIntegrity(Insertable<Friendship> instance,
       {bool isInserting = false}) {

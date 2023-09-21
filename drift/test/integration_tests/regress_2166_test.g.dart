@@ -26,9 +26,10 @@ class $_SomeTableTable extends _SomeTable
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
-  String get aliasedName => _alias ?? 'some_table';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'some_table';
+  String get actualTableName => $name;
+  static const String $name = 'some_table';
   @override
   VerificationContext validateIntegrity(Insertable<_SomeTableData> instance,
       {bool isInserting = false}) {

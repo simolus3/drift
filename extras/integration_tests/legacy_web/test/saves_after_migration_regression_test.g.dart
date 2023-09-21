@@ -20,9 +20,10 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  String get aliasedName => _alias ?? 'foos';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'foos';
+  String get actualTableName => $name;
+  static const String $name = 'foos';
   @override
   VerificationContext validateIntegrity(Insertable<Foo> instance,
       {bool isInserting = false}) {
@@ -157,9 +158,10 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  String get aliasedName => _alias ?? 'bars';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'bars';
+  String get actualTableName => $name;
+  static const String $name = 'bars';
   @override
   VerificationContext validateIntegrity(Insertable<Bar> instance,
       {bool isInserting = false}) {

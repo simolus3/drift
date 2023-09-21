@@ -18,9 +18,10 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   @override
   List<GeneratedColumn> get $columns => [payload];
   @override
-  String get aliasedName => _alias ?? 'no_ids';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'no_ids';
+  String get actualTableName => $name;
+  static const String $name = 'no_ids';
   @override
   VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
       {bool isInserting = false}) {
@@ -118,9 +119,10 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   @override
   List<GeneratedColumn> get $columns => [a, b];
   @override
-  String get aliasedName => _alias ?? 'with_defaults';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'with_defaults';
+  String get actualTableName => $name;
+  static const String $name = 'with_defaults';
   @override
   VerificationContext validateIntegrity(Insertable<WithDefault> instance,
       {bool isInserting = false}) {
@@ -314,9 +316,10 @@ class WithConstraints extends Table
   @override
   List<GeneratedColumn> get $columns => [a, b, c];
   @override
-  String get aliasedName => _alias ?? 'with_constraints';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'with_constraints';
+  String get actualTableName => $name;
+  static const String $name = 'with_constraints';
   @override
   VerificationContext validateIntegrity(Insertable<WithConstraint> instance,
       {bool isInserting = false}) {
@@ -557,9 +560,10 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
   @override
-  String get aliasedName => _alias ?? 'config';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'config';
+  String get actualTableName => $name;
+  static const String $name = 'config';
   @override
   VerificationContext validateIntegrity(Insertable<Config> instance,
       {bool isInserting = false}) {
@@ -855,9 +859,10 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   List<GeneratedColumn> get $columns =>
       [someid, sometext, isInserting, somedate];
   @override
-  String get aliasedName => _alias ?? 'mytable';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'mytable';
+  String get actualTableName => $name;
+  static const String $name = 'mytable';
   @override
   VerificationContext validateIntegrity(Insertable<MytableData> instance,
       {bool isInserting = false}) {
@@ -1117,9 +1122,10 @@ class Email extends Table
   @override
   List<GeneratedColumn> get $columns => [sender, title, body];
   @override
-  String get aliasedName => _alias ?? 'email';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'email';
+  String get actualTableName => $name;
+  static const String $name = 'email';
   @override
   VerificationContext validateIntegrity(Insertable<EMail> instance,
       {bool isInserting = false}) {
@@ -1341,9 +1347,10 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   @override
   List<GeneratedColumn> get $columns => [sqlClass, textColumn];
   @override
-  String get aliasedName => _alias ?? 'Expression';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'Expression';
+  String get actualTableName => $name;
+  static const String $name = 'Expression';
   @override
   VerificationContext validateIntegrity(Insertable<WeirdData> instance,
       {bool isInserting = false}) {

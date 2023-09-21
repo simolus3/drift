@@ -30,9 +30,10 @@ class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
   @override
   List<i0.GeneratedColumn> get $columns => [id, author, content];
   @override
-  String get aliasedName => _alias ?? 'posts';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'posts';
+  String get actualTableName => $name;
+  static const String $name = 'posts';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Post> instance,
       {bool isInserting = false}) {
@@ -236,9 +237,10 @@ class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
   @override
   List<i0.GeneratedColumn> get $columns => [post, likedBy];
   @override
-  String get aliasedName => _alias ?? 'likes';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'likes';
+  String get actualTableName => $name;
+  static const String $name = 'likes';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Like> instance,
       {bool isInserting = false}) {

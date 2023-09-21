@@ -22,9 +22,10 @@ class $KeyValuesTable extends KeyValues
   @override
   List<GeneratedColumn> get $columns => [key, value];
   @override
-  String get aliasedName => _alias ?? 'key_values';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'key_values';
+  String get actualTableName => $name;
+  static const String $name = 'key_values';
   @override
   VerificationContext validateIntegrity(Insertable<KeyValue> instance,
       {bool isInserting = false}) {

@@ -29,9 +29,10 @@ class SearchInPosts extends i0.Table
   @override
   List<i0.GeneratedColumn> get $columns => [author, content];
   @override
-  String get aliasedName => _alias ?? 'search_in_posts';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'search_in_posts';
+  String get actualTableName => $name;
+  static const String $name = 'search_in_posts';
   @override
   i0.VerificationContext validateIntegrity(
       i0.Insertable<i1.SearchInPost> instance,

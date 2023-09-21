@@ -23,9 +23,10 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   @override
   List<GeneratedColumn> get $columns => [id, value];
   @override
-  String get aliasedName => _alias ?? 'entries';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'entries';
+  String get actualTableName => $name;
+  static const String $name = 'entries';
   @override
   VerificationContext validateIntegrity(Insertable<Entrie> instance,
       {bool isInserting = false}) {

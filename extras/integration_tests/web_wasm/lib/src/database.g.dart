@@ -27,9 +27,10 @@ class $TestTableTable extends TestTable
   @override
   List<GeneratedColumn> get $columns => [id, content];
   @override
-  String get aliasedName => _alias ?? 'test_table';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'test_table';
+  String get actualTableName => $name;
+  static const String $name = 'test_table';
   @override
   VerificationContext validateIntegrity(Insertable<TestTableData> instance,
       {bool isInserting = false}) {
