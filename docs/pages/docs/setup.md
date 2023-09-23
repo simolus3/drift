@@ -112,7 +112,6 @@ started with drift:
   Dart tables and which classes drift generates for them.
 - Writing queries: Drift-generated classes support writing the most common SQL statements, like
   [selects]({{ 'Dart API/select.md' | pageUrl }}) or [inserts, updates and deletes]({{ 'Dart API/writes.md' | pageUrl }}).
-- General [notes on how to integrate drift with your app's architecture]({{ 'Dart API/architecture.md' | pageUrl }}).
 - Something to keep in mind for later: When changing the database, for instance by adding new columns
   or tables, you need to write a migration so that existing databases are transformed to the new
   format. Drift's extensive [migration tools]({{ 'Migrations/index.md' | pageUrl }}) help with that.
