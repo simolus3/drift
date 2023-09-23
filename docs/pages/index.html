@@ -14,7 +14,7 @@ data:
 		Write type-safe queries in Dart or SQL, enjoy auto-updating streams, easily managed transactions
 		and so much more to make persistence fun.
 	</p>
-	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="{{ 'docs/Getting started/index.md' | pageUrl }}">
+	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="{{ 'docs/setup.md' | pageUrl }}">
 		Get started <i class="fas fa-code ml-2 "></i>
 	</a>
 </div>
@@ -28,7 +28,7 @@ With drift, you can declare your database tables and queries in pure Dart withou
 advanced SQL features. Drift will take care of creating the tables and generate code
 that allows you run fluent queries on your data.
 
-[Get started now]({{ "docs/Getting started/index.md" | pageUrl }})
+[Get started now]({{ "docs/setup.md" | pageUrl }})
 {% endblock %}
 {% endblock %}
 
@@ -51,7 +51,7 @@ and easy process.
 Further, drift provides a complete test toolkit to help you test migrations
 between all your revisions.
 
-[All about schema migrations]({{ "docs/Advanced Features/migrations.md" | pageUrl }})
+[All about schema migrations]({{ "docs/Migrations/index.md" | pageUrl }})
 {% endblock %}
 {% endblock %}
 
@@ -62,7 +62,7 @@ validated and analyzed during build-time, so drift can provide hints about poten
 code.
 Of course, you can mix SQL and Dart to your liking.
 
-[Using SQL with Drift]({{ 'docs/Using SQL/index.md' | pageUrl }})
+[Using SQL with Drift]({{ 'docs/SQL API/index.md' | pageUrl }})
 {% endblock %}
 {% endblock %}
 
@@ -73,14 +73,14 @@ Drift has primary first-class support for Android, iOS, macOS, Linux Windows and
 
 Other database libraries can easily be integrated into drift as well.
 
-[All platforms]({{ "docs/platforms.md" | pageUrl }})
+[All platforms]({{ "docs/Platforms/index.md" | pageUrl }})
 {% endblock %}
 {% endblock %}
 
 {% block "blocks/feature.html" icon="fas fa-star" title="And much more!" %}
 {% block "blocks/markdown.html" %}
 Drift provides auto-updating streams for all your queries, makes dealing with transactions and migrations easy
-and lets your write modular database code with DAOs. We even have a [sql IDE]({{ 'docs/Using SQL/sql_ide.md' | pageUrl }}) builtin to the project.
+and lets your write modular database code with DAOs.
 When using drift, working with databases in Dart is fun!
 {% endblock %}
 {% endblock %}

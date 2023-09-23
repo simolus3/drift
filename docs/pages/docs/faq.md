@@ -1,13 +1,13 @@
 ---
 data:
   title: "Frequently asked questions"
-
+  weight: 25
 path: faq/
 template: layouts/docs/single
 ---
 
 ## Using the database
-If you've created a `MyDatabase` class by following the [getting started guide]({{ "Getting started/index.md" | pageUrl }}), you
+If you've created a `MyDatabase` class by following the [getting started guide]({{ "setup.md" | pageUrl }}), you
 still need to somehow obtain an instance of it. It's recommended to only have one (singleton) instance of your database,
 so you could store that instance in a global variable:
 
@@ -55,7 +55,7 @@ in your favorite dependency injection framework for flutter hence solves this pr
 
 ## Why am I getting no such table errors?
 
-If you add another table after your app has already been installed, you need to write a [migration]({{ "Advanced Features/migrations.md" | pageUrl }})
+If you add another table after your app has already been installed, you need to write a [migration]({{ "Migrations/index.md" | pageUrl }})
 that covers creating that table. If you're in the process of developing your app and want to use un- and reinstall your app
 instead of writing migrations, that's fine too. Please note that your apps data might be backed up on Android, so
 manually deleting your app's data instead of a reinstall is necessary on some devices.
@@ -80,7 +80,7 @@ you can set to `true`. When enabled, drift will print the statements it runs.
 
 ## How do I insert data on the first app start?
 
-You can populate the database on the first start of your app with a custom [migration strategy]({{ 'Advanced Features/migrations.md' | pageUrl }}).
+You can populate the database on the first start of your app with a custom [migration strategy]({{ 'Migrations/index.md' | pageUrl }}).
 To insert data when the database is created (which usually happens when the app is first run), you can use this:
 
 ```dart
@@ -142,13 +142,13 @@ result of your queries.
 ### floor
 Floor also has a lot of convenience features like auto-updating queries and schema migrations. Similar to drift, you
 define the structure of your database in Dart. Then, you have write queries in sql - the mapping code if generated
-by floor. Drift has a [similar feature]({{ "Using SQL/custom_queries.md" | pageUrl }}), but it can also verify that your queries are valid at compile time. Drift
+by floor. Drift has a [similar feature]({{ "SQL API/custom_queries.md" | pageUrl }}), but it can also verify that your queries are valid at compile time. Drift
 additionally has an api that lets you write some queries in Dart instead of sql.
 
 A difference between these two is that Floor lets you write your own classes and generates mapping code around that.
 By default, drift generates most classes for you, which can make it easier to use, but makes the api less flexible in some
 instances.
-Drift can also be used with [custom row classes]({{ 'Advanced Features/custom_row_classes.md' | pageUrl }}) though.
+Drift can also be used with [custom row classes]({{ 'custom_row_classes.md' | pageUrl }}) though.
 
 ### firebase
 Both the Realtime Database and Cloud Datastore are easy to use persistence libraries that can sync across devices while

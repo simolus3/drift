@@ -110,7 +110,7 @@ Also, you may have to
 
 - Format your sources again: Run `dart format .`.
 - Re-run the build: Run `dart run build_runner build -d`.
-  - If you have been using generated [migration test files]({{ 'Advanced Features/migrations.md#exporting-the-schema' | pageUrl }}),
+  - If you have been using generated [migration test files]({{ 'Migrations/exports.md' | pageUrl }}),
     re-generate them as well with `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`
     (you may have to adapt the command to the directories you use for schemas).
 - Manually fix the changed order of imports caused by the migration.
@@ -191,7 +191,7 @@ If you opt for a rename, also update your imports and `include:` parameters in d
 
 #### Build configuration
 
-When configuring moor builders for [options]({{ 'Advanced Features/builder_options.md' | pageUrl }}), you have to update your `build.yaml` files to reflect the new builder keys:
+When configuring moor builders for [options]({{ 'Generation options/index.md' | pageUrl }}), you have to update your `build.yaml` files to reflect the new builder keys:
 
 | Moor builder key                            | Drift builder key              |
 | ------------------------------------------- | ------------------------------ |

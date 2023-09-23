@@ -1,7 +1,7 @@
 ---
 data:
   title: "Examples"
-  weight: 3
+  weight: 30
   description: Example apps using drift
 template: layouts/docs/list
 ---
@@ -51,5 +51,5 @@ Additional patterns are also shown and explained on this website:
 [web_worker]: https://github.com/simolus3/drift/tree/develop/examples/web_worker_example
 [flutter_web_worker]: https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example
 [migration]: https://github.com/simolus3/drift/tree/develop/examples/migrations_example
-[migration tooling]: {{ '../Advanced Features/migrations.md#verifying-migrations' | pageUrl }}
+[migration tooling]: {{ '../Migrations/tests.md#verifying-migrations' | pageUrl }}
 [with_built_value]: https://github.com/simolus3/drift/tree/develop/examples/with_built_value

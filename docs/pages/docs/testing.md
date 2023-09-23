@@ -2,6 +2,7 @@
 data:
   title: "Testing"
   description: Guide on writing unit tests for drift databases
+  weight: 10
 
 template: layouts/docs/single
 ---
@@ -116,4 +117,4 @@ test('stream emits a new user when the name updates', () async {
 ## Testing migrations
 
 Drift can help you generate code for schema migrations. For more details, see
-[this guide]({{ "Advanced Features/migrations.md#verifying-migrations" | pageUrl }}).
+[this guide]({{ "Migrations/tests.md" | pageUrl }}).

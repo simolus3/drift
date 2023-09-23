@@ -12,7 +12,7 @@ path: v2
     <a class="btn btn-lg btn-primary mr-3 mb-4" href="{{ "docs/index.md" | pageUrl }}">
 		Get started <i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
-	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="{{ "docs/Getting started/starting_with_sql.md" | pageUrl }}">
+	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="{{ "docs/SQL API/index.md" | pageUrl }}">
 		Migrate an existing project <i class="fas fa-code ml-2 "></i>
 	</a>
 </div>
@@ -25,7 +25,7 @@ path: v2
 The rewritten compiler is faster than ever, supports more SQL features and gives you
 more flexibility when writing database code.
 
-[Check the updated documentation]({{ "docs/Using SQL/drift_files.md" | pageUrl }})
+[Check the updated documentation]({{ "docs/SQL API/drift_files.md" | pageUrl }})
 {% endblock %}
 {% endblock %}
 
@@ -35,7 +35,7 @@ The new `.moor` files have been updated and can now hold both `CREATE TABLE` sta
 and queries you define. Moor will then generate typesafe Dart APIs based on your tables
 and statements.
 
-[Get started with SQL and moor]({{ "docs/Getting started/starting_with_sql.md" | pageUrl }})
+[Get started with SQL and moor]({{ "docs/SQL API/index.md" | pageUrl }})
 {% endblock %} {% endblock %}
 {% block "blocks/feature" icon="fas fa-plus" title="Analyzer improvements" %} {% block "blocks/markdown" %}
 We now support more advanced features like compound select statements and window functions,
@@ -59,7 +59,7 @@ Moor 2.0 expands the previous sql parser and analyzer, providing real-time feedb
 SQL queries as you type. Moor plugs right into the Dart analysis server, so you don't have
 to install any additional extensions.
 
-[Learn more about the IDE]({{ "docs/Using SQL/sql_ide.md" | pageUrl }})
+[Learn more about the IDE]({{ "docs/SQL API/sql_ide.md" | pageUrl }})
 {% endblock %} {% endblock %}
 
 {% block "blocks/section" color="dark" %}
@@ -109,8 +109,8 @@ _Please not that the package is still in preview_
 {% block "blocks/section" color="dark" type="section" %} {% block "blocks/markdown" %}
 ## Try moor now
 
-- To get started with moor, follow our [getting started guide]({{ "docs/Getting started/index.md" | pageUrl }}) here.
+- To get started with moor, follow our [getting started guide]({{ "docs/setup.md" | pageUrl }}) here.
 - To get started with SQL in moor, or to migrate an existing project to moor, follow our
- [migration guide]({{ "docs/Getting started/starting_with_sql.md" | pageUrl }})
+ [migration guide]({{ "docs/SQL API/index.md" | pageUrl }})
 
 {% endblock %} {% endblock %}
