@@ -1,16 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:rxdart/rxdart.dart';
 
-part 'many_to_many_relationships.g.dart';
+import 'shared.dart' show BuyableItems;
+import 'shared.drift.dart';
 
-// #docregion buyable_items
-class BuyableItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
-  IntColumn get price => integer()();
-  // we could add more columns as we wish.
-}
-// #enddocregion buyable_items
+import 'relational.drift.dart';
+
+typedef ShoppingCartWithItems = ({
+  ShoppingCart cart,
+  List<BuyableItem> items,
+});
 
 // #docregion cart_tables
 class ShoppingCarts extends Table {
@@ -30,30 +29,20 @@ class ShoppingCartEntries extends Table {
 }
 // #enddocregion cart_tables
 
-// #docregion cart
-/// Represents a full shopping cart with all its items.
-class CartWithItems {
-  final ShoppingCart cart;
-  final List<BuyableItem> items;
-
-  CartWithItems(this.cart, this.items);
-}
-// #enddocregion cart
-
 @DriftDatabase(tables: [BuyableItems, ShoppingCarts, ShoppingCartEntries])
-class Db extends _$Db {
-  Db(QueryExecutor e) : super(e);
+class RelationalDatabase extends $RelationalDatabase {
+  RelationalDatabase(QueryExecutor e) : super(e);
 
   @override
   int get schemaVersion => 1;
 
-  // #docregion writeShoppingCart
-  Future<void> writeShoppingCart(CartWithItems entry) {
+  // #docregion updateCart
+  Future<void> updateCart(ShoppingCartWithItems entry) {
     return transaction(() async {
       final cart = entry.cart;
 
       // first, we write the shopping cart
-      await into(shoppingCarts).insert(cart, mode: InsertMode.replace);
+      await update(shoppingCarts).replace(cart);
 
       // we replace the entries of the cart, so first delete the old ones
       await (delete(shoppingCartEntries)
@@ -67,20 +56,20 @@ class Db extends _$Db {
       }
     });
   }
-  // #enddocregion writeShoppingCart
+  // #enddocregion updateCart
 
   // #docregion createEmptyCart
-  Future<CartWithItems> createEmptyCart() async {
-    final id = await into(shoppingCarts).insert(const ShoppingCartsCompanion());
-    final cart = ShoppingCart(id: id);
+  Future<ShoppingCartWithItems> createEmptyCart() async {
+    final cart = await into(shoppingCarts)
+        .insertReturning(const ShoppingCartsCompanion());
     // we set the items property to [] because we've just created the cart - it
     // will be empty
-    return CartWithItems(cart, []);
+    return (cart: cart, items: <BuyableItem>[]);
   }
   // #enddocregion createEmptyCart
 
   // #docregion watchCart
-  Stream<CartWithItems> watchCart(int id) {
+  Stream<ShoppingCartWithItems> watchCart(int id) {
     // load information about the cart
     final cartQuery = select(shoppingCarts)
       ..where((cart) => cart.id.equals(id));
@@ -106,13 +95,13 @@ class Db extends _$Db {
     // now, we can merge the two queries together in one stream
     return Rx.combineLatest2(cartStream, contentStream,
         (ShoppingCart cart, List<BuyableItem> items) {
-      return CartWithItems(cart, items);
+      return (cart: cart, items: items);
     });
   }
   // #enddocregion watchCart
 
   // #docregion watchAllCarts
-  Stream<List<CartWithItems>> watchAllCarts() {
+  Stream<List<ShoppingCartWithItems>> watchAllCarts() {
     // start by watching all carts
     final cartStream = select(shoppingCarts).watch();
 
@@ -150,7 +139,7 @@ class Db extends _$Db {
         // finally, all that's left is to merge the map of carts with the map of
         // entries
         return [
-          for (var id in ids) CartWithItems(idToCart[id]!, idToItems[id] ?? []),
+          for (var id in ids) (cart: idToCart[id]!, items: idToItems[id] ?? []),
         ];
       });
     });

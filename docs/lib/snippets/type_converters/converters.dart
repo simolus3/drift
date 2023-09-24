@@ -17,6 +17,15 @@ class Preferences {
       _$PreferencesFromJson(json);
 
   Map<String, dynamic> toJson() => _$PreferencesToJson(this);
+  // #enddocregion start
+
+  // #docregion simplified
+  static TypeConverter<Preferences, String> converter = TypeConverter.json(
+    fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
+    toJson: (pref) => pref.toJson(),
+  );
+  // #enddocregion simplified
+  // #docregion start
 }
 // #enddocregion start
 
