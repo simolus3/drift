@@ -1,6 +1,7 @@
-## 2.12.0-dev
+## 2.12.0
 
 - Adds the static getter `$name` to generated table classes.
+- Recognize and analyze the `@TableIndex` annotation.
 
 ## 2.11.2
 

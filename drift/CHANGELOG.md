@@ -1,4 +1,4 @@
-## 2.12.0-dev
+## 2.12.0
 
 - Add support for table-valued functions in the Dart query builder.
 - Add the `@TableIndex` annotation for table classes to add an index to the

@@ -1,3 +1,7 @@
+## 0.31.2
+
+- Add `CaseInsensitiveMap.of` to wrap existing maps.
+
 ## 0.31.1
 
 - Add the `sqlite3_schema` table to the builtin tables supported by every
