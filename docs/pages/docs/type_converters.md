@@ -37,8 +37,14 @@ also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
 
 {% block "blocks/alert" title="Caution with equality" color="warning" %}
 If your converter returns an object that is not comparable by value, the generated dataclass will not
-be comparable by value.
+be comparable by value. Consider implementing `==` and `hashCode` on those classes.
 {% endblock %}
+
+Since applying type converters for JSON conversion is so common, drift provides a helper
+for that. For instance, we could declare the type converter as a field in the
+`Preferences` class:
+
+{% include "blocks/snippet" snippets = dart name = 'simplified' %}
 
 ### Implicit enum converters
 
@@ -158,6 +164,8 @@ If you want to apply the same conversion to JSON as well, make your type convert
 `JsonTypeConverter` class.
 You can also override the `toJson` and `fromJson` methods to customize serialization as long as the types
 stay the compatible.
+The type converter returned by `TypeConverter.json` already implements `JsonTypeConverter`, so it will
+apply to generated row classes as well.
 
 If the JSON type you want to serialize to is different to the SQL type you're
 mapping to, you can mix-in `JsonTypeConverter2` instead.
