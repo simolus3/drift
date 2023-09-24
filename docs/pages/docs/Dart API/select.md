@@ -4,6 +4,9 @@ data:
   description: "Select rows or invidiual columns from tables in Dart"
   weight: 2
 template: layouts/docs/single
+
+aliases:
+  - docs/getting-started/writing_queries/
 ---
 
 {% assign tables = 'package:drift_docs/snippets/_shared/todo_tables.dart.excerpt.json' | readString | json_decode %}

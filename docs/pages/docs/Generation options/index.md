@@ -4,9 +4,9 @@ data:
   description: Options for `drift_dev` and `build_runner` to change the generated code.
   weight: 7
 template: layouts/docs/list
-#path: docs/advanced-features/builder_options/
-#aliases:
-# - "options/"
+path: docs/advanced-features/builder_options/
+aliases:
+ - "options/"
 ---
 
 The `drift_dev` package supports a range of options that control how code

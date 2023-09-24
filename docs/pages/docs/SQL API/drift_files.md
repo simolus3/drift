@@ -7,6 +7,7 @@ data:
 aliases:
   - /docs/using-sql/custom_tables/  # Redirect from outdated "custom tables" page which has been deleted
   - /docs/using-sql/moor_files/
+  - /docs/using-sql/drift_files/
 
 template: layouts/docs/single
 ---

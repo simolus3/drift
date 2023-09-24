@@ -27,8 +27,6 @@ If you want to look at an example app for inspiration, a cross-platform Flutter 
 ## The dependencies {#adding-dependencies}
 
 First, lets add drift to your project's `pubspec.yaml`.
-At the moment, the current version of `drift` is [![Drift version](https://img.shields.io/pub/v/drift.svg)](https://pub.dev/packages/drift)
-and the latest version of `drift_dev` is [![Generator version](https://img.shields.io/pub/v/drift_dev.svg)](https://pub.dev/packages/drift_dev).
 In addition to the core drift dependencies, we're also adding packages to find a suitable database
 location on the device and to include a recent version of `sqlite3`, the database most commonly
 used with drift.

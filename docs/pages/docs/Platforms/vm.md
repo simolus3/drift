@@ -4,6 +4,9 @@ data:
   description: Run drift on both mobile and desktop
   weight: 1
 template: layouts/docs/single
+
+aliases:
+  - docs/other-engines/vm/
 ---
 
 ## Supported platforms

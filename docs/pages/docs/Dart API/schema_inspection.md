@@ -3,6 +3,9 @@ data:
   title: Runtime schema inspection
   description: Use generated table classes to reflectively inspect the schema of your database.
 template: layouts/docs/single
+
+aliases:
+  - docs/advanced-features/schema_inspection/
 ---
 
 {% assign snippets = 'package:drift_docs/snippets/modular/schema_inspection.dart.excerpt.json' | readString | json_decode %}

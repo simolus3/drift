@@ -5,6 +5,7 @@ data:
   description: Write SQL for advanced queries that drift can't express in Dart yet.
 aliases:
   - /queries/custom
+  - /docs/using-sql/custom_queries/
 template: layouts/docs/single
 ---
 

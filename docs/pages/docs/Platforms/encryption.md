@@ -4,6 +4,8 @@ data:
   description: Use drift on encrypted databases
   weight: 10
 template: layouts/docs/single
+aliases:
+  - docs/other-engines/encryption/
 ---
 
 {% assign snippets = 'package:drift_docs/snippets/platforms/encryption.dart.excerpt.json' | readString | json_decode %}

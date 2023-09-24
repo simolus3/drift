@@ -4,6 +4,9 @@ data:
   weight: 10
   description: Information on json1 and fts5 support in drift files
 template: layouts/docs/single
+
+aliases:
+ - docs/using-sql/extensions/
 ---
 
 When analyzing `.drift` files, the generator can consider sqlite3 extensions

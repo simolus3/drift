@@ -21,6 +21,18 @@
   status = 301
   force = true
 
+[[redirects]]
+  from = "/docs/getting-started/starting_with_sql/"
+  to = "/docs/sql-api/#setup"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/docs/advanced-features/joins/"
+  to = "/docs/dart-api/select/#joins"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]

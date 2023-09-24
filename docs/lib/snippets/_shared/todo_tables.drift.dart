@@ -45,9 +45,10 @@ class $TodoItemsTable extends i2.TodoItems
   @override
   List<i0.GeneratedColumn> get $columns => [id, title, content, category];
   @override
-  String get aliasedName => _alias ?? 'todo_items';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todo_items';
+  String get actualTableName => $name;
+  static const String $name = 'todo_items';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.TodoItem> instance,
       {bool isInserting = false}) {
@@ -285,9 +286,10 @@ class $CategoriesTable extends i2.Categories
   @override
   List<i0.GeneratedColumn> get $columns => [id, name];
   @override
-  String get aliasedName => _alias ?? 'categories';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'categories';
+  String get actualTableName => $name;
+  static const String $name = 'categories';
   @override
   i0.VerificationContext validateIntegrity(i0.Insertable<i1.Category> instance,
       {bool isInserting = false}) {

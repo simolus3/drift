@@ -5,6 +5,8 @@ data:
   description: >-
     Use your own classes as data classes for drift tables
 template: layouts/docs/single
+
+path: docs/advanced-features/custom_row_classes/
 ---
 
 For each table declared in Dart or in a drift file, `drift_dev` generates a row class (sometimes also referred to as _data class_)

@@ -5,7 +5,7 @@ data:
   description: Store more complex data in columns with type converters
 aliases:
  - /type_converters
-path: /docs/advanced_features/type_converters/
+path: /docs/advanced-features/type_converters/
 template: layouts/docs/single
 ---
 

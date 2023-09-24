@@ -6,6 +6,7 @@ data:
 template: layouts/docs/list
 aliases:
   - /migrations
+  - /docs/advanced-features/migrations/
 ---
 
 The strict schema of tables and columns is what enables type-safe queries to
