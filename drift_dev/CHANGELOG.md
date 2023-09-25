@@ -1,3 +1,7 @@
+## 2.12.1-dev
+
+- Fix invalid types listed in `views` crashing the generator.
+
 ## 2.12.0
 
 - Adds the static getter `$name` to generated table classes.

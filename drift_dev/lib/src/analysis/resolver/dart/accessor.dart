@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
@@ -23,19 +24,25 @@ class DartAccessorResolver
     final annotation = discovered.annotation;
     final element = discovered.dartElement;
 
-    final rawTablesOrNull = annotation.getField('tables')?.toListValue();
-    if (rawTablesOrNull == null) {
-      final annotationName =
-          annotation.type?.nameIfInterfaceType ?? 'DriftDatabase';
+    List<DartObject> readList(String name) {
+      final rawTablesOrNull = annotation.getField(name)?.toListValue();
+      if (rawTablesOrNull == null) {
+        final annotationName =
+            annotation.type?.nameIfInterfaceType ?? 'DriftDatabase';
 
-      reportError(DriftAnalysisError.forDartElement(
-        element,
-        'Could not read tables from @$annotationName annotation! \n'
-        'Please make sure that all table classes exist.',
-      ));
+        reportError(DriftAnalysisError.forDartElement(
+          element,
+          'Could not read $name from @$annotationName annotation! \n'
+          'Please make sure that all table classes exist.',
+        ));
+
+        return const [];
+      } else {
+        return rawTablesOrNull;
+      }
     }
 
-    for (final tableType in rawTablesOrNull ?? const []) {
+    for (final tableType in readList('tables')) {
       final dartType = tableType.toTypeValue();
 
       if (dartType is! InterfaceType) {
@@ -58,8 +65,7 @@ class DartAccessorResolver
       }
     }
 
-    final rawViews = annotation.getField('views')!.toListValue()!;
-    for (final viewType in rawViews) {
+    for (final viewType in readList('views')) {
       final dartType = viewType.toTypeValue();
 
       if (dartType is! InterfaceType) {

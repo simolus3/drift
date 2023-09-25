@@ -112,7 +112,7 @@ void main() {
       @DriftDatabase(tables: [Foo, DoesNotExist])
       class Database {}
 
-      @DriftAccessor(tables: [DoesNotExist])
+      @DriftAccessor(views: [DoesNotExist])
       class Accessor {}
       ''',
       'a|lib/invalid_constraints.dart': '''
@@ -298,7 +298,7 @@ void main() {
           contains('Please make sure that all table classes exist.'),
         )),
         isDriftError(allOf(
-          contains('Could not read tables from @DriftAccessor annotation!'),
+          contains('Could not read views from @DriftAccessor annotation!'),
           contains('Please make sure that all table classes exist.'),
         )),
       ]),
