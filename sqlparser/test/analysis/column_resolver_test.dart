@@ -339,4 +339,14 @@ SELECT * FROM cars
 ''');
     query.expectNoError();
   });
+
+  test('expands star columns', () {
+    final engine = SqlEngine()
+      ..registerTableFromSql('CREATE TABLE foo (bar INTEGER);');
+
+    final result = engine.analyze("SELECT 'client' literal, * FROM foo;");
+    final select = result.root as SelectStatement;
+
+    expect(select.resolvedColumns?.map((e) => e.name), ['literal', 'bar']);
+  });
 }

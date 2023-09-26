@@ -386,7 +386,8 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         } else {
           // we have a * column without a table, that resolves to every column
           // available
-          visibleColumnsForStar = columnsForStar ?? availableColumns;
+          visibleColumnsForStar =
+              columnsForStar ?? scope.expansionOfStarColumn ?? const [];
 
           // Star columns can't be used without a table (e.g. `SELECT *` is
           // not allowed)

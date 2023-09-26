@@ -1,3 +1,7 @@
+## 0.31.3-dev
+
+- Fix star columns expanding to more columns than they should.
+
 ## 0.31.2
 
 - Add `CaseInsensitiveMap.of` to wrap existing maps.
