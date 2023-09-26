@@ -14,7 +14,7 @@ import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
 final _resolvers =
-    withEnabledExperiments(() => AnalyzerResolvers(), ['records']);
+    withEnabledExperiments(() => AnalyzerResolvers.sharedInstance, ['records']);
 
 BuilderOptions builderOptionsFromYaml(String yaml) {
   final map = loadYaml(yaml);
