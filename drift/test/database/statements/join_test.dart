@@ -138,6 +138,10 @@ void main() {
           title: 'title',
           content: 'content',
         ));
+
+    expect(row.readTableOrNull(db.categories), isNull);
+    expect(row.read(db.categories.id), isNull);
+    expect(row.readWithConverter(db.categories.priority), isNull);
   });
 
   test('where and order-by clauses are kept', () async {

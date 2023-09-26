@@ -221,6 +221,7 @@ class TypedResult {
   /// a type converter.
   D? readWithConverter<D, S extends Object>(
       GeneratedColumnWithTypeConverter<D, S> column) {
-    return column.converter.fromSql(read<S>(column));
+    return NullAwareTypeConverter.wrapFromSql(
+        column.converter, read<S>(column));
   }
 }

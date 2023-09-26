@@ -1,3 +1,8 @@
+## 2.12.1-dev
+
+- Fix `readWithConverter` throwing an exception for null values in non-
+  nullable columns.
+
 ## 2.12.0
 
 - Add support for table-valued functions in the Dart query builder.
