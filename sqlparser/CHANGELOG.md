@@ -1,4 +1,4 @@
-## 0.31.3-dev
+## 0.31.3
 
 - Fix star columns expanding to more columns than they should.
 

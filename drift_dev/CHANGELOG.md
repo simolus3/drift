@@ -1,4 +1,4 @@
-## 2.12.1-dev
+## 2.12.1
 
 - Fix invalid types listed in `views` crashing the generator.
 - Fix indices in drift files crashing the generator when they index expressions.

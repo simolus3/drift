@@ -1,4 +1,4 @@
-## 2.12.1-dev
+## 2.12.1
 
 - Fix `readWithConverter` throwing an exception for null values in non-
   nullable columns.
