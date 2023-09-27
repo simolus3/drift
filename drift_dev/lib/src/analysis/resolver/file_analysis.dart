@@ -53,8 +53,9 @@ class FileAnalyzer {
             final fileState = driver.cache.knownFiles[table.id.libraryUri]!;
 
             for (final attachedIndex in table.attachedIndices) {
-              final index =
-                  fileState.analysis[fileState.id(attachedIndex)]?.result;
+              final index = await driver.resolveElement(
+                  fileState, fileState.id(attachedIndex));
+
               if (index is DriftIndex) {
                 availableByDefault.add(index);
               }

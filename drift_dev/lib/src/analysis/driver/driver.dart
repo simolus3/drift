@@ -12,6 +12,7 @@ import '../resolver/drift/sqlparser/mapping.dart';
 import '../resolver/file_analysis.dart';
 import '../resolver/queries/custom_known_functions.dart';
 import '../resolver/resolver.dart';
+import '../results/results.dart';
 import '../serializer.dart';
 import 'cache.dart';
 import 'error.dart';
@@ -198,23 +199,31 @@ class DriftAnalysisDriver {
   /// was discovered or because discovered elements have been imported from
   /// cache.
   Future<void> _analyzeLocalElements(FileState state) async {
-    assert(state.discovery != null || state.cachedDiscovery != null);
-
     for (final discovered in state.definedElements) {
-      if (!state.elementIsAnalyzed(discovered.ownId)) {
-        final resolver = DriftResolver(this);
+      await resolveElement(state, discovered.ownId);
+    }
+  }
 
-        try {
-          await resolver.resolveEntrypoint(discovered.ownId);
-        } catch (e, s) {
-          if (e is! CouldNotResolveElementException) {
-            backend.log.warning('Could not analyze ${discovered.ownId}', e, s);
+  Future<DriftElement?> resolveElement(
+      FileState state, DriftElementId id) async {
+    assert(state.discovery != null || state.cachedDiscovery != null);
+    assert(id.libraryUri == state.ownUri);
 
-            if (_isTesting) rethrow;
-          }
+    if (!state.elementIsAnalyzed(id)) {
+      final resolver = DriftResolver(this);
+
+      try {
+        return await resolver.resolveEntrypoint(id);
+      } catch (e, s) {
+        if (e is! CouldNotResolveElementException) {
+          backend.log.warning('Could not analyze $id', e, s);
+
+          if (_isTesting) rethrow;
         }
       }
     }
+
+    return null;
   }
 
   /// Resolves elements in a file under the given [uri] by doing all the

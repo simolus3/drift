@@ -346,7 +346,13 @@ class _DriftBuildRun {
         // In the monolithic build mode, we also need to analyze all reachable
         // imports - it is needed to fully resolve triggers and indices, and we
         // should also warn about issues in those files.
-        for (final file in driver.cache.crawlMulti(resolved.knownImports)) {
+        final importRoots = {
+          ...resolved.knownImports,
+          for (final element in resolved.availableElements)
+            if (driver.cache.knownFiles.containsKey(element.id.libraryUri))
+              driver.cache.knownFiles[element.id.libraryUri]!,
+        };
+        for (final file in driver.cache.crawlMulti(importRoots)) {
           await _analyze(file.ownUri);
         }
 

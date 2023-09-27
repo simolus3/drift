@@ -1,3 +1,7 @@
+## 2.12.2-dev
+
+- Fix indices not being created for Dart tables from different tables.
+
 ## 2.12.1
 
 - Fix invalid types listed in `views` crashing the generator.

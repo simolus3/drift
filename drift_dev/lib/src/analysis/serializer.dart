@@ -428,6 +428,7 @@ class ElementDeserializer {
       state
         ..result = result
         ..isUpToDate = true;
+
       return result;
     } catch (e, s) {
       if (e is CouldNotDeserializeException) rethrow;
