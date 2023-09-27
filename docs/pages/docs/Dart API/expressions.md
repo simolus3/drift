@@ -49,6 +49,16 @@ select(animals)..where((a) => a.isMammal.not() & a.amountOfLegs.equals(4));
 select(animals)..where((a) => a.isMammal | a.amountOfLegs.equals(2));
 ```
 
+If you have a list of predicates for which one or all need to match, you can use
+`Expression.or` and `Expression.and`, respectively:
+
+```dart
+Expression.and([
+  a.isMammal,
+  a.amountOfLegs().equals(4),
+])
+```
+
 ## Arithmetic
 
 For `int` and `double` expressions, you can use the `+`, `-`, `*` and `/` operators. To

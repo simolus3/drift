@@ -271,6 +271,38 @@ abstract class Expression<D extends Object> implements FunctionParameter {
 
   /// The supported [DriftSqlType] backing this expression.
   DriftSqlType<D> get driftSqlType => DriftSqlType.forType();
+
+  /// Chains all [predicates] together into a single expression that will
+  /// evaluate to `true` iff any of the [predicates] evaluates to `true`.
+  ///
+  /// The [ifEmpty] value will be used when no predicates have been passed to
+  /// [or]. By default, `false` is returned.
+  static Expression<bool> or(
+    Iterable<Expression<bool>> predicates, {
+    Expression<bool> ifEmpty = const Constant(false),
+  }) {
+    if (predicates.isEmpty) {
+      return ifEmpty;
+    }
+
+    return predicates.reduce((value, element) => value | element);
+  }
+
+  /// Chains all [predicates] together into a single expression that will
+  /// evaluate to `true` iff all of the [predicates] evaluates to `true`.
+  ///
+  /// The [ifEmpty] value will be used when no predicates have been passed to
+  /// [or]. By default, `true` is returned.
+  static Expression<bool> and(
+    Iterable<Expression<bool>> predicates, {
+    Expression<bool> ifEmpty = const Constant(true),
+  }) {
+    if (predicates.isEmpty) {
+      return ifEmpty;
+    }
+
+    return predicates.reduce((value, element) => value & element);
+  }
 }
 
 /// Used to order the precedence of sql expressions so that we can avoid

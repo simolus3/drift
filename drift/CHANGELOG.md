@@ -1,3 +1,8 @@
+## 2.13.0-dev
+
+- Add `Expression.and` and `Expression.or` to create disjunctions and conjunctions
+  of sub-predicates.
+
 ## 2.12.1
 
 - Fix `readWithConverter` throwing an exception for null values in non-

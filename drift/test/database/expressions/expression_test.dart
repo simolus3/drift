@@ -131,4 +131,48 @@ void main() {
     expect(a.isExp(b), generates('a IS b'));
     expect(b.isNotExp(a), generates('b IS NOT a'));
   });
+
+  test('Expression.and', () {
+    expect(
+      Expression.and([
+        for (var i = 0; i < 5; i++)
+          CustomExpression<bool>('e$i', precedence: Precedence.primary)
+      ]),
+      generates('e0 AND e1 AND e2 AND e3 AND e4'),
+    );
+
+    expect(Expression.and(const []), generates('1'));
+    expect(Expression.and(const [], ifEmpty: const Constant(false)),
+        generates('0'));
+  });
+
+  test('Expression.or', () {
+    expect(
+      Expression.or([
+        for (var i = 0; i < 5; i++)
+          CustomExpression<bool>('e$i', precedence: Precedence.primary)
+      ]),
+      generates('e0 OR e1 OR e2 OR e3 OR e4'),
+    );
+
+    expect(Expression.or(const []), generates('0'));
+    expect(
+        Expression.or(const [], ifEmpty: const Constant(true)), generates('1'));
+  });
+
+  test('and and or', () {
+    expect(
+      Expression.and([
+        Expression.or([
+          const CustomExpression<bool>('a', precedence: Precedence.primary),
+          const CustomExpression<bool>('b', precedence: Precedence.primary),
+        ]),
+        Expression.and([
+          const CustomExpression<bool>('c', precedence: Precedence.primary),
+          const CustomExpression<bool>('d', precedence: Precedence.primary),
+        ]),
+      ]),
+      generates('(a OR b) AND c AND d'),
+    );
+  });
 }
