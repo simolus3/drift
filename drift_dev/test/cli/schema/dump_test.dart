@@ -127,7 +127,7 @@ void main() {
         "name": "idx",
         "sql": "CREATE INDEX idx ON users (name);",
         "unique": false,
-        "columns": ["name"]
+        "columns": []
       }
     }
   ]

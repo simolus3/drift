@@ -22,14 +22,15 @@ class MyDatabase {}
       'a|lib/a.drift': '''
 import 'b.drift';
 
-CREATE INDEX b_idx /* comment should be stripped */ ON b (foo);
+CREATE INDEX b_idx /* comment should be stripped */ ON b (foo, upper(foo));
 ''',
       'a|lib/b.drift': 'CREATE TABLE b (foo TEXT);',
     });
 
     checkOutputs({
       'a|lib/main.drift.dart': decodedMatches(contains(
-          "late final Index bIdx = Index('b_idx', 'CREATE INDEX b_idx ON b (foo)')")),
+          'late final Index bIdx =\n'
+          "      Index('b_idx', 'CREATE INDEX b_idx ON b (foo, upper(foo))')")),
     }, result.dartOutputs, result.writer);
   });
 

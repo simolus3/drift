@@ -13,6 +13,10 @@ class DriftIndex extends DriftSchemaElement {
   DriftTable? table;
 
   /// Columns of [table] that have been indexed.
+  ///
+  /// This list is empty for indices created in SQL because it can't represent
+  /// all expressions being indexed. It is useful for Dart-defined indices to
+  /// implement [createStatementForDartDefinition].
   List<DriftColumn> indexedColumns;
 
   /// Whethet the index has been declared to be unique.

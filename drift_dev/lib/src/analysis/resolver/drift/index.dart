@@ -20,28 +20,18 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
 
     final onTable = stmt.on.resolved;
     DriftTable? target;
-    List<DriftColumn> indexedColumns = [];
 
     if (onTable is Table) {
       target = references
           .whereType<DriftTable>()
           .firstWhere((e) => e.schemaName == onTable.name);
-
-      for (final indexedColumn in stmt.columns) {
-        final name = (indexedColumn.expression as Reference).columnName;
-        final tableColumn = target.columnBySqlName[name];
-
-        if (tableColumn != null) {
-          indexedColumns.add(tableColumn);
-        }
-      }
     }
 
     return DriftIndex(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       table: target,
-      indexedColumns: indexedColumns,
+      indexedColumns: [],
       unique: stmt.unique,
       createStmt: source.substring(stmt.firstPosition, stmt.lastPosition),
     );
