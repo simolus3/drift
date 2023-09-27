@@ -220,6 +220,7 @@ final class _ProbeResult implements WasmProbeResult {
     WasmStorageImplementation implementation,
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
+    WasmDatabaseSetup? localSetup,
   }) async {
     final channel = MessageChannel();
     final initializer = initializeDatabase;
@@ -249,14 +250,17 @@ final class _ProbeResult implements WasmProbeResult {
         } else {
           // Workers seem to be broken, but we don't need them with this storage
           // mode.
-          return _hostDatabaseLocally(implementation,
-              await IndexedDbFileSystem.open(dbName: name), initializeDatabase);
+          return _hostDatabaseLocally(
+              implementation,
+              await IndexedDbFileSystem.open(dbName: name),
+              initializeDatabase,
+              localSetup);
         }
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
-        return _hostDatabaseLocally(
-            implementation, InMemoryFileSystem(), initializeDatabase);
+        return _hostDatabaseLocally(implementation, InMemoryFileSystem(),
+            initializeDatabase, localSetup);
     }
 
     initChannel?.port1.onMessage.listen((event) async {
@@ -298,24 +302,16 @@ final class _ProbeResult implements WasmProbeResult {
     WasmStorageImplementation storage,
     VirtualFileSystem vfs,
     FutureOr<Uint8List?> Function()? initializer,
+    WasmDatabaseSetup? setup,
   ) async {
-    final sqlite3 = await WasmSqlite3.loadFromUrl(opener.sqlite3WasmUri);
-    sqlite3.registerVirtualFileSystem(vfs);
-
-    if (initializer != null) {
-      final blob = await initializer();
-      if (blob != null) {
-        final (file: file, outFlags: _) =
-            vfs.xOpen(Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
-        file
-          ..xWrite(blob, 0)
-          ..xClose();
-      }
-    }
-
-    return DatabaseConnection(
-      WasmDatabase(sqlite3: sqlite3, path: '/database'),
+    final database = await DriftServerController(setup).openConnection(
+      sqlite3WasmUri: opener.sqlite3WasmUri,
+      databaseName: 'database',
+      storage: storage,
+      initializer: initializer,
     );
+
+    return DatabaseConnection(database);
   }
 
   @override

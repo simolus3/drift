@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 import 'dart:indexed_db';
 
@@ -165,52 +166,75 @@ Future<void> deleteDatabaseInOpfs(String databaseName) async {
 class DriftServerController {
   /// Running drift servers by the name of the database they're serving.
   final Map<String, RunningWasmServer> servers = {};
+  final WasmDatabaseSetup? _setup;
+
+  /// Creates a controller responsible for loading wasm databases and serving
+  /// them. The [_setup] callback will be invoked on created databases if set.
+  DriftServerController(this._setup);
 
   /// Serves a drift connection as requested by the [message].
   void serve(
     ServeDriftDatabase message,
   ) {
     final server = servers.putIfAbsent(message.databaseName, () {
-      final server = DriftServer(LazyDatabase(() async {
-        final sqlite3 = await WasmSqlite3.loadFromUrl(message.sqlite3WasmUri);
+      final initPort = message.initializationPort;
 
-        final vfs = await switch (message.storage) {
-          WasmStorageImplementation.opfsShared =>
-            SimpleOpfsFileSystem.loadFromStorage(
-                pathForOpfs(message.databaseName)),
-          WasmStorageImplementation.opfsLocks =>
-            _loadLockedWasmVfs(message.databaseName),
-          WasmStorageImplementation.unsafeIndexedDb ||
-          WasmStorageImplementation.sharedIndexedDb =>
-            IndexedDbFileSystem.open(dbName: message.databaseName),
-          WasmStorageImplementation.inMemory =>
-            Future.value(InMemoryFileSystem()),
-        };
+      final initializer = initPort != null
+          ? () async {
+              initPort.postMessage(true);
 
-        final initPort = message.initializationPort;
-        if (vfs.xAccess('/database', 0) == 0 && initPort != null) {
-          initPort.postMessage(true);
+              return await initPort.onMessage
+                  .map((e) => e.data as Uint8List?)
+                  .first;
+            }
+          : null;
 
-          final response =
-              await initPort.onMessage.map((e) => e.data as Uint8List?).first;
-
-          if (response != null) {
-            final (file: file, outFlags: _) = vfs.xOpen(
-                Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
-            file.xWrite(response, 0);
-            file.xClose();
-          }
-        }
-
-        sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
-
-        return WasmDatabase(sqlite3: sqlite3, path: '/database');
-      }));
+      final server = DriftServer(LazyDatabase(() => openConnection(
+            sqlite3WasmUri: message.sqlite3WasmUri,
+            databaseName: message.databaseName,
+            storage: message.storage,
+            initializer: initializer,
+          )));
 
       return RunningWasmServer(message.storage, server);
     });
 
     server.server.serve(message.port.channel());
+  }
+
+  /// Loads a new sqlite3 WASM module, registers an appropriate VFS for [storage]
+  /// and finally opens a database, creating it if it doesn't exist.
+  Future<WasmDatabase> openConnection({
+    required Uri sqlite3WasmUri,
+    required String databaseName,
+    required WasmStorageImplementation storage,
+    required FutureOr<Uint8List?> Function()? initializer,
+  }) async {
+    final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
+
+    final vfs = await switch (storage) {
+      WasmStorageImplementation.opfsShared =>
+        SimpleOpfsFileSystem.loadFromStorage(pathForOpfs(databaseName)),
+      WasmStorageImplementation.opfsLocks => _loadLockedWasmVfs(databaseName),
+      WasmStorageImplementation.unsafeIndexedDb ||
+      WasmStorageImplementation.sharedIndexedDb =>
+        IndexedDbFileSystem.open(dbName: databaseName),
+      WasmStorageImplementation.inMemory => Future.value(InMemoryFileSystem()),
+    };
+
+    if (initializer != null && vfs.xAccess('/database', 0) == 0) {
+      final response = await initializer();
+
+      if (response != null) {
+        final (file: file, outFlags: _) =
+            vfs.xOpen(Sqlite3Filename('/database'), SqlFlag.SQLITE_OPEN_CREATE);
+        file.xWrite(response, 0);
+        file.xClose();
+      }
+    }
+
+    sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
+    return WasmDatabase(sqlite3: sqlite3, path: '/database', setup: _setup);
   }
 
   Future<WasmVfs> _loadLockedWasmVfs(String databaseName) async {

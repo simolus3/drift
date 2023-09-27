@@ -7,6 +7,14 @@ library;
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:sqlite3/common.dart';
+
+/// Signature of a function that can perform setup work on a [database] before
+/// drift is fully ready.
+///
+/// This could be used to, for instance, register custom user-defined functions
+/// on the database.
+typedef WasmDatabaseSetup = void Function(CommonDatabase database);
 
 /// The storage implementation used by the `drift` and `sqlite3` packages to
 /// emulate a synchronous file system on the web, used by the sqlite3 C library
@@ -176,6 +184,7 @@ abstract interface class WasmProbeResult {
     WasmStorageImplementation implementation,
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
+    WasmDatabaseSetup? localSetup,
   });
 
   /// Deletes an [ExistingDatabase] from storage.

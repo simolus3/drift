@@ -245,6 +245,31 @@ and drift has chosen the `unsafeIndexedDb` or the `inMemory` implementation due 
 persistence support, you may want to show a warning to the user explaining that they have to upgrade
 their browser.
 
+### Custom functions and database setup
+
+Constructors on `NativeDatabase` have a `setup` callback used to initialize the raw database instance,
+for instance by registering custom functions that are needed on the database.
+Unfortunately, this cannot be supported by `WasmDatabase.open` directly. Since the raw database instance
+may only exist on a web worker, we can't use Dart callback functions.
+
+However, it is possible to compile a custom worker that will setup drift databases it creates. For that,
+you can create a Dart file (usually put into `web/`) with content like:
+
+{% include "blocks/snippet" snippets = snippets name = "setupAll" %}
+
+To open the database from the application, you can then use this:
+
+{% include "blocks/snippet" snippets = snippets name = "setupLocal" %}
+
+The `setupDatabase` value is duplicated with `localSetup` in case drift determines that it needs to use
+an in-memory database or an IndexedDB-powered database that doesn't run in a worker. In that case,
+`localSetup` would get called instead. For databases running in a worker, the worker calls `setupAllDatabases`
+which creates the necessary functions.
+
+The next section explains how to compile the Dart file calling `workerMainForOpen` into a JavaScript
+worker that can be referenced with `driftWorkerUri`.
+There is no need to compile a custom `sqlite3.wasm` for this.
+
 ### Compilation
 
 Drift and the `sqlite3` Dart package provide pre-compiled versions of the worker and the WebAssembly

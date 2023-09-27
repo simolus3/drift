@@ -16,9 +16,10 @@ class SharedDriftWorker {
   /// "shared-dedicated" worker hosting the database.
   Worker? _dedicatedWorker;
 
-  final DriftServerController _servers = DriftServerController();
+  final DriftServerController _servers;
 
-  SharedDriftWorker(this.self);
+  SharedDriftWorker(this.self, WasmDatabaseSetup? setup)
+      : _servers = DriftServerController(setup);
 
   void start() {
     const event = EventStreamProvider<MessageEvent>('connect');

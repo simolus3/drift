@@ -141,6 +141,15 @@ Future<void> _open(String? implementationName) async {
       sqlite3Uri: sqlite3WasmUri,
       driftWorkerUri: driftWorkerUri,
       initializeDatabase: _initializeDatabase,
+      localSetup: (db) {
+        // The worker has a similar setup call that will make database_host
+        // return `worker` instead.
+        db.createFunction(
+          functionName: 'database_host',
+          function: (args) => 'document',
+          argumentCount: const AllowedArgumentCount(1),
+        );
+      },
     );
 
     connection = result.resolvedExecutor;
@@ -149,7 +158,7 @@ Future<void> _open(String? implementationName) async {
   final db = openedDatabase = TestDatabase(connection);
 
   // Make sure it works!
-  await db.customSelect('SELECT 1').get();
+  await db.customSelect('SELECT database_host()').get();
 
   tableUpdates = StreamQueue(db.testTable.all().watch());
   await tableUpdates!.next;

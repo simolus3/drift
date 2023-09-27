@@ -22,13 +22,6 @@ import 'src/web/wasm_setup/types.dart';
 
 export 'src/web/wasm_setup/types.dart';
 
-/// Signature of a function that can perform setup work on a [database] before
-/// drift is fully ready.
-///
-/// This could be used to, for instance, set encryption keys for SQLCipher
-/// implementations.
-typedef WasmDatabaseSetup = void Function(CommonDatabase database);
-
 /// An experimental, WebAssembly based implementation of a drift sqlite3
 /// database.
 ///
@@ -98,12 +91,21 @@ class WasmDatabase extends DelegatedDatabase {
   /// which you can [get here](https://github.com/simolus3/sqlite3.dart/releases),
   /// and a drift worker, which you can [get here](https://drift.simonbinder.eu/web/#worker).
   ///
+  /// [localSetup] will be called to initialize the database only if the
+  /// database will be opened directly in this JavaScript context. It is likely
+  /// that the database will actually be opened in a web worker, with drift
+  /// using communication mechanisms to access the database. As there is no way
+  /// to send the database over to the main context, [localSetup] would not be
+  /// called in that case. Instead, you'd have to compile a custom drift worker
+  /// with a setup function - see [workerMainForOpen] for additional information.
+  ///
   /// For more detailed information, see https://drift.simonbinder.eu/web.
   static Future<WasmDatabaseResult> open({
     required String databaseName,
     required Uri sqlite3Uri,
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
+    WasmDatabaseSetup? localSetup,
   }) async {
     final probed = await probe(
       sqlite3Uri: sqlite3Uri,
@@ -147,7 +149,8 @@ class WasmDatabase extends DelegatedDatabase {
 
     final bestImplementation = availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
-    final connection = await probed.open(bestImplementation, databaseName);
+    final connection = await probed.open(bestImplementation, databaseName,
+        localSetup: localSetup);
 
     return WasmDatabaseResult(
         connection, bestImplementation, probed.missingFeatures);
@@ -196,13 +199,18 @@ class WasmDatabase extends DelegatedDatabase {
   /// If you prefer to compile the worker yourself, write a simple Dart program
   /// that calls this method in its `main()` function and compile that with
   /// `dart2js`.
-  static void workerMainForOpen() {
+  /// This is particularly useful when using [setupAllDatabases], a callback
+  /// that will be invoked on every new [CommonDatabase] created by the web
+  /// worker. This is a suitable place to register custom functions.
+  static void workerMainForOpen({
+    WasmDatabaseSetup? setupAllDatabases,
+  }) {
     final self = WorkerGlobalScope.instance;
 
     if (self is DedicatedWorkerGlobalScope) {
-      DedicatedDriftWorker(self).start();
+      DedicatedDriftWorker(self, setupAllDatabases).start();
     } else if (self is SharedWorkerGlobalScope) {
-      SharedDriftWorker(self).start();
+      SharedDriftWorker(self, setupAllDatabases).start();
     }
   }
 }

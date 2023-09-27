@@ -118,3 +118,30 @@ DatabaseConnection migrateFromLegacy() {
     return result.resolvedExecutor;
   }));
 }
+
+// #docregion setupAll
+void setupDatabase(CommonDatabase database) {
+  database.createFunction(
+    functionName: 'my_function',
+    function: (args) => args.length,
+  );
+}
+
+void main() {
+  WasmDatabase.workerMainForOpen(
+    setupAllDatabases: setupDatabase,
+  );
+}
+// #enddocregion setupAll
+
+void withSetup() async {
+  // #docregion setupLocal
+  final result = await WasmDatabase.open(
+    databaseName: 'my_app_db', // prefer to only use valid identifiers here
+    sqlite3Uri: Uri.parse('sqlite3.wasm'),
+    driftWorkerUri: Uri.parse('my_drift_worker.dart.js'),
+    localSetup: setupDatabase,
+  );
+  // #enddocregion setupLocal
+  print(result);
+}

@@ -1,5 +1,6 @@
 ## 2.13.0-dev
 
+- Add APIs to setup Wasm databases with custom drift workers.
 - Add `Expression.and` and `Expression.or` to create disjunctions and conjunctions
   of sub-predicates.
 

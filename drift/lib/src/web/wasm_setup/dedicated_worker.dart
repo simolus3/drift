@@ -3,22 +3,23 @@
 import 'dart:async';
 import 'dart:html';
 
-import 'package:drift/wasm.dart';
 import 'package:js/js_util.dart';
 import 'package:sqlite3/wasm.dart';
 
 import '../../utils/synchronized.dart';
 import 'protocol.dart';
 import 'shared.dart';
+import 'types.dart';
 
 class DedicatedDriftWorker {
   final DedicatedWorkerGlobalScope self;
   final Lock _checkCompatibility = Lock();
 
-  final DriftServerController _servers = DriftServerController();
+  final DriftServerController _servers;
   WasmCompatibility? _compatibility;
 
-  DedicatedDriftWorker(this.self);
+  DedicatedDriftWorker(this.self, WasmDatabaseSetup? setup)
+      : _servers = DriftServerController(setup);
 
   void start() {
     self.onMessage.listen((event) {
