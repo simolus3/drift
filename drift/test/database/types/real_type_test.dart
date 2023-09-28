@@ -14,6 +14,11 @@ void main() {
       expect(typeSystem.read(drift.DriftSqlType.double, null), isNull);
     });
 
+    test('can read BigInt', () {
+      expect(typeSystem.read(drift.DriftSqlType.double, BigInt.parse('12345')),
+          12345.0);
+    });
+
     test('can be mapped to sql constants', () {
       expect(typeSystem.mapToSqlLiteral(1.123), '1.123');
     });

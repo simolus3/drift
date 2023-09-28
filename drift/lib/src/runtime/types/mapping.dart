@@ -191,6 +191,8 @@ class SqlTypes {
         }
         return sqlValue as T;
       case DriftSqlType.double:
+        if (sqlValue case final BigInt bi) return bi.toDouble() as T;
+
         return (sqlValue as num?)?.toDouble() as T;
       case DriftSqlType.any:
         return DriftAny(sqlValue) as T;
