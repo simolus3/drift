@@ -101,12 +101,12 @@ final category = coalesce([todos.category, const Constant(1)]);
 This corresponds to the `??` operator in Dart.
 
 ## Date and Time
+
 For columns and expressions that return a `DateTime`, you can use the
 `year`, `month`, `day`, `hour`, `minute` and `second` getters to extract individual
 fields from that date:
-```dart
-select(users)..where((u) => u.birthDate.year.isLessThan(1950))
-```
+
+{% include "blocks/snippet" snippets = snippets name = 'date1' %}
 
 The individual fields like `year`, `month` and so on are expressions themselves. This means
 that you can use operators and comparisons on them.
@@ -115,10 +115,12 @@ and `currentDateAndTime` constants provided by drift.
 
 You can also use the `+` and `-` operators to add or subtract a duration from a time column:
 
-```dart
-final toNextWeek = TasksCompanion.custom(dueDate: tasks.dueDate + Duration(weeks: 1));
-update(tasks).write(toNextWeek);
-```
+{% include "blocks/snippet" snippets = snippets name = 'date2' %}
+
+For more complex transformations of a datetime, the `modify` and `modifyAll` function is useful.
+For instance, this increments every `dueDate` value for todo items to the same time on a Monday:
+
+{% include "blocks/snippet" snippets = snippets name = 'date3' %}
 
 ## `IN` and `NOT IN`
 You can check whether an expression is in a list of values by using the `isIn` and `isNotIn`

@@ -42,8 +42,15 @@ class $TodoItemsTable extends i2.TodoItems
       requiredDuringInsert: false,
       defaultConstraints:
           i0.GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
+  static const i0.VerificationMeta _dueDateMeta =
+      const i0.VerificationMeta('dueDate');
   @override
-  List<i0.GeneratedColumn> get $columns => [id, title, content, category];
+  late final i0.GeneratedColumn<DateTime> dueDate =
+      i0.GeneratedColumn<DateTime>('due_date', aliasedName, true,
+          type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<i0.GeneratedColumn> get $columns =>
+      [id, title, content, category, dueDate];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -73,6 +80,10 @@ class $TodoItemsTable extends i2.TodoItems
       context.handle(_categoryMeta,
           category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     }
+    if (data.containsKey('due_date')) {
+      context.handle(_dueDateMeta,
+          dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta));
+    }
     return context;
   }
 
@@ -90,6 +101,8 @@ class $TodoItemsTable extends i2.TodoItems
           .read(i0.DriftSqlType.string, data['${effectivePrefix}body'])!,
       category: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.int, data['${effectivePrefix}category']),
+      dueDate: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}due_date']),
     );
   }
 
@@ -104,11 +117,13 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
   final String title;
   final String content;
   final int? category;
+  final DateTime? dueDate;
   const TodoItem(
       {required this.id,
       required this.title,
       required this.content,
-      this.category});
+      this.category,
+      this.dueDate});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -117,6 +132,9 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
     map['body'] = i0.Variable<String>(content);
     if (!nullToAbsent || category != null) {
       map['category'] = i0.Variable<int>(category);
+    }
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = i0.Variable<DateTime>(dueDate);
     }
     return map;
   }
@@ -129,6 +147,9 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
       category: category == null && nullToAbsent
           ? const i0.Value.absent()
           : i0.Value(category),
+      dueDate: dueDate == null && nullToAbsent
+          ? const i0.Value.absent()
+          : i0.Value(dueDate),
     );
   }
 
@@ -140,6 +161,7 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       category: serializer.fromJson<int?>(json['category']),
+      dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
     );
   }
   @override
@@ -150,6 +172,7 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'category': serializer.toJson<int?>(category),
+      'dueDate': serializer.toJson<DateTime?>(dueDate),
     };
   }
 
@@ -157,12 +180,14 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
           {int? id,
           String? title,
           String? content,
-          i0.Value<int?> category = const i0.Value.absent()}) =>
+          i0.Value<int?> category = const i0.Value.absent(),
+          i0.Value<DateTime?> dueDate = const i0.Value.absent()}) =>
       i1.TodoItem(
         id: id ?? this.id,
         title: title ?? this.title,
         content: content ?? this.content,
         category: category.present ? category.value : this.category,
+        dueDate: dueDate.present ? dueDate.value : this.dueDate,
       );
   @override
   String toString() {
@@ -170,13 +195,14 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
-          ..write('category: $category')
+          ..write('category: $category, ')
+          ..write('dueDate: $dueDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, content, category);
+  int get hashCode => Object.hash(id, title, content, category, dueDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -184,7 +210,8 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
           other.id == this.id &&
           other.title == this.title &&
           other.content == this.content &&
-          other.category == this.category);
+          other.category == this.category &&
+          other.dueDate == this.dueDate);
 }
 
 class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
@@ -192,17 +219,20 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
   final i0.Value<String> title;
   final i0.Value<String> content;
   final i0.Value<int?> category;
+  final i0.Value<DateTime?> dueDate;
   const TodoItemsCompanion({
     this.id = const i0.Value.absent(),
     this.title = const i0.Value.absent(),
     this.content = const i0.Value.absent(),
     this.category = const i0.Value.absent(),
+    this.dueDate = const i0.Value.absent(),
   });
   TodoItemsCompanion.insert({
     this.id = const i0.Value.absent(),
     required String title,
     required String content,
     this.category = const i0.Value.absent(),
+    this.dueDate = const i0.Value.absent(),
   })  : title = i0.Value(title),
         content = i0.Value(content);
   static i0.Insertable<i1.TodoItem> custom({
@@ -210,12 +240,14 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
     i0.Expression<String>? title,
     i0.Expression<String>? content,
     i0.Expression<int>? category,
+    i0.Expression<DateTime>? dueDate,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (content != null) 'body': content,
       if (category != null) 'category': category,
+      if (dueDate != null) 'due_date': dueDate,
     });
   }
 
@@ -223,12 +255,14 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
       {i0.Value<int>? id,
       i0.Value<String>? title,
       i0.Value<String>? content,
-      i0.Value<int?>? category}) {
+      i0.Value<int?>? category,
+      i0.Value<DateTime?>? dueDate}) {
     return i1.TodoItemsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       content: content ?? this.content,
       category: category ?? this.category,
+      dueDate: dueDate ?? this.dueDate,
     );
   }
 
@@ -247,6 +281,9 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
     if (category.present) {
       map['category'] = i0.Variable<int>(category.value);
     }
+    if (dueDate.present) {
+      map['due_date'] = i0.Variable<DateTime>(dueDate.value);
+    }
     return map;
   }
 
@@ -256,7 +293,8 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
-          ..write('category: $category')
+          ..write('category: $category, ')
+          ..write('dueDate: $dueDate')
           ..write(')'))
         .toString();
   }
@@ -428,6 +466,179 @@ class CategoriesCompanion extends i0.UpdateCompanion<i1.Category> {
     return (StringBuffer('CategoriesCompanion(')
           ..write('id: $id, ')
           ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
+  @override
+  final i0.GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UsersTable(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
+  @override
+  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          i0.GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const i0.VerificationMeta _birthDateMeta =
+      const i0.VerificationMeta('birthDate');
+  @override
+  late final i0.GeneratedColumn<DateTime> birthDate =
+      i0.GeneratedColumn<DateTime>('birth_date', aliasedName, false,
+          type: i0.DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<i0.GeneratedColumn> get $columns => [id, birthDate];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'users';
+  @override
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.User> instance,
+      {bool isInserting = false}) {
+    final context = i0.VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('birth_date')) {
+      context.handle(_birthDateMeta,
+          birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta));
+    } else if (isInserting) {
+      context.missing(_birthDateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<i0.GeneratedColumn> get $primaryKey => {id};
+  @override
+  i1.User map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return i1.User(
+      id: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
+      birthDate: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
+    );
+  }
+
+  @override
+  $UsersTable createAlias(String alias) {
+    return $UsersTable(attachedDatabase, alias);
+  }
+}
+
+class User extends i0.DataClass implements i0.Insertable<i1.User> {
+  final int id;
+  final DateTime birthDate;
+  const User({required this.id, required this.birthDate});
+  @override
+  Map<String, i0.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, i0.Expression>{};
+    map['id'] = i0.Variable<int>(id);
+    map['birth_date'] = i0.Variable<DateTime>(birthDate);
+    return map;
+  }
+
+  i1.UsersCompanion toCompanion(bool nullToAbsent) {
+    return i1.UsersCompanion(
+      id: i0.Value(id),
+      birthDate: i0.Value(birthDate),
+    );
+  }
+
+  factory User.fromJson(Map<String, dynamic> json,
+      {i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return User(
+      id: serializer.fromJson<int>(json['id']),
+      birthDate: serializer.fromJson<DateTime>(json['birthDate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({i0.ValueSerializer? serializer}) {
+    serializer ??= i0.driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'birthDate': serializer.toJson<DateTime>(birthDate),
+    };
+  }
+
+  i1.User copyWith({int? id, DateTime? birthDate}) => i1.User(
+        id: id ?? this.id,
+        birthDate: birthDate ?? this.birthDate,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('User(')
+          ..write('id: $id, ')
+          ..write('birthDate: $birthDate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, birthDate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is i1.User &&
+          other.id == this.id &&
+          other.birthDate == this.birthDate);
+}
+
+class UsersCompanion extends i0.UpdateCompanion<i1.User> {
+  final i0.Value<int> id;
+  final i0.Value<DateTime> birthDate;
+  const UsersCompanion({
+    this.id = const i0.Value.absent(),
+    this.birthDate = const i0.Value.absent(),
+  });
+  UsersCompanion.insert({
+    this.id = const i0.Value.absent(),
+    required DateTime birthDate,
+  }) : birthDate = i0.Value(birthDate);
+  static i0.Insertable<i1.User> custom({
+    i0.Expression<int>? id,
+    i0.Expression<DateTime>? birthDate,
+  }) {
+    return i0.RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (birthDate != null) 'birth_date': birthDate,
+    });
+  }
+
+  i1.UsersCompanion copyWith(
+      {i0.Value<int>? id, i0.Value<DateTime>? birthDate}) {
+    return i1.UsersCompanion(
+      id: id ?? this.id,
+      birthDate: birthDate ?? this.birthDate,
+    );
+  }
+
+  @override
+  Map<String, i0.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, i0.Expression>{};
+    if (id.present) {
+      map['id'] = i0.Variable<int>(id.value);
+    }
+    if (birthDate.present) {
+      map['birth_date'] = i0.Variable<DateTime>(birthDate.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsersCompanion(')
+          ..write('id: $id, ')
+          ..write('birthDate: $birthDate')
           ..write(')'))
         .toString();
   }
