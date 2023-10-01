@@ -3,6 +3,7 @@
 - Add APIs to setup Wasm databases with custom drift workers.
 - Add `Expression.and` and `Expression.or` to create disjunctions and conjunctions
   of sub-predicates.
+- Step-by-step migrations now save the intermediate schema version after each step.
 
 ## 2.12.1
 
