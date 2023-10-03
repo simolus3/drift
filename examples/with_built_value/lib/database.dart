@@ -2,11 +2,13 @@ import 'package:built_value/built_value.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
-part 'database.drift.dart';
+import 'database.drift.dart';
+import 'tables.drift.dart';
+
 part 'database.g.dart';
 
 abstract class Foo implements Built<Foo, FooBuilder> {
-  User get moorField;
+  User get driftGeneratedField;
 
   Foo._();
 
@@ -14,7 +16,7 @@ abstract class Foo implements Built<Foo, FooBuilder> {
 }
 
 @DriftDatabase(include: {'tables.drift'})
-class Database extends _$Database {
+class Database extends $Database {
   Database() : super(NativeDatabase.memory());
 
   @override

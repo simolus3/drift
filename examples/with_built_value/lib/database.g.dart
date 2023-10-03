@@ -8,13 +8,14 @@ part of 'database.dart';
 
 class _$Foo extends Foo {
   @override
-  final User moorField;
+  final User driftGeneratedField;
 
   factory _$Foo([void Function(FooBuilder)? updates]) =>
       (new FooBuilder()..update(updates))._build();
 
-  _$Foo._({required this.moorField}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(moorField, r'Foo', 'moorField');
+  _$Foo._({required this.driftGeneratedField}) : super._() {
+    BuiltValueNullFieldError.checkNotNull(
+        driftGeneratedField, r'Foo', 'driftGeneratedField');
   }
 
   @override
@@ -27,20 +28,21 @@ class _$Foo extends Foo {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Foo && moorField == other.moorField;
+    return other is Foo && driftGeneratedField == other.driftGeneratedField;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, moorField.hashCode);
+    _$hash = $jc(_$hash, driftGeneratedField.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'Foo')..add('moorField', moorField))
+    return (newBuiltValueToStringHelper(r'Foo')
+          ..add('driftGeneratedField', driftGeneratedField))
         .toString();
   }
 }
@@ -48,16 +50,17 @@ class _$Foo extends Foo {
 class FooBuilder implements Builder<Foo, FooBuilder> {
   _$Foo? _$v;
 
-  User? _moorField;
-  User? get moorField => _$this._moorField;
-  set moorField(User? moorField) => _$this._moorField = moorField;
+  User? _driftGeneratedField;
+  User? get driftGeneratedField => _$this._driftGeneratedField;
+  set driftGeneratedField(User? driftGeneratedField) =>
+      _$this._driftGeneratedField = driftGeneratedField;
 
   FooBuilder();
 
   FooBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _moorField = $v.moorField;
+      _driftGeneratedField = $v.driftGeneratedField;
       _$v = null;
     }
     return this;
@@ -80,8 +83,8 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
   _$Foo _build() {
     final _$result = _$v ??
         new _$Foo._(
-            moorField: BuiltValueNullFieldError.checkNotNull(
-                moorField, r'Foo', 'moorField'));
+            driftGeneratedField: BuiltValueNullFieldError.checkNotNull(
+                driftGeneratedField, r'Foo', 'driftGeneratedField'));
     replace(_$result);
     return _$result;
   }

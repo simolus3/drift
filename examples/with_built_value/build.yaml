@@ -1,25 +1,16 @@
 targets:
+  drift:
+    auto_apply_builders: false
+    builders:
+      drift_dev:modular:
+        enabled: true
+
   $default:
+    dependencies:
+      # run drift's builder first
+      - ":drift"
     builders:
-      # disables the SharedPartBuilder in favor of a PartBuilder from drift_dev
+      # This builder is enabled by default, but we're using the modular builder in
+      # its own target instead.
       drift_dev:
-        enabled: false
-      drift_dev:preparing_builder:
-        enabled: true
-      drift_dev:not_shared:
-        enabled: true
-
-      # Run built_value_generator when drift is done (so after this target)
-      built_value_generator:built_value:
-        enabled: false
-
-  run_built_value:
-    dependencies: ['$default']
-    builders:
-      # Disable all auto-applied builders from drift
-      drift_dev:
-        enabled: false
-      drift_dev:preparing_builder:
-        enabled: false
-      build_resolvers:transitive_digests:
         enabled: false
