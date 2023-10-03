@@ -175,4 +175,16 @@ void main() {
       generates('(a OR b) AND c AND d'),
     );
   });
+
+  test('dialect-specific custom expression', () {
+    final expr = CustomExpression.dialectSpecific({
+      SqlDialect.mariadb: 'mariadb',
+      SqlDialect.postgres: 'pg',
+      SqlDialect.sqlite: 'default',
+    });
+
+    expect(expr, generatesWithOptions('mariadb', dialect: SqlDialect.mariadb));
+    expect(expr, generatesWithOptions('pg', dialect: SqlDialect.postgres));
+    expect(expr, generatesWithOptions('default', dialect: SqlDialect.sqlite));
+  });
 }

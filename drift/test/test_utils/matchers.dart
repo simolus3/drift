@@ -17,14 +17,25 @@ void expectNotEquals(dynamic a, dynamic expected) {
 /// matching [sql] and, optionally, the matching [variables].
 Matcher generates(dynamic sql, [dynamic variables = isEmpty]) {
   return _GeneratesSqlMatcher(
-      wrapMatcher(sql), wrapMatcher(variables), const DriftDatabaseOptions());
+    wrapMatcher(sql),
+    wrapMatcher(variables),
+    const DriftDatabaseOptions(),
+    SqlDialect.sqlite,
+  );
 }
 
-Matcher generatesWithOptions(dynamic sql,
-    {dynamic variables = isEmpty,
-    DriftDatabaseOptions options = const DriftDatabaseOptions()}) {
+Matcher generatesWithOptions(
+  dynamic sql, {
+  dynamic variables = isEmpty,
+  DriftDatabaseOptions options = const DriftDatabaseOptions(),
+  SqlDialect dialect = SqlDialect.sqlite,
+}) {
   return _GeneratesSqlMatcher(
-      wrapMatcher(sql), wrapMatcher(variables), options);
+    wrapMatcher(sql),
+    wrapMatcher(variables),
+    options,
+    dialect,
+  );
 }
 
 class _GeneratesSqlMatcher extends Matcher {
@@ -32,8 +43,14 @@ class _GeneratesSqlMatcher extends Matcher {
   final Matcher? _matchVariables;
 
   final DriftDatabaseOptions options;
+  final SqlDialect dialect;
 
-  _GeneratesSqlMatcher(this._matchSql, this._matchVariables, this.options);
+  _GeneratesSqlMatcher(
+    this._matchSql,
+    this._matchVariables,
+    this.options,
+    this.dialect,
+  );
 
   @override
   Description describe(Description description) {
@@ -78,7 +95,7 @@ class _GeneratesSqlMatcher extends Matcher {
       return false;
     }
 
-    final ctx = stubContext(options: options);
+    final ctx = stubContext(options: options, dialect: dialect);
     item.writeInto(ctx);
 
     var matches = true;
