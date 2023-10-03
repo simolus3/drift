@@ -65,8 +65,14 @@ class WritePropagation extends UpdateRule {
 
 /// Classifies a [TableUpdate] by what kind of write happened - an insert, an
 /// update or a delete operation.
+///
+/// This information is used by drift to determine which triggers might be
+/// invoked by the write. For instance, an `AFTER UPDATE ON table` trigger would
+/// only be considered for [UpdateKind.update].
 enum UpdateKind {
   /// An insert statement ran on the affected table.
+  ///
+  /// This will also be used for upserts.
   insert,
 
   /// An update statement ran on the affected table.
