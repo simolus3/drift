@@ -41,6 +41,8 @@ class CustomExpression<D extends Object> extends Expression<D> {
     final dialectSpecific = _dialectSpecificContent;
 
     if (dialectSpecific != null) {
+      final dialect = context.dialect;
+      context.buffer.write(dialectSpecific[dialect]);
     } else {
       context.buffer.write(content);
     }

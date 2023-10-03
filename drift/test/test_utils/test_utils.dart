@@ -43,15 +43,20 @@ DatabaseConnection createConnection(QueryExecutor executor,
       streamQueries: streams ?? StreamQueryStore());
 }
 
-GenerationContext stubContext({DriftDatabaseOptions? options}) {
-  return GenerationContext(
-      options ?? const DriftDatabaseOptions(), _NullDatabase.instance);
+GenerationContext stubContext({
+  DriftDatabaseOptions? options,
+  SqlDialect dialect = SqlDialect.sqlite,
+}) {
+  final warnBefore = driftRuntimeOptions.dontWarnAboutMultipleDatabases;
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  final database = _NullDatabase(_NullExecutor(dialect: dialect));
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = warnBefore;
+
+  return GenerationContext(options ?? const DriftDatabaseOptions(), database);
 }
 
 class _NullDatabase extends GeneratedDatabase {
-  static final instance = _NullDatabase();
-
-  _NullDatabase() : super(_NullExecutor());
+  _NullDatabase([QueryExecutor? e]) : super(e ?? _NullExecutor());
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables =>
@@ -63,7 +68,9 @@ class _NullDatabase extends GeneratedDatabase {
 
 class _NullExecutor extends Fake implements QueryExecutor {
   @override
-  SqlDialect get dialect => SqlDialect.sqlite;
+  final SqlDialect dialect;
+
+  _NullExecutor({this.dialect = SqlDialect.sqlite});
 }
 
 class CustomTable extends Table with TableInfo<CustomTable, void> {
