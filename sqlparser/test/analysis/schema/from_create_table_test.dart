@@ -110,10 +110,10 @@ void main() {
     final table = const SchemaFromCreateTable(driftExtensions: true)
         .read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.map((c) => c.type), const [
-      ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: true),
-      ResolvedType(type: BasicType.int, hint: IsDateTime(), nullable: true),
-      ResolvedType(type: BasicType.int, hint: IsDateTime(), nullable: true),
-      ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: false),
+      ResolvedType(type: BasicType.int, hints: [IsBoolean()], nullable: true),
+      ResolvedType(type: BasicType.int, hints: [IsDateTime()], nullable: true),
+      ResolvedType(type: BasicType.int, hints: [IsDateTime()], nullable: true),
+      ResolvedType(type: BasicType.int, hints: [IsBoolean()], nullable: false),
     ]);
   });
 

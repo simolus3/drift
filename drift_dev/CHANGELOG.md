@@ -1,6 +1,7 @@
-## 2.12.2-dev
+## 2.13.0-dev
 
-- Fix indices not being created for Dart tables from different tables.
+- Fix indices not being created for Dart tables from different files.
+- Fix type converters on `int64` columns not propagating properly.
 
 ## 2.12.1
 

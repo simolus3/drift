@@ -134,13 +134,12 @@ class SqlWriter extends NodeSqlBuilder {
     );
 
     final type = schema.resolveColumnType(e.typeName);
-    final hint = type.hint;
 
     String? overriddenTypeName;
 
-    if (hint is IsDateTime) {
+    if (type.hint<IsDateTime>() != null) {
       overriddenTypeName = options.storeDateTimeValuesAsText ? 'TEXT' : 'INT';
-    } else if (hint is IsBoolean) {
+    } else if (type.hint<IsBoolean>() != null) {
       overriddenTypeName = 'INT';
     } else {
       final enumMatch = FoundReferencesInSql.enumRegex.firstMatch(e.typeName);

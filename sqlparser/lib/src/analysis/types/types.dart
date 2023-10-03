@@ -28,10 +28,10 @@ class TypeInferenceSession {
     if (expectation is ExactTypeExpectation) {
       final expectedType = expectation.type;
 
-      if (expectedType.hint != null &&
-          r.hint == null &&
+      if (expectedType.hints.isNotEmpty &&
+          r.hints.isEmpty &&
           expectedType.type == r.type) {
-        r = r.copyWith(hint: expectedType.hint);
+        r = r.copyWith(hints: expectedType.hints);
       }
     }
 

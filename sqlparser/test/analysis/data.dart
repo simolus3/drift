@@ -20,7 +20,7 @@ final Table demoTable = Table(
 final TableColumn anotherId =
     TableColumn('id', const ResolvedType(type: BasicType.int));
 final TableColumn dateTime = TableColumn(
-    'date', const ResolvedType(type: BasicType.int, hint: IsDateTime()));
+    'date', const ResolvedType(type: BasicType.int, hints: [IsDateTime()]));
 
 final Table anotherTable = Table(
   name: 'tbl',

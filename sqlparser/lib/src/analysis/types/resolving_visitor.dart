@@ -581,7 +581,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'timediff':
         return _textType;
       case 'datetime':
-        return _textType.copyWith(hint: const IsDateTime(), nullable: true);
+        return _textType.copyWith(hints: const [IsDateTime()], nullable: true);
       case 'changes':
       case 'last_insert_rowid':
       case 'random':
@@ -655,7 +655,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return null;
       case 'unixepoch':
         return const ResolvedType(
-            type: BasicType.int, nullable: true, hint: IsDateTime());
+            type: BasicType.int, nullable: true, hints: [IsDateTime()]);
     }
 
     final extensionHandler = _functionHandlerFor(e);
@@ -710,7 +710,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
                 param,
                 const ExactTypeExpectation(ResolvedType(
                   type: BasicType.text,
-                  hint: IsDateTime(),
+                  hints: [IsDateTime()],
                 )));
             visited.add(param);
           }

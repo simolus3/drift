@@ -62,8 +62,8 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
         }
       }
 
-      if (type != null && type.hint is TypeConverterHint) {
-        converter ??= (type.hint as TypeConverterHint).converter;
+      if (type?.hint<TypeConverterHint>() case final TypeConverterHint h) {
+        converter ??= h.converter;
         ownsConverter = converter.owningColumn == null;
       }
 

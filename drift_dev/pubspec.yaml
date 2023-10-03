@@ -1,6 +1,6 @@
 name: drift_dev
 description: Dev-dependency for users of drift. Contains the generator and development tools.
-version: 2.12.1
+version: 2.13.0-dev
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
@@ -32,7 +32,7 @@ dependencies:
   # Drift-specific analysis and apis
   drift: '>=2.13.0 <2.14.0'
   sqlite3: '>=0.1.6 <3.0.0'
-  sqlparser: '^0.31.2'
+  sqlparser: '^0.32.0'
 
   # Dart analysis
   analyzer: '>=5.12.0 <7.0.0'

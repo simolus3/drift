@@ -88,7 +88,7 @@ class TableColumn extends Column implements ColumnWithType {
   ///
   /// The [hint] will then be reflected in the [type].
   void applyTypeHint(TypeHint hint) {
-    _type = _type.copyWith(hint: hint);
+    _type = _type.addHint(hint);
   }
 
   /// Whether this column is an alias for the rowid, as defined in

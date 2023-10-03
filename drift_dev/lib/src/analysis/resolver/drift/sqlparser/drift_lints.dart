@@ -35,7 +35,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     final type = result.type;
     return type != null &&
         type.type == BasicType.text &&
-        type.hint is IsDateTime;
+        type.hint<IsDateTime>() != null;
   }
 
   @override
@@ -124,9 +124,9 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitNumericLiteral(NumericLiteral e, void arg) {
     final type = linter._context.typeOf(e);
-    final hint = type.type?.hint;
+    final hint = type.type?.hint<TypeConverterHint>();
 
-    if (hint is TypeConverterHint && hint.converter.isDriftEnumTypeConverter) {
+    if (hint != null && hint.converter.isDriftEnumTypeConverter) {
       final enumElement =
           (hint.converter.dartType as InterfaceType).element as EnumElement;
       final entryCount =
@@ -303,9 +303,9 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitStringLiteral(StringLiteral e, void arg) {
     final type = linter._context.typeOf(e);
-    final hint = type.type?.hint;
+    final hint = type.type?.hint<TypeConverterHint>();
 
-    if (hint is TypeConverterHint && hint.converter.isDriftEnumTypeConverter) {
+    if (hint != null && hint.converter.isDriftEnumTypeConverter) {
       final enumElement =
           (hint.converter.dartType as InterfaceType).element as EnumElement;
       final field = enumElement.getField(e.value);

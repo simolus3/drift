@@ -284,12 +284,10 @@ extension ResolvedTypeUtils on ResolvedType {
       case CastMode.numeric:
       case CastMode.numericPreferInt:
         if (type == BasicType.int || type == BasicType.real) {
-          final newHint = dropTypeHint ? null : hint;
-
-          if (newHint != hint) {
+          if (dropTypeHint && hints.isNotEmpty) {
             return ResolvedType(
               type: type,
-              hint: newHint,
+              hints: const [],
               nullable: nullable,
               isArray: isArray,
             );

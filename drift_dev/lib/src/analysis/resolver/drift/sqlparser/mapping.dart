@@ -73,39 +73,34 @@ class TypeMapping {
   }
 
   ResolvedType _columnType(DriftColumn column) {
-    return _driftTypeToParser(column.sqlType,
-            overrideHint: column.typeConverter != null
-                ? TypeConverterHint(column.typeConverter!)
-                : null)
-        .withNullable(column.nullable);
+    final type =
+        _driftTypeToParser(column.sqlType).withNullable(column.nullable);
+
+    if (column.typeConverter case final AppliedTypeConverter c) {
+      return type.addHint(TypeConverterHint(c));
+    } else {
+      return type;
+    }
   }
 
-  ResolvedType _driftTypeToParser(DriftSqlType type, {TypeHint? overrideHint}) {
-    switch (type) {
-      case DriftSqlType.int:
-        return ResolvedType(type: BasicType.int, hint: overrideHint);
-      case DriftSqlType.bigInt:
-        return ResolvedType(
-            type: BasicType.int, hint: overrideHint ?? const IsBigInt());
-      case DriftSqlType.string:
-        return ResolvedType(type: BasicType.text, hint: overrideHint);
-      case DriftSqlType.bool:
-        return ResolvedType(
-            type: BasicType.int, hint: overrideHint ?? const IsBoolean());
-      case DriftSqlType.dateTime:
-        return ResolvedType(
+  ResolvedType _driftTypeToParser(DriftSqlType type) {
+    return switch (type) {
+      DriftSqlType.int => const ResolvedType(type: BasicType.int),
+      DriftSqlType.bigInt =>
+        const ResolvedType(type: BasicType.int, hints: [IsBigInt()]),
+      DriftSqlType.string => const ResolvedType(type: BasicType.text),
+      DriftSqlType.bool =>
+        const ResolvedType(type: BasicType.int, hints: [IsBoolean()]),
+      DriftSqlType.dateTime => ResolvedType(
           type: driver.options.storeDateTimeValuesAsText
               ? BasicType.text
               : BasicType.int,
-          hint: overrideHint ?? const IsDateTime(),
-        );
-      case DriftSqlType.blob:
-        return ResolvedType(type: BasicType.blob, hint: overrideHint);
-      case DriftSqlType.double:
-        return ResolvedType(type: BasicType.real, hint: overrideHint);
-      case DriftSqlType.any:
-        return ResolvedType(type: BasicType.any, hint: overrideHint);
-    }
+          hints: const [IsDateTime()],
+        ),
+      DriftSqlType.blob => const ResolvedType(type: BasicType.blob),
+      DriftSqlType.double => const ResolvedType(type: BasicType.real),
+      DriftSqlType.any => const ResolvedType(type: BasicType.any),
+    };
   }
 
   DriftSqlType sqlTypeToDrift(ResolvedType? type) {
@@ -118,12 +113,12 @@ class TypeMapping {
       case BasicType.nullType:
         return DriftSqlType.string;
       case BasicType.int:
-        if (type.hint is IsBoolean) {
+        if (type.hint<IsBoolean>() != null) {
           return DriftSqlType.bool;
         } else if (!driver.options.storeDateTimeValuesAsText &&
-            type.hint is IsDateTime) {
+            type.hint<IsDateTime>() != null) {
           return DriftSqlType.dateTime;
-        } else if (type.hint is IsBigInt) {
+        } else if (type.hint<IsBigInt>() != null) {
           return DriftSqlType.bigInt;
         }
         return DriftSqlType.int;
@@ -131,7 +126,7 @@ class TypeMapping {
         return DriftSqlType.double;
       case BasicType.text:
         if (driver.options.storeDateTimeValuesAsText &&
-            type.hint is IsDateTime) {
+            type.hint<IsDateTime>() != null) {
           return DriftSqlType.dateTime;
         }
 
@@ -158,14 +153,16 @@ TypeFromText enumColumnFromText(
       if (type != null) {
         return ResolvedType(
           type: isStoredAsName ? BasicType.text : BasicType.int,
-          hint: TypeConverterHint(
-            readEnumConverter(
-              (_) {},
-              type,
-              isStoredAsName ? EnumType.textEnum : EnumType.intEnum,
-              helper,
-            )..owningColumn = null,
-          ),
+          hints: [
+            TypeConverterHint(
+              readEnumConverter(
+                (_) {},
+                type,
+                isStoredAsName ? EnumType.textEnum : EnumType.intEnum,
+                helper,
+              )..owningColumn = null,
+            ),
+          ],
         );
       }
     }

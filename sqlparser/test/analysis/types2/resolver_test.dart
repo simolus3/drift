@@ -108,7 +108,7 @@ void main() {
 
     test('infers condition', () {
       expect(resolveFirstVariable('SELECT IIF(?, 0, 1)'),
-          const ResolvedType(type: BasicType.int, hint: IsBoolean()));
+          const ResolvedType(type: BasicType.int, hints: [IsBoolean()]));
     });
   });
 
@@ -183,7 +183,7 @@ void main() {
 
       expect(resultType, const ResolvedType(type: BasicType.text));
       expect(argType,
-          const ResolvedType(type: BasicType.text, hint: IsDateTime()));
+          const ResolvedType(type: BasicType.text, hints: [IsDateTime()]));
     });
 
     test('octet_length', () {
@@ -298,7 +298,7 @@ WITH RECURSIVE
   });
 
   test('resolves type hints from between expressions', () {
-    const dateTime = ResolvedType(type: BasicType.int, hint: IsDateTime());
+    const dateTime = ResolvedType(type: BasicType.int, hints: [IsDateTime()]);
     final session = obtainResolver(
       'SELECT 1 WHERE :date BETWEEN :start AND :end',
       options: const AnalyzeStatementOptions(

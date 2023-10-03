@@ -180,7 +180,7 @@ class SchemaFromCreateTable {
       if (upper.contains('DATE')) {
         return ResolvedType(
           type: driftUseTextForDateTime ? BasicType.text : BasicType.int,
-          hint: const IsDateTime(),
+          hints: const [IsDateTime()],
         );
       }
 

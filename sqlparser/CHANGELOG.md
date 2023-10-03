@@ -1,3 +1,7 @@
+## 0.32.0-dev
+
+- Turn `ResolvedType.hints` into a list, supporting multiple type hints.
+
 ## 0.31.3
 
 - Fix star columns expanding to more columns than they should.

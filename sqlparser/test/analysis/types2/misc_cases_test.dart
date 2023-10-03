@@ -25,7 +25,7 @@ const Map<String, ResolvedType?> _types = {
   'SELECT * FROM demo WHERE content IN (?)':
       ResolvedType(type: BasicType.text, isArray: false),
   'SELECT * FROM demo JOIN tbl ON demo.id = tbl.id WHERE date = ?':
-      ResolvedType(type: BasicType.int, hint: IsDateTime()),
+      ResolvedType(type: BasicType.int, hints: [IsDateTime()]),
   'SELECT row_number() OVER (RANGE ? PRECEDING)':
       ResolvedType(type: BasicType.int),
   'SELECT ?;': null,
@@ -55,9 +55,9 @@ const Map<String, ResolvedType?> _types = {
   'SELECT MAX(id, ?) FROM demo': ResolvedType(type: BasicType.int),
   'SELECT SUM(id = 2) = ? FROM demo': ResolvedType(type: BasicType.int),
   "SELECT unixepoch('now') = ?":
-      ResolvedType(type: BasicType.int, nullable: true, hint: IsDateTime()),
+      ResolvedType(type: BasicType.int, nullable: true, hints: [IsDateTime()]),
   "SELECT datetime('now') = ?":
-      ResolvedType(type: BasicType.text, nullable: true, hint: IsDateTime()),
+      ResolvedType(type: BasicType.text, nullable: true, hints: [IsDateTime()]),
   'SELECT CAST(NULLIF(1, 2) AS INTEGER) = ?': ResolvedType(
     type: BasicType.int,
     nullable: true,

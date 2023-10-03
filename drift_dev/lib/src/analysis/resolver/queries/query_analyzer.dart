@@ -293,8 +293,8 @@ class QueryAnalyzer {
       final mappedBy = source?.mappedBy;
       AppliedTypeConverter? converter;
 
-      if (type?.hint is TypeConverterHint) {
-        converter = (type!.hint as TypeConverterHint).converter;
+      if (type?.hint<TypeConverterHint>() case final TypeConverterHint h) {
+        converter = h.converter;
       } else if (mappedBy != null) {
         final dartExpression = _resolvedExpressions[mappedBy.mapper.dartCode];
         if (dartExpression != null) {
@@ -668,9 +668,11 @@ class QueryAnalyzer {
 
         // Recognizing type converters on variables is opt-in since it would
         // break existing code.
-        if (driver.options.applyConvertersOnVariables &&
-            internalType.type?.hint is TypeConverterHint) {
-          converter = (internalType.type!.hint as TypeConverterHint).converter;
+        if (driver.options.applyConvertersOnVariables) {
+          if (internalType.type?.hint<TypeConverterHint>()
+              case final TypeConverterHint h) {
+            converter = h.converter;
+          }
         }
 
         addNewElement(FoundVariable(

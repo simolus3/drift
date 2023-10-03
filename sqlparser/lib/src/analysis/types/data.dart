@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:sqlparser/src/engine/sql_engine.dart';
 
 /// Something that has a type.
@@ -19,12 +20,14 @@ enum BasicType {
 }
 
 class ResolvedType {
+  static const _hintEquality = ListEquality<TypeHint>();
+
   final BasicType? type;
 
   /// We set hints for additional information that might be useful for
   /// applications but aren't covered by just exposing a [BasicType]. See the
   /// comment on [TypeHint] for examples.
-  final TypeHint? hint;
+  final List<TypeHint> hints;
 
   /// Whether this type is nullable. A `null` value for [nullable] indicates
   /// that nullability is unknown.
@@ -34,15 +37,21 @@ class ResolvedType {
   final bool isArray;
 
   const ResolvedType(
-      {this.type, this.hint, this.nullable = false, this.isArray = false});
+      {this.type,
+      this.hints = const [],
+      this.nullable = false,
+      this.isArray = false});
   const ResolvedType.bool({bool? nullable = false})
-      : this(type: BasicType.int, hint: const IsBoolean(), nullable: nullable);
+      : this(
+            type: BasicType.int,
+            hints: const [IsBoolean()],
+            nullable: nullable);
 
   ResolvedType get withoutNullabilityInfo {
     return nullable == null
         ? this
         : ResolvedType(
-            type: type, hint: hint, isArray: isArray, nullable: null);
+            type: type, hints: hints, isArray: isArray, nullable: null);
   }
 
   ResolvedType withNullable(bool nullable) {
@@ -53,13 +62,22 @@ class ResolvedType {
     return copyWith(isArray: array);
   }
 
-  ResolvedType copyWith({TypeHint? hint, bool? nullable, bool? isArray}) {
+  ResolvedType copyWith(
+      {List<TypeHint>? hints, bool? nullable, bool? isArray}) {
     return ResolvedType(
       type: type,
-      hint: hint ?? this.hint,
+      hints: hints ?? this.hints,
       nullable: nullable ?? this.nullable,
       isArray: isArray ?? this.isArray,
     );
+  }
+
+  T? hint<T extends TypeHint>() {
+    return hints.whereType<T>().firstOrNull;
+  }
+
+  ResolvedType addHint(TypeHint hint) {
+    return copyWith(hints: [...hints, hint]);
   }
 
   @override
@@ -67,19 +85,19 @@ class ResolvedType {
     return identical(this, other) ||
         other is ResolvedType &&
             other.type == type &&
-            other.hint == hint &&
+            _hintEquality.equals(other.hints, hints) &&
             other.nullable == nullable &&
             other.isArray == isArray;
   }
 
   @override
   int get hashCode {
-    return type.hashCode + hint.hashCode + nullable.hashCode;
+    return type.hashCode + _hintEquality.hash(hints) + nullable.hashCode;
   }
 
   @override
   String toString() {
-    return 'ResolvedType($type, hint: $hint, nullable: $nullable, '
+    return 'ResolvedType($type, hints: $hints, nullable: $nullable, '
         'array: $isArray)';
   }
 }

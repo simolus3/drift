@@ -325,6 +325,44 @@ TypeConverter<Object, int> myConverter() => throw UnimplementedError();
     );
   });
 
+  test('can restore types from multiple hints', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.drift': '''
+import 'table.dart';
+
+CREATE VIEW my_view AS SELECT foo FROM my_table;
+''',
+        'a|lib/table.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  Int64Column get foo => int64().map(myConverter())();
+}
+
+enum MyEnum {
+  foo, bar
+}
+
+TypeConverter<Object, BigInt> myConverter() => throw UnimplementedError();
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(contains(
+            'foo: i2.\$MyTableTable.\$converterfoo.fromSql(attachedDatabase.typeMapping\n'
+            '          .read(i0.DriftSqlType.bigInt')),
+        'a|lib/table.drift.dart': decodedMatches(anything),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
+  });
+
   test('supports @create queries in modular generation', () async {
     final result = await emulateDriftBuild(
       inputs: {

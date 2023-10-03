@@ -96,8 +96,8 @@ sqlite:
         isA<ResolvedType>().having((e) => e.type, 'type', BasicType.int),
         isA<ResolvedType>()
             .having((e) => e.type, 'type', BasicType.int)
-            .having((e) => e.hint, 'hint', const IsBoolean())
-            .having((e) => e.nullable, 'nullable', true),
+            .having((e) => e.hints, 'hints', [IsBoolean()]).having(
+                (e) => e.nullable, 'nullable', true),
       ]);
     });
 
