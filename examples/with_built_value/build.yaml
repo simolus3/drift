@@ -4,6 +4,8 @@ targets:
       # disables the SharedPartBuilder in favor of a PartBuilder from drift_dev
       drift_dev:
         enabled: false
+      drift_dev:preparing_builder:
+        enabled: true
       drift_dev:not_shared:
         enabled: true
 
