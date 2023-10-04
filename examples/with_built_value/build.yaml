@@ -4,6 +4,15 @@ targets:
     builders:
       drift_dev:modular:
         enabled: true
+        options: &options
+          # Drift builder options (https://drift.simonbinder.eu/docs/advanced-features/builder_options/)
+          # that would usually be applied to the `drift_dev` builder now need to be applied to both
+          # `modular` and `analyzer`.
+          sql:
+            options:
+              version: "3.42"
+      drift_dev:analyzer:
+        options: *options
 
   $default:
     dependencies:
