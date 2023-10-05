@@ -72,6 +72,11 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<Category?> categoryById(int? id) async {
+    final query = select(categories)..where((row) => row.id.equalsNullable(id));
+    return query.getSingleOrNull();
+  }
+
   Future<List<TodoEntryWithCategory>> search(String query) {
     return _search(query).map((row) {
       return TodoEntryWithCategory(entry: row.todos, category: row.cat);

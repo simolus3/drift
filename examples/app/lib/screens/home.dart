@@ -25,6 +25,16 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+
+    Future(() async {
+      await ref.read(AppDatabase.provider).categoryById(10);
+      print('got category!');
+    });
+  }
+
   void _addTodoEntry() {
     if (_controller.text.isNotEmpty) {
       // We write the entry here. Notice how we don't have to call setState()
