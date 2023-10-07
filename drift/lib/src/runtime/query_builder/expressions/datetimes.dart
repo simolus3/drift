@@ -33,6 +33,7 @@ const Expression<DateTime> currentDateAndTime = _DependingOnDateTimeExpression(
       'strftime',
       [Constant('%s'), _currentTimestampLiteral],
     ),
+    DriftSqlType.dateTime,
   ),
 );
 
@@ -341,7 +342,7 @@ class _DependingOnDateTimeExpression<D extends Object> extends Expression<D> {
 /// For another explanation of modifiers, see the [sqlite3 docs].
 ///
 /// [sqlite3 docs]: https://sqlite.org/lang_datefunc.html#modifiers
-class DateTimeModifier extends Constant<String> {
+final class DateTimeModifier extends Constant<String> {
   const DateTimeModifier._(super.value);
 
   /// Adds or subtracts [days] calendar days from the date time value.
@@ -356,7 +357,7 @@ class DateTimeModifier extends Constant<String> {
   /// Adds or subtracts [seconds] seconds from this date time value.
   ///
   /// Note that drift assumes date time values to be encoded as unix timestamps
-  /// (with second accuracy) in the database. So adding seconds with a
+  /// (with second accuracy) in the 1⁰5database. So adding seconds with a
   /// fractional value may not always be preserved in a chain of computation.
   const DateTimeModifier.seconds(num seconds) : this._('$seconds seconds');
 
