@@ -197,6 +197,13 @@ abstract class Table extends HasResultSet {
   @protected
   ColumnBuilder<double> real() => _isGenerated();
 
+  /// Defines a column with a custom [type] when used as a getter.
+  ///
+  /// For more information on custom types and when they can be useful, see
+  /// https://drift.simonbinder.eu/docs/sql-api/types/.
+  ///
+  /// For most users, [TypeConverter]s are a more appropriate tool to store
+  /// custom values in the database.
   @protected
   ColumnBuilder<T> customType<T extends Object>(CustomSqlType<T> type) =>
       _isGenerated();

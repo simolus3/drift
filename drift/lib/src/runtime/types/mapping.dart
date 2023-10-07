@@ -407,6 +407,8 @@ enum DriftSqlType<T extends Object> implements BaseSqlType<T> {
 /// To create a custom type, implement this interface. You can now create values
 /// of this type by passing it to [Constant] or [Variable], [Expression.cast]
 /// and other methods operating on types.
+/// Custom types can also be applied to table columns, see https://drift.simonbinder.eu/docs/sql-api/types/
+/// for details.
 abstract interface class CustomSqlType<T extends Object>
     implements BaseSqlType<T> {
   /// Interprets the underlying [fromSql] value from the database driver into
