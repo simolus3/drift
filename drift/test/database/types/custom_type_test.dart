@@ -1,30 +1,10 @@
 import 'package:drift/drift.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
-
-class UuidType implements CustomSqlType<UuidValue> {
-  const UuidType();
-
-  @override
-  String mapToSqlLiteral(UuidValue dartValue) {
-    return "'$dartValue'";
-  }
-
-  @override
-  Object mapToSqlParameter(UuidValue dartValue) {
-    return dartValue;
-  }
-
-  @override
-  UuidValue read(Object fromSql) {
-    return fromSql as UuidValue;
-  }
-
-  @override
-  String sqlTypeName(GenerationContext context) => 'uuid';
-}
 
 void main() {
   final uuid = Uuid().v4obj();
@@ -50,5 +30,35 @@ void main() {
       expect(cast.driftSqlType, isA<UuidType>());
       expect(cast, generates('CAST(? AS uuid)', ['foo']));
     });
+  });
+
+  test('for inserts', () async {
+    final executor = MockExecutor();
+    final database = TodoDb(executor);
+    addTearDown(database.close);
+
+    final uuid = Uuid().v4obj();
+    await database
+        .into(database.withCustomType)
+        .insert(WithCustomTypeCompanion.insert(id: uuid));
+
+    verify(executor
+        .runInsert('INSERT INTO "with_custom_type" ("id") VALUES (?)', [uuid]));
+  });
+
+  test('for selects', () async {
+    final executor = MockExecutor();
+    final database = TodoDb(executor);
+    addTearDown(database.close);
+
+    final uuid = Uuid().v4obj();
+    when(executor.runSelect(any, any)).thenAnswer((_) {
+      return Future.value([
+        {'id': uuid}
+      ]);
+    });
+
+    final row = await database.withCustomType.all().getSingle();
+    expect(row.id, uuid);
   });
 }

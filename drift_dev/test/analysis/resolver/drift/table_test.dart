@@ -263,4 +263,31 @@ CREATE TABLE IF NOT EXISTS currencies (
           'documentationComment', '/// The name of this currency'),
     );
   });
+
+  test('can use custom types', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'b.dart';
+
+CREATE TABLE foo (
+  bar `MyType()` NOT NULL
+);
+''',
+      'a|lib/b.dart': '''
+import 'package:drift/drift.dart';
+
+class MyType implements CustomSqlType<String> {}
+      ''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final column = table.columns.single;
+
+    expect(column.sqlType.isCustom, isTrue);
+    expect(column.sqlType.custom?.dartType.toString(), 'String');
+    expect(column.sqlType.custom?.expression.toString(), 'MyType()');
+  });
 }

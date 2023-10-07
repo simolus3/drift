@@ -180,6 +180,32 @@ abstract class TodoWithCategoryView extends View {
       .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
 }
 
+class WithCustomType extends Table {
+  Column<UuidValue> get id => customType(const UuidType())();
+}
+
+class UuidType implements CustomSqlType<UuidValue> {
+  const UuidType();
+
+  @override
+  String mapToSqlLiteral(UuidValue dartValue) {
+    return "'$dartValue'";
+  }
+
+  @override
+  Object mapToSqlParameter(UuidValue dartValue) {
+    return dartValue;
+  }
+
+  @override
+  UuidValue read(Object fromSql) {
+    return fromSql as UuidValue;
+  }
+
+  @override
+  String sqlTypeName(GenerationContext context) => 'uuid';
+}
+
 @DriftDatabase(
   tables: [
     TodosTable,
@@ -188,6 +214,7 @@ abstract class TodoWithCategoryView extends View {
     SharedTodos,
     TableWithoutPK,
     PureDefaults,
+    WithCustomType,
   ],
   views: [
     CategoryTodoCountView,

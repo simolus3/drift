@@ -21,6 +21,31 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
   DriftElementResolver(
       super.file, super.discovered, super.resolver, super.state);
 
+  Future<CustomColumnType?> resolveCustomColumnType(
+      InlineDartToken type) async {
+    dart.Expression expression;
+    try {
+      expression = await resolver.driver.backend.resolveExpression(
+        file.ownUri,
+        type.dartCode,
+        file.discovery!.importDependencies
+            .map((e) => e.uri.toString())
+            .where((e) => e.endsWith('.dart')),
+      );
+    } on CannotReadExpressionException catch (e) {
+      reportError(DriftAnalysisError.inDriftFile(type, e.msg));
+      return null;
+    }
+
+    final knownTypes = await resolver.driver.loadKnownTypes();
+    return readCustomType(
+      knownTypes.helperLibrary,
+      expression,
+      knownTypes,
+      (msg) => reportError(DriftAnalysisError.inDriftFile(type, msg)),
+    );
+  }
+
   Future<AppliedTypeConverter?> typeConverterFromMappedBy(
       ColumnType sqlType, bool nullable, MappedBy mapper) async {
     final code = mapper.mapper.dartCode;

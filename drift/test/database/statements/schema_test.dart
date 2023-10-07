@@ -109,6 +109,14 @@ void main() {
           []));
     });
 
+    test('creates tables with custom types', () async {
+      await db.createMigrator().createTable(db.withCustomType);
+
+      verify(mockExecutor.runCustom(
+          'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" uuid NOT NULL);',
+          []));
+    });
+
     test('creates views through create()', () async {
       await db.createMigrator().create(db.categoryTodoCountView);
 

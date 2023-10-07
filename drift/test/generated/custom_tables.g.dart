@@ -797,10 +797,12 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     }
     if (syncState.present) {
       final converter = ConfigTable.$convertersyncStaten;
+
       map['sync_state'] = Variable<int>(converter.toSql(syncState.value));
     }
     if (syncStateImplicit.present) {
       final converter = ConfigTable.$convertersyncStateImplicitn;
+
       map['sync_state_implicit'] =
           Variable<int>(converter.toSql(syncStateImplicit.value));
     }

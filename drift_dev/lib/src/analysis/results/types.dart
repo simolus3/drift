@@ -24,8 +24,27 @@ abstract class HasType {
   AppliedTypeConverter? get typeConverter;
 }
 
+/// The underlying SQL type of a column analyzed by drift.
+///
+/// We distinguish between types directly supported by drift, and types that
+/// are supplied by another library. Custom types can hold different Dart types,
+/// but are a feature distinct from type converters: They indicate that a type
+/// is directly supported by the underlying database driver, whereas a type
+/// converter is a mapping done in drift.
+///
+/// In addition to the SQL type, we also track whether a column is nullable,
+/// appears where an array is expected or has a type converter applied to it.
+/// [HasType] is the interface for sql-typed elements and is implemented by
+/// columns.
 class ColumnType {
+  /// The builtin drift type used by this column.
+  ///
+  /// Even though it's unused there, custom types also have this field set -
+  /// to [DriftSqlType.any] because drift doesn't reinterpret these values at
+  /// all.
   final DriftSqlType builtin;
+
+  /// Details about the custom type, if one is present.
   final CustomColumnType? custom;
 
   bool get isCustom => custom != null;

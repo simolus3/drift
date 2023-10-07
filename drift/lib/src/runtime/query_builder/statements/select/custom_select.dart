@@ -81,7 +81,7 @@ class QueryRow {
   /// support non-nullable types.
   T read<T>(String key) {
     final type = DriftSqlType.forNullableType<T>();
-    return readWithType<Object>(type, key) as T;
+    return readNullableWithType(type, key) as T;
   }
 
   /// Interprets the column named [key] under the known drift type [type].
