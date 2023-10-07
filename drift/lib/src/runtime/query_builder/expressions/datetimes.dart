@@ -357,7 +357,7 @@ final class DateTimeModifier extends Constant<String> {
   /// Adds or subtracts [seconds] seconds from this date time value.
   ///
   /// Note that drift assumes date time values to be encoded as unix timestamps
-  /// (with second accuracy) in the 1⁰5database. So adding seconds with a
+  /// (with second accuracy) in the database. So adding seconds with a
   /// fractional value may not always be preserved in a chain of computation.
   const DateTimeModifier.seconds(num seconds) : this._('$seconds seconds');
 

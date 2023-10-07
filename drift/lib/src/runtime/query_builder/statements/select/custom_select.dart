@@ -87,7 +87,8 @@ class QueryRow {
   /// Interprets the column named [key] under the known drift type [type].
   ///
   /// Like [read], except that the [type] is fixed and not inferred from the
-  /// type parameter [T].
+  /// type parameter [T]. Also, this method does not support nullable values -
+  /// use [readNullableWithType] if needed.
   @optionalTypeArgs
   T readWithType<T extends Object>(BaseSqlType<T> type, String key) {
     return _db.typeMapping.read(type, data[key])!;
