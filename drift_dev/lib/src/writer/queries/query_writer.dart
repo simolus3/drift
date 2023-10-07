@@ -202,10 +202,19 @@ class QueryWriter {
     }
 
     final dartLiteral = asDartLiteral(name);
-    final method = isNullable ? 'readNullable' : 'read';
+
     final rawDartType =
-        _emitter.dartCode(AnnotatedDartCode([dartTypeNames[column.sqlType]!]));
-    var code = 'row.$method<$rawDartType>($dartLiteral)';
+        _emitter.dartCode(_emitter.innerColumnType(column.sqlType));
+    String code;
+
+    if (column.sqlType.isCustom) {
+      final method = isNullable ? 'readNullableWithType' : 'readWithType';
+      final typeImpl = _emitter.dartCode(column.sqlType.custom!.expression);
+      code = 'row.$method<$rawDartType>($dartLiteral, $typeImpl)';
+    } else {
+      final method = isNullable ? 'readNullable' : 'read';
+      code = 'row.$method<$rawDartType>($dartLiteral)';
+    }
 
     final converter = column.typeConverter;
     if (converter != null) {
@@ -838,8 +847,8 @@ class _ExpandedVariableWriter {
     // write all the variables sequentially.
     String constructVar(String dartExpr) {
       // No longer an array here, we apply a for loop if necessary
-      final type =
-          _emitter.dartCode(_emitter.innerColumnType(element, nullable: false));
+      final type = _emitter
+          .dartCode(_emitter.innerColumnType(element.sqlType, nullable: false));
 
       final varType = _emitter.drift('Variable');
       final buffer = StringBuffer('$varType<$type>(');

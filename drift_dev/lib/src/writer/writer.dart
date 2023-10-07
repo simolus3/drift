@@ -134,7 +134,16 @@ abstract class _NodeOrWriter {
       {bool makeNullable = false}) {
     // Write something like `TypeConverter<MyFancyObject, String>`
     return AnnotatedDartCode.build((b) {
-      var sqlDartType = dartTypeNames[converter.sqlType]!;
+      AnnotatedDartCode sqlDartType;
+
+      if (converter.sqlType.isCustom) {
+        sqlDartType =
+            AnnotatedDartCode.type(converter.sqlType.custom!.dartType);
+      } else {
+        sqlDartType =
+            AnnotatedDartCode([dartTypeNames[converter.sqlType.builtin]!]);
+      }
+
       final className = converter.alsoAppliesToJsonConversion
           ? 'JsonTypeConverter2'
           : 'TypeConverter';
@@ -145,7 +154,7 @@ abstract class _NodeOrWriter {
         ..addDartType(converter.dartType)
         ..questionMarkIfNullable(makeNullable)
         ..addText(',')
-        ..addTopLevel(sqlDartType)
+        ..addCode(sqlDartType)
         ..questionMarkIfNullable(makeNullable || converter.sqlTypeIsNullable);
 
       if (converter.alsoAppliesToJsonConversion) {
@@ -169,7 +178,8 @@ abstract class _NodeOrWriter {
   /// This is the same as [dartType] but without custom types.
   AnnotatedDartCode variableTypeCode(HasType type, {bool? nullable}) {
     if (type.isArray) {
-      final inner = innerColumnType(type, nullable: nullable ?? type.nullable);
+      final inner =
+          innerColumnType(type.sqlType, nullable: nullable ?? type.nullable);
       return AnnotatedDartCode([
         DartTopLevelSymbol.list,
         '<',
@@ -177,7 +187,7 @@ abstract class _NodeOrWriter {
         '>',
       ]);
     } else {
-      return innerColumnType(type, nullable: nullable ?? type.nullable);
+      return innerColumnType(type.sqlType, nullable: nullable ?? type.nullable);
     }
   }
 
@@ -185,11 +195,20 @@ abstract class _NodeOrWriter {
   /// [nullable] parameter.
   ///
   /// This type does not respect type converters or arrays.
-  AnnotatedDartCode innerColumnType(HasType type, {bool nullable = false}) {
-    return AnnotatedDartCode([
-      dartTypeNames[type.sqlType],
-      if (nullable) '?',
-    ]);
+  AnnotatedDartCode innerColumnType(ColumnType type, {bool nullable = false}) {
+    return AnnotatedDartCode.build((b) {
+      final custom = type.custom;
+
+      if (custom != null) {
+        b.addDartType(custom.dartType);
+      } else {
+        b.addTopLevel(dartTypeNames[type.builtin]!);
+      }
+
+      if (nullable) {
+        b.addText('?');
+      }
+    });
   }
 
   String refUri(Uri definition, String element) {

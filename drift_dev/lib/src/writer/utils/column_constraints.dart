@@ -72,7 +72,7 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
     }
   }
 
-  if (column.sqlType == DriftSqlType.bool) {
+  if (column.sqlType.builtin == DriftSqlType.bool) {
     final name = column.nameInSql;
     dialectSpecificConstraints[SqlDialect.sqlite]!
         .add('CHECK (${SqlDialect.sqlite.escape(name)} IN (0, 1))');

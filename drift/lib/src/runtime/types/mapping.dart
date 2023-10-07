@@ -10,8 +10,7 @@ import '../query_builder/query_builder.dart';
 
 /// Database-specific helper methods mapping Dart values from and to SQL
 /// variables or literals.
-@sealed
-class SqlTypes {
+final class SqlTypes {
   // Stolen from DateTime._parseFormat
   static final RegExp _timeZoneInDateTime =
       RegExp(r' ?([-+])(\d\d)(?::?(\d\d))?$');
@@ -127,76 +126,77 @@ class SqlTypes {
         'Must be null, bool, String, int, DateTime, Uint8List or double');
   }
 
-  /// Maps a raw [sqlValue] to Dart given its sql [type].
-  T? read<T extends Object>(DriftSqlType<T> type, Object? sqlValue) {
+  DateTime _readDateTime(Object sqlValue) {
+    if (storeDateTimesAsText) {
+      final rawValue = read(DriftSqlType.string, sqlValue)!;
+      DateTime result;
+
+      // We store date times like this:
+      //
+      //  - if it's in UTC, we call [DateTime.toIso8601String], so there's a
+      //    trailing `Z`. We can just use [DateTime.parse] and get an utc
+      //    datetime back.
+      //  - for local date times, we append the time zone offset, e.g.
+      //    `+02:00`. [DateTime.parse] respects this UTC offset and returns
+      //    the correct date, but it returns it in UTC. Since we only use
+      //    this format for local times, we need to transform it back to
+      //    local.
+      //
+      // Additionally, complex date time expressions are wrapped in a
+      // `datetime` sqlite call, which doesn't append a `Z` or a time zone
+      // offset. As sqlite3 always uses UTC for these computations
+      // internally, we'll return a UTC datetime as well.
+      if (_timeZoneInDateTime.hasMatch(rawValue)) {
+        // Case 2: Explicit time zone offset given, we do this for local
+        // dates.
+        result = DateTime.parse(rawValue).toLocal();
+      } else if (rawValue.endsWith('Z')) {
+        // Case 1: Date time in UTC, [DateTime.parse] will do the right
+        // thing.
+        result = DateTime.parse(rawValue);
+      } else {
+        // Result from complex date tmie transformation. Interpret as UTC,
+        // which is what sqlite3 does by default.
+        result = DateTime.parse('${rawValue}Z');
+      }
+
+      return result;
+    } else {
+      final unixSeconds = read(DriftSqlType.int, sqlValue)!;
+      return DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000);
+    }
+  }
+
+  /// Maps a raw [sqlValue] to Dart given its sql [type] (typically a
+  /// [DriftSqlType]).
+  T? read<T extends Object>(BaseSqlType<T> type, Object? sqlValue) {
     if (sqlValue == null) return null;
 
-    // ignore: unnecessary_cast
-    switch (type as DriftSqlType<Object>) {
-      case DriftSqlType.bool:
-        return (sqlValue != 0 && sqlValue != false) as T;
-      case DriftSqlType.string:
-        return sqlValue.toString() as T;
-      case DriftSqlType.bigInt:
-        if (sqlValue is BigInt) return sqlValue as T?;
-        if (sqlValue is int) return BigInt.from(sqlValue) as T;
-        return BigInt.parse(sqlValue.toString()) as T;
-      case DriftSqlType.int:
-        if (sqlValue is int) return sqlValue as T;
-        if (sqlValue is BigInt) return sqlValue.toInt() as T;
-        return int.parse(sqlValue.toString()) as T;
-      case DriftSqlType.dateTime:
-        if (storeDateTimesAsText) {
-          final rawValue = read(DriftSqlType.string, sqlValue)!;
-          DateTime result;
-
-          // We store date times like this:
-          //
-          //  - if it's in UTC, we call [DateTime.toIso8601String], so there's a
-          //    trailing `Z`. We can just use [DateTime.parse] and get an utc
-          //    datetime back.
-          //  - for local date times, we append the time zone offset, e.g.
-          //    `+02:00`. [DateTime.parse] respects this UTC offset and returns
-          //    the correct date, but it returns it in UTC. Since we only use
-          //    this format for local times, we need to transform it back to
-          //    local.
-          //
-          // Additionally, complex date time expressions are wrapped in a
-          // `datetime` sqlite call, which doesn't append a `Z` or a time zone
-          // offset. As sqlite3 always uses UTC for these computations
-          // internally, we'll return a UTC datetime as well.
-          if (_timeZoneInDateTime.hasMatch(rawValue)) {
-            // Case 2: Explicit time zone offset given, we do this for local
-            // dates.
-            result = DateTime.parse(rawValue).toLocal();
-          } else if (rawValue.endsWith('Z')) {
-            // Case 1: Date time in UTC, [DateTime.parse] will do the right
-            // thing.
-            result = DateTime.parse(rawValue);
-          } else {
-            // Result from complex date tmie transformation. Interpret as UTC,
-            // which is what sqlite3 does by default.
-            result = DateTime.parse('${rawValue}Z');
-          }
-
-          return result as T;
-        } else {
-          final unixSeconds = read(DriftSqlType.int, sqlValue)!;
-          return DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000) as T;
-        }
-      case DriftSqlType.blob:
-        if (sqlValue is String) {
-          final list = sqlValue.codeUnits;
-          return Uint8List.fromList(list) as T;
-        }
-        return sqlValue as T;
-      case DriftSqlType.double:
-        if (sqlValue case final BigInt bi) return bi.toDouble() as T;
-
-        return (sqlValue as num?)?.toDouble() as T;
-      case DriftSqlType.any:
-        return DriftAny(sqlValue) as T;
-    }
+    return switch (type) {
+      DriftSqlType.bool => (sqlValue != 0 && sqlValue != false),
+      DriftSqlType.string => sqlValue.toString(),
+      DriftSqlType.bigInt => switch (sqlValue) {
+          BigInt() => sqlValue,
+          int() => BigInt.from(sqlValue),
+          _ => BigInt.parse(sqlValue.toString()),
+        },
+      DriftSqlType.int => switch (sqlValue) {
+          int() => sqlValue,
+          BigInt() => sqlValue.toInt(),
+          _ => int.parse(sqlValue.toString()),
+        },
+      DriftSqlType.dateTime => _readDateTime(sqlValue),
+      DriftSqlType.blob => switch (sqlValue) {
+          String() => Uint8List.fromList(sqlValue.codeUnits),
+          _ => sqlValue,
+        },
+      DriftSqlType.double => switch (sqlValue) {
+          BigInt() => sqlValue.toDouble(),
+          _ => (sqlValue as num).toDouble(),
+        },
+      DriftSqlType.any => DriftAny(sqlValue),
+      CustomSqlType() => type.read(sqlValue),
+    } as T;
   }
 }
 
@@ -212,8 +212,7 @@ class SqlTypes {
 /// column with an `ANY` type.
 ///
 /// [STRICT tables]: https://www.sqlite.org/stricttables.html
-@sealed
-class DriftAny {
+final class DriftAny {
   /// The direct, unmodified SQL value being wrapped by this [DriftAny]
   /// instance.
   ///
@@ -249,7 +248,7 @@ class DriftAny {
   /// [DatabaseConnectionUser.typeMapping].
   ///
   /// [as text]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#datetime-options
-  T readAs<T extends Object>(DriftSqlType<T> type, SqlTypes types) {
+  T readAs<T extends Object>(BaseSqlType<T> type, SqlTypes types) {
     return types.read<T>(type, rawSqlValue)!;
   }
 
@@ -268,19 +267,16 @@ class DriftAny {
   }
 }
 
-/// In [DriftSqlType.forNullableType], we need to do an `is` check over
-/// `DriftSqlType<T>` with a potentially nullable `T`. Since `DriftSqlType` is
-/// defined with a non-nullable `T`, this is illegal.
-/// The non-nullable upper bound in [DriftSqlType] is generally useful, for
-/// instance because it works well with [SqlTypes.read] which can then have a
-/// sound nullable return type.
-///
-/// As a hack, we define this base class that doesn't have this restriction and
-/// use this one for type checks.
-abstract class _InternalDriftSqlType<T> {}
+/// The superclass for SQL types, whether built-in to drift ([DriftSqlType]) or
+/// provided by the user through [CustomSqlType]s.
+@internal
+sealed class BaseSqlType<T> {
+  /// Returns a suitable representation of this type in SQL.
+  String sqlTypeName(GenerationContext context);
+}
 
 /// An enumation of type mappings that are builtin to drift and `drift_dev`.
-enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
+enum DriftSqlType<T extends Object> implements BaseSqlType<T> {
   /// A boolean type, represented as `0` or `1` (int) in SQL.
   bool<core.bool>(),
 
@@ -316,7 +312,7 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
   /// [STRICT tables]: https://www.sqlite.org/stricttables.html
   any<DriftAny>();
 
-  /// Returns a suitable representation of this type in SQL.
+  @override
   String sqlTypeName(GenerationContext context) {
     final dialect = context.dialect;
 
@@ -390,7 +386,7 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
     // typecheck where that doesn't work (which can be the case for complex
     // type like `forNullableType<FutureOr<int?>>`).
     final type = _dartToDrift[Dart] ??
-        values.whereType<_InternalDriftSqlType<Dart>>().singleOrNull;
+        values.whereType<BaseSqlType<Dart>>().singleOrNull;
 
     if (type == null) {
       throw ArgumentError('Could not find a matching SQL type for $Dart');
@@ -398,4 +394,32 @@ enum DriftSqlType<T extends Object> implements _InternalDriftSqlType<T> {
 
     return type as DriftSqlType;
   }
+}
+
+/// Interface for a custom SQL type.
+///
+/// Being designed with sqlite3 as its primary database engine, drift lacks
+/// builtin support for the rich type system found in more complex database
+/// systems like postgres. By providing the [CustomSqlType] interface, drift can
+/// be extended to support any database type by customizing the way these types
+/// are mapped from and to the database.
+///
+/// To create a custom type, implement this interface. You can now create values
+/// of this type by passing it to [Constant] or [Variable], [Expression.cast]
+/// and other methods operating on types.
+/// Custom types can also be applied to table columns, see https://drift.simonbinder.eu/docs/sql-api/types/
+/// for details.
+abstract interface class CustomSqlType<T extends Object>
+    implements BaseSqlType<T> {
+  /// Interprets the underlying [fromSql] value from the database driver into
+  /// the Dart representation [T] of this type.
+  T read(Object fromSql);
+
+  /// Maps the [dartValue] to a value understood by the underlying database
+  /// driver.
+  Object mapToSqlParameter(T dartValue);
+
+  /// Maps the [dartValue] to a SQL snippet that can be embedded as a literal
+  /// into SQL queries generated by drift.
+  String mapToSqlLiteral(T dartValue);
 }

@@ -187,6 +187,7 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
     }
     if (entries.present) {
       final converter = i2.$ShoppingCartsTable.$converterentries;
+
       map['entries'] = i0.Variable<String>(converter.toSql(entries.value));
     }
     return map;

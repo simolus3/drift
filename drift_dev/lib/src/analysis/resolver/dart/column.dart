@@ -22,6 +22,7 @@ const String _startBool = 'boolean';
 const String _startDateTime = 'dateTime';
 const String _startBlob = 'blob';
 const String _startReal = 'real';
+const String _startCustom = 'customType';
 
 const Set<String> _starters = {
   _startInt,
@@ -33,6 +34,7 @@ const Set<String> _starters = {
   _startDateTime,
   _startBlob,
   _startReal,
+  _startCustom,
 };
 
 const String _methodNamed = 'named';
@@ -337,19 +339,40 @@ class ColumnParser {
       remainingExpr = inner;
     }
 
-    _resolver.resolver.driver.options.caseFromDartToSql;
     final sqlName = foundExplicitName ??
         _resolver.resolver.driver.options.caseFromDartToSql
             .apply(getter.name.lexeme);
-    final sqlType = _startMethodToColumnType(foundStartMethod);
+    ColumnType columnType;
+
     final helper = await _resolver.resolver.driver.loadKnownTypes();
+
+    if (foundStartMethod == _startCustom) {
+      final expression = remainingExpr.argumentList.arguments.single;
+
+      final custom = readCustomType(
+        element.library!,
+        expression,
+        helper,
+        (message) => _resolver.reportError(
+          DriftAnalysisError.inDartAst(element, mappedAs!, message),
+        ),
+      );
+      columnType = custom != null
+          ? ColumnType.custom(custom)
+          // Fallback if we fail to read the custom type - we'll also emit an
+          // error int that case.
+          : ColumnType.drift(DriftSqlType.any);
+    } else {
+      columnType =
+          ColumnType.drift(_startMethodToBuiltinColumnType(foundStartMethod));
+    }
 
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
       converter = readTypeConverter(
         element.library!,
         mappedAs,
-        sqlType,
+        columnType,
         nullable,
         (message) => _resolver.reportError(
             DriftAnalysisError.inDartAst(element, mappedAs!, message)),
@@ -437,7 +460,7 @@ class ColumnParser {
 
     return PendingColumnInformation(
       DriftColumn(
-        sqlType: sqlType,
+        sqlType: columnType,
         nullable: nullable,
         nameInSql: sqlName,
         nameInDart: element.name!,
@@ -454,7 +477,7 @@ class ColumnParser {
     );
   }
 
-  DriftSqlType _startMethodToColumnType(String name) {
+  DriftSqlType _startMethodToBuiltinColumnType(String name) {
     return const {
       _startBool: DriftSqlType.bool,
       _startString: DriftSqlType.string,

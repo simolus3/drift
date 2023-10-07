@@ -81,7 +81,17 @@ class QueryRow {
   /// support non-nullable types.
   T read<T>(String key) {
     final type = DriftSqlType.forNullableType<T>();
-    return _db.typeMapping.read(type, data[key]) as T;
+    return readNullableWithType(type, key) as T;
+  }
+
+  /// Interprets the column named [key] under the known drift type [type].
+  ///
+  /// Like [read], except that the [type] is fixed and not inferred from the
+  /// type parameter [T]. Also, this method does not support nullable values -
+  /// use [readNullableWithType] if needed.
+  @optionalTypeArgs
+  T readWithType<T extends Object>(BaseSqlType<T> type, String key) {
+    return _db.typeMapping.read(type, data[key])!;
   }
 
   /// Reads a nullable value from this row.
@@ -90,7 +100,7 @@ class QueryRow {
   /// drift (e.g. booleans, strings, numbers, dates, `Uint8List`s).
   T? readNullable<T extends Object>(String key) {
     final type = DriftSqlType.forType<T>();
-    return _db.typeMapping.read(type, data[key]);
+    return readNullableWithType(type, key);
   }
 
   /// Interprets the column named [key] under the known drift type [type].
@@ -98,7 +108,7 @@ class QueryRow {
   /// Like [readNullable], except that the [type] is fixed and not inferred from
   /// the type parameter [T].
   @optionalTypeArgs
-  T? readNullableWithType<T extends Object>(DriftSqlType<T> type, String key) {
+  T? readNullableWithType<T extends Object>(BaseSqlType<T> type, String key) {
     return _db.typeMapping.read(type, data[key]);
   }
 

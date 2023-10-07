@@ -339,7 +339,13 @@ class RowMappingWriter {
       final columnName = column.nameInSql;
       final rawData = "data['\${effectivePrefix}$columnName']";
 
-      final sqlType = writer.drift(column.sqlType.toString());
+      String sqlType;
+      if (column.sqlType.custom case CustomColumnType custom) {
+        sqlType = writer.dartCode(custom.expression);
+      } else {
+        sqlType = writer.drift(column.sqlType.builtin.toString());
+      }
+
       var loadType = '$databaseGetter.typeMapping.read($sqlType, $rawData)';
 
       if (!column.nullable) {

@@ -279,7 +279,8 @@ class _HasInferredColumnTypes extends CustomMatcher {
 
     final resultSet = actual.resultSet;
     return {
-      for (final column in resultSet.scalarColumns) column.name: column.sqlType
+      for (final column in resultSet.scalarColumns)
+        column.name: column.sqlType.builtin
     };
   }
 }

@@ -33,12 +33,12 @@ CREATE TABLE b (
     final b = results[1].result! as DriftTable;
     final bBar = b.columns[0];
 
-    expect(aFoo.sqlType, DriftSqlType.int);
+    expect(aFoo.sqlType.builtin, DriftSqlType.int);
     expect(aFoo.nullable, isFalse);
     expect(aFoo.constraints, [isA<PrimaryKeyColumn>()]);
     expect(aFoo.customConstraints, 'PRIMARY KEY');
 
-    expect(aBar.sqlType, DriftSqlType.int);
+    expect(aBar.sqlType.builtin, DriftSqlType.int);
     expect(aBar.nullable, isTrue);
     expect(aBar.constraints, [
       isA<ForeignKeyReference>()
@@ -48,7 +48,7 @@ CREATE TABLE b (
     ]);
     expect(aBar.customConstraints, 'REFERENCES b(bar)');
 
-    expect(bBar.sqlType, DriftSqlType.int);
+    expect(bBar.sqlType.builtin, DriftSqlType.int);
     expect(bBar.nullable, isFalse);
     expect(bBar.constraints, isEmpty);
     expect(bBar.customConstraints, 'NOT NULL');
@@ -111,7 +111,7 @@ CREATE TABLE b (
     final indexColumn =
         table.columns.singleWhere((c) => c.nameInSql == 'fruitIndex');
 
-    expect(indexColumn.sqlType, DriftSqlType.int);
+    expect(indexColumn.sqlType.builtin, DriftSqlType.int);
     expect(
       indexColumn.typeConverter,
       isA<AppliedTypeConverter>()
@@ -126,7 +126,7 @@ CREATE TABLE b (
 
     final withGenericIndexColumn = table.columns
         .singleWhere((c) => c.nameInSql == 'fruitWithGenericIndex');
-    expect(withGenericIndexColumn.sqlType, DriftSqlType.int);
+    expect(withGenericIndexColumn.sqlType.builtin, DriftSqlType.int);
     expect(
       withGenericIndexColumn.typeConverter,
       isA<AppliedTypeConverter>()
@@ -142,7 +142,7 @@ CREATE TABLE b (
     final nameColumn =
         table.columns.singleWhere((c) => c.nameInSql == 'fruitName');
 
-    expect(nameColumn.sqlType, DriftSqlType.string);
+    expect(nameColumn.sqlType.builtin, DriftSqlType.string);
     expect(
       nameColumn.typeConverter,
       isA<AppliedTypeConverter>()
@@ -262,5 +262,32 @@ CREATE TABLE IF NOT EXISTS currencies (
       isA<DriftColumn>().having((e) => e.documentationComment,
           'documentationComment', '/// The name of this currency'),
     );
+  });
+
+  test('can use custom types', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+import 'b.dart';
+
+CREATE TABLE foo (
+  bar `MyType()` NOT NULL
+);
+''',
+      'a|lib/b.dart': '''
+import 'package:drift/drift.dart';
+
+class MyType implements CustomSqlType<String> {}
+      ''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final column = table.columns.single;
+
+    expect(column.sqlType.isCustom, isTrue);
+    expect(column.sqlType.custom?.dartType.toString(), 'String');
+    expect(column.sqlType.custom?.expression.toString(), 'MyType()');
   });
 }

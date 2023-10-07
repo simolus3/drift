@@ -23,8 +23,8 @@ void main() {
     final view = file.analyzedElements.single as DriftView;
 
     expect(view.columns, [
-      isA<DriftColumn>()
-          .having((e) => e.sqlType, 'sqlType', drift.DriftSqlType.string)
+      isA<DriftColumn>().having(
+          (e) => e.sqlType.builtin, 'sqlType', drift.DriftSqlType.string)
     ]);
 
     expect(view.references,
@@ -56,8 +56,8 @@ void main() {
 
     expect(parentView.columns, hasLength(2));
     expect(childView.columns, [
-      isA<DriftColumn>()
-          .having((e) => e.sqlType, 'sqlType', drift.DriftSqlType.string)
+      isA<DriftColumn>().having(
+          (e) => e.sqlType.builtin, 'sqlType', drift.DriftSqlType.string)
     ]);
 
     expect(parentView.references.map((e) => e.id.name), ['t']);
@@ -290,7 +290,7 @@ enum MyEnum {
       final view = state.analyzedElements.single as DriftView;
       final column = view.columns.single;
 
-      expect(column.sqlType, expectedType);
+      expect(column.sqlType.builtin, expectedType);
       expect(
         view.source,
         isA<SqlViewSource>().having(

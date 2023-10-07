@@ -172,7 +172,8 @@ class ProgrammingLanguages extends Table {
     final tablesFile = await backend.analyze('package:a/tables.drift');
     final librariesQuery = tablesFile.fileAnalysis!.resolvedQueries.values
         .singleWhere((e) => e.name == 'findLibraries') as SqlSelectQuery;
-    expect(librariesQuery.variables.single.sqlType, DriftSqlType.string);
+    expect(
+        librariesQuery.variables.single.sqlType.builtin, DriftSqlType.string);
     expect(librariesQuery.declaredInDriftFile, isTrue);
   });
 

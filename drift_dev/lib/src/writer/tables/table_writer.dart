@@ -210,7 +210,13 @@ abstract class TableOrViewWriter {
       }
     }
 
-    additionalParams['type'] = emitter.drift(column.sqlType.toString());
+    if (column.sqlType.isCustom) {
+      additionalParams['type'] =
+          emitter.dartCode(column.sqlType.custom!.expression);
+    } else {
+      additionalParams['type'] =
+          emitter.drift(column.sqlType.builtin.toString());
+    }
 
     if (isRequiredForInsert != null) {
       additionalParams['requiredDuringInsert'] = isRequiredForInsert.toString();
@@ -256,7 +262,7 @@ abstract class TableOrViewWriter {
           emitter.dartCode(column.clientDefaultCode!);
     }
 
-    final innerType = emitter.innerColumnType(column);
+    final innerType = emitter.innerColumnType(column.sqlType);
     var type =
         '${emitter.drift('GeneratedColumn')}<${emitter.dartCode(innerType)}>';
     expressionBuffer

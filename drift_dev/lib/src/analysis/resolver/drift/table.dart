@@ -43,31 +43,43 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
 
     for (final column in table.resultColumns) {
       String? overriddenDartName;
-      final type = resolver.driver.typeMapping.sqlTypeToDrift(column.type);
+      var type = resolver.driver.typeMapping.sqlTypeToDrift(column.type);
       final nullable = column.type.nullable != false;
       final constraints = <DriftColumnConstraint>[];
       AppliedTypeConverter? converter;
       AnnotatedDartCode? defaultArgument;
       String? overriddenJsonName;
 
-      final typeName = column.definition?.typeName;
+      final definition = column.definition;
+      if (definition != null) {
+        final typeName = definition.typeName;
 
-      final enumIndexMatch = typeName != null
-          ? FoundReferencesInSql.enumRegex.firstMatch(typeName)
-          : null;
-      if (enumIndexMatch != null) {
-        final dartTypeName = enumIndexMatch.group(2)!;
-        final dartType = await findDartTypeOrReportError(
-            dartTypeName, column.definition?.typeNames?.toSingleEntity ?? stmt);
+        final enumIndexMatch = typeName != null
+            ? FoundReferencesInSql.enumRegex.firstMatch(typeName)
+            : null;
 
-        if (dartType != null) {
-          converter = readEnumConverter(
-            (msg) => reportError(
-                DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg)),
-            dartType,
-            type == DriftSqlType.int ? EnumType.intEnum : EnumType.textEnum,
-            await resolver.driver.loadKnownTypes(),
-          );
+        if (definition.typeNames case [InlineDartToken token]) {
+          // An inline Dart token used as a type name indicates a custom type.
+          final custom = await resolveCustomColumnType(token);
+          if (custom != null) {
+            type = ColumnType.custom(custom);
+          }
+        } else if (enumIndexMatch != null) {
+          final dartTypeName = enumIndexMatch.group(2)!;
+          final dartType = await findDartTypeOrReportError(dartTypeName,
+              column.definition?.typeNames?.toSingleEntity ?? stmt);
+
+          if (dartType != null) {
+            converter = readEnumConverter(
+              (msg) => reportError(DriftAnalysisError.inDriftFile(
+                  column.definition ?? stmt, msg)),
+              dartType,
+              type.builtin == DriftSqlType.int
+                  ? EnumType.intEnum
+                  : EnumType.textEnum,
+              await resolver.driver.loadKnownTypes(),
+            );
+          }
         }
       }
 

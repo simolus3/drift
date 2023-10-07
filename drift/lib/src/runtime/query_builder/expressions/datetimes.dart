@@ -33,6 +33,7 @@ const Expression<DateTime> currentDateAndTime = _DependingOnDateTimeExpression(
       'strftime',
       [Constant('%s'), _currentTimestampLiteral],
     ),
+    DriftSqlType.dateTime,
   ),
 );
 
@@ -341,7 +342,7 @@ class _DependingOnDateTimeExpression<D extends Object> extends Expression<D> {
 /// For another explanation of modifiers, see the [sqlite3 docs].
 ///
 /// [sqlite3 docs]: https://sqlite.org/lang_datefunc.html#modifiers
-class DateTimeModifier extends Constant<String> {
+final class DateTimeModifier extends Constant<String> {
   const DateTimeModifier._(super.value);
 
   /// Adds or subtracts [days] calendar days from the date time value.

@@ -15,7 +15,7 @@ void main() {
       DriftDeclaration(fakeUri, -1, ''),
       columns: [
         DriftColumn(
-          sqlType: DriftSqlType.int,
+          sqlType: ColumnType.drift(DriftSqlType.int),
           nullable: false,
           nameInSql: 'foo',
           nameInDart: 'foo',

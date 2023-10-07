@@ -1,0 +1,7 @@
+import 'type.dart';
+
+CREATE TABLE periodic_reminders (
+  id INTEGER NOT NULL PRIMARY KEY,
+  frequency `const DurationType()` NOT NULL,
+  reminder TEXT NOT NULL
+);

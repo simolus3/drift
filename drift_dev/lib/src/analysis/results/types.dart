@@ -17,16 +17,47 @@ abstract class HasType {
   bool get isArray;
 
   /// The associated sql type.
-  DriftSqlType get sqlType;
+  ColumnType get sqlType;
 
   /// The applied type converter, or null if no type converter has been applied
   /// to this column.
   AppliedTypeConverter? get typeConverter;
 }
 
+/// The underlying SQL type of a column analyzed by drift.
+///
+/// We distinguish between types directly supported by drift, and types that
+/// are supplied by another library. Custom types can hold different Dart types,
+/// but are a feature distinct from type converters: They indicate that a type
+/// is directly supported by the underlying database driver, whereas a type
+/// converter is a mapping done in drift.
+///
+/// In addition to the SQL type, we also track whether a column is nullable,
+/// appears where an array is expected or has a type converter applied to it.
+/// [HasType] is the interface for sql-typed elements and is implemented by
+/// columns.
+class ColumnType {
+  /// The builtin drift type used by this column.
+  ///
+  /// Even though it's unused there, custom types also have this field set -
+  /// to [DriftSqlType.any] because drift doesn't reinterpret these values at
+  /// all.
+  final DriftSqlType builtin;
+
+  /// Details about the custom type, if one is present.
+  final CustomColumnType? custom;
+
+  bool get isCustom => custom != null;
+
+  const ColumnType.drift(this.builtin) : custom = null;
+
+  ColumnType.custom(CustomColumnType this.custom) : builtin = DriftSqlType.any;
+}
+
 extension OperationOnTypes on HasType {
-  bool get isUint8ListInDart =>
-      sqlType == DriftSqlType.blob && typeConverter == null;
+  bool get isUint8ListInDart {
+    return sqlType.builtin == DriftSqlType.blob && typeConverter == null;
+  }
 
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
@@ -52,15 +83,3 @@ Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
   DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
   DriftSqlType.any: DartTopLevelSymbol('DriftAny', AnnotatedDartCode.drift),
 });
-
-/// Maps from a column type to code that can be used to create a variable of the
-/// respective type.
-const Map<DriftSqlType, String> createVariable = {
-  DriftSqlType.bool: 'Variable.withBool',
-  DriftSqlType.string: 'Variable.withString',
-  DriftSqlType.int: 'Variable.withInt',
-  DriftSqlType.bigInt: 'Variable.withBigInt',
-  DriftSqlType.dateTime: 'Variable.withDateTime',
-  DriftSqlType.blob: 'Variable.withBlob',
-  DriftSqlType.double: 'Variable.withReal',
-};

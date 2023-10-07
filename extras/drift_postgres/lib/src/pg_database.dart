@@ -152,25 +152,16 @@ class _BoundArguments {
     }
 
     for (final value in args) {
-      if (value == null) {
-        add(PgTypedParameter(PgDataType.text, null));
-      } else if (value is int) {
-        add(PgTypedParameter(PgDataType.bigInteger, value));
-      } else if (value is BigInt) {
-        // Drift only uses BigInts to represent 64-bit values on the web, so we
-        // can use toInt() here.
-        add(PgTypedParameter(PgDataType.bigInteger, value));
-      } else if (value is bool) {
-        add(PgTypedParameter(PgDataType.boolean, value));
-      } else if (value is double) {
-        add(PgTypedParameter(PgDataType.double, value));
-      } else if (value is String) {
-        add(PgTypedParameter(PgDataType.text, value));
-      } else if (value is List<int>) {
-        add(PgTypedParameter(PgDataType.byteArray, value));
-      } else {
-        throw ArgumentError.value(value, 'value', 'Unsupported type');
-      }
+      add(switch (value) {
+        PgTypedParameter() => value,
+        null => PgTypedParameter(PgDataType.text, null),
+        int() || BigInt() => PgTypedParameter(PgDataType.bigInteger, value),
+        String() => PgTypedParameter(PgDataType.text, value),
+        bool() => PgTypedParameter(PgDataType.boolean, value),
+        double() => PgTypedParameter(PgDataType.double, value),
+        List<int>() => PgTypedParameter(PgDataType.byteArray, value),
+        _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
+      });
     }
 
     return _BoundArguments(types, parameters);

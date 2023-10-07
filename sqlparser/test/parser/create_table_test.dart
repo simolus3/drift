@@ -217,7 +217,7 @@ void main() {
     );
   });
 
-  test('parses CREATE TABLE WITH in drift more', () {
+  test('parses CREATE TABLE WITH in drift mode', () {
     testStatement(
       'CREATE TABLE a (b INTEGER) WITH MyExistingClass',
       CreateTableStatement(
@@ -232,6 +232,23 @@ void main() {
           overriddenDataClassName: 'MyExistingClass',
           useExistingDartClass: true,
         ),
+      ),
+      driftMode: true,
+    );
+  });
+
+  test('parses custom types in drift mode', () {
+    testStatement(
+      'CREATE TABLE a (b `PgTypes.uuid` NOT NULL)',
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(
+            columnName: 'b',
+            typeName: '`PgTypes.uuid`',
+            constraints: [NotNull(null)],
+          ),
+        ],
       ),
       driftMode: true,
     );

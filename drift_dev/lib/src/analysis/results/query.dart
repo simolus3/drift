@@ -722,7 +722,7 @@ final class ScalarResultColumn extends ResultColumn
     implements HasType, ArgumentForQueryRowType {
   final String name;
   @override
-  final DriftSqlType sqlType;
+  final ColumnType sqlType;
   @override
   final bool nullable;
 
@@ -746,17 +746,22 @@ final class ScalarResultColumn extends ResultColumn
     return dartNameForSqlColumn(name, existingNames: existingNames);
   }
 
+  int get _columnTypeCompatibilityHash {
+    return Object.hash(sqlType.builtin, sqlType.custom?.dartType);
+  }
+
   @override
   int get compatibilityHashCode {
-    return Object.hash(
-        ScalarResultColumn, name, sqlType, nullable, typeConverter);
+    return Object.hash(ScalarResultColumn, name, _columnTypeCompatibilityHash,
+        nullable, typeConverter);
   }
 
   @override
   bool isCompatibleTo(ResultColumn other) {
     return other is ScalarResultColumn &&
         other.name == name &&
-        other.sqlType == sqlType &&
+        other.sqlType.builtin == sqlType.builtin &&
+        other.sqlType.custom?.dartType == sqlType.custom?.dartType &&
         other.nullable == nullable &&
         other.typeConverter == typeConverter;
   }
@@ -924,7 +929,7 @@ class FoundVariable extends FoundElement implements HasType {
 
   /// The (inferred) type for this variable.
   @override
-  final DriftSqlType sqlType;
+  final ColumnType sqlType;
 
   /// The type converter to apply before writing this value.
   @override
@@ -1014,7 +1019,7 @@ class SimpleDartPlaceholderType extends DartPlaceholderType {
 
 class ExpressionDartPlaceholderType extends DartPlaceholderType {
   /// The sql type of this expression.
-  final DriftSqlType? columnType;
+  final ColumnType? columnType;
   final Expression? defaultValue;
 
   ExpressionDartPlaceholderType(this.columnType, this.defaultValue);

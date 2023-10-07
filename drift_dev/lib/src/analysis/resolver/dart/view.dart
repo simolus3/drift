@@ -275,7 +275,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
 
         columns.add(DriftColumn(
           declaration: DriftDeclaration.dartElement(getter),
-          sqlType: sqlType,
+          sqlType: ColumnType.drift(sqlType),
           nameInDart: getter.name,
           nameInSql: ReCase(getter.name).snakeCase,
           nullable: true,
