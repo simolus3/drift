@@ -59,7 +59,7 @@ class FunctionStubsWriter {
   String _nameFor(String sqlName) => ReCase(sqlName).camelCase;
 
   void _writeTypeFor(ResolvedType type) {
-    final driftType = _driver.typeMapping.sqlTypeToDrift(type);
+    final driftType = _driver.typeMapping.sqlTypeToDrift(type).builtin;
 
     _emitter.writeDart(AnnotatedDartCode([dartTypeNames[driftType]!]));
     if (type.nullable == true) {

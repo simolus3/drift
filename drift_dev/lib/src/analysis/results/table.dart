@@ -7,6 +7,7 @@ import 'element.dart';
 
 import 'column.dart';
 import 'result_sets.dart';
+import 'types.dart';
 
 class DriftTable extends DriftElementWithResultSet {
   @override
@@ -82,7 +83,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.attachedIndices = const [],
   }) {
     _rowIdColumn = DriftColumn(
-      sqlType: DriftSqlType.int,
+      sqlType: ColumnType.drift(DriftSqlType.int),
       nullable: false,
       nameInSql: 'rowid',
       nameInDart: 'rowid',
@@ -126,8 +127,9 @@ class DriftTable extends DriftElementWithResultSet {
     final primaryKey = fullPrimaryKey;
     if (primaryKey.length == 1) {
       final column = primaryKey.single;
-      if (column.sqlType == DriftSqlType.int ||
-          column.sqlType == DriftSqlType.bigInt) {
+      final builtinType = column.sqlType.builtin;
+      if (builtinType == DriftSqlType.int ||
+          builtinType == DriftSqlType.bigInt) {
         // So this column is an alias for the rowid
         return column;
       }

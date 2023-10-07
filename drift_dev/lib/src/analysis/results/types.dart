@@ -17,16 +17,28 @@ abstract class HasType {
   bool get isArray;
 
   /// The associated sql type.
-  DriftSqlType get sqlType;
+  ColumnType get sqlType;
 
   /// The applied type converter, or null if no type converter has been applied
   /// to this column.
   AppliedTypeConverter? get typeConverter;
 }
 
+class ColumnType {
+  final DriftSqlType builtin;
+  final CustomColumnType? custom;
+
+  bool get isCustom => custom != null;
+
+  const ColumnType.drift(this.builtin) : custom = null;
+
+  ColumnType.custom(CustomColumnType this.custom) : builtin = DriftSqlType.any;
+}
+
 extension OperationOnTypes on HasType {
-  bool get isUint8ListInDart =>
-      sqlType == DriftSqlType.blob && typeConverter == null;
+  bool get isUint8ListInDart {
+    return sqlType.builtin == DriftSqlType.blob && typeConverter == null;
+  }
 
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
@@ -52,15 +64,3 @@ Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
   DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
   DriftSqlType.any: DartTopLevelSymbol('DriftAny', AnnotatedDartCode.drift),
 });
-
-/// Maps from a column type to code that can be used to create a variable of the
-/// respective type.
-const Map<DriftSqlType, String> createVariable = {
-  DriftSqlType.bool: 'Variable.withBool',
-  DriftSqlType.string: 'Variable.withString',
-  DriftSqlType.int: 'Variable.withInt',
-  DriftSqlType.bigInt: 'Variable.withBigInt',
-  DriftSqlType.dateTime: 'Variable.withDateTime',
-  DriftSqlType.blob: 'Variable.withBlob',
-  DriftSqlType.double: 'Variable.withReal',
-};

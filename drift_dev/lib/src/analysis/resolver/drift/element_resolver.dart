@@ -3,7 +3,6 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:collection/collection.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
@@ -23,7 +22,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       super.file, super.discovered, super.resolver, super.state);
 
   Future<AppliedTypeConverter?> typeConverterFromMappedBy(
-      DriftSqlType sqlType, bool nullable, MappedBy mapper) async {
+      ColumnType sqlType, bool nullable, MappedBy mapper) async {
     final code = mapper.mapper.dartCode;
 
     dart.Expression expression;

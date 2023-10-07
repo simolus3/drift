@@ -27,6 +27,7 @@ class KnownDriftTypes {
   final InterfaceType tableInfoType;
   final InterfaceType driftDatabase;
   final InterfaceType driftAccessor;
+  final InterfaceElement customSqlType;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
   final InterfaceType driftAny;
@@ -39,6 +40,7 @@ class KnownDriftTypes {
     this.tableIndexType,
     this.viewType,
     this.tableInfoType,
+    this.customSqlType,
     this.typeConverter,
     this.jsonTypeConverter,
     this.driftDatabase,
@@ -62,6 +64,7 @@ class KnownDriftTypes {
       (exportNamespace.get('TableIndex') as InterfaceElement).thisType,
       (exportNamespace.get('View') as InterfaceElement).thisType,
       (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
+      exportNamespace.get('CustomSqlType') as InterfaceElement,
       exportNamespace.get('TypeConverter') as InterfaceElement,
       exportNamespace.get('JsonTypeConverter2') as InterfaceElement,
       dbElement.defaultInstantiation,
@@ -79,6 +82,10 @@ class KnownDriftTypes {
   /// Returns `null` if [type] is not a subtype of `TypeConverter`.
   InterfaceType? asTypeConverter(DartType type) {
     return type.asInstanceOf(typeConverter);
+  }
+
+  InterfaceType? asCustomType(DartType type) {
+    return type.asInstanceOf(customSqlType);
   }
 
   /// Converts the given Dart [type] into an instantiation of the

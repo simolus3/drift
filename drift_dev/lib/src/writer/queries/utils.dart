@@ -26,7 +26,7 @@ extension FoundElementType on FoundElement {
           builder
             ..addSymbol('Expression', AnnotatedDartCode.drift)
             ..addText('<')
-            ..addTopLevel(dartTypeNames[kind.columnType]!)
+            ..addCode(scope.innerColumnType(kind.columnType!))
             ..addText('>');
         } else if (kind is InsertableDartPlaceholderType) {
           final table = kind.table;

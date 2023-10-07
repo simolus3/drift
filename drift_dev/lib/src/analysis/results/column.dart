@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' show GeneratedAs, ReferenceAction;
 import 'package:sqlparser/utils/node_to_text.dart';
@@ -15,7 +14,7 @@ part '../../generated/analysis/results/column.g.dart';
 
 class DriftColumn implements HasType {
   @override
-  final DriftSqlType sqlType;
+  final ColumnType sqlType;
 
   @override
   bool get isArray => false;
@@ -127,6 +126,15 @@ class DriftColumn implements HasType {
   }
 }
 
+class CustomColumnType {
+  /// The Dart expression creating an instance of the `CustomSqlType` responsible
+  /// for the column.
+  final AnnotatedDartCode expression;
+  final DartType dartType;
+
+  CustomColumnType(this.expression, this.dartType);
+}
+
 class AppliedTypeConverter {
   /// The Dart expression creating an instance of the applied type converter.
   final AnnotatedDartCode expression;
@@ -136,7 +144,7 @@ class AppliedTypeConverter {
   /// The JSON type representation of this column, if this type converter
   /// applies to the JSON serialization as well.
   final DartType? jsonType;
-  final DriftSqlType sqlType;
+  final ColumnType sqlType;
 
   late DriftColumn? owningColumn;
 

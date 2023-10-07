@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -231,6 +232,30 @@ class Database {}
 
     final column = table.columns.single;
     expect(column.nameInSql, 'TEXTCOLUMN');
+  });
+
+  test('recognizes custom column types', () async {
+    final state = TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class StringArrayType implements CustomSqlType<List<String>> {}
+
+class TestTable extends Table {
+  Column<List<String>> get list => customType(StringArrayType())();
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/main.dart');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.whereType<DriftTable>().single;
+    final column = table.columns.single;
+
+    expect(column.sqlType.builtin, DriftSqlType.any);
+    expect(column.sqlType.custom?.dartType.toString(), 'List<String>');
+    expect(column.sqlType.custom?.expression.toString(), 'StringArrayType()');
   });
 
   group('customConstraint analysis', () {

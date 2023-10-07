@@ -65,7 +65,9 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
             (msg) => reportError(
                 DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg)),
             dartType,
-            type == DriftSqlType.int ? EnumType.intEnum : EnumType.textEnum,
+            type.builtin == DriftSqlType.int
+                ? EnumType.intEnum
+                : EnumType.textEnum,
             await resolver.driver.loadKnownTypes(),
           );
         }

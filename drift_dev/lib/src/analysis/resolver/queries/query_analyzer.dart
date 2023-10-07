@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift/drift.dart' as drift;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
@@ -715,7 +714,7 @@ class QueryAnalyzer {
     final type = placeholder.when(
       isExpression: (e) {
         final foundType = context.typeOf(e);
-        DriftSqlType? columnType;
+        ColumnType? columnType;
         if (foundType.type != null) {
           columnType = driver.typeMapping.sqlTypeToDrift(foundType.type);
         }

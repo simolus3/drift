@@ -95,7 +95,7 @@ abstract class TodoItemWithCategoryNameView extends View {
         todoCategoryItemCount.columns[1],
         isA<DriftColumn>()
             .having((e) => e.nameInDart, 'nameInDart', 'itemCount')
-            .having((e) => e.sqlType, 'sqlType', DriftSqlType.int)
+            .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.int)
             .having((e) => e.nullable, 'nullable', isTrue));
 
     expect(todoItemWithCategoryName.columns, hasLength(2));
@@ -108,7 +108,7 @@ abstract class TodoItemWithCategoryNameView extends View {
         todoItemWithCategoryName.columns[1],
         isA<DriftColumn>()
             .having((e) => e.nameInDart, 'nameInDart', 'title')
-            .having((e) => e.sqlType, 'sqlType', DriftSqlType.string)
+            .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.string)
             .having((e) => e.nullable, 'nullable', isTrue));
   });
 }

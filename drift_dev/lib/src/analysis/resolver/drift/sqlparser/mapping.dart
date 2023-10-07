@@ -73,14 +73,17 @@ class TypeMapping {
   }
 
   ResolvedType _columnType(DriftColumn column) {
-    final type =
-        _driftTypeToParser(column.sqlType).withNullable(column.nullable);
+    var type = _driftTypeToParser(column.sqlType.builtin)
+        .withNullable(column.nullable);
 
-    if (column.typeConverter case final AppliedTypeConverter c) {
-      return type.addHint(TypeConverterHint(c));
-    } else {
-      return type;
+    if (column.sqlType.isCustom) {
+      type = type.addHint(CustomTypeHint(column.sqlType.custom!));
     }
+    if (column.typeConverter case AppliedTypeConverter c) {
+      type = type.addHint(TypeConverterHint(c));
+    }
+
+    return type;
   }
 
   ResolvedType _driftTypeToParser(DriftSqlType type) {
@@ -103,11 +106,7 @@ class TypeMapping {
     };
   }
 
-  DriftSqlType sqlTypeToDrift(ResolvedType? type) {
-    if (type == null) {
-      return DriftSqlType.string;
-    }
-
+  DriftSqlType _toDefaultType(ResolvedType type) {
     switch (type.type) {
       case null:
       case BasicType.nullType:
@@ -136,6 +135,19 @@ class TypeMapping {
       case BasicType.any:
         return DriftSqlType.any;
     }
+  }
+
+  ColumnType sqlTypeToDrift(ResolvedType? type) {
+    if (type == null) {
+      return const ColumnType.drift(DriftSqlType.string);
+    }
+
+    final customHint = type.hint<CustomTypeHint>();
+    if (customHint != null) {
+      return ColumnType.custom(customHint.type);
+    }
+
+    return ColumnType.drift(_toDefaultType(type));
   }
 }
 
@@ -174,6 +186,12 @@ class TypeConverterHint extends TypeHint {
   final AppliedTypeConverter converter;
 
   TypeConverterHint(this.converter);
+}
+
+class CustomTypeHint extends TypeHint {
+  final CustomColumnType type;
+
+  CustomTypeHint(this.type);
 }
 
 class _SimpleColumn extends Column implements ColumnWithType {

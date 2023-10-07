@@ -47,7 +47,7 @@ final class _TableShape {
       DriftElementWithResultSet e) {
     return {
       for (final column in e.columns)
-        column.nameInDart: (column.nameInSql, column.sqlType),
+        column.nameInDart: (column.nameInSql, column.sqlType.builtin),
     };
   }
 }

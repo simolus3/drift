@@ -135,7 +135,8 @@ class UpdateCompanionWriter {
 
     final expression = _emitter.drift('Expression');
     for (final column in columns) {
-      final typeName = _emitter.dartCode(_emitter.innerColumnType(column));
+      final typeName =
+          _emitter.dartCode(_emitter.innerColumnType(column.sqlType));
       _buffer.write('$expression<$typeName>? ${column.nameInDart}, \n');
     }
 

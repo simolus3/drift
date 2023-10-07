@@ -24,7 +24,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     final resultSet = (query as SqlSelectQuery).resultSet;
     expect(resultSet.matchingTable, isNull);
     expect(resultSet.scalarColumns.map((c) => c.name), ['?', ':foo']);
-    expect(resultSet.scalarColumns.map((c) => c.sqlType),
+    expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin),
         [DriftSqlType.string, DriftSqlType.bool]);
   });
 
@@ -181,19 +181,22 @@ q3: SELECT datetime('now');
       expect(queries, hasLength(3));
 
       final q1 = queries[0];
-      expect(q1.resultSet!.scalarColumns.single.sqlType, DriftSqlType.dateTime);
+      expect(q1.resultSet!.scalarColumns.single.sqlType.builtin,
+          DriftSqlType.dateTime);
 
       final q2 = queries[1];
       final q3 = queries[2];
 
       if (dateTimeAsText) {
-        expect(q2.resultSet!.scalarColumns.single.sqlType, DriftSqlType.int);
-        expect(
-            q3.resultSet!.scalarColumns.single.sqlType, DriftSqlType.dateTime);
+        expect(q2.resultSet!.scalarColumns.single.sqlType.builtin,
+            DriftSqlType.int);
+        expect(q3.resultSet!.scalarColumns.single.sqlType.builtin,
+            DriftSqlType.dateTime);
       } else {
-        expect(
-            q2.resultSet!.scalarColumns.single.sqlType, DriftSqlType.dateTime);
-        expect(q3.resultSet!.scalarColumns.single.sqlType, DriftSqlType.string);
+        expect(q2.resultSet!.scalarColumns.single.sqlType.builtin,
+            DriftSqlType.dateTime);
+        expect(q3.resultSet!.scalarColumns.single.sqlType.builtin,
+            DriftSqlType.string);
       }
     });
   }
@@ -306,11 +309,12 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
     final query = result.fileAnalysis!.resolvedQueries.values.single;
     expect(query.resultSet!.columns, [
       isA<ScalarResultColumn>()
-          .having((e) => e.sqlType, 'sqlType', DriftSqlType.bool)
+          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.bool)
     ]);
 
     final args = query.variables;
-    expect(args.map((e) => e.sqlType), [DriftSqlType.int, DriftSqlType.string]);
+    expect(args.map((e) => e.sqlType.builtin),
+        [DriftSqlType.int, DriftSqlType.string]);
   });
 
   test('can cast to DATETIME and BOOLEAN', () async {
@@ -325,9 +329,10 @@ a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
     final resultSet = query.resultSet!;
 
     expect(resultSet.columns, [
-      scalarColumn('a').having((e) => e.sqlType, 'sqlType', DriftSqlType.bool),
+      scalarColumn('a')
+          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.bool),
       scalarColumn('b')
-          .having((e) => e.sqlType, 'sqlType', DriftSqlType.dateTime),
+          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.dateTime),
     ]);
   });
 
