@@ -17,6 +17,7 @@ class _VersionsBuilder extends Builder {
       'build_runner',
       'drift',
       'drift_dev',
+      'drift_postgres',
     ];
 
     final versions = <String, String>{};

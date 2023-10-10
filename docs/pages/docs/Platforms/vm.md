@@ -1,6 +1,6 @@
 ---
 data:
-  title: Native Drift (Desktop support)
+  title: Native Drift (cross-platform)
   description: Run drift on both mobile and desktop
   weight: 1
 template: layouts/docs/single

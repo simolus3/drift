@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'src/types.dart';
 
 export 'src/pg_database.dart';
+export 'package:uuid/uuid_value.dart' show UuidValue;
 
 typedef UuidColumn = Column<UuidValue>;
 typedef IntervalColumn = Column<Duration>;

@@ -10,10 +10,12 @@ class PgDatabase extends DelegatedDatabase {
     required PgEndpoint endpoint,
     PgSessionSettings? sessionSettings,
     bool logStatements = false,
+    bool enableMigrations = true,
   }) : super(
           _PgDelegate(
             () => PgConnection.open(endpoint, sessionSettings: sessionSettings),
             true,
+            enableMigrations,
           ),
           isSequential: true,
           logStatements: logStatements,
@@ -21,8 +23,11 @@ class PgDatabase extends DelegatedDatabase {
 
   /// Creates a drift database implementation from a postgres database
   /// [connection].
-  PgDatabase.opened(PgSession connection, {bool logStatements = false})
-      : super(_PgDelegate(() => connection, false),
+  PgDatabase.opened(
+    PgSession connection, {
+    bool logStatements = false,
+    bool enableMigrations = true,
+  }) : super(_PgDelegate(() => connection, false, enableMigrations),
             isSequential: true, logStatements: logStatements);
 
   @override
@@ -30,9 +35,14 @@ class PgDatabase extends DelegatedDatabase {
 }
 
 class _PgDelegate extends DatabaseDelegate {
-  _PgDelegate(this._open, this.closeUnderlyingWhenClosed);
+  _PgDelegate(
+    this._open,
+    this.closeUnderlyingWhenClosed,
+    this.enableMigrations,
+  );
 
   final bool closeUnderlyingWhenClosed;
+  final bool enableMigrations;
   final FutureOr<PgSession> Function() _open;
 
   PgSession? _openedSession;
@@ -49,12 +59,17 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   Future<void> open(QueryExecutorUser user) async {
     final session = await _open();
-    final pgVersionDelegate = _PgVersionDelegate(session);
 
-    await pgVersionDelegate.init();
+    if (enableMigrations) {
+      final pgVersionDelegate = _PgVersionDelegate(session);
+
+      await pgVersionDelegate.init();
+      versionDelegate = pgVersionDelegate;
+    } else {
+      versionDelegate = NoVersionDelegate();
+    }
 
     _openedSession = session;
-    versionDelegate = pgVersionDelegate;
   }
 
   @override
