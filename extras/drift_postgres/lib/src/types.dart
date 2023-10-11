@@ -65,3 +65,32 @@ class IntervalType extends PostgresType<Duration> {
     return "'${dartValue.inMicroseconds} microseconds'::interval";
   }
 }
+
+abstract interface class PgTimeValue {
+  DateTime toDateTime();
+}
+
+class DateType<T extends PgTimeValue> extends PostgresType<T> {
+  final T Function(DateTime) _fromDateTime;
+
+  const DateType(
+    PgDataType type,
+    String name,
+    this._fromDateTime,
+  ) : super(type: type, name: name);
+
+  @override
+  String mapToSqlLiteral(T dartValue) {
+    return "${PostgresType._encoder.convert(dartValue.toDateTime())}::$name";
+  }
+
+  @override
+  Object mapToSqlParameter(T dartValue) {
+    return PgTypedParameter(type, dartValue.toDateTime());
+  }
+
+  @override
+  T read(Object fromSql) {
+    return _fromDateTime(fromSql as DateTime);
+  }
+}

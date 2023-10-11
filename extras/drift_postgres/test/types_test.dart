@@ -49,5 +49,10 @@ void main() {
     group('json', () => testWith(PgTypes.json, {'foo': 'bar'}));
     group('jsonb', () => testWith(PgTypes.jsonb, {'foo': 'bar'}));
     group('point', () => testWith(PgTypes.point, PgPoint(90, -90)));
+    group(
+      'timestamp without timezone',
+      () => testWith(PgTypes.timestampNoTimezone,
+          PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0))),
+    );
   });
 }
