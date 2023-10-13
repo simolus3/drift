@@ -48,7 +48,7 @@ In general, a test looks like this:
 2. Create your application database with that connection. For this, create a constructor in your database class that
    accepts a `QueryExecutor` and forwards it to the super constructor in `GeneratedDatabase`.
    Then, you can pass the result of calling `newConnection()` to that constructor to create a test instance of your
-   datbaase.
+   database.
 3. Call `verifier.migrateAndValidate(db, version)`. This will initiate a migration towards the target version (here, `2`).
    Unlike the database created by `startAt`, this uses the migration logic you wrote for your database.
 
