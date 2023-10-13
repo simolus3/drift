@@ -57,7 +57,7 @@ If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fa
 
 {% block "blocks/alert" title="Writing testable migrations" %}
 To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if your current version is `v3`),
-you're `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
+your `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
 For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
 Or, use [step-by-step migrations]({{ 'step_by_step.md' | pageUrl }}) which do this automatically.
 {% endblock %}
