@@ -1,9 +1,11 @@
 import 'package:devtools_app_shared/ui.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'src/details.dart';
 import 'src/list.dart';
@@ -47,6 +49,9 @@ class DriftDevtoolsBody extends ConsumerWidget {
                 roundedTopBorder: false,
                 includeTopBorder: false,
                 title: Text('Drift databases'),
+                actions: [
+                  _InfoButton(),
+                ],
               ),
               Expanded(child: DatabaseList()),
             ],
@@ -66,6 +71,60 @@ class DriftDevtoolsBody extends ConsumerWidget {
           ]),
         ),
       ],
+    );
+  }
+}
+
+class _InfoButton extends StatelessWidget {
+  const _InfoButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.info_outline),
+      onPressed: () {
+        showAboutDialog(
+          context: context,
+          applicationName: 'Drift extensions for DevTools',
+          children: [
+            Text.rich(
+              TextSpan(
+                children: [
+                  _text(
+                    'This extension allows inspecting a drift database in '
+                    'DevTools. If you have ideas for additional functionality '
+                    'that could be provided here, please ',
+                  ),
+                  _link('opening an issue',
+                      'https://github.com/simolus3/drift/issues/new'),
+                  _text(
+                      'to make suggestions.\nAlso, thanks to Koen Van Looveren for writing '),
+                  _link('drift_db_viewer',
+                      'https://github.com/vanlooverenkoen/db_viewer/'),
+                  const TextSpan(text: ' which is used to show the database.'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static TextSpan _text(String content) {
+    return TextSpan(text: content);
+  }
+
+  static TextSpan _link(String content, String uri) {
+    return TextSpan(
+      text: content,
+      style: const TextStyle(
+        decoration: TextDecoration.underline,
+      ),
+      recognizer: TapGestureRecognizer()
+        ..onTap = () async {
+          await launchUrl(Uri.parse(uri));
+        },
     );
   }
 }
