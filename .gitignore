@@ -18,4 +18,5 @@ flutter_export_environment.sh
 docs/**/*.g.dart
 
 */build/
+drift/extension/devtools/build
 **/pubspec_overrides.yaml

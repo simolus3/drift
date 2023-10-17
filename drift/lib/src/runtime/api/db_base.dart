@@ -143,6 +143,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   @override
   Future<void> close() async {
     await super.close();
+    devtools.handleClosed(this);
 
     assert(() {
       if (_openedDbCount[runtimeType] != null) {

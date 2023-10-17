@@ -34,7 +34,7 @@ class DriftServiceExtension {
           });
         });
 
-        return id.toString();
+        return id;
       case 'unsubscribe-from-tables':
         _activeSubscriptions.remove(int.parse(parameters['id']!))?.cancel();
         return null;

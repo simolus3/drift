@@ -64,6 +64,11 @@ class EntityDescription {
   final String type;
   final List<ColumnDescription>? columns;
 
+  late Map<String, ColumnDescription> columnsByName = {
+    for (final column in columns ?? const <ColumnDescription>[])
+      column.name: column,
+  };
+
   EntityDescription(
       {required this.name, required this.type, required this.columns});
 
@@ -98,6 +103,10 @@ class EntityDescription {
 class DatabaseDescription {
   final bool dateTimeAsText;
   final List<EntityDescription> entities;
+
+  late Map<String, EntityDescription> entitiesByName = {
+    for (final entity in entities) entity.name: entity,
+  };
 
   DatabaseDescription({required this.dateTimeAsText, required this.entities});
 

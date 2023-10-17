@@ -2,6 +2,7 @@ import 'package:devtools_app_shared/service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'db_viewer/viewer.dart';
 import 'list.dart';
 import 'remote_database.dart';
 import 'service.dart';
@@ -18,16 +19,6 @@ final loadedDatabase = AutoDisposeFutureProvider((ref) async {
   }
 
   return null;
-});
-
-final _testQuery = AutoDisposeFutureProvider((ref) async {
-  final database = await ref.watch(loadedDatabase.future);
-
-  if (database != null) {
-    return await database.select('SELECT 1, 2, 3', []);
-  } else {
-    return null;
-  }
 });
 
 class DatabaseDetails extends ConsumerStatefulWidget {
@@ -51,21 +42,28 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
   @override
   Widget build(BuildContext context) {
     final database = ref.watch(loadedDatabase);
-    final query = ref.watch(_testQuery);
 
     return database.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Text('unknown error: $err\n$stack'),
       data: (database) {
         if (database != null) {
+          final textTheme = Theme.of(context).textTheme;
+
           return Scrollbar(
             controller: controller,
             child: ListView(
               controller: controller,
               children: [
-                for (final entity in database.description.entities)
-                  Text('${entity.name}: ${entity.type}'),
-                Text(query.toString()),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Text('Database viewer', style: textTheme.headlineMedium),
+                    ],
+                  ),
+                ),
+                DatabaseViewer(database: database),
               ],
             ),
           );

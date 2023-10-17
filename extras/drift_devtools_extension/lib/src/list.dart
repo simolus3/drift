@@ -155,7 +155,9 @@ class _DatabaseEntry extends ConsumerWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {},
+      onTap: () {
+        ref.read(selectedDatabase.notifier).state = database;
+      },
       child: Container(
         color: isSelected ? colorScheme.selectedRowBackgroundColor : null,
         padding: _DatabaseListState._tilePadding,

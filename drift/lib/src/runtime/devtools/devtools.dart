@@ -50,6 +50,14 @@ void handleCreated(GeneratedDatabase database) {
   }
 }
 
+void handleClosed(GeneratedDatabase database) {
+  if (_enable) {
+    final tracked = TrackedDatabase.byDatabase[database];
+    TrackedDatabase.all.remove(tracked);
+    _postChangedEvent();
+  }
+}
+
 String describe(GeneratedDatabase database) {
   return json.encode(DatabaseDescription.fromDrift(database));
 }

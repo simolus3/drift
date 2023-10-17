@@ -62,12 +62,13 @@ class RemoteDatabase {
 
   Future<List<Map<String, Object?>>> select(
       String sql, List<Object?> args) async {
-    final result = await _driftRequest('execute-query', payload: {
-      'query': json.encode(_protocol
-          .encodePayload(ExecuteQuery(StatementMethod.select, sql, args)))
-    });
+    final result = await _executeQuery<SelectResult>(
+        ExecuteQuery(StatementMethod.select, sql, args));
+    return result.rows;
+  }
 
-    return (_protocol.decodePayload(result) as SelectResult).rows;
+  Future<void> execute(String sql, List<Object?> args) async {
+    await _executeQuery<void>(ExecuteQuery(StatementMethod.custom, sql, args));
   }
 
   Future<int> _newTableSubscription() async {
@@ -80,6 +81,14 @@ class RemoteDatabase {
         payload: {'id': subId.toString()});
     await _tableNotifications?.cancel();
     _tableNotifications = null;
+  }
+
+  Future<T> _executeQuery<T>(ExecuteQuery e) async {
+    final result = await _driftRequest('execute-query', payload: {
+      'query': json.encode(_protocol.encodePayload(e)),
+    });
+
+    return _protocol.decodePayload(result) as T;
   }
 
   Future<Object?> _driftRequest(String method,

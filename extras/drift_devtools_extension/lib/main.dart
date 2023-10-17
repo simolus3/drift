@@ -59,7 +59,7 @@ class DriftDevtoolsBody extends ConsumerWidget {
               roundedTopBorder: false,
               includeTopBorder: false,
               title: selected != null
-                  ? Text(selected.typeName)
+                  ? Text('Inspecting ${selected.typeName}')
                   : const Text('No database selected'),
             ),
             if (selected != null) const Expanded(child: DatabaseDetails())
