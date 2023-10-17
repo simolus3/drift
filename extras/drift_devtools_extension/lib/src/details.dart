@@ -1,9 +1,6 @@
 import 'package:devtools_app_shared/service.dart';
-import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:vm_service/vm_service.dart';
 
 import 'list.dart';
 import 'remote_database.dart';
@@ -16,13 +13,21 @@ final loadedDatabase = AutoDisposeFutureProvider((ref) async {
   final isAlive = Disposable();
   ref.onDispose(isAlive.dispose);
 
-  if (selected?.database case InstanceRef dbRef) {
-    final db = await eval.safeGetInstance(dbRef, isAlive);
-
-    return await RemoteDatabase.resolve(db, eval, isAlive);
+  if (selected != null) {
+    return await RemoteDatabase.resolve(selected, eval, isAlive);
   }
 
   return null;
+});
+
+final _testQuery = AutoDisposeFutureProvider((ref) async {
+  final database = await ref.watch(loadedDatabase.future);
+
+  if (database != null) {
+    return await database.select('SELECT 1, 2, 3', []);
+  } else {
+    return null;
+  }
 });
 
 class DatabaseDetails extends ConsumerStatefulWidget {
@@ -46,6 +51,7 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
   @override
   Widget build(BuildContext context) {
     final database = ref.watch(loadedDatabase);
+    final query = ref.watch(_testQuery);
 
     return database.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -59,6 +65,7 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
               children: [
                 for (final entity in database.description.entities)
                   Text('${entity.name}: ${entity.type}'),
+                Text(query.toString()),
               ],
             ),
           );

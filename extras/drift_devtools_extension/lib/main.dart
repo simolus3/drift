@@ -1,13 +1,23 @@
 import 'package:devtools_app_shared/ui.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import 'src/details.dart';
 import 'src/list.dart';
 
 void main() {
   runApp(const ProviderScope(child: DriftDevToolsExtension()));
+
+  if (kDebugMode) {
+    Logger.root.level = Level.FINE;
+    Logger.root.onRecord.listen((record) {
+      debugPrint(
+          '[${record.level.name}] ${record.loggerName}: ${record.message}');
+    });
+  }
 }
 
 class DriftDevToolsExtension extends StatelessWidget {

@@ -43,6 +43,7 @@ dependencies:
   vm_service: ^11.10.0
   path: ^1.8.3
   drift: ^2.12.1
+  logging: ^1.2.0
 
 dev_dependencies:
   flutter_test:

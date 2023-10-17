@@ -9,18 +9,22 @@ import 'dart:developer' as developer;
 import 'package:meta/meta.dart';
 
 import '../api/runtime_api.dart';
+import 'service_extension.dart';
 import 'shared.dart';
 
 const _releaseMode = bool.fromEnvironment('dart.vm.product');
 const _profileMode = bool.fromEnvironment('dart.vm.profile');
+
+// Avoid pulling in a bunch of unused code to describe databases and to make
+// them available through service extensions on release builds.
 const _enable = !_releaseMode && !_profileMode;
 
-void _postEvent(String type, Map<Object?, Object?> data) {
+void postEvent(String type, Map<Object?, Object?> data) {
   developer.postEvent('drift:$type', data);
 }
 
 void _postChangedEvent() {
-  _postEvent('database-list-changed', {});
+  postEvent('database-list-changed', {});
 }
 
 class TrackedDatabase {
@@ -41,6 +45,7 @@ class TrackedDatabase {
 void handleCreated(GeneratedDatabase database) {
   if (_enable) {
     TrackedDatabase(database);
+    DriftServiceExtension.registerIfNeeded();
     _postChangedEvent();
   }
 }
