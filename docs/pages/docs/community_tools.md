@@ -23,10 +23,14 @@ This includes drift databases, but preferences or secure local storage are also 
 
 ## drift_db_viewer
 
-[drift_db_viewer](https://pub.dev/packages/drift_db_viewer) (and [moor_db_viewer](https://pub.dev/packages/moor_db_viewer)) by [Koen Van Looveren](https://github.com/vanlooverenkoen)
+The [drift_db_viewer](https://pub.dev/packages/drift_db_viewer) package by [Koen Van Looveren](https://github.com/vanlooverenkoen)
 is a package to view a moor or drift database in your Flutter app directly.
 It includes a graphical user interface showing you all rows for each table. You can also filter
 rows by columns that you've added to your tables.
+
+Starting with Drift 2.13 and Flutter 3.16, this database viewer is also available in DevTools! Navigate to
+the "Drift" tab in DevTools and select your database class to view your database in Flutter's DevTools.
+No additional dependencies are needed for this.
 
 ## moor2csv
 

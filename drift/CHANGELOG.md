@@ -3,6 +3,8 @@
 - Add APIs to setup Wasm databases with custom drift workers.
 - Add support for [custom types](https://drift.simonbinder.eu/docs/sql-api/types/),
   which are useful when extending drift to support other database engines.
+- Drift now provides a DevTools extension embedding the drift inspector written by
+  [Koen Van Looveren](https://github.co).
 - Add `Expression.and` and `Expression.or` to create disjunctions and conjunctions
   of sub-predicates.
 - Step-by-step migrations now save the intermediate schema version after each step.
