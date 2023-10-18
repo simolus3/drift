@@ -76,7 +76,7 @@ class ViewerDatabase implements DbViewerDatabase {
   @override
   String getType(String entityName, String columnName) {
     final type = database.description.entitiesByName[entityName]!
-        .columnsByName[columnName]!.type!;
+        .columnsByName[columnName]!.type;
     final genContext = GenerationContext(
       DriftDatabaseOptions(
           storeDateTimeAsText: database.description.dateTimeAsText),
@@ -101,7 +101,7 @@ class ViewerDatabase implements DbViewerDatabase {
         final resolvedColumn = entity.columnsByName[column];
 
         if (resolvedColumn != null) {
-          final type = resolvedColumn.type?.type ?? DriftSqlType.any;
+          final type = resolvedColumn.type.type ?? DriftSqlType.any;
 
           mappedRow[column] = types.read(type, value);
         } else {

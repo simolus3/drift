@@ -135,7 +135,7 @@ class _DatabaseListState extends ConsumerState<DatabaseList> {
 class _DatabaseEntry extends ConsumerWidget {
   final TrackedDatabase database;
 
-  const _DatabaseEntry({super.key, required this.database});
+  const _DatabaseEntry({required this.database});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

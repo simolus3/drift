@@ -2,18 +2,14 @@
 @internal
 library;
 
-import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
 import '../api/runtime_api.dart';
 import '../query_builder/query_builder.dart';
 import '../types/mapping.dart';
 
-part 'shared.g.dart';
-
 typedef JsonObject = Map<String, Object?>;
 
-@JsonSerializable()
 class TypeDescription {
   final DriftSqlType? type;
   final String? customTypeName;
@@ -28,16 +24,26 @@ class TypeDescription {
     };
   }
 
-  factory TypeDescription.fromJson(JsonObject obj) =>
-      _$TypeDescriptionFromJson(obj);
+  factory TypeDescription.fromJson(JsonObject obj) {
+    final typeName = obj['type'] as String?;
 
-  JsonObject toJson() => _$TypeDescriptionToJson(this);
+    return TypeDescription(
+      type: typeName != null ? DriftSqlType.values.byName(typeName) : null,
+      customTypeName: obj['customTypeName'] as String?,
+    );
+  }
+
+  JsonObject toJson() {
+    return {
+      'type': type?.name,
+      'customTypeName': customTypeName,
+    };
+  }
 }
 
-@JsonSerializable()
 class ColumnDescription {
   final String name;
-  final TypeDescription? type;
+  final TypeDescription type;
   final bool isNullable;
 
   ColumnDescription(
@@ -52,13 +58,23 @@ class ColumnDescription {
     );
   }
 
-  factory ColumnDescription.fromJson(JsonObject obj) =>
-      _$ColumnDescriptionFromJson(obj);
+  factory ColumnDescription.fromJson(JsonObject obj) {
+    return ColumnDescription(
+      name: obj['name'] as String,
+      type: TypeDescription.fromJson(obj['type'] as JsonObject),
+      isNullable: obj['isNullable'] as bool,
+    );
+  }
 
-  JsonObject toJson() => _$ColumnDescriptionToJson(this);
+  JsonObject toJson() {
+    return {
+      'name': name,
+      'type': type.toJson(),
+      'isNullable': isNullable,
+    };
+  }
 }
 
-@JsonSerializable()
 class EntityDescription {
   final String name;
   final String type;
@@ -93,13 +109,28 @@ class EntityDescription {
     );
   }
 
-  factory EntityDescription.fromJson(JsonObject obj) =>
-      _$EntityDescriptionFromJson(obj);
+  factory EntityDescription.fromJson(JsonObject obj) {
+    return EntityDescription(
+      name: obj['name'] as String,
+      type: obj['type'] as String,
+      columns: (obj['columns'] as List<dynamic>)
+          .map((e) => ColumnDescription.fromJson(e as JsonObject))
+          .toList(),
+    );
+  }
 
-  JsonObject toJson() => _$EntityDescriptionToJson(this);
+  JsonObject toJson() {
+    return {
+      'name': name,
+      'type': type,
+      'columns': [
+        if (columns != null)
+          for (final column in columns!) column.toJson()
+      ],
+    };
+  }
 }
 
-@JsonSerializable()
 class DatabaseDescription {
   final bool dateTimeAsText;
   final List<EntityDescription> entities;
@@ -124,8 +155,19 @@ class DatabaseDescription {
     );
   }
 
-  factory DatabaseDescription.fromJson(JsonObject obj) =>
-      _$DatabaseDescriptionFromJson(obj);
+  factory DatabaseDescription.fromJson(JsonObject obj) {
+    return DatabaseDescription(
+      dateTimeAsText: obj['dateTimeAsText'] as bool,
+      entities: (obj['entities'] as List<dynamic>)
+          .map((e) => EntityDescription.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 
-  JsonObject toJson() => _$DatabaseDescriptionToJson(this);
+  JsonObject toJson() {
+    return <String, dynamic>{
+      'dateTimeAsText': dateTimeAsText,
+      'entities': [for (final entity in entities) entity.toJson()],
+    };
+  }
 }
