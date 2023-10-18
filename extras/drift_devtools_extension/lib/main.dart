@@ -76,7 +76,7 @@ class DriftDevtoolsBody extends ConsumerWidget {
 }
 
 class _InfoButton extends StatelessWidget {
-  const _InfoButton({super.key});
+  const _InfoButton();
 
   @override
   Widget build(BuildContext context) {
