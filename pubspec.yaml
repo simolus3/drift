@@ -1,4 +1,5 @@
 name: drift_workspace
+publish_to: none
 
 environment:
   sdk: ^2.19.0

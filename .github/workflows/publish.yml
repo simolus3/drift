@@ -1,0 +1,89 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'drift-[0-9]+.[0-9]+.[0-9]+*'
+      - 'drift_dev-[0-9]+.[0-9]+.[0-9]+*'
+      - 'sqlparser-[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  setup:
+    uses: ./.github/workflows/setup.yml
+
+  publish_drift:
+    if: "${{ startsWith(github.ref_name, 'drift-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    steps:
+      - uses: actions/checkout@v4
+
+      # We need to build the DevTools extension, which is written in Flutter
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - uses: actions/cache@v3
+        with:
+          path: "${{ env.PUB_CACHE }}"
+          key: dart-dependencies-${{ needs.setup.outputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            dart-dependencies-${{ needs.setup.outputs.dart_version }}-
+            dart-dependencies-
+      - name: Setup dependencies
+        run: |
+          dart pub global activate melos
+          dart pub get
+          melos bootstrap
+        shell: bash
+      - name: Build DevTools extension
+        working-directory: extras/drift_devtools_extension
+        run: ./build.sh
+
+      - run: dart pub lish --dry-run
+        working-directory: drift
+      - run: dart pub lish
+        working-directory: drift
+
+  publish_drift_dev:
+    if: "${{ startsWith(github.ref_name, 'drift_dev-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    defaults:
+      run:
+        working-directory: drift_dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: melos bootstrap --scope drift_dev
+        working-directory: .
+      - run: dart pub lish --dry-run
+      - run: dart pub lish
+
+
+  # Published versions of sqlparser are tagged with `sqlparser-<version>`
+  publish_sqlparser:
+    if: "${{ startsWith(github.ref_name, 'sqlparser-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    defaults:
+      run:
+        working-directory: sqlparser
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: dart pub get
+      - run: dart pub lish --dry-run
+      - run: dart pub lish

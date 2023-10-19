@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**' # we just don't want this to run redundantly on tags
+  pull_request:
 
 env:
   PUB_ENVIRONMENT: bot.github
