@@ -44,7 +44,7 @@ jobs:
 
       - run: dart pub lish --dry-run
         working-directory: drift
-      - run: dart pub lish
+      - run: dart pub lish -f
         working-directory: drift
 
   publish_drift_dev:
@@ -65,7 +65,7 @@ jobs:
       - run: melos bootstrap --scope drift_dev
         working-directory: .
       - run: dart pub lish --dry-run
-      - run: dart pub lish
+      - run: dart pub lish -f
 
 
   # Published versions of sqlparser are tagged with `sqlparser-<version>`
@@ -86,4 +86,4 @@ jobs:
           dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: dart pub get
       - run: dart pub lish --dry-run
-      - run: dart pub lish
+      - run: dart pub lish -f
