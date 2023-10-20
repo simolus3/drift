@@ -1,4 +1,4 @@
-## 0.32.0-dev
+## 0.32.0
 
 - Turn `ResolvedType.hints` into a list, supporting multiple type hints.
 

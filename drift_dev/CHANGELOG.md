@@ -1,4 +1,4 @@
-## 2.13.0-dev
+## 2.13.0
 
 - Fix indices not being created for Dart tables from different files.
 - Fix type converters on `int64` columns not propagating properly.
