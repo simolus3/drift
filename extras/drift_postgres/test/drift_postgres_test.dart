@@ -1,4 +1,4 @@
-import 'package:drift_postgres/postgres.dart';
+import 'package:drift_postgres/drift_postgres.dart';
 import 'package:drift_testcases/tests.dart';
 import 'package:postgres/postgres_v3_experimental.dart';
 

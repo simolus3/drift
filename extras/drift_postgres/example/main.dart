@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:drift_postgres/postgres.dart';
+import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres_v3_experimental.dart';
 import 'package:uuid/uuid.dart';
 
