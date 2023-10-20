@@ -1,6 +1,9 @@
 name: drift_postgres
 description: Postgres implementation and APIs for the drift database package.
 version: 0.1.0
+repository: https://github.com/simolus3/drift
+homepage: https://drift.simonbinder.eu/docs/platforms/postgres/
+issue_tracker: https://github.com/simolus3/drift/issues
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
