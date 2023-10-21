@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart' as pg;
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,7 +8,7 @@ import '../example/main.dart';
 
 void main() {
   final database = DriftPostgresDatabase(PgDatabase(
-    endpoint: PgEndpoint(
+    endpoint: pg.Endpoint(
       host: 'localhost',
       database: 'postgres',
       username: 'postgres',
@@ -48,7 +48,7 @@ void main() {
     group('interval', () => testWith(PgTypes.interval, Duration(seconds: 15)));
     group('json', () => testWith(PgTypes.json, {'foo': 'bar'}));
     group('jsonb', () => testWith(PgTypes.jsonb, {'foo': 'bar'}));
-    group('point', () => testWith(PgTypes.point, PgPoint(90, -90)));
+    group('point', () => testWith(PgTypes.point, pg.Point(90, -90)));
     group(
       'timestamp without timezone',
       () => testWith(PgTypes.timestampNoTimezone,

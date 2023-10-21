@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart';
 
 part 'postgres.g.dart';
 
@@ -20,7 +20,7 @@ class MyDatabase extends _$MyDatabase {
 
 void main() async {
   final pgDatabase = PgDatabase(
-    endpoint: PgEndpoint(
+    endpoint: Endpoint(
       host: 'localhost',
       database: 'postgres',
       username: 'postgres',

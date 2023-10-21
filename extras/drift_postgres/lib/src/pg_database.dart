@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:drift/backends.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart';
 
 /// A drift database implementation that talks to a postgres database.
 class PgDatabase extends DelegatedDatabase {
   PgDatabase({
-    required PgEndpoint endpoint,
-    PgSessionSettings? sessionSettings,
+    required Endpoint endpoint,
+    SessionSettings? sessionSettings,
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(
           _PgDelegate(
-            () => PgConnection.open(endpoint, sessionSettings: sessionSettings),
+            () => Connection.open(endpoint, sessionSettings: sessionSettings),
             true,
             enableMigrations,
           ),
@@ -24,7 +24,7 @@ class PgDatabase extends DelegatedDatabase {
   /// Creates a drift database implementation from a postgres database
   /// [connection].
   PgDatabase.opened(
-    PgSession connection, {
+    Session connection, {
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(_PgDelegate(() => connection, false, enableMigrations),
@@ -43,9 +43,9 @@ class _PgDelegate extends DatabaseDelegate {
 
   final bool closeUnderlyingWhenClosed;
   final bool enableMigrations;
-  final FutureOr<PgSession> Function() _open;
+  final FutureOr<Session> Function() _open;
 
-  PgSession? _openedSession;
+  Session? _openedSession;
 
   @override
   TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
@@ -76,7 +76,7 @@ class _PgDelegate extends DatabaseDelegate {
   Future<void> runBatched(BatchedStatements statements) async {
     final session = _openedSession!;
     final prepared =
-        List<PgStatement?>.filled(statements.statements.length, null);
+        List<Statement?>.filled(statements.statements.length, null);
 
     try {
       for (final instantation in statements.arguments) {
@@ -89,7 +89,7 @@ class _PgDelegate extends DatabaseDelegate {
         if (stmt == null) {
           final sql = statements.statements[stmtIndex];
           stmt = prepared[stmtIndex] =
-              await session.prepare(PgSql(sql, types: pgArgs.types));
+              await session.prepare(Sql(sql, types: pgArgs.types));
         }
 
         await stmt.run(pgArgs.parameters);
@@ -106,7 +106,7 @@ class _PgDelegate extends DatabaseDelegate {
 
     final pgArgs = _BoundArguments.ofDartArgs(args);
     final result = await session.execute(
-      PgSql(statement, types: pgArgs.types),
+      Sql(statement, types: pgArgs.types),
       parameters: pgArgs.parameters,
     );
     return result.affectedRows;
@@ -121,7 +121,7 @@ class _PgDelegate extends DatabaseDelegate {
   Future<int> runInsert(String statement, List<Object?> args) async {
     final session = _openedSession!;
     final pgArgs = _BoundArguments.ofDartArgs(args);
-    final result = await session.execute(PgSql(statement, types: pgArgs.types),
+    final result = await session.execute(Sql(statement, types: pgArgs.types),
         parameters: pgArgs.parameters);
     return result.firstOrNull?[0] as int? ?? 0;
   }
@@ -135,7 +135,7 @@ class _PgDelegate extends DatabaseDelegate {
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final session = _openedSession!;
     final pgArgs = _BoundArguments.ofDartArgs(args);
-    final result = await session.execute(PgSql(statement, types: pgArgs.types),
+    final result = await session.execute(Sql(statement, types: pgArgs.types),
         parameters: pgArgs.parameters);
 
     return QueryResult([
@@ -146,35 +146,37 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   Future<void> close() async {
     if (closeUnderlyingWhenClosed) {
-      await _openedSession?.close();
+      if (_openedSession case final Connection c) {
+        await c.close();
+      }
     }
   }
 }
 
 class _BoundArguments {
-  final List<PgDataType> types;
-  final List<PgTypedParameter> parameters;
+  final List<Type> types;
+  final List<TypedValue> parameters;
 
   _BoundArguments(this.types, this.parameters);
 
   factory _BoundArguments.ofDartArgs(List<Object?> args) {
-    final types = <PgDataType>[];
-    final parameters = <PgTypedParameter>[];
+    final types = <Type>[];
+    final parameters = <TypedValue>[];
 
-    void add(PgTypedParameter param) {
+    void add(TypedValue param) {
       types.add(param.type);
       parameters.add(param);
     }
 
     for (final value in args) {
       add(switch (value) {
-        PgTypedParameter() => value,
-        null => PgTypedParameter(PgDataType.text, null),
-        int() || BigInt() => PgTypedParameter(PgDataType.bigInteger, value),
-        String() => PgTypedParameter(PgDataType.text, value),
-        bool() => PgTypedParameter(PgDataType.boolean, value),
-        double() => PgTypedParameter(PgDataType.double, value),
-        List<int>() => PgTypedParameter(PgDataType.byteArray, value),
+        TypedValue() => value,
+        null => TypedValue(Type.text, null),
+        int() || BigInt() => TypedValue(Type.bigInteger, value),
+        String() => TypedValue(Type.text, value),
+        bool() => TypedValue(Type.boolean, value),
+        double() => TypedValue(Type.double, value),
+        List<int>() => TypedValue(Type.byteArray, value),
         _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
       });
     }
@@ -184,35 +186,32 @@ class _BoundArguments {
 }
 
 class _PgVersionDelegate extends DynamicVersionDelegate {
-  final PgSession database;
+  final Session database;
 
   _PgVersionDelegate(this.database);
 
   @override
   Future<int> get schemaVersion async {
-    final result =
-        await database.execute(PgSql('SELECT version FROM __schema'));
+    final result = await database.execute(Sql('SELECT version FROM __schema'));
     return result[0][0] as int;
   }
 
   Future init() async {
-    await database.execute(PgSql('CREATE TABLE IF NOT EXISTS __schema ('
+    await database.execute(Sql('CREATE TABLE IF NOT EXISTS __schema ('
         'version integer NOT NULL DEFAULT 0)'));
 
-    final count =
-        await database.execute(PgSql('SELECT COUNT(*) FROM __schema'));
+    final count = await database.execute(Sql('SELECT COUNT(*) FROM __schema'));
     if (count[0][0] as int == 0) {
-      await database
-          .execute(PgSql('INSERT INTO __schema (version) VALUES (0)'));
+      await database.execute(Sql('INSERT INTO __schema (version) VALUES (0)'));
     }
   }
 
   @override
   Future<void> setSchemaVersion(int version) async {
     await database.execute(
-      PgSql(r'UPDATE __schema SET version = $1', types: [PgDataType.integer]),
+      Sql(r'UPDATE __schema SET version = $1', types: [Type.integer]),
       parameters: [
-        PgTypedParameter(PgDataType.integer, version),
+        TypedValue(Type.integer, version),
       ],
     );
   }

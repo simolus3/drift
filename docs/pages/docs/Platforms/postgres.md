@@ -1,15 +1,10 @@
 ---
 data:
-  title: PostgreSQL support (Alpha)
+  title: PostgreSQL support (Beta)
   description: Use drift with PostgreSQL database servers.
   weight: 10
 template: layouts/docs/single
 ---
-
-{% block "blocks/pageinfo" %}
-Postgres support is still in development. In particular, drift is waiting for [version 3](https://github.com/isoos/postgresql-dart/issues/105)
-of the postgres package to stabilize. Minor breaking changes or remaining issues are not unlikely.
-{% endblock %}
 
 Thanks to contributions from the community, drift currently has alpha support for postgres with the `drift_postgres` package.
 Without having to change your query code, drift can generate Postgres-compatible SQL for most queries,
