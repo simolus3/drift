@@ -38,4 +38,4 @@ To test this package, first run
 docker run -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
 
-It can then be tested with `dart test`.
+It can then be tested with `dart test -j 1` (concurrency needs to be disabled since tests are using the same database).

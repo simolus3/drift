@@ -188,7 +188,7 @@ jobs:
         working-directory: extras/drift_postgres
         run: |
           dart pub upgrade
-          dart test
+          dart test -j 1
       - name: MariaDB integration tests
         working-directory: extras/drift_mariadb
         continue-on-error: true

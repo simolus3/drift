@@ -18,11 +18,12 @@ class PgExecutor extends TestExecutor {
         username: 'postgres',
         password: 'postgres',
       ),
+      sessionSettings: pg.SessionSettings(sslMode: pg.SslMode.disable),
     ));
   }
 
   @override
-  Future clearDatabaseAndClose(Database db) async {
+  Future clearDatabaseAndClose(GeneratedDatabase db) async {
     await db.customStatement('DROP SCHEMA public CASCADE;');
     await db.customStatement('CREATE SCHEMA public;');
     await db.customStatement('GRANT ALL ON SCHEMA public TO postgres;');

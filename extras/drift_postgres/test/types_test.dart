@@ -5,24 +5,18 @@ import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
 import '../example/main.dart';
+import 'drift_postgres_test.dart';
 
 void main() {
-  final database = DriftPostgresDatabase(PgDatabase(
-    endpoint: pg.Endpoint(
-      host: 'localhost',
-      database: 'postgres',
-      username: 'postgres',
-      password: 'postgres',
-    ),
-  ));
+  final executor = PgExecutor();
+  final database = DriftPostgresDatabase(executor.createConnection());
 
   setUpAll(() async {
     await database.users.insertOne(UsersCompanion.insert(name: 'test user'));
   });
 
   tearDownAll(() async {
-    await database.users.deleteAll();
-    await database.close();
+    await executor.clearDatabaseAndClose(database);
   });
 
   group('custom types pass through', () {

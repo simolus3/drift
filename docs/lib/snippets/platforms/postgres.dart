@@ -26,6 +26,11 @@ void main() async {
       username: 'postgres',
       password: 'postgres',
     ),
+    sessionSettings: SessionSettings(
+      // If you expect to talk to a Postgres database over a public connection,
+      // please use SslMode.verifyFull instead.
+      sslMode: SslMode.disable,
+    ),
   );
 
   final driftDatabase = MyDatabase(pgDatabase);
