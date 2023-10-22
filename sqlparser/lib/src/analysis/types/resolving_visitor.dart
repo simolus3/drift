@@ -549,10 +549,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         // ignore: dead_code
         throw AssertionError(); // required so that this switch compiles
       case 'sum':
+        checkArgumentCount(1);
+
+        // The result of `sum()` is `NULL` if there are no input rows.
+        session._addRelation(CopyAndCast(
+          e,
+          params.first,
+          CastMode.numeric,
+          dropTypeHint: true,
+          makeNullable: true,
+        ));
         session._addRelation(
-            CopyAndCast(e, params.first, CastMode.numeric, dropTypeHint: true));
-        session._addRelation(DefaultType(e, defaultType: _realType));
-        nullableIfChildIs();
+            DefaultType(e, defaultType: _realType.withNullable(true)));
         return null;
       case 'lower':
       case 'ltrim':
