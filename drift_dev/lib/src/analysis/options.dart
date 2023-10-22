@@ -102,6 +102,9 @@ class DriftOptions {
   @JsonKey(name: 'write_to_columns_mixins', defaultValue: false)
   final bool writeToColumnsMixins;
 
+  @JsonKey(name: 'has_separate_analyzer', defaultValue: false)
+  final bool hasDriftAnalyzer;
+
   final String? preamble;
 
   @JsonKey(name: 'fatal_warnings', defaultValue: false)
@@ -131,6 +134,7 @@ class DriftOptions {
     this.preamble,
     this.writeToColumnsMixins = false,
     this.fatalWarnings = false,
+    this.hasDriftAnalyzer = false,
   });
 
   DriftOptions({
@@ -155,6 +159,7 @@ class DriftOptions {
     required this.writeToColumnsMixins,
     required this.fatalWarnings,
     required this.preamble,
+    required this.hasDriftAnalyzer,
     this.dialect,
   }) {
     // ignore: deprecated_member_use_from_same_package
