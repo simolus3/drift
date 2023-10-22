@@ -295,6 +295,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     }
     if (preferences.present) {
       final converter = $UsersTable.$converterpreferences;
+
       map['preferences'] = Variable<String>(converter.toSql(preferences.value));
     }
     return map;

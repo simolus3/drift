@@ -26,9 +26,10 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   @override
   List<GeneratedColumn> get $columns => [id, content];
   @override
-  String get aliasedName => _alias ?? 'notes';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'notes';
+  String get actualTableName => $name;
+  static const String $name = 'notes';
   @override
   VerificationContext validateIntegrity(Insertable<Note> instance,
       {bool isInserting = false}) {

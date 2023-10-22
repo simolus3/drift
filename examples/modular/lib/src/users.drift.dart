@@ -292,6 +292,7 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
     }
     if (preferences.present) {
       final converter = i1.Users.$converterpreferencesn;
+
       map['preferences'] =
           i0.Variable<String>(converter.toSql(preferences.value));
     }

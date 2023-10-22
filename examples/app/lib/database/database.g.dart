@@ -32,9 +32,10 @@ class $CategoriesTable extends Categories
   @override
   List<GeneratedColumn> get $columns => [id, name, color];
   @override
-  String get aliasedName => _alias ?? 'categories';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'categories';
+  String get actualTableName => $name;
+  static const String $name = 'categories';
   @override
   VerificationContext validateIntegrity(Insertable<Category> instance,
       {bool isInserting = false}) {
@@ -194,6 +195,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (color.present) {
       final converter = $CategoriesTable.$convertercolor;
+
       map['color'] = Variable<int>(converter.toSql(color.value));
     }
     return map;
@@ -249,9 +251,10 @@ class $TodoEntriesTable extends TodoEntries
   @override
   List<GeneratedColumn> get $columns => [id, description, category, dueDate];
   @override
-  String get aliasedName => _alias ?? 'todo_entries';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todo_entries';
+  String get actualTableName => $name;
+  static const String $name = 'todo_entries';
   @override
   VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
       {bool isInserting = false}) {
@@ -486,9 +489,10 @@ class TextEntries extends Table
   @override
   List<GeneratedColumn> get $columns => [description];
   @override
-  String get aliasedName => _alias ?? 'text_entries';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'text_entries';
+  String get actualTableName => $name;
+  static const String $name = 'text_entries';
   @override
   VerificationContext validateIntegrity(Insertable<TextEntrie> instance,
       {bool isInserting = false}) {
