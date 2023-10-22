@@ -1,3 +1,7 @@
+## 0.32.1-dev
+
+- Treat the result of `sum()` as nullable when inferring types.
+
 ## 0.32.0
 
 - Turn `ResolvedType.hints` into a list, supporting multiple type hints.
