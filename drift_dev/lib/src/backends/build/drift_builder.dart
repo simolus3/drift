@@ -140,8 +140,10 @@ class _DriftBuildRun {
             // The discovery and analyzer builders will have emitted IR for
             // every relevant file in a previous build step that this builder
             // has a dependency on.
-            findsResolvedElementsReliably: !mode.embeddedAnalyzer,
-            findsLocalElementsReliably: !mode.embeddedAnalyzer,
+            findsResolvedElementsReliably:
+                !mode.embeddedAnalyzer || options.hasDriftAnalyzer,
+            findsLocalElementsReliably:
+                !mode.embeddedAnalyzer || options.hasDriftAnalyzer,
           );
 
   Future<void> run() async {

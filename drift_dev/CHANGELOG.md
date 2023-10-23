@@ -1,3 +1,7 @@
+## 2.13.1-dev
+
+- Add `has_separate_analyzer` option to optimize builds using the `not_shared` builder.
+
 ## 2.13.0
 
 - Fix indices not being created for Dart tables from different files.
