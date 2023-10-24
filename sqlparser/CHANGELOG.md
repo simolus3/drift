@@ -3,6 +3,7 @@
 - Treat the result of `sum()` as nullable when inferring types.
 - Support features added in sqlite 3.44:
   - `ORDER BY` clauses as part of aggregate functions.
+  - Support `concat`, `concat_ws` and `string_agg`.
 
 ## 0.32.0
 

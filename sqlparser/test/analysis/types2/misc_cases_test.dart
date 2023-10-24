@@ -66,6 +66,12 @@ const Map<String, ResolvedType?> _types = {
   "SELECT unhex('ab') = ?": ResolvedType(type: BasicType.blob, nullable: true),
   'SELECT unhex(?)': ResolvedType(type: BasicType.text),
   'SELECT 1 GROUP BY 1 HAVING ? ': ResolvedType.bool(),
+  "SELECT concat(1, NULL, 2) = ?":
+      ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT concat_ws(',', 1, 2) = ?":
+      ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT concat_ws(NULL, 1, 2) = ?":
+      ResolvedType(type: BasicType.text, nullable: true),
 };
 
 SqlEngine _spawnEngine() {
