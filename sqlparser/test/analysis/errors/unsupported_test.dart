@@ -155,4 +155,12 @@ void main() {
     currentEngine.analyze(right).expectNoError();
     currentEngine.analyze(full).expectNoError();
   });
+
+  test('warns about aggregate functions with order by', () {
+    const sql = "SELECT group_concat(content ORDER BY id) FROM demo";
+
+    minimumEngine.analyze(sql).expectError('ORDER BY id',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    currentEngine.analyze(sql).expectNoError();
+  });
 }

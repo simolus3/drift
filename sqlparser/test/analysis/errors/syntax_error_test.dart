@@ -128,4 +128,14 @@ END;
       });
     });
   });
+
+  test('window function with order by', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_44))
+      ..registerTable(demoTable);
+
+    engine
+        .analyze('SELECT group_concat(content ORDER BY id DESC) '
+            'OVER (ROWS UNBOUNDED PRECEDING) FROM demo;')
+        .expectError('ORDER BY id DESC');
+  });
 }

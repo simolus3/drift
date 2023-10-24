@@ -65,6 +65,19 @@ final Map<String, Expression> _testCases = {
       BooleanLiteral(true),
     ),
   ),
+  "string_agg(foo, ', ' ORDER BY foo DESC)": AggregateFunctionInvocation(
+    function: identifier('string_agg'),
+    parameters: ExprFunctionParameters(parameters: [
+      Reference(columnName: 'foo'),
+      StringLiteral(', '),
+    ]),
+    orderBy: OrderBy(terms: [
+      OrderingTerm(
+        expression: Reference(columnName: 'foo'),
+        orderingMode: OrderingMode.descending,
+      ),
+    ]),
+  ),
 };
 
 void main() {

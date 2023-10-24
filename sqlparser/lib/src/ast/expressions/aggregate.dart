@@ -12,6 +12,7 @@ class AggregateFunctionInvocation extends Expression
 
   @override
   FunctionParameters parameters;
+  OrderByBase? orderBy;
   Expression? filter;
 
   @override
@@ -20,6 +21,7 @@ class AggregateFunctionInvocation extends Expression
   AggregateFunctionInvocation({
     required this.function,
     required this.parameters,
+    this.orderBy,
     this.filter,
   }) : nameToken = function;
 
@@ -31,6 +33,7 @@ class AggregateFunctionInvocation extends Expression
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     parameters = transformer.transformChild(parameters, this, arg);
+    orderBy = transformer.transformNullableChild(orderBy, this, arg);
     filter = transformer.transformNullableChild(filter, this, arg);
   }
 
@@ -61,14 +64,14 @@ class WindowFunctionInvocation extends AggregateFunctionInvocation {
   final String? windowName;
 
   WindowFunctionInvocation(
-      {required IdentifierToken function,
-      required FunctionParameters parameters,
-      Expression? filter,
+      {required super.function,
+      required super.parameters,
+      super.orderBy,
+      super.filter,
       this.windowDefinition,
       this.windowName})
       // one of window definition or name must be null
-      : assert((windowDefinition == null) || (windowName == null)),
-        super(function: function, parameters: parameters, filter: filter);
+      : assert((windowDefinition == null) || (windowName == null));
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

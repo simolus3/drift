@@ -1,6 +1,8 @@
 ## 0.32.1-dev
 
 - Treat the result of `sum()` as nullable when inferring types.
+- Support features added in sqlite 3.44:
+  - `ORDER BY` clauses as part of aggregate functions.
 
 ## 0.32.0
 

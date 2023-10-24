@@ -922,11 +922,17 @@ class Parser {
     } else if (_matchOne(TokenType.leftParen)) {
       // We have something like "foo(" -> that's a function!
       final parameters = _functionParameters();
+
+      // Aggregate functions can use `ORDER BY` in their argument list.
+      final orderBy = _orderBy();
+
       final rightParen = _consume(
           TokenType.rightParen, 'Expected closing bracket after argument list');
 
-      if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
-        return _aggregate(first, parameters);
+      if (orderBy != null ||
+          _peek.type == TokenType.filter ||
+          _peek.type == TokenType.over) {
+        return _aggregate(first, parameters, orderBy);
       }
 
       return FunctionExpression(name: first.identifier, parameters: parameters)
@@ -980,7 +986,10 @@ class Parser {
   }
 
   AggregateFunctionInvocation _aggregate(
-      IdentifierToken name, FunctionParameters params) {
+    IdentifierToken name,
+    FunctionParameters params,
+    OrderByBase? orderBy,
+  ) {
     Expression? filter;
 
     // https://www.sqlite.org/syntax/filter.html (it's optional)
@@ -1005,6 +1014,7 @@ class Parser {
       return WindowFunctionInvocation(
         function: name,
         parameters: params,
+        orderBy: orderBy,
         filter: filter,
         windowDefinition: window,
         windowName: windowName,
@@ -1013,6 +1023,7 @@ class Parser {
       return AggregateFunctionInvocation(
         function: name,
         parameters: params,
+        orderBy: orderBy,
         filter: filter,
       )..setSpan(name, _previous);
     }
