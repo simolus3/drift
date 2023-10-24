@@ -96,6 +96,11 @@ now looks like this:
 
 {% include "blocks/snippet" snippets = snippets name = 'open' %}
 
+The Android-specific workarounds are necessary because sqlite3 attempts to use `/tmp` to store
+private data on unix-like systems, which is forbidden on Android. We also use this opportunity
+to work around a problem some older Android devices have with loading custom libraries through
+`dart:ffi`.
+
 ## Next steps
 
 Congratulations! With this setup complete, your project is ready to use drift.
