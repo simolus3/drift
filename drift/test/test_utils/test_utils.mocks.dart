@@ -64,7 +64,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
-
   @override
   set isInTransaction(bool? _isInTransaction) => super.noSuchMethod(
         Invocation.setter(
@@ -73,7 +72,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         ),
         returnValueForMissingStub: null,
       );
-
   @override
   _i2.DbVersionDelegate get versionDelegate => (super.noSuchMethod(
         Invocation.getter(#versionDelegate),
@@ -86,7 +84,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
           Invocation.getter(#versionDelegate),
         ),
       ) as _i2.DbVersionDelegate);
-
   @override
   _i2.TransactionDelegate get transactionDelegate => (super.noSuchMethod(
         Invocation.getter(#transactionDelegate),
@@ -99,14 +96,12 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
           Invocation.getter(#transactionDelegate),
         ),
       ) as _i2.TransactionDelegate);
-
   @override
   _i4.FutureOr<bool> get isOpen => (super.noSuchMethod(
         Invocation.getter(#isOpen),
         returnValue: _i4.Future<bool>.value(false),
         returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.FutureOr<bool>);
-
   @override
   _i4.Future<void> open(_i5.QueryExecutorUser? db) => (super.noSuchMethod(
         Invocation.method(
@@ -116,7 +111,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
-
   @override
   _i4.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
@@ -126,7 +120,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
-
   @override
   void notifyDatabaseOpened(_i5.OpeningDetails? details) => super.noSuchMethod(
         Invocation.method(
@@ -135,7 +128,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         ),
         returnValueForMissingStub: null,
       );
-
   @override
   _i4.Future<_i3.QueryResult> runSelect(
     String? statement,
@@ -171,7 +163,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
           ),
         )),
       ) as _i4.Future<_i3.QueryResult>);
-
   @override
   _i4.Future<int> runUpdate(
     String? statement,
@@ -188,7 +179,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         returnValue: _i4.Future<int>.value(0),
         returnValueForMissingStub: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
-
   @override
   _i4.Future<int> runInsert(
     String? statement,
@@ -205,7 +195,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         returnValue: _i4.Future<int>.value(0),
         returnValueForMissingStub: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
-
   @override
   _i4.Future<void> runCustom(
     String? statement,
@@ -222,7 +211,6 @@ class MockDatabaseDelegate extends _i1.Mock implements _i2.DatabaseDelegate {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
-
   @override
   _i4.Future<void> runBatched(_i5.BatchedStatements? statements) =>
       (super.noSuchMethod(
@@ -246,7 +234,6 @@ class MockDynamicVersionDelegate extends _i1.Mock
         returnValue: _i4.Future<int>.value(0),
         returnValueForMissingStub: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
-
   @override
   _i4.Future<void> setSchemaVersion(int? version) => (super.noSuchMethod(
         Invocation.method(
@@ -269,7 +256,6 @@ class MockSupportedTransactionDelegate extends _i1.Mock
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
-
   @override
   _i4.FutureOr<void> startTransaction(
           _i4.Future<dynamic> Function(_i2.QueryDelegate)? run) =>
@@ -298,7 +284,6 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
         returnValueForMissingStub:
             _i4.Stream<List<Map<String, Object?>>>.empty(),
       ) as _i4.Stream<List<Map<String, Object?>>>);
-
   @override
   _i4.Stream<Set<_i5.TableUpdate>> updatesForSync(
           _i5.TableUpdateQuery? query) =>
@@ -310,7 +295,6 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
         returnValue: _i4.Stream<Set<_i5.TableUpdate>>.empty(),
         returnValueForMissingStub: _i4.Stream<Set<_i5.TableUpdate>>.empty(),
       ) as _i4.Stream<Set<_i5.TableUpdate>>);
-
   @override
   void handleTableUpdates(Set<_i5.TableUpdate>? updates) => super.noSuchMethod(
         Invocation.method(
@@ -319,7 +303,6 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
         ),
         returnValueForMissingStub: null,
       );
-
   @override
   void markAsClosed(
     _i6.QueryStream? stream,
@@ -335,7 +318,6 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
         ),
         returnValueForMissingStub: null,
       );
-
   @override
   void markAsOpened(_i6.QueryStream? stream) => super.noSuchMethod(
         Invocation.method(
@@ -344,7 +326,6 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
         ),
         returnValueForMissingStub: null,
       );
-
   @override
   _i4.Future<void> close() => (super.noSuchMethod(
         Invocation.method(

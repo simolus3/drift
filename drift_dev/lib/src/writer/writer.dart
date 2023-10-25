@@ -99,34 +99,39 @@ abstract class _NodeOrWriter {
   /// Returns a Dart expression evaluating to the [converter].
   AnnotatedDartCode readConverter(AppliedTypeConverter converter,
       {bool forNullable = false}) {
-    if (converter.owningColumn == null) {
-      // Type converters applied to individual columns in the result set of a
-      // `SELECT` query don't have an owning table. We instead write the
-      // expression here.
-      return AnnotatedDartCode.build((b) {
-        final implicitlyNullable =
-            converter.canBeSkippedForNulls && forNullable;
+    return AnnotatedDartCode.build((b) {
+      final owningColumn = converter.owningColumn;
+      final needsImplicitNullableVersion =
+          forNullable && converter.canBeSkippedForNulls;
+      final hasNullableVariantInField = owningColumn != null &&
+          converter.canBeSkippedForNulls &&
+          owningColumn.nullable;
 
-        if (implicitlyNullable) {
+      void addRegularConverter() {
+        if (owningColumn != null) {
+          b
+            ..addCode(entityInfoType(owningColumn.owner))
+            ..addText('.${converter.fieldName}');
+        } else {
+          // There's no field storing this converter, so evaluate it every time
+          // it is used.
+          b.addCode(converter.expression);
+        }
+      }
+
+      switch ((needsImplicitNullableVersion, hasNullableVariantInField)) {
+        case (false, _):
+          addRegularConverter();
+        case (true, false):
           b.addSymbol('NullAwareTypeConverter.wrap(', AnnotatedDartCode.drift);
-        }
-
-        b.addCode(converter.expression);
-
-        if (implicitlyNullable) {
+          b.addCode(converter.expression);
           b.addText(')');
-        }
-      });
-    } else {
-      final fieldName = forNullable && converter.canBeSkippedForNulls
-          ? converter.nullableFieldName
-          : converter.fieldName;
-
-      return AnnotatedDartCode([
-        ...entityInfoType(converter.owningColumn!.owner).elements,
-        '.$fieldName',
-      ]);
-    }
+        case (true, true):
+          b
+            ..addCode(entityInfoType(converter.owningColumn!.owner))
+            ..addText('.${converter.nullableFieldName}');
+      }
+    });
   }
 
   /// A suitable typename to store an instance of the type converter used here.

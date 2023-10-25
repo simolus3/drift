@@ -1,6 +1,8 @@
 ## 2.13.1-dev
 
 - Add `has_separate_analyzer` option to optimize builds using the `not_shared` builder.
+- Avoid illegal references to implicitly nullable variant of type converter when no such
+  field exists.
 
 ## 2.13.0
 

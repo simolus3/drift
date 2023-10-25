@@ -192,7 +192,11 @@ class AppliedTypeConverter {
   /// column, drift generates a new wrapped type converter which will deal with
   /// `null` values.
   /// That converter is stored in this field.
-  String get nullableFieldName => '${fieldName}n';
+  String get nullableFieldName {
+    assert(canBeSkippedForNulls && owningColumn?.nullable == true);
+
+    return '${fieldName}n';
+  }
 
   AppliedTypeConverter({
     required this.expression,
