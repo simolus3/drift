@@ -31,6 +31,16 @@ class MyDatabase extends $MyDatabase {
 
   MyDatabase(QueryExecutor e) : super(e);
 
+  // #docregion amountOfTodosInCategory
+  Stream<int> amountOfTodosInCategory(int id) {
+    return customSelect(
+      'SELECT COUNT(*) AS c FROM todo_items WHERE category = ?',
+      variables: [Variable.withInt(id)],
+      readsFrom: {todoItems},
+    ).map((row) => row.read<int>('c')).watchSingle();
+  }
+  // #enddocregion amountOfTodosInCategory
+
   // #docregion run
   Future<void> useGeneratedQuery() async {
     // The generated query can be run once as a future:

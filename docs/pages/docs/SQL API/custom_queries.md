@@ -84,15 +84,8 @@ items.
 
 You can also bind SQL variables by using question-mark placeholders and the `variables` parameter:
 
-```dart
-Stream<int> amountOfTodosInCategory(int id) {
-  return customSelect(
-    'SELECT COUNT(*) AS c FROM todos WHERE category = ?',
-    variables: [Variable.withInt(id)],
-    readsFrom: {todos},
-  ).map((row) => row.read<int>('c')).watch();
-}
-```
+{% include "blocks/snippet" snippets = snippets name = "amountOfTodosInCategory" %}
+
 
 Of course, you can also use indexed variables (like `?12`) - for more information on them, see
 [the sqlite3 documentation](https://sqlite.org/lang_expr.html#varparam).
