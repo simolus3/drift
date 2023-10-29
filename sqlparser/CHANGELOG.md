@@ -1,4 +1,4 @@
-## 0.32.1-dev
+## 0.32.1
 
 - Treat the result of `sum()` as nullable when inferring types.
 - Support features added in sqlite 3.44:
