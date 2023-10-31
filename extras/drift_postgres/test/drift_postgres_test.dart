@@ -18,7 +18,7 @@ class PgExecutor extends TestExecutor {
         username: 'postgres',
         password: 'postgres',
       ),
-      sessionSettings: pg.SessionSettings(sslMode: pg.SslMode.disable),
+      settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
     ));
   }
 

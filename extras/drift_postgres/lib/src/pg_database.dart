@@ -8,12 +8,12 @@ import 'package:postgres/postgres.dart';
 class PgDatabase extends DelegatedDatabase {
   PgDatabase({
     required Endpoint endpoint,
-    SessionSettings? sessionSettings,
+    ConnectionSettings? settings,
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(
           _PgDelegate(
-            () => Connection.open(endpoint, sessionSettings: sessionSettings),
+            () => Connection.open(endpoint, settings: settings),
             true,
             enableMigrations,
           ),
