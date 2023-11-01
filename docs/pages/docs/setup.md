@@ -26,7 +26,7 @@ If you want to look at an example app for inspiration, a cross-platform Flutter 
 
 ## The dependencies {#adding-dependencies}
 
-First, lets add drift to your project's `pubspec.yaml`.
+First, let's add drift to your project's `pubspec.yaml`.
 In addition to the core drift dependencies, we're also adding packages to find a suitable database
 location on the device and to include a recent version of `sqlite3`, the database most commonly
 used with drift.
@@ -66,7 +66,7 @@ If you're wondering why so many packages are necessary, here's a quick overview 
 ## Database class
 
 Every project using drift needs at least one class to access a database. This class references all the
-tables you want to use and is the central entrypoint for drift's code generator.
+tables you want to use and is the central entry point for drift's code generator.
 In this example, we'll assume that this database class is defined in a file called `database.dart` and
 somewhere under `lib/`. Of course, you can put this class in any Dart file you like.
 

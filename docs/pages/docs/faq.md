@@ -124,7 +124,7 @@ Sqflite is a Flutter package that provides bindings to the sqlite api for both i
 and has stable api. In fact, the `moor_flutter` or `drift_sqflite` variants are built on top of sqflite. But even though sqflite
 has an api to construct some simple queries in Dart, drift goes a bit further by
 
-* Generating typesafe mapping code for your queries
+* Generating type-safe mapping code for your queries
 * Providing auto-updating streams for queries
 * Managing `CREATE TABLE` statements and most schema migrations
 * A more fluent api to compose queries
