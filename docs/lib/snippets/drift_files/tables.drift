@@ -13,7 +13,7 @@ CREATE TABLE categories (
 -- You can also create an index or triggers with drift files
 CREATE INDEX categories_description ON categories(description);
 
--- we can put named sql queries in here as well:
+-- we can put named SQL queries in here as well:
 createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
 deleteById: DELETE FROM todos WHERE id = :id;
 allTodos: SELECT * FROM todos;

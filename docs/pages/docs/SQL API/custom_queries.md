@@ -25,7 +25,7 @@ the second section gives an example for a custom query defined at runtime.
 
 ## Statements with a generated api
 
-You can instruct drift to automatically generate a typesafe
+You can instruct drift to automatically generate a type-safe
 API for your select, update and delete statements. Of course, you can still write custom
 sql manually. See the sections below for details.
 
@@ -92,6 +92,6 @@ Of course, you can also use indexed variables (like `?12`) - for more informatio
 
 ## Custom update statements
 For update and delete statements, you can use `customUpdate`. Just like `customSelect`, that method
-also takes a sql statement and optional variables. You can also tell drift which tables will be
+also takes an SQL statement and optional variables. You can also tell drift which tables will be
 affected by your query using the optional `updates` parameter. That will help with other select
 streams, which will then update automatically.

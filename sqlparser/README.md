@@ -1,16 +1,16 @@
 # sqlparser
 
-Sql parser and static analyzer written in Dart. At the moment, this library targets the
-sqlite dialect only.
+SQL parser and static analyzer written in Dart. At the moment, this library targets the
+SQLite dialect only.
 
 ## Features
 
-This library aims to support every sqlite feature, which includes parsing and detailed
+This library aims to support every SQLite feature, which includes parsing and detailed
 static analysis.
 We can resolve what type a column in a `SELECT` statement has, infer types for variables,
 find semantic errors and more.
 
-This library supports most sqlite features:
+This library supports most SQLite features:
 - DQL: Full support, including joins, `group by`, nested and compound selects, `WITH` clauses
   and window functions
 - DDL: Supports `CREATE TABLE` statements, including advanced features like foreign keys or
@@ -18,7 +18,7 @@ This library supports most sqlite features:
   `CREATE TRIGGER` and `CREATE INDEX` statements.
 
 ### Using the parser
-To obtain an abstract syntax tree from an sql statement, use `SqlEngine.parse`.
+To obtain an abstract syntax tree from an SQL statement, use `SqlEngine.parse`.
 ```dart
 import 'package:sqlparser/sqlparser.dart';
 
@@ -35,11 +35,11 @@ LIMIT 5 OFFSET 5 * 3
 ```
 
 ### Analysis
-Given information about all tables and a sql statement, this library can:
+Given information about all tables and an SQL statement, this library can:
 
 1. Determine which result columns a query is going to have, including types and nullability
 2. Make an educated guess about what type the variables in the query should have (it's not really
-   possible to be 100% accurate about this because sqlite is very flexible at types, but this library
+   possible to be 100% accurate about this because SQLite is very flexible at types, but this library
    gets it mostly right)
 3. Issue basic warnings about queries that are syntactically valid but won't run (references unknown
    tables / columns, uses undefined functions, etc.)
@@ -70,7 +70,7 @@ resolvedColumns.map((c) => context.typeOf(c).type.type); // int, text, int, text
 
 ## But why?
 [Drift](https://pub.dev/packages/drift), a persistence library for Dart apps, uses this
-package to generate type-safe methods from sql.
+package to generate type-safe methods from SQL.
 
 ## Thanks
 - To [Bob Nystrom](https://github.com/munificent) for his amazing ["Crafting Interpreters"](https://craftinginterpreters.com/)

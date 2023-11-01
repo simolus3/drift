@@ -9,9 +9,9 @@ path: docs/getting-started/expressions/
 template: layouts/docs/single
 ---
 
-Expressions are pieces of sql that return a value when the database interprets them.
+Expressions are pieces of SQL that return a value when the database interprets them.
 The Dart API from drift allows you to write most expressions in Dart and then convert
-them to sql. Expressions are used in all kinds of situations. For instance, `where`
+them to SQL. Expressions are used in all kinds of situations. For instance, `where`
 expects an expression that returns a boolean.
 
 In most cases, you're writing an expression that combines other expressions. Any
@@ -62,7 +62,7 @@ Expression.and([
 ## Arithmetic
 
 For `int` and `double` expressions, you can use the `+`, `-`, `*` and `/` operators. To
-run calculations between a sql expression and a Dart value, wrap it in a `Variable`:
+run calculations between an SQL expression and a Dart value, wrap it in a `Variable`:
 ```dart
 Future<List<Product>> canBeBought(int amount, int price) {
   return (select(products)..where((p) {
@@ -73,7 +73,7 @@ Future<List<Product>> canBeBought(int amount, int price) {
 ```
 
 String expressions define a `+` operator as well. Just like you would expect, it performs
-a concatenation in sql.
+a concatenation in SQL.
 
 For integer values, you can use `~`, `bitwiseAnd` and `bitwiseOr` to perform
 bitwise operations:
@@ -81,7 +81,7 @@ bitwise operations:
 {% include "blocks/snippet" snippets = snippets name = 'bitwise' %}
 
 ## Nullability
-To check whether an expression evaluates to `NULL` in sql, you can use the `isNull` extension:
+To check whether an expression evaluates to `NULL` in SQL, you can use the `isNull` extension:
 
 ```dart
 final withoutCategories = select(todos)..where((row) => row.category.isNull());
@@ -213,7 +213,7 @@ with the `separator` argument on `groupConcat`.
 ## Mathematical functions and regexp
 
 When using a `NativeDatabase`, a basic set of trigonometric functions will be available.
-It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in sql queries.
+It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in SQL queries.
 For more information, see the [list of functions]({{ "../Platforms/vm.md#moor-only-functions" | pageUrl }}) here.
 
 ## Subqueries
@@ -261,8 +261,8 @@ Drift also supports subqueries that appear in `JOIN`s, which are described in th
 [documentation for joins]({{ 'select.md#subqueries' | pageUrl }}).
 
 ## Custom expressions
-If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.
-It takes a `sql` parameter that lets you write custom expressions:
+If you want to inline custom SQL into Dart queries, you can use a `CustomExpression` class.
+It takes an `sql` parameter that lets you write custom expressions:
 ```dart
 const inactive = CustomExpression<bool, BoolType>("julianday('now') - julianday(last_login) > 60");
 select(users)..where((u) => inactive);
@@ -270,5 +270,5 @@ select(users)..where((u) => inactive);
 
 _Note_: It's easy to write invalid queries by using `CustomExpressions` too much. If you feel like
 you need to use them because a feature you use is not available in drift, consider creating an issue
-to let us know. If you just prefer sql, you could also take a look at
-[compiled sql]({{ "../SQL API/custom_queries.md" | pageUrl }}) which is typesafe to use.
+to let us know. If you just prefer SQL, you could also take a look at
+[compiled SQL]({{ "../SQL API/custom_queries.md" | pageUrl }}) which is type-safe to use.

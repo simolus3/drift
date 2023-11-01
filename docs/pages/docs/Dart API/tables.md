@@ -11,7 +11,7 @@ path: /docs/getting-started/advanced_dart_tables/
 {% assign setup = 'package:drift_docs/snippets/setup/database.dart.excerpt.json' | readString | json_decode %}
 
 In relational databases, tables are used to describe the structure of rows. By
-adhering to a predefined schema, drift can generate typesafe code for your
+adhering to a predefined schema, drift can generate type-safe code for your
 database.
 As already shown in the [setup]({{ '../setup.md#database-class' | pageUrl }})
 page, drift provides APIs to declare tables in Dart:
