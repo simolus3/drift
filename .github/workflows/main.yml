@@ -82,14 +82,6 @@ jobs:
           dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: melos bootstrap --scope drift
         working-directory: .
-      - name: Get dependencies for plugin
-        run: |
-          echo "dependency_overrides:" >> pubspec_overrides.yaml
-          echo "  drift: {path: ../../}" >> pubspec_overrides.yaml
-          echo "  drift_dev: {path: ../../../drift_dev}" >> pubspec_overrides.yaml
-          echo "  sqlparser: {path: ../../../sqlparser}" >> pubspec_overrides.yaml
-          dart pub get
-        working-directory: drift/tools/analyzer_plugin
       # analysis
       - run: dart format -o none --set-exit-if-changed .
         name: dartfmt
