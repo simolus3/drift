@@ -1,3 +1,7 @@
+## 2.13.1
+
+- Fix a bug when running batches over serialized communication channels.
+
 ## 2.13.0
 
 - Add APIs to setup Wasm databases with custom drift workers.
