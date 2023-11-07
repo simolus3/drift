@@ -128,7 +128,8 @@ class ElementSerializer {
           'staticReferences': [
             for (final reference in source.staticReferences)
               _serializeTableReferenceInDartView(reference),
-          ]
+          ],
+          'staticSource':source.staticSource
         };
       }
 
@@ -647,6 +648,9 @@ class ElementDeserializer {
               for (final element in serializedSource.list('staticReferences'))
                 readReference(element as Map)
             ],
+              serializedSource['staticSource'] != null
+                  ? serializedSource['staticSource'] as String
+                  : null,
           );
         } else {
           throw UnsupportedError('Unknown view source $serializedSource');
