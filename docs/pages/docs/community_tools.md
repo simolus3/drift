@@ -11,6 +11,16 @@ Do you have a drift-related package you want to share? Awesome, please let me kn
 [Twitter](https://twitter.com/dersimolus) or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 {% endblock %}
 
+## Conflict-free replicated datatypes
+
+Conflict-free replicated datatypes (CRDTs) enable synchronization and replication of data
+even when offline.
+The [sql\_crdt](https://pub.dev/packages/sql_crdt) package by Daniel Cachapa uses the
+`sqlparser` package from the drift project transforms SQL queries at runtime to implement
+CRDTs for databases.
+The [drift\_crdt](https://pub.dev/packages/drift_crdt) package by Janez Štupar provides a
+wrapper around this for drift.
+
 ## Storage inspector
 
 [Nicola Verbeeck](https://github.com/NicolaVerbeeck) wrote the `storage_inspector` packages, which

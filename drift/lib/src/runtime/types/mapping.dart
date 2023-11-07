@@ -155,7 +155,7 @@ final class SqlTypes {
         // thing.
         result = DateTime.parse(rawValue);
       } else {
-        // Result from complex date tmie transformation. Interpret as UTC,
+        // Result from complex date time transformation. Interpret as UTC,
         // which is what sqlite3 does by default.
         result = DateTime.parse('${rawValue}Z');
       }
