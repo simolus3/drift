@@ -50,7 +50,7 @@ If you want to use another constructor, set the `constructor` parameter on the
 {% assign snippets = "package:drift_docs/snippets/custom_row_classes/named.dart.excerpt.json" | readString | json_decode %}
 {% include "blocks/snippet" snippets = snippets name = "named" %}
 
-### Static and aynchronous factories
+### Static and asynchronous factories
 
 Starting with drift 2.0, the custom constructor set with the `constructor`
 parameter on the `@UseRowClass` annotation may also refer to a static method
