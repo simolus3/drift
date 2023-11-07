@@ -96,6 +96,6 @@ class DartViewSource extends DriftViewSource {
   final AnnotatedDartCode dartQuerySource;
   final TableReferenceInDartView? primaryFrom;
   final List<TableReferenceInDartView> staticReferences;
-
-  DartViewSource(this.dartQuerySource, this.primaryFrom, this.staticReferences);
+  final String? staticSource;
+  DartViewSource(this.dartQuerySource, this.primaryFrom, this.staticReferences, [this.staticSource]);
 }

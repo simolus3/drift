@@ -33,6 +33,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'store_date_time_values_as_text',
             'case_from_dart_to_sql',
             'write_to_columns_mixins',
+            'assume_correct_reference',
             'has_separate_analyzer',
             'preamble',
             'fatal_warnings'
@@ -94,6 +95,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           preamble: $checkedConvert('preamble', (v) => v as String?),
           hasDriftAnalyzer: $checkedConvert(
               'has_separate_analyzer', (v) => v as bool? ?? false),
+          assumeCorrectReference: $checkedConvert(
+              'assume_correct_reference', (v) => v as bool? ?? false),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
         );
@@ -124,6 +127,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'writeToColumnsMixins': 'write_to_columns_mixins',
         'fatalWarnings': 'fatal_warnings',
         'hasDriftAnalyzer': 'has_separate_analyzer',
+        'assumeCorrectReference': 'assume_correct_reference',
         'dialect': 'sql'
       },
     );
@@ -157,6 +161,7 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'case_from_dart_to_sql':
           _$CaseFromDartToSqlEnumMap[instance.caseFromDartToSql]!,
       'write_to_columns_mixins': instance.writeToColumnsMixins,
+      'assume_correct_reference': instance.assumeCorrectReference,
       'has_separate_analyzer': instance.hasDriftAnalyzer,
       'preamble': instance.preamble,
       'fatal_warnings': instance.fatalWarnings,

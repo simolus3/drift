@@ -138,7 +138,7 @@ class ViewWriter extends TableOrViewWriter {
     final source = view.source;
     if (source is DartViewSource) {
       emitter
-        ..write('(attachedDatabase.selectOnly(${source.primaryFrom?.name})'
+        ..write('(attachedDatabase.selectOnly(${scope.options.assumeCorrectReference? source.primaryFrom?.name ?? source.staticSource:source.primaryFrom?.name})'
             '..addColumns(\$columns))')
         ..writeDart(source.dartQuerySource)
         ..writeln(';');

@@ -34,6 +34,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         structure.dartQuerySource,
         structure.primarySource,
         staticReferences,
+        structure.staticSource
       ),
       references: [
         for (final reference in staticReferences) reference.table,
@@ -178,7 +179,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     final from = target.argumentList.arguments[0].toSource();
     final resolvedFrom =
         references.firstWhereOrNull((element) => element.name == from);
-    if (resolvedFrom == null) {
+    if (resolvedFrom == null && !resolver.driver.options.assumeCorrectReference) {
       reportError(
         DriftAnalysisError.inDartAst(
           as,
@@ -188,11 +189,28 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         ),
       );
     }
+    AnnotatedDartCode query;
+    if (resolvedFrom == null &&
+        resolver.driver.options.assumeCorrectReference) {
+      query = AnnotatedDartCode.build(
+          (builder) => builder.addText(body.expression.toSource().replaceAll(target!.toSource(), '')));
+    } else {
+      query = AnnotatedDartCode.build(
+          (builder) => builder.addAstNode(body.expression, exclude: {target!}));
+    }
 
-    final query = AnnotatedDartCode.build(
-        (builder) => builder.addAstNode(body.expression, exclude: {target!}));
+    // if(resolver.driver.options.assumeCorrectReference){
+    //   bool separate = false;
+    //   for (int i = 0; i < query.elements.length; i++) {
+    //     if (separate && query.elements[i] is String && i != query.elements.length-1) {
+    //       query.elements[i]+=',';
+    //       separate = false;
+    //     }
+    //     separate = query.elements[i] is DartTopLevelSymbol;
+    //   }
+    // }
     return _ParsedDartViewSelect(
-        resolvedFrom, innerJoins, outerJoins, columnExpressions, query);
+        resolvedFrom, innerJoins, outerJoins, columnExpressions, query, from);
   }
 
   Future<List<DriftColumn>> _parseColumns(
@@ -209,7 +227,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       if (parts.length > 1) {
         final reference =
             references.firstWhereOrNull((ref) => ref.name == parts[0]);
-        if (reference == null) {
+        if (reference == null || reference.table == null) {
           reportError(DriftAnalysisError.inDartAst(
             discovered.dartElement,
             columnReference,
@@ -280,7 +298,11 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           nameInSql: ReCase(getter.name).snakeCase,
           nullable: true,
           constraints: [
-            ColumnGeneratedAs(AnnotatedDartCode.ast(expression), false)
+            resolver.driver.options.assumeCorrectReference
+                ? ColumnGeneratedAs(AnnotatedDartCode.build((builder) {
+                    builder.addText(expression.toSource());
+                  }), false)
+                : ColumnGeneratedAs(AnnotatedDartCode.ast(expression), false),
           ],
         ));
       }
@@ -310,8 +332,9 @@ class _ParsedDartViewSelect {
   final List<Expression> selectedColumns;
   final AnnotatedDartCode dartQuerySource;
 
+  final String? staticSource;
   _ParsedDartViewSelect(this.primarySource, this.innerJoins, this.outerJoins,
-      this.selectedColumns, this.dartQuerySource);
+      this.selectedColumns, this.dartQuerySource, [this.staticSource]);
 
   bool referenceIsNullable(TableReferenceInDartView ref) {
     return ref != primarySource && !innerJoins.contains(ref);
