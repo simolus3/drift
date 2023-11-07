@@ -1,3 +1,7 @@
+## 2.14.0-dev
+
+- Add the `QueryInterceptor` to easily monitor all database calls made by drift.
+
 ## 2.13.1
 
 - Fix a bug when running batches over serialized communication channels.

@@ -30,7 +30,7 @@ dependencies:
   io: ^1.0.3
 
   # Drift-specific analysis and apis
-  drift: '>=2.13.0 <2.14.0'
+  drift: '>=2.14.0 <2.15.0'
   sqlite3: '>=0.1.6 <3.0.0'
   sqlparser: '^0.32.0'
 
