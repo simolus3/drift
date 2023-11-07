@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift_docs/snippets/dart_api/datetime_conversion.dart';
+import 'package:drift_docs/snippets/log_interceptor.dart';
 import 'package:drift_docs/snippets/modular/schema_inspection.dart';
 import 'package:test/test.dart';
 
@@ -116,5 +117,35 @@ void main() {
       final row = await db.users.findById(2).getSingle();
       expect(row.name, 'bar');
     });
+  });
+
+  test('interceptor', () {
+    expect(
+      () async {
+        final db =
+            Database(NativeDatabase.memory().interceptWith(LogInterceptor()));
+
+        await db.batch((batch) {
+          batch.insert(db.users, UsersCompanion.insert(name: 'foo'));
+        });
+
+        await db.users.all().get();
+      },
+      prints(
+        allOf(
+          stringContainsInOrder(
+            [
+              'begin',
+              'Running batch with BatchedStatements',
+              ' => succeeded after ',
+              'Running commit',
+              ' => succeeded after ',
+              'Running SELECT * FROM "users"; with []',
+              ' => succeeded after'
+            ],
+          ),
+        ),
+      ),
+    );
   });
 }
