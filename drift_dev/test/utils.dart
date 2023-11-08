@@ -28,6 +28,10 @@ Logger loggerThat(dynamic expectedLogs) {
   return logger;
 }
 
+TypeMatcher<LogRecord> record(dynamic message) {
+  return isA<LogRecord>().having((e) => e.message, 'message', message);
+}
+
 final _packageConfig = Future(() async {
   final uri = await Isolate.packageConfig;
 
@@ -76,6 +80,10 @@ Future<DriftBuildResult> emulateDriftBuild({
       // easier to debug when running builders in a serial order.
       for (final input in inputs.keys) {
         final inputId = makeAssetId(input);
+
+        // Assets from other packages are visible, but we're not running
+        // builders on them.
+        if (inputId.package != 'a') continue;
 
         if (expectedOutputs(stage, inputId).isNotEmpty) {
           final readerForPhase = _TrackingAssetReader(reader);

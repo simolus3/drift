@@ -625,8 +625,7 @@ class MyDatabase {
         Future<void> runTest(String source, expectedMessage) async {
           final build = emulateDriftBuild(
             inputs: {'a|lib/a.drift': source},
-            logger: loggerThat(emits(isA<LogRecord>()
-                .having((e) => e.message, 'message', expectedMessage))),
+            logger: loggerThat(emits(record(expectedMessage))),
             modularBuild: true,
             options: options,
           );
@@ -660,5 +659,41 @@ class MyDatabase {
         });
       });
     }
+  });
+
+  test('warns about missing imports', () async {
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.drift': '''
+import 'package:b/b.drift';
+import 'package:a/missing.drift';
+
+CREATE TABLE users (
+  another INTEGER REFERENCES b(foo)
+);
+''',
+        'b|lib/b.drift': '''
+CREATE TABLE b (foo INTEGER);
+''',
+      },
+      logger: loggerThat(
+        emitsInAnyOrder(
+          [
+            record(
+              allOf(
+                contains(
+                    "The imported file, `package:b/b.drift`, does not exist or can't be imported"),
+                contains('Note: When importing drift files across packages'),
+              ),
+            ),
+            record(allOf(
+              contains('package:a/missing.drift'),
+              isNot(contains('Note: When')),
+            )),
+            record(contains('`b` could not be found in any import.')),
+          ],
+        ),
+      ),
+    );
   });
 }

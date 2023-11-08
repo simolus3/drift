@@ -174,19 +174,40 @@ class DriftAnalysisDriver {
   }
 
   Future<void> _warnAboutUnresolvedImportsInDriftFile(FileState known) async {
+    await discoverIfNecessary(known);
+
     final state = known.discovery;
     if (state is DiscoveredDriftFile) {
       for (final import in state.imports) {
         final file = await findLocalElements(import.importedUri);
 
         if (file.isValidImport != true) {
-          known.errorsDuringDiscovery.add(
-            DriftAnalysisError.inDriftFile(
-              import.ast,
-              'The imported file, `${import.importedUri}`, does not exist or '
-              "can't be imported.",
-            ),
+          var crossesPackageBoundaries = false;
+
+          if (import.importedUri.scheme == 'package' &&
+              known.ownUri.scheme == 'package') {
+            final ownPackage = known.ownUri.pathSegments.first;
+            final importedPackage = import.importedUri.pathSegments.first;
+            crossesPackageBoundaries = ownPackage != importedPackage;
+          }
+
+          final message = StringBuffer(
+            'The imported file, `${import.importedUri}`, does not exist or '
+            "can't be imported.",
           );
+          if (crossesPackageBoundaries) {
+            message
+              ..writeln()
+              ..writeln(
+                'Note: When importing drift files across packages, the '
+                'imported package needs to apply a drift builder. '
+                'See https://github.com/simolus3/drift/issues/2719 for '
+                'details.',
+              );
+          }
+
+          known.errorsDuringDiscovery.add(
+              DriftAnalysisError.inDriftFile(import.ast, message.toString()));
         }
       }
     }
@@ -241,7 +262,7 @@ class DriftAnalysisDriver {
     await _warnAboutUnresolvedImportsInDriftFile(known);
 
     // Also make sure elements in transitive imports have been resolved.
-    final seen = cache.knownFiles.keys.toSet();
+    final seen = <Uri>{};
     final pending = <Uri>[known.ownUri];
 
     while (pending.isNotEmpty) {
