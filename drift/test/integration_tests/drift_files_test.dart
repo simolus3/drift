@@ -11,7 +11,7 @@ const _createNoIds =
     'WITHOUT ROWID;';
 
 const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS "with_defaults" ('
-    "\"a\" TEXT DEFAULT 'something', \"b\" INTEGER UNIQUE);";
+    "\"a\" MY_TEXT DEFAULT 'something', \"b\" INTEGER UNIQUE);";
 
 const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS "with_constraints" ('
     '"a" TEXT, "b" INTEGER NOT NULL, "c" REAL, '

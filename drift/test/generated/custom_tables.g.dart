@@ -106,7 +106,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   static const VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String> a = GeneratedColumn<String>(
       'a', aliasedName, true,
-      type: DriftSqlType.string,
+      type: const CustomTextType(),
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT \'something\'',
       defaultValue: const CustomExpression('\'something\''));
@@ -144,7 +144,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WithDefault(
       a: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}a']),
+          .read(const CustomTextType(), data['${effectivePrefix}a']),
       b: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}b']),
     );
@@ -267,7 +267,7 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (a.present) {
-      map['a'] = Variable<String>(a.value);
+      map['a'] = Variable<String>(a.value, const CustomTextType());
     }
     if (b.present) {
       map['b'] = Variable<int>(b.value);
@@ -1801,7 +1801,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           ...generatedpredicate.watchedTables,
         }).asyncMap((QueryRow row) async => MultipleResult(
           row: row,
-          a: row.readNullable<String>('a'),
+          a: row.readNullableWithType<String>(const CustomTextType(), 'a'),
           b: row.readNullable<int>('b'),
           c: await withConstraints.mapFromRowOrNull(row,
               tablePrefix: 'nested_0'),
