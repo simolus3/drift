@@ -256,4 +256,33 @@ void main() {
       [r'$.foo'],
     ));
   });
+
+  group('count', () {
+    test('all', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) async => [
+            {'c0': 3}
+          ]);
+
+      final result = await db.todosTable.count().getSingle();
+      expect(result, 3);
+
+      verify(executor.runSelect(
+          'SELECT COUNT(*) AS "c0" FROM "todos";', argThat(isEmpty)));
+    });
+
+    test('with filter', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) async => [
+            {'c0': 2}
+          ]);
+
+      final result = await db.todosTable
+          .count(where: (row) => row.id.isBiggerThanValue(12))
+          .getSingle();
+      expect(result, 2);
+
+      verify(executor.runSelect(
+          'SELECT COUNT(*) AS "c0" FROM "todos" WHERE "todos"."id" > ?;',
+          [12]));
+    });
+  });
 }
