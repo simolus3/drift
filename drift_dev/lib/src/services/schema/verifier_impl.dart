@@ -6,6 +6,7 @@ import 'package:drift_dev/api/migrations.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import 'find_differences.dart';
+import 'verifier_common.dart';
 
 Expando<List<Input>> expectedSchema = Expando();
 
@@ -94,21 +95,6 @@ Input? _parseInputFromSchemaRow(
   return Input(name, row['sql'] as String);
 }
 
-/// Attempts to recognize whether [name] is likely the name of an internal
-/// sqlite3 table (like `sqlite3_sequence`) that we should not consider when
-/// comparing schemas.
-bool isInternalElement(String name, List<String> virtualTables) {
-  // Skip sqlite-internal tables, https://www.sqlite.org/fileformat2.html#intschema
-  if (name.startsWith('sqlite_')) return true;
-  if (virtualTables.any((v) => name.startsWith('${v}_'))) return true;
-
-  // This file is added on some Android versions when using the native Android
-  // database APIs, https://github.com/simolus3/drift/discussions/2042
-  if (name == 'android_metadata') return true;
-
-  return false;
-}
-
 extension CollectSchemaDb on DatabaseConnectionUser {
   Future<List<Input>> collectSchemaInput(List<String> virtualTables) async {
     final result = await customSelect('SELECT * FROM sqlite_master;').get();
@@ -138,17 +124,6 @@ extension CollectSchema on QueryExecutor {
     }
 
     return inputs;
-  }
-}
-
-void verify(List<Input> referenceSchema, List<Input> actualSchema,
-    bool validateDropped) {
-  final result =
-      FindSchemaDifferences(referenceSchema, actualSchema, validateDropped)
-          .compare();
-
-  if (!result.noChanges) {
-    throw SchemaMismatch(result.describe());
   }
 }
 

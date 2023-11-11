@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:drift/drift.dart';
 import 'package:drift/src/remote/protocol.dart';
+import 'package:drift/src/runtime/executor/transactions.dart';
 
-import '../query_builder/query_builder.dart';
 import 'devtools.dart';
 
 /// A service extension making asynchronous requests on drift databases
@@ -26,7 +27,7 @@ class DriftServiceExtension {
         final stream = tracked.database.tableUpdates();
         final id = _subscriptionId++;
 
-        stream.listen((event) {
+        _activeSubscriptions[id] = stream.listen((event) {
           postEvent('event', {
             'subscription': id,
             'payload':
@@ -60,6 +61,16 @@ class DriftServiceExtension {
         };
 
         return _protocol.encodePayload(result);
+      case 'collect-expected-schema':
+        final executor = _CollectCreateStatements();
+        await tracked.database.runConnectionZoned(
+            BeforeOpenRunner(tracked.database, executor), () async {
+          // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+          final migrator = tracked.database.createMigrator();
+          await migrator.createAll();
+        });
+
+        return executor.statements;
       default:
         throw UnsupportedError('Method $action');
     }
@@ -95,4 +106,53 @@ class DriftServiceExtension {
   }
 
   static const _protocol = DriftProtocol();
+}
+
+class _CollectCreateStatements extends QueryExecutor {
+  final List<String> statements = [];
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw UnimplementedError();
+  }
+
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) {
+    return Future.value(true);
+  }
+
+  @override
+  Future<void> runBatched(BatchedStatements statements) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> runCustom(String statement, [List<Object?>? args]) {
+    statements.add(statement);
+    return Future.value();
+  }
+
+  @override
+  Future<int> runDelete(String statement, List<Object?> args) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> runInsert(String statement, List<Object?> args) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List<Object?> args) {
+    throw UnimplementedError();
+  }
 }

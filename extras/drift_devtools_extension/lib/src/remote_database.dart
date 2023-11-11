@@ -71,6 +71,11 @@ class RemoteDatabase {
     await _executeQuery<void>(ExecuteQuery(StatementMethod.custom, sql, args));
   }
 
+  Future<List<String>> get createStatements async {
+    final res = await _driftRequest('collect-expected-schema');
+    return (res as List).cast();
+  }
+
   Future<int> _newTableSubscription() async {
     final result = await _driftRequest('subscribe-to-tables');
     return result as int;

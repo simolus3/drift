@@ -2,10 +2,13 @@ import 'package:drift/drift.dart';
 import 'package:drift/internal/migrations.dart';
 import 'package:drift/native.dart';
 import 'package:drift_dev/src/services/schema/verifier_impl.dart';
+import 'package:drift_dev/src/services/schema/verifier_common.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 export 'package:drift/internal/migrations.dart';
+export 'package:drift_dev/src/services/schema/verifier_common.dart'
+    show SchemaMismatch;
 
 abstract class SchemaVerifier {
   factory SchemaVerifier(SchemaInstantiationHelper helper) =
@@ -128,18 +131,6 @@ class _GenerateFromScratch extends GeneratedDatabase {
 
   @override
   int get schemaVersion => 1;
-}
-
-/// Thrown when the actual schema differs from the expected schema.
-class SchemaMismatch implements Exception {
-  final String explanation;
-
-  SchemaMismatch(this.explanation);
-
-  @override
-  String toString() {
-    return 'Schema does not match\n$explanation';
-  }
 }
 
 /// Contains an initialized schema with all tables, views, triggers and indices.

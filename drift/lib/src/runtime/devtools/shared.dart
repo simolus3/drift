@@ -93,6 +93,7 @@ class EntityDescription {
     return EntityDescription(
       name: entity.entityName,
       type: switch (entity) {
+        VirtualTableInfo() => 'virtual_table',
         TableInfo() => 'table',
         ViewInfo() => 'view',
         Index() => 'index',

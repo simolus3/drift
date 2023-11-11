@@ -606,3 +606,15 @@ extension on TransactionExecutor {
     }
   }
 }
+
+/// Exposes the private `_runConnectionZoned` method for other parts of drift.
+///
+/// This is only used by the DevTools extension.
+@internal
+extension RunWithEngine on DatabaseConnectionUser {
+  /// Call the private [_runConnectionZoned] method.
+  Future<T> runConnectionZoned<T>(
+      DatabaseConnectionUser user, Future<T> Function() calculation) {
+    return _runConnectionZoned(user, calculation);
+  }
+}

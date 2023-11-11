@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/services/schema/verifier_impl.dart';
 import 'package:logging/logging.dart';
 import 'package:sqlite3/common.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -8,6 +7,7 @@ import 'package:sqlparser/sqlparser.dart';
 import '../../analysis/backend.dart';
 import '../../analysis/driver/driver.dart';
 import '../../analysis/results/results.dart';
+import 'verifier_common.dart';
 
 /// Extracts drift elements from the schema of an existing database.
 ///
