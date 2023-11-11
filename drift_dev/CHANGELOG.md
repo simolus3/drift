@@ -1,5 +1,7 @@
 ## 2.14.0-dev
 
+## 2.13.2
+
 - Fix generated queries relying on custom types.
 
 ## 2.13.1
