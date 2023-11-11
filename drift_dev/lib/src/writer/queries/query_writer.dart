@@ -210,7 +210,7 @@ class QueryWriter {
     if (column.sqlType.isCustom) {
       final method = isNullable ? 'readNullableWithType' : 'readWithType';
       final typeImpl = _emitter.dartCode(column.sqlType.custom!.expression);
-      code = 'row.$method<$rawDartType>($dartLiteral, $typeImpl)';
+      code = 'row.$method<$rawDartType>($typeImpl, $dartLiteral)';
     } else {
       final method = isNullable ? 'readNullable' : 'read';
       code = 'row.$method<$rawDartType>($dartLiteral)';
