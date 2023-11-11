@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/remote/protocol.dart';
 import 'package:drift/src/runtime/executor/transactions.dart';
 
+import '../api/runtime_api.dart';
 import 'devtools.dart';
 
 /// A service extension making asynchronous requests on drift databases

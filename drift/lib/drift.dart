@@ -8,7 +8,7 @@ export 'dart:typed_data' show Uint8List;
 
 export 'src/dsl/dsl.dart';
 export 'src/runtime/api/options.dart';
-export 'src/runtime/api/runtime_api.dart';
+export 'src/runtime/api/runtime_api.dart' hide RunWithEngine;
 export 'src/runtime/custom_result_set.dart';
 export 'src/runtime/data_class.dart';
 export 'src/runtime/data_verification.dart';
