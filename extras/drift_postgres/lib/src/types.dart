@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:postgres/postgres.dart';
 // ignore: implementation_imports
-import 'package:postgres/src/text_codec.dart';
+import 'package:postgres/src/types/text_codec.dart';
 import 'package:uuid/uuid.dart';
 
 class PostgresType<T extends Object> implements CustomSqlType<T> {
@@ -43,7 +43,7 @@ class UuidType extends PostgresType<UuidValue> {
 
   @override
   UuidValue read(Object fromSql) {
-    return UuidValue(fromSql as String);
+    return UuidValue.fromString(fromSql as String);
   }
 }
 
@@ -57,12 +57,12 @@ class PointType extends PostgresType<Point> {
   }
 }
 
-class IntervalType extends PostgresType<Duration> {
+class IntervalType extends PostgresType<Interval> {
   const IntervalType() : super(type: Type.interval, name: 'interval');
 
   @override
-  String mapToSqlLiteral(Duration dartValue) {
-    return "'${dartValue.inMicroseconds} microseconds'::interval";
+  String mapToSqlLiteral(Interval dartValue) {
+    return "'$dartValue'::interval";
   }
 }
 

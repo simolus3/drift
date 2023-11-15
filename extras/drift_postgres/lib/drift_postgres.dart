@@ -40,7 +40,7 @@ final class PgTypes {
   static const CustomSqlType<UuidValue> uuid = UuidType();
 
   /// The `interval` type in Postgres.
-  static const CustomSqlType<Duration> interval = IntervalType();
+  static const CustomSqlType<pg.Interval> interval = IntervalType();
 
   /// The `date` type in Postgres.
   static const CustomSqlType<PgDate> date = DateType(

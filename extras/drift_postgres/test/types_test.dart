@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres.dart' as pg;
+import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
@@ -39,7 +40,10 @@ void main() {
     }
 
     group('uuid', () => testWith(PgTypes.uuid, Uuid().v4obj()));
-    group('interval', () => testWith(PgTypes.interval, Duration(seconds: 15)));
+    group(
+      'interval',
+      () => testWith(PgTypes.interval, Interval(months: 2, microseconds: 1234)),
+    );
     group('json', () => testWith(PgTypes.json, {'foo': 'bar'}));
     group('jsonb', () => testWith(PgTypes.jsonb, {'foo': 'bar'}));
     group('point', () => testWith(PgTypes.point, pg.Point(90, -90)));
