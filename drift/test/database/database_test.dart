@@ -6,7 +6,7 @@ import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
 
 class _FakeDb extends GeneratedDatabase {
-  _FakeDb(QueryExecutor executor) : super(executor);
+  _FakeDb(super.executor);
 
   @override
   MigrationStrategy get migration {

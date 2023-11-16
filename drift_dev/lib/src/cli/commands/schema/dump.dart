@@ -86,7 +86,8 @@ class DumpSchemaCommand extends Command {
 
     try {
       final elements = await extractDriftElementsFromDatabase(opened);
-      final userVersion = opened.select('pragma user_version').single[0] as int;
+      final userVersion =
+          opened.select('pragma user_version').single.columnAt(0) as int;
 
       return _AnalyzedDatabase(elements, userVersion);
     } finally {

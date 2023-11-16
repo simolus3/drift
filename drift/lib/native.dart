@@ -48,8 +48,8 @@ class NativeDatabase extends DelegatedDatabase {
   // when changing this, also update the documentation in `drift_vm_database_factory`.
   static const _cacheStatementsByDefault = false;
 
-  NativeDatabase._(DatabaseDelegate delegate, bool logStatements)
-      : super(delegate, isSequential: false, logStatements: logStatements);
+  NativeDatabase._(super.delegate, bool logStatements)
+      : super(isSequential: false, logStatements: logStatements);
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
@@ -253,15 +253,12 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
         );
 
   _NativeDelegate.opened(
-    Database db,
-    DatabaseSetup? setup,
-    bool closeUnderlyingWhenClosed,
+    Database super.db,
+    super.setup,
+    super.closeUnderlyingWhenClosed,
     bool cachePreparedStatements,
   )   : file = null,
         super.opened(
-          db,
-          setup,
-          closeUnderlyingWhenClosed,
           cachePreparedStatements: cachePreparedStatements,
         );
 

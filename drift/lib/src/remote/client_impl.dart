@@ -135,8 +135,7 @@ abstract class _BaseExecutor extends QueryExecutor {
 }
 
 class _RemoteQueryExecutor extends _BaseExecutor {
-  _RemoteQueryExecutor(DriftClient client, [int? executorId])
-      : super(client, executorId);
+  _RemoteQueryExecutor(super.client, [super.executorId]);
 
   Completer<void>? _setSchemaVersion;
   Future<bool>? _serverIsOpen;
@@ -181,8 +180,7 @@ class _RemoteTransactionExecutor extends _BaseExecutor
     implements TransactionExecutor {
   final int? _outerExecutorId;
 
-  _RemoteTransactionExecutor(DriftClient client, this._outerExecutorId)
-      : super(client);
+  _RemoteTransactionExecutor(super.client, this._outerExecutorId);
 
   Completer<bool>? _pendingOpen;
   bool _done = false;

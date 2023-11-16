@@ -44,11 +44,10 @@ class UnresolvedReferenceError extends AnalysisError {
   final Iterable<String> available;
 
   UnresolvedReferenceError(
-      {required AnalysisErrorType type,
+      {required super.type,
       required this.reference,
       required this.available,
-      AstNode? relevantNode})
-      : super(type: type, relevantNode: relevantNode);
+      AstNode? super.relevantNode});
 
   @override
   String get message {

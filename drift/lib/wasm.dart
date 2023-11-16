@@ -31,8 +31,8 @@ export 'src/web/wasm_setup/types.dart';
 /// how to obtain this file. A [working example](https://github.com/simolus3/drift/blob/04539882330d80519128fec1ceb120fb1623a831/examples/app/lib/database/connection/web.dart#L27-L36)
 /// is also available in the drift repository.
 class WasmDatabase extends DelegatedDatabase {
-  WasmDatabase._(DatabaseDelegate delegate, bool logStatements)
-      : super(delegate, isSequential: true, logStatements: logStatements);
+  WasmDatabase._(super.delegate, bool logStatements)
+      : super(isSequential: true, logStatements: logStatements);
 
   /// Creates a wasm database at [path] in the virtual file system of the
   /// [sqlite3] module.

@@ -15,7 +15,7 @@ part 'custom_tables.g.dart';
   },
 )
 class CustomTablesDb extends _$CustomTablesDb {
-  CustomTablesDb(QueryExecutor e) : super(e) {
+  CustomTablesDb(super.e) {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 

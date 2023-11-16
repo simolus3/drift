@@ -257,7 +257,7 @@ class TodoDb extends _$TodoDb {
   },
 )
 class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
-  SomeDao(TodoDb db) : super(db);
+  SomeDao(super.db);
 }
 
 QueryExecutor get _nullExecutor =>

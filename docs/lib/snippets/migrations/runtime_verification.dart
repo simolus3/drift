@@ -8,14 +8,14 @@ import 'package:drift_dev/api/migrations.dart';
 const kDebugMode = true;
 
 abstract class _$MyDatabase extends GeneratedDatabase {
-  _$MyDatabase(QueryExecutor executor) : super(executor);
+  _$MyDatabase(super.executor);
 }
 
 // #docregion
 
 class MyDatabase extends _$MyDatabase {
 // #enddocregion
-  MyDatabase(QueryExecutor executor) : super(executor);
+  MyDatabase(super.executor);
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables =>

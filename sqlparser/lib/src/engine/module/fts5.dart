@@ -114,20 +114,18 @@ class Fts5Table extends Table {
   final String? contentRowId;
 
   Fts5Table({
-    required String name,
+    required super.name,
     required List<TableColumn> columns,
     this.contentTable,
     this.contentRowId,
-    CreateVirtualTableStatement? definition,
+    CreateVirtualTableStatement? super.definition,
   }) : super(
-          name: name,
           resolvedColumns: [
             if (contentTable != null && contentRowId != null) RowId(),
             ...columns,
             _Fts5RankColumn(),
             _Fts5TableColumn(name),
           ],
-          definition: definition,
           isVirtual: true,
         );
 }

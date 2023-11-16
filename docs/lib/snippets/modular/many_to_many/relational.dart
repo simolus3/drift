@@ -31,7 +31,7 @@ class ShoppingCartEntries extends Table {
 
 @DriftDatabase(tables: [BuyableItems, ShoppingCarts, ShoppingCartEntries])
 class RelationalDatabase extends $RelationalDatabase {
-  RelationalDatabase(QueryExecutor e) : super(e);
+  RelationalDatabase(super.e);
 
   @override
   int get schemaVersion => 1;

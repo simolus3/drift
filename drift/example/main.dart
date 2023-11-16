@@ -64,7 +64,7 @@ abstract class TodoItemWithCategoryNameView extends View {
   TodoItemWithCategoryNameView,
 ])
 class Database extends _$Database {
-  Database(QueryExecutor e) : super(e);
+  Database(super.e);
 
   @override
   int get schemaVersion => 2;

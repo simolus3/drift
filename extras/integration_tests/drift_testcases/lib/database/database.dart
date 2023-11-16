@@ -88,7 +88,7 @@ class Database extends _$Database {
   @override
   final int schemaVersion;
 
-  Database(DatabaseConnection e, {this.schemaVersion = 2}) : super(e);
+  Database(DatabaseConnection super.e, {this.schemaVersion = 2});
 
   Database.executor(QueryExecutor db) : this(DatabaseConnection(db));
 

@@ -8,7 +8,7 @@ abstract class BaseSelectStatement extends CrudStatement with ResultSet {
   @override
   List<Column>? resolvedColumns;
 
-  BaseSelectStatement._(WithClause? withClause) : super(withClause);
+  BaseSelectStatement._(super.withClause);
 }
 
 /// Marker interface for classes that are a [BaseSelectStatement] but aren't a

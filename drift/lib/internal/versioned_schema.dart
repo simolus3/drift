@@ -223,9 +223,9 @@ class VersionedVirtualTable extends VersionedTable
   /// Create a virtual table by copying fields from [source] and applying a
   /// [alias] to columns.
   VersionedVirtualTable.aliased(
-      {required VersionedVirtualTable source, required String? alias})
+      {required VersionedVirtualTable super.source, required super.alias})
       : moduleAndArgs = source.moduleAndArgs,
-        super.aliased(source: source, alias: alias);
+        super.aliased();
 
   @override
   VersionedVirtualTable createAlias(String alias) {

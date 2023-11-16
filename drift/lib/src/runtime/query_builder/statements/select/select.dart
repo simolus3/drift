@@ -30,10 +30,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
 
   /// Used internally by drift, users will want to call
   /// [DatabaseConnectionUser.select] instead.
-  SimpleSelectStatement(
-      DatabaseConnectionUser database, ResultSetImplementation<T, D> table,
-      {this.distinct = false})
-      : super(database, table);
+  SimpleSelectStatement(super.database, super.table, {this.distinct = false});
 
   /// The tables this select statement reads from.
   @visibleForOverriding

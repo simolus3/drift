@@ -29,7 +29,7 @@ class MyDatabase extends $MyDatabase {
   @override
   int get schemaVersion => 1;
 
-  MyDatabase(QueryExecutor e) : super(e);
+  MyDatabase(super.e);
 
   // #docregion amountOfTodosInCategory
   Stream<int> amountOfTodosInCategory(int id) {

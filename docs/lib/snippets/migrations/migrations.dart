@@ -18,7 +18,7 @@ class Todos extends Table {
 
 @DriftDatabase(tables: [Todos])
 class MyDatabase extends _$MyDatabase {
-  MyDatabase(QueryExecutor e) : super(e);
+  MyDatabase(super.e);
 
   // #docregion start
   @override
