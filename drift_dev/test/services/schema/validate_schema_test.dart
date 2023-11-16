@@ -42,8 +42,7 @@ class _TestDatabase extends GeneratedDatabase {
   @override
   DriftDatabaseOptions options = DriftDatabaseOptions();
 
-  _TestDatabase.connect(super.connection)
-      : super.connect();
+  _TestDatabase.connect(super.connection) : super.connect();
 }
 
 void main() {

@@ -1,4 +1,3 @@
-
 import 'example.drift.dart';
 
 class DartExample extends ExampleDrift {
