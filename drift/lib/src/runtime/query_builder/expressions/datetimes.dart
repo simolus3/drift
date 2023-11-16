@@ -71,7 +71,7 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// ```dart
   ///  Variable(DateTime.now()).modify(DateTimeModifier.localTime()).hour
   /// ```
-  /// {@template}
+  /// {@endtemplate}
   Expression<int> get year => _StrftimeSingleFieldExpression('%Y', this);
 
   /// Extracts the month from `this` datetime expression.

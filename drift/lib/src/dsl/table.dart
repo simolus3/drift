@@ -395,7 +395,7 @@ class DriftView {
   /// By default, drift will attempt to use the view name followed by "Data"
   /// when naming data classes (e.g. a view named "UserView" will generate a
   /// data class called "UserViewData").
-  /// {@macro drift_custom_data_class}
+  /// {@endtemplate}
   final String? dataClassName;
 
   /// The parent class of generated data class. Class must extends [DataClass]!
