@@ -1690,9 +1690,7 @@ class Parser {
   }
 
   SingleColumnSetComponent _singleColumnSetComponent() {
-    final columnName =
-        _consume(TokenType.identifier, 'Expected a column name to set')
-            as IdentifierToken;
+    final columnName = _consumeIdentifier('Expected a column name to set');
     final reference = Reference(columnName: columnName.identifier)
       ..setSpan(columnName, columnName);
     _consume(TokenType.equal, 'Expected = after the column name');
