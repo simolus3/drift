@@ -112,6 +112,11 @@ class MultiColumnSetComponent extends SetComponent {
   // Will be either Tuple or SubQuery
   Expression rowValue;
 
+  List<Column?>? get resolvedTargetColumns {
+    if (columns.isEmpty) return null;
+    return columns.map((c) => c.resolvedColumn).toList();
+  }
+
   MultiColumnSetComponent({required this.columns, required this.rowValue});
 
   @override

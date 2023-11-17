@@ -142,15 +142,20 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitMultiColumnSetComponent(
       MultiColumnSetComponent e, TypeExpectation arg) {
     visitList(e.columns, const NoTypeExpectation());
-    if (e.rowValue is Tuple) {
-      final expressions = (e.rowValue as Tuple).expressions;
-      for (final (idx, expression) in expressions.indexed) {
-        _lazyCopy(expression, e.columns.elementAtOrNull(idx));
-      }
-    } else if (e.rowValue is SubQuery) {
-      // TODO: handle subquery case
+
+    final targets = e.resolvedTargetColumns ?? const [];
+    for (final column in targets) {
+      _handleColumn(column, e);
     }
-    visit(e.rowValue, const NoTypeExpectation());
+
+    final expectations = targets.map((r) {
+      if (r != null && session.graph.knowsType(r)) {
+        return ExactTypeExpectation(session.typeOf(r)!);
+      }
+      return const NoTypeExpectation();
+    }).toList();
+
+    visit(e.rowValue, SelectTypeExpectation(expectations));
   }
 
   @override
