@@ -1030,8 +1030,10 @@ class Parser {
   }
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
-  /// (in brackets) will be accepted as well.
-  Expression _consumeTuple({bool orSubQuery = false}) {
+  /// (in brackets) will be accepted as well. If parsing a [Tuple], [useAsRowValue] is
+  /// passed into the [Tuple] constructor.
+  Expression _consumeTuple(
+      {bool orSubQuery = false, bool useAsRowValue = false}) {
     final firstToken =
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
@@ -1049,7 +1051,8 @@ class Parser {
 
       _consume(
           TokenType.rightParen, 'Expected right parenthesis to close tuple');
-      return Tuple(expressions: expressions)..setSpan(firstToken, _previous);
+      return Tuple(expressions: expressions, usedAsRowValue: useAsRowValue)
+        ..setSpan(firstToken, _previous);
     } else {
       _consume(TokenType.rightParen,
           'Expected right parenthesis to finish subquery');
@@ -1686,19 +1689,49 @@ class Parser {
     )..setSpan(withClause?.first ?? updateToken, _previous);
   }
 
+  SingleColumnSetComponent _singleColumnSetComponent() {
+    final columnName =
+        _consume(TokenType.identifier, 'Expected a column name to set')
+            as IdentifierToken;
+    final reference = Reference(columnName: columnName.identifier)
+      ..setSpan(columnName, columnName);
+    _consume(TokenType.equal, 'Expected = after the column name');
+    final expr = expression();
+
+    return SingleColumnSetComponent(column: reference, expression: expr)
+      ..setSpan(columnName, _previous);
+  }
+
+  MultiColumnSetComponent _multiColumnSetComponent() {
+    final first = _consume(
+        TokenType.leftParen, 'Expected opening parenthesis before column list');
+
+    final targetColumns = <Reference>[];
+    do {
+      final columnName = _consumeIdentifier('Expected a column');
+      targetColumns.add(Reference(columnName: columnName.identifier)
+        ..setSpan(columnName, columnName));
+    } while (_matchOne(TokenType.comma));
+
+    _consume(
+        TokenType.rightParen, 'Expected closing parenthesis after column list');
+    _consume(TokenType.equal, 'Expected = after the column name list');
+    final tupleOrSubQuery =
+        _consumeTuple(orSubQuery: true, useAsRowValue: true);
+
+    return MultiColumnSetComponent(
+        columns: targetColumns, rowValue: tupleOrSubQuery)
+      ..setSpan(first, _previous);
+  }
+
   List<SetComponent> _setComponents() {
     final set = <SetComponent>[];
     do {
-      final columnName =
-          _consume(TokenType.identifier, 'Expected a column name to set')
-              as IdentifierToken;
-      final reference = Reference(columnName: columnName.identifier)
-        ..setSpan(columnName, columnName);
-      _consume(TokenType.equal, 'Expected = after the column name');
-      final expr = expression();
-
-      set.add(SetComponent(column: reference, expression: expr)
-        ..setSpan(columnName, _previous));
+      if (_check(TokenType.leftParen)) {
+        set.add(_multiColumnSetComponent());
+      } else {
+        set.add(_singleColumnSetComponent());
+      }
     } while (_matchOne(TokenType.comma));
 
     return set;

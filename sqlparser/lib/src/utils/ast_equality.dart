@@ -608,8 +608,14 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
-  void visitSetComponent(SetComponent e, void arg) {
-    _currentAs<SetComponent>(e);
+  void visitSingleColumnSetComponent(SingleColumnSetComponent e, void arg) {
+    _currentAs<SingleColumnSetComponent>(e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitMultiColumnSetComponent(MultiColumnSetComponent e, void arg) {
+    _currentAs<MultiColumnSetComponent>(e);
     _checkChildren(e);
   }
 

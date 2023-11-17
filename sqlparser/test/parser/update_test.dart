@@ -8,11 +8,11 @@ final Map<String, AstNode> testCases = {
     or: FailureMode.rollback,
     table: TableReference('tbl'),
     set: [
-      SetComponent(
+      SingleColumnSetComponent(
         column: Reference(columnName: 'a'),
         expression: NullLiteral(),
       ),
-      SetComponent(
+      SingleColumnSetComponent(
         column: Reference(columnName: 'b'),
         expression: Reference(columnName: 'c'),
       )
@@ -38,7 +38,7 @@ void main() {
       UpdateStatement(
         table: TableReference('inventory'),
         set: [
-          SetComponent(
+          SingleColumnSetComponent(
             column: Reference(columnName: 'quantity'),
             expression: BinaryExpression(
               Reference(columnName: 'quantity'),
@@ -85,7 +85,7 @@ void main() {
       UpdateStatement(
         table: TableReference('tbl'),
         set: [
-          SetComponent(
+          SingleColumnSetComponent(
             column: Reference(columnName: 'foo'),
             expression: Reference(columnName: 'bar'),
           ),

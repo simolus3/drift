@@ -113,7 +113,9 @@ class ReferenceResolver
     if (table != null) {
       // Resolve the set components against the primary table
       for (final set in e.set) {
-        _resolveReferenceInTable(set.column, table);
+        for (final column in set.columns) {
+          _resolveReferenceInTable(column, table);
+        }
       }
     }
 

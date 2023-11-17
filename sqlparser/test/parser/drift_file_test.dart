@@ -151,7 +151,7 @@ END;
               UpdateStatement(
                 table: TableReference('foo'),
                 set: [
-                  SetComponent(
+                  SingleColumnSetComponent(
                     column: Reference(columnName: 'bar'),
                     expression: Reference(columnName: 'baz'),
                   ),

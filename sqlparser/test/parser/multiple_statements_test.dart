@@ -18,7 +18,7 @@ void main() {
           UpdateStatement(
             table: TableReference('tbl'),
             set: [
-              SetComponent(
+              SingleColumnSetComponent(
                 column: Reference(columnName: 'a'),
                 expression: Reference(columnName: 'b'),
               ),

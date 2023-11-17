@@ -43,7 +43,8 @@ abstract class AstVisitor<A, R> {
   R visitDoNothing(DoNothing e, A arg);
   R visitDoUpdate(DoUpdate e, A arg);
 
-  R visitSetComponent(SetComponent e, A arg);
+  R visitSingleColumnSetComponent(SingleColumnSetComponent e, A arg);
+  R visitMultiColumnSetComponent(MultiColumnSetComponent e, A arg);
 
   R visitValuesSource(ValuesSource e, A arg);
   R visitSelectInsertSource(SelectInsertSource e, A arg);
@@ -315,7 +316,16 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   }
 
   @override
-  R? visitSetComponent(SetComponent e, A arg) {
+  R? visitSingleColumnSetComponent(SingleColumnSetComponent e, A arg) {
+    return defaultSetComponent(e, arg);
+  }
+
+  @override
+  R? visitMultiColumnSetComponent(MultiColumnSetComponent e, A arg) {
+    return defaultSetComponent(e, arg);
+  }
+
+  R? defaultSetComponent(SetComponent e, A arg) {
     return defaultNode(e, arg);
   }
 

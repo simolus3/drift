@@ -131,10 +131,26 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitSetComponent(SetComponent e, TypeExpectation arg) {
+  void visitSingleColumnSetComponent(
+      SingleColumnSetComponent e, TypeExpectation arg) {
     visit(e.column, const NoTypeExpectation());
     _lazyCopy(e.expression, e.column);
     visit(e.expression, const NoTypeExpectation());
+  }
+
+  @override
+  void visitMultiColumnSetComponent(
+      MultiColumnSetComponent e, TypeExpectation arg) {
+    visitList(e.columns, const NoTypeExpectation());
+    if (e.rowValue is Tuple) {
+      final expressions = (e.rowValue as Tuple).expressions;
+      for (final (idx, expression) in expressions.indexed) {
+        _lazyCopy(expression, e.columns.elementAtOrNull(idx));
+      }
+    } else if (e.rowValue is SubQuery) {
+      // TODO: handle subquery case
+    }
+    visit(e.rowValue, const NoTypeExpectation());
   }
 
   @override

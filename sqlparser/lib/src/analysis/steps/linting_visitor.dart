@@ -388,9 +388,8 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  @override
-  void visitSetComponent(SetComponent e, void arg) {
-    final target = e.column.resolvedColumn;
+  void _checkForGeneratedColumn(Reference column) {
+    final target = column.resolvedColumn;
 
     if (target is TableColumn && target.isGenerated) {
       context.reportError(
@@ -398,7 +397,43 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
           type: AnalysisErrorType.writeToGeneratedColumn,
           message: 'This column is generated, and generated columns cannot be '
               'updated explicitly.',
-          relevantNode: e.column,
+          relevantNode: column,
+        ),
+      );
+    }
+  }
+
+  @override
+  void visitSingleColumnSetComponent(SingleColumnSetComponent e, void arg) {
+    _checkForGeneratedColumn(e.column);
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitMultiColumnSetComponent(MultiColumnSetComponent e, void arg) {
+    for (final column in e.columns) {
+      _checkForGeneratedColumn(column);
+    }
+
+    if (e.rowValue is Tuple &&
+        e.columns.length != (e.rowValue as Tuple).expressions.length) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.cteColumnCountMismatch,
+          message:
+              'Length of column-name-list must match length of row values.',
+          relevantNode: e.rowValue,
+        ),
+      );
+    } else if (e.rowValue is SubQuery &&
+        e.columns.length !=
+            (e.rowValue as SubQuery).select.resolvedColumns?.length) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.cteColumnCountMismatch,
+          message:
+              'Length of column-name-list must match length of columns returned by SubQuery.',
+          relevantNode: e.rowValue,
         ),
       );
     }

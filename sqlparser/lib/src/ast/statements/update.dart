@@ -78,15 +78,22 @@ class UpdateStatement extends CrudStatement
   }
 }
 
-class SetComponent extends AstNode {
+abstract class SetComponent extends AstNode {
+  List<Reference> get columns;
+}
+
+class SingleColumnSetComponent extends SetComponent {
   Reference column;
   Expression expression;
 
-  SetComponent({required this.column, required this.expression});
+  @override
+  List<Reference> get columns => [column];
+
+  SingleColumnSetComponent({required this.column, required this.expression});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitSetComponent(this, arg);
+    return visitor.visitSingleColumnSetComponent(this, arg);
   }
 
   @override
@@ -97,4 +104,27 @@ class SetComponent extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [column, expression];
+}
+
+class MultiColumnSetComponent extends SetComponent {
+  @override
+  List<Reference> columns;
+  // Will be either Tuple or SubQuery
+  Expression rowValue;
+
+  MultiColumnSetComponent({required this.columns, required this.rowValue});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMultiColumnSetComponent(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    columns = transformer.transformChildren(columns, this, arg);
+    rowValue = transformer.transformChild(rowValue, this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [...columns, rowValue];
 }
