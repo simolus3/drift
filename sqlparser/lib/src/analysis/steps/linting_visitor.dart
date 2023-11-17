@@ -529,6 +529,8 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       // In expressions are tricky. The rhs can always be a row value, but the
       // lhs can only be a row value if the rhs is a subquery
       isAllowed = e == parent.inside || parent.inside is SubQuery;
+    } else if (parent is SetComponent) {
+      isAllowed = true;
     }
 
     if (!isAllowed) {
