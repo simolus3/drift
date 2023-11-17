@@ -1030,10 +1030,10 @@ class Parser {
   }
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
-  /// (in brackets) will be accepted as well. If parsing a [Tuple], [useAsRowValue] is
+  /// (in brackets) will be accepted as well. If parsing a [Tuple], [usedAsRowValue] is
   /// passed into the [Tuple] constructor.
   Expression _consumeTuple(
-      {bool orSubQuery = false, bool useAsRowValue = false}) {
+      {bool orSubQuery = false, bool usedAsRowValue = false}) {
     final firstToken =
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
@@ -1051,7 +1051,7 @@ class Parser {
 
       _consume(
           TokenType.rightParen, 'Expected right parenthesis to close tuple');
-      return Tuple(expressions: expressions, usedAsRowValue: useAsRowValue)
+      return Tuple(expressions: expressions, usedAsRowValue: usedAsRowValue)
         ..setSpan(firstToken, _previous);
     } else {
       _consume(TokenType.rightParen,
@@ -1717,7 +1717,7 @@ class Parser {
         TokenType.rightParen, 'Expected closing parenthesis after column list');
     _consume(TokenType.equal, 'Expected = after the column name list');
     final tupleOrSubQuery =
-        _consumeTuple(orSubQuery: true, useAsRowValue: true);
+        _consumeTuple(orSubQuery: true, usedAsRowValue: true);
 
     return MultiColumnSetComponent(
         columns: targetColumns, rowValue: tupleOrSubQuery)
