@@ -80,7 +80,7 @@ class _TestDatabase extends GeneratedDatabase {
   @override
   MigrationStrategy migration = MigrationStrategy();
 
-  _TestDatabase(QueryExecutor executor, this.schemaVersion) : super(executor);
+  _TestDatabase(super.executor, this.schemaVersion);
 
   @override
   Iterable<TableInfo<Table, DataClass>> get allTables {

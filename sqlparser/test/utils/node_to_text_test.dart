@@ -82,7 +82,7 @@ END;
 
       test('after update of when', () {
         testFormat('''
-CREATE TRIGGER IF NOT EXISTS my_trigger AFTER UPDATE OF c1, c2 ON t1 
+CREATE TRIGGER IF NOT EXISTS my_trigger AFTER UPDATE OF c1, c2 ON t1
   WHEN foo = bar
 BEGIN
   SELECT * FROM t2;
@@ -306,6 +306,15 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             COUNT(is_passed) FILTER (WHERE is_passed = true) passed
           FROM stats
           GROUP BY subs_id;
+        ''');
+      });
+
+      test('aggregate with order by', () {
+        testFormat('''
+          SELECT
+            string_agg(foo, ',' ORDER BY foo DESC, bar),
+            string_agg(foo, ',' ORDER BY foo DESC) FILTER (WHERE foo > 10)
+          FROM bar
         ''');
       });
 

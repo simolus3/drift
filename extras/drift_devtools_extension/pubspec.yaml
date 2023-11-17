@@ -15,17 +15,19 @@ dependencies:
   devtools_app_shared: '>=0.0.5 <0.0.6' # 0.0.6 requires unstable Flutter
   db_viewer: ^1.0.3
   rxdart: ^0.27.7
-  flutter_riverpod: ^2.4.4
+  flutter_riverpod: ^3.0.0-dev.0
   vm_service: ^11.10.0
   path: ^1.8.3
   drift: ^2.12.1
   logging: ^1.2.0
   url_launcher: ^6.1.14
+  drift_dev: ^2.13.1
+  sqlite3: ^2.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true

@@ -22,7 +22,7 @@ template: layouts/docs/single
 Drift files are a new feature that lets you write all your database code in SQL.
 But unlike raw SQL strings you might pass to simple database clients, everything in a drift file is verified
 by drift's powerful SQL analyzer.
-This allows you to write SQL queries safer: Drift will find mistakes in them during builds, and it will generate typesafe
+This allows you to write SQL queries safer: Drift will find mistakes in them during builds, and it will generate type-safe
 Dart APIs for them so that you don't have to read back results manually.
 
 ## Getting started
@@ -63,7 +63,7 @@ Inside of named queries, you can use variables just like you would expect with
 sql. We support regular variables (`?`), explicitly indexed variables (`?123`)
 and colon-named variables (`:id`). We don't support variables declared
 with @ or $. The compiler will attempt to infer the variable's type by
-looking at its context. This lets drift generate typesafe apis for your
+looking at its context. This lets drift generate type-safe APIs for your
 queries, the variables will be written as parameters to your method.
 
 When it's ambiguous, the analyzer might be unable to resolve the type of

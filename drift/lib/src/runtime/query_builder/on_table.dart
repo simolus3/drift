@@ -12,6 +12,23 @@ extension TableOrViewStatements<Tbl extends HasResultSet, Row>
     return select();
   }
 
+  /// Counts the rows in this table.
+  ///
+  /// The optional [where] clause can be used to only count rows matching the
+  /// condition, similar to [SimpleSelectStatement.where].
+  ///
+  /// The returned [Selectable] can be run once with [Selectable.getSingle] to
+  /// get the count once, or be watched as a stream with [Selectable.watchSingle].
+  Selectable<int> count({Expression<bool> Function(Tbl row)? where}) {
+    final count = countAll();
+    final stmt = selectOnly()..addColumns([count]);
+    if (where != null) {
+      stmt.where(where(asDslTable));
+    }
+
+    return stmt.map((row) => row.read(count)!);
+  }
+
   /// Composes a `SELECT` statement on the captured table or view.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.select].

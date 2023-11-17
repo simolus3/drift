@@ -5,7 +5,7 @@
 library drift.postgres;
 
 import 'package:drift/drift.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
 
 import 'src/types.dart';
@@ -23,7 +23,7 @@ typedef IntervalColumn = Column<Duration>;
 typedef JsonColumn = Column<Object>;
 
 /// Type for columns storing [PgPoint]s.
-typedef PointColumn = Column<PgPoint>;
+typedef PointColumn = Column<pg.Point>;
 
 /// Type for columns storing dates directly as ([PgDateTime]).
 typedef TimestampColumn = Column<PgDateTime>;
@@ -40,32 +40,32 @@ final class PgTypes {
   static const CustomSqlType<UuidValue> uuid = UuidType();
 
   /// The `interval` type in Postgres.
-  static const CustomSqlType<Duration> interval = IntervalType();
+  static const CustomSqlType<pg.Interval> interval = IntervalType();
 
   /// The `date` type in Postgres.
   static const CustomSqlType<PgDate> date = DateType(
-    PgDataType.date,
+    pg.Type.date,
     'date',
     PgDate.fromDateTime,
   );
 
   /// The `timestamp without time zone` type in Postgres.
   static const CustomSqlType<PgDateTime> timestampNoTimezone = DateType(
-    PgDataType.timestampWithoutTimezone,
+    pg.Type.timestampWithoutTimezone,
     'timestamp without time zone',
     PgDateTime.new,
   );
 
   /// The `json` type in Postgres.
   static const CustomSqlType<Object> json =
-      PostgresType(type: PgDataType.json, name: 'json');
+      PostgresType(type: pg.Type.json, name: 'json');
 
   /// The `jsonb` type in Postgres.
   static const CustomSqlType<Object> jsonb =
-      PostgresType(type: PgDataType.json, name: 'jsonb');
+      PostgresType(type: pg.Type.json, name: 'jsonb');
 
   /// The `point` type in Postgres.
-  static const CustomSqlType<PgPoint> point = PointType();
+  static const CustomSqlType<pg.Point> point = PointType();
 }
 
 /// A wrapper for values with the Postgres `timestamp without timezone` and

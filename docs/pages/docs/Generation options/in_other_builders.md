@@ -15,8 +15,21 @@ targets:
   drift:
     auto_apply_builders: false
     builders:
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          # Drift build options, as per https://drift.simonbinder.eu/docs/advanced-features/builder_options/
+          store_date_time_values_as_text: true
+          named_parameters: true
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.39"
+              modules: [fts5]
       drift_dev:modular:
         enabled: true
+        # We use yaml anchors to give the two builders the same options
+        options: *options
 
   $default:
     dependencies:
@@ -27,7 +40,6 @@ targets:
       # its own target instead.
       drift_dev:
         enabled: false
-
 ```
 
 With modular generation, you'll have to replace the `part` statement in the database file with an
@@ -59,3 +71,41 @@ and use the non-shared generator instead.
 Finally, we need to the build system to run drift first, and all the other builders otherwise. This is
 why we split the builders up into multiple targets. The first target will only run drift, the second
 target has a dependency on the first one and will run all the other builders.
+
+## Using `drift_dev:not_shared`
+
+For complex build setups like those requiring other builders to see drift code, the `drift_dev:modular`
+builder is recommended.
+However, enabling the modular builder requires other code modifications like replacing `part` statements
+with imports. A simpler change may be the `not_shared` builder offered by `drift_dev`. It works like the
+default setup, except that it emits a `.drift.dart` part file instead of a shared `.g.dart` file - so you
+only have to change a single `part` statement to migrate.
+
+To enable this builder, also enable the `drift_dev:analyzer` builder and the `has_separate_analyzer`
+option:
+
+```yaml
+targets:
+  drift:
+    auto_apply_builders: false
+    builders:
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          has_separate_analyzer: true # always enable this option when using `not_shared`
+          # remaining options...
+      drift_dev:not_shared:
+        enabled: true
+        # We use yaml anchors to give the two builders the same options
+        options: *options
+
+  $default:
+    dependencies:
+      # run drift's builder first
+      - ":drift"
+    builders:
+      # This builder is enabled by default, but we're using the modular builder in
+      # its own target instead.
+      drift_dev:
+        enabled: false
+```

@@ -52,7 +52,10 @@ class ViewerDatabase implements DbViewerDatabase {
   @override
   List<String> get entityNames => [
         for (final entity in database.description.entities)
-          if (entity.type == 'table') entity.name,
+          if (entity.type == 'table' ||
+              entity.type == 'virtual_table' ||
+              entity.type == 'view')
+            entity.name,
       ];
 
   @override

@@ -62,6 +62,7 @@ builders:
     auto_apply: none
     required_inputs: [".drift_prep.json"]
     applies_builders: [":preparing_builder"]
+    runs_before: [":not_shared"]
 
 post_process_builders:
   cleanup:

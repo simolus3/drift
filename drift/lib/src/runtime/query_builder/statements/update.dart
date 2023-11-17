@@ -4,8 +4,7 @@ part of '../query_builder.dart';
 class UpdateStatement<T extends Table, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   /// Used internally by drift, construct an update statement
-  UpdateStatement(DatabaseConnectionUser database, TableInfo<T, D> table)
-      : super(database, table);
+  UpdateStatement(super.database, TableInfo<T, D> super.table);
 
   late Map<String, Expression> _updatedFields;
 

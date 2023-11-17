@@ -1,11 +1,6 @@
 `package:drift_postgres` extends [drift](https://drift.simonbinder.eu/) to support
 talking to PostgreSQL databases by using the `postgres` package.
 
-This package is currently in alpha. It uses preview APIs from the `postgres` packages,
-which may require this package to be updated if there are breaking changes in that
-package. Once these APIs from `postgres` are stabilized, a stable version of `drift_postgres`
-will be released as well.
-
 ## Using this
 
 For general notes on using drift, see [this guide](https://drift.simonbinder.eu/getting-started/).
@@ -38,4 +33,4 @@ To test this package, first run
 docker run -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
 
-It can then be tested with `dart test`.
+It can then be tested with `dart test -j 1` (concurrency needs to be disabled since tests are using the same database).

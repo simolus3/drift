@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS todo_categories (
 }
 
 class _Database extends GeneratedDatabase {
-  _Database(QueryExecutor executor) : super(executor);
+  _Database(super.executor);
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables => const Iterable.empty();

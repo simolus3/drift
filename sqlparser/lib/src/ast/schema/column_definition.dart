@@ -95,7 +95,7 @@ class NullColumnConstraint extends ColumnConstraint {
   /// The `NULL` token forming this constraint.
   Token? $null;
 
-  NullColumnConstraint(String? name, {this.$null}) : super(name);
+  NullColumnConstraint(super.name, {this.$null});
 
   @override
   Iterable<AstNode> get childNodes => const Iterable.empty();
@@ -110,7 +110,7 @@ class NotNull extends ColumnConstraint {
   Token? not;
   Token? $null;
 
-  NotNull(String? name, {this.onConflict}) : super(name);
+  NotNull(super.name, {this.onConflict});
 
   @override
   final Iterable<AstNode> childNodes = const [];
@@ -124,9 +124,8 @@ class PrimaryKeyColumn extends ColumnConstraint {
   final ConflictClause? onConflict;
   final OrderingMode? mode;
 
-  PrimaryKeyColumn(String? name,
-      {this.autoIncrement = false, this.mode, this.onConflict})
-      : super(name);
+  PrimaryKeyColumn(super.name,
+      {this.autoIncrement = false, this.mode, this.onConflict});
 
   @override
   Iterable<AstNode> get childNodes => const [];
@@ -138,7 +137,7 @@ class PrimaryKeyColumn extends ColumnConstraint {
 class UniqueColumn extends ColumnConstraint {
   final ConflictClause? onConflict;
 
-  UniqueColumn(String? name, this.onConflict) : super(name);
+  UniqueColumn(super.name, this.onConflict);
 
   @override
   Iterable<AstNode> get childNodes => const [];
@@ -150,7 +149,7 @@ class UniqueColumn extends ColumnConstraint {
 class CheckColumn extends ColumnConstraint {
   Expression expression;
 
-  CheckColumn(String? name, this.expression) : super(name);
+  CheckColumn(super.name, this.expression);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
@@ -164,7 +163,7 @@ class CheckColumn extends ColumnConstraint {
 class Default extends ColumnConstraint {
   Expression expression;
 
-  Default(String? name, this.expression) : super(name);
+  Default(super.name, this.expression);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
@@ -178,7 +177,7 @@ class Default extends ColumnConstraint {
 class CollateConstraint extends ColumnConstraint {
   final String collation;
 
-  CollateConstraint(String? name, this.collation) : super(name);
+  CollateConstraint(super.name, this.collation);
 
   @override
   final Iterable<AstNode> childNodes = const [];
@@ -190,7 +189,7 @@ class CollateConstraint extends ColumnConstraint {
 class ForeignKeyColumnConstraint extends ColumnConstraint {
   ForeignKeyClause clause;
 
-  ForeignKeyColumnConstraint(String? name, this.clause) : super(name);
+  ForeignKeyColumnConstraint(super.name, this.clause);
 
   @override
   Iterable<AstNode> get childNodes => [clause];
@@ -223,7 +222,7 @@ class MappedBy extends ColumnConstraint {
   /// The Dart expression creating the type converter we use to map this token.
   final InlineDartToken mapper;
 
-  MappedBy(String? name, this.mapper) : super(name);
+  MappedBy(super.name, this.mapper);
 
   @override
   final Iterable<AstNode> childNodes = const [];
@@ -243,7 +242,7 @@ class JsonKey extends ColumnConstraint {
 
   String get jsonKey => jsonNameToken.identifier;
 
-  JsonKey(String? name, this.jsonNameToken) : super(name);
+  JsonKey(super.name, this.jsonNameToken);
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
@@ -259,7 +258,7 @@ class DriftDartName extends ColumnConstraint {
 
   String get dartName => identifier.identifier;
 
-  DriftDartName(String? name, this.identifier) : super(name);
+  DriftDartName(super.name, this.identifier);
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}

@@ -53,7 +53,8 @@ const Map<String, ResolvedType?> _types = {
   "SELECT 'a' -> ? = 'b'": ResolvedType(type: BasicType.text, nullable: false),
   "SELECT 'a' ->> ? = 'b'": ResolvedType(type: BasicType.text, nullable: false),
   'SELECT MAX(id, ?) FROM demo': ResolvedType(type: BasicType.int),
-  'SELECT SUM(id = 2) = ? FROM demo': ResolvedType(type: BasicType.int),
+  'SELECT SUM(id = 2) = ? FROM demo':
+      ResolvedType(type: BasicType.int, nullable: true),
   "SELECT unixepoch('now') = ?":
       ResolvedType(type: BasicType.int, nullable: true, hints: [IsDateTime()]),
   "SELECT datetime('now') = ?":
@@ -65,6 +66,12 @@ const Map<String, ResolvedType?> _types = {
   "SELECT unhex('ab') = ?": ResolvedType(type: BasicType.blob, nullable: true),
   'SELECT unhex(?)': ResolvedType(type: BasicType.text),
   'SELECT 1 GROUP BY 1 HAVING ? ': ResolvedType.bool(),
+  "SELECT concat(1, NULL, 2) = ?":
+      ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT concat_ws(',', 1, 2) = ?":
+      ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT concat_ws(NULL, 1, 2) = ?":
+      ResolvedType(type: BasicType.text, nullable: true),
 };
 
 SqlEngine _spawnEngine() {

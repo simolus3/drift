@@ -15,4 +15,14 @@ void main() {
           message: 'iif expects 3 arguments, got 2.'),
     ]);
   });
+
+  test('sum', () {
+    final engine = SqlEngine();
+    final result = engine.analyze('SELECT sum(1, 2, 3)');
+
+    result.expectError(
+      '1, 2, 3',
+      type: AnalysisErrorType.invalidAmountOfParameters,
+    );
+  });
 }

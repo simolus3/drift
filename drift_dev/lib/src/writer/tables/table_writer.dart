@@ -49,7 +49,7 @@ abstract class TableOrViewWriter {
       buffer.write('static $typeName ${converter.fieldName} = $code;');
 
       // Generate wrappers for non-nullable type converters that are applied to
-      // nullable converters.
+      // nullable columns.
       final column = converter.owningColumn!;
       if (converter.canBeSkippedForNulls && column.nullable) {
         final nullableTypeName = emitter.dartCode(

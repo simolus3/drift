@@ -1,6 +1,6 @@
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:drift_testcases/tests.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart' as pg;
 
 class PgExecutor extends TestExecutor {
   @override
@@ -12,17 +12,18 @@ class PgExecutor extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection(PgDatabase(
-      endpoint: PgEndpoint(
+      endpoint: pg.Endpoint(
         host: 'localhost',
         database: 'postgres',
         username: 'postgres',
         password: 'postgres',
       ),
+      settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
     ));
   }
 
   @override
-  Future clearDatabaseAndClose(Database db) async {
+  Future clearDatabaseAndClose(GeneratedDatabase db) async {
     await db.customStatement('DROP SCHEMA public CASCADE;');
     await db.customStatement('CREATE SCHEMA public;');
     await db.customStatement('GRANT ALL ON SCHEMA public TO postgres;');

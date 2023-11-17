@@ -28,7 +28,7 @@ DatabaseConnection connectOnWeb() {
 
 // You can then use this method to open your database:
 class MyWebDatabase extends _$MyWebDatabase {
-  MyWebDatabase._(QueryExecutor e) : super(e);
+  MyWebDatabase._(super.e);
 
   factory MyWebDatabase() => MyWebDatabase._(connectOnWeb());
   // ...

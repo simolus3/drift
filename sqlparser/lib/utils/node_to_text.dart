@@ -39,6 +39,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
     symbol('(');
     visit(e.parameters, arg);
+    visitNullable(e.orderBy, arg);
     symbol(')');
 
     if (e.filter != null) {

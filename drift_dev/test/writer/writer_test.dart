@@ -88,4 +88,36 @@ class Database {}
       ))
     }, result.dartOutputs, result.writer);
   }, skip: requireDart('3.0.0-dev'));
+
+  test(
+    'references nullable variant of converter on non-nullable column',
+    () async {
+      final result = await emulateDriftBuild(
+        inputs: {
+          'a|lib/converter.dart': '''
+import 'package:drift/drift.dart';
+
+TypeConverter<int, String> get testConverter => throw '';
+''',
+          'a|lib/a.drift': '''
+import 'converter.dart';
+
+CREATE TABLE foo (
+  bar TEXT MAPPED BY `testConverter` NOT NULL
+);
+
+CREATE VIEW a AS SELECT nullif(bar, '') FROM foo;
+''',
+        },
+        modularBuild: true,
+        logger: loggerThat(neverEmits(anything)),
+      );
+
+      checkOutputs({
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(isNot(contains('converterbarn'))),
+        ),
+      }, result.dartOutputs, result.writer);
+    },
+  );
 }

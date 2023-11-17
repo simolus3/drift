@@ -508,7 +508,7 @@ class IdentifierToken extends Token {
 }
 
 abstract class VariableToken extends Token {
-  VariableToken(TokenType type, FileSpan span) : super(type, span);
+  VariableToken(super.type, super.span);
 }
 
 class QuestionMarkVariableToken extends Token {
@@ -559,7 +559,7 @@ class KeywordToken extends Token {
   /// Whether this token has been used as an identifier while parsing.
   bool isIdentifier = false;
 
-  KeywordToken(TokenType type, FileSpan span) : super(type, span);
+  KeywordToken(super.type, super.span);
 
   bool canConvertToIdentifier() {
     // https://stackoverflow.com/a/45775719, but we don't parse indexed yet.

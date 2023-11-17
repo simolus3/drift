@@ -5,6 +5,7 @@ import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/transformers.dart';
+import 'package:sqlite3/wasm.dart';
 import 'package:vm_service/vm_service.dart';
 
 final _serviceConnection = StreamController<VmService>.broadcast();
@@ -47,4 +48,10 @@ final hotRestartEventProvider =
   ref.onDispose(() => selectedIsolateListenable.removeListener(listener));
 
   return notifier;
+});
+
+final sqliteProvider = FutureProvider((ref) async {
+  final sqlite = await WasmSqlite3.loadFromUrl(Uri.parse('sqlite3.wasm'));
+  sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+  return sqlite;
 });

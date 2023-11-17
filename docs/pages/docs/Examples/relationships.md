@@ -1,6 +1,6 @@
 ---
 data:
-  title: "Many to many relationships"
+  title: "Many-to-many relationships"
   description: An example that models a shopping cart system with drift.
 template: layouts/docs/single
 ---
@@ -19,16 +19,16 @@ A product can be in many shopping carts at the same time, and carts can of cours
 contain more than one product too.
 
 In sqlite3, there are two good ways to model many-to-many relationships
-betweeen tables:
+between tables:
 
 1. The traditional way of using a third table storing every combination of
    products and carts.
-2. A more modern way might be to store product ids in a shopping cart as a JSON
+2. A more modern way might be to store product IDs in a shopping cart as a JSON
    array.
 
 The two approaches have different upsides and downsides. With the traditional
 relational way, it's easier to ensure data integrity (by, for instance, deleting
-product references out of shopping carts when they a product is deleted).
+product references out of shopping carts when a product is deleted).
 On the other hand, queries are easier to write with JSON structures. Especially
 when the order of products in the shopping cart is important as well, a JSON
 list is very helpful since rows in a table are unordered.
@@ -109,7 +109,7 @@ in a single table:
 
 To select a single cart, we can use the [`json_each`](https://sqlite.org/json1.html#jeach)
 function from sqlite3 to "join" each item stored in the JSON array as if it were a separate
-row. That way, we can efficiently lookup all items in a cart:
+row. That way, we can efficiently look up all items in a cart:
 
 {% include "blocks/snippet" snippets=json name="watchCart" %}
 

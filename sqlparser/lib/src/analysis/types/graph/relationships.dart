@@ -91,6 +91,13 @@ class CopyAndCast extends TypeRelation implements DirectedRelation {
   final Typeable other;
   final CastMode cast;
   final bool dropTypeHint;
+  final bool makeNullable;
 
-  CopyAndCast(this.target, this.other, this.cast, {this.dropTypeHint = false});
+  CopyAndCast(
+    this.target,
+    this.other,
+    this.cast, {
+    this.dropTypeHint = false,
+    this.makeNullable = false,
+  });
 }

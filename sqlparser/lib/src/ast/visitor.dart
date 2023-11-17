@@ -505,7 +505,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitWindowFunctionInvocation(WindowFunctionInvocation e, A arg) {
-    return visitExpressionInvocation(e, arg);
+    return visitAggregateFunctionInvocation(e, arg);
   }
 
   @override

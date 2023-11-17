@@ -37,7 +37,7 @@ The project is divided into multiple modules:
 - `moor_flutter/`: Contains a Flutter implementation for the database.
 - `drift_dev/`: Creates table, database and dao classes from the table structure and
    compiled queries.
-- `sqlparser/`: Contains an sql parser and analyzer that is mostly independent of drift,
+- `sqlparser/`: Contains an SQL parser and analyzer that is mostly independent of drift,
   but used by the generator for compiled custom queries.
 
 ## Concepts
@@ -46,7 +46,7 @@ we generate three classes:
 
 1. A class that inherits from `TableInfo` (we call this the "table class"). It contains a structural representation
    of the table, which includes columns (including name, type, constraints...), the primary key and so on. The idea is
-   that, if we have a `TableInfo` instance, we can create all kinds of sql statements.
+   that, if we have a `TableInfo` instance, we can create all kinds of SQL statements.
 2. A class to represent a fully loaded row of a table. We call this a "data class" and it inherits from `DataClass`.
 3. A class to represent partial data (e.g. for inserts or updates, where not all columns are set). This class was
    introduced in moor 1.5 and is called a "companion".
@@ -55,7 +55,7 @@ This approach lets us write a higher-level api that uses the generated `TableInf
 write. For instance, the `Migrator` can write `CREATE TABLE` statements from these classes, an `UpdateStatement` will
 write `UPDATE` statements and so on. To write the query, we construct a `GenerationContext`, which contains a string
 buffer to write the query, keeps track of the introduced variables and so on. The idea is that everything that can
-appear anywhere in a sql statement inherits from `Component` (for instance, `Query`, `Expression`, `Variable`, `Where`,
+appear anywhere in an SQL statement inherits from `Component` (for instance, `Query`, `Expression`, `Variable`, `Where`,
 `OrderBy`). We can then recursively create the query by calling `Component.writeInto` for all subparts of a component.
 This query is then sent to a `QueryExecutor`, which is responsible for executing it and returning its result. The
 `QueryExecutor` is the only part that is platform specific, everything else is pure Dart that doesn't import any
@@ -63,7 +63,7 @@ restricted libraries.
 
 ### Important classes
 A `DatabaseConnectionUser` is the central piece of a drift database instance. It contains an `SqlTypeSystem` (responsible
-for mapping simple Dart objects from and to sql), the `QueryExecutor` discussed above and a `StreamQueryStore`
+for mapping simple Dart objects from and to SQL), the `QueryExecutor` discussed above and a `StreamQueryStore`
 (responsible for keeping active queries and re-running them when a table updates). It is also the super class of
 `GeneratedDatabase` and `DatabaseAccessor`, which are the classes a `@UseMoor` and `@UseDao` class inherits from.
 Finally, the `QueryEngine` is a mixin in `DatabaseConnectionUser` that provides the `select`, `update`, `delete` methods
@@ -119,7 +119,7 @@ updates that span multiple versions, we should follow these steps
    2. `drift_dev`
    3. (optional) `moor_flutter`
 
-The `sqlparser` library can be published independently from drift.
+The `sqlparser` library can be published independently of drift.
 
 ### Building the documentation
 

@@ -35,7 +35,7 @@ class SnippetsBuilder extends CodeExcerptBuilder {
 }
 
 class _DriftHighlighter extends Highlighter {
-  _DriftHighlighter(SourceFile file) : super(file);
+  _DriftHighlighter(super.file);
 
   @override
   void highlight() {

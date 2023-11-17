@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
 
 part 'main.g.dart';
@@ -20,11 +20,16 @@ class DriftPostgresDatabase extends _$DriftPostgresDatabase {
 
 void main() async {
   final database = DriftPostgresDatabase(PgDatabase(
-    endpoint: PgEndpoint(
+    endpoint: pg.Endpoint(
       host: 'localhost',
       database: 'postgres',
       username: 'postgres',
       password: 'postgres',
+    ),
+    settings: pg.ConnectionSettings(
+      // If you expect to talk to a Postgres database over a public connection,
+      // please use SslMode.verifyFull instead.
+      sslMode: pg.SslMode.disable,
     ),
     logStatements: true,
   ));

@@ -149,6 +149,15 @@ void main() {
           (e) => e.remoteCause, 'remoteCause', 'UnimplementedError: error!')),
     );
 
+    final statements =
+        BatchedStatements(['SELECT 1'], [ArgumentsForBatchedStatement(0, [])]);
+    when(executor.runBatched(any)).thenAnswer((i) => Future.value());
+    // Not using db.batch because that starts a transaction, we want to test
+    // this working with the default executor.
+    // Regression test for: https://github.com/simolus3/drift/pull/2707
+    await db.executor.runBatched(statements);
+    verify(executor.runBatched(statements));
+
     await db.close();
   });
 

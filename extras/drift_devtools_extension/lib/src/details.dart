@@ -1,4 +1,5 @@
 import 'package:devtools_app_shared/service.dart';
+import 'package:drift_devtools_extension/src/schema_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -55,6 +56,10 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
             child: ListView(
               controller: controller,
               children: [
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: DatabaseSchemaCheck(),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(

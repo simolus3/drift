@@ -495,8 +495,7 @@ void main() {
 }
 
 class _TestDatabase extends GeneratedDatabase {
-  _TestDatabase(QueryExecutor executor, this.schemaVersion, this.migration)
-      : super(executor);
+  _TestDatabase(super.executor, this.schemaVersion, this.migration);
 
   @override
   Iterable<TableInfo<Table, dynamic>> get allTables => const Iterable.empty();

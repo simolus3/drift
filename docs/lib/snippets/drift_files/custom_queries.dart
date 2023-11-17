@@ -29,7 +29,17 @@ class MyDatabase extends $MyDatabase {
   @override
   int get schemaVersion => 1;
 
-  MyDatabase(QueryExecutor e) : super(e);
+  MyDatabase(super.e);
+
+  // #docregion amountOfTodosInCategory
+  Stream<int> amountOfTodosInCategory(int id) {
+    return customSelect(
+      'SELECT COUNT(*) AS c FROM todo_items WHERE category = ?',
+      variables: [Variable.withInt(id)],
+      readsFrom: {todoItems},
+    ).map((row) => row.read<int>('c')).watchSingle();
+  }
+  // #enddocregion amountOfTodosInCategory
 
   // #docregion run
   Future<void> useGeneratedQuery() async {

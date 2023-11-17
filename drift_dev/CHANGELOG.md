@@ -1,3 +1,15 @@
+## 2.14.0-dev
+
+## 2.13.2
+
+- Fix generated queries relying on custom types.
+
+## 2.13.1
+
+- Add `has_separate_analyzer` option to optimize builds using the `not_shared` builder.
+- Avoid illegal references to implicitly nullable variant of type converter when no such
+  field exists.
+
 ## 2.13.0
 
 - Fix indices not being created for Dart tables from different files.

@@ -191,7 +191,7 @@ class DriftProtocol {
               list[0] as int, list.skip(1).toList()));
         }
 
-        final executorId = fullMessage.last as int;
+        final executorId = fullMessage.last as int?;
         return ExecuteBatchedStatement(
             BatchedStatements(sql, args), executorId);
       case _tag_RunTransactionAction:

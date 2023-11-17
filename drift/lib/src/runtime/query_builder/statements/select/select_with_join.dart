@@ -10,12 +10,10 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     implements BaseSelectStatement {
   /// Used internally by drift, users should use [SimpleSelectStatement.join]
   /// instead.
-  JoinedSelectStatement(DatabaseConnectionUser database,
-      ResultSetImplementation<FirstT, FirstD> table, this._joins,
+  JoinedSelectStatement(super.database, super.table, this._joins,
       [this.distinct = false,
       this._includeMainTableInResult = true,
-      this._includeJoinedTablesInResult = true])
-      : super(database, table);
+      this._includeJoinedTablesInResult = true]);
 
   /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
   /// rows from the result set.

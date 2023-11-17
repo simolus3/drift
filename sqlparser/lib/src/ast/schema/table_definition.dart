@@ -97,9 +97,8 @@ class KeyClause extends TableConstraint {
     ];
   }
 
-  KeyClause(String? name,
-      {required this.isPrimaryKey, required this.columns, this.onConflict})
-      : super(name);
+  KeyClause(super.name,
+      {required this.isPrimaryKey, required this.columns, this.onConflict});
 
   @override
   bool constraintEquals(KeyClause other) {
@@ -118,7 +117,7 @@ class KeyClause extends TableConstraint {
 class CheckTable extends TableConstraint {
   Expression expression;
 
-  CheckTable(String? name, this.expression) : super(name);
+  CheckTable(super.name, this.expression);
 
   @override
   bool constraintEquals(CheckTable other) => true;
@@ -136,9 +135,8 @@ class ForeignKeyTableConstraint extends TableConstraint {
   List<Reference> columns;
   ForeignKeyClause clause;
 
-  ForeignKeyTableConstraint(String? name,
-      {required this.columns, required this.clause})
-      : super(name);
+  ForeignKeyTableConstraint(super.name,
+      {required this.columns, required this.clause});
 
   @override
   bool constraintEquals(ForeignKeyTableConstraint other) => true;

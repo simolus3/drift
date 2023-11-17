@@ -278,6 +278,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       'format' || 'unixepoch' => SqliteVersion.v3_38,
       'unhex' => SqliteVersion.v3_41,
       'timediff' || 'octet_length' => SqliteVersion.v3_43,
+      'concat' || 'concat_ws' || 'string_agg' => SqliteVersion.v3_44,
       _ => null,
     };
 

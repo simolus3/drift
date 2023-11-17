@@ -35,7 +35,7 @@ DatabaseConnection createConnection() {
 }
 
 class EmptyDb extends GeneratedDatabase {
-  EmptyDb(DatabaseConnection c) : super(c);
+  EmptyDb(DatabaseConnection super.c);
   @override
   final List<TableInfo> allTables = const [];
   @override

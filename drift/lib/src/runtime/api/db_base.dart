@@ -59,14 +59,13 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   final Type _$dontSendThisOverIsolates = Null;
 
   /// Used by generated code
-  GeneratedDatabase(QueryExecutor executor, {StreamQueryStore? streamStore})
-      : super(executor, streamQueries: streamStore) {
+  GeneratedDatabase(super.executor, {StreamQueryStore? streamStore})
+      : super(streamQueries: streamStore) {
     _whenConstructed();
   }
 
   /// Used by generated code to connect to a database that is already open.
-  GeneratedDatabase.connect(DatabaseConnection connection)
-      : super.fromConnection(connection) {
+  GeneratedDatabase.connect(super.connection) : super.fromConnection() {
     _whenConstructed();
   }
 

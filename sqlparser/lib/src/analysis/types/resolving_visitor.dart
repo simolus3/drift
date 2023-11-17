@@ -549,10 +549,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         // ignore: dead_code
         throw AssertionError(); // required so that this switch compiles
       case 'sum':
+        checkArgumentCount(1);
+
+        // The result of `sum()` is `NULL` if there are no input rows.
+        session._addRelation(CopyAndCast(
+          e,
+          params.first,
+          CastMode.numeric,
+          dropTypeHint: true,
+          makeNullable: true,
+        ));
         session._addRelation(
-            CopyAndCast(e, params.first, CastMode.numeric, dropTypeHint: true));
-        session._addRelation(DefaultType(e, defaultType: _realType));
-        nullableIfChildIs();
+            DefaultType(e, defaultType: _realType.withNullable(true)));
         return null;
       case 'lower':
       case 'ltrim':
@@ -565,7 +573,16 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'upper':
         nullableIfChildIs();
         return _textType.withoutNullabilityInfo;
+      case 'concat':
+        return _textType;
+      case 'concat_ws':
+        // null if the first argument is null
+        if (params.isNotEmpty) {
+          session._addRelation(NullableIfSomeOtherIs(e, [params.first]));
+        }
+        return _textType.withoutNullabilityInfo;
       case 'group_concat':
+      case 'string_agg':
         return _textType.withNullable(true);
       case 'date':
       case 'time':

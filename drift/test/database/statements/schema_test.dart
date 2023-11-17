@@ -321,7 +321,7 @@ final class _FakeSchemaVersion extends VersionedSchema {
 }
 
 class _DefaultDb extends GeneratedDatabase {
-  _DefaultDb(QueryExecutor executor) : super(executor);
+  _DefaultDb(super.executor);
 
   @override
   List<TableInfo<Table, DataClass>> get allTables => [];

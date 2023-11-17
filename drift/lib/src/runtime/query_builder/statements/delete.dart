@@ -5,8 +5,7 @@ class DeleteStatement<T extends Table, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   /// This constructor should be called by [DatabaseConnectionUser.delete] for
   /// you.
-  DeleteStatement(DatabaseConnectionUser database, TableInfo<T, D> table)
-      : super(database, table);
+  DeleteStatement(super.database, TableInfo<T, D> super.table);
 
   @override
   void writeStartPart(GenerationContext ctx) {

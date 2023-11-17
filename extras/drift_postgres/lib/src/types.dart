@@ -1,13 +1,13 @@
 import 'package:drift/drift.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+import 'package:postgres/postgres.dart';
 // ignore: implementation_imports
-import 'package:postgres/src/text_codec.dart';
+import 'package:postgres/src/types/text_codec.dart';
 import 'package:uuid/uuid.dart';
 
 class PostgresType<T extends Object> implements CustomSqlType<T> {
   static final _encoder = PostgresTextEncoder();
 
-  final PgDataType type;
+  final Type type;
   final String name;
 
   const PostgresType({required this.type, required this.name});
@@ -18,7 +18,7 @@ class PostgresType<T extends Object> implements CustomSqlType<T> {
   }
 
   @override
-  Object mapToSqlParameter(T dartValue) => PgTypedParameter(type, dartValue);
+  Object mapToSqlParameter(T dartValue) => TypedValue(type, dartValue);
 
   @override
   T read(Object fromSql) => fromSql as T;
@@ -28,7 +28,7 @@ class PostgresType<T extends Object> implements CustomSqlType<T> {
 }
 
 class UuidType extends PostgresType<UuidValue> {
-  const UuidType() : super(type: PgDataType.uuid, name: 'uuid');
+  const UuidType() : super(type: Type.uuid, name: 'uuid');
 
   @override
   String mapToSqlLiteral(UuidValue dartValue) {
@@ -38,31 +38,31 @@ class UuidType extends PostgresType<UuidValue> {
 
   @override
   Object mapToSqlParameter(UuidValue dartValue) {
-    return PgTypedParameter(PgDataType.uuid, dartValue.uuid);
+    return TypedValue(Type.uuid, dartValue.uuid);
   }
 
   @override
   UuidValue read(Object fromSql) {
-    return UuidValue(fromSql as String);
+    return UuidValue.fromString(fromSql as String);
   }
 }
 
 // override because the text encoder doesn't properly encode PgPoint values
-class PointType extends PostgresType<PgPoint> {
-  const PointType() : super(type: PgDataType.point, name: 'point');
+class PointType extends PostgresType<Point> {
+  const PointType() : super(type: Type.point, name: 'point');
 
   @override
-  String mapToSqlLiteral(PgPoint dartValue) {
+  String mapToSqlLiteral(Point dartValue) {
     return "'(${dartValue.latitude}, ${dartValue.longitude})'::point";
   }
 }
 
-class IntervalType extends PostgresType<Duration> {
-  const IntervalType() : super(type: PgDataType.interval, name: 'interval');
+class IntervalType extends PostgresType<Interval> {
+  const IntervalType() : super(type: Type.interval, name: 'interval');
 
   @override
-  String mapToSqlLiteral(Duration dartValue) {
-    return "'${dartValue.inMicroseconds} microseconds'::interval";
+  String mapToSqlLiteral(Interval dartValue) {
+    return "'$dartValue'::interval";
   }
 }
 
@@ -74,7 +74,7 @@ class DateType<T extends PgTimeValue> extends PostgresType<T> {
   final T Function(DateTime) _fromDateTime;
 
   const DateType(
-    PgDataType type,
+    Type type,
     String name,
     this._fromDateTime,
   ) : super(type: type, name: name);
@@ -86,7 +86,7 @@ class DateType<T extends PgTimeValue> extends PostgresType<T> {
 
   @override
   Object mapToSqlParameter(T dartValue) {
-    return PgTypedParameter(type, dartValue.toDateTime());
+    return TypedValue(type, dartValue.toDateTime());
   }
 
   @override

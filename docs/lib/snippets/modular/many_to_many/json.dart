@@ -48,7 +48,7 @@ class ShoppingCartEntries {
 
 @DriftDatabase(tables: [BuyableItems, ShoppingCarts])
 class JsonBasedDatabase extends $JsonBasedDatabase {
-  JsonBasedDatabase(QueryExecutor e) : super(e);
+  JsonBasedDatabase(super.e);
 
   @override
   int get schemaVersion => 1;

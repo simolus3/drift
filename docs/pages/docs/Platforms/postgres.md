@@ -1,19 +1,16 @@
 ---
 data:
-  title: PostgreSQL support (Alpha)
+  title: PostgreSQL support
   description: Use drift with PostgreSQL database servers.
   weight: 10
 template: layouts/docs/single
 ---
 
-{% block "blocks/pageinfo" %}
-Postgres support is still in development. In particular, drift is waiting for [version 3](https://github.com/isoos/postgresql-dart/issues/105)
-of the postgres package to stabilize. Minor breaking changes or remaining issues are not unlikely.
-{% endblock %}
-
-Thanks to contributions from the community, drift currently has alpha support for postgres with the `drift_postgres` package.
-Without having to change your query code, drift can generate Postgres-compatible SQL for most queries,
-allowing you to use your drift databases with a Postgres database server.
+While drift has originally been designed as a client-side database wrapper for SQLite databases, it can also be used
+with PostgreSQL database servers.
+Without having to change your query code, drift can generate Postgres-compatible SQL for most queries.
+Please keep in mind that some drift APIs, like those for date time modification, are only supported with SQLite.
+Most queries will work without any modification though.
 
 ## Setup
 
@@ -68,11 +65,12 @@ disable migrations in postgres by passing `enableMigrations: false` to the `PgDa
 
 ## Current state
 
-Drift's support for Postgres is still in development, and the integration tests we have for Postgres are
-less extensive than the tests for sqlite3 databases.
-Also, some parts of the core APIs (like the datetime expressions API) are direct wrappers around SQL
-functions only available in sqlite3 and won't work in Postgres.
-However, you can already create tables (or use an existing schema) and most queries should work already.
+Drift's support for PostgreSQL is stable in the sense that the current API is unlikely to break.
+Still, it is a newer implementation and integration tests for PostgreSQL are less extensive than
+the tests for SQLite databases. And while drift offers typed wrappers around most functions supported
+by SQLite, only a tiny subset of PostgreSQL's advanced operators and functions are exposed by
+`drift_postgres`.
 
 If you're running into problems or bugs with the postgres database, please let us know by creating an issue
 or a discussion.
+Contributions expanding wrappers around PosgreSQL functions are also much appreciated.

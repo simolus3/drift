@@ -109,7 +109,9 @@ This makes them suitable for bulk insert or update operations.
 
 ### Upserts
 
-Upserts are a feature from newer sqlite3 versions that allows an insert to 
+{% assign upserts = "package:drift_docs/snippets/modular/upserts.dart.excerpt.json" | readString | json_decode %}
+
+Upserts are a feature from newer sqlite3 versions that allows an insert to
 behave like an update if a conflicting row already exists.
 
 This allows us to create or override an existing row when its primary key is
@@ -129,35 +131,20 @@ Future<int> createOrUpdateUser(User user) {
 }
 ```
 
-When calling `createOrUpdateUser()` with an email address that already exists, 
+When calling `createOrUpdateUser()` with an email address that already exists,
 that user's name will be updated. Otherwise, a new user will be inserted into
 the database.
 
-Inserts can also be used with more advanced queries. For instance, let's say 
-we're building a dictionary and want to keep track of how many times we 
+Inserts can also be used with more advanced queries. For instance, let's say
+we're building a dictionary and want to keep track of how many times we
 encountered a word. A table for that might look like
 
-```dart
-class Words extends Table {
-  TextColumn get word => text()();
-  IntColumn get usages => integer().withDefault(const Constant(1))();
-
-  @override
-  Set<Column> get primaryKey => {word};
-}
-```
+{% include "blocks/snippet" snippets = upserts name = "words-table" %}
 
 By using a custom upserts, we can insert a new word or increment its `usages`
 counter if it already exists:
 
-```dart
-Future<void> trackWord(String word) {
-  return into(words).insert(
-    WordsCompanion.insert(word: word),
-    onConflict: DoUpdate((old) => WordsCompanion.custom(usages: old.usages + Constant(1))),
-  );
-}
-```
+{% include "blocks/snippet" snippets = upserts name = "track-word" %}
 
 {% block "blocks/alert" title="Unique constraints and conflict targets" %}
 Both `insertOnConflictUpdate` and `onConflict: DoUpdate` use an `DO UPDATE`
@@ -165,7 +152,10 @@ upsert in sql. This requires us to provide a so-called "conflict target", a
 set of columns to check for uniqueness violations. By default, drift will use
 the table's primary key as conflict target. That works in most cases, but if
 you have custom `UNIQUE` constraints on some columns, you'll need to use
-the `target` parameter on `DoUpdate` in Dart to include those columns.
+the `target` parameter on `DoUpdate` in Dart to include those columns:
+
+{% include "blocks/snippet" snippets = upserts name = "upsert-target" %}
+
 {% endblock %}
 
 Note that this requires a fairly recent sqlite3 version (3.24.0) that might not
