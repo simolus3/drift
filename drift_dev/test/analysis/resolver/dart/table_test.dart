@@ -93,6 +93,22 @@ class InvalidConstraints extends Table {
   IntColumn get a => integer().autoIncrement().customConstraint('foo')();
   IntColumn get b => integer().customConstraint('a').customConstraint('b')();
 }
+
+class Properties extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+class Cats extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+class Messages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+class Pianos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
 ''',
     });
   });
@@ -142,6 +158,42 @@ class InvalidConstraints extends Table {
     });
   });
 
+  group("class name inflection", () {
+    test("singularizes table name that end in -ies", () async {
+      final result = await findTable('Properties');
+      final table = result!.result as DriftTable;
+
+      expect(table.nameOfRowClass, 'Property');
+    });
+
+    test("singularizes table name that end in -s", () async {
+      final result = await findTable('Cats');
+      final table = result!.result as DriftTable;
+
+      expect(table.nameOfRowClass, 'Cat');
+    });
+
+    test("singularizes table name that end in -es", () async {
+      final result = await findTable('Messages');
+      final table = result!.result as DriftTable;
+
+      expect(table.nameOfRowClass, 'Message');
+    });
+
+    test("singularizes table name that end in -os", () async {
+      final result = await findTable('Pianos');
+      final table = result!.result as DriftTable;
+
+      expect(table.nameOfRowClass, 'Piano');
+    });
+
+    test("singularizes table name that end in -s", () async {
+      final result = await findTable('Socks');
+      final table = result!.result as DriftTable;
+
+      expect(table.nameOfRowClass, 'Sock');
+    });
+  });
   group('Columns', () {
     test('should use field name if no name has been set explicitly', () async {
       final result = await findTable('Users');
