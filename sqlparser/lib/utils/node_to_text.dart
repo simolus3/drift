@@ -1062,10 +1062,19 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
-  void visitSetComponent(SetComponent e, void arg) {
+  void visitSingleColumnSetComponent(SingleColumnSetComponent e, void arg) {
     visit(e.column, arg);
     symbol('=', spaceBefore: true, spaceAfter: true);
     visit(e.expression, arg);
+  }
+
+  @override
+  void visitMultiColumnSetComponent(MultiColumnSetComponent e, void arg) {
+    symbol('(', spaceBefore: true);
+    _join(e.columns, ',');
+    symbol(')');
+    symbol('=', spaceBefore: true, spaceAfter: true);
+    visit(e.rowValue, arg);
   }
 
   @override

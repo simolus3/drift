@@ -131,10 +131,31 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitSetComponent(SetComponent e, TypeExpectation arg) {
+  void visitSingleColumnSetComponent(
+      SingleColumnSetComponent e, TypeExpectation arg) {
     visit(e.column, const NoTypeExpectation());
     _lazyCopy(e.expression, e.column);
     visit(e.expression, const NoTypeExpectation());
+  }
+
+  @override
+  void visitMultiColumnSetComponent(
+      MultiColumnSetComponent e, TypeExpectation arg) {
+    visitList(e.columns, const NoTypeExpectation());
+
+    final targets = e.resolvedTargetColumns ?? const [];
+    for (final column in targets) {
+      _handleColumn(column, e);
+    }
+
+    final expectations = targets.map((r) {
+      if (r != null && session.graph.knowsType(r)) {
+        return ExactTypeExpectation(session.typeOf(r)!);
+      }
+      return const NoTypeExpectation();
+    }).toList();
+
+    visit(e.rowValue, SelectTypeExpectation(expectations));
   }
 
   @override

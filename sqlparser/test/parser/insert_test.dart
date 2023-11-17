@@ -133,7 +133,7 @@ void main() {
               UpsertClauseEntry(
                 action: DoUpdate(
                   [
-                    SetComponent(
+                    SingleColumnSetComponent(
                       column: Reference(columnName: 'foo'),
                       expression: NumericLiteral(2),
                     ),
@@ -158,7 +158,7 @@ void main() {
               UpsertClauseEntry(
                 action: DoUpdate(
                   [
-                    SetComponent(
+                    SingleColumnSetComponent(
                       column: Reference(columnName: 'foo'),
                       expression: NumericLiteral(2),
                     ),
@@ -189,7 +189,7 @@ void main() {
                 onColumns: [IndexedColumn(Reference(columnName: 'bar'))],
                 action: DoUpdate(
                   [
-                    SetComponent(
+                    SingleColumnSetComponent(
                       column: Reference(columnName: 'x'),
                       expression: NumericLiteral(2),
                     ),
