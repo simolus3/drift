@@ -28,47 +28,53 @@ void main() {
 
   test('parses updates with column-name-list and subquery', () {
     testStatement(
-        '''
+      '''
       UPDATE foo
       SET (a, b) = (SELECT b, a FROM bar AS b WHERE b.id=foo.id);
       ''',
-        UpdateStatement(table: TableReference('foo'), set: [
-          MultiColumnSetComponent(
-              columns: [Reference(columnName: 'a'), Reference(columnName: 'b')],
-              rowValue: SubQuery(
-                  select: SelectStatement(
-                      columns: [
-                    ExpressionResultColumn(
-                      expression: Reference(columnName: 'b'),
-                    ),
-                    ExpressionResultColumn(
-                      expression: Reference(columnName: 'a'),
-                    ),
-                  ],
-                      from: TableReference('bar', as: 'b'),
-                      where: BinaryExpression(
-                        Reference(entityName: 'b', columnName: 'id'),
-                        token(TokenType.equal),
-                        Reference(entityName: 'foo', columnName: 'id'),
-                      ))))
-        ]));
+      UpdateStatement(table: TableReference('foo'), set: [
+        MultiColumnSetComponent(
+          columns: [Reference(columnName: 'a'), Reference(columnName: 'b')],
+          rowValue: SubQuery(
+            select: SelectStatement(
+              columns: [
+                ExpressionResultColumn(
+                  expression: Reference(columnName: 'b'),
+                ),
+                ExpressionResultColumn(
+                  expression: Reference(columnName: 'a'),
+                ),
+              ],
+              from: TableReference('bar', as: 'b'),
+              where: BinaryExpression(
+                Reference(entityName: 'b', columnName: 'id'),
+                token(TokenType.equal),
+                Reference(entityName: 'foo', columnName: 'id'),
+              ),
+            ),
+          ),
+        )
+      ]),
+    );
   });
 
   test('parses updates with column-name-list and scalar rowValues', () {
     testStatement(
-        '''
+      '''
       UPDATE foo
       SET (a, b) = (b, 3+4);
       ''',
-        UpdateStatement(table: TableReference('foo'), set: [
-          MultiColumnSetComponent(
-              columns: [Reference(columnName: 'a'), Reference(columnName: 'b')],
-              rowValue: Tuple(expressions: [
-                Reference(columnName: "b"),
-                BinaryExpression(NumericLiteral(3), token(TokenType.plus),
-                    NumericLiteral(4)),
-              ], usedAsRowValue: true))
-        ]));
+      UpdateStatement(table: TableReference('foo'), set: [
+        MultiColumnSetComponent(
+          columns: [Reference(columnName: 'a'), Reference(columnName: 'b')],
+          rowValue: Tuple(expressions: [
+            Reference(columnName: "b"),
+            BinaryExpression(
+                NumericLiteral(3), token(TokenType.plus), NumericLiteral(4)),
+          ], usedAsRowValue: true),
+        )
+      ]),
+    );
   });
 
   test('parses updates with FROM clause', () {
