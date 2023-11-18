@@ -96,6 +96,11 @@ class DartViewSource extends DriftViewSource {
   final AnnotatedDartCode dartQuerySource;
   final TableReferenceInDartView? primaryFrom;
   final List<TableReferenceInDartView> staticReferences;
+
+  /// `staticSource` is used when the view is unable to automatically detect the source table for the data.
+  /// In cases where the table source is not yet generated or is not directly detectable,
+  /// but the programmer knows the expected source, this field can be manually specified to
+  /// inform the view of the intended data source. **Requires the `assume_correct_reference` option to be true.**
   final String? staticSource;
   DartViewSource(this.dartQuerySource, this.primaryFrom, this.staticReferences, [this.staticSource]);
 }

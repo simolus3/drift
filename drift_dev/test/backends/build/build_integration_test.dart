@@ -740,13 +740,9 @@ CREATE TABLE [STRING_TABLE](
 );
 	''',
         },
-        modularBuild: true,
         options: BuilderOptions({'assume_correct_reference': true}),
         logger: debugLogger
     );
-
-    // var actual = utf8.decode(result.writer.assets[(result.writer.assets.keys
-    //     .firstWhere((key) => key.path == ('lib/drift/datastore_db.drift.dart')))]!);
 
     checkOutputs(
       {
@@ -755,8 +751,6 @@ CREATE TABLE [STRING_TABLE](
             contains(r'attachedDatabase.selectOnly(attachedDatabase.comboGroup)'),
           ),
         ),
-        'a|lib/drift/combo_group.drift.dart' : anything,
-        'a|lib/drift/string_table.drift.dart' : anything,
       },
       result.dartOutputs,
       result.writer,
