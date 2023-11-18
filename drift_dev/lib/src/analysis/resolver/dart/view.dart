@@ -199,16 +199,6 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           (builder) => builder.addAstNode(body.expression, exclude: {target!}));
     }
 
-    // if(resolver.driver.options.assumeCorrectReference){
-    //   bool separate = false;
-    //   for (int i = 0; i < query.elements.length; i++) {
-    //     if (separate && query.elements[i] is String && i != query.elements.length-1) {
-    //       query.elements[i]+=',';
-    //       separate = false;
-    //     }
-    //     separate = query.elements[i] is DartTopLevelSymbol;
-    //   }
-    // }
     return _ParsedDartViewSelect(
         resolvedFrom, innerJoins, outerJoins, columnExpressions, query, from);
   }
@@ -227,7 +217,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       if (parts.length > 1) {
         final reference =
             references.firstWhereOrNull((ref) => ref.name == parts[0]);
-        if (reference == null || reference.table == null) {
+        if (reference == null) {
           reportError(DriftAnalysisError.inDartAst(
             discovered.dartElement,
             columnReference,
