@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
-import 'dart.dart';
 import 'element.dart';
 
 import 'column.dart';
@@ -22,7 +21,7 @@ class DriftTable extends DriftElementWithResultSet {
   final ExistingRowClass? existingRowClass;
 
   @override
-  final AnnotatedDartCode? customParentClass;
+  final CustomParentClass? customParentClass;
 
   /// The fixed [entityInfoName] to use, overriding the default.
   final String? fixedEntityInfoName;

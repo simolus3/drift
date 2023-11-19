@@ -44,8 +44,9 @@ class DataClassWriter {
   }
 
   void write() {
-    final parentClass = table.customParentClass != null
-        ? _emitter.dartCode(table.customParentClass!)
+    final customParent = table.customParentClass;
+    final parentClass = customParent != null
+        ? _emitter.dartCode(customParent.parentClass)
         : _emitter.drift('DataClass');
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
@@ -76,8 +77,8 @@ class DataClassWriter {
     }
 
     // write constructor with named optional fields
-
-    if (!scope.options.generateMutableClasses) {
+    if (!scope.options.generateMutableClasses &&
+        customParent?.isConst != false) {
       _buffer.write('const ');
     }
     _emitter

@@ -14,7 +14,7 @@ class DriftView extends DriftElementWithResultSet {
   final DriftViewSource source;
 
   @override
-  final AnnotatedDartCode? customParentClass;
+  final CustomParentClass? customParentClass;
 
   @override
   String entityInfoName;
