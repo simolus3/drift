@@ -741,14 +741,14 @@ CREATE TABLE [STRING_TABLE](
 	''',
         },
         options: BuilderOptions({'assume_correct_reference': true}),
-        logger: debugLogger
-    );
+        logger: debugLogger);
 
     checkOutputs(
       {
         'a|lib/drift/datastore_db.drift.dart': decodedMatches(
           allOf(
-            contains(r'attachedDatabase.selectOnly(attachedDatabase.comboGroup)'),
+            contains(
+                r'attachedDatabase.selectOnly(attachedDatabase.comboGroup)'),
           ),
         ),
       },

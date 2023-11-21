@@ -102,5 +102,6 @@ class DartViewSource extends DriftViewSource {
   /// but the programmer knows the expected source, this field can be manually specified to
   /// inform the view of the intended data source. **Requires the `assume_correct_reference` option to be true.**
   final String? staticSource;
-  DartViewSource(this.dartQuerySource, this.primaryFrom, this.staticReferences, [this.staticSource]);
+  DartViewSource(this.dartQuerySource, this.primaryFrom, this.staticReferences,
+      [this.staticSource]);
 }
