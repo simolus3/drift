@@ -1,4 +1,3 @@
-
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/backends/build/analyzer.dart';
