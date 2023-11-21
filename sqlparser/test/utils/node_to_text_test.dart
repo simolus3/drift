@@ -407,6 +407,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
       });
 
+      test('upsert - update with column-name-list', () {
+        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
+            'ON CONFLICT DO UPDATE SET (a, c) = (b, d) WHERE d < a;');
+      });
+
       test('upsert - multiple clauses', () {
         testFormat('INSERT INTO foo VALUES (1, 2, 3) '
             'ON CONFLICT DO NOTHING '
@@ -417,6 +422,14 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     group('update', () {
       test('simple', () {
         testFormat('UPDATE foo SET bar = baz WHERE 1;');
+      });
+
+      test('with column-name-list', () {
+        testFormat('UPDATE foo SET (bar, baz) = (baz, bar) WHERE 1;');
+      });
+
+      test('with column-name-list and subquery', () {
+        testFormat('UPDATE foo SET (bar, baz) = (SELECT 1,2) WHERE 1;');
       });
 
       test('with returning', () {

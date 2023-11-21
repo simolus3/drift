@@ -52,7 +52,8 @@ class ElementSerializer {
           for (final constraint in element.tableConstraints)
             _serializeTableConstraint(constraint),
         ],
-        'custom_parent_class': element.customParentClass?.toJson(),
+        'custom_parent_class':
+            _serializeCustomParentClass(element.customParentClass),
         'fixed_entity_info_name': element.fixedEntityInfoName,
         'base_dart_name': element.baseDartName,
         'row_class_name': element.nameOfRowClass,
@@ -142,7 +143,8 @@ class ElementSerializer {
         'existing_data_class': element.existingRowClass != null
             ? _serializeExistingRowClass(element.existingRowClass!)
             : null,
-        'custom_parent_class': element.customParentClass?.toJson(),
+        'custom_parent_class':
+            _serializeCustomParentClass(element.customParentClass),
         'name_of_row_class': element.nameOfRowClass,
         'source': serializedSource,
       };
@@ -308,6 +310,15 @@ class ElementSerializer {
       'module': data.module,
       'arguments': data.moduleArguments,
       'recognized': serializedRecognized,
+    };
+  }
+
+  Map<String, Object?>? _serializeCustomParentClass(CustomParentClass? pc) {
+    if (pc == null) return null;
+
+    return {
+      'class': pc.parentClass.toJson(),
+      'const': pc.isConst,
     };
   }
 
@@ -520,9 +531,8 @@ class ElementDeserializer {
             for (final constraint in json.list('table_constraints'))
               await _readTableConstraint(constraint as Map, columnByName),
           ],
-          customParentClass: json['custom_parent_class'] != null
-              ? AnnotatedDartCode.fromJson(json['custom_parent_class'] as Map)
-              : null,
+          customParentClass:
+              _readCustomParentClass(json['custom_parent_class'] as Map?),
           fixedEntityInfoName: json['fixed_entity_info_name'] as String?,
           baseDartName: json['base_dart_name'] as String,
           nameOfRowClass: json['row_class_name'] as String,
@@ -662,9 +672,8 @@ class ElementDeserializer {
           references: references,
           columns: columns,
           entityInfoName: json['entity_info_name'] as String,
-          customParentClass: json['custom_parent_class'] != null
-              ? AnnotatedDartCode.fromJson(json['custom_parent_class'] as Map)
-              : null,
+          customParentClass:
+              _readCustomParentClass(json['custom_parent_class'] as Map?),
           nameOfRowClass: json['name_of_row_class'] as String,
           existingRowClass: json['existing_data_class'] != null
               ? await _readExistingRowClass(
@@ -806,6 +815,15 @@ class ElementDeserializer {
       positionalColumns: (json['positional'] as List).cast(),
       namedColumns: (json['named'] as Map).cast(),
       generateInsertable: json['generate_insertable'] as bool,
+    );
+  }
+
+  CustomParentClass? _readCustomParentClass(Map? json) {
+    if (json == null) return null;
+
+    return CustomParentClass(
+      parentClass: AnnotatedDartCode.fromJson(json['class'] as Map),
+      isConst: json['const'] as bool,
     );
   }
 

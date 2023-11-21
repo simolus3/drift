@@ -23,6 +23,13 @@ void main() {
         .expectError('g', type: AnalysisErrorType.writeToGeneratedColumn);
   });
 
+  test('reports error when updating generated column with column-name-list',
+      () {
+    engine
+        .analyze("UPDATE a SET (ok, g) = ('new', 'old');")
+        .expectError('g', type: AnalysisErrorType.writeToGeneratedColumn);
+  });
+
   test('reports error when inserting generated column', () {
     engine
         .analyze('INSERT INTO a (ok, g) VALUES (?, ?)')

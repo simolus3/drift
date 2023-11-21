@@ -89,9 +89,22 @@ void main() {
       expect(result.errors, isEmpty);
     });
 
+    test('update statements with column-name-list', () {
+      final result = engine.analyze(
+          'WITH x AS (SELECT * FROM demo) UPDATE demo '
+          'SET (id, content) = (x.id, x.content) FROM x WHERE demo.id = x.id;');
+      expect(result.errors, isEmpty);
+    });
+
     test('insert statements', () {
       final result = engine.analyze(
           'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x;');
+      expect(result.errors, isEmpty);
+    });
+
+    test('insert statements with upsert using column-name-list', () {
+      final result = engine.analyze(
+          'WITH x AS (SELECT * FROM demo) INSERT INTO demo SELECT * FROM x ON CONFLICT(content) DO UPDATE SET (id, content) = (0, \'hello\');');
       expect(result.errors, isEmpty);
     });
 

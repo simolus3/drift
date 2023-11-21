@@ -1,5 +1,8 @@
 ## 2.14.0-dev
 
+- Don't generate `const` row classes when they are extending a class which
+  isn't const.
+
 ## 2.13.2
 
 - Fix generated queries relying on custom types.

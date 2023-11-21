@@ -5,7 +5,7 @@ import 'utils.dart';
 
 final _block = Block([
   UpdateStatement(table: TableReference('tbl'), set: [
-    SetComponent(
+    SingleColumnSetComponent(
       column: Reference(columnName: 'foo'),
       expression: Reference(columnName: 'bar'),
     ),

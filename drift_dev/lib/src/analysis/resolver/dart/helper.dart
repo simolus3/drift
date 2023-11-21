@@ -198,7 +198,7 @@ extension TypeUtils on DartType {
 
 class DataClassInformation {
   final String enforcedName;
-  final AnnotatedDartCode? extending;
+  final CustomParentClass? extending;
   final ExistingRowClass? existingClass;
 
   DataClassInformation(
@@ -234,7 +234,7 @@ class DataClassInformation {
     }
 
     String name;
-    AnnotatedDartCode? customParentClass;
+    CustomParentClass? customParentClass;
     ExistingRowClass? existingClass;
 
     if (dataClassName != null) {

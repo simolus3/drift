@@ -440,7 +440,7 @@ class FooData {
       expect(file.allErrors, isEmpty);
 
       final table = file.analyzedElements.single as DriftTable;
-      expect(table.customParentClass?.toString(), 'BaseModel');
+      expect(table.customParentClass?.parentClass.toString(), 'BaseModel');
     });
 
     test('check valid with type argument', () async {
@@ -473,6 +473,14 @@ class FooData {
               '@DataClassName must be subtype of DataClass'))
         ],
       );
+
+      final table = file.analyzedElements.single as DriftTable;
+      expect(
+          table.customParentClass,
+          isA<CustomParentClass>()
+              .having((e) => e.isConst, 'isConst', false)
+              .having(
+                  (e) => e.parentClass.toString(), 'parentClass', 'BaseModel'));
     });
 
     test('wrong type argument in extending', () async {

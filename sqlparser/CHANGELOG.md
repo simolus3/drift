@@ -1,3 +1,8 @@
+## 0.33.0-dev
+
+- Support the [column-name-list](https://sqlite.org/syntax/column-name-list.html)
+  syntax for updates, thanks to [@tibotix](https://github.com/tibotix).
+
 ## 0.32.1
 
 - Treat the result of `sum()` as nullable when inferring types.

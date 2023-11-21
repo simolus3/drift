@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:drift_dev/src/analysis/results/result_sets.dart';
 
 import '../../driver/error.dart';
 import '../../results/dart.dart';
@@ -24,7 +25,7 @@ String dataClassNameForClassName(String tableName) {
   return '${tableName}Data';
 }
 
-AnnotatedDartCode? parseCustomParentClass(
+CustomParentClass? parseCustomParentClass(
   String dartTypeName,
   DartObject dataClassName,
   ClassElement element,
@@ -44,7 +45,6 @@ AnnotatedDartCode? parseCustomParentClass(
             'DataClass',
           ),
         );
-        return null;
       }
 
       if (extendingType.typeArguments.length > 1) {
@@ -55,7 +55,22 @@ AnnotatedDartCode? parseCustomParentClass(
             'type parameter',
           ),
         );
-        return null;
+      }
+
+      final defaultConstructor =
+          extendingType.lookUpConstructor(null, element.library);
+      var isConst = true;
+      AnnotatedDartCode code;
+      if (defaultConstructor == null) {
+        resolver.reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            'Parameter `extending` in @DataClassName must have an unnamed '
+            'constructor.',
+          ),
+        );
+      } else {
+        isConst = defaultConstructor.isConst;
       }
 
       // For legacy reasons, if we're extending an existing class with a type
@@ -64,7 +79,7 @@ AnnotatedDartCode? parseCustomParentClass(
       if (extendingType.typeArguments.length == 1) {
         final genericType = extendingType.typeArguments[0];
         if (genericType.isDartCoreObject || genericType is DynamicType) {
-          return AnnotatedDartCode([
+          code = AnnotatedDartCode([
             DartTopLevelSymbol.topLevelElement(extendingType.element),
             '<',
             DartTopLevelSymbol(dartTypeName, null),
@@ -84,7 +99,8 @@ AnnotatedDartCode? parseCustomParentClass(
         }
       }
 
-      return AnnotatedDartCode.type(extendingType);
+      code = AnnotatedDartCode.type(extendingType);
+      return CustomParentClass(parentClass: code, isConst: isConst);
     } else {
       resolver.reportError(
         DriftAnalysisError.forDartElement(

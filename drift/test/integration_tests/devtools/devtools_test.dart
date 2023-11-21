@@ -43,12 +43,12 @@ void main() {
     });
 
     await vmServiceListening.future;
+
     vm = await vmServiceConnectUri('ws://localhost:$port/ws');
+    await databaseOpened.future;
 
     final state = await vm.getVM();
     isolateId = state.isolates!.single.id!;
-
-    await databaseOpened.future;
   });
 
   tearDownAll(() async {

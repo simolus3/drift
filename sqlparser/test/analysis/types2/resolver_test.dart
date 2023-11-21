@@ -14,13 +14,18 @@ void main() {
     return TypeResolver(TypeInferenceSession(context))..run(context.root);
   }
 
-  ResolvedType? resolveFirstVariable(String sql,
+  Iterable<ResolvedType?> resolveVariableTypes(String sql,
       {AnalyzeStatementOptions? options}) {
     final resolver = obtainResolver(sql, options: options);
     final session = resolver.session;
-    final variable =
-        session.context.root.allDescendants.whereType<Variable>().first;
-    return session.typeOf(variable);
+    return session.context.root.allDescendants
+        .whereType<Variable>()
+        .map((variable) => session.typeOf(variable));
+  }
+
+  ResolvedType? resolveFirstVariable(String sql,
+      {AnalyzeStatementOptions? options}) {
+    return resolveVariableTypes(sql, options: options).first;
   }
 
   ResolvedType? resolveResultColumn(String sql) {
@@ -290,6 +295,32 @@ WITH RECURSIVE
   test('handles set components in updates', () {
     final type = resolveFirstVariable('UPDATE demo SET id = ?');
     expect(type, const ResolvedType(type: BasicType.int));
+  });
+
+  test('handles multi column set components in updates', () {
+    final variableTypes =
+        resolveVariableTypes('UPDATE demo SET (id, content) = (?, ?)');
+    expect(variableTypes.first, const ResolvedType(type: BasicType.int));
+    expect(
+        variableTypes.elementAt(1), const ResolvedType(type: BasicType.text));
+  });
+
+  test('handles multi column set components in updates with select subquery',
+      () {
+    final variableTypes =
+        resolveVariableTypes('UPDATE demo SET (id, content) = (SELECT ?,?)');
+    expect(variableTypes.first, const ResolvedType(type: BasicType.int));
+    expect(
+        variableTypes.elementAt(1), const ResolvedType(type: BasicType.text));
+  });
+
+  test('handles multi column set components in updates with values subquery',
+      () {
+    final variableTypes =
+        resolveVariableTypes('UPDATE demo SET (id, content) = (VALUES(?,?))');
+    expect(variableTypes.first, const ResolvedType(type: BasicType.int));
+    expect(
+        variableTypes.elementAt(1), const ResolvedType(type: BasicType.text));
   });
 
   test('infers offsets in frame specs', () {
