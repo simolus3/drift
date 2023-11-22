@@ -14,19 +14,19 @@ String dataClassNameForClassName(String tableName) {
   // from the table name.
 
   if (tableName.endsWith('s')) {
-    if (tableName.endsWith('ss') || tableName.endsWith('us') || tableName.endsWith('sses')) {
+    if (tableName.endsWith('ss') ||
+        tableName.endsWith('us') ||
+        tableName.endsWith('sses')) {
       return tableName;
     } else if (tableName.endsWith('ies')) {
-      return tableName.substring(0, tableName.length - 3) + 'y';
+      return '${tableName.substring(0, tableName.length - 3)}y';
     } else {
       return tableName.substring(0, tableName.length - 1);
     }
   } else {
-    return tableName;
+    // Default behavior if the table name is not a valid plural.
+    return '${tableName}Data';
   }
-
-  // Default behavior if the table name is not a valid plural.
-  return '${tableName}Data';
 }
 
 AnnotatedDartCode? parseCustomParentClass(

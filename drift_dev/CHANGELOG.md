@@ -1,5 +1,10 @@
 ## 2.14.0-dev
 
+- __Breaking change__: The name of the generated row class derived from the name
+  of the Dart table name now supports more forms of plurals.
+  For instance, a table without a `@DataClassName` annotation named `Categories`
+  would now generate a `Category` class instead of `Categorie`.
+
 ## 2.13.2
 
 - Fix generated queries relying on custom types.

@@ -3,7 +3,7 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class Entries extends Table with TableInfo<Entries, Entrie> {
+class Entries extends Table with TableInfo<Entries, Entry> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -28,7 +28,7 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   String get actualTableName => $name;
   static const String $name = 'entries';
   @override
-  VerificationContext validateIntegrity(Insertable<Entrie> instance,
+  VerificationContext validateIntegrity(Insertable<Entry> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -47,9 +47,9 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Entrie map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Entry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Entrie(
+    return Entry(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       value: attachedDatabase.typeMapping
@@ -66,10 +66,10 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   bool get dontWriteConstraints => true;
 }
 
-class Entrie extends DataClass implements Insertable<Entrie> {
+class Entry extends DataClass implements Insertable<Entry> {
   final int id;
   final String value;
-  const Entrie({required this.id, required this.value});
+  const Entry({required this.id, required this.value});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -85,10 +85,10 @@ class Entrie extends DataClass implements Insertable<Entrie> {
     );
   }
 
-  factory Entrie.fromJson(Map<String, dynamic> json,
+  factory Entry.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Entrie(
+    return Entry(
       id: serializer.fromJson<int>(json['id']),
       value: serializer.fromJson<String>(json['text']),
     );
@@ -102,13 +102,13 @@ class Entrie extends DataClass implements Insertable<Entrie> {
     };
   }
 
-  Entrie copyWith({int? id, String? value}) => Entrie(
+  Entry copyWith({int? id, String? value}) => Entry(
         id: id ?? this.id,
         value: value ?? this.value,
       );
   @override
   String toString() {
-    return (StringBuffer('Entrie(')
+    return (StringBuffer('Entry(')
           ..write('id: $id, ')
           ..write('value: $value')
           ..write(')'))
@@ -120,10 +120,10 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Entrie && other.id == this.id && other.value == this.value);
+      (other is Entry && other.id == this.id && other.value == this.value);
 }
 
-class EntriesCompanion extends UpdateCompanion<Entrie> {
+class EntriesCompanion extends UpdateCompanion<Entry> {
   final Value<int> id;
   final Value<String> value;
   const EntriesCompanion({
@@ -134,7 +134,7 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
     this.id = const Value.absent(),
     required String value,
   }) : value = Value(value);
-  static Insertable<Entrie> custom({
+  static Insertable<Entry> custom({
     Expression<int>? id,
     Expression<String>? value,
   }) {
@@ -176,7 +176,7 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
 abstract class _$MyDatabase extends GeneratedDatabase {
   _$MyDatabase(QueryExecutor e) : super(e);
   late final Entries entries = Entries(this);
-  Selectable<Entrie> allEntries() {
+  Selectable<Entry> allEntries() {
     return customSelect('SELECT * FROM entries', variables: [], readsFrom: {
       entries,
     }).asyncMap(entries.mapFromRow);

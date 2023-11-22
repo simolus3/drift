@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   drift: ^2.0.2+1
-  sqlcipher_flutter_libs: ^0.5.1
+  sqlcipher_flutter_libs: ^0.6.0
   flutter:
     sdk: flutter
   path_provider: ^2.0.11
