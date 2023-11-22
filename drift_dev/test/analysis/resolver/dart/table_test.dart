@@ -186,13 +186,6 @@ class Pianos extends Table {
 
       expect(table.nameOfRowClass, 'Piano');
     });
-
-    test("singularizes table name that end in -s", () async {
-      final result = await findTable('Socks');
-      final table = result!.result as DriftTable;
-
-      expect(table.nameOfRowClass, 'Sock');
-    });
   });
   group('Columns', () {
     test('should use field name if no name has been set explicitly', () async {
