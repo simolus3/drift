@@ -13,11 +13,10 @@ import 'service_extension.dart';
 import 'shared.dart';
 
 const _releaseMode = bool.fromEnvironment('dart.vm.product');
-const _profileMode = bool.fromEnvironment('dart.vm.profile');
 
-// Avoid pulling in a bunch of unused code to describe databases and to make
-// them available through service extensions on release builds.
-const _enable = !_releaseMode && !_profileMode;
+// This code is only used for the Drift DevTools extension. Avoid including it
+// in release builds.
+const _enable = !_releaseMode;
 
 void postEvent(String type, Map<Object?, Object?> data) {
   developer.postEvent('drift:$type', data);
