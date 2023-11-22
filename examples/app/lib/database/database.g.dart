@@ -473,8 +473,8 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
 
 class TextEntries extends Table
     with
-        TableInfo<TextEntries, TextEntrie>,
-        VirtualTableInfo<TextEntries, TextEntrie> {
+        TableInfo<TextEntries, TextEntry>,
+        VirtualTableInfo<TextEntries, TextEntry> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -494,7 +494,7 @@ class TextEntries extends Table
   String get actualTableName => $name;
   static const String $name = 'text_entries';
   @override
-  VerificationContext validateIntegrity(Insertable<TextEntrie> instance,
+  VerificationContext validateIntegrity(Insertable<TextEntry> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -512,9 +512,9 @@ class TextEntries extends Table
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  TextEntrie map(Map<String, dynamic> data, {String? tablePrefix}) {
+  TextEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TextEntrie(
+    return TextEntry(
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
     );
@@ -532,9 +532,9 @@ class TextEntries extends Table
       'fts5(description, content=todo_entries, content_rowid=id)';
 }
 
-class TextEntrie extends DataClass implements Insertable<TextEntrie> {
+class TextEntry extends DataClass implements Insertable<TextEntry> {
   final String description;
-  const TextEntrie({required this.description});
+  const TextEntry({required this.description});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -548,10 +548,10 @@ class TextEntrie extends DataClass implements Insertable<TextEntrie> {
     );
   }
 
-  factory TextEntrie.fromJson(Map<String, dynamic> json,
+  factory TextEntry.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TextEntrie(
+    return TextEntry(
       description: serializer.fromJson<String>(json['description']),
     );
   }
@@ -563,12 +563,12 @@ class TextEntrie extends DataClass implements Insertable<TextEntrie> {
     };
   }
 
-  TextEntrie copyWith({String? description}) => TextEntrie(
+  TextEntry copyWith({String? description}) => TextEntry(
         description: description ?? this.description,
       );
   @override
   String toString() {
-    return (StringBuffer('TextEntrie(')
+    return (StringBuffer('TextEntry(')
           ..write('description: $description')
           ..write(')'))
         .toString();
@@ -579,10 +579,10 @@ class TextEntrie extends DataClass implements Insertable<TextEntrie> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is TextEntrie && other.description == this.description);
+      (other is TextEntry && other.description == this.description);
 }
 
-class TextEntriesCompanion extends UpdateCompanion<TextEntrie> {
+class TextEntriesCompanion extends UpdateCompanion<TextEntry> {
   final Value<String> description;
   final Value<int> rowid;
   const TextEntriesCompanion({
@@ -593,7 +593,7 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntrie> {
     required String description,
     this.rowid = const Value.absent(),
   }) : description = Value(description);
-  static Insertable<TextEntrie> custom({
+  static Insertable<TextEntry> custom({
     Expression<String>? description,
     Expression<int>? rowid,
   }) {

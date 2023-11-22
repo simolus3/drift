@@ -14,7 +14,7 @@ void main() {
 }
 
 class _DatabaseSampleState extends State<_DatabaseSample> {
-  List<Entrie> allItems = [];
+  List<Entry> allItems = [];
   TextEditingController editController = TextEditingController();
   final database = MyDatabase(Platform.createDatabaseConnection('sample'));
 
