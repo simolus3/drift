@@ -303,6 +303,7 @@ class QueryStream {
     for (final op in _runningOperations) {
       op.cancel();
     }
+    _runningOperations.clear();
   }
 
   Future<void> fetchAndEmitData() async {
