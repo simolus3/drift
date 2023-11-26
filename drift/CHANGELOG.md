@@ -1,3 +1,8 @@
+## 2.13.2
+
+- Fix a race condition causing query streams to not emit new data around some
+  transaction setups.
+
 ## 2.13.1
 
 - Fix a bug when running batches over serialized communication channels.
