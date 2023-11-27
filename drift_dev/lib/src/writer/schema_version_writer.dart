@@ -75,6 +75,10 @@ class SchemaVersionWriter {
     assert(versions.isSortedBy<num>((element) => element.version));
   }
 
+  String _nameForSchemaClass(int version) {
+    return 'Schema$version';
+  }
+
   /// Since not every column changes in every schema version, we prefer to re-use
   /// columns with an identical definition across tables and schema versions.
   ///
@@ -308,7 +312,7 @@ class SchemaVersionWriter {
       text
         ..write('required Future<void> Function(')
         ..writeDriftRef('Migrator')
-        ..write(' m, _S${next.version} schema)')
+        ..write(' m, ${_nameForSchemaClass(next.version)} schema)')
         ..writeln('from${current.version}To${next.version},');
     }
   }
@@ -322,7 +326,7 @@ class SchemaVersionWriter {
     // only need them for versions targeted by migrations.
     for (final version in versions.skip(1)) {
       final versionNo = version.version;
-      final versionClass = '_S$versionNo';
+      final versionClass = _nameForSchemaClass(version.version);
       final versionScope = libraryScope.child();
 
       // Reserve all the names already in use in [VersionedSchema] and its
@@ -336,7 +340,7 @@ class SchemaVersionWriter {
         'runMigrationSteps',
       ]);
 
-      // Write an _S<x> class for each schema version x.
+      // Write an Schema<x> class for each schema version x.
       versionScope.leaf()
         ..write('final class $versionClass extends ')
         ..writeUriRef(_schemaLibrary, 'VersionedSchema')
@@ -367,7 +371,7 @@ class SchemaVersionWriter {
     // Write a MigrationStepWithVersion factory that takes a callback doing a
     // step for each schema to to the next. We supply a special migrator that
     // only considers entities from that version, as well as a typed reference
-    // to the _S<x> class used to lookup elements.
+    // to the numbered Schema<x> class used to lookup elements.
     final steps = libraryScope.leaf()
       ..writeUriRef(_schemaLibrary, 'MigrationStepWithVersion')
       ..write(' migrationSteps({');
@@ -380,7 +384,8 @@ class SchemaVersionWriter {
     for (final (current, next) in versions.withNext) {
       steps
         ..writeln('case ${current.version}:')
-        ..write('final schema = _S${next.version}(database: database);')
+        ..write(
+            'final schema = ${_nameForSchemaClass(next.version)}(database: database);')
         ..write('final migrator = ')
         ..writeDriftRef('Migrator')
         ..writeln('(database, schema);')
