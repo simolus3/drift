@@ -80,7 +80,7 @@ bitwise operations:
 
 {% include "blocks/snippet" snippets = snippets name = 'bitwise' %}
 
-## Nullability
+## Null checks {#nullability}
 To check whether an expression evaluates to `NULL` in SQL, you can use the `isNull` extension:
 
 ```dart
@@ -130,6 +130,12 @@ select(animals)..where((a) => a.amountOfLegs.isIn([3, 7, 4, 2]);
 ```
 
 Again, the `isNotIn` function works the other way around.
+
+## JSON
+
+Support for common JSON operators is provided through `package:drift/extensions/json1.dart`.
+This provides things like `jsonExtract` to extract fields from JSON or `jsonEach` to query
+nested JSON structures. For more details, see the [JSON support]({{ 'select.md#json-support' | pageUrl }}) section on the page about selects or [this more complex example]({{ '../Examples/relationships.md#with-json-functions' | pageUrl }}).
 
 ## Aggregate functions (like count and sum) {#aggregate}
 
