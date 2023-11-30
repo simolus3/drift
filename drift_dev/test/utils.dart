@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:analyzer/dart/analysis/features.dart';
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build/experiments.dart';
 import 'package:build_resolvers/build_resolvers.dart';
@@ -10,6 +13,7 @@ import 'package:drift_dev/integrations/build.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
@@ -188,5 +192,36 @@ class _TrackingAssetReader implements AssetReader {
   Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) {
     _trackRead(id);
     return _inner.readAsString(id, encoding: encoding);
+  }
+}
+
+class IsValidDartFile extends CustomMatcher {
+  IsValidDartFile(valueOrMatcher)
+      : super(
+          'A syntactically-valid Dart source file',
+          'parsed unit',
+          valueOrMatcher,
+        );
+
+  @override
+  Object? featureValueOf(actual) {
+    final resourceProvider = MemoryResourceProvider();
+    if (actual is List<int>) {
+      resourceProvider.newFileWithBytes('/foo.dart', actual);
+    } else if (actual is String) {
+      resourceProvider.newFile('/foo.dart', actual);
+    } else {
+      throw 'Not a String or a List<int>';
+    }
+
+    return parseFile(
+      path: '/foo.dart',
+      featureSet: FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: Version(3, 0, 0),
+        flags: const [],
+      ),
+      resourceProvider: resourceProvider,
+      throwIfDiagnostics: true,
+    ).unit;
   }
 }

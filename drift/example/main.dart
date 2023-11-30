@@ -6,6 +6,16 @@ import 'package:drift/native.dart';
 
 part 'main.g.dart';
 
+class Todo extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get listid => text().nullable()();
+
+  TextColumn get text$ => text().named('text').nullable()();
+
+  BoolColumn get completed => boolean()();
+}
+
 @DataClassName('TodoCategory')
 class TodoCategories extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -57,6 +67,7 @@ abstract class TodoItemWithCategoryNameView extends View {
 }
 
 @DriftDatabase(tables: [
+  Todo,
   TodoItems,
   TodoCategories,
 ], views: [

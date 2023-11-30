@@ -26,7 +26,13 @@ void overrideToString(
   for (var i = 0; i < properties.length; i++) {
     final property = properties[i];
 
-    into.write("..write('$property: \$$property");
+    if (property.contains(r'$')) {
+      final asKey = property.replaceAll('\$', '\\\$');
+      into.write("..write('$asKey: \${$property}");
+    } else {
+      into.write("..write('$property: \$$property");
+    }
+
     if (i != properties.length - 1) into.write(', ');
 
     into.write("')");

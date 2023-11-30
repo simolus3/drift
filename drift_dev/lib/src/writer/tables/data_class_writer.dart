@@ -143,7 +143,7 @@ class DataClassWriter {
 
     for (final column in columns) {
       final getter = column.nameInDart;
-      final jsonKey = column.getJsonKey(scope.options);
+      final jsonKeyString = asDartLiteral(column.getJsonKey(scope.options));
       String deserialized;
 
       final typeConverter = column.typeConverter;
@@ -154,13 +154,14 @@ class DataClassWriter {
           type = '$type?';
         }
 
-        final fromConverter = "serializer.fromJson<$type>(json['$jsonKey'])";
+        final fromConverter =
+            "serializer.fromJson<$type>(json[$jsonKeyString])";
         final converterField = _converter(column);
         deserialized = '$converterField.fromJson($fromConverter)';
       } else {
         final type = _columnType(column);
 
-        deserialized = "serializer.fromJson<$type>(json['$jsonKey'])";
+        deserialized = "serializer.fromJson<$type>(json[$jsonKeyString])";
       }
 
       _buffer.write('$getter: $deserialized,');
@@ -186,7 +187,7 @@ class DataClassWriter {
         'return <String, dynamic>{\n');
 
     for (final column in columns) {
-      final name = column.getJsonKey(scope.options);
+      final nameLiteral = asDartLiteral(column.getJsonKey(scope.options));
       final getter = column.nameInDart;
       final needsThis = getter == 'serializer';
       var value = needsThis ? 'this.$getter' : getter;
@@ -199,7 +200,7 @@ class DataClassWriter {
         dartType = _jsonType(column);
       }
 
-      _buffer.write("'$name': serializer.toJson<$dartType>($value),");
+      _buffer.write("$nameLiteral: serializer.toJson<$dartType>($value),");
     }
 
     _buffer.write('};}');

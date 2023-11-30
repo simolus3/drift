@@ -5,6 +5,7 @@ import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../analysis/options.dart';
 import '../analysis/results/results.dart';
+import '../utils/string_escaper.dart';
 import 'import_manager.dart';
 import 'queries/sql_writer.dart';
 
@@ -407,6 +408,10 @@ class TextEmitter extends _Node {
 
   void writeSqlByDialectMap(sql.AstNode node) {
     _writeSqlByDialectMap(node, buffer);
+  }
+
+  void stringLiteral(String contents) {
+    return buffer.write(asDartLiteral(contents));
   }
 }
 

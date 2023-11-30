@@ -454,10 +454,11 @@ class TableWriter extends TableOrViewWriter {
   void _writeColumnVerificationMeta(DriftColumn column) {
     if (!_skipVerification) {
       final meta = emitter.drift('VerificationMeta');
+      final arg = asDartLiteral(column.nameInDart);
 
       buffer
         ..write('static const $meta ${_fieldNameForColumnMeta(column)} = ')
-        ..writeln("const $meta('${column.nameInDart}');");
+        ..writeln("const $meta($arg);");
     }
   }
 

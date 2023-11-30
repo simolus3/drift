@@ -1,10 +1,6 @@
-import 'package:analyzer/dart/analysis/features.dart';
-import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -35,10 +31,10 @@ class Database extends _$Database {}
     }, options: options);
 
     checkOutputs(
-      const {
-        'a|lib/main.drift.dart': _GeneratesWithoutFinalFields(
+      {
+        'a|lib/main.drift.dart': IsValidDartFile(_WithoutFinalFields(
           {'User', 'UsersCompanion', 'SomeQueryResult'},
-        ),
+        )),
       },
       writer.dartOutputs,
       writer.writer,
@@ -46,10 +42,10 @@ class Database extends _$Database {}
   }, tags: 'analyzer');
 }
 
-class _GeneratesWithoutFinalFields extends Matcher {
+class _WithoutFinalFields extends Matcher {
   final Set<String> expectedWithoutFinals;
 
-  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals);
+  const _WithoutFinalFields(this.expectedWithoutFinals);
 
   @override
   Description describe(Description description) {
@@ -58,27 +54,14 @@ class _GeneratesWithoutFinalFields extends Matcher {
   }
 
   @override
-  bool matches(dynamic desc, Map matchState) {
+  bool matches(Object? desc, Map matchState) {
     // Parse the file, assure we don't have final fields in data classes.
-    final resourceProvider = MemoryResourceProvider();
-    if (desc is List<int>) {
-      resourceProvider.newFileWithBytes('/foo.dart', desc);
-    } else if (desc is String) {
-      resourceProvider.newFile('/foo.dart', desc);
-    } else {
-      desc['desc'] = 'Neither a List<int> or String - cannot be parsed';
+    final parsed = desc;
+
+    if (parsed is! CompilationUnit) {
+      matchState['desc'] = 'Could not be parsed';
       return false;
     }
-
-    final parsed = parseFile(
-      path: '/foo.dart',
-      featureSet: FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(2, 12, 0),
-        flags: const [],
-      ),
-      resourceProvider: resourceProvider,
-      throwIfDiagnostics: true,
-    ).unit;
 
     final remaining = expectedWithoutFinals.toSet();
 
