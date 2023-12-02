@@ -22,9 +22,6 @@ class _DatabaseViewerState extends State<DatabaseViewer> {
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 800),
-      child: const DbViewerNavigator(),
-    );
+    return const DbViewerNavigator();
   }
 }

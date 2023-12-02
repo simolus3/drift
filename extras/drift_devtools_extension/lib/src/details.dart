@@ -49,12 +49,17 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
       error: (err, stack) => Text('unknown error: $err\n$stack'),
       data: (database) {
         if (database != null) {
-          final textTheme = Theme.of(context).textTheme;
+          final theme = Theme.of(context);
+          final textTheme = theme.textTheme;
 
-          return Scrollbar(
-            controller: controller,
-            child: ListView(
-              controller: controller,
+          return Theme(
+            data: theme.copyWith(
+              scrollbarTheme: const ScrollbarThemeData(
+                thumbVisibility: MaterialStatePropertyAll(true),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Padding(
                   padding: EdgeInsets.all(8),
@@ -68,7 +73,7 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
                     ],
                   ),
                 ),
-                DatabaseViewer(database: database),
+                Expanded(child: DatabaseViewer(database: database)),
               ],
             ),
           );
