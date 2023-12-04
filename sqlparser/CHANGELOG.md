@@ -1,4 +1,4 @@
-## 0.33.0-dev
+## 0.33.0
 
 - Support the [column-name-list](https://sqlite.org/syntax/column-name-list.html)
   syntax for updates, thanks to [@tibotix](https://github.com/tibotix).

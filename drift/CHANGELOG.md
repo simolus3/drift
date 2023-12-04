@@ -1,6 +1,7 @@
-## 2.14.0-dev
+## 2.14.0
 
-- Add the `QueryInterceptor` to easily monitor all database calls made by drift.
+- Add the `QueryInterceptor` API to easily monitor or transform all database
+  calls made by drift.
 - Add the `count()` extension on tables to easily count rows in tables or views.
 
 ## 2.13.2
