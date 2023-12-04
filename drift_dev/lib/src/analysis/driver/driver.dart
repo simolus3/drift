@@ -230,7 +230,9 @@ class DriftAnalysisDriver {
     assert(state.discovery != null || state.cachedDiscovery != null);
     assert(id.libraryUri == state.ownUri);
 
-    if (!state.elementIsAnalyzed(id)) {
+    if (state.elementIsAnalyzed(id)) {
+      return state.analysis[id]?.result;
+    } else {
       final resolver = DriftResolver(this);
 
       try {
@@ -241,10 +243,10 @@ class DriftAnalysisDriver {
 
           if (_isTesting) rethrow;
         }
+
+        return null;
       }
     }
-
-    return null;
   }
 
   /// Resolves elements in a file under the given [uri] by doing all the
