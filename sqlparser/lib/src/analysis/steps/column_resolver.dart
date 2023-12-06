@@ -366,7 +366,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
     // result, but also expressions that appear as result columns
     for (final resultColumn in columns) {
       if (resultColumn is StarResultColumn) {
-        Iterable<Column>? visibleColumnsForStar;
+        Iterable<Column> visibleColumnsForStar;
 
         if (resultColumn.tableName != null) {
           final tableResolver =
@@ -380,9 +380,11 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
             continue;
           }
 
-          visibleColumnsForStar =
-              tableResolver.resultSet.resultSet?.resolvedColumns?.map(
-                  (tableColumn) => AvailableColumn(tableColumn, tableResolver));
+          visibleColumnsForStar = tableResolver
+                  .resultSet.resultSet?.resolvedColumns
+                  ?.map((tableColumn) =>
+                      AvailableColumn(tableColumn, tableResolver)) ??
+              const [];
         } else {
           // we have a * column without a table, that resolves to every column
           // available
@@ -401,7 +403,7 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
         }
 
         final added =
-            visibleColumnsForStar!.where((e) => e.includedInResults).toList();
+            visibleColumnsForStar.where((e) => e.includedInResults).toList();
 
         usedColumns.addAll(added);
         resultColumn.resolvedColumns = added;
