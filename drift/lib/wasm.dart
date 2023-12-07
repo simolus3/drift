@@ -150,7 +150,7 @@ class WasmDatabase extends DelegatedDatabase {
     final bestImplementation = availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
     final connection = await probed.open(bestImplementation, databaseName,
-        localSetup: localSetup);
+        localSetup: localSetup, initializeDatabase: initializeDatabase);
 
     return WasmDatabaseResult(
         connection, bestImplementation, probed.missingFeatures);
