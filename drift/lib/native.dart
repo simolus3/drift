@@ -310,7 +310,7 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
   Future<int> runUpdate(String statement, List<Object?> args) {
     return Future.sync(() {
       runWithArgsSync(statement, args);
-      return database.getUpdatedRows();
+      return database.updatedRows;
     });
   }
 

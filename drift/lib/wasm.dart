@@ -267,7 +267,7 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   @override
   Future<int> runUpdate(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
-    return database.getUpdatedRows();
+    return database.updatedRows;
   }
 
   @override
