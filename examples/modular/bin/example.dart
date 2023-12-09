@@ -9,4 +9,5 @@ void main() async {
 
   await database.myAccessor
       .addUser(user: UsersCompanion.insert(name: 'first_user'));
+  await database.close();
 }
