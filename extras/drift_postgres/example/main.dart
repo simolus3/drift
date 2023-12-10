@@ -8,6 +8,9 @@ part 'main.g.dart';
 class Users extends Table {
   UuidColumn get id => customType(PgTypes.uuid).withDefault(genRandomUuid())();
   TextColumn get name => text()();
+
+  @override
+  Set<Column<Object>>? get primaryKey => {id};
 }
 
 @DriftDatabase(tables: [Users])
@@ -37,6 +40,8 @@ void main() async {
   final user = await database.users.insertReturning(
       UsersCompanion.insert(name: 'Simon', id: Value(Uuid().v4obj())));
   print(user);
+
+  await database.users.deleteOne(user);
 
   await database.close();
 }

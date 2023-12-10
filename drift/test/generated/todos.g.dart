@@ -119,8 +119,8 @@ class Category extends DataClass implements Insertable<Category> {
     map['id'] = Variable<int>(id);
     map['desc'] = Variable<String>(description);
     {
-      final converter = $CategoriesTable.$converterpriority;
-      map['priority'] = Variable<int>(converter.toSql(priority));
+      map['priority'] =
+          Variable<int>($CategoriesTable.$converterpriority.toSql(priority));
     }
     return map;
   }
@@ -246,9 +246,8 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       map['desc'] = Variable<String>(description.value);
     }
     if (priority.present) {
-      final converter = $CategoriesTable.$converterpriority;
-
-      map['priority'] = Variable<int>(converter.toSql(priority.value));
+      map['priority'] = Variable<int>(
+          $CategoriesTable.$converterpriority.toSql(priority.value));
     }
     return map;
   }
@@ -423,8 +422,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       map['category'] = Variable<int>(category);
     }
     if (!nullToAbsent || status != null) {
-      final converter = $TodosTableTable.$converterstatusn;
-      map['status'] = Variable<String>(converter.toSql(status));
+      map['status'] =
+          Variable<String>($TodosTableTable.$converterstatusn.toSql(status));
     }
     return map;
   }
@@ -598,9 +597,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       map['category'] = Variable<int>(category.value);
     }
     if (status.present) {
-      final converter = $TodosTableTable.$converterstatusn;
-
-      map['status'] = Variable<String>(converter.toSql(status.value));
+      map['status'] = Variable<String>(
+          $TodosTableTable.$converterstatusn.toSql(status.value));
     }
     return map;
   }
@@ -1270,9 +1268,8 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
       map['web_safe_int'] = Variable<BigInt>(webSafeInt.value);
     }
     if (custom.present) {
-      final converter = $TableWithoutPKTable.$convertercustom;
-
-      map['custom'] = Variable<String>(converter.toSql(custom.value));
+      map['custom'] = Variable<String>(
+          $TableWithoutPKTable.$convertercustom.toSql(custom.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1371,8 +1368,8 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || txt != null) {
-      final converter = $PureDefaultsTable.$convertertxtn;
-      map['insert'] = Variable<String>(converter.toSql(txt));
+      map['insert'] =
+          Variable<String>($PureDefaultsTable.$convertertxtn.toSql(txt));
     }
     return map;
   }
@@ -1457,9 +1454,8 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (txt.present) {
-      final converter = $PureDefaultsTable.$convertertxtn;
-
-      map['insert'] = Variable<String>(converter.toSql(txt.value));
+      map['insert'] =
+          Variable<String>($PureDefaultsTable.$convertertxtn.toSql(txt.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1532,7 +1528,7 @@ class WithCustomTypeData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<UuidValue>(id);
+    map['id'] = Variable<UuidValue>(id, const UuidType());
     return map;
   }
 

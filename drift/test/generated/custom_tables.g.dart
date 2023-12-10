@@ -167,7 +167,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<String>(a);
+      map['a'] = Variable<String>(a, const CustomTextType());
     }
     if (!nullToAbsent || b != null) {
       map['b'] = Variable<int>(b);
@@ -645,13 +645,12 @@ class Config extends DataClass implements Insertable<Config> {
       map['config_value'] = Variable<DriftAny>(configValue);
     }
     if (!nullToAbsent || syncState != null) {
-      final converter = ConfigTable.$convertersyncStaten;
-      map['sync_state'] = Variable<int>(converter.toSql(syncState));
+      map['sync_state'] =
+          Variable<int>(ConfigTable.$convertersyncStaten.toSql(syncState));
     }
     if (!nullToAbsent || syncStateImplicit != null) {
-      final converter = ConfigTable.$convertersyncStateImplicitn;
-      map['sync_state_implicit'] =
-          Variable<int>(converter.toSql(syncStateImplicit));
+      map['sync_state_implicit'] = Variable<int>(
+          ConfigTable.$convertersyncStateImplicitn.toSql(syncStateImplicit));
     }
     return map;
   }
@@ -796,15 +795,13 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['config_value'] = Variable<DriftAny>(configValue.value);
     }
     if (syncState.present) {
-      final converter = ConfigTable.$convertersyncStaten;
-
-      map['sync_state'] = Variable<int>(converter.toSql(syncState.value));
+      map['sync_state'] = Variable<int>(
+          ConfigTable.$convertersyncStaten.toSql(syncState.value));
     }
     if (syncStateImplicit.present) {
-      final converter = ConfigTable.$convertersyncStateImplicitn;
-
-      map['sync_state_implicit'] =
-          Variable<int>(converter.toSql(syncStateImplicit.value));
+      map['sync_state_implicit'] = Variable<int>(ConfigTable
+          .$convertersyncStateImplicitn
+          .toSql(syncStateImplicit.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1747,12 +1744,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
-          Variable<int>(NullAwareTypeConverter.wrapToSql(
-              ConfigTable.$convertersyncState, var1)),
+          Variable<int>(ConfigTable.$convertersyncStaten.toSql(var1)),
           ...generatedpred.introducedVariables,
           for (var $ in var2)
-            Variable<int>(NullAwareTypeConverter.wrapToSql(
-                ConfigTable.$convertersyncStateImplicit, $))
+            Variable<int>(ConfigTable.$convertersyncStateImplicitn.toSql($))
         ],
         readsFrom: {
           config,
@@ -1893,7 +1888,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
         variables: [
-          Variable<String>(var1)
+          Variable<String>(var1, const CustomTextType())
         ],
         readsFrom: {
           withConstraints,

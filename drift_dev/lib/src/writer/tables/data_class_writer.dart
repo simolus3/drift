@@ -387,7 +387,6 @@ class RowMappingWriter {
 extension WriteToColumns on TextEmitter {
   void writeToColumnsOverride(Iterable<DriftColumn> columns) {
     final expression = drift('Expression');
-    final variable = drift('Variable');
 
     this
       ..write('@override\nMap<String, $expression> toColumns'
@@ -409,28 +408,10 @@ extension WriteToColumns on TextEmitter {
       }
       if (needsScope) write('{');
 
-      final typeName = dartCode(variableTypeCode(column, nullable: false));
-      final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
-          '$variable<$typeName>';
-
-      if (column.typeConverter != null) {
-        // apply type converter before writing the variable
-        final converter = column.typeConverter!;
-
-        this
-          ..write('final converter = ')
-          ..writeDart(readConverter(converter, forNullable: column.nullable))
-          ..writeln(';')
-          ..write(mapSetter)
-          ..write('(converter.toSql(${column.nameInDart}));');
-      } else {
-        // no type converter. Write variable directly
-        this
-          ..write(mapSetter)
-          ..write('(')
-          ..write(column.nameInDart)
-          ..write(');');
-      }
+      write('map[${asDartLiteral(column.nameInSql)}] = ');
+      writeDart(
+          wrapInVariable(column, AnnotatedDartCode.text(column.nameInDart)));
+      writeln(';');
 
       // This one closes the optional if from before.
       if (needsScope) write('}');

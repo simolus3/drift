@@ -181,9 +181,10 @@ abstract class _NodeOrWriter {
   /// The Dart type that matches the type of this column, ignoring type
   /// converters.
   ///
-  /// This is the same as [dartType] but without custom types.
-  AnnotatedDartCode variableTypeCode(HasType type, {bool? nullable}) {
-    if (type.isArray) {
+  /// This is the same as [dartType] but without type converters.
+  AnnotatedDartCode variableTypeCode(HasType type,
+      {bool? nullable, bool ignoreArray = false}) {
+    if (type.isArray && !ignoreArray) {
       final inner =
           innerColumnType(type.sqlType, nullable: nullable ?? type.nullable);
       return AnnotatedDartCode([
@@ -214,6 +215,40 @@ abstract class _NodeOrWriter {
       if (nullable) {
         b.addText('?');
       }
+    });
+  }
+
+  AnnotatedDartCode wrapInVariable(HasType column, AnnotatedDartCode expression,
+      {bool ignoreArray = false}) {
+    return AnnotatedDartCode.build((b) {
+      b
+        ..addTopLevel(DartTopLevelSymbol.drift('Variable'))
+        ..addText('<')
+        ..addCode(
+            variableTypeCode(column, nullable: false, ignoreArray: ignoreArray))
+        ..addText('>(');
+
+      final converter = column.typeConverter;
+      if (converter != null) {
+        // apply type converter before writing the variable
+        b
+          ..addCode(readConverter(converter, forNullable: column.nullable))
+          ..addText('.toSql(')
+          ..addCode(expression)
+          ..addText(')');
+      } else {
+        b.addCode(expression);
+      }
+
+      if (column.sqlType.isCustom) {
+        // Also specify the custom type since it can't be inferred from the
+        // value passed to the variable.
+        b
+          ..addText(', ')
+          ..addCode(column.sqlType.custom!.expression);
+      }
+
+      b.addText(')');
     });
   }
 

@@ -25,6 +25,8 @@ class AnnotatedDartCode {
   AnnotatedDartCode(this.elements)
       : assert(elements.every((e) => e is String || e is DartTopLevelSymbol));
 
+  AnnotatedDartCode.text(String e) : elements = [e];
+
   factory AnnotatedDartCode.ast(AstNode node) {
     return AnnotatedDartCode.build(((builder) => builder.addAstNode(node)));
   }

@@ -1,3 +1,8 @@
+## 2.14.1
+
+- Fix inconsistencies when generating `Variable` instances for columns with
+  custom types.
+
 ## 2.14.0
 
 - __Breaking change__: The name of the generated row class derived from the name
