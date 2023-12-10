@@ -843,37 +843,22 @@ class _ExpandedVariableWriter {
     // Variables without type converters are written as:
     // `Variable<int>(x)`. When there's a type converter, we instead use
     // `Variable<int>(typeConverter.toSql(x))`.
-    // Finally, if we're dealing with a list, we use a collection for to
-    // write all the variables sequentially.
+    // Finally, if we're dealing with a list, we use a collection for to write
+    // all the variables sequentially.
     String constructVar(String dartExpr) {
-      // No longer an array here, we apply a for loop if necessary
-      final type = _emitter
-          .dartCode(_emitter.innerColumnType(element.sqlType, nullable: false));
-
-      final varType = _emitter.drift('Variable');
-      final buffer = StringBuffer('$varType<$type>(');
       final capture = element.forCaptured;
-
-      final converter = element.typeConverter;
-      if (converter != null) {
-        // Apply the converter.
-        if (element.nullable && converter.canBeSkippedForNulls) {
-          final nullAware = _emitter.drift('NullAwareTypeConverter');
-
-          buffer.write('$nullAware.wrapToSql('
-              '${readConverter(_emitter, element.typeConverter!)}, $dartExpr)');
-        } else {
-          buffer.write(
-              '${readConverter(_emitter, element.typeConverter!)}.toSql($dartExpr)');
-        }
-      } else if (capture != null) {
-        buffer.write('row.read(${asDartLiteral(capture.helperColumn)})');
-      } else {
-        buffer.write(dartExpr);
+      if (capture != null) {
+        dartExpr = ('row.read(${asDartLiteral(capture.helperColumn)})');
       }
 
-      buffer.write(')');
-      return buffer.toString();
+      final code = _emitter.wrapInVariable(
+        element,
+        AnnotatedDartCode.text(dartExpr),
+        // No longer an array here, we apply a for loop below and run this on
+        // individual values only.
+        ignoreArray: true,
+      );
+      return _emitter.dartCode(code);
     }
 
     final name = element.dartParameterName;

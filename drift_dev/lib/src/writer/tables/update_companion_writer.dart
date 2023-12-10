@@ -192,34 +192,13 @@ class UpdateCompanionWriter {
       final getterName = thisIfNeeded(column.nameInDart, locals);
 
       _buffer.writeln('if ($getterName.present) {');
-      final typeName =
-          _emitter.dartCode(_emitter.variableTypeCode(column, nullable: false));
-      final mapSetter = 'map[${asDartLiteral(column.nameInSql)}] = '
-          '${_emitter.drift('Variable')}<$typeName>';
+      _buffer.write('map[${asDartLiteral(column.nameInSql)}] = ');
       var value = '$getterName.value';
 
-      final converter = column.typeConverter;
-      if (converter != null) {
-        // apply type converter before writing the variable
-        final fieldName = _emitter.dartCode(
-            _emitter.readConverter(converter, forNullable: column.nullable));
-        _buffer.writeln('final converter = $fieldName;\n');
-        value = 'converter.toSql($value)';
-      }
+      _emitter.writeDart(
+          _emitter.wrapInVariable(column, AnnotatedDartCode.text(value)));
 
-      _buffer
-        ..write(mapSetter)
-        ..write('($value');
-
-      if (column.sqlType.isCustom) {
-        // Also specify the custom type since it can't be inferred from the
-        // value passed to the variable.
-        _buffer
-          ..write(', ')
-          ..write(_emitter.dartCode(column.sqlType.custom!.expression));
-      }
-
-      _buffer.writeln(');}');
+      _buffer.writeln(';}');
     }
 
     _buffer.write('return map; \n}\n');
