@@ -174,25 +174,27 @@ class DriftAnalysisDriver {
   }
 
   Future<void> _warnAboutUnresolvedImportsInDriftFile(FileState known) async {
-    await discoverIfNecessary(known);
+    if (known.isDriftFile) {
+      final imports = known.imports?.toList();
+      if (imports == null) return;
 
-    final state = known.discovery;
-    if (state is DiscoveredDriftFile) {
-      for (final import in state.imports) {
-        final file = await findLocalElements(import.importedUri);
+      var discovery = known.discovery as DiscoveredDriftFile?;
+      for (var i = 0; i < imports.length; i++) {
+        var (uri: importedUri, transitive: _) = imports[i];
+        final file = await findLocalElements(importedUri);
 
         if (file.isValidImport != true) {
           var crossesPackageBoundaries = false;
 
-          if (import.importedUri.scheme == 'package' &&
+          if (importedUri.scheme == 'package' &&
               known.ownUri.scheme == 'package') {
             final ownPackage = known.ownUri.pathSegments.first;
-            final importedPackage = import.importedUri.pathSegments.first;
+            final importedPackage = importedUri.pathSegments.first;
             crossesPackageBoundaries = ownPackage != importedPackage;
           }
 
           final message = StringBuffer(
-            'The imported file, `${import.importedUri}`, does not exist or '
+            'The imported file, `$importedUri`, does not exist or '
             "can't be imported.",
           );
           if (crossesPackageBoundaries) {
@@ -206,8 +208,14 @@ class DriftAnalysisDriver {
               );
           }
 
-          known.errorsDuringDiscovery.add(
-              DriftAnalysisError.inDriftFile(import.ast, message.toString()));
+          if (discovery == null) {
+            await discoverIfNecessary(known);
+            discovery = known.discovery as DiscoveredDriftFile;
+          }
+
+          var importAst = discovery.imports[i];
+          known.errorsDuringDiscovery.add(DriftAnalysisError.inDriftFile(
+              importAst.ast, message.toString()));
         }
       }
     }

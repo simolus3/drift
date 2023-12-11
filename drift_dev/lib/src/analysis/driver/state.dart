@@ -37,6 +37,13 @@ class FileState {
 
   String get extension => url.extension(ownUri.path);
 
+  bool get isDriftFile {
+    return switch (extension) {
+      '.drift' || '.moor' => true,
+      _ => false,
+    };
+  }
+
   /// Whether this file contains a drift database or a drift accessor / DAO.
   bool get containsDatabaseAccessor {
     return analyzedElements.any((e) => e is BaseDriftAccessor);
