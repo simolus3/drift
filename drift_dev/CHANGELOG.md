@@ -2,6 +2,8 @@
 
 - Fix inconsistencies when generating `Variable` instances for columns with
   custom types.
+- Fix a build performance regression introduced in version 2.14.0 related to
+  analyzing imports in drift files.
 
 ## 2.14.0
 

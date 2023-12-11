@@ -1,3 +1,7 @@
+## 2.14.1
+
+- Fix `WasmProbeResult.open` ignoring the `ìnitializeDatabase` callback.
+
 ## 2.14.0
 
 - Add the `QueryInterceptor` API to easily monitor or transform all database
