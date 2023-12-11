@@ -19,7 +19,7 @@ void main() {
     );
 
     await emulateDriftBuild(inputs: {
-      'a|lib/a.dart': '''
+      'foo|lib/a.dart': '''
 // @dart = 2.11
 
 import 'package:drift/drift.dart';
@@ -32,7 +32,7 @@ class Database {}
 
   test('includes version override in part file mode', () async {
     final writer = await emulateDriftBuild(inputs: {
-      'a|lib/a.dart': '''
+      'foo|lib/a.dart': '''
 // @dart = 2.13
 
 import 'package:drift/drift.dart';
@@ -44,7 +44,7 @@ class Database {}
 
     checkOutputs(
       {
-        'a|lib/a.drift.dart': decodedMatches(contains('// @dart=2.13')),
+        'foo|lib/a.drift.dart': decodedMatches(contains('// @dart=2.13')),
       },
       writer.dartOutputs,
       writer.writer,
