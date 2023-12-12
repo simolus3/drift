@@ -204,6 +204,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
         keyword(TokenType.$null);
         _conflictClause(notNull.onConflict);
       },
+      nullable: (nullable) {
+        keyword(TokenType.$null);
+      },
       unique: (unique) {
         keyword(TokenType.unique);
         _conflictClause(unique.onConflict);

@@ -4,7 +4,7 @@ import 'tables.dart';
 CREATE TABLE "groups" (
     id INTEGER NOT NULL,
     title TEXT NOT NULL,
-    deleted BOOLEAN DEFAULT FALSE,
+    deleted BOOLEAN NULL DEFAULT FALSE,
     owner INTEGER NOT NULL REFERENCES users (id),
 
     PRIMARY KEY (id)

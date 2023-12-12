@@ -1,3 +1,8 @@
+## 0.33.1
+
+- Fix explicit `NULL` column constraints being dropped when converting nodes
+  to SQL.
+
 ## 0.33.0
 
 - Support the [column-name-list](https://sqlite.org/syntax/column-name-list.html)

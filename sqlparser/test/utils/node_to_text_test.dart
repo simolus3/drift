@@ -165,6 +165,14 @@ CREATE TABLE foo (bar INTEGER NOT NULL PRIMARY KEY) With FooData.myConstructor;
       test('virtual', () {
         testFormat('CREATE VIRTUAL TABLE foo USING bar(a, b, c);');
       });
+
+      test('not null', () {
+        testFormat('CREATE TABLE foo (bar TEXT NOT NULL);');
+      });
+
+      test('null constraint', () {
+        testFormat('CREATE TABLE foo (bar TEXT NULL);');
+      });
     });
 
     test('index', () {

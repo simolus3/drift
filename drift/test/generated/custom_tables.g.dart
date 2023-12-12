@@ -115,7 +115,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
       'b', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      $customConstraints: 'UNIQUE');
+      $customConstraints: 'UNIQUE NULL');
   @override
   List<GeneratedColumn> get $columns => [a, b];
   @override

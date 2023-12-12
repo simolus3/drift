@@ -7,7 +7,7 @@ CREATE TABLE no_ids (
 
 CREATE TABLE with_defaults (
     a `const CustomTextType()` JSON KEY customJsonName DEFAULT 'something',
-    b INT UNIQUE
+    b INT UNIQUE NULL
 );
 
 CREATE TABLE with_constraints (
