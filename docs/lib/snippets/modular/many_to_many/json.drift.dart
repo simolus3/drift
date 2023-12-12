@@ -94,8 +94,8 @@ class ShoppingCart extends i0.DataClass
     final map = <String, i0.Expression>{};
     map['id'] = i0.Variable<int>(id);
     {
-      final converter = i2.$ShoppingCartsTable.$converterentries;
-      map['entries'] = i0.Variable<String>(converter.toSql(entries));
+      map['entries'] = i0.Variable<String>(
+          i2.$ShoppingCartsTable.$converterentries.toSql(entries));
     }
     return map;
   }
@@ -186,9 +186,8 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
       map['id'] = i0.Variable<int>(id.value);
     }
     if (entries.present) {
-      final converter = i2.$ShoppingCartsTable.$converterentries;
-
-      map['entries'] = i0.Variable<String>(converter.toSql(entries.value));
+      map['entries'] = i0.Variable<String>(
+          i2.$ShoppingCartsTable.$converterentries.toSql(entries.value));
     }
     return map;
   }

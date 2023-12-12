@@ -95,7 +95,8 @@ class PeriodicReminder extends i0.DataClass
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['id'] = i0.Variable<int>(id);
-    map['frequency'] = i0.Variable<Duration>(frequency);
+    map['frequency'] =
+        i0.Variable<Duration>(frequency, const i2.DurationType());
     map['reminder'] = i0.Variable<String>(reminder);
     return map;
   }

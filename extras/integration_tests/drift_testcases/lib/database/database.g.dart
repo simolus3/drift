@@ -138,8 +138,8 @@ class User extends DataClass implements Insertable<User> {
       map['profile_picture'] = Variable<Uint8List>(profilePicture);
     }
     if (!nullToAbsent || preferences != null) {
-      final converter = $UsersTable.$converterpreferences;
-      map['preferences'] = Variable<String>(converter.toSql(preferences));
+      map['preferences'] = Variable<String>(
+          $UsersTable.$converterpreferences.toSql(preferences));
     }
     return map;
   }
@@ -294,9 +294,8 @@ class UsersCompanion extends UpdateCompanion<User> {
       map['profile_picture'] = Variable<Uint8List>(profilePicture.value);
     }
     if (preferences.present) {
-      final converter = $UsersTable.$converterpreferences;
-
-      map['preferences'] = Variable<String>(converter.toSql(preferences.value));
+      map['preferences'] = Variable<String>(
+          $UsersTable.$converterpreferences.toSql(preferences.value));
     }
     return map;
   }

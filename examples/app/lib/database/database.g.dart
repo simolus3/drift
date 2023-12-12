@@ -89,8 +89,8 @@ class Category extends DataClass implements Insertable<Category> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     {
-      final converter = $CategoriesTable.$convertercolor;
-      map['color'] = Variable<int>(converter.toSql(color));
+      map['color'] =
+          Variable<int>($CategoriesTable.$convertercolor.toSql(color));
     }
     return map;
   }
@@ -194,9 +194,8 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       map['name'] = Variable<String>(name.value);
     }
     if (color.present) {
-      final converter = $CategoriesTable.$convertercolor;
-
-      map['color'] = Variable<int>(converter.toSql(color.value));
+      map['color'] =
+          Variable<int>($CategoriesTable.$convertercolor.toSql(color.value));
     }
     return map;
   }

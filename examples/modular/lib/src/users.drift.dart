@@ -135,8 +135,8 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       map['biography'] = i0.Variable<String>(biography);
     }
     if (!nullToAbsent || preferences != null) {
-      final converter = i1.Users.$converterpreferencesn;
-      map['preferences'] = i0.Variable<String>(converter.toSql(preferences));
+      map['preferences'] = i0.Variable<String>(
+          i1.Users.$converterpreferencesn.toSql(preferences));
     }
     if (!nullToAbsent || profilePicture != null) {
       map['profile_picture'] = i0.Variable<i3.Uint8List>(profilePicture);
@@ -291,10 +291,8 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
       map['biography'] = i0.Variable<String>(biography.value);
     }
     if (preferences.present) {
-      final converter = i1.Users.$converterpreferencesn;
-
-      map['preferences'] =
-          i0.Variable<String>(converter.toSql(preferences.value));
+      map['preferences'] = i0.Variable<String>(
+          i1.Users.$converterpreferencesn.toSql(preferences.value));
     }
     if (profilePicture.present) {
       map['profile_picture'] = i0.Variable<i3.Uint8List>(profilePicture.value);
