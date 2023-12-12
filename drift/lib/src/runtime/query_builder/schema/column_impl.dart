@@ -126,7 +126,11 @@ class GeneratedColumn<T extends Object> extends Column<T> {
       into.buffer.write('$escapedName ${type.sqlTypeName(into)}');
     }
 
-    if ($customConstraints == null) {
+    if ($customConstraints != null && $customConstraints!.isNotEmpty) {
+      into.buffer
+        ..write(' ')
+        ..write($customConstraints);
+    } else {
       if (!isSerial) {
         into.buffer.write($nullable ? ' NULL' : ' NOT NULL');
       }
@@ -164,10 +168,6 @@ class GeneratedColumn<T extends Object> extends Column<T> {
       if (!isSerial && _defaultConstraints != null) {
         _defaultConstraints!(into);
       }
-    } else if ($customConstraints?.isNotEmpty == true) {
-      into.buffer
-        ..write(' ')
-        ..write($customConstraints);
     }
   }
 
