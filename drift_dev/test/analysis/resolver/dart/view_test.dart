@@ -78,13 +78,13 @@ abstract class TodoItemWithCategoryNameView extends View {
         isA<DartViewSource>().having(
             (e) => e.dartQuerySource.toString(),
             'dartQuerySource',
-            '.join([ innerJoin(todoItems,todoItems.categoryId.equalsExp(todoCategories.id)) ])'));
+            '.join([innerJoin(todoItems,todoItems.categoryId.equalsExp(todoCategories.id))])'));
     expect(
         todoItemWithCategoryName.source,
         isA<DartViewSource>().having(
             (e) => e.dartQuerySource.toString(),
             'dartQuerySource',
-            '.join([ innerJoin(todoCategories,todoCategories.id.equalsExp(todoItems.categoryId)) ])'));
+            '.join([innerJoin(todoCategories,todoCategories.id.equalsExp(todoItems.categoryId))])'));
     expect(todoCategoryItemCount.columns, hasLength(2));
     expect(
         todoCategoryItemCount.columns[0],
