@@ -149,4 +149,42 @@ class MyDatabase {}
       result.writer,
     );
   });
+
+  test('generates code for view with multiple group by', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': r'''
+import 'package:drift/drift.dart';
+
+class Todo extends Table {
+  TextColumn get id => text()();
+  TextColumn get listid => text().nullable()();
+  BoolColumn get completed => boolean()();
+}
+
+@DriftView()
+abstract class SomeView extends View {
+  Todo get todoItems;
+
+  @override
+  Query as() => select([todoItems.id]).from(todoItems)
+        ..groupBy([todoItems.id, todoItems.listId]);
+}
+
+@DriftDatabase(tables: [Todo], views: [SomeView])
+class MyDatabase {}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': allOf(IsValidDartFile(anything),
+            decodedMatches(contains('todoItems.id, todoItems.listId')))
+      },
+      result.dartOutputs,
+      result.writer,
+    );
+  });
 }

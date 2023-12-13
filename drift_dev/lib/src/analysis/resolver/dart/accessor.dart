@@ -122,7 +122,7 @@ class DartAccessorResolver
     final declaration = DriftDeclaration.dartElement(element);
     if (discovered.isDatabase) {
       final accessors = <DatabaseAccessor>[];
-      final rawDaos = annotation.getField('daos')!.toListValue()!;
+      final rawDaos = annotation.getField('daos')?.toListValue() ?? const [];
       for (final value in rawDaos) {
         final type = value.toTypeValue()!;
 

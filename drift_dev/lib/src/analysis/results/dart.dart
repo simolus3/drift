@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -459,13 +460,20 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     }
   }
 
-  @override
-  void visitNode(AstNode node) {
-    if (_excluding.contains(node)) return;
+  void _visitCommaSeparated(NodeList nodes) {
+    var first = true;
+    for (final arg in nodes) {
+      if (!first) _builder.addText(',');
 
+      arg.accept(this);
+      first = false;
+    }
+  }
+
+  void _childEntities(Iterable<SyntacticEntity> childEntities) {
     int? offset;
 
-    for (final childEntity in node.childEntities) {
+    for (final childEntity in childEntities) {
       if (offset != null && childEntity.offset > offset) {
         _builder.addText(' ');
       }
@@ -480,18 +488,16 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   }
 
   @override
+  void visitNode(AstNode node) {
+    if (_excluding.contains(node)) return;
+    _childEntities(node.childEntities);
+  }
+
+  @override
   void visitArgumentList(ArgumentList node) {
     // Workaround to the analyzer not including commas: https://github.com/dart-lang/sdk/blob/20ad5db3ab3f2ae49f9668b75331e51c84267011/pkg/analyzer/lib/src/dart/ast/ast.dart#L389
     _builder.addText('(');
-
-    var first = true;
-    for (final arg in node.arguments) {
-      if (!first) _builder.addText(',');
-
-      visitNode(arg);
-      first = false;
-    }
-
+    _visitCommaSeparated(node.arguments);
     _builder.addText(')');
   }
 
@@ -533,5 +539,21 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     } else {
       _builder.addText(node.name);
     }
+  }
+
+  @override
+  void visitListLiteral(ListLiteral node) {
+    _childEntities(
+        [node.constKeyword, node.typeArguments, node.leftBracket].whereType());
+    _visitCommaSeparated(node.elements);
+    _childEntities([node.rightBracket]);
+  }
+
+  @override
+  void visitSetOrMapLiteral(SetOrMapLiteral node) {
+    _childEntities(
+        [node.constKeyword, node.typeArguments, node.leftBracket].whereType());
+    _visitCommaSeparated(node.elements);
+    _childEntities([node.rightBracket]);
   }
 }
