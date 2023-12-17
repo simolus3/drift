@@ -18,6 +18,8 @@ When running the app, either with `flutter run` or by running the outputs of
 When running the app in a regular Dart VM, for instance through `flutter test`,
 you need to ensure that sqlite3 is available yourself. See the [documentation](https://drift.simonbinder.eu/docs/platforms/#desktop)
 for more details on this.
+To run or build this app on the web, first run `build_runner build` to compile
+the web worker used to access databases.
 
 ## Development
 
