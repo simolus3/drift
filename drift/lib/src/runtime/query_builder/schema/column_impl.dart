@@ -227,7 +227,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   }
 
   Variable _evaluateClientDefault() {
-    return Variable<T>(clientDefault!());
+    return variable(clientDefault!());
   }
 
   /// A value for [additionalChecks] validating allowed text lengths.

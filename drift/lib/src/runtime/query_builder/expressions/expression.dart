@@ -57,7 +57,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// nullable values and translates to a direct `=` comparison in SQL.
   /// To compare this column to `null`, use [isValue].
   Expression<bool> equals(D compare) =>
-      _Comparison.equal(this, Variable<D>(compare));
+      _Comparison.equal(this, variable(compare));
 
   /// Compares the value of this column to [compare] or `null`.
   ///
@@ -81,8 +81,8 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// in sql, use [cast].
   ///
   /// This method is used internally by drift.
-  Expression<D2> dartCast<D2 extends Object>() {
-    return _DartCastExpression<D, D2>(this);
+  Expression<D2> dartCast<D2 extends Object>({CustomSqlType<D2>? customType}) {
+    return _DartCastExpression<D, D2>(this, customType);
   }
 
   /// Generates a `CAST(expression AS TYPE)` expression.
@@ -106,7 +106,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// Dart. When this expression and [value] are both non-null, this is the same
   /// as [equals]. Two `NULL` values are considered equal as well.
   Expression<bool> isValue(D value) {
-    return isExp(Variable<D>(value));
+    return isExp(variable(value));
   }
 
   /// Generates an `IS NOT` expression in SQL, comparing this expression with
@@ -114,7 +114,7 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   ///
   /// This the inverse of [isValue].
   Expression<bool> isNotValue(D value) {
-    return isNotExp(Variable<D>(value));
+    return isNotExp(variable(value));
   }
 
   /// Expression that is true if the inner expression resolves to a null value.
@@ -147,13 +147,13 @@ abstract class Expression<D extends Object> implements FunctionParameter {
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
   Expression<bool> isIn(Iterable<D> values) {
-    return isInExp([for (final value in values) Variable<D>(value)]);
+    return isInExp([for (final value in values) variable(value)]);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
   Expression<bool> isNotIn(Iterable<D> values) {
-    return isNotInExp([for (final value in values) Variable<D>(value)]);
+    return isNotInExp([for (final value in values) variable(value)]);
   }
 
   /// An expression that evaluates to `true` if this expression resolves to a
@@ -478,8 +478,12 @@ class _UnaryMinus<DT extends Object> extends Expression<DT> {
 class _DartCastExpression<D1 extends Object, D2 extends Object>
     extends Expression<D2> {
   final Expression<D1> inner;
+  final CustomSqlType<D2>? _customSqlType;
 
-  const _DartCastExpression(this.inner);
+  const _DartCastExpression(this.inner, this._customSqlType);
+
+  @override
+  BaseSqlType<D2> get driftSqlType => _customSqlType ?? super.driftSqlType;
 
   @override
   Precedence get precedence => inner.precedence;

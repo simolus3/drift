@@ -3,6 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
+import '../types/mapping.dart';
 import 'query_builder.dart';
 
 /// Internal utilities for building queries that aren't exported.
@@ -44,5 +45,17 @@ extension WriteDefinition on GenerationContext {
     }
 
     return sql.values.first; // Fallback
+  }
+}
+
+/// Utilities to derive other expressions with a type compatible to `this`
+/// expression.
+extension WithTypes<T extends Object> on Expression<T> {
+  /// Creates a variable with a matching [driftSqlType].
+  Variable<T> variable(T? value) {
+    return switch (driftSqlType) {
+      CustomSqlType<T> custom => Variable(value, custom),
+      _ => Variable(value),
+    };
   }
 }

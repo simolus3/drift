@@ -1,3 +1,7 @@
+## 2.15.0-dev
+
+- Methods in the query builder API now respect custom types.
+
 ## 2.14.1
 
 - Fix `WasmProbeResult.open` ignoring the `ìnitializeDatabase` callback.

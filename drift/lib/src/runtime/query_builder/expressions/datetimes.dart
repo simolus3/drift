@@ -21,6 +21,7 @@ const Expression<DateTime> currentDate = _DependingOnDateTimeExpression(
       'strftime',
       [Constant('%s'), _currentDateLiteral],
     ),
+    null,
   ),
 );
 

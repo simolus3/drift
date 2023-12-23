@@ -24,17 +24,27 @@ class CustomExpression<D extends Object> extends Expression<D> {
   @override
   final Precedence precedence;
 
+  final CustomSqlType<D>? _customSqlType;
+
   /// Constructs a custom expression by providing the raw sql [content].
-  const CustomExpression(this.content,
-      {this.watchedTables = const [], this.precedence = Precedence.unknown})
-      : _dialectSpecificContent = null;
+  const CustomExpression(
+    this.content, {
+    this.watchedTables = const [],
+    this.precedence = Precedence.unknown,
+    CustomSqlType<D>? customType,
+  })  : _dialectSpecificContent = null,
+        _customSqlType = customType;
 
   /// Constructs a custom expression providing the raw SQL in [content] depending
   /// on the SQL dialect when this expression is built.
-  const CustomExpression.dialectSpecific(Map<SqlDialect, String> content,
-      {this.watchedTables = const [], this.precedence = Precedence.unknown})
-      : _dialectSpecificContent = content,
-        content = '';
+  const CustomExpression.dialectSpecific(
+    Map<SqlDialect, String> content, {
+    this.watchedTables = const [],
+    this.precedence = Precedence.unknown,
+    CustomSqlType<D>? customType,
+  })  : _dialectSpecificContent = content,
+        content = '',
+        _customSqlType = customType;
 
   @override
   void writeInto(GenerationContext context) {
@@ -52,6 +62,9 @@ class CustomExpression<D extends Object> extends Expression<D> {
 
   @override
   int get hashCode => content.hashCode * 3;
+
+  @override
+  BaseSqlType<D> get driftSqlType => _customSqlType ?? super.driftSqlType;
 
   @override
   bool operator ==(Object other) {

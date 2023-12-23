@@ -11,7 +11,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other value.
   Expression<bool> isBiggerThanValue(DT other) {
-    return isBiggerThan(Variable(other));
+    return isBiggerThan(variable(other));
   }
 
   /// Returns an expression that is true if this expression is bigger than or
@@ -23,7 +23,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other value.
   Expression<bool> isBiggerOrEqualValue(DT other) {
-    return isBiggerOrEqual(Variable(other));
+    return isBiggerOrEqual(variable(other));
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
@@ -35,7 +35,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other value.
   Expression<bool> isSmallerThanValue(DT other) =>
-      isSmallerThan(Variable(other));
+      isSmallerThan(variable(other));
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
@@ -46,7 +46,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other value.
   Expression<bool> isSmallerOrEqualValue(DT other) {
-    return isSmallerOrEqual(Variable(other));
+    return isSmallerOrEqual(variable(other));
   }
 
   /// Returns an expression evaluating to true if this expression is between
@@ -67,8 +67,8 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   Expression<bool> isBetweenValues(DT lower, DT higher, {bool not = false}) {
     return _BetweenExpression(
       target: this,
-      lower: Variable<DT>(lower),
-      higher: Variable<DT>(higher),
+      lower: variable(lower),
+      higher: variable(higher),
       not: not,
     );
   }
