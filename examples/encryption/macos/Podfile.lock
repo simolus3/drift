@@ -1,0 +1,40 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - SQLCipher (4.5.5):
+    - SQLCipher/standard (= 4.5.5)
+  - SQLCipher/common (4.5.5)
+  - SQLCipher/standard (4.5.5):
+    - SQLCipher/common
+  - sqlcipher_flutter_libs (0.0.1):
+    - FlutterMacOS
+    - SQLCipher (~> 4.5.5)
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - sqlcipher_flutter_libs (from `Flutter/ephemeral/.symlinks/plugins/sqlcipher_flutter_libs/macos`)
+
+SPEC REPOS:
+  trunk:
+    - SQLCipher
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  sqlcipher_flutter_libs:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqlcipher_flutter_libs/macos
+
+SPEC CHECKSUMS:
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  SQLCipher: f2e96b3822e3006b379181a0e4fd145f6de29b56
+  sqlcipher_flutter_libs: 495715cf0af89eaa59ea14b5f67b183fc1a84a4e
+
+PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
+
+COCOAPODS: 1.14.2

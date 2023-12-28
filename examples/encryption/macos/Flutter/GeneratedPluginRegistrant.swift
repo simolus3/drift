@@ -5,7 +5,7 @@
 import FlutterMacOS
 import Foundation
 
-import path_provider_macos
+import path_provider_foundation
 import sqlcipher_flutter_libs
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {

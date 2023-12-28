@@ -37,7 +37,7 @@ QueryExecutor _openDatabase() {
   return LazyDatabase(() async {
     final path = await getApplicationDocumentsDirectory();
 
-    return NativeDatabase(
+    return NativeDatabase.createInBackground(
       File(p.join(path.path, 'app.db.enc')),
       setup: (db) {
         // Check that we're actually running with SQLCipher by quering the
