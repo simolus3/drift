@@ -9,13 +9,13 @@ class _BinaryStringConversion extends Codec<List<int>, String> {
   const _BinaryStringConversion();
 
   @override
-  String encode(List<int> input) => latin1.decode(input);
+  String encode(List<int> input) => utf8.decode(input);
   @override
-  Uint8List decode(String input) => latin1.encode(input);
+  Uint8List decode(String input) => utf8.encode(input);
 
   @override
-  Converter<String, List<int>> get decoder => const Latin1Encoder();
+  Converter<String, List<int>> get decoder => const Utf8Encoder();
 
   @override
-  Converter<List<int>, String> get encoder => const Latin1Decoder();
+  Converter<List<int>, String> get encoder => const Utf8Decoder();
 }
