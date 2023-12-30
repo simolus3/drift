@@ -32,9 +32,25 @@ Defining a database with Postgres is no different than defining it for sqlite3 -
 pages on [Dart]({{ '../setup.md' | pageUrl }}) and [SQL]({{ '../SQL API/index.md' | pageUrl }})
 explain how to define tables picked up by drift.
 
+Different dialects require changes in generated code in some cases. Since most drift users are
+targeting sqlite3, drift generates code optimized for sqlite3 by default. To enable code generation
+for PostgreSQL as well, [create a `build.yaml`]({{ '../Generation options/index.md' | pageUrl }}) next to your pubspec with this content:
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialects:
+              - sqlite # remove this line if you only need postgres
+              - postgres
+```
+
 {% assign snippets = "package:drift_docs/snippets/platforms/postgres.dart.excerpt.json" | readString | json_decode %}
 
-Perhaps this example database is helpful as a starting point:
+Then, perhaps this example database is helpful as a starting point:
 
 {% include "blocks/snippet" snippets = snippets name = "(full)" %}
 
