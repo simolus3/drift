@@ -62,10 +62,23 @@ abstract class ReferenceScope {
   ///
   /// Like [addResolvedResultSet], this operation is not supported on all
   /// scopes.
-  void addAlias(AstNode origin, ResultSet resultSet, String alias) {
+  ///
+  /// [canUseUnqualifiedColumns] controls whether [resolveUnqualifiedReference]
+  /// considers the alias when resolving references. Some aliases, such as `new`
+  /// and `old` in triggers, can only be used in their qualified form and thus
+  /// have that parameter set to false.
+  void addAlias(
+    AstNode origin,
+    ResultSet resultSet,
+    String alias, {
+    bool canUseUnqualifiedColumns = true,
+  }) {
     final createdAlias = TableAlias(resultSet, alias);
     addResolvedResultSet(
-        alias, ResultSetAvailableInStatement(origin, createdAlias));
+      alias,
+      ResultSetAvailableInStatement(origin, createdAlias,
+          canUseUnqualifiedColumns: canUseUnqualifiedColumns),
+    );
   }
 
   /// Attempts to find a result set that _can_ be added to a scope.
@@ -207,10 +220,15 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   }
 
   @override
-  void addAlias(AstNode origin, ResultSet resultSet, String alias) {
+  void addAlias(
+    AstNode origin,
+    ResultSet resultSet,
+    String alias, {
+    bool canUseUnqualifiedColumns = true,
+  }) {
     final createdAlias = TableAlias(resultSet, alias);
-    additionalKnownTables[alias] = createdAlias;
-    resultSets[alias] = ResultSetAvailableInStatement(origin, createdAlias);
+    resultSets[alias] = ResultSetAvailableInStatement(origin, createdAlias,
+        canUseUnqualifiedColumns: canUseUnqualifiedColumns);
   }
 
   @override
@@ -247,7 +265,10 @@ class StatementScope extends ReferenceScope with _HasParentScope {
     for (final availableSource in available) {
       final resolvedColumns =
           availableSource.resultSet.resultSet?.resolvedColumns;
-      if (resolvedColumns == null) continue;
+      if (resolvedColumns == null ||
+          !availableSource.canUseUnqualifiedColumns) {
+        continue;
+      }
 
       for (final column in resolvedColumns) {
         if (column.name.toLowerCase() == columnName.toLowerCase() &&
@@ -348,10 +369,10 @@ class MiscStatementSubScope extends ReferenceScope with _HasParentScope {
 class SingleTableReferenceScope extends ReferenceScope {
   final ReferenceScope parent;
 
-  String? addedTableName;
-  ResultSetAvailableInStatement? addedTable;
+  final String addedTableName;
+  final ResultSetAvailableInStatement? addedTable;
 
-  SingleTableReferenceScope(this.parent);
+  SingleTableReferenceScope(this.parent, this.addedTableName, this.addedTable);
 
   @override
   RootScope get rootScope => parent.rootScope;
@@ -363,13 +384,6 @@ class SingleTableReferenceScope extends ReferenceScope {
     } else {
       return null;
     }
-  }
-
-  @override
-  void addResolvedResultSet(
-      String? name, ResultSetAvailableInStatement resultSet) {
-    addedTableName = null;
-    addedTable = null;
   }
 
   @override

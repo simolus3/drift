@@ -21,20 +21,6 @@ class ReferenceResolver
   }
 
   @override
-  void visitForeignKeyClause(
-      ForeignKeyClause e, ReferenceResolvingContext arg) {
-    final table = e.foreignTable.resultSet;
-    if (table == null) {
-      // If the table wasn't found, an earlier step will have reported an error
-      return super.visitForeignKeyClause(e, arg);
-    }
-
-    for (final columnName in e.columnNames) {
-      _resolveReferenceInTable(columnName, table);
-    }
-  }
-
-  @override
   void visitGroupBy(GroupBy e, ReferenceResolvingContext arg) {
     return super.visitGroupBy(
         e, const ReferenceResolvingContext(canReferToColumnAlias: true));

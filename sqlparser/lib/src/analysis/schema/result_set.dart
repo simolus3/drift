@@ -65,10 +65,18 @@ class ResultSetAvailableInStatement with Referencable {
   /// The added result set.
   final ResolvesToResultSet resultSet;
 
+  /// Whether this result set should be considered when resolving unqualified
+  /// references.
+  ///
+  /// This is true for most result sets, but some aliases such as the `old` and
+  /// `new` result sets in triggers can only be used with a qualified reference.
+  final bool canUseUnqualifiedColumns;
+
   @override
   bool get visibleToChildren => true;
 
-  ResultSetAvailableInStatement(this.origin, this.resultSet);
+  ResultSetAvailableInStatement(this.origin, this.resultSet,
+      {this.canUseUnqualifiedColumns = true});
 }
 
 extension UnaliasResultSet on ResultSet {

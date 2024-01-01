@@ -137,12 +137,6 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitForeignKeyClause(ForeignKeyClause e, void arg) {
-    e.scope = SingleTableReferenceScope(e.scope);
-    visitChildren(e, arg);
-  }
-
-  @override
   void visitNumberedVariable(NumberedVariable e, void arg) {
     _foundVariables.add(e);
     visitChildren(e, arg);

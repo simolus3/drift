@@ -2,6 +2,8 @@
 
 - Fix explicit `NULL` column constraints being dropped when converting nodes
   to SQL.
+- Add analysis errors for illegal unqualified references to `old` and `new` in
+  triggers.
 
 ## 0.33.0
 

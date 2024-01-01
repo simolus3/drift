@@ -417,7 +417,7 @@ CREATE TABLE points (
 
     final parseResult = engine.parse('''
 CREATE TABLE routes (
-  id INTEGER NOT NULL PRIMARY KEY,
+  route_id INTEGER NOT NULL PRIMARY KEY,
   "from" INTEGER NOT NULL REFERENCES points (id),
   "to" INTEGER NOT NULL REFERENCES points (id)
 );
@@ -437,7 +437,7 @@ CREATE TABLE routes (
         fromReference.clause.columnNames.single.resolvedColumn;
 
     expect(fromReferenced, isNotNull);
-    expect(
-        fromReferenced!.containingSet, result.rootScope.knownTables['points']);
+    expect(fromReferenced!.source.containingSet,
+        result.rootScope.knownTables['points']);
   });
 }
