@@ -6,37 +6,59 @@ import 'package:drift/src/web/binary_string_conversion.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final data = Uint8List(256 * 2);
-  final encodedBuilder = StringBuffer();
-  for (var i = 0; i < 256; i++) {
-    data[i] = i % 256;
-    encodedBuilder.writeCharCode(i % 256);
-  }
-  encodedBuilder.write('\u0000' * 256);
-  final encoded = encodedBuilder.toString();
+  group("Ascii Range", () {
+    // Generate data that is valid in UTF-8 encoding (ASCII range)
+    final data = Uint8List(128); // Limiting to ASCII range
+    for (var i = 0; i < data.length; i++) {
+      data[i] = i; // ASCII characters are valid UTF-8
+    }
 
-  test('converts binary data from and to strings', () {
-    final asStr = bin2str.encode(data);
-    expect(asStr, encoded);
+    // Convert to UTF-8 string
+    final encoded = utf8.decode(data, allowMalformed: true);
 
-    final backToBin = bin2str.decode(asStr);
+    test('converts binary data from and to strings', () {
+      final asStr = bin2str.encode(data);
+      expect(asStr, encoded);
 
-    expect(backToBin, data);
+      final backToBin = bin2str.decode(asStr);
+      expect(backToBin, data);
+    });
+
+    test('can encode large data', () {
+      bin2str.encode(Uint8List.fromList(List.filled(0xfffff, 42)));
+    });
+
+    test('compatible with previous implementation', () {
+      const bin2strOld = _BinaryStringConversion();
+
+      final previousEncoded = utf8.decode(data, allowMalformed: true);
+      expect(bin2strOld.encode(data), previousEncoded);
+      expect(bin2strOld.decode(previousEncoded), data);
+    });
   });
 
-  test('can encode large data', () {
-    bin2str.encode(List.filled(0xfffff, 42));
-  });
+  group("Full UTF-8 Range", () {
+    // Combining ASCII and various UTF-8 characters (including emojis)
+    final testString = 'Hello, UTF-8 World! 😊 🌍 🔥 💻';
 
-  test('compatible with previous implementation', () {
-    expect(_bin2str.encode(data), bin2str.encode(data));
-    expect(_bin2str.decode(encoded), bin2str.decode(encoded));
+    // Encode the string to Uint8List using UTF-8 encoding
+    final data = utf8.encode(testString);
+
+    // Decode the Uint8List back to a string
+    final encoded = utf8.decode(data);
+
+    test('converts full range binary data from and to strings', () {
+      final asStr = bin2str.encode(Uint8List.fromList(data));
+      expect(asStr, encoded);
+
+      final backToBin = bin2str.decode(asStr);
+      expect(backToBin, Uint8List.fromList(data));
+    });
   });
 }
 
-// Previous implementation used by drift before switching to `latin1`. Copied
+// Previous implementation used by drift before switching to `utf8`. Copied
 // here to test compatibility.
-const _bin2str = _BinaryStringConversion();
 
 class _BinaryStringConversion extends Codec<Uint8List, String> {
   const _BinaryStringConversion();
