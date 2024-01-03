@@ -5,6 +5,7 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   const foo = CustomExpression<int>('foo', precedence: Precedence.primary);
+  const s1 = CustomExpression<String>('s1', precedence: Precedence.primary);
 
   group('count', () {
     test('all', () {
@@ -49,10 +50,12 @@ void main() {
 
   test('max', () {
     expect(foo.max(), generates('MAX(foo)'));
+    expect(s1.max(), generates('MAX(s1)'));
   });
 
   test('min', () {
     expect(foo.min(), generates('MIN(foo)'));
+    expect(s1.min(), generates('MIN(s1)'));
   });
 
   test('sum', () {
