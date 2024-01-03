@@ -30,6 +30,20 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
         filter: filter, distinct: distinct);
   }
 
+  /// Return the maximum of all non-null values in this group.
+  ///
+  /// If there are no non-null values in the group, returns null.
+  /// {@macro drift_aggregate_filter}
+  Expression<DT> max({Expression<bool>? filter}) =>
+      _AggregateExpression('MAX', [this], filter: filter);
+
+  /// Return the minimum of all non-null values in this group.
+  ///
+  /// If there are no non-null values in the group, returns null.
+  /// {@macro drift_aggregate_filter}
+  Expression<DT> min({Expression<bool>? filter}) =>
+      _AggregateExpression('MIN', [this], filter: filter);
+
   /// Returns the concatenation of all non-null values in the current group,
   /// joined by the [separator].
   ///
