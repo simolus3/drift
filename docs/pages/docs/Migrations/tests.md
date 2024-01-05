@@ -20,7 +20,7 @@ Drift's migration tooling consists of the following steps:
 3. Use generated code to make writing schema migrations easier.
 
 This page describes steps 2 and 3. It assumes that you're already following step 1 by
-[exporting your schema]({{ 'exports.md' }}) when it changes.
+[exporting your schema]({{ 'exports.md' | pageUrl }}) when it changes.
 
 ## Writing tests
 
