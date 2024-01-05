@@ -115,11 +115,15 @@ void main() {
   test('sum', () {
     expect(foo.sum(), generates('SUM(foo)'));
     expect(b1.sum(), generates('SUM(b1)'));
+    expect(s1.sum(), generates('SUM(s1)'));
+    expect(p1.sum(), generates('SUM(p1)'));
   });
 
   test('total', () {
     expect(foo.total(), generates('TOTAL(foo)'));
     expect(b1.total(), generates('TOTAL(b1)'));
+    expect(s1.total(), generates('TOTAL(s1)'));
+    expect(p1.total(), generates('TOTAL(p1)'));
   });
 
   group('group_concat', () {

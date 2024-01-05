@@ -44,6 +44,26 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
   Expression<DT> min({Expression<bool>? filter}) =>
       _AggregateExpression('MIN', [this], filter: filter);
 
+  /// Calculate the sum of all non-null values in the group.
+  ///
+  /// If all values are null, evaluates to null as well. If an overflow occurs
+  /// during calculation, sqlite will terminate the query with an "integer
+  /// overflow" exception.
+  ///
+  /// See also [total], which behaves similarly but returns a floating point
+  /// value and doesn't throw an overflow exception.
+  /// {@macro drift_aggregate_filter}
+  Expression<int> sum({Expression<bool>? filter}) =>
+      _AggregateExpression('SUM', [this], filter: filter);
+
+  /// Calculate the sum of all non-null values in the group.
+  ///
+  /// If all values in the group are null, [total] returns `0.0`. This function
+  /// uses floating-point values internally.
+  /// {@macro drift_aggregate_filter}
+  Expression<double> total({Expression<bool>? filter}) =>
+      _AggregateExpression('TOTAL', [this], filter: filter);
+
   /// Returns the concatenation of all non-null values in the current group,
   /// joined by the [separator].
   ///
