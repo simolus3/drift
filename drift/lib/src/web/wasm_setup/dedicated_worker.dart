@@ -77,6 +77,7 @@ class DedicatedDriftWorker {
           opfsExists: opfsExists,
           indexedDbExists: indexedDbExists,
           existingDatabases: existingDatabases,
+          version: ProtocolVersion.current,
         ).sendToClient(self);
       case ServeDriftDatabase():
         _servers.serve(message);

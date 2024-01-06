@@ -22,6 +22,9 @@ InitializationMode initializationMode = InitializationMode.none;
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
   _addCallbackForWebDriver('open', _open);
+  _addCallbackForWebDriver('close', (arg) async {
+    await openedDatabase?.close();
+  });
   _addCallbackForWebDriver('insert', _insert);
   _addCallbackForWebDriver('get_rows', _getRows);
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);

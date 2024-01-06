@@ -8,6 +8,56 @@ import 'package:sqlite3/wasm.dart';
 
 import 'types.dart';
 
+/// Due to in-browser caching or users not updating their `drift_worker.dart`
+/// file after updating drift, the main web app and the workers may be compiled
+/// with different versions of drift. To avoid inconsistencies in the
+/// communication channel between them, they compare their versions in a
+/// handshake and only use features supported by both.
+class ProtocolVersion {
+  final int versionCode;
+
+  const ProtocolVersion._(this.versionCode);
+
+  void writeToJs(Object object) {
+    setProperty(object, 'v', versionCode);
+  }
+
+  bool operator >=(ProtocolVersion other) {
+    return versionCode >= other.versionCode;
+  }
+
+  static ProtocolVersion negotiate(int? versionCode) {
+    return switch (versionCode) {
+      null => legacy,
+      <= 0 => legacy,
+      1 => v1,
+      > 1 => current,
+      _ => throw AssertionError(),
+    };
+  }
+
+  static ProtocolVersion fromJsObject(Object object) {
+    if (hasProperty(object, 'v')) {
+      return negotiate(getProperty<int>(object, 'v'));
+    } else {
+      return legacy;
+    }
+  }
+
+  /// The protocol version used for drift versions up to 2.14 - these don't have
+  /// a version marker anywhere.
+  static const legacy = ProtocolVersion._(0);
+
+  /// This version makes workers report their supported protocol version.
+  ///
+  /// When both the client and the involved worker support this version, an
+  /// explicit close notification is sent from clients to workers when closing
+  /// databases. This allows workers to release resources more effieciently.
+  static const v1 = ProtocolVersion._(1);
+
+  static const current = v1;
+}
+
 typedef PostMessage = void Function(Object? msg, [List<Object>? transfer]);
 
 /// Sealed superclass for JavaScript objects exchanged between the UI tab and
@@ -65,6 +115,12 @@ sealed class CompatibilityResult extends WasmInitializationMessage {
   /// be used to check whether the database exists.
   final List<ExistingDatabase> existingDatabases;
 
+  /// The latest protocol version spoken by the worker.
+  ///
+  /// Workers only started to report their version in drift 2.15, we assume
+  /// [ProtocolVersion.legacy] for workers that don't report their version.
+  final ProtocolVersion version;
+
   final bool indexedDbExists;
   final bool opfsExists;
 
@@ -74,6 +130,7 @@ sealed class CompatibilityResult extends WasmInitializationMessage {
     required this.existingDatabases,
     required this.indexedDbExists,
     required this.opfsExists,
+    required this.version,
   });
 }
 
@@ -96,6 +153,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
     required super.indexedDbExists,
     required super.opfsExists,
     required super.existingDatabases,
+    required super.version,
   });
 
   factory SharedWorkerCompatibilityResult.fromJsPayload(Object payload) {
@@ -103,9 +161,15 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
     final asBooleans = asList.cast<bool>();
 
     final List<ExistingDatabase> existingDatabases;
+    var version = ProtocolVersion.legacy;
+
     if (asList.length > 5) {
       existingDatabases =
           EncodeLocations.readFromJs(asList[5] as List<dynamic>);
+
+      if (asList.length > 6) {
+        version = ProtocolVersion.negotiate(asList[6] as int);
+      }
     } else {
       existingDatabases = const [];
     }
@@ -117,6 +181,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
       indexedDbExists: asBooleans[3],
       opfsExists: asBooleans[4],
       existingDatabases: existingDatabases,
+      version: version,
     );
   }
 
@@ -129,6 +194,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
       indexedDbExists,
       opfsExists,
       existingDatabases.encodeToJs(),
+      version.versionCode,
     ]);
   }
 
@@ -175,6 +241,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final WasmStorageImplementation storage;
   final String databaseName;
   final MessagePort? initializationPort;
+  final ProtocolVersion protocolVersion;
 
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
@@ -182,6 +249,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     required this.storage,
     required this.databaseName,
     required this.initializationPort,
+    required this.protocolVersion,
   });
 
   factory ServeDriftDatabase.fromJsPayload(Object payload) {
@@ -192,6 +260,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
           .byName(getProperty(payload, 'storage')),
       databaseName: getProperty(payload, 'database'),
       initializationPort: getProperty(payload, 'initPort'),
+      protocolVersion: ProtocolVersion.fromJsObject(payload),
     );
   }
 
@@ -204,6 +273,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     setProperty(object, 'database', databaseName);
     final initPort = initializationPort;
     setProperty(object, 'initPort', initPort);
+    protocolVersion.writeToJs(object);
 
     sender.sendTyped(type, object, [
       port,
@@ -249,6 +319,7 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
     required super.indexedDbExists,
     required super.opfsExists,
     required super.existingDatabases,
+    required super.version,
   });
 
   factory DedicatedWorkerCompatibilityResult.fromJsPayload(Object payload) {
@@ -268,6 +339,7 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
       indexedDbExists: getProperty(payload, 'indexedDbExists'),
       opfsExists: getProperty(payload, 'opfsExists'),
       existingDatabases: existingDatabases,
+      version: ProtocolVersion.fromJsObject(payload),
     );
   }
 
@@ -283,6 +355,7 @@ final class DedicatedWorkerCompatibilityResult extends CompatibilityResult {
     setProperty(object, 'indexedDbExists', indexedDbExists);
     setProperty(object, 'opfsExists', opfsExists);
     setProperty(object, 'existing', existingDatabases.encodeToJs());
+    version.writeToJs(object);
 
     sender.sendTyped(type, object);
   }

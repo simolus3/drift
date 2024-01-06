@@ -78,6 +78,7 @@ class SharedDriftWorker {
         indexedDbExists: indexedDbExists,
         opfsExists: false,
         existingDatabases: const [],
+        version: ProtocolVersion.current,
       );
     } else {
       final worker = _dedicatedWorker ??= Worker(Uri.base.toString());
@@ -102,6 +103,7 @@ class SharedDriftWorker {
             indexedDbExists: indexedDbExists,
             opfsExists: opfsExists,
             existingDatabases: databases,
+            version: ProtocolVersion.current,
           ));
 
           messageSubscription?.cancel();

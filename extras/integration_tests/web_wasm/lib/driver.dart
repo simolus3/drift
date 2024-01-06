@@ -135,6 +135,10 @@ class DriftWebDriver {
         'open(arguments[0], arguments[1])', [implementation?.name]);
   }
 
+  Future<void> closeDatabase() async {
+    await driver.executeAsync("close('', arguments[0])", []);
+  }
+
   Future<void> insertIntoDatabase() async {
     await driver.executeAsync('insert("", arguments[0])', []);
   }

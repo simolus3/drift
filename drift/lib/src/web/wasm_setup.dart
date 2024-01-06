@@ -114,6 +114,7 @@ class WasmDatabaseOpener {
           as DedicatedWorkerCompatibilityResult;
 
       _handleCompatibilityResult(status);
+      dedicatedWorker.version = status.version;
 
       if (status.supportsNestedWorkers &&
           status.canAccessOpfs &&
@@ -142,6 +143,7 @@ class WasmDatabaseOpener {
           as SharedWorkerCompatibilityResult;
 
       _handleCompatibilityResult(sharedFeatures);
+      shared.version = sharedFeatures.version;
 
       // Prefer to use the shared worker to host the database if it supports the
       // necessary APIs.
@@ -160,6 +162,7 @@ class WasmDatabaseOpener {
 
 final class _DriftWorker {
   final AbstractWorker worker;
+  ProtocolVersion version = ProtocolVersion.legacy;
 
   /// The message port to communicate with the worker, if it's a shared worker.
   final MessagePort? portForShared;
@@ -225,16 +228,8 @@ final class _ProbeResult implements WasmProbeResult {
     final channel = MessageChannel();
     final initializer = initializeDatabase;
     final initChannel = initializer != null ? MessageChannel() : null;
-    final local = channel.port1.channel();
 
-    final message = ServeDriftDatabase(
-      sqlite3WasmUri: opener.sqlite3WasmUri,
-      port: channel.port2,
-      storage: implementation,
-      databaseName: name,
-      initializationPort: initChannel?.port2,
-    );
-
+    ServeDriftDatabase message;
     final sharedWorker = opener._sharedWorker;
     final dedicatedWorker = opener._dedicatedWorker;
 
@@ -242,10 +237,28 @@ final class _ProbeResult implements WasmProbeResult {
       case WasmStorageImplementation.opfsShared:
       case WasmStorageImplementation.sharedIndexedDb:
         // Forward connection request to shared worker.
-        message.sendTo(sharedWorker!.send);
+        message = ServeDriftDatabase(
+          sqlite3WasmUri: opener.sqlite3WasmUri,
+          port: channel.port2,
+          storage: implementation,
+          databaseName: name,
+          initializationPort: initChannel?.port2,
+          protocolVersion: sharedWorker!.version,
+        );
+
+        message.sendTo(sharedWorker.send);
       case WasmStorageImplementation.opfsLocks:
       case WasmStorageImplementation.unsafeIndexedDb:
         if (dedicatedWorker != null) {
+          message = ServeDriftDatabase(
+            sqlite3WasmUri: opener.sqlite3WasmUri,
+            port: channel.port2,
+            storage: implementation,
+            databaseName: name,
+            initializationPort: initChannel?.port2,
+            protocolVersion: dedicatedWorker.version,
+          );
+
           message.sendTo(dedicatedWorker.send);
         } else {
           // Workers seem to be broken, but we don't need them with this storage
@@ -275,6 +288,9 @@ final class _ProbeResult implements WasmProbeResult {
           ..close();
       }
     });
+
+    final local = channel.port1
+        .channel(explicitClose: message.protocolVersion >= ProtocolVersion.v1);
 
     var connection = await connectToRemoteAndInitialize(local);
     if (implementation == WasmStorageImplementation.opfsLocks) {

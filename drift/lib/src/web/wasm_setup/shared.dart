@@ -9,6 +9,7 @@ import 'package:js/js_util.dart';
 // ignore: implementation_imports
 import 'package:sqlite3/src/wasm/js_interop/file_system_access.dart';
 import 'package:sqlite3/wasm.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import '../channel.dart';
 import 'protocol.dart';
@@ -196,15 +197,21 @@ class DriftServerController {
             initializer: initializer,
           )));
 
-      return RunningWasmServer(message.storage, server);
+      final wasmServer = RunningWasmServer(message.storage, server);
+      wasmServer.lastClientDisconnected.whenComplete(() {
+        servers.remove(message.databaseName);
+        wasmServer.server.shutdown();
+      });
+      return wasmServer;
     });
 
-    server.server.serve(message.port.channel());
+    server.serve(message.port
+        .channel(explicitClose: message.protocolVersion >= ProtocolVersion.v1));
   }
 
   /// Loads a new sqlite3 WASM module, registers an appropriate VFS for [storage]
   /// and finally opens a database, creating it if it doesn't exist.
-  Future<WasmDatabase> openConnection({
+  Future<QueryExecutor> openConnection({
     required Uri sqlite3WasmUri,
     required String databaseName,
     required WasmStorageImplementation storage,
@@ -212,15 +219,24 @@ class DriftServerController {
   }) async {
     final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
 
-    final vfs = await switch (storage) {
-      WasmStorageImplementation.opfsShared =>
-        SimpleOpfsFileSystem.loadFromStorage(pathForOpfs(databaseName)),
-      WasmStorageImplementation.opfsLocks => _loadLockedWasmVfs(databaseName),
-      WasmStorageImplementation.unsafeIndexedDb ||
-      WasmStorageImplementation.sharedIndexedDb =>
-        IndexedDbFileSystem.open(dbName: databaseName),
-      WasmStorageImplementation.inMemory => Future.value(InMemoryFileSystem()),
-    };
+    VirtualFileSystem vfs;
+    void Function()? close;
+
+    switch (storage) {
+      case WasmStorageImplementation.opfsShared:
+        final simple = vfs = await SimpleOpfsFileSystem.loadFromStorage(
+            pathForOpfs(databaseName));
+        close = simple.close;
+      case WasmStorageImplementation.opfsLocks:
+        final locks = vfs = await _loadLockedWasmVfs(databaseName);
+        close = locks.close;
+      case WasmStorageImplementation.unsafeIndexedDb:
+      case WasmStorageImplementation.sharedIndexedDb:
+        final idb = vfs = await IndexedDbFileSystem.open(dbName: databaseName);
+        close = idb.close;
+      case WasmStorageImplementation.inMemory:
+        vfs = InMemoryFileSystem();
+    }
 
     if (initializer != null && vfs.xAccess('/database', 0) == 0) {
       final response = await initializer();
@@ -234,7 +250,13 @@ class DriftServerController {
     }
 
     sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
-    return WasmDatabase(sqlite3: sqlite3, path: '/database', setup: _setup);
+    var db = WasmDatabase(sqlite3: sqlite3, path: '/database', setup: _setup);
+
+    if (close != null) {
+      return db.interceptWith(_CloseVfsOnClose(close));
+    } else {
+      return db;
+    }
   }
 
   Future<WasmVfs> _loadLockedWasmVfs(String databaseName) async {
@@ -253,6 +275,20 @@ class DriftServerController {
   }
 }
 
+class _CloseVfsOnClose extends QueryInterceptor {
+  final FutureOr<void> Function() _close;
+
+  _CloseVfsOnClose(this._close);
+
+  @override
+  Future<void> close(QueryExecutor inner) async {
+    await inner.close();
+    if (inner is! TransactionExecutor) {
+      await _close();
+    }
+  }
+}
+
 /// Information about a running drift server in a web worker.
 class RunningWasmServer {
   /// The storage implementation used by the VFS of this server.
@@ -261,8 +297,32 @@ class RunningWasmServer {
   /// The server hosting the drift database.
   final DriftServer server;
 
+  int _connectedClients = 0;
+  final Completer<void> _lastClientDisconnected = Completer.sync();
+
+  /// A future that completes synchronously after all [serve]d connections have
+  /// closed.
+  Future<void> get lastClientDisconnected => _lastClientDisconnected.future;
+
   /// Default constructor
   RunningWasmServer(this.storage, this.server);
+
+  /// Tracks a new connection and serves drift database requests over it.
+  void serve(StreamChannel<Object?> channel) {
+    _connectedClients++;
+
+    server.serve(
+      channel.transformStream(StreamTransformer.fromHandlers(
+        handleDone: (sink) {
+          if (--_connectedClients == 0) {
+            _lastClientDisconnected.complete();
+          }
+
+          sink.close();
+        },
+      )),
+    );
+  }
 }
 
 /// Reported compatibility results with IndexedDB and OPFS.

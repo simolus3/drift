@@ -1,6 +1,7 @@
 ## 2.15.0-dev
 
 - Methods in the query builder API now respect custom types.
+- Close wasm databases hosted in workers after the last client disconnects.
 
 ## 2.14.1
 

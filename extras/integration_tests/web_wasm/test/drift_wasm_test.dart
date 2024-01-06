@@ -144,7 +144,7 @@ void main() {
               await driver.insertIntoDatabase();
               await driver.waitForTableUpdate();
 
-              await driver.driver.refresh(); // Reset JS state
+              await driver.closeDatabase();
 
               final newImpls = await driver.probeImplementations();
               expect(newImpls.existing, hasLength(1));
