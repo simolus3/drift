@@ -422,6 +422,7 @@ class _DriftBuildRun {
     }
 
     output.writeln('// ignore_for_file: type=lint');
+    output.writeln('// coverage:ignore-file');
 
     if (mode == DriftGenerationMode.monolithicPart) {
       final originalFile = buildStep.inputId.pathSegments.last;

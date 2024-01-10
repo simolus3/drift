@@ -50,4 +50,25 @@ class Database {}
       writer.writer,
     );
   });
+
+  test("includes coverage ignore", () async {
+    final writer = await emulateDriftBuild(inputs: {
+      'a|lib/a.dart': '''
+// @dart = 2.13
+
+import 'package:drift/drift.dart';
+
+@DriftDatabase(tables: [])
+class Database {}
+        ''',
+    });
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart':
+            decodedMatches(contains('// coverage:ignore-file')),
+      },
+      writer.dartOutputs,
+      writer.writer,
+    );
+  });
 }
