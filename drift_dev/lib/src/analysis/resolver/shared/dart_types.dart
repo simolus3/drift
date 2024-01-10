@@ -275,7 +275,7 @@ CustomColumnType? readCustomType(
 ) {
   final staticType = dartExpression.staticType;
   final asCustomType =
-      staticType != null ? helper.asCustomType(staticType) : null;
+      staticType != null ? helper.asUserDefinedType(staticType) : null;
 
   if (asCustomType == null) {
     reportError('Not a custom type');

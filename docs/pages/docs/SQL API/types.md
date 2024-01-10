@@ -7,6 +7,8 @@ data:
 template: layouts/docs/single
 ---
 
+{% assign type_snippets = "package:drift_docs/snippets/modular/custom_types/type.dart.excerpt.json" | readString | json_decode %}
+
 Drift's core library is written with sqlite3 as a primary target. This is
 reflected in the [SQL types][types] drift supports out of the box - these
 types supported by sqlite3 with a few additions that are handled in Dart.
@@ -41,7 +43,7 @@ prepared statements and also be read from rows without manual conversions.
 In that case, a custom type class to implement `Duration` support for drift would be
 added:
 
-{% include "blocks/snippet" snippets = ('package:drift_docs/snippets/modular/custom_types/type.dart.excerpt.json' | readString | json_decode) %}
+{% include "blocks/snippet" snippets = type_snippets name = "duration" %}
 
 This type defines the following things:
 
@@ -84,3 +86,25 @@ opening an issue or a discussion describing your use-cases, thanks!
 
 [types]: {{ '../Dart API/tables.md#supported-column-types' | pageUrl }}
 [type converters]: {{ '../type_converters.md' | pageUrl }}
+
+## Dialect awareness
+
+When defining custom types for SQL types only supported on some database management systems, your
+database will _only_ work with those database systems. For instance, any table using the `DurationType`
+defined above will not work with sqlite3 since it uses an `interval` type interpreted as an integer
+by sqlite3 - and the `interval xyz microseconds` syntax is not supported by sqlite3 at all.
+
+Starting with drift 2.15, it is possible to define custom types that behave differently depending on
+the dialect used.
+This can be used to build polyfills for other database systems. First, consider a custom type storing
+durations as integers, similar to what a type converter might do:
+
+{% include "blocks/snippet" snippets = type_snippets name = "fallback" %}
+
+By using a `DialectAwareSqlType`, you can automatically use the `interval` type on PostgreSQL databases
+while falling back to an integer type on sqlite3 and other databases:
+
+```dart
+  Column<Duration> get frequency => customType(durationType)
+      .clientDefault(() => Duration(minutes: 15))();
+```

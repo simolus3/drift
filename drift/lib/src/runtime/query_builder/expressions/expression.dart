@@ -549,7 +549,9 @@ class _CastInSqlExpression<D1 extends Object, D2 extends Object>
         DriftSqlType.blob => 'BINARY',
         DriftSqlType.dateTime => 'DATETIME',
         DriftSqlType.any => '',
-        CustomSqlType() => targetType.sqlTypeName(context),
+        CustomSqlType() ||
+        DialectAwareSqlType() =>
+          targetType.sqlTypeName(context),
       };
     } else {
       typeName = targetType.sqlTypeName(context);

@@ -205,7 +205,7 @@ abstract class Table extends HasResultSet {
   /// For most users, [TypeConverter]s are a more appropriate tool to store
   /// custom values in the database.
   @protected
-  ColumnBuilder<T> customType<T extends Object>(CustomSqlType<T> type) =>
+  ColumnBuilder<T> customType<T extends Object>(UserDefinedSqlType<T> type) =>
       _isGenerated();
 }
 

@@ -113,6 +113,12 @@ void main() {
       await db.createMigrator().createTable(db.withCustomType);
 
       verify(mockExecutor.runCustom(
+          'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" text NOT NULL);',
+          []));
+
+      when(mockExecutor.dialect).thenReturn(SqlDialect.postgres);
+      await db.createMigrator().createTable(db.withCustomType);
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" uuid NOT NULL);',
           []));
     });

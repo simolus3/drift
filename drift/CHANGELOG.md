@@ -1,6 +1,10 @@
 ## 2.15.0-dev
 
 - Methods in the query builder API now respect custom types.
+- Support `DialectAwareSqlType`, custom types that depend on the dialect of the
+  active database connection. This can be used to use native types not
+  supported by drift (like UUIDs) on databases that support it while falling
+  back to a text type on sqlite3.
 - Close wasm databases hosted in workers after the last client disconnects.
 
 ## 2.14.1

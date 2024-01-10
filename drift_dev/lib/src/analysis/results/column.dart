@@ -127,8 +127,8 @@ class DriftColumn implements HasType {
 }
 
 class CustomColumnType {
-  /// The Dart expression creating an instance of the `CustomSqlType` responsible
-  /// for the column.
+  /// The Dart expression creating an instance of the `UserDefinedType`
+  /// responsible for the column.
   final AnnotatedDartCode expression;
   final DartType dartType;
 

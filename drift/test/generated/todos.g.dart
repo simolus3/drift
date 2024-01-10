@@ -1483,7 +1483,7 @@ class $WithCustomTypeTable extends WithCustomType
   @override
   late final GeneratedColumn<UuidValue> id = GeneratedColumn<UuidValue>(
       'id', aliasedName, false,
-      type: const UuidType(), requiredDuringInsert: true);
+      type: uuidType, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
@@ -1511,7 +1511,7 @@ class $WithCustomTypeTable extends WithCustomType
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WithCustomTypeData(
       id: attachedDatabase.typeMapping
-          .read(const UuidType(), data['${effectivePrefix}id'])!,
+          .read(uuidType, data['${effectivePrefix}id'])!,
     );
   }
 
@@ -1528,7 +1528,7 @@ class WithCustomTypeData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<UuidValue>(id, const UuidType());
+    map['id'] = Variable<UuidValue>(id, uuidType);
     return map;
   }
 
@@ -1609,7 +1609,7 @@ class WithCustomTypeCompanion extends UpdateCompanion<WithCustomTypeData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<UuidValue>(id.value, const UuidType());
+      map['id'] = Variable<UuidValue>(id.value, uuidType);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);

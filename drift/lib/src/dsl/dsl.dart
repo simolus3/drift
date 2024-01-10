@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:meta/meta_meta.dart';
 
+import '../runtime/types/mapping.dart';
+
 part 'columns.dart';
 part 'database.dart';
 part 'table.dart';

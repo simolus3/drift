@@ -19,7 +19,8 @@ class TypeDescription {
   factory TypeDescription.fromDrift(GenerationContext ctx, BaseSqlType type) {
     return switch (type) {
       DriftSqlType() => TypeDescription(type: type),
-      CustomSqlType<Object>() =>
+      CustomSqlType() ||
+      DialectAwareSqlType() =>
         TypeDescription(customTypeName: type.sqlTypeName(ctx)),
     };
   }
