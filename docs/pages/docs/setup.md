@@ -45,6 +45,12 @@ dev_dependencies:
   build_runner: ^{{ versions.build_runner }}
 ```
 
+Alternatively, you can achieve the same result using the following command:
+
+```
+flutter pub add drift sqlite3_flutter_libs path_provider path dev:drift_dev dev:build_runner
+```
+
 If you're wondering why so many packages are necessary, here's a quick overview over what each package does:
 
 - `drift`: This is the core package defining the APIs you use to access drift databases.
