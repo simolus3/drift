@@ -67,17 +67,27 @@ class NativeDatabase extends DelegatedDatabase {
   /// the database is opened, before drift is fully ready. This can be used to
   /// add custom user-defined sql functions or to provide encryption keys in
   /// SQLCipher implementations.
+  ///
+  /// By default, drift runs migrations defined in your database class to create
+  /// tables when the database is first opened or to alter when when your schema
+  /// changes. This uses the `user_version` sqlite3 pragma, which is compared
+  /// against the `schemaVersion` getter of the database.
+  /// If you want to manage migrations independently or don't need them at all,
+  /// you can disable migrations in drift with the [enableMigrations]
+  /// parameter.
   /// {@endtemplate}
   factory NativeDatabase(
     File file, {
     bool logStatements = false,
     DatabaseSetup? setup,
+    bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
         _NativeDelegate(
           file,
           setup,
+          enableMigrations,
           cachePreparedStatements,
         ),
         logStatements);
@@ -105,6 +115,7 @@ class NativeDatabase extends DelegatedDatabase {
     bool logStatements = false,
     bool cachePreparedStatements = _cacheStatementsByDefault,
     DatabaseSetup? setup,
+    bool enableMigrations = true,
     IsolateSetup? isolateSetup,
   }) {
     return createBackgroundConnection(
@@ -112,6 +123,7 @@ class NativeDatabase extends DelegatedDatabase {
       logStatements: logStatements,
       setup: setup,
       isolateSetup: isolateSetup,
+      enableMigrations: enableMigrations,
       cachePreparedStatements: cachePreparedStatements,
     );
   }
@@ -126,6 +138,7 @@ class NativeDatabase extends DelegatedDatabase {
     bool logStatements = false,
     DatabaseSetup? setup,
     IsolateSetup? isolateSetup,
+    bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return DatabaseConnection.delayed(Future.sync(() async {
@@ -136,6 +149,7 @@ class NativeDatabase extends DelegatedDatabase {
           file.absolute.path,
           logStatements,
           cachePreparedStatements,
+          enableMigrations,
           setup,
           isolateSetup,
           receiveIsolate.sendPort,
@@ -159,7 +173,15 @@ class NativeDatabase extends DelegatedDatabase {
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
-      _NativeDelegate(null, setup, cachePreparedStatements),
+      _NativeDelegate(
+        null,
+        setup,
+        // Disabling migrations makes no sense for in-memory databases, which
+        // would always be empty otherwise. They will also not be read-only, so
+        // what's the point...
+        true,
+        cachePreparedStatements,
+      ),
       logStatements,
     );
   }
@@ -181,6 +203,7 @@ class NativeDatabase extends DelegatedDatabase {
     bool logStatements = false,
     DatabaseSetup? setup,
     bool closeUnderlyingOnClose = true,
+    bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
     return NativeDatabase._(
@@ -189,6 +212,7 @@ class NativeDatabase extends DelegatedDatabase {
           setup,
           closeUnderlyingOnClose,
           cachePreparedStatements,
+          enableMigrations,
         ),
         logStatements);
   }
@@ -246,9 +270,11 @@ class NativeDatabase extends DelegatedDatabase {
 class _NativeDelegate extends Sqlite3Delegate<Database> {
   final File? file;
 
-  _NativeDelegate(this.file, DatabaseSetup? setup, bool cachePreparedStatements)
+  _NativeDelegate(this.file, DatabaseSetup? setup, bool enableMigrations,
+      bool cachePreparedStatements)
       : super(
           setup,
+          enableMigrations: enableMigrations,
           cachePreparedStatements: cachePreparedStatements,
         );
 
@@ -257,9 +283,11 @@ class _NativeDelegate extends Sqlite3Delegate<Database> {
     super.setup,
     super.closeUnderlyingWhenClosed,
     bool cachePreparedStatements,
+    bool enableMigrations,
   )   : file = null,
         super.opened(
           cachePreparedStatements: cachePreparedStatements,
+          enableMigrations: enableMigrations,
         );
 
   @override
@@ -334,6 +362,7 @@ class _NativeIsolateStartup {
   final String path;
   final bool enableLogs;
   final bool cachePreparedStatements;
+  final bool enableMigrations;
   final DatabaseSetup? setup;
   final IsolateSetup? isolateSetup;
   final SendPort sendServer;
@@ -342,6 +371,7 @@ class _NativeIsolateStartup {
     this.path,
     this.enableLogs,
     this.cachePreparedStatements,
+    this.enableMigrations,
     this.setup,
     this.isolateSetup,
     this.sendServer,
@@ -354,6 +384,7 @@ class _NativeIsolateStartup {
         File(startup.path),
         logStatements: startup.enableLogs,
         cachePreparedStatements: startup.cachePreparedStatements,
+        enableMigrations: startup.enableMigrations,
         setup: startup.setup,
       ));
     });

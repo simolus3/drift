@@ -28,6 +28,9 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// Whether prepared statements should be cached.
   final bool cachePreparedStatements;
 
+  /// Whether migrations are enabled (they are by default).
+  final bool enableMigrations;
+
   /// Whether the [database] should be closed when [close] is called on this
   /// instance.
   ///
@@ -40,6 +43,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
   /// A delegate that will call [openDatabase] to open the database.
   Sqlite3Delegate(
     this._setup, {
+    this.enableMigrations = true,
     required this.cachePreparedStatements,
   }) : closeUnderlyingWhenClosed = true;
 
@@ -49,6 +53,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     this._database,
     this._setup,
     this.closeUnderlyingWhenClosed, {
+    this.enableMigrations = true,
     required this.cachePreparedStatements,
   }) {
     _initializeDatabase();
@@ -98,7 +103,9 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
     database.useNativeFunctions();
     _setup?.call(database);
-    versionDelegate = _SqliteVersionDelegate(database);
+    versionDelegate = enableMigrations
+        ? _SqliteVersionDelegate(database)
+        : const NoVersionDelegate();
     _hasInitializedDatabase = true;
   }
 

@@ -184,6 +184,53 @@ void main() {
     await db.close();
     expect(underlying.activeStatementCount, isZero);
   });
+
+  group('can disable migrations', () {
+    Future<void> runTest(QueryExecutor executor) async {
+      final db = TodoDb(executor);
+      db.migration = MigrationStrategy(
+        onCreate: (_) => fail('should not call onCreate'),
+        onUpgrade: (_, __, ___) => fail('should not call onUpgrade'),
+        beforeOpen: expectAsync1((details) async {}),
+      );
+
+      addTearDown(db.close);
+      await db.customSelect('select 1').get(); // open database
+    }
+
+    test(
+      'with native database',
+      () => runTest(NativeDatabase(
+        File(d.path('test.db')),
+        enableMigrations: false,
+      )),
+    );
+
+    test(
+      'createInBackground',
+      () => runTest(NativeDatabase.createInBackground(
+        File(d.path('test.db')),
+        enableMigrations: false,
+      )),
+    );
+
+    test(
+      'createBackgroundConnection',
+      () => runTest(NativeDatabase.createBackgroundConnection(
+        File(d.path('test.db')),
+        enableMigrations: false,
+      )),
+    );
+
+    test(
+      'opened',
+      () => runTest(NativeDatabase.opened(
+        sqlite3.openInMemory(),
+        enableMigrations: false,
+        closeUnderlyingOnClose: true,
+      )),
+    );
+  });
 }
 
 class _FakeExecutorUser extends QueryExecutorUser {

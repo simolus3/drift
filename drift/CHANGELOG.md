@@ -6,6 +6,8 @@
   supported by drift (like UUIDs) on databases that support it while falling
   back to a text type on sqlite3.
 - Close wasm databases hosted in workers after the last client disconnects.
+- Add `enableMigrations` parameter to `NativeDatabase` which can be used to
+  optionally disable database migrations when opening databases.
 
 ## 2.14.1
 
