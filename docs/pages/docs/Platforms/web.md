@@ -29,10 +29,10 @@ platforms, which enables a fast implementation that works on more browsers.
 Drift uses the FileSystem Access API to store databases if it's available. Otherwise, it will fall back to
 a slower implementation based on IndexedDb in a shared worker. This makes drift available on all modern browsers,
 even ones that don't support the official sqlite3 build for the web.
-In some browsers, you need to serve your app with [additional headers](#additional-headers) for full support (but drift works without that too - the official sqlite3 build doesn't).
+In some browsers, you need to serve your app with [additional COOP/COEP headers](#additional-headers) for full support (but drift works without that too - the official sqlite3 build doesn't).
 
-| Browser | Support [with headers](#additional-headers) | Support without headers |
-|---------|---------------------------------------------|-------------------------|
+| Supported Browser | With [security headers](#additional-headers) | Without security headers |
+|-------------------|----------------------------------------------|--------------------------|
 | Firefox _(tested version 114)_ | Full | Full |
 | Chrome _(tested version 114)_ | Full | Good (slightly slower) |
 | Chrome on Android _(tested version 114)_ | Full | Limited (not with multiple tabs) |
@@ -95,6 +95,14 @@ web/
 └── sqlite3.wasm
 ```
 
+{% block "blocks/alert" title="Serving wasm files" color="info" %}
+For browsers to accept the `sqlite3.wasm` file, it must be served with
+`Content-Type: application/wasm`.
+`flutter run` does this by default, but some webservers might not. After
+deploying your app to the web, check that your server is configured to send the
+correct `Content-Type` header for wasm files.
+{% endblock %}
+
 #### Additional headers
 
 On browsers that support it, drift uses the origin-private part of the [FileSystem Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to store databases efficiently.
@@ -109,6 +117,9 @@ For more details, see the [security requirements](https://developer.mozilla.org/
 Unfortunately, there's no way (that I'm aware of) to add these headers onto `flutter run`'s web server.
 Drift will fall back to a (slightly slower) implementation in that case (see [storages](#storages)),
 but we recommend researching and enabling these headers in production if possible.
+
+Also, note that the `sqlite3.wasm` file needs to be served with a `Content-Type` of
+`application/wasm` since browsers will reject the module otherwise.
 
 {% block "blocks/alert" title="Downsides of COOP and COEP" color="danger" %}
 While these headers are required for the origin-private FileSystem Access API
