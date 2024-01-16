@@ -9,16 +9,16 @@ environment:
   sdk: '>=2.12.0 <4.0.0'
 
 dependencies:
-  drift: ^2.0.0
-  sqflite: ^2.1.0
-  path: ^1.8.0
+  drift: ^2.14.1
+  sqflite: ^2.3.0
+  path: ^1.9.0
   flutter:
     sdk: flutter
 
 dev_dependencies:
   integration_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^3.0.1
   flutter_test:
     sdk: flutter
   drift_testcases:
