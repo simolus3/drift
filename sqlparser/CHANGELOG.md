@@ -1,9 +1,10 @@
-## 0.33.1
+## 0.34.1
 
 - Fix explicit `NULL` column constraints being dropped when converting nodes
   to SQL.
 - Add analysis errors for illegal unqualified references to `old` and `new` in
   triggers.
+- Analysis support for sqlite 3.45 and jsonb functions.
 
 ## 0.33.0
 

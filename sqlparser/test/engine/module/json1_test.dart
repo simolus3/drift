@@ -1,10 +1,13 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import '../../analysis/errors/utils.dart';
+
 void main() {
   group('json with new type inference', () {
     final engine = SqlEngine(EngineOptions(
       enabledExtensions: const [Json1Extension()],
+      version: SqliteVersion.v3_45,
     ));
     // add user (name, phone) table
     final table = engine.schemaReader.read(
@@ -23,6 +26,7 @@ void main() {
     }
 
     const resolvedString = ResolveResult(ResolvedType(type: BasicType.text));
+    const resolvedBlob = ResolveResult(ResolvedType(type: BasicType.blob));
 
     test('create json', () {
       expect(findResult("json('{}')"), resolvedString);
@@ -36,6 +40,19 @@ void main() {
       expect(findResult("json_quote('foo')"), resolvedString);
       expect(findResult('json_group_array()'), resolvedString);
       expect(findResult('json_group_object()'), resolvedString);
+    });
+
+    test('create binary json', () {
+      expect(findResult("jsonb('{}')"), resolvedBlob);
+      expect(findResult("jsonb_array('foo', 'bar')"), resolvedBlob);
+      expect(findResult("jsonb_insert('{}')"), resolvedBlob);
+      expect(findResult("jsonb_replace('{}')"), resolvedBlob);
+      expect(findResult("jsonb_set('{}')"), resolvedBlob);
+      expect(findResult('jsonb_object()'), resolvedBlob);
+      expect(findResult("jsonb_patch('{}', '{}')"), resolvedBlob);
+      expect(findResult("jsonb_remove('{}', '{}')"), resolvedBlob);
+      expect(findResult('jsonb_group_array()'), resolvedBlob);
+      expect(findResult('jsonb_group_object()'), resolvedBlob);
     });
 
     test('json_type', () {
@@ -70,5 +87,16 @@ SELECT DISTINCT user.name
 
       expect(result.errors, isEmpty);
     });
+  });
+
+  test('does not allow jsonb functions before 3.45', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_44));
+    final result = engine.analyze('SELECT jsonb(?);');
+    expect(result.errors, [
+      analysisErrorWith(
+        lexeme: 'jsonb',
+        type: AnalysisErrorType.unknownFunction,
+      )
+    ]);
   });
 }

@@ -5,15 +5,19 @@ class Json1Extension implements Extension {
 
   @override
   void register(SqlEngine engine) {
+    final supportsJsonb = engine.options.version >= SqliteVersion.v3_45;
+
     engine
-      ..registerFunctionHandler(const _Json1Functions())
+      ..registerFunctionHandler(_Json1Functions(supportsJsonb))
       ..registerTableValuedFunctionHandler(const _JsonEachFunction())
       ..registerTableValuedFunctionHandler(const _JsonTreeFunction());
   }
 }
 
 class _Json1Functions implements FunctionHandler {
-  const _Json1Functions();
+  final bool _supportBinaryJson;
+
+  const _Json1Functions(this._supportBinaryJson);
 
   static const Set<String> _returnStrings = {
     'json',
@@ -29,12 +33,27 @@ class _Json1Functions implements FunctionHandler {
     'json_group_object',
   };
 
+  static const Set<String> _returnBlobs = {
+    'jsonb',
+    'jsonb_array',
+    'jsonb_insert',
+    'jsonb_object',
+    'jsonb_patch',
+    'jsonb_remove',
+    'jsonb_replace',
+    'jsonb_set',
+    'jsonb_group_array',
+    'jsonb_group_object'
+  };
+
   @override
-  Set<String> get functionNames => const {
+  Set<String> get functionNames => {
         ..._returnStrings,
+        if (_supportBinaryJson) ..._returnBlobs,
         'json_type',
         'json_valid',
         'json_extract',
+        if (_supportBinaryJson) 'jsonb_extract',
         'json_array_length',
       };
 
@@ -51,6 +70,8 @@ class _Json1Functions implements FunctionHandler {
 
     if (_returnStrings.contains(name)) {
       return const ResolveResult(ResolvedType(type: BasicType.text));
+    } else if (_returnBlobs.contains(name)) {
+      return const ResolveResult(ResolvedType(type: BasicType.blob));
     } else {
       switch (name) {
         case 'json_type':
@@ -59,6 +80,7 @@ class _Json1Functions implements FunctionHandler {
         case 'json_valid':
           return const ResolveResult(ResolvedType.bool());
         case 'json_extract':
+        case 'jsonb_extract':
           return const ResolveResult.unknown();
         case 'json_array_length':
           return const ResolveResult(ResolvedType(type: BasicType.int));
