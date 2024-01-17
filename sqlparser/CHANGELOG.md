@@ -1,4 +1,4 @@
-## 0.34.1
+## 0.34.0
 
 - Fix explicit `NULL` column constraints being dropped when converting nodes
   to SQL.

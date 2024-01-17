@@ -1,4 +1,4 @@
-## 2.15.0-dev
+## 2.15.0
 
 - Methods in the query builder API now respect custom types.
 - Support `DialectAwareSqlType`, custom types that depend on the dialect of the

@@ -1,13 +1,13 @@
-## 2.15.0-dev
+## 2.15.0
 
 - Potentially __breaking change__: Fix a bug causing `NULL` column constraints
   not to show up in generated table definitions.
   This is a breaking change drift's migration tooling is used, since they will
   not expect the `NULL` column constraint to be there.
   After upgrading, you can either drop the `NULL` constraint from your drift
-  files to make it consistent with the schema (since `NULL` has no effect in
-  sqlite3), or increment the schema version and run a `TableMigration` on
-  affected tables to make column constraints consistent.
+  files to make it consistent with the schema (since `NULL` column constraints
+  are the default ignored by sqlite3), or increment the schema version and run
+  a `TableMigration` on affected tables to make column constraints consistent.
 
 ## 2.14.1
 
