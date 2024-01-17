@@ -8,6 +8,7 @@
 - Close wasm databases hosted in workers after the last client disconnects.
 - Add `enableMigrations` parameter to `NativeDatabase` which can be used to
   optionally disable database migrations when opening databases.
+- Support `jsonb` functions in the Dart query builder.
 
 ## 2.14.1
 

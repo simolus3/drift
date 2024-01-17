@@ -12,6 +12,22 @@ import '../drift.dart';
 
 /// Defines extensions on string expressions to support the json1 api from Dart.
 extension JsonExtensions on Expression<String> {
+  /// Reads `this` expression as a JSON structure and outputs the JSON in a
+  /// minified format.
+  ///
+  /// For details, see https://www.sqlite.org/json1.html#jmini.
+  Expression<String> json() {
+    return FunctionCallExpression('json', [this]);
+  }
+
+  /// Reads `this` expression as a JSON structure and outputs the JSON in a
+  /// binary format internal to sqlite3.
+  ///
+  /// For details, see https://www.sqlite.org/json1.html#jminib.
+  Expression<Uint8List> jsonb() {
+    return FunctionCallExpression('jsonb', [this]);
+  }
+
   /// Assuming that this string is a json array, returns the length of this json
   /// array.
   ///
@@ -82,6 +98,56 @@ extension JsonExtensions on Expression<String> {
       this,
       if (path != null) Variable(path),
     ]);
+  }
+}
+
+/// Defines extensions for the binary `JSONB` format introduced in sqlite3
+/// version 3.45.
+///
+/// For details, see https://www.sqlite.org/json1.html#jsonb
+extension JsonbExtensions on Expression<Uint8List> {
+  /// Reads this binary JSONB structure and emits its textual representation as
+  /// minified JSON.
+  ///
+  /// For details, see https://www.sqlite.org/json1.html#jmini.
+  Expression<String> json() {
+    return dartCast<String>().json();
+  }
+
+  /// Assuming that `this` is an expression evaluating to a binary JSONB array,
+  /// returns the length of the array.
+  ///
+  /// See [JsonExtensions.jsonArrayLength] for more details and
+  /// https://www.sqlite.org/json1.html#jsonb for details on jsonb.
+  Expression<int> jsonArrayLength([String? path]) {
+    // the function accepts both formats, and this way we avoid some duplicate
+    // code.
+    return dartCast<String>().jsonArrayLength(path);
+  }
+
+  /// Assuming that `this` is an expression evaluating to a binary JSONB object
+  /// or array, extracts the part of the structure identified by [path].
+  ///
+  /// For more details, see [JsonExtensions.jsonExtract] or
+  /// https://www.sqlite.org/json1.html#jex.
+  Expression<T> jsonExtract<T extends Object>(String path) {
+    return dartCast<String>().jsonExtract(path);
+  }
+
+  /// Calls the `json_each` table-valued function on `this` binary JSON buffer,
+  /// optionally using [path] as the root path.
+  ///
+  /// See [JsonTableFunction] and [JsonExtensions.jsonEach] for more details.
+  JsonTableFunction jsonEach(DatabaseConnectionUser database, [String? path]) {
+    return dartCast<String>().jsonEach(database, path);
+  }
+
+  /// Calls the `json_tree` table-valued function on `this` binary JSON buffer,
+  /// optionally using [path] as the root path.
+  ///
+  /// See [JsonTableFunction] and [JsonExtensions.jsonTree] for more details.
+  JsonTableFunction jsonTree(DatabaseConnectionUser database, [String? path]) {
+    return dartCast<String>().jsonTree(database, path);
   }
 }
 

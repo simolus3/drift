@@ -70,9 +70,38 @@ void main() {
 
     expect(rows, [
       (DriftAny('bar'), 0),
-      (DriftAny('one'), 4),
-      (DriftAny('two'), 4),
-      (DriftAny('three'), 4),
+      (DriftAny('one'), 10),
+      (DriftAny('two'), 10),
+      (DriftAny('three'), 10),
     ]);
+  });
+
+  group('jsonb', () {
+    setUp(() async {
+      await db.categories
+          .insertOne(CategoriesCompanion.insert(description: '_'));
+    });
+
+    Expression<Uint8List> jsonb(Object? dart) {
+      return Variable(json.encode(dart)).jsonb();
+    }
+
+    Future<T?> eval<T extends Object>(Expression<T> expr) {
+      final query = db.selectOnly(db.categories)..addColumns([expr]);
+      return query.getSingle().then((row) => row.read(expr));
+    }
+
+    test('json', () async {
+      expect(await eval(jsonb([1, 2, 3]).json()), '[1,2,3]');
+    });
+
+    test('jsonArrayLength', () async {
+      expect(await eval(jsonb([1, 2, 3]).jsonArrayLength()), 3);
+    });
+
+    test('jsonExtract', () async {
+      expect(
+          await eval(jsonb(jsonObject).jsonExtract<String>(r'$.foo')), 'bar');
+    });
   });
 }
