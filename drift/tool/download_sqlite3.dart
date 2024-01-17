@@ -39,7 +39,7 @@ Future<void> main(List<String> args) async {
   // Much easier to just download precompiled builds.
   if (Platform.isWindows) {
     const windowsUri =
-        'https://www.sqlite.org/$_year/sqlite-dll-win64-x64-$_version.zip';
+        'https://www.sqlite.org/$_year/sqlite-dll-win-x64-$_version.zip';
     final sqlite3Zip = p.join(temporaryDirPath, 'sqlite3.zip');
     final client = Client();
     final response = await client.send(Request('GET', Uri.parse(windowsUri)));
