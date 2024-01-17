@@ -1,3 +1,7 @@
+## 1.1.0
+
+- Add `PgTypes.timestampWithTimezone`.
+
 ## 1.0.0
 
 - __Breaking__: The interval type now expects `Interval` types from postgres

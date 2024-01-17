@@ -49,6 +49,13 @@ final class PgTypes {
     PgDate.fromDateTime,
   );
 
+  /// The `timestamp with time zone` type in Postgres.
+  static const CustomSqlType<PgDateTime> timestampWithTimezone = DateType(
+    pg.Type.timestampWithTimezone,
+    'timestamp with time zone',
+    PgDateTime.new,
+  );
+
   /// The `timestamp without time zone` type in Postgres.
   static const CustomSqlType<PgDateTime> timestampNoTimezone = DateType(
     pg.Type.timestampWithoutTimezone,
