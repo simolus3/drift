@@ -23,7 +23,7 @@ void main() {
     final writer = Writer(
       options,
       generationOptions: GenerationOptions(
-        imports: ImportManagerForPartFiles(),
+        imports: NullImportManager(),
       ),
     );
     QueryWriter(writer.child())

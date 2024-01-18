@@ -161,7 +161,7 @@ class _DriftBuildRun {
       return;
     }
 
-    _createWriter();
+    await _createWriter();
     if (mode.isMonolithic) {
       await _generateMonolithic(fileResult);
     } else {
@@ -394,10 +394,10 @@ class _DriftBuildRun {
     }
   }
 
-  void _createWriter() {
+  Future<void> _createWriter() async {
     if (mode.isMonolithic) {
       final generationOptions = GenerationOptions(
-        imports: ImportManagerForPartFiles(),
+        imports: ImportManagerForPartFiles(await buildStep.inputLibrary),
       );
       writer = Writer(options, generationOptions: generationOptions);
     } else {

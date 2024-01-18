@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:path/path.dart' show url;
 
 import '../utils/string_escaper.dart';
@@ -8,9 +9,41 @@ abstract class ImportManager {
 }
 
 class ImportManagerForPartFiles extends ImportManager {
+  final LibraryElement mainLibrary;
+  final Map<String, Map<String, Element>> _namedImports = {};
+
+  ImportManagerForPartFiles(this.mainLibrary) {
+    for (final import in mainLibrary.libraryImports) {
+      if (import.prefix case ImportElementPrefix prefix) {
+        // Not using import.namespace here because that contains the prefix
+        // everywhere. We want to look up the prefix from the raw name.
+        final library = import.importedLibrary;
+        if (library != null) {
+          _namedImports[prefix.element.name] =
+              library.exportNamespace.definedNames;
+        }
+      }
+    }
+  }
+
   @override
   String? prefixFor(Uri definitionUri, String elementName) {
-    return null; // todo: Find import alias from existing imports?
+    // Part files can't add their own imports, so try to find the element in an
+    // existing import.
+    for (final MapEntry(:key, :value) in _namedImports.entries) {
+      if (value.containsKey(elementName)) {
+        return key;
+      }
+    }
+
+    return null;
+  }
+}
+
+class NullImportManager extends ImportManager {
+  @override
+  String? prefixFor(Uri definitionUri, String elementName) {
+    return null;
   }
 }
 

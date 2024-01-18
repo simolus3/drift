@@ -101,7 +101,7 @@ class GenerateUtilsCommand extends Command {
         forSchema: version,
         writeCompanions: companions,
         writeDataClasses: dataClasses,
-        imports: ImportManagerForPartFiles(),
+        imports: NullImportManager(),
       ),
     );
     final file = File(p.join(output.path, _filenameForVersion(version)));

@@ -108,7 +108,7 @@ class Database {}
         forSchema: 1,
         writeCompanions: true,
         writeDataClasses: true,
-        imports: ImportManagerForPartFiles(),
+        imports: NullImportManager(),
       ),
     );
 

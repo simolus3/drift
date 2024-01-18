@@ -34,6 +34,43 @@ CREATE INDEX b_idx /* comment should be stripped */ ON b (foo, upper(foo));
     }, result.dartOutputs, result.writer);
   });
 
+  test('keep import aliases', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': r'''
+import 'package:drift/drift.dart' as drift;
+import 'tables.dart' as tables;
+
+@drift.DriftDatabase(tables: [tables.Texts])
+class MyDatabase extends _$MyDatabase {}
+''',
+        'a|lib/tables.dart': '''
+import 'package:drift/drift.dart';
+
+class Texts extends Table {
+  TextColumn get content => text()();
+}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/main.drift.dart': decodedMatches(
+        allOf(
+          contains(
+            r'class $TextsTable extends tables.Texts with '
+            r'drift.TableInfo<$TextsTable, Text>',
+          ),
+          contains(
+            'class Text extends drift.DataClass implements '
+            'drift.Insertable<Text>',
+          ),
+        ),
+      ),
+    }, result.dartOutputs, result.writer);
+  });
+
   test('warns about errors in imports', () async {
     final logger = Logger.detached('build');
     final logs = logger.onRecord.map((e) => e.message).toList();
