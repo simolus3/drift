@@ -325,7 +325,7 @@ AppliedTypeConverter? readTypeConverter(
           "potentially map to `null` which can't be stored in the database.");
     } else if (!canBeSkippedForNulls) {
       final alternative = appliesToJsonToo
-          ? 'JsonTypeConverter.asNullable'
+          ? 'JsonTypeConverter2.asNullable'
           : 'NullAwareTypeConverter.wrap';
 
       reportError('This column is nullable, but the type converter has a non-'
