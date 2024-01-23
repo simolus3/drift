@@ -157,31 +157,29 @@ class _BoundArguments {
   final List<Type> types;
   final List<TypedValue> parameters;
 
-  _BoundArguments(this.types, this.parameters);
+  _BoundArguments(this.parameters)
+      : types = parameters.map((p) => p.type).toList(growable: false);
 
   factory _BoundArguments.ofDartArgs(List<Object?> args) {
-    final types = <Type>[];
-    final parameters = <TypedValue>[];
+    final parameters = List<TypedValue>.generate(
+      args.length,
+      (i) {
+        final value = args[i];
+        return switch (value) {
+          TypedValue() => value,
+          null => TypedValue(Type.text, null),
+          int() || BigInt() => TypedValue(Type.bigInteger, value),
+          String() => TypedValue(Type.text, value),
+          bool() => TypedValue(Type.boolean, value),
+          double() => TypedValue(Type.double, value),
+          List<int>() => TypedValue(Type.byteArray, value),
+          _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
+        };
+      },
+      growable: false,
+    );
 
-    void add(TypedValue param) {
-      types.add(param.type);
-      parameters.add(param);
-    }
-
-    for (final value in args) {
-      add(switch (value) {
-        TypedValue() => value,
-        null => TypedValue(Type.text, null),
-        int() || BigInt() => TypedValue(Type.bigInteger, value),
-        String() => TypedValue(Type.text, value),
-        bool() => TypedValue(Type.boolean, value),
-        double() => TypedValue(Type.double, value),
-        List<int>() => TypedValue(Type.byteArray, value),
-        _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
-      });
-    }
-
-    return _BoundArguments(types, parameters);
+    return _BoundArguments(parameters);
   }
 }
 
