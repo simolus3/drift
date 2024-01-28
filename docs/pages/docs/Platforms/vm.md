@@ -106,6 +106,8 @@ LazyDatabase(() async {
 });
 ```
 
+Using existing databases is explained in more detail in [this example]({{ '../Examples/existing_databases.md' | pageUrl }}).
+
 ## Used compile options on Android
 
 On Android, iOS and macOs, depending on `sqlite3_flutter_libs` will include a custom build of sqlite instead of

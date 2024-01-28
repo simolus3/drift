@@ -89,6 +89,16 @@ class MyDatabase extends _$MyDatabase {
   // ...
 ```
 
+### Additional considerations for WAL
+
+When enabling [write-ahead logging](https://www.sqlite.org/wal.html), sqlite3 won't immediately
+store all writes in the main database file. Instead, additional `-wal` and `-shm` files are
+created to append new writes that are then periodically synced into the main database file.
+
+Restoring a WAL database requires copying the `-wal` file as well.
+When overwriting an existing WAL database on the device with a database using a different
+journaling mode, the `-wal` file should be deleted too.
+
 ## Exporting a database
 
 To export a sqlite3 database into a file, you can use the `VACUUM INTO` statement.
