@@ -1,0 +1,23 @@
+name: server
+publish_to: none
+
+environment:
+  sdk: ^3.2.5
+
+dependencies:
+  args: ^2.4.0
+  drift: ^2.15.0
+  drift_postgres: ^1.1.0
+  shelf: ^1.4.0
+  shelf_router: ^1.1.0
+
+  shared:
+    path: ../shared/
+  postgres: ^3.0.8
+
+dev_dependencies:
+  build_runner: ^2.4.8
+  http: ^1.1.0
+  lints: ^2.1.0
+  test: ^1.24.0
+  drift_dev: ^2.15.0

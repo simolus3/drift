@@ -7,6 +7,7 @@ This collection of examples demonstrates how to use some advanced drift features
 - `migrations_example`: Example showing to how to generate test utilities to verify schema migration.
 - `modular`: Example using drift's upcoming modular generation mode.
 - `with_built_value`: Configure `build_runner` so that drift-generated classes can be used by `build_runner`.
+- `multi_package`: This example shows how to share drift definitions between packages.
 
 These two examples exist to highlight a feature of `package:drift/web.dart` and `package:drift/web/workers.dart`.
 However, the setup shown here is now a core drift feature thanks to `WasmDatabase.open`, which means that this

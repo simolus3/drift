@@ -26,6 +26,8 @@ drift features:
 - The [migration] example makes use of advanced schema migrations and shows how
   to test migrations between different database schemas by using drift's
   [dedicated tooling][migration tooling] for this purpose.
+- There's an example showing how to share drift database definitions between a
+  [server and a client][multi_package] in different packages.
 - [Another example][with_built_value] shows how to use drift-generated code in
   other builders (here, `built_value`).
 
@@ -53,3 +55,5 @@ Additional patterns are also shown and explained on this website:
 [migration]: https://github.com/simolus3/drift/tree/develop/examples/migrations_example
 [migration tooling]: {{ '../Migrations/tests.md#verifying-migrations' | pageUrl }}
 [with_built_value]: https://github.com/simolus3/drift/tree/develop/examples/with_built_value
+[multi_package]: https://github.com/simolus3/drift/tree/develop/examples/multi_package
+

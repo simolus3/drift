@@ -1,0 +1,26 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        # disable drift's default builder, we're using the modular setup
+        # instead.
+        enabled: false
+
+      # Instead, enable drift_dev:analyzer and drift_dev:modular manually:
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          # Drift build options, as per https://drift.simonbinder.eu/docs/advanced-features/builder_options/
+          store_date_time_values_as_text: true
+          named_parameters: true
+          sql:
+            # The server itself will only support postgres
+            dialects:
+              - postgres
+            options:
+              version: "3.45"
+              modules: [fts5]
+      drift_dev:modular:
+        enabled: true
+        # We use yaml anchors to give the two builders the same options
+        options: *options

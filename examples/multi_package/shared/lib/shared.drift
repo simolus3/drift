@@ -1,0 +1,11 @@
+-- Imports in drift files are transitive, so this is the drift equivalent
+-- of exporting files in `src/`.
+-- If we only had Dart-defined tables we wanted to expose, a Dart file exporting
+-- `users.dart` would have worked as well.
+
+import 'src/posts.drift';
+import 'src/users.dart';
+
+allPosts: SELECT posts.**, author.** FROM posts
+  INNER JOIN users AS author ON author.id = posts.author
+  LIMIT $limit;

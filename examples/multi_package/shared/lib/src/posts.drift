@@ -1,0 +1,6 @@
+import 'users.dart';
+
+CREATE TABLE posts (
+  author INTEGER NOT NULL REFERENCES users (id),
+  content TEXT
+);
