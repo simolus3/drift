@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:drift/web.dart';
+import 'package:drift_docs/src/external_apis.dart';
 import 'package:sqlite3/wasm.dart';
 
 typedef _$MyWebDatabase = GeneratedDatabase;
@@ -43,6 +44,25 @@ class MyWebDatabase extends _$MyWebDatabase {
 // #docregion connect
 }
 // #enddocregion connect
+
+DatabaseConnection connectWithExisting() {
+  // #docregion existing
+  return DatabaseConnection.delayed(Future(() async {
+    final result = await WasmDatabase.open(
+      databaseName: 'my_app_db', // prefer to only use valid identifiers here
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
+      initializeDatabase: () async {
+        final data = await rootBundle.load('my_database');
+        return data.buffer.asUint8List();
+      },
+    );
+
+    // ...
+    return result.resolvedExecutor;
+  }));
+  // #enddocregion existing
+}
 
 // #docregion migrate-wasm
 // If you've previously opened your database like this

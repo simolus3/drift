@@ -217,6 +217,18 @@ export 'unsupported.dart'
 
 A ready example of this construct can also be found [here](https://github.com/simolus3/drift/blob/develop/examples/app/lib/database/connection/connection.dart).
 
+## Using existing databases
+
+You can use existing database with Drift on the web by importing the `initializeDatabase`
+function on `WasmDatabase.open`.
+This function will be called when attempting to open a database that doesn't exist yet,
+allowing the initial sqlite3 file to be provided instead:
+
+{% include "blocks/snippet" snippets = snippets name = "existing" %}
+
+Please be aware that this only works for the default journal mode, WAL is not supported
+on the web and WAL databases can't be imported with `initializeDatabase` either.
+
 ## Examples
 
 The drift repository contains a two small web applications using drift on the web:
