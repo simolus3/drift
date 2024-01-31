@@ -231,6 +231,20 @@ void main() {
       )),
     );
   });
+
+  test('prevents database access after failed migrations', () async {
+    final db = TodoDb(NativeDatabase.memory());
+    final exception = 'exception';
+    db.migration = MigrationStrategy(onCreate: (_) async => throw exception);
+
+    await expectLater(db.customSelect('SELECT 1').get(), throwsA(exception));
+
+    // The database should now be unusable.
+    db.migration = MigrationStrategy();
+    await expectLater(db.customSelect('SELECT 1').get(), throwsA(exception));
+
+    await db.close();
+  });
 }
 
 class _FakeExecutorUser extends QueryExecutorUser {

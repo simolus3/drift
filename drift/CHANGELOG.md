@@ -1,3 +1,9 @@
+## 2.16.0-dev
+
+- When a migration throws, the database  will now block subsequent operations
+  instead of potentially allowing them to operate on a database in an
+  inconsistent state.
+
 ## 2.15.0
 
 - Methods in the query builder API now respect custom types.

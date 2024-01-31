@@ -386,6 +386,7 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
 class DelegatedDatabase extends _BaseExecutor {
   /// The [DatabaseDelegate] to send queries to.
   final DatabaseDelegate delegate;
+  (Object, StackTrace)? _migrationError;
 
   @override
   bool logStatements;
@@ -415,6 +416,12 @@ class DelegatedDatabase extends _BaseExecutor {
             'database connection and open that instead.'));
       }
 
+      // If we have been unable to run migrations, the database is likely in an
+      // inconsistent state and we should prevent subsequent operations on it.
+      if (_migrationError case (var err, var trace)?) {
+        Error.throwWithStackTrace(err, trace);
+      }
+
       final alreadyOpen = await delegate.isOpen;
       if (alreadyOpen) {
         _ensureOpenCalled = true;
@@ -423,8 +430,14 @@ class DelegatedDatabase extends _BaseExecutor {
 
       await delegate.open(user);
       _ensureOpenCalled = true;
-      await _runMigrations(user);
-      return true;
+
+      try {
+        await _runMigrations(user);
+        return true;
+      } catch (e, s) {
+        _migrationError = (e, s);
+        rethrow;
+      }
     });
   }
 
