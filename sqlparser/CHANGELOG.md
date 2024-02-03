@@ -1,3 +1,8 @@
+## 0.34.1-dev
+
+- Allow selecting from virtual tables using the table-valued function
+  syntax.
+
 ## 0.34.0
 
 - Fix explicit `NULL` column constraints being dropped when converting nodes

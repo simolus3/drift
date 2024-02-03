@@ -335,7 +335,17 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
       isTableFunction: (function) {
         final handler = context
             .engineOptions.addedTableFunctions[function.name.toLowerCase()];
-        final resolved = handler?.resolveTableValued(context, function);
+        var resolved = handler?.resolveTableValued(context, function);
+
+        // Virtual tables can also be used as table-valued functions, so try to
+        // resolve a table otherwise.
+        if (resolved == null) {
+          final table = scope.resolveResultSetToAdd(function.name);
+          if (table is Table && table.isVirtual) {
+            resolved =
+                function.as != null ? TableAlias(table, function.as!) : table;
+          }
+        }
 
         markAvailableResultSet(
             function, resolved ?? function, function.as ?? function.name);

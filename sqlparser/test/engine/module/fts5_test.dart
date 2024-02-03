@@ -1,6 +1,8 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import '../../analysis/data.dart';
+
 final _fts5Options = EngineOptions(enabledExtensions: const [Fts5Extension()]);
 
 void main() {
@@ -293,5 +295,19 @@ void main() {
 
     expect(columns, isNot(anyElement((Column c) => c.name == 'rank')));
     expect(columns, isNot(anyElement((Column c) => c.name == 'foo')));
+  });
+
+  test('can select via table-valued function syntax', () {
+    final engine = SqlEngine(_fts5Options)..registerTableFromSql('''
+      CREATE VIRTUAL TABLE email USING fts5 (sender, title, body);
+    ''');
+
+    final result = engine.analyze("SELECT * FROM email('fts5')");
+    expect(result.errors, isEmpty);
+
+    final rootNode = result.root as SelectStatement;
+    for (final column in rootNode.resolvedColumns!) {
+      expect(column.source, isA<TableColumn>());
+    }
   });
 }
