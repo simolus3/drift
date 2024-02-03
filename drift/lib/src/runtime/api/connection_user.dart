@@ -57,7 +57,7 @@ abstract class DatabaseConnectionUser {
   /// Creates and auto-updating stream from the given select statement. This
   /// method should not be used directly.
   Stream<List<Map<String, Object?>>> createStream(QueryStreamFetcher stmt) =>
-      streamQueries.registerStream(stmt);
+      resolvedEngine.streamQueries.registerStream(stmt);
 
   /// Creates a copy of the table with an alias so that it can be used in the
   /// same query more than once.
@@ -165,7 +165,7 @@ abstract class DatabaseConnectionUser {
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   InsertStatement<T, D> into<T extends Table, D>(TableInfo<T, D> table) {
-    return InsertStatement<T, D>(resolvedEngine, table);
+    return InsertStatement<T, D>(this, table);
   }
 
   /// Starts an [UpdateStatement] for the given table. You can use that
@@ -173,7 +173,7 @@ abstract class DatabaseConnectionUser {
   /// clause on that table and then use [UpdateStatement.write].
   UpdateStatement<Tbl, R> update<Tbl extends Table, R>(
           TableInfo<Tbl, R> table) =>
-      UpdateStatement(resolvedEngine, table);
+      UpdateStatement(this, table);
 
   /// Starts a query on the given table.
   ///
@@ -202,8 +202,7 @@ abstract class DatabaseConnectionUser {
   SimpleSelectStatement<T, R> select<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
       {bool distinct = false}) {
-    return SimpleSelectStatement<T, R>(resolvedEngine, table,
-        distinct: distinct);
+    return SimpleSelectStatement<T, R>(this, table, distinct: distinct);
   }
 
   /// Starts a complex statement on [table] that doesn't necessarily use all of
@@ -239,8 +238,7 @@ abstract class DatabaseConnectionUser {
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
       {bool distinct = false}) {
-    return JoinedSelectStatement<T, R>(
-        resolvedEngine, table, [], distinct, false, false);
+    return JoinedSelectStatement<T, R>(this, table, [], distinct, false, false);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
@@ -248,7 +246,7 @@ abstract class DatabaseConnectionUser {
   /// See the [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   /// for more details and example on how delete statements work.
   DeleteStatement<T, D> delete<T extends Table, D>(TableInfo<T, D> table) {
-    return DeleteStatement<T, D>(resolvedEngine, table);
+    return DeleteStatement<T, D>(this, table);
   }
 
   /// Executes a custom delete or update statement and returns the amount of
@@ -360,7 +358,7 @@ abstract class DatabaseConnectionUser {
   Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<ResultSetImplementation> readsFrom = const {}}) {
-    return CustomSelectStatement(query, variables, readsFrom, resolvedEngine);
+    return CustomSelectStatement(query, variables, readsFrom, this);
   }
 
   /// Creates a custom select statement from the given sql [query]. To run the
@@ -616,5 +614,10 @@ extension RunWithEngine on DatabaseConnectionUser {
   Future<T> runConnectionZoned<T>(
       DatabaseConnectionUser user, Future<T> Function() calculation) {
     return _runConnectionZoned(user, calculation);
+  }
+
+  Future<T> withCurrentExecutor<T>(Future<T> Function(QueryExecutor e) run) {
+    final engine = resolvedEngine;
+    return engine.doWhenOpened(run);
   }
 }

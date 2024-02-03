@@ -48,7 +48,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
   }
 
   Future<List<Map<String, Object?>>> _executeRaw(List<Object?> mappedArgs) {
-    return _db.doWhenOpened((e) => e.runSelect(query, mappedArgs));
+    return _db.withCurrentExecutor((e) => e.runSelect(query, mappedArgs));
   }
 
   List<QueryRow> _mapDbResponse(List<Map<String, Object?>> rows) {

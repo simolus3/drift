@@ -70,7 +70,7 @@ class InsertStatement<T extends Table, D> {
     final ctx = createContext(entity, mode ?? InsertMode.insert,
         onConflict: onConflict);
 
-    return await database.doWhenOpened((e) async {
+    return await database.withCurrentExecutor((e) async {
       final id = await e.runInsert(ctx.sql, ctx.boundVariables);
       database
           .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
@@ -131,7 +131,7 @@ class InsertStatement<T extends Table, D> {
       ..write(' FROM $sourceCte');
     _writeOnConflict(ctx, mode, null, onConflict);
 
-    return await database.doWhenOpened((e) async {
+    return await database.withCurrentExecutor((e) async {
       await e.runInsert(ctx.sql, ctx.boundVariables);
       database
           .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
@@ -170,7 +170,7 @@ class InsertStatement<T extends Table, D> {
     final ctx = createContext(entity, mode ?? InsertMode.insert,
         onConflict: onConflict, returning: true);
 
-    return database.doWhenOpened((e) async {
+    return database.withCurrentExecutor((e) async {
       final result = await e.runSelect(ctx.sql, ctx.boundVariables);
       if (result.isNotEmpty) {
         database.notifyUpdates(

@@ -261,7 +261,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   }
 
   Future<List<Map<String, Object?>>> _getRaw(GenerationContext ctx) {
-    return ctx.executor!.doWhenOpened((e) async {
+    return database.withCurrentExecutor((e) async {
       try {
         return await e.runSelect(ctx.sql, ctx.boundVariables);
       } catch (e, s) {

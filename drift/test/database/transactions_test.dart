@@ -255,4 +255,71 @@ void main() {
           .having((e) => e.exception, 'exception', rollbackException)),
     );
   });
+
+  group('statements run in correct zone', () {
+    // Statements used to run in the executor of the zone that created them, but
+    // they should actually run in the zone that calls the async method starting
+    // the database operation (https://github.com/simolus3/drift/issues/2873).
+
+    test('select', () async {
+      when(executor.runSelect(any, any))
+          .thenAnswer((_) => Future.error('should run select in transaction'));
+
+      final simpleQuery = db.users.select();
+      final joinedQuery = db.selectOnly(db.users)..addColumns([db.users.id]);
+      final customQuery = db.customSelect('SELECT 1');
+
+      await db.transaction(() async {
+        expect(await simpleQuery.get(), isEmpty);
+        expect(await joinedQuery.get(), isEmpty);
+        expect(await customQuery.get(), isEmpty);
+      });
+    });
+
+    test('update', () async {
+      when(executor.runUpdate(any, any))
+          .thenAnswer((_) => Future.error('should run update in transaction'));
+
+      final stmt = db.update(db.users);
+      await db.transaction(() async {
+        await stmt.write(UsersCompanion(isAwesome: Value(true)));
+      });
+
+      verify(executor.transactions
+          .runUpdate('UPDATE "users" SET "is_awesome" = ?;', [1]));
+    });
+
+    test('delete', () async {
+      when(executor.runDelete(any, any))
+          .thenAnswer((_) => Future.error('should run delete in transaction'));
+
+      final stmt = db.delete(db.users);
+      await db.transaction(() async {
+        await stmt.go();
+      });
+
+      verify(executor.transactions.runDelete('DELETE FROM "users";', []));
+    });
+
+    test('insert', () async {
+      when(executor.runSelect(any, any))
+          .thenAnswer((_) => Future.error('should run select in transaction'));
+      when(executor.runInsert(any, any))
+          .thenAnswer((_) => Future.error('should run delete in transaction'));
+
+      final stmt = db.into(db.categories);
+
+      await db.transaction(() async {
+        await stmt.insert(CategoriesCompanion.insert(description: 'test'));
+        await stmt.insertReturningOrNull(
+            CategoriesCompanion.insert(description: 'test2'));
+      });
+
+      verify(executor.transactions
+          .runInsert('INSERT INTO "categories" ("desc") VALUES (?)', ['test']));
+      verify(executor.transactions.runSelect(
+          'INSERT INTO "categories" ("desc") VALUES (?) RETURNING *',
+          ['test2']));
+    });
+  });
 }

@@ -77,7 +77,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
   }
 
   Future<List<Map<String, Object?>>> _getRaw(GenerationContext ctx) {
-    return database.doWhenOpened((e) {
+    return database.withCurrentExecutor((e) {
       return e.runSelect(ctx.sql, ctx.boundVariables);
     });
   }
