@@ -9,6 +9,7 @@ import 'package:drift/native.dart';
 import 'package:drift/src/isolate.dart';
 import 'package:drift/src/remote/communication.dart';
 import 'package:mockito/mockito.dart';
+import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 
 import 'generated/todos.dart';
@@ -110,7 +111,7 @@ void main() {
 
       // The stack trace of remote exceptions should point towards the actual
       // source making the faulty call.
-      expect(s.toString(), contains('main.<anonymous closure>'));
+      expect(s.toString(), contains('test/isolate_test.dart'));
     }
 
     // Check that isolate is still usable
@@ -467,6 +468,56 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
       );
     }
   });
+
+  if (!serialize) {
+    test('provides complete stack traces for exceptions', () async {
+      // This functions have a name so that we can assert they show up in stack
+      // traces.
+      Future<void> faultyMigration() async {
+        await database.customStatement('invalid syntax');
+      }
+
+      database.migration = MigrationStrategy(onCreate: (m) async {
+        await faultyMigration();
+      });
+
+      try {
+        // The database is opened at the first statement, which will also run the
+        // faulty migration logic.
+        Future<void> useDatabase() async {
+          await database.customSelect('SELECT 1').get();
+        }
+
+        await useDatabase();
+        fail('Should have failed in the migration');
+      } on DriftRemoteException catch (e, s) {
+        final trace = Chain.forTrace(s);
+
+        // Innermost trace: The query failing on the remote isolate
+        expect(trace.traces, hasLength(4));
+        expect(
+            trace.traces[0].frames[0].toString(), contains('package:sqlite3/'));
+
+        // Then the next one: The migration being called in this isolate
+        expect(
+            trace.traces[1].frames,
+            contains(isA<Frame>().having(
+                (e) => e.member, 'member', contains('faultyMigration'))));
+
+        // This in turn is called by the server when trying to open the database.
+        expect(
+            trace.traces[2].frames,
+            contains(isA<Frame>().having((e) => e.member, 'member',
+                contains('_ServerDbUser.beforeOpen'))));
+
+        // Which, finally, happened because we were opening the database here.
+        expect(
+            trace.traces[3].frames,
+            contains(isA<Frame>()
+                .having((e) => e.member, 'member', contains('useDatabase'))));
+      }
+    });
+  }
 }
 
 DatabaseConnection _backgroundConnection() {

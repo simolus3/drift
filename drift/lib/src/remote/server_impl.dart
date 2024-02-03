@@ -9,7 +9,7 @@ import '../runtime/cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 
-/// The implementation of a drift server, manging remote channels to send
+/// The implementation of a drift server, managing remote channels to send
 /// database requests.
 @internal
 class ServerImplementation implements DriftServer {

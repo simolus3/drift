@@ -9,6 +9,8 @@
   `database.update` outside of a transaction and then calling
   `UpdateStatement.write` inside of a transaction will now perform the update
   inside of the transaction, instead of causing a deadlock.
+- Improve stack traces for errors happening on drift isolates (which includes
+  usages of `NativeDatabase.createInBackground`).
 
 ## 2.15.0
 
