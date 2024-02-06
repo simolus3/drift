@@ -40,6 +40,17 @@ void main() {
           generates(r'json_extract(col, ?)', [r'$.c']));
     });
 
+    test('aggregates', () {
+      expect(jsonGroupArray(column), generates('json_group_array(col)'));
+      expect(
+        jsonGroupObject({
+          Variable('foo'): column,
+          Variable('bar'): Constant(3),
+        }),
+        generates('json_group_object(?, col, ?, 3)', ['foo', 'bar']),
+      );
+    });
+
     test('jsonEach', () async {
       final db = TodoDb();
       addTearDown(db.close);
@@ -69,6 +80,17 @@ void main() {
     test('jsonExtract', () {
       expect(binary.jsonExtract(r'$.c'),
           generates(r'json_extract(bin, ?)', [r'$.c']));
+    });
+
+    test('aggregates', () {
+      expect(jsonbGroupArray(column), generates('jsonb_group_array(col)'));
+      expect(
+        jsonbGroupObject({
+          Variable('foo'): column,
+          Variable('bar'): Constant(3),
+        }),
+        generates('jsonb_group_object(?, col, ?, 3)', ['foo', 'bar']),
+      );
     });
 
     test('jsonEach', () async {

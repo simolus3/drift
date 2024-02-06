@@ -76,6 +76,70 @@ void main() {
     ]);
   });
 
+  group('aggregate', () {
+    setUp(() async {
+      await db.batch((batch) {
+        batch
+          ..insert(db.categories, CategoriesCompanion.insert(description: '_'))
+          ..insertAll(db.todosTable, [
+            TodosTableCompanion.insert(
+                title: Value('first title'),
+                content: 'entry in category',
+                category: Value(1)),
+            TodosTableCompanion.insert(content: 'not in category'),
+            TodosTableCompanion.insert(
+                title: Value('second title'),
+                content: 'another in category',
+                category: Value(1))
+          ]);
+      });
+    });
+
+    test('json_group_array', () async {
+      final query = db.select(db.categories).join([
+        leftOuterJoin(
+            db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
+      ]);
+
+      final stringArray = jsonGroupArray(db.todosTable.id);
+      final binaryArray = jsonbGroupArray(db.todosTable.id).json();
+      query
+        ..groupBy([db.categories.id])
+        ..addColumns([stringArray, binaryArray]);
+
+      final row = await query.getSingle();
+      expect(json.decode(row.read(stringArray)!), unorderedEquals([1, 3]));
+      expect(json.decode(row.read(binaryArray)!), unorderedEquals([1, 3]));
+    });
+
+    test('json_group_object', () async {
+      final query = db.select(db.categories).join([
+        leftOuterJoin(
+            db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
+      ]);
+
+      final stringObject = jsonGroupObject({
+        db.todosTable.title: db.todosTable.content,
+      });
+      final binaryObject = jsonbGroupObject({
+        db.todosTable.title: db.todosTable.content,
+      }).json();
+      query
+        ..groupBy([db.categories.id])
+        ..addColumns([stringObject, binaryObject]);
+
+      final row = await query.getSingle();
+      expect(json.decode(row.read(stringObject)!), {
+        'first title': 'entry in category',
+        'second title': 'another in category',
+      });
+      expect(json.decode(row.read(binaryObject)!), {
+        'first title': 'entry in category',
+        'second title': 'another in category',
+      });
+    });
+  });
+
   group('jsonb', () {
     setUp(() async {
       await db.categories

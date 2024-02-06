@@ -101,6 +101,132 @@ extension JsonExtensions on Expression<String> {
   }
 }
 
+/// Returns a JSON array containing the result of evaluating [value] in each row
+/// of the current group.
+///
+/// As an example, consider two tables with a one-to-many relationship between
+/// them:
+///
+/// ```dart
+/// class Emails extends Table {
+///   TextColumn get subject => text()();
+///   TextColumn get body => text()();
+///   IntColumn get folder => integer().references(Folders, #id)();
+/// }
+///
+/// class Folders extends Table {
+///   IntColumn get id => integer()();
+///   TextColumn get title => text()();
+/// }
+/// ```
+///
+/// With this schema, suppose we want to find the subject lines of every email
+/// in every folder. A join gets us all the information:
+///
+/// ```dart
+/// final query = select(folders)
+///   .join([innerJoin(emails, emails.folder.equalsExp(folders.id))]);
+/// ```
+///
+/// However, running this query would duplicate rows for `Folders` - if that
+/// table had more columns, that might not be what you want. With
+/// [jsonGroupArray], it's possible to join all subjects into a single row:
+///
+/// ```dart
+/// final subjects = jsonGroupObject(emails.subject);
+/// query
+///   ..groupBy([folders.id])
+///   ..addColumns([subjects]);
+/// ```
+///
+/// Running this query would return one row for each folder, where
+/// `row.read(subjects)` is a textual JSON representation of the subjects for
+/// all emails in that folder.
+/// This string could be turned back into a list with
+/// `(json.decode(row.read(subjects)!) as List).cast<String>()`.
+Expression<String> jsonGroupArray(Expression value) {
+  return FunctionCallExpression('json_group_array', [value]);
+}
+
+/// Returns a binary representation of a JSON array containing the result of
+/// evaluating [value] in each row of the current group.
+///
+/// See [jsonGroupArray], the variant of this function returning a textual
+/// description, for more details and an example.
+Expression<Uint8List> jsonbGroupArray(Expression value) {
+  return FunctionCallExpression('jsonb_group_array', [value]);
+}
+
+List<Expression> _groupObjectArgs(Map<Expression<String>, Expression> values) {
+  final expressions = <Expression>[];
+  for (final MapEntry(:key, :value) in values.entries) {
+    expressions.add(key);
+    expressions.add(value);
+  }
+  return expressions;
+}
+
+/// Returns a JSON object consisting of the keys and values from the provided
+/// [values] map.
+///
+/// As an example, consider this example schema to store emails:
+///
+/// ```dart
+/// class Emails extends Table {
+///   TextColumn get subject => text()();
+///   TextColumn get body => text()();
+///   IntColumn get folder => integer().references(Folders, #id)();
+/// }
+///
+/// class Folders extends Table {
+///   IntColumn get id => integer()();
+///   TextColumn get title => text()();
+/// }
+/// ```
+///
+/// Now, say you wanted to write a query finding the subject and body of every
+/// email in every folder. The resulting value might look like this:
+/// ```json
+///  {
+///    "Group array example": "Hey there, aren't you aware that email is dead?",
+///    "Re: Group array example": "It's just an example okay?"
+///  }
+/// ```
+///
+/// Again, the starting point is formed by a query joining the tables:
+///
+/// ```dart
+/// final query = select(folders)
+///   .join([innerJoin(emails, emails.folder.equalsExp(folders.id))]);
+/// ```
+///
+/// Now, a group by clause and [jsonGroupObject] can be used to collapse all
+/// joined rows from the `emails` table into a single value:
+///
+/// ```dart
+/// final subjectAndBody = jsonGroupObject({emails.subject: emails.body});
+/// query
+///   ..groupBy([folders.id])
+///   ..addColumns([subjectAndBody]);
+/// ```
+///
+/// Running this query would return one row for each folder, where
+/// `row.read(subjectAndBody)` is a textual JSON representation of a
+/// `Map<String, String>`.
+Expression<String> jsonGroupObject(Map<Expression<String>, Expression> values) {
+  return FunctionCallExpression('json_group_object', _groupObjectArgs(values));
+}
+
+/// Returns a binary representation of a JSON object consisting of the provided
+/// keys and values in the current group.
+///
+/// See [jsonGroupObject], the variant of this function returning a textual
+/// description, for more details and an example.
+Expression<Uint8List> jsonbGroupObject(
+    Map<Expression<String>, Expression> values) {
+  return FunctionCallExpression('jsonb_group_object', _groupObjectArgs(values));
+}
+
 /// Defines extensions for the binary `JSONB` format introduced in sqlite3
 /// version 3.45.
 ///
