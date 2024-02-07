@@ -2,6 +2,25 @@
 
 Drift is a reactive persistence library for Flutter and Dart, built on top of
 SQLite.
+
+## Sponsors
+
+Drift is proudly Sponsored by [Stream 💙](https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22)
+
+<p align="center">
+<table>
+    <tbody>
+        <tr>
+            <td align="center">
+                <a href="https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</p>
+
+## Features
+
 Drift is
 
 - __Flexible__: Drift lets you write queries in both SQL and Dart,
