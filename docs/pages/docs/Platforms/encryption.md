@@ -62,7 +62,7 @@ To use `sqlcipher`, add a dependency on `sqlcipher_flutter_libs`:
 
 ```yaml
 dependencies:
-  sqlcipher_flutter_libs: ^0.5.0
+  sqlcipher_flutter_libs: ^0.6.0
 ```
 
 If you already have a dependency on `sqlite3_flutter_libs`, __drop that dependency__.
@@ -77,14 +77,13 @@ of the regular `libsqlite3.so`:
 When using drift on a background database, you need to call `setupSqlCipher` on the background isolate
 as well. With `NativeDatabase.createInBackground`, which are using isolates internally, you can use
 the `setupIsolate` callback to do this - the examples on this page use this as well.
+Since `applyWorkaroundToOpenSqlCipherOnOldAndroidVersions()` invokes a platform channel, one needs
+to install a `BackgroundIsolateBinaryMessenger` on the isolate as well.
 
-On iOS and macOS, no additional setup is necessary - simply depend on `sqlcipher_flutter_libs`.
-
-On Windows and Linux, you currently have to include a version of SQLCipher manually when you distribute
-your app.
-For more information on this, you can use the documentation [here]({{ '../Platforms/index.md#bundling-sqlite-with-your-app' | pageUrl }}).
-Instead of including `sqlite3.dll` or `libsqlite3.so`, you'd include the respective versions
-of SQLCipher.
+On iOS, macOS and Windows, no additional setup is necessary - simply depend on `sqlcipher_flutter_libs`.
+For Linux builds, note that OpenSSL is linked statically by default. If you want to compile your app to use
+a dynamically-linked distribution of OpenSSL, see [this](https://github.com/simolus3/sqlite3.dart/issues/186#issuecomment-1742110933)
+issue comment.
 
 ### Using
 

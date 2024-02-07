@@ -24,6 +24,8 @@ dependencies:
     path: assets/path_provider
   sqlite3_flutter_libs:
     path: assets/sqlite3_flutter_libs
+  sqlcipher_flutter_libs:
+    path: assets/sqlcipher_flutter_libs
   # Used in examples
   rxdart: ^0.27.3
   yaml: ^3.1.1

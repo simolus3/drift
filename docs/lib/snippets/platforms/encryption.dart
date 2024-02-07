@@ -1,15 +1,16 @@
 import 'dart:io';
 import 'package:drift/native.dart';
+import 'package:drift_docs/snippets/isolates.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 // #docregion setup
-import 'dart:ffi';
 import 'package:sqlite3/open.dart';
+import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 
 // call this method before using drift
-void setupSqlCipher() {
-  open.overrideFor(
-      OperatingSystem.android, () => DynamicLibrary.open('libsqlcipher.so'));
+Future<void> setupSqlCipher() async {
+  await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
+  open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
 }
 // #enddocregion setup
 
@@ -23,9 +24,13 @@ void databases() {
   final myDatabaseFile = File('/dev/null');
 
   // #docregion encrypted1
+  final token = RootIsolateToken.instance;
   NativeDatabase.createInBackground(
     myDatabaseFile,
-    isolateSetup: setupSqlCipher,
+    isolateSetup: () async {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+      await setupSqlCipher();
+    },
     setup: (rawDb) {
       rawDb.execute("PRAGMA key = 'passphrase';");
     },
@@ -35,7 +40,10 @@ void databases() {
   // #docregion encrypted2
   NativeDatabase.createInBackground(
     myDatabaseFile,
-    isolateSetup: setupSqlCipher,
+    isolateSetup: () async {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+      await setupSqlCipher();
+    },
     setup: (rawDb) {
       assert(_debugCheckHasCipher(rawDb));
       rawDb.execute("PRAGMA key = 'passphrase';");
