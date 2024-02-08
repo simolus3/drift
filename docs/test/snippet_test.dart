@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:drift_docs/snippets/dart_api/datetime_conversion.dart';
 import 'package:drift_docs/snippets/log_interceptor.dart';
 import 'package:drift_docs/snippets/modular/schema_inspection.dart';
+import 'package:sqlite3/sqlite3.dart' show sqlite3;
 import 'package:test/test.dart';
 
 import 'generated/database.dart';
@@ -44,9 +45,10 @@ void main() {
 
     test('text to unix timestamp', () async {
       // First, create all tables using text as datetime
-      final db = Database(DatabaseConnection(NativeDatabase.memory()));
+      final nativeDatabase = sqlite3.openInMemory();
+      var db = Database(DatabaseConnection(NativeDatabase.opened(nativeDatabase,
+          closeUnderlyingOnClose: false)));
       db.options = const DriftDatabaseOptions(storeDateTimeAsText: true);
-      addTearDown(db.close);
 
       final time = DateTime.fromMillisecondsSinceEpoch(
           1000 * (DateTime.now().millisecondsSinceEpoch ~/ 1000));
@@ -56,6 +58,11 @@ void main() {
           UsersCompanion.insert(name: 'name', createdAt: Value(time)));
       await db.users.insertOne(
           UsersCompanion.insert(name: 'name2', createdAt: Value(null)));
+      await db.close();
+
+      db = Database(DatabaseConnection(
+          NativeDatabase.opened(nativeDatabase, closeUnderlyingOnClose: true)));
+      addTearDown(db.close);
 
       // Next, migrate back to unix timestamps
       db.options = const DriftDatabaseOptions(storeDateTimeAsText: false);
@@ -73,10 +80,11 @@ void main() {
     });
 
     test('text to unix timestamp, support old sqlite', () async {
-      // First, create all tables using text as datetime
-      final db = Database(DatabaseConnection(NativeDatabase.memory()));
+      // First, create all tables using datetime as text
+      final nativeDatabase = sqlite3.openInMemory();
+      var db = Database(DatabaseConnection(NativeDatabase.opened(nativeDatabase,
+          closeUnderlyingOnClose: false)));
       db.options = const DriftDatabaseOptions(storeDateTimeAsText: true);
-      addTearDown(db.close);
 
       final time = DateTime.fromMillisecondsSinceEpoch(
           1000 * (DateTime.now().millisecondsSinceEpoch ~/ 1000));
@@ -86,6 +94,11 @@ void main() {
           UsersCompanion.insert(name: 'name', createdAt: Value(time)));
       await db.users.insertOne(
           UsersCompanion.insert(name: 'name2', createdAt: Value(null)));
+      await db.close();
+
+      db = Database(DatabaseConnection(
+          NativeDatabase.opened(nativeDatabase, closeUnderlyingOnClose: true)));
+      addTearDown(db.close);
 
       // Next, migrate back to unix timestamps
       db.options = const DriftDatabaseOptions(storeDateTimeAsText: false);
