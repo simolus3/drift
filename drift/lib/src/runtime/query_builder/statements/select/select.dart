@@ -87,8 +87,8 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     return table.map(row);
   }
 
-  Future<List<D>> _mapResponse(List<Map<String, Object?>> rows) {
-    return rows.mapAsyncAndAwait(_mapRow);
+  FutureOr<List<D>> _mapResponse(List<Map<String, Object?>> rows) {
+    return rows.mapAsyncAndAwait(table.map);
   }
 
   /// Creates a select statement that operates on more than one table by

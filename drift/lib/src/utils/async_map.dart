@@ -15,14 +15,14 @@ extension AsyncMapPerSubscription<S> on Stream<S> {
   /// controller. Since we need the behavior of `asyncMap` internally though, we
   /// re-implement it in a simple variant that transforms each subscription
   /// individually.
-  Stream<T> asyncMapPerSubscription<T>(Future<T> Function(S) mapper) {
+  Stream<T> asyncMapPerSubscription<T>(FutureOr<T> Function(S) mapper) {
     return Stream.multi(
       (listener) {
         late StreamSubscription<S> subscription;
 
         void onData(S original) {
           subscription.pause();
-          mapper(original)
+          Future.sync(() => mapper(original))
               .then(listener.addSync, onError: listener.addErrorSync)
               .whenComplete(subscription.resume);
         }
