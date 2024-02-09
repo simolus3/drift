@@ -80,7 +80,7 @@ final class PgTypes {
 ///
 /// We can't use [DateTime] directly because drift expects to store them as
 /// unix timestamp or text.
-final class PgDateTime implements PgTimeValue {
+final class PgDateTime implements PgTimeValue, Comparable<PgDateTime> {
   final DateTime dateTime;
 
   PgDateTime(this.dateTime);
@@ -98,11 +98,16 @@ final class PgDateTime implements PgTimeValue {
 
   @override
   String toString() => dateTime.toString();
+
+  @override
+  int compareTo(PgDateTime other) {
+    return dateTime.compareTo(other.dateTime);
+  }
 }
 
 /// A wrapper for the Postgres `date` type, which stores dates (year, month,
 /// days).
-final class PgDate implements PgTimeValue {
+final class PgDate implements PgTimeValue, Comparable<PgDate> {
   final int year, month, day;
   final DateTime _dateTime;
 
@@ -133,6 +138,11 @@ final class PgDate implements PgTimeValue {
   @override
   DateTime toDateTime() {
     return _dateTime;
+  }
+
+  @override
+  int compareTo(PgDate other) {
+    return _dateTime.compareTo(other._dateTime);
   }
 }
 

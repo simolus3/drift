@@ -20,22 +20,22 @@ void main() {
     await executor.clearDatabaseAndClose(database);
   });
 
+  Future<T> eval<T extends Object>(Expression<T> expression) async {
+    final query = database.selectOnly(database.users)..addColumns([expression]);
+    final row = await query.getSingle();
+    return row.read(expression)!;
+  }
+
   group('custom types pass through', () {
     void testWith<T extends Object>(CustomSqlType<T> type, T value) {
       test('with variable', () async {
         final variable = Variable(value, type);
-        final query = database.selectOnly(database.users)
-          ..addColumns([variable]);
-        final row = await query.getSingle();
-        expect(row.read(variable), value);
+        expect(await eval(variable), value);
       });
 
       test('with constant', () async {
         final constant = Constant(value, type);
-        final query = database.selectOnly(database.users)
-          ..addColumns([constant]);
-        final row = await query.getSingle();
-        expect(row.read(constant), value);
+        expect(await eval(constant), value);
       });
     }
 
@@ -58,5 +58,28 @@ void main() {
       () => testWith(PgTypes.timestampNoTimezone,
           PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0))),
     );
+  });
+
+  test('compare datetimes', () async {
+    final time = DateTime.now();
+    final before = Variable(
+        PgDateTime(time.subtract(const Duration(minutes: 10))),
+        PgTypes.timestampNoTimezone);
+    final now = Variable(PgDateTime(time), PgTypes.timestampNoTimezone);
+    final after = Variable(PgDateTime(time.add(const Duration(days: 2))),
+        PgTypes.timestampNoTimezone);
+
+    expect(await eval(before.isSmallerOrEqual(after)), isTrue);
+    expect(await eval(now.isBetween(before, after)), isTrue);
+  });
+
+  test('compare dates', () async {
+    final moonLanding = PgDate(year: 1969, month: 7, day: 20);
+    final berlinWallFell = PgDate(year: 1989, month: 11, day: 9);
+
+    expect(
+        await eval(Variable(berlinWallFell, PgTypes.date)
+            .isBiggerOrEqualValue(moonLanding)),
+        isTrue);
   });
 }

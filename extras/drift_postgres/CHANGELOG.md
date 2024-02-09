@@ -1,3 +1,8 @@
+## 1.2.0
+
+- Drift's comparable expression operators are now available for expressions
+  using postgres-specific `date` or `timestamp` types.
+
 ## 1.1.0
 
 - Add `PgTypes.timestampWithTimezone`.
