@@ -277,11 +277,32 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     });
   }
 
+  /// Precomputes information used to parse results in [_mapWithStructure].
+  ///
+  /// As the column names are the same for each row, we can pre-compute some
+  /// information (like the column aliases for [_LazyExpressionMap]) once and
+  /// then apply them to every row.
+  _ResultStructure _computeResultStructure() {
+    return _ResultStructure(
+      columnAliases: {
+        for (final (expr, alias) in _expandedColumns) expr: alias,
+      },
+      queriedTables: _queriedTables(true).toList(),
+    );
+  }
+
   @override
   Future<TypedResult> _mapRow(Map<String, Object?> row) async {
+    return await _mapWithStructure(_computeResultStructure(), row);
+  }
+
+  /// Reads a raw database [row] into a [TypedResult] by using information that
+  /// doesn't change between rows, such as the expected columns or tables.
+  Future<TypedResult> _mapWithStructure(
+      _ResultStructure structure, Map<String, Object?> row) async {
     final readTables = <ResultSetImplementation, dynamic>{};
 
-    for (final table in _queriedTables(true)) {
+    for (final table in structure.queriedTables) {
       final prefix = '${table.aliasedName}.';
       // if all columns of this table are null, skip the table
       if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
@@ -295,16 +316,16 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       readTables,
       driftRow,
       _LazyExpressionMap(
-        {
-          for (final (expr, alias) in _expandedColumns) expr: alias,
-        },
+        structure.columnAliases,
         driftRow,
       ),
     );
   }
 
   Future<List<TypedResult>> _mapResponse(List<Map<String, Object?>> rows) {
-    return Future.wait(rows.map(_mapRow));
+    final structure = _computeResultStructure();
+
+    return Future.wait(rows.map((row) => _mapWithStructure(structure, row)));
   }
 
   Never _warnAboutDuplicate(
@@ -355,4 +376,11 @@ class _LazyExpressionMap extends UnmodifiableMapBase<Expression, Object?> {
 
   @override
   bool containsKey(Object? key) => _columnAliases.containsKey(key);
+}
+
+class _ResultStructure {
+  final Map<Expression, String> columnAliases;
+  final List<ResultSetImplementation> queriedTables;
+
+  _ResultStructure({required this.columnAliases, required this.queriedTables});
 }
