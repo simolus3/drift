@@ -1,7 +1,5 @@
 # Drift
 
-_Note: Moor has been renamed to drift_
-
 [![Build Status](https://github.com/simolus3/drift/actions/workflows/main.yml/badge.svg)](https://github.com/simolus3/drift/actions/workflows/main.yml/badge.svg)
 [![Using melos](https://img.shields.io/badge/maintained%20with-melos-f700ff.svg?style=flat-square)](https://github.com/invertase/melos)
 
