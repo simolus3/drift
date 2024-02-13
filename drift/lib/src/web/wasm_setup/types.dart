@@ -57,7 +57,7 @@ enum WasmStorageImplementation {
   /// implementation.
   ///
   /// While being less efficient than [opfsShared], this mode is also very
-  /// reliably and used by the official WASM builds of the sqlite3 project as
+  /// reliable and used by the official WASM builds of the sqlite3 project as
   /// well.
   ///
   /// It requires [cross-origin isolation], which needs to be enabled by serving
