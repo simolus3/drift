@@ -144,48 +144,52 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
     if (args.isEmpty) {
       database.execute(statement);
     } else {
-      final stmt = _getPreparedStatement(statement);
+      final (stmt, cached) = _getPreparedStatement(statement);
       try {
         stmt.execute(args);
       } finally {
-        _returnStatement(stmt);
+        _returnStatement(stmt, cached);
       }
     }
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
-    final stmt = _getPreparedStatement(statement);
+    final (stmt, cached) = _getPreparedStatement(statement);
 
     try {
       final result = stmt.select(args);
       return QueryResult.fromRows(result.toList());
     } finally {
-      _returnStatement(stmt);
+      _returnStatement(stmt, cached);
     }
   }
 
-  CommonPreparedStatement _getPreparedStatement(String sql) {
+  /// Returns a prepared statement for [sql] and reports whether this statement
+  /// was cached.
+  (CommonPreparedStatement, bool) _getPreparedStatement(String sql) {
     if (cachePreparedStatements) {
       final cachedStmt = _preparedStmtsCache.use(sql);
       if (cachedStmt != null) {
-        return cachedStmt;
+        return (cachedStmt, true);
       }
 
       final stmt = database.prepare(sql, checkNoTail: true);
-      _preparedStmtsCache.addNew(sql, stmt);
+      if (!stmt.isExplain) {
+        _preparedStmtsCache.addNew(sql, stmt);
+      }
 
-      return stmt;
+      return (stmt, !stmt.isExplain);
     } else {
       final stmt = database.prepare(sql, checkNoTail: true);
-      return stmt;
+      return (stmt, false);
     }
   }
 
-  void _returnStatement(CommonPreparedStatement stmt) {
+  void _returnStatement(CommonPreparedStatement stmt, bool cached) {
     // When using a statement cache, prepared statements are disposed as they
     // get evicted from the cache, so we don't need to do anything.
-    if (!cachePreparedStatements) {
+    if (!cached) {
       stmt.dispose();
     }
   }

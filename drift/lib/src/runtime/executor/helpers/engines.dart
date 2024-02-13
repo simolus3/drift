@@ -43,7 +43,7 @@ on how to reproduce this.''');
 This database or transaction runner has already been closed and may not be used
 anymore.
 
-If this is happening in a transaction, you might be using the transaction 
+If this is happening in a transaction, you might be using the transaction
 without awaiting every statement in it.''');
     }
 

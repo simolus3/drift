@@ -185,6 +185,23 @@ void main() {
     expect(underlying.activeStatementCount, isZero);
   });
 
+  test('does not cache explain statements', () async {
+    final db = NativeDatabase.memory(cachePreparedStatements: true);
+    addTearDown(db.close);
+    await db.ensureOpen(_FakeExecutorUser());
+
+    await db.runCustom(
+        'create table test(id integer primary key, description text)');
+    await db.runCustom('create index i1 on test(description)');
+    // The schema is locked while an explain is active, so caching this
+    // statement makes the test fail at the `drop index` statement.
+    await db.runSelect(
+        'explain query plan select * from test where description = ?', ['t']);
+    await db.runCustom('drop index i1');
+    await db.runSelect(
+        'explain query plan select * from test where description = ?', ['t']);
+  });
+
   group('can disable migrations', () {
     Future<void> runTest(QueryExecutor executor) async {
       final db = TodoDb(executor);
