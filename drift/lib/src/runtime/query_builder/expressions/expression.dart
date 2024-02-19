@@ -636,7 +636,7 @@ class _SubqueryExpression<R extends Object> extends Expression<R> {
   int get hashCode => statement.hashCode;
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     return other is _SubqueryExpression && other.statement == statement;
   }
 }

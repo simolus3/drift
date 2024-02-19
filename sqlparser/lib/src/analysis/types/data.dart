@@ -81,7 +81,7 @@ class ResolvedType {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         other is ResolvedType &&
             other.type == type &&
@@ -112,7 +112,7 @@ abstract class TypeHint {
   @override
   int get hashCode => runtimeType.hashCode;
   @override
-  bool operator ==(dynamic other) => other.runtimeType == runtimeType;
+  bool operator ==(Object other) => other.runtimeType == runtimeType;
 }
 
 /// Type hint to mark that this type will contain a boolean value.
@@ -181,7 +181,7 @@ class ResolveResult {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         other is ResolveResult &&
             other.type == type &&

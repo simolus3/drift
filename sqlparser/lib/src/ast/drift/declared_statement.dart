@@ -64,7 +64,7 @@ class SimpleName extends DeclaredStatementIdentifier {
   int get hashCode => name.hashCode;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other is SimpleName && other.name == name);
   }
@@ -87,7 +87,7 @@ class SpecialStatementIdentifier extends DeclaredStatementIdentifier {
   String get name => specialName;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other is SpecialStatementIdentifier &&
             other.specialName == specialName);

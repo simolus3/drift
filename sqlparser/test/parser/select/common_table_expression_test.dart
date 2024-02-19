@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   test('parses WITH clauses', () {
     testStatement(
-      ''' 
+      '''
       WITH RECURSIVE
         cnt(x) AS (
           SELECT 1

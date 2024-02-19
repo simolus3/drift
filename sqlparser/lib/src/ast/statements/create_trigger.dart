@@ -56,7 +56,7 @@ abstract class TriggerTarget extends AstNode {
   int get hashCode => runtimeType.hashCode;
 
   @override
-  bool operator ==(dynamic other) => other.runtimeType == runtimeType;
+  bool operator ==(Object other) => other.runtimeType == runtimeType;
 
   @override
   Iterable<AstNode> get childNodes => const Iterable.empty();
