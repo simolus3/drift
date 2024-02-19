@@ -240,6 +240,34 @@ void main() {
       await testWith(DatabaseConnection(NativeDatabase.memory()));
     });
   });
+
+  test('uses correct dialect', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/2894
+    final isolate = await DriftIsolate.spawn(() {
+      return NativeDatabase.memory()
+          .interceptWith(PretendDialectInterceptor(SqlDialect.postgres));
+    });
+    final database = TodoDb(await isolate.connect(singleClientMode: true));
+    addTearDown(database.close);
+
+    await database.transaction(() async {
+      await expectLater(
+        database.into(database.users).insertReturning(UsersCompanion.insert(
+            name: 'test user', profilePicture: Uint8List(0))),
+        throwsA(
+          isA<DriftRemoteException>().having(
+            (e) => e.remoteCause,
+            'remoteCause',
+            isA<SqliteException>().having(
+              (e) => e.causingStatement,
+              'causingStatement',
+              contains(r'VALUES ($1, $2)'),
+            ),
+          ),
+        ),
+      );
+    });
+  });
 }
 
 void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,

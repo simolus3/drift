@@ -100,3 +100,14 @@ class CustomTable extends Table with TableInfo<CustomTable, void> {
     return;
   }
 }
+
+class PretendDialectInterceptor extends QueryInterceptor {
+  final SqlDialect _dialect;
+
+  PretendDialectInterceptor(this._dialect);
+
+  @override
+  SqlDialect dialect(QueryExecutor executor) {
+    return _dialect;
+  }
+}
