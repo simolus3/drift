@@ -49,8 +49,24 @@ To call this extension, `await myDatabase.todos.findById(3).getSingle()` could b
 A nice thing about defining the method as an extension is that type inference works really well - calling `findById` on `todos`
 returns a `Todo` instance, the generated data class for this table.
 
+## Updates and inserts
+
 The same approach also works to construct update, delete and insert statements (although those require a [TableInfo] instead of a [ResultSetImplementation]
 as views are read-only).
+Also, updates and inserts use an `Insertable` object which represents a partial row of updated or
+inserted columns, respectively.
+With a known table, one would use the generated typed `Companion` objects for that.
+But this can also be done with schema introspection thanks to the `RawValuesInsertable`, which
+can be used as a generic `Insertable` backed by a map of column names to values.
+
+This example builds on the previous one to update the `title` column of a generic table based on a filter
+of the `id` column:
+
+{% include "blocks/snippet" snippets = snippets name = 'updateTitle' %}
+
+This method can then be called like this:
+
+{% include "blocks/snippet" snippets = snippets name = 'updateTodo' %}
 
 Hopefully, this page gives you some pointers to start reflectively inspecting your drift databases.
 The linked Dart documentation also expains the concepts in more detail.
