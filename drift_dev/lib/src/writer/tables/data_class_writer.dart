@@ -107,6 +107,7 @@ class DataClassWriter {
       if (scope.options.dataClassToCompanions &&
           scope.generationOptions.writeCompanions) {
         _writeToCompanion();
+        _writeCopyWithCompanion();
       }
     }
 
@@ -254,6 +255,29 @@ class DataClassWriter {
     }
 
     _buffer.write(');');
+  }
+
+  void _writeCopyWithCompanion() {
+    final asTable = table as DriftTable;
+    final companionType = _emitter.writer.companionType(asTable);
+
+    _emitter
+      ..write('${table.nameOfRowClass} copyWithCompanion(')
+      ..writeDart(companionType)
+      ..writeln(' data) {')
+      ..writeln('return ${table.nameOfRowClass}(');
+
+    for (final column in columns) {
+      // Generated columns are not fields of companions.
+      if (column.isGenerated) continue;
+      final name = column.nameInDart;
+      _buffer
+          .write('$name: data.$name.present ? data.$name.value : this.$name,');
+    }
+
+    _buffer
+      ..writeln(');')
+      ..writeln('}');
   }
 
   void _writeToCompanion() {
