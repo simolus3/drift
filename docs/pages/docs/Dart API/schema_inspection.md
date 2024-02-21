@@ -64,7 +64,7 @@ of the `id` column:
 
 {% include "blocks/snippet" snippets = snippets name = 'updateTitle' %}
 
-This method can then be called like this:
+In a database or database accessor class, the method can then be called like this:
 
 {% include "blocks/snippet" snippets = snippets name = 'updateTodo' %}
 

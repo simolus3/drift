@@ -25,16 +25,8 @@ extension FindById<Table extends HasResultSet, Row>
 }
 // #enddocregion findById
 
-extension FindTodoEntryById on GeneratedDatabase {
-  Todos get todos => Todos(this);
-
-  // #docregion findTodoEntryById
-  Selectable<Todo> findTodoEntryById(int id) {
-    return select(todos)..where((row) => row.id.equals(id));
-  }
-  // #enddocregion findTodoEntryById
-
-  // #docregion updateTitle
+// #docregion updateTitle
+extension UpdateTitle on DatabaseConnectionUser {
   Future<Row?> updateTitle<T extends TableInfo<Table, Row>, Row>(
       T table, int id, String newTitle) async {
     final columnsByName = table.columnsByName;
@@ -60,7 +52,17 @@ extension FindTodoEntryById on GeneratedDatabase {
 
     return rows.singleOrNull;
   }
-  // #enddocregion updateTitle
+}
+// #enddocregion updateTitle
+
+extension FindTodoEntryById on GeneratedDatabase {
+  Todos get todos => Todos(this);
+
+  // #docregion findTodoEntryById
+  Selectable<Todo> findTodoEntryById(int id) {
+    return select(todos)..where((row) => row.id.equals(id));
+  }
+  // #enddocregion findTodoEntryById
 
   // #docregion updateTodo
   Future<Todo?> updateTodoTitle(int id, String newTitle) {
