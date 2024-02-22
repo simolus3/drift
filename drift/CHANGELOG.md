@@ -12,6 +12,7 @@
 - Improve stack traces for errors happening on drift isolates (which includes
   usages of `NativeDatabase.createInBackground`).
 - Don't cache `EXPLAIN` statements, avoiding schema locks.
+- Migrate `WasmDatabase` to `dart:js_interop` and `package:web`.
 
 ## 2.15.0
 

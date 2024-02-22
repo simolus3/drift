@@ -6,7 +6,7 @@ void main() {
     db.createFunction(
       functionName: 'database_host',
       function: (args) => 'worker',
-      argumentCount: const AllowedArgumentCount(1),
+      argumentCount: const AllowedArgumentCount(0),
     );
   });
 }

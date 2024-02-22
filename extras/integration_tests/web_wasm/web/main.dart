@@ -150,7 +150,7 @@ Future<void> _open(String? implementationName) async {
         db.createFunction(
           functionName: 'database_host',
           function: (args) => 'document',
-          argumentCount: const AllowedArgumentCount(1),
+          argumentCount: const AllowedArgumentCount(0),
         );
       },
     );

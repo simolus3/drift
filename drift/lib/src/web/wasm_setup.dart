@@ -7,22 +7,23 @@
 /// asynchronous
 // ignore_for_file: public_member_api_docs
 @internal
+@JS()
 library;
 
 import 'dart:async';
-import 'dart:html';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/wasm.dart';
-import 'package:js/js.dart';
-import 'package:js/js_util.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/wasm.dart';
+import 'package:web/web.dart' as web;
 
 import 'broadcast_stream_queries.dart';
-import 'channel.dart';
+import 'new_channel.dart';
 import 'wasm_setup/shared.dart';
 import 'wasm_setup/protocol.dart';
 
@@ -32,10 +33,10 @@ import 'wasm_setup/protocol.dart';
 external bool get crossOriginIsolated;
 
 /// Whether shared workers can be constructed in the current context.
-bool get supportsSharedWorkers => hasProperty(globalThis, 'SharedWorker');
+bool get supportsSharedWorkers => globalContext.has('SharedWorker');
 
 /// Whether dedicated workers can be constructed in the current context.
-bool get supportsWorkers => hasProperty(globalThis, 'Worker');
+bool get supportsWorkers => globalContext.has('Worker');
 
 class WasmDatabaseOpener {
   final Uri sqlite3WasmUri;
@@ -107,7 +108,7 @@ class WasmDatabaseOpener {
   Future<void> _probeDedicated() async {
     if (supportsWorkers) {
       final dedicatedWorker = _dedicatedWorker =
-          _DriftWorker.dedicated(Worker(driftWorkerUri.toString()));
+          _DriftWorker.dedicated(web.Worker(driftWorkerUri.toString()));
       _createCompatibilityCheck().sendTo(dedicatedWorker.send);
 
       final status = await dedicatedWorker.workerMessages.nextNoError
@@ -133,8 +134,8 @@ class WasmDatabaseOpener {
   Future<void> _probeShared() async {
     if (supportsSharedWorkers) {
       final sharedWorker =
-          SharedWorker(driftWorkerUri.toString(), 'drift worker');
-      final port = sharedWorker.port!;
+          web.SharedWorker(driftWorkerUri.toString(), 'drift worker'.toJS);
+      final port = sharedWorker.port;
       final shared = _sharedWorker = _DriftWorker.shared(sharedWorker, port);
 
       // First, the shared worker will tell us which features it supports.
@@ -161,40 +162,38 @@ class WasmDatabaseOpener {
 }
 
 final class _DriftWorker {
-  final AbstractWorker worker;
+  /// Either a [web.SharedWorker] or a [web.Worker].
+  final JSObject worker;
   ProtocolVersion version = ProtocolVersion.legacy;
 
   /// The message port to communicate with the worker, if it's a shared worker.
-  final MessagePort? portForShared;
+  final web.MessagePort? portForShared;
 
   final StreamQueue<WasmInitializationMessage> workerMessages;
 
-  _DriftWorker.dedicated(Worker this.worker)
+  _DriftWorker.dedicated(web.Worker this.worker)
       : portForShared = null,
-        workerMessages =
-            StreamQueue(_readMessages(worker.onMessage, worker.onError));
+        workerMessages = StreamQueue(_readMessages(worker, worker));
 
-  _DriftWorker.shared(SharedWorker this.worker, this.portForShared)
-      : workerMessages =
-            StreamQueue(_readMessages(worker.port!.onMessage, worker.onError));
+  _DriftWorker.shared(web.SharedWorker this.worker, this.portForShared)
+      : workerMessages = StreamQueue(_readMessages(worker.port, worker)) {
+    (worker as web.SharedWorker).port.start();
+  }
 
-  void send(Object? msg, [List<Object>? transfer]) {
-    switch (worker) {
-      case final Worker worker:
-        worker.postMessage(msg, transfer);
-      case SharedWorker():
-        portForShared!.postMessage(msg, transfer);
+  void send(JSAny? msg, List<JSObject>? transfer) {
+    if (portForShared case final port?) {
+      port.postMessage(msg, (transfer ?? const []).toJS);
+    } else {
+      (worker as web.Worker).postMessage(msg, (transfer ?? const []).toJS);
     }
   }
 
   void close() {
     workerMessages.cancel();
-
-    switch (worker) {
-      case final Worker dedicated:
-        dedicated.terminate();
-      case SharedWorker():
-        portForShared!.close();
+    if (portForShared case final port?) {
+      port.close();
+    } else {
+      (worker as web.Worker).terminate();
     }
   }
 }
@@ -225,9 +224,9 @@ final class _ProbeResult implements WasmProbeResult {
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
   }) async {
-    final channel = MessageChannel();
+    final channel = web.MessageChannel();
     final initializer = initializeDatabase;
-    final initChannel = initializer != null ? MessageChannel() : null;
+    final initChannel = initializer != null ? web.MessageChannel() : null;
 
     ServeDriftDatabase message;
     final sharedWorker = opener._sharedWorker;
@@ -276,18 +275,24 @@ final class _ProbeResult implements WasmProbeResult {
             initializeDatabase, localSetup);
     }
 
-    initChannel?.port1.onMessage.listen((event) async {
-      // The worker hosting the database is asking for the initial blob because
-      // the database doesn't exist.
-      Uint8List? result;
-      try {
-        result = await initializer?.call();
-      } finally {
-        initChannel.port1
-          ..postMessage(result, [if (result != null) result.buffer])
-          ..close();
-      }
-    });
+    if (initChannel != null) {
+      initChannel.port1.start();
+      web.EventStreamProviders.messageEvent
+          .forTarget(initChannel.port1)
+          .listen((event) async {
+        // The worker hosting the database is asking for the initial blob because
+        // the database doesn't exist.
+        Uint8List? result;
+        try {
+          result = await initializer?.call();
+        } finally {
+          initChannel.port1
+            ..postMessage(
+                result?.toJS, [if (result != null) result.buffer.toJS].toJS)
+            ..close();
+        }
+      });
+    }
 
     final local = channel.port1
         .channel(explicitClose: message.protocolVersion >= ProtocolVersion.v1);
@@ -350,7 +355,13 @@ final class _ProbeResult implements WasmProbeResult {
 }
 
 Stream<WasmInitializationMessage> _readMessages(
-    Stream<MessageEvent> messages, Stream<Event> errors) {
+  web.EventTarget messageTarget,
+  web.EventTarget errorTarget,
+) {
+  final messages =
+      web.EventStreamProviders.messageEvent.forTarget(messageTarget);
+  final errors = web.EventStreamProviders.errorEvent.forTarget(errorTarget);
+
   final mappedMessages = messages.map(WasmInitializationMessage.read);
 
   return Stream.multi((listener) {

@@ -348,7 +348,7 @@ class InsertStatement<T extends Table, D> {
 
         if (onConflict._where != null) {
           ctx.writeWhitespace();
-          final where = onConflict._where!(
+          final where = onConflict._where(
               table.asDslTable, table.createAlias('excluded').asDslTable);
           where.writeInto(ctx);
         }
