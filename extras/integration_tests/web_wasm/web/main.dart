@@ -18,6 +18,7 @@ TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
 
 InitializationMode initializationMode = InitializationMode.none;
+int schemaVersion = 1;
 
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
@@ -30,6 +31,10 @@ void main() {
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
   _addCallbackForWebDriver('enable_initialization', (arg) async {
     initializationMode = InitializationMode.values.byName(arg!);
+    return true;
+  });
+  _addCallbackForWebDriver('set_schema_version', (arg) async {
+    schemaVersion = int.parse(arg!);
     return true;
   });
   _addCallbackForWebDriver('delete_database', (arg) async {
@@ -158,7 +163,8 @@ Future<void> _open(String? implementationName) async {
     connection = result.resolvedExecutor;
   }
 
-  final db = openedDatabase = TestDatabase(connection);
+  final db =
+      openedDatabase = TestDatabase(connection)..schemaVersion = schemaVersion;
 
   // Make sure it works!
   await db.customSelect('SELECT database_host()').get();

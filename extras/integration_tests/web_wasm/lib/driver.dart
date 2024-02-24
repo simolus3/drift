@@ -162,6 +162,17 @@ class DriftWebDriver {
     }
   }
 
+  Future<void> setSchemaVersion(int version) async {
+    final result = await driver.executeAsync(
+      'set_schema_version(arguments[0], arguments[1])',
+      [version.toString()],
+    );
+
+    if (result != true) {
+      throw 'Could not set schema version';
+    }
+  }
+
   Future<void> deleteDatabase(WebStorageApi storageApi, String name) async {
     await driver.executeAsync('delete_database(arguments[0], arguments[1])', [
       json.encode([storageApi.name, name]),
