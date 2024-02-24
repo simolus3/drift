@@ -1,4 +1,4 @@
-## 2.16.0-dev
+## 2.16.0
 
 - When a migration throws, the database will now block subsequent operations
   instead of potentially allowing them to operate on a database in an

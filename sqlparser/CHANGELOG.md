@@ -1,4 +1,4 @@
-## 0.34.1-dev
+## 0.34.1
 
 - Allow selecting from virtual tables using the table-valued function
   syntax.

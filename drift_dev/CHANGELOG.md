@@ -1,4 +1,4 @@
-## 2.15.1-dev
+## 2.16.0
 
 - Keep import alias when referencing existing elements in generated code
   ([#2845](https://github.com/simolus3/drift/issues/2845)).
