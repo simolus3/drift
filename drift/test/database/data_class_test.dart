@@ -105,15 +105,16 @@ void main() {
     expect(entry.toCompanion(true), const PureDefaultsCompanion());
   });
 
-  test('nullable values cannot be used with nullOrAbsent', () {
+  test('utilities to wrap nullable values', () {
     expect(
-        // ignore: prefer_const_constructors
+        // ignore: prefer_const_constructors, deprecated_member_use_from_same_package
         () => Value<int?>.ofNullable(null),
         throwsA(isA<AssertionError>()));
 
-    expect(const Value<int>.ofNullable(null).present, isFalse);
-    expect(const Value<int?>.ofNullable(12).present, isTrue);
-    expect(const Value<int>.ofNullable(23).present, isTrue);
+    expect(const Value<int?>.absentIfNull(null).present, isFalse);
+    expect(const Value<int>.absentIfNull(null).present, isFalse);
+    expect(const Value<int?>.absentIfNull(12).present, isTrue);
+    expect(const Value<int>.absentIfNull(23).present, isTrue);
   });
 
   test('companions support hash and equals', () {

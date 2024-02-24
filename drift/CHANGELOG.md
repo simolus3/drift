@@ -12,6 +12,8 @@
 - Improve stack traces for errors happening on drift isolates (which includes
   usages of `NativeDatabase.createInBackground`).
 - Don't cache `EXPLAIN` statements, avoiding schema locks.
+- Deprecate `Value.ofNullable` in favor of `Value.absentIfNull`, which is more
+  explicit about its behavior and allows nullable types too.
 - Migrate `WasmDatabase` to `dart:js_interop` and `package:web`.
 
 ## 2.15.0
