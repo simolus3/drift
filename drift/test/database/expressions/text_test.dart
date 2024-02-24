@@ -52,5 +52,8 @@ void main() {
   test('substr', () {
     expect(expression.substr(10), generates('SUBSTR(col, 10)'));
     expect(expression.substr(10, 2), generates('SUBSTR(col, 10, 2)'));
+
+    expect(expression.substrExpr(Variable(1), expression.length - Variable(5)),
+        generates('SUBSTR(col, ?, LENGTH(col) - ?)', [1, 5]));
   });
 }
