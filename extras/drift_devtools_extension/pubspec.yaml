@@ -12,11 +12,11 @@ dependencies:
     sdk: flutter
 
   devtools_extensions: ^0.0.8
-  devtools_app_shared: '>=0.0.5 <0.0.6' # 0.0.6 requires unstable Flutter
+  devtools_app_shared: ^0.0.9
   db_viewer: ^1.0.3
   rxdart: ^0.27.7
   flutter_riverpod: ^3.0.0-dev.0
-  vm_service: ^11.10.0
+  vm_service: ^13.0.0
   path: ^1.8.3
   drift: ^2.12.1
   logging: ^1.2.0
@@ -28,6 +28,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+
+dependency_overrides:
+  web: ^0.5.0
 
 flutter:
   uses-material-design: true
