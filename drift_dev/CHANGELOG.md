@@ -1,3 +1,7 @@
+## 2.17.0-dev
+
+- Fix drift using the wrong import alias in generated part files.
+
 ## 2.16.0
 
 - Keep import alias when referencing existing elements in generated code
