@@ -132,7 +132,7 @@ class Migrator {
     return _issueCustomQuery(context.sql, context.boundVariables);
   }
 
-  /// Alter columns of an existing tabe.
+  /// Alter columns of an existing table.
   ///
   /// Since sqlite does not provide a way to alter the type or constraint of an
   /// individual column, one needs to write a fairly complex migration procedure
