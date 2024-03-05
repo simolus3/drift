@@ -108,12 +108,13 @@ class DriftColumn implements HasType {
   /// The actual json key to use when serializing a data class of this table
   /// to json.
   ///
-  /// This respectts the [overriddenJsonName], if any, as well as [options].
+  /// This respects the [overriddenJsonName], if any, as well as [options].
   String getJsonKey([DriftOptions options = const DriftOptions.defaults()]) {
     if (overriddenJsonName != null) return overriddenJsonName!;
 
-    final useColumnName = options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
-        declaredInDriftFile;
+    final useColumnName = options.useSqlColumnNameAsJsonKey ||
+        (options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
+            declaredInDriftFile);
     return useColumnName ? nameInSql : nameInDart;
   }
 

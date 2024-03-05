@@ -18,6 +18,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'skip_verification_code',
             'use_data_class_name_for_companions',
             'use_column_name_as_json_key_when_defined_in_moor_file',
+            'use_sql_column_name_as_json_key',
             'generate_connect_constructor',
             'sqlite_modules',
             'sqlite',
@@ -52,6 +53,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           useColumnNameAsJsonKeyWhenDefinedInMoorFile: $checkedConvert(
               'use_column_name_as_json_key_when_defined_in_moor_file',
               (v) => v as bool? ?? true),
+          useSqlColumnNameAsJsonKey: $checkedConvert(
+              'use_sql_column_name_as_json_key', (v) => v as bool? ?? false),
           generateConnectConstructor: $checkedConvert(
               'generate_connect_constructor', (v) => v as bool? ?? false),
           dataClassToCompanions: $checkedConvert(
@@ -111,6 +114,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'useDataClassNameForCompanions': 'use_data_class_name_for_companions',
         'useColumnNameAsJsonKeyWhenDefinedInMoorFile':
             'use_column_name_as_json_key_when_defined_in_moor_file',
+        'useSqlColumnNameAsJsonKey': 'use_sql_column_name_as_json_key',
         'generateConnectConstructor': 'generate_connect_constructor',
         'dataClassToCompanions': 'data_class_to_companions',
         'generateMutableClasses': 'mutable_classes',
@@ -143,6 +147,7 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
           instance.useDataClassNameForCompanions,
       'use_column_name_as_json_key_when_defined_in_moor_file':
           instance.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
+      'use_sql_column_name_as_json_key': instance.useSqlColumnNameAsJsonKey,
       'generate_connect_constructor': instance.generateConnectConstructor,
       'sqlite_modules':
           instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
