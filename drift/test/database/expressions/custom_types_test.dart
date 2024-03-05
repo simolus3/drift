@@ -44,6 +44,23 @@ void main() {
     expect(exp, generates('?', [10]));
     expect(exp.driftSqlType, isA<_NegatedIntType>());
   });
+
+  test('also supports dialect-aware types', () {
+    const b = CustomExpression(
+      'b',
+      customType: DialectAwareSqlType<int>.via(
+        fallback: _NegatedIntType(),
+        overrides: {SqlDialect.postgres: DriftSqlType.int},
+      ),
+      precedence: Precedence.primary,
+    );
+
+    expect(b.equals(3), generates('b = ?', [-3]));
+    expect(
+        b.equals(3),
+        generatesWithOptions('b = \$1',
+            variables: [3], dialect: SqlDialect.postgres));
+  });
 }
 
 class _NegatedIntType implements CustomSqlType<int> {

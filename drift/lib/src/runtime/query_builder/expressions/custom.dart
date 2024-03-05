@@ -24,14 +24,14 @@ class CustomExpression<D extends Object> extends Expression<D> {
   @override
   final Precedence precedence;
 
-  final CustomSqlType<D>? _customSqlType;
+  final UserDefinedSqlType<D>? _customSqlType;
 
   /// Constructs a custom expression by providing the raw sql [content].
   const CustomExpression(
     this.content, {
     this.watchedTables = const [],
     this.precedence = Precedence.unknown,
-    CustomSqlType<D>? customType,
+    UserDefinedSqlType<D>? customType,
   })  : _dialectSpecificContent = null,
         _customSqlType = customType;
 
@@ -41,7 +41,7 @@ class CustomExpression<D extends Object> extends Expression<D> {
     Map<SqlDialect, String> content, {
     this.watchedTables = const [],
     this.precedence = Precedence.unknown,
-    CustomSqlType<D>? customType,
+    UserDefinedSqlType<D>? customType,
   })  : _dialectSpecificContent = content,
         content = '',
         _customSqlType = customType;
