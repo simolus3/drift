@@ -267,6 +267,56 @@ extension ItemToInsertable on i1.Item {
       result.writer,
     );
   });
+
+  test(
+    'It should use the provided names for the data classes and the companion class',
+    () async {
+      final writer = await emulateDriftBuild(
+        inputs: const {
+          'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+@DataClassName('FirstDataClass', companion: 'FirstCompanionClass')
+class FirstTable extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+@DataClassName.custom(name: 'SecondDataClass', companion: 'SecondCompanionClass')
+class SecondTable extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+@DriftDatabase(
+  tables: [FirstTable, SecondTable],
+)
+class Database extends _$Database {}
+'''
+        },
+      );
+
+      checkOutputs({
+        'a|lib/main.drift.dart': decodedMatches(allOf([
+          contains(
+            'class FirstDataClass extends DataClass implements Insertable<FirstDataClass> {',
+          ),
+          contains(
+            'class FirstTableCompanion extends UpdateCompanion<FirstDataClass> {',
+          ),
+          contains(
+            'class SecondDataClass extends DataClass implements Insertable<SecondDataClass> {',
+          ),
+          contains(
+            'class SecondTableCompanion extends UpdateCompanion<SecondDataClass> {',
+          ),
+        ])),
+      }, writer.dartOutputs, writer.writer);
+    },
+    tags: 'analyzer',
+  );
 }
 
 class _GeneratesConstDataClasses extends Matcher {
