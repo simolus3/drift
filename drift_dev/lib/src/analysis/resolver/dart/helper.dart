@@ -198,11 +198,13 @@ extension TypeUtils on DartType {
 
 class DataClassInformation {
   final String enforcedName;
+  final String? companionName;
   final CustomParentClass? extending;
   final ExistingRowClass? existingClass;
 
   DataClassInformation(
     this.enforcedName,
+    this.companionName,
     this.extending,
     this.existingClass,
   );
@@ -233,16 +235,16 @@ class DataClassInformation {
       ));
     }
 
-    String name;
+    var name = dataClassName?.getField('name')!.toStringValue() ??
+        dataClassNameForClassName(element.name);
+    final companionName =
+        dataClassName?.getField('companionName')?.toStringValue();
     CustomParentClass? customParentClass;
     ExistingRowClass? existingClass;
 
     if (dataClassName != null) {
-      name = dataClassName.getField('name')!.toStringValue()!;
       customParentClass =
           parseCustomParentClass(name, dataClassName, element, resolver);
-    } else {
-      name = dataClassNameForClassName(element.name);
     }
 
     if (useRowClass != null) {
@@ -277,7 +279,12 @@ class DataClassInformation {
       }
     }
 
-    return DataClassInformation(name, customParentClass, existingClass);
+    return DataClassInformation(
+      name,
+      companionName,
+      customParentClass,
+      existingClass,
+    );
   }
 }
 

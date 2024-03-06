@@ -55,6 +55,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       columns: columns,
       references: references.toList(),
       nameOfRowClass: dataClassInfo.enforcedName,
+      nameOfCompanionClass: dataClassInfo.companionName,
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       baseDartName: element.name,

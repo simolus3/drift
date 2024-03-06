@@ -57,6 +57,7 @@ class ElementSerializer {
         'fixed_entity_info_name': element.fixedEntityInfoName,
         'base_dart_name': element.baseDartName,
         'row_class_name': element.nameOfRowClass,
+        'companion_class_name': element.nameOfCompanionClass,
         'without_rowid': element.withoutRowId,
         'strict': element.strict,
         if (element.isVirtual)
@@ -146,6 +147,7 @@ class ElementSerializer {
         'custom_parent_class':
             _serializeCustomParentClass(element.customParentClass),
         'name_of_row_class': element.nameOfRowClass,
+        'name_of_companion_class': element.nameOfCompanionClass,
         'source': serializedSource,
       };
     } else if (element is BaseDriftAccessor) {
@@ -536,6 +538,7 @@ class ElementDeserializer {
           fixedEntityInfoName: json['fixed_entity_info_name'] as String?,
           baseDartName: json['base_dart_name'] as String,
           nameOfRowClass: json['row_class_name'] as String,
+          nameOfCompanionClass: json['companion_class_name'] as String?,
           withoutRowId: json['without_rowid'] as bool,
           strict: json['strict'] as bool,
           virtualTableData: virtualTableData,
@@ -675,6 +678,7 @@ class ElementDeserializer {
           customParentClass:
               _readCustomParentClass(json['custom_parent_class'] as Map?),
           nameOfRowClass: json['name_of_row_class'] as String,
+          nameOfCompanionClass: json['name_of_companion_class'] as String,
           existingRowClass: json['existing_data_class'] != null
               ? await _readExistingRowClass(
                   id.libraryUri, json['existing_data_class'] as Map)
