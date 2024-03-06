@@ -1,6 +1,7 @@
 ## 2.17.0-dev
 
 - Fix drift using the wrong import alias in generated part files.
+- Add the `use_sql_column_name_as_json_key` builder option.
 
 ## 2.16.0
 
