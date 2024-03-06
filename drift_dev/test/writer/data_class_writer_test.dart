@@ -267,6 +267,58 @@ extension ItemToInsertable on i1.Item {
       result.writer,
     );
   });
+
+  test(
+    'generates fromJson and toJson with the sql column names as json keys',
+    () async {
+      final writer = await emulateDriftBuild(
+        options: const BuilderOptions({
+          'use_sql_column_name_as_json_key': true,
+        }),
+        inputs: const {
+          'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+class MyTable extends Table {
+  TextColumn get myFirstColumn => text()();
+  IntColumn get mySecondColumn => integer()();
+}
+
+
+@DriftDatabase(
+  tables: [MyTable],
+)
+class Database extends _$Database {}
+'''
+        },
+      );
+
+      checkOutputs({
+        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+  factory MyTableData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MyTableData(
+      myFirstColumn: serializer.fromJson<String>(json['my_first_column']),
+      mySecondColumn: serializer.fromJson<int>(json['my_second_column']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'my_first_column': serializer.toJson<String>(myFirstColumn),
+      'my_second_column': serializer.toJson<int>(mySecondColumn),
+    };
+  }
+
+''')),
+      }, writer.dartOutputs, writer.writer);
+    },
+    tags: 'analyzer',
+  );
 }
 
 class _GeneratesConstDataClasses extends Matcher {
