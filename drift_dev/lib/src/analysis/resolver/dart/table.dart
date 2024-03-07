@@ -2,6 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
+import 'package:drift_dev/src/analysis/resolver/shared/data_class.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../driver/error.dart';
@@ -54,7 +55,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       DriftDeclaration.dartElement(element),
       columns: columns,
       references: references.toList(),
-      nameOfRowClass: dataClassInfo.enforcedName,
+      nameOfRowClass:
+          dataClassInfo.enforcedName ?? dataClassNameForClassName(element.name),
       nameOfCompanionClass: dataClassInfo.companionName,
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
