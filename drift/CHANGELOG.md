@@ -1,3 +1,8 @@
+## 2.17.0-dev
+
+- Adds `companion` entry to `DataClassName` to override the name of the
+  generated companion class.
+
 ## 2.16.0
 
 - When a migration throws, the database will now block subsequent operations
