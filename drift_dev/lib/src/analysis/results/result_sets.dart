@@ -40,6 +40,9 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
   /// The name for the data class associated with this table or view.
   String get nameOfRowClass;
 
+  /// The name for the companion class associated with this table or view.
+  String? get nameOfCompanionClass;
+
   /// All [columns] of this table, indexed by their name in SQL.
   late final Map<String, DriftColumn> columnBySqlName = CaseInsensitiveMap.of({
     for (final column in columns) column.nameInSql: column,

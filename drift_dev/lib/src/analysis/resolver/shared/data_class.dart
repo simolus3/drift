@@ -31,7 +31,7 @@ String dataClassNameForClassName(String tableName) {
 }
 
 CustomParentClass? parseCustomParentClass(
-  String dartTypeName,
+  String? dartTypeName,
   DartObject dataClassName,
   ClassElement element,
   LocalElementResolver resolver,
@@ -87,7 +87,10 @@ CustomParentClass? parseCustomParentClass(
           code = AnnotatedDartCode([
             DartTopLevelSymbol.topLevelElement(extendingType.element),
             '<',
-            DartTopLevelSymbol(dartTypeName, null),
+            DartTopLevelSymbol(
+              dartTypeName ?? dataClassNameForClassName(element.name),
+              null,
+            ),
             '>',
           ]);
         } else {

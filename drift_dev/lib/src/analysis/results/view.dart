@@ -26,6 +26,9 @@ class DriftView extends DriftElementWithResultSet {
   final String nameOfRowClass;
 
   @override
+  final String? nameOfCompanionClass;
+
+  @override
   List<DriftElement> references;
 
   DriftView(
@@ -38,6 +41,7 @@ class DriftView extends DriftElementWithResultSet {
     required this.existingRowClass,
     required this.nameOfRowClass,
     required this.references,
+    this.nameOfCompanionClass,
   });
 
   @override
