@@ -54,6 +54,8 @@ At the moment, drift supports these options:
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   You can always override the json key by using a `JSON KEY` column constraint
   (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).
+* `use_sql_column_name_as_json_key` (defaults to false): Uses the column name in SQL as the JSON key for serialization,
+  regardless of whether the table was defined in a drift file or not.
 * `generate_connect_constructor` (deprecated): Generates a named `connect()` constructor on database classes
   that takes a `DatabaseConnection` instead of a `QueryExecutor`.
   This option was deprecated in drift 2.5 because `DatabaseConnection` now implements `QueryExecutor`.
