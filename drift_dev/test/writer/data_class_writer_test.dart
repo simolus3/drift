@@ -290,8 +290,14 @@ class SecondTable extends Table {
   IntColumn get bar => integer()();
 }
 
+@DataClassName.custom(companion: 'ThirdCompanionClass')
+class ThirdTable extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
 @DriftDatabase(
-  tables: [FirstTable, SecondTable],
+  tables: [FirstTable, SecondTable, ThirdTable],
 )
 class Database extends _$Database {}
 '''
@@ -311,6 +317,12 @@ class Database extends _$Database {}
           ),
           contains(
             'class SecondTableCompanion extends UpdateCompanion<SecondDataClass> {',
+          ),
+          contains(
+            'class ThirdTableData extends DataClass implements Insertable<ThirdTableData> {',
+          ),
+          contains(
+            'class ThirdTableCompanion extends UpdateCompanion<ThirdTableData> {',
           ),
         ])),
       }, writer.dartOutputs, writer.writer);
