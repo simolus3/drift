@@ -107,6 +107,14 @@ CREATE VIEW my_view (foo, bar) AS SELECT * FROM t1;
       testFormat('''
 CREATE VIEW my_view AS SELECT * FROM t1;
       ''');
+
+      testFormat('''
+CREATE VIEW my_view AS Foo (foo, bar) AS SELECT * FROM t1;
+      ''');
+
+      testFormat('''
+CREATE VIEW my_view WITH Foo.constr (foo, bar) AS SELECT * FROM t1;
+      ''');
     });
 
     group('table', () {

@@ -1,3 +1,7 @@
+## 3.35.0-dev
+
+- Drift extensions: Allow custom class names for `CREATE VIEW` statements.
+
 ## 0.34.1
 
 - Allow selecting from virtual tables using the table-valued function
