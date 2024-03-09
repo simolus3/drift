@@ -1,7 +1,7 @@
 ---
 data:
   title: "Selects"
-  description: "Select rows or invidiual columns from tables in Dart"
+  description: "Select rows or individual columns from tables in Dart"
   weight: 2
 template: layouts/docs/single
 
