@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs
 import 'dart:async';
+import 'dart:js';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:web/web.dart';
 
@@ -8,6 +10,12 @@ import '../wasm_setup.dart';
 import 'protocol.dart';
 import 'shared.dart';
 import 'types.dart';
+
+extension type ChromeConnectInfo._(JSObject _) implements JSObject {
+  external String get name;
+
+  external ChromeConnectInfo({required String name});
+}
 
 class SharedDriftWorker {
   final SharedWorkerGlobalScope self;
@@ -23,10 +31,25 @@ class SharedDriftWorker {
 
   void start() {
     const event = EventStreamProviders.connectEvent;
+
     event.forTarget(self).listen((e) => _newConnection(e as MessageEvent));
+
+    final port = ((self.getProperty("chrome".toJS) as JSObject)
+            .getProperty("runtime".toJS) as JSObject)
+        .callMethod("connect".toJS, ChromeConnectInfo(name: "drift"));
+    _newChromeConnection(port as MessagePort);
+  }
+
+  void _newChromeConnection(MessagePort clientPort) async {
+    print("Chrome connect EVENT: ");
+    clientPort.start();
+    EventStreamProviders.messageEvent
+        .forTarget(clientPort)
+        .listen((event) => _messageFromClient(clientPort, event));
   }
 
   void _newConnection(MessageEvent event) async {
+    print("Connect EVENT: ");
     final clientPort = event.ports.toDart[0];
     clientPort.start();
     EventStreamProviders.messageEvent
