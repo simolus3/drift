@@ -263,6 +263,22 @@ void main() {
     ));
   });
 
+  test('can ignore conflict target', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoUpdate((old) {
+            return TodosTableCompanion.custom(
+                content: const Variable('important: ') + old.content);
+          }, target: []),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT DO UPDATE SET "content" = ? || "content"',
+      argThat(equals(['my content', 'important: '])),
+    ));
+  });
+
   test(
     'can use multiple upsert targets',
     () async {
