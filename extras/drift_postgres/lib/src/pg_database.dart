@@ -54,7 +54,8 @@ class _PgDelegate extends DatabaseDelegate {
   late DbVersionDelegate versionDelegate;
 
   @override
-  Future<bool> get isOpen => Future.value(_openedSession != null);
+  Future<bool> get isOpen =>
+      Future.value(_openedSession != null && _openedSession!.isOpen);
 
   @override
   Future<void> open(QueryExecutorUser user) async {
