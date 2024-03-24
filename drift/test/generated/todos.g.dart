@@ -11,13 +11,14 @@ class $CategoriesTable extends Categories
   $CategoriesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  late final GeneratedColumnWithTypeConverter<RowId, int> id = GeneratedColumn<
+              int>('id', aliasedName, false,
+          hasAutoIncrement: true,
+          type: DriftSqlType.int,
+          requiredDuringInsert: false,
+          defaultConstraints:
+              GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      .withConverter<RowId>($CategoriesTable.$converterid);
   static const VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   @override
@@ -56,9 +57,7 @@ class $CategoriesTable extends Categories
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
+    context.handle(_idMeta, const VerificationResult.success());
     if (data.containsKey('desc')) {
       context.handle(_descriptionMeta,
           description.isAcceptableOrUnknown(data['desc']!, _descriptionMeta));
@@ -81,8 +80,8 @@ class $CategoriesTable extends Categories
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Category(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      id: $CategoriesTable.$converterid.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!),
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
       priority: $CategoriesTable.$converterpriority.fromSql(attachedDatabase
@@ -99,12 +98,14 @@ class $CategoriesTable extends Categories
     return $CategoriesTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<RowId, int, int> $converterid =
+      TypeConverter.extensionType<RowId, int>();
   static JsonTypeConverter2<CategoryPriority, int, int> $converterpriority =
       const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
 }
 
 class Category extends DataClass implements Insertable<Category> {
-  final int id;
+  final RowId id;
   final String description;
   final CategoryPriority priority;
   final String descriptionInUpperCase;
@@ -116,7 +117,9 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    {
+      map['id'] = Variable<int>($CategoriesTable.$converterid.toSql(id));
+    }
     map['desc'] = Variable<String>(description);
     {
       map['priority'] =
@@ -137,7 +140,8 @@ class Category extends DataClass implements Insertable<Category> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Category(
-      id: serializer.fromJson<int>(json['id']),
+      id: $CategoriesTable.$converterid
+          .fromJson(serializer.fromJson<int>(json['id'])),
       description: serializer.fromJson<String>(json['description']),
       priority: $CategoriesTable.$converterpriority
           .fromJson(serializer.fromJson<int>(json['priority'])),
@@ -154,7 +158,7 @@ class Category extends DataClass implements Insertable<Category> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<int>($CategoriesTable.$converterid.toJson(id)),
       'description': serializer.toJson<String>(description),
       'priority': serializer
           .toJson<int>($CategoriesTable.$converterpriority.toJson(priority)),
@@ -164,7 +168,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   Category copyWith(
-          {int? id,
+          {RowId? id,
           String? description,
           CategoryPriority? priority,
           String? descriptionInUpperCase}) =>
@@ -200,7 +204,7 @@ class Category extends DataClass implements Insertable<Category> {
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
-  final Value<int> id;
+  final Value<RowId> id;
   final Value<String> description;
   final Value<CategoryPriority> priority;
   const CategoriesCompanion({
@@ -226,7 +230,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   }
 
   CategoriesCompanion copyWith(
-      {Value<int>? id,
+      {Value<RowId>? id,
       Value<String>? description,
       Value<CategoryPriority>? priority}) {
     return CategoriesCompanion(
@@ -240,7 +244,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int>($CategoriesTable.$converterid.toSql(id.value));
     }
     if (description.present) {
       map['desc'] = Variable<String>(description.value);
@@ -271,13 +275,14 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  late final GeneratedColumnWithTypeConverter<RowId, int> id = GeneratedColumn<
+              int>('id', aliasedName, false,
+          hasAutoIncrement: true,
+          type: DriftSqlType.int,
+          requiredDuringInsert: false,
+          defaultConstraints:
+              GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      .withConverter<RowId>($TodosTableTable.$converterid);
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -328,9 +333,7 @@ class $TodosTableTable extends TodosTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
+    context.handle(_idMeta, const VerificationResult.success());
     if (data.containsKey('title')) {
       context.handle(
           _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
@@ -366,8 +369,8 @@ class $TodosTableTable extends TodosTable
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TodoEntry(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      id: $TodosTableTable.$converterid.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!),
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title']),
       content: attachedDatabase.typeMapping
@@ -387,6 +390,8 @@ class $TodosTableTable extends TodosTable
     return $TodosTableTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<RowId, int, int> $converterid =
+      TypeConverter.extensionType<RowId, int>();
   static JsonTypeConverter2<TodoStatus, String, String> $converterstatus =
       const EnumNameConverter<TodoStatus>(TodoStatus.values);
   static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
@@ -394,7 +399,7 @@ class $TodosTableTable extends TodosTable
 }
 
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
-  final int id;
+  final RowId id;
   final String? title;
   final String content;
   final DateTime? targetDate;
@@ -410,7 +415,9 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    {
+      map['id'] = Variable<int>($TodosTableTable.$converterid.toSql(id));
+    }
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
     }
@@ -449,7 +456,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoEntry(
-      id: serializer.fromJson<int>(json['id']),
+      id: $TodosTableTable.$converterid
+          .fromJson(serializer.fromJson<int>(json['id'])),
       title: serializer.fromJson<String?>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
@@ -467,7 +475,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<int>($TodosTableTable.$converterid.toJson(id)),
       'title': serializer.toJson<String?>(title),
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
@@ -478,7 +486,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   TodoEntry copyWith(
-          {int? id,
+          {RowId? id,
           Value<String?> title = const Value.absent(),
           String? content,
           Value<DateTime?> targetDate = const Value.absent(),
@@ -521,7 +529,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
 }
 
 class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
-  final Value<int> id;
+  final Value<RowId> id;
   final Value<String?> title;
   final Value<String> content;
   final Value<DateTime?> targetDate;
@@ -562,7 +570,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   }
 
   TodosTableCompanion copyWith(
-      {Value<int>? id,
+      {Value<RowId>? id,
       Value<String?>? title,
       Value<String>? content,
       Value<DateTime?>? targetDate,
@@ -582,7 +590,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int>($TodosTableTable.$converterid.toSql(id.value));
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -624,13 +632,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  late final GeneratedColumnWithTypeConverter<RowId, int> id = GeneratedColumn<
+              int>('id', aliasedName, false,
+          hasAutoIncrement: true,
+          type: DriftSqlType.int,
+          requiredDuringInsert: false,
+          defaultConstraints:
+              GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      .withConverter<RowId>($UsersTable.$converterid);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -678,9 +687,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
+    context.handle(_idMeta, const VerificationResult.success());
     if (data.containsKey('name')) {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
@@ -714,8 +721,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      id: $UsersTable.$converterid.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!),
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       isAwesome: attachedDatabase.typeMapping
@@ -731,10 +738,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable createAlias(String alias) {
     return $UsersTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<RowId, int, int> $converterid =
+      TypeConverter.extensionType<RowId, int>();
 }
 
 class User extends DataClass implements Insertable<User> {
-  final int id;
+  final RowId id;
   final String name;
   final bool isAwesome;
   final Uint8List profilePicture;
@@ -748,7 +758,9 @@ class User extends DataClass implements Insertable<User> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    {
+      map['id'] = Variable<int>($UsersTable.$converterid.toSql(id));
+    }
     map['name'] = Variable<String>(name);
     map['is_awesome'] = Variable<bool>(isAwesome);
     map['profile_picture'] = Variable<Uint8List>(profilePicture);
@@ -770,7 +782,8 @@ class User extends DataClass implements Insertable<User> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return User(
-      id: serializer.fromJson<int>(json['id']),
+      id: $UsersTable.$converterid
+          .fromJson(serializer.fromJson<int>(json['id'])),
       name: serializer.fromJson<String>(json['name']),
       isAwesome: serializer.fromJson<bool>(json['isAwesome']),
       profilePicture: serializer.fromJson<Uint8List>(json['profilePicture']),
@@ -785,7 +798,7 @@ class User extends DataClass implements Insertable<User> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<int>($UsersTable.$converterid.toJson(id)),
       'name': serializer.toJson<String>(name),
       'isAwesome': serializer.toJson<bool>(isAwesome),
       'profilePicture': serializer.toJson<Uint8List>(profilePicture),
@@ -794,7 +807,7 @@ class User extends DataClass implements Insertable<User> {
   }
 
   User copyWith(
-          {int? id,
+          {RowId? id,
           String? name,
           bool? isAwesome,
           Uint8List? profilePicture,
@@ -834,7 +847,7 @@ class User extends DataClass implements Insertable<User> {
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
-  final Value<int> id;
+  final Value<RowId> id;
   final Value<String> name;
   final Value<bool> isAwesome;
   final Value<Uint8List> profilePicture;
@@ -871,7 +884,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 
   UsersCompanion copyWith(
-      {Value<int>? id,
+      {Value<RowId>? id,
       Value<String>? name,
       Value<bool>? isAwesome,
       Value<Uint8List>? profilePicture,
@@ -889,7 +902,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int>($UsersTable.$converterid.toSql(id.value));
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1872,7 +1885,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
           todosTable,
         }).map((QueryRow row) => AllTodosWithCategoryResult(
           row: row,
-          id: row.read<int>('id'),
+          id: $TodosTableTable.$converterid.fromSql(row.read<int>('id')),
           title: row.readNullable<String>('title'),
           content: row.read<String>('content'),
           targetDate: row.readNullable<DateTime>('target_date'),
@@ -1880,21 +1893,21 @@ abstract class _$TodoDb extends GeneratedDatabase {
           status: NullAwareTypeConverter.wrapFromSql(
               $TodosTableTable.$converterstatus,
               row.readNullable<String>('status')),
-          catId: row.read<int>('catId'),
+          catId: $CategoriesTable.$converterid.fromSql(row.read<int>('catId')),
           catDesc: row.read<String>('catDesc'),
         ));
   }
 
-  Future<int> deleteTodoById(int var1) {
+  Future<int> deleteTodoById(RowId var1) {
     return customUpdate(
       'DELETE FROM todos WHERE id = ?1',
-      variables: [Variable<int>(var1)],
+      variables: [Variable<int>($TodosTableTable.$converterid.toSql(var1))],
       updates: {todosTable},
       updateKind: UpdateKind.delete,
     );
   }
 
-  Selectable<TodoEntry> withIn(String? var1, String? var2, List<int> var3) {
+  Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {
     var $arrayStartIndex = 3;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
@@ -1903,18 +1916,19 @@ abstract class _$TodoDb extends GeneratedDatabase {
         variables: [
           Variable<String>(var1),
           Variable<String>(var2),
-          for (var $ in var3) Variable<int>($)
+          for (var $ in var3)
+            Variable<int>($TodosTableTable.$converterid.toSql($))
         ],
         readsFrom: {
           todosTable,
         }).asyncMap(todosTable.mapFromRow);
   }
 
-  Selectable<TodoEntry> search({required int id}) {
+  Selectable<TodoEntry> search({required RowId id}) {
     return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
         variables: [
-          Variable<int>(id)
+          Variable<int>($TodosTableTable.$converterid.toSql(id))
         ],
         readsFrom: {
           todosTable,
@@ -1949,13 +1963,13 @@ abstract class _$TodoDb extends GeneratedDatabase {
 }
 
 class AllTodosWithCategoryResult extends CustomResultSet {
-  final int id;
+  final RowId id;
   final String? title;
   final String content;
   final DateTime? targetDate;
   final int? category;
   final TodoStatus? status;
-  final int catId;
+  final RowId catId;
   final String catDesc;
   AllTodosWithCategoryResult({
     required QueryRow row,
@@ -2006,11 +2020,11 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
   $TodoWithCategoryViewView get todoWithCategoryView =>
       attachedDatabase.todoWithCategoryView;
-  Selectable<TodoEntry> todosForUser({required int user}) {
+  Selectable<TodoEntry> todosForUser({required RowId user}) {
     return customSelect(
         'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
         variables: [
-          Variable<int>(user)
+          Variable<int>($UsersTable.$converterid.toSql(user))
         ],
         readsFrom: {
           todosTable,

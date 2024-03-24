@@ -58,13 +58,14 @@ void main() {
 
         final returnedValue = await db
             .delete(db.todosTable)
-            .deleteReturning(const TodosTableCompanion(id: Value(10)));
+            .deleteReturning(const TodosTableCompanion(id: Value(RowId(10))));
 
         verify(executor.runSelect(
             'DELETE FROM "todos" WHERE "id" = ? RETURNING *;', [10]));
         verify(streamQueries.handleTableUpdates(
             {TableUpdate.onTable(db.todosTable, kind: UpdateKind.delete)}));
-        expect(returnedValue, const TodoEntry(id: 10, content: 'Content'));
+        expect(
+            returnedValue, const TodoEntry(id: RowId(10), content: 'Content'));
       });
 
       test('for multiple rows', () async {
@@ -112,7 +113,7 @@ void main() {
     });
 
     test('deleteOne()', () async {
-      await db.users.deleteOne(const UsersCompanion(id: Value(3)));
+      await db.users.deleteOne(const UsersCompanion(id: Value(RowId(3))));
 
       verify(
           executor.runDelete('DELETE FROM "users" WHERE "id" = ?;', const [3]));

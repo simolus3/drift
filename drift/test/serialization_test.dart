@@ -6,7 +6,7 @@ import 'generated/todos.dart';
 final DateTime _someDate = DateTime(2019, 06, 08);
 
 final TodoEntry _someTodoEntry = TodoEntry(
-  id: 3,
+  id: RowId(3),
   title: null,
   content: 'content',
   targetDate: _someDate,

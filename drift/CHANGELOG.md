@@ -2,6 +2,8 @@
 
 - Adds `companion` entry to `DataClassName` to override the name of the
   generated companion class.
+- Add the `TypeConverter.extensionType` factory to create type converters for
+  extension types.
 
 ## 2.16.0
 

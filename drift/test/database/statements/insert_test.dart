@@ -56,7 +56,7 @@ void main() {
   test('generates insert or replace statements', () async {
     await db.into(db.todosTable).insert(
         const TodoEntry(
-          id: 113,
+          id: RowId(113),
           content: 'Done',
         ),
         mode: InsertMode.insertOrReplace);
@@ -405,7 +405,8 @@ void main() {
     when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(3));
 
     final id = await db.into(db.todosTable).insertOnConflictUpdate(
-        TodosTableCompanion.insert(content: 'content', id: const Value(3)));
+        TodosTableCompanion.insert(
+            content: 'content', id: const Value(RowId(3))));
 
     verify(executor.runInsert(
       'INSERT INTO "todos" ("id", "content") VALUES (?, ?) '
@@ -615,7 +616,7 @@ void main() {
       expect(
         row,
         const Category(
-          id: 1,
+          id: RowId(1),
           description: 'description',
           descriptionInUpperCase: 'DESCRIPTION',
           priority: CategoryPriority.medium,

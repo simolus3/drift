@@ -190,7 +190,7 @@ void main() {
           stream,
           emits([
             Category(
-              id: 1,
+              id: RowId(1),
               description: 'From remote isolate!',
               priority: CategoryPriority.low,
               descriptionInUpperCase: 'FROM REMOTE ISOLATE!',
@@ -318,7 +318,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
     await database.into(database.todosTable).insert(initialCompanion);
     await expectLater(
       stream,
-      emits(const TodoEntry(id: 1, content: 'my content')),
+      emits(const TodoEntry(id: RowId(1), content: 'my content')),
     );
   });
 

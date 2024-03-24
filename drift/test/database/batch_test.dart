@@ -35,14 +35,14 @@ void main() {
       );
 
       b.replaceAll(db.categories, const [
-        CategoriesCompanion(id: Value(1), description: Value('new1')),
-        CategoriesCompanion(id: Value(2), description: Value('new2')),
+        CategoriesCompanion(id: Value(RowId(1)), description: Value('new1')),
+        CategoriesCompanion(id: Value(RowId(2)), description: Value('new2')),
       ]);
 
       b.deleteWhere<$CategoriesTable, Category>(
           db.categories, (tbl) => tbl.id.equals(1));
       b.deleteAll(db.categories);
-      b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
+      b.delete(db.todosTable, const TodosTableCompanion(id: Value(RowId(3))));
 
       b.update(db.users, const UsersCompanion(name: Value('new name 2')));
 
@@ -97,7 +97,7 @@ void main() {
         db.categories,
         CategoriesCompanion.insert(description: 'description'),
         onConflict: DoUpdate((old) {
-          return const CategoriesCompanion(id: Value(42));
+          return const CategoriesCompanion(id: Value(RowId(42)));
         }),
       );
     });
@@ -203,16 +203,17 @@ void main() {
 
   test('updates stream queries', () async {
     await db.batch((b) {
-      b.insert(db.todosTable, const TodoEntry(id: 3, content: 'content'));
+      b.insert(
+          db.todosTable, const TodoEntry(id: RowId(3), content: 'content'));
 
       b.update(db.users, const UsersCompanion(name: Value('new user name')));
       b.replace(
         db.todosTable,
-        const TodosTableCompanion(id: Value(3), content: Value('new')),
+        const TodosTableCompanion(id: Value(RowId(3)), content: Value('new')),
       );
 
       b.deleteWhere(db.todosTable, (TodosTable row) => row.id.equals(3));
-      b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
+      b.delete(db.todosTable, const TodosTableCompanion(id: Value(RowId(3))));
     });
 
     verify(

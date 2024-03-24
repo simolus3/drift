@@ -6,7 +6,7 @@ import '../generated/todos.dart';
 void main() {
   test('data classes can be serialized', () {
     final entry = TodoEntry(
-      id: 13,
+      id: RowId(13),
       title: 'Title',
       content: 'Content',
       targetDate: DateTime.now(),
@@ -36,7 +36,7 @@ void main() {
       driftRuntimeOptions.defaultSerializer = _MySerializer();
 
       final entry = TodoEntry(
-        id: 13,
+        id: RowId(13),
         title: 'Title',
         content: 'Content',
         category: 3,
@@ -59,7 +59,7 @@ void main() {
 
     test('can serialize and deserialize blob columns', () {
       final user = User(
-        id: 3,
+        id: RowId(3),
         name: 'Username',
         isAwesome: true,
         profilePicture: Uint8List.fromList(const [1, 2, 3, 4]),
@@ -79,7 +79,7 @@ void main() {
 
   test('generated data classes can be converted to companions', () {
     const entry = Category(
-      id: 3,
+      id: RowId(3),
       description: 'description',
       priority: CategoryPriority.low,
       descriptionInUpperCase: 'ignored',
@@ -91,7 +91,7 @@ void main() {
       companion,
       equals(CategoriesCompanion.insert(
         description: 'description',
-        id: const Value(3),
+        id: const Value(RowId(3)),
         priority: const Value(CategoryPriority.low),
       )),
     );

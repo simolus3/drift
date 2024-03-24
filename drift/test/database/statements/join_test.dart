@@ -81,7 +81,7 @@ void main() {
     expect(
         row.readTable(todos),
         TodoEntry(
-          id: 5,
+          id: RowId(5),
           title: 'title',
           content: 'content',
           targetDate: date,
@@ -92,7 +92,7 @@ void main() {
     expect(
       row.readTable(categories),
       const Category(
-        id: 3,
+        id: RowId(3),
         description: 'description',
         priority: CategoryPriority.high,
         descriptionInUpperCase: 'DESCRIPTION',
@@ -134,7 +134,7 @@ void main() {
     expect(
         row.readTable(db.todosTable),
         const TodoEntry(
-          id: 5,
+          id: RowId(5),
           title: 'title',
           content: 'content',
         ));
@@ -256,7 +256,7 @@ void main() {
       result.readTable(categories),
       equals(
         const Category(
-          id: 3,
+          id: RowId(3),
           description: 'Description',
           descriptionInUpperCase: 'DESCRIPTION',
           priority: CategoryPriority.medium,
@@ -306,7 +306,7 @@ void main() {
       result.readTable(categories),
       equals(
         const Category(
-          id: 3,
+          id: RowId(3),
           description: 'Description',
           descriptionInUpperCase: 'DESCRIPTION',
           priority: CategoryPriority.medium,
@@ -362,7 +362,7 @@ void main() {
     expect(
       result.readTable(categories),
       const Category(
-        id: 3,
+        id: RowId(3),
         description: 'desc',
         descriptionInUpperCase: 'DESC',
         priority: CategoryPriority.low,
