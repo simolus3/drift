@@ -54,7 +54,8 @@ class DriftProtocol {
   }
 
   Message deserialize(Object message) {
-    if (message is! List) throw const FormatException('Cannot read message');
+    if (message is! List)
+      throw FormatException('Cannot read message ${message.runtimeType}');
 
     final tag = message[0];
     final id = message[1] as int;
