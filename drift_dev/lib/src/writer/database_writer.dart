@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 // ignore: implementation_imports
 import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift_dev/src/writer/manager.dart';
 import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';
 
@@ -38,11 +39,14 @@ class DatabaseWriter {
   void write() {
     final elements = input.resolvedAccessor.availableElements;
 
+    final shortcutWriter = ManagerWriter(scope.child(), dbClassName);
+
     // Write data classes, companions and info classes
     if (!scope.generationOptions.isModular) {
       for (final reference in elements) {
         if (reference is DriftTable) {
           TableWriter(reference, scope.child()).writeInto();
+          shortcutWriter.addTable(reference);
         } else if (reference is DriftView) {
           ViewWriter(reference, scope.child(), this).write();
         }
