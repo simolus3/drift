@@ -1,5 +1,35 @@
 part of 'manager.dart';
 
+/// Defines a class which is used to wrap a column to only expose ordering functions
+class ColumnOrderings<T extends Object> {
+  /// This class is a wrapper on top of the generated column class
+  ///
+  /// It's used to expose ordering functions for a column
+  ///
+  /// ```dart
+  /// extension on FilterComposer<DateTime>{
+  ///  FitlerBuilder after2000() => isAfter(DateTime(2000));
+  ///}
+  /// ```
+  ColumnOrderings(this.column);
+
+  /// Column that this [ColumnOrderings] wraps
+  GeneratedColumn<T> column;
+
+  /// Sort this column in ascending order
+  ///
+  /// 10 -> 1 | Z -> A | Dec 31 -> Jan 1
+  ComposableOrdering asc() =>
+      ComposableOrdering.simple({OrderingBuilder(OrderingMode.asc, column)});
+
+  /// Sort this column in descending order
+  ///
+  ///  1 -> 10 | A -> Z | Jan 1 -> Dec 31
+  ComposableOrdering desc() =>
+      ComposableOrdering.simple({OrderingBuilder(OrderingMode.desc, column)});
+}
+
+/// Defines a class which will hold the information needed to create an ordering
 class OrderingBuilder {
   /// The mode of the ordering
   final OrderingMode mode;
@@ -7,6 +37,7 @@ class OrderingBuilder {
   /// The column that the ordering is applied to
   final GeneratedColumn column;
 
+  /// Create a new ordering builder, will be used by the [TableManagerState] to create [OrderingTerm]s
   OrderingBuilder(this.mode, this.column);
 
   @override
@@ -26,7 +57,11 @@ class OrderingBuilder {
 }
 
 /// Defines a class that can be used to compose orderings for a column
+///
+/// Multiple orderings can be composed together using the `&` operator.
+/// The orderings will be executed from left to right.
 class ComposableOrdering implements HasJoinBuilders {
+  /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
   @override
   final Set<JoinBuilder> joinBuilders;
@@ -35,11 +70,14 @@ class ComposableOrdering implements HasJoinBuilders {
     joinBuilders.add(builder);
   }
 
-  /// Create a new ordering for a column
+  /// Create a new [ComposableOrdering] for a column without any joins
   ComposableOrdering.simple(this.orderingBuilders) : joinBuilders = {};
+
+  /// Create a new [ComposableOrdering] for a column with joins
   ComposableOrdering.withJoin(this.orderingBuilders, this.joinBuilders);
 
-  ComposableOrdering operator |(ComposableOrdering other) {
+  /// Combine two orderings with THEN
+  ComposableOrdering operator &(ComposableOrdering other) {
     return ComposableOrdering.withJoin(
         orderingBuilders.union(other.orderingBuilders),
         joinBuilders.union(other.joinBuilders));
@@ -52,12 +90,13 @@ class ComposableOrdering implements HasJoinBuilders {
 }
 
 /// The class that orchestrates the composition of orderings
+///
+///
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
-  /// Create a new ordering composer from existing query state
-  // OrderingComposer.fromComposer(super.state);
-
   /// Create an ordering composer with an empty state
   OrderingComposer.empty(super.db, super.table) : super.empty();
+
+  /// Create an ordering composer using another composers state
   OrderingComposer.withAliasedTable(super.data) : super.withAliasedTable();
 }

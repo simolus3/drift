@@ -29,9 +29,7 @@ class ManagerWriter {
       filters.writeln(
           "ColumnFilters get $getterName => ColumnFilters(state.table.${col.nameInDart});");
       orderings.writeln(
-          "ComposableOrdering get ${getterName}Asc => ComposableOrdering.simple({OrderingBuilder( OrderingMode.asc, state.table.${col.nameInDart})});");
-      orderings.writeln(
-          "ComposableOrdering get ${getterName}Desc => ComposableOrdering.simple({OrderingBuilder( OrderingMode.desc, state.table.${col.nameInDart})});");
+          "ColumnOrderings get $getterName => ColumnOrderings(state.table.${col.nameInDart});");
 
       if (col.isForeignKey) {
         final referencedCol = col.constraints

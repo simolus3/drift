@@ -1,6 +1,6 @@
 part of 'manager.dart';
 
-/// Defines a class that can be used to compose filters for a column
+/// Defines a class which is used to wrap a column to only expose filter functions
 class ColumnFilters<T extends Object> {
   /// This class is a wrapper on top of the generated column class
   ///
@@ -18,111 +18,99 @@ class ColumnFilters<T extends Object> {
   /// Column that this [ColumnFilters] wraps
   GeneratedColumn<T> column;
 
-  // ignore: public_member_api_docs
+  /// Create a filter that checks if the column is null.
   ComposableFilter isNull() => ComposableFilter.simple(column.isNull());
-  // ignore: public_member_api_docs
+
+  /// Create a filter that checks if the column is not null.
   ComposableFilter isNotNull() => ComposableFilter.simple(column.isNotNull());
-  // ignore: public_member_api_docs
+
+  /// Create a filter that checks if the column equals a value.
   ComposableFilter equals(T value) =>
+      ComposableFilter.simple(column.equals(value));
+
+  /// Create a filter that checks if the column equals a value.
+  ComposableFilter call(T value) =>
       ComposableFilter.simple(column.equals(value));
 }
 
 /// Built in filters for int/double columns
 extension NumFilters<T extends num> on ColumnFilters<T> {
-  // ignore: public_member_api_docs
+  /// Create a filter to check if the column is bigger than a value
   ComposableFilter isBiggerThan(T value) =>
       ComposableFilter.simple(column.isBiggerThanValue(value));
-// ignore: public_member_api_docs
-  ComposableFilter isNotBiggerThan(T value) => isBiggerThan(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is small than a value
   ComposableFilter isSmallerThan(T value) =>
       ComposableFilter.simple(column.isSmallerThanValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotSmallerThan(T value) =>
-      isSmallerThan(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is bigger or equal to a value
   ComposableFilter isBiggerOrEqualTo(T value) =>
       ComposableFilter.simple(column.isBiggerOrEqualValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotBiggerOrEqualTo(T value) =>
-      isBiggerOrEqualTo(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is small or equal to a value
   ComposableFilter isSmallerOrEqualTo(T value) =>
       ComposableFilter.simple(column.isSmallerOrEqualValue(value));
-// ignore: public_member_api_docs
-  ComposableFilter isNotSmallerOrEqualTo(T value) =>
-      isSmallerOrEqualTo(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is between two values
   ComposableFilter isBetween(T lower, T higher) =>
       ComposableFilter.simple(column.isBetweenValues(lower, higher));
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is not between two values
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._reversed();
 }
 
 /// Built in filters for BigInt columns
 extension BigIntFilters<T extends BigInt> on ColumnFilters<T> {
-  // ignore: public_member_api_docs
+  /// Create a filter to check if the column is bigger than a value
   ComposableFilter isBiggerThan(T value) =>
       ComposableFilter.simple(column.isBiggerThanValue(value));
-// ignore: public_member_api_docs
-  ComposableFilter isNotBiggerThan(T value) => isBiggerThan(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is small than a value
   ComposableFilter isSmallerThan(T value) =>
       ComposableFilter.simple(column.isSmallerThanValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotSmallerThan(T value) =>
-      isSmallerThan(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is bigger or equal to a value
   ComposableFilter isBiggerOrEqualTo(T value) =>
       ComposableFilter.simple(column.isBiggerOrEqualValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotBiggerOrEqualTo(T value) =>
-      isBiggerOrEqualTo(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is small or equal to a value
   ComposableFilter isSmallerOrEqualTo(T value) =>
       ComposableFilter.simple(column.isSmallerOrEqualValue(value));
-// ignore: public_member_api_docs
-  ComposableFilter isNotSmallerOrEqualTo(T value) =>
-      isSmallerOrEqualTo(value)._reversed();
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is between two values
   ComposableFilter isBetween(T lower, T higher) =>
       ComposableFilter.simple(column.isBetweenValues(lower, higher));
-// ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is not between two values
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._reversed();
 }
 
 /// Built in filters for String columns
 extension DateFilters<T extends DateTime> on ColumnFilters<T> {
-// ignore: public_member_api_docs
+  /// Create a filter to check if the column is after a [DateTime]
   ComposableFilter isAfter(T value) =>
       ComposableFilter.simple(column.isBiggerThanValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotAfter(T value) => isAfter(value)._reversed();
 
-  // ignore: public_member_api_docs
+  /// Create a filter to check if the column is before a [DateTime]
   ComposableFilter isBefore(T value) =>
       ComposableFilter.simple(column.isSmallerThanValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotBefore(T value) => isBefore(value)._reversed();
 
-  // ignore: public_member_api_docs
+  /// Create a filter to check if the column is on or after a [DateTime]
   ComposableFilter isAfterOrOn(T value) =>
       ComposableFilter.simple(column.isBiggerOrEqualValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotAfterOrOn(T value) => isAfterOrOn(value)._reversed();
 
-  // ignore: public_member_api_docs
+  /// Create a filter to check if the column is before or on a [DateTime]
   ComposableFilter isBeforeOrOn(T value) =>
       ComposableFilter.simple(column.isSmallerOrEqualValue(value));
-  // ignore: public_member_api_docs
-  ComposableFilter isNotBeforeOrOn(T value) => isBeforeOrOn(value)._reversed();
 
-  // ignore: public_member_api_docs
+  /// Create a filter to check if the column is between 2 [DateTime]s
+
   ComposableFilter isBetween(T lower, T higher) =>
       ComposableFilter.simple(column.isBetweenValues(lower, higher));
-  // ignore: public_member_api_docs
+
+  /// Create a filter to check if the column is not between 2 [DateTime]s
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._reversed();
 }
@@ -186,12 +174,11 @@ class ComposableFilter implements HasJoinBuilders {
 }
 
 /// The class that orchestrates the composition of filtering
-class FilterComposer<DB extends GeneratedDatabase, T extends TableInfo>
+class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
-  /// Create a new filter composer from existing query state
-  // FilterComposer(super.state);
-
   /// Create a filter composer with an empty state
   FilterComposer.empty(super.db, super.table) : super.empty();
+
+  /// Create a filter composer using another composers state
   FilterComposer.withAliasedTable(super.data) : super.withAliasedTable();
 }

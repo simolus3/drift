@@ -21,7 +21,7 @@ class ComposerState<DB extends GeneratedDatabase, T extends Table>
   /// Get a random alias for a table
   String _getRandomAlias(TableInfo table) {
     var aliasName = '${table.actualTableName}__${Random().nextInt(4294967296)}';
-    while (joinBuilders.aliasedNames.contains(aliasName)) {
+    while (joinBuilders.map((e) => (e.aliasedName)).contains(aliasName)) {
       aliasName = '${table.actualTableName}__${Random().nextInt(4294967296)}';
       continue;
     }
@@ -44,10 +44,26 @@ class AliasedComposerBuilder<DB extends GeneratedDatabase, RT extends Table,
   );
 }
 
-/// Base class for all query composers
+/// Base class for all composers
+///
+/// Any class that can be composed using the `&` or `|` operator is called a composable,
+/// and must implement the [HasJoinBuilders] interface. [ComposableFilter] and [ComposableOrdering] are examples of composable classes.
+///
+/// The [Composer] class is a top level manager for this operation.
+/// ```dart
+/// filter((f) => f.id.equals(1) & f.name.equals('Bob'));
+/// ```
+/// `f` in this example is a [Composer] object, and `f.id.equals(1) & f.name.equals('Bob')` is a [ComposableFilter] object.
+///
+/// The [Composer] class is responsible for creating joins between tables, and passing them down to the composable classes.
+/// This is done to ensure that duplicate joins are never created.
+///
+/// The [ComposerState] that is held in this class only holds temporary state, as the final state will be held in the composable classes.
+/// E.G. In the example above, the resulting [ComposableFilter] object is returned, and the [FilterComposer] is discarded.
+///
 @internal
 sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
-  /// The state of the query composer
+  /// The state of the composer
   final ComposerState<DB, CT> state;
 
   Composer.withAliasedTable(AliasedComposerBuilder<DB, dynamic, CT> data)
@@ -55,9 +71,7 @@ sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
             data.state.db, data.aliasedTable, data.state.joinBuilders);
   Composer.empty(DB db, CT table) : state = ComposerState._(db, table, {});
 
-  /// Helper method for creaing an aliased join
-  /// and adding it to the state and Composable object
-
+  /// Method for create a join between two tables
   B referenced<RT extends Table, QC extends Composer<DB, RT>,
       B extends HasJoinBuilders>({
     required GeneratedColumn Function(CT) getCurrentColumn,
@@ -107,8 +121,6 @@ sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
     // that state doesnt have, it is also possible that the result is missing
     // the `joinBuilder` we create above.
     // We will combine both sets and set it to `state.joinBuilders` and `result.joinBuilders`
-
-    // Add the joins that may have been created in the filterBuilder to state
     for (var joinBuilder in result.joinBuilders.union(state.joinBuilders)) {
       state.addJoinBuilder(joinBuilder);
       result.addJoinBuilder(joinBuilder);

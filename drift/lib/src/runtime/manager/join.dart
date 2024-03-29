@@ -58,8 +58,3 @@ abstract interface class HasJoinBuilders {
   /// Add a join builder to this class
   void addJoinBuilder(JoinBuilder builder);
 }
-
-/// Helper for getting all the aliased names of a set of join builders
-extension on Set<JoinBuilder> {
-  List<String> get aliasedNames => map((e) => (e.aliasedName)).toList();
-}

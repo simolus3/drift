@@ -7,10 +7,10 @@ part 'filter.dart';
 part 'join.dart';
 part 'ordering.dart';
 
-/// Defines a class that holds the state for a table manager
+/// Defines a class that holds the state for a [BaseTableManager]
 class TableManagerState<
     DB extends GeneratedDatabase,
-    T extends TableInfo,
+    T extends Table,
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>> {
@@ -23,10 +23,12 @@ class TableManagerState<
   /// The expression that will be applied to the query
   final Expression<bool>? filter;
 
-  /// The orderings that will be applied to the query
+  /// A set of [OrderingBuilder] which will be used to apply
+  /// [OrderingTerm]s to the statement when it's eventually built
   final Set<OrderingBuilder> orderingBuilders;
 
-  /// The joins that will be applied to the query
+  /// A set of [JoinBuilder] which will be used to create [Join]s
+  /// that will be applied to the build statement
   final Set<JoinBuilder> joinBuilders;
 
   /// Whether the query should return distinct results
@@ -38,15 +40,19 @@ class TableManagerState<
   /// If set, the number of rows that will be skipped
   final int? offset;
 
-  /// The composer for the filters
+  /// The [FilterComposer] for this [TableManagerState]
+  /// This class will be used to create filtering [Expression]s
+  /// which will be applied to the statement when its eventually created
   final FS filteringComposer;
 
-  /// The composer for the orderings
+  /// The [OrderingComposer] for this [TableManagerState]
+  /// This class will be used to create [OrderingTerm]s
+  /// which will be applied to the statement when its eventually created
   final OS orderingComposer;
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
-  /// This is held in a seperate class so that the state can be passed down from the root manager to the lower level managers
+  /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
   TableManagerState({
     required this.db,
     required this.table,
@@ -88,7 +94,8 @@ class TableManagerState<
   /// This is needed due to dart's limitations with generics
   TableInfo<T, DT> get _tableAsTableInfo => table as TableInfo<T, DT>;
 
-  /// Builds a joined select statement.
+  /// Builds a joined  select statement, should be used when joins are present
+  /// Will order, filter, and limit the statement using the state
   JoinedSelectStatement _buildJoinedSelectStatement() {
     // Build the joins
     final joins = joinBuilders.map((e) => e.buildJoin()).toList();
@@ -112,9 +119,10 @@ class TableManagerState<
     return statement;
   }
 
-  /// Builds a simple select statement
+  /// Builds a simple select statement, this should be used when there are no joins
+  /// Will order, filter, and limit the statement using the state
   SimpleSelectStatement<T, DT> _buildSimpleSelectStatement() {
-    // Create the joined statement
+    // Create the statement
     final statement = db.select(_tableAsTableInfo, distinct: distinct ?? false);
 
     // Apply the expression to the statement
