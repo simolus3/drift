@@ -26,8 +26,20 @@ class ManagerWriter {
       final getterName =
           (col.nameInDart + (col.isForeignKey ? " id" : " ")).camelCase;
 
-      filters.writeln(
-          "ColumnFilters get $getterName => ColumnFilters(state.table.${col.nameInDart});");
+      // The type this column stores
+      final innerColumnType = leaf.dartCode(leaf.innerColumnType(col.sqlType));
+
+      if (col.typeConverter == null) {
+        filters.writeln(
+            "ColumnFilters<$innerColumnType> get $getterName => ColumnFilters(state.table.${col.nameInDart});");
+      } else {
+        filters.writeln(
+            "ColumnFilters<$innerColumnType> get ${getterName}Value => ColumnFilters(state.table.${col.nameInDart});");
+        final mappedType = leaf.dartCode(leaf.writer.dartType(col));
+        filters.writeln(
+            "ColumnWithTypeConverterFilters<$mappedType,$innerColumnType> get $getterName => ColumnWithTypeConverterFilters(state.table.${col.nameInDart});");
+      }
+
       orderings.writeln(
           "ColumnOrderings get $getterName => ColumnOrderings(state.table.${col.nameInDart});");
 
@@ -40,15 +52,16 @@ class ManagerWriter {
           if (referencedCol.owner is DriftTable) {
             final referencedTableGetter = referencedCol.owner.dbGetterName;
             final referencedEntityInfoName = referencedCol.owner.entityInfoName;
+
             if (referencedTableGetter != null) {
               filters.write('''
 
 ComposableFilter ${col.nameInDart}Filter(
-          ComposableFilter Function(${referencedEntityInfoName}FilterComposer) f) {
+          ComposableFilter Function(${referencedEntityInfoName}FilterComposer f) f) {
         return referenced(
             referencedTable: state.db.$referencedTableGetter,
-            getCurrentColumn: (p0) => p0.${col.nameInDart},
-            getReferencedColumn: (p0) => p0.${referencedCol.nameInDart},
+            getCurrentColumn: (f) => f.${col.nameInDart},
+            getReferencedColumn: (f) => f.${referencedCol.nameInDart},
             getReferencedQueryComposer: (data) =>
                 ${referencedEntityInfoName}FilterComposer.withAliasedTable(data),
             builder: f);
@@ -59,14 +72,14 @@ ComposableFilter ${col.nameInDart}Filter(
               orderings.write('''
 
 ComposableOrdering ${col.nameInDart}OrderBy(
-          ComposableOrdering Function(${referencedEntityInfoName}OrderingComposer) f) {
+          ComposableOrdering Function(${referencedEntityInfoName}OrderingComposer o) o) {
         return referenced(
             referencedTable: state.db.$referencedTableGetter,
-            getCurrentColumn: (p0) => p0.${col.nameInDart},
-            getReferencedColumn: (p0) => p0.${referencedCol.nameInDart},
+            getCurrentColumn: (f) => f.${col.nameInDart},
+            getReferencedColumn: (f) => f.${referencedCol.nameInDart},
             getReferencedQueryComposer: (data) =>
                 ${referencedEntityInfoName}OrderingComposer.withAliasedTable(data),
-            builder: f);
+            builder: o);
           }
           
           ''');
@@ -115,8 +128,8 @@ class ${table.entityInfoName}ProcessedTableManagerWithOrdering extends Processed
   ${table.entityInfoName}ProcessedTableManagerWithOrdering(super.data);
 
   ${table.entityInfoName}ProcessedTableManager orderBy(
-      ComposableOrdering Function(${table.entityInfoName}OrderingComposer o) order) {
-    final ordering = order(state.orderingComposer);
+      ComposableOrdering Function(${table.entityInfoName}OrderingComposer o) o) {
+    final ordering = o(state.orderingComposer);
     return ${table.entityInfoName}ProcessedTableManager(state.copyWith(
         orderingTerms: state.orderingBuilders.union(ordering.orderingBuilders),
         joinBuilders: state.joinBuilders.union(ordering.joinBuilders)));
@@ -141,8 +154,8 @@ class ${table.entityInfoName}TableManager extends RootTableManager<$_dbClassName
   }
 
     ${table.entityInfoName}ProcessedTableManagerWithFiltering orderBy(
-      ComposableOrdering Function(${table.entityInfoName}OrderingComposer o) order) {
-    final ordering = order(state.orderingComposer);
+      ComposableOrdering Function(${table.entityInfoName}OrderingComposer o) o) {
+    final ordering = o(state.orderingComposer);
     return ${table.entityInfoName}ProcessedTableManagerWithFiltering(state.copyWith(
         orderingTerms: state.orderingBuilders.union(ordering.orderingBuilders),
         joinBuilders: state.joinBuilders.union(ordering.joinBuilders)));

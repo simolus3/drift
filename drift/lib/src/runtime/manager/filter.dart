@@ -1,7 +1,7 @@
 part of 'manager.dart';
 
 /// Defines a class which is used to wrap a column to only expose filter functions
-class ColumnFilters<T extends Object, C extends GeneratedColumn<T>> {
+class ColumnFilters<T extends Object> {
   /// This class is a wrapper on top of the generated column class
   ///
   /// It's used to expose filter functions for a column type
@@ -16,7 +16,7 @@ class ColumnFilters<T extends Object, C extends GeneratedColumn<T>> {
   ColumnFilters(this.column);
 
   /// Column that this [ColumnFilters] wraps
-  C column;
+  GeneratedColumn<T> column;
 
   /// Create a filter that checks if the column is null.
   ComposableFilter isNull() => ComposableFilter.simple(column.isNull());
@@ -34,7 +34,7 @@ class ColumnFilters<T extends Object, C extends GeneratedColumn<T>> {
 }
 
 /// Built in filters for int/double columns
-extension NumFilters<T extends num> on ColumnFilters<T, GeneratedColumn<T>> {
+extension NumFilters<T extends num> on ColumnFilters<T> {
   /// Create a filter to check if the column is bigger than a value
   ComposableFilter isBiggerThan(T value) =>
       ComposableFilter.simple(column.isBiggerThanValue(value));
@@ -61,8 +61,7 @@ extension NumFilters<T extends num> on ColumnFilters<T, GeneratedColumn<T>> {
 }
 
 /// Built in filters for BigInt columns
-extension BigIntFilters<T extends BigInt>
-    on ColumnFilters<T, GeneratedColumn<T>> {
+extension BigIntFilters<T extends BigInt> on ColumnFilters<T> {
   /// Create a filter to check if the column is bigger than a value
   ComposableFilter isBiggerThan(T value) =>
       ComposableFilter.simple(column.isBiggerThanValue(value));
@@ -89,8 +88,7 @@ extension BigIntFilters<T extends BigInt>
 }
 
 /// Built in filters for String columns
-extension DateFilters<T extends DateTime>
-    on ColumnFilters<T, GeneratedColumn<T>> {
+extension DateFilters<T extends DateTime> on ColumnFilters<T> {
   /// Create a filter to check if the column is after a [DateTime]
   ComposableFilter isAfter(T value) =>
       ComposableFilter.simple(column.isBiggerThanValue(value));
@@ -117,21 +115,44 @@ extension DateFilters<T extends DateTime>
       isBetween(lower, higher)._reversed();
 }
 
-extension CustomFilters<CUSTOM, T extends Object,
-        C extends GeneratedColumnWithTypeConverter<CUSTOM, T>>
-    on ColumnFilters<T, C> {
-  /// Create a filter that checks if the column equals the columns custom type
+/// Defines a class which is used to wrap a column with a type converter to only expose filter functions
+class ColumnWithTypeConverterFilters<CUSTOM, T extends Object> {
+  /// Similar to [ColumnFilters] but for columns with type converters
+  ColumnWithTypeConverterFilters(this.column);
+
+  /// Column that this [ColumnWithTypeConverterFilters] wraps
+  GeneratedColumnWithTypeConverter<CUSTOM, T> column;
+
+  /// Create a filter that checks if the column is null.
+  ComposableFilter isNull() => ComposableFilter.simple(column.isNull());
+
+  /// Create a filter that checks if the column is not null.
+  ComposableFilter isNotNull() => ComposableFilter.simple(column.isNotNull());
+
+  /// Create a filter that checks if the column equals a value.
   ComposableFilter equals(CUSTOM value) =>
       ComposableFilter.simple(column.equalsValue(value));
-
-  /// Create a filter that checks if the column equals the value of the columns custom type
-  ComposableFilter equalsValue(T value) =>
-      ComposableFilter.simple(column.equals(value));
 
   /// Shortcut for [equals]
   ComposableFilter call(CUSTOM value) =>
       ComposableFilter.simple(column.equalsValue(value));
 }
+
+// extension CustomFilters<CUSTOM, T extends Object,
+//         C extends GeneratedColumnWithTypeConverter<CUSTOM, T>>
+//     on ColumnFilters<T, C> {
+//   /// Create a filter that checks if the column equals the columns custom type
+//   ComposableFilter equals(CUSTOM value) =>
+//       ComposableFilter.simple(column.equalsValue(value));
+
+//   /// Create a filter that checks if the column equals the value of the columns custom type
+//   ComposableFilter equalsValue(T value) =>
+//       ComposableFilter.simple(column.equals(value));
+
+//   /// Shortcut for [equals]
+//   ComposableFilter call(CUSTOM value) =>
+//       ComposableFilter.simple(column.equalsValue(value));
+// }
 
 /// Defines a class that can be used to compose filters for a column
 class ComposableFilter implements HasJoinBuilders {
