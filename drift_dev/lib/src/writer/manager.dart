@@ -43,7 +43,7 @@ class ManagerWriter {
             if (referencedTableGetter != null) {
               filters.write('''
 
-ComposableFilter ${col.nameInDart}OrderBy(
+ComposableFilter ${col.nameInDart}Filter(
           ComposableFilter Function(${referencedEntityInfoName}FilterComposer) f) {
         return referenced(
             referencedTable: state.db.$referencedTableGetter,
@@ -152,7 +152,7 @@ class ${table.entityInfoName}TableManager extends RootTableManager<$_dbClassName
   }
 
   String get managerGetter {
-    return '''${_dbClassName}Manager managers => ${_dbClassName}Manager(this);''';
+    return '''${_dbClassName}Manager get managers => ${_dbClassName}Manager(this);''';
   }
 
   void addTable(DriftTable table) {
