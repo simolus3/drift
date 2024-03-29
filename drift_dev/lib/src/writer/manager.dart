@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
@@ -11,20 +10,21 @@ extension on DriftColumn {
 }
 
 class ManagerWriter {
-  final Scope scope;
-  final String dbClassName;
+  final Scope _scope;
+  final String _dbClassName;
+  final List<DriftTable> _addedTables;
 
-  ManagerWriter(this.scope, this.dbClassName);
+  ManagerWriter(this._scope, this._dbClassName) : _addedTables = [];
 
-  void addTable(DriftTable table) {
-    final leaf = scope.leaf();
+  void _writeTableManagers(DriftTable table) {
+    final leaf = _scope.leaf();
 
     final filters = StringBuffer();
     final orderings = StringBuffer();
 
     for (var col in table.columns) {
       final getterName =
-          ReCase(col.nameInDart + (col.isForeignKey ? " id" : " ")).camelCase;
+          (col.nameInDart + (col.isForeignKey ? " id" : " ")).camelCase;
 
       filters.writeln(
           "ColumnFilters get $getterName => ColumnFilters(state.table.${col.nameInDart});");
@@ -46,7 +46,7 @@ class ManagerWriter {
 ComposableFilter ${col.nameInDart}OrderBy(
           ComposableFilter Function(${referencedEntityInfoName}FilterComposer) f) {
         return referenced(
-            referencedTable: state.db.${referencedTableGetter},
+            referencedTable: state.db.$referencedTableGetter,
             getCurrentColumn: (p0) => p0.${col.nameInDart},
             getReferencedColumn: (p0) => p0.${referencedCol.nameInDart},
             getReferencedQueryComposer: (data) =>
@@ -61,7 +61,7 @@ ComposableFilter ${col.nameInDart}OrderBy(
 ComposableOrdering ${col.nameInDart}OrderBy(
           ComposableOrdering Function(${referencedEntityInfoName}OrderingComposer) f) {
         return referenced(
-            referencedTable: state.db.${referencedTableGetter},
+            referencedTable: state.db.$referencedTableGetter,
             getCurrentColumn: (p0) => p0.${col.nameInDart},
             getReferencedColumn: (p0) => p0.${referencedCol.nameInDart},
             getReferencedQueryComposer: (data) =>
@@ -78,26 +78,26 @@ ComposableOrdering ${col.nameInDart}OrderBy(
 
     leaf.write("""
 
-class ${table.entityInfoName}FilterComposer extends FilterComposer<$dbClassName, ${table.entityInfoName}> {
+class ${table.entityInfoName}FilterComposer extends FilterComposer<$_dbClassName, ${table.entityInfoName}> {
   ${table.entityInfoName}FilterComposer.empty(super.db, super.table) : super.empty();
   ${table.entityInfoName}FilterComposer.withAliasedTable(super.data) : super.withAliasedTable();
 
   $filters
 }
 
-class ${table.entityInfoName}OrderingComposer extends OrderingComposer<$dbClassName, ${table.entityInfoName}> {
+class ${table.entityInfoName}OrderingComposer extends OrderingComposer<$_dbClassName, ${table.entityInfoName}> {
   ${table.entityInfoName}OrderingComposer.empty(super.db, super.table) : super.empty();
   ${table.entityInfoName}OrderingComposer.withAliasedTable(super.data) : super.withAliasedTable();
 
   $orderings
 }
 
-class ${table.entityInfoName}ProcessedTableManager extends ProcessedTableManager<$dbClassName,
+class ${table.entityInfoName}ProcessedTableManager extends ProcessedTableManager<$_dbClassName,
     ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
   ${table.entityInfoName}ProcessedTableManager(super.data);
 }
 
-class ${table.entityInfoName}ProcessedTableManagerWithFiltering extends ProcessedTableManager<$dbClassName,
+class ${table.entityInfoName}ProcessedTableManagerWithFiltering extends ProcessedTableManager<$_dbClassName,
     ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
   ${table.entityInfoName}ProcessedTableManagerWithFiltering(super.data);
 
@@ -110,7 +110,7 @@ class ${table.entityInfoName}ProcessedTableManagerWithFiltering extends Processe
   }
 }
 
-class ${table.entityInfoName}ProcessedTableManagerWithOrdering extends ProcessedTableManager<$dbClassName,
+class ${table.entityInfoName}ProcessedTableManagerWithOrdering extends ProcessedTableManager<$_dbClassName,
     ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
   ${table.entityInfoName}ProcessedTableManagerWithOrdering(super.data);
 
@@ -123,8 +123,9 @@ class ${table.entityInfoName}ProcessedTableManagerWithOrdering extends Processed
   }
 }
 
-class ${table.entityInfoName}TableManager extends ${table.entityInfoName}ProcessedTableManager {
-  ${table.entityInfoName}TableManager($dbClassName db, ${table.entityInfoName} table)
+class ${table.entityInfoName}TableManager extends RootTableManager<$_dbClassName,
+    ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
+  ${table.entityInfoName}TableManager($_dbClassName db, ${table.entityInfoName} table)
       : super(TableManagerState(
             db: db,
             table: table,
@@ -146,6 +147,37 @@ class ${table.entityInfoName}TableManager extends ${table.entityInfoName}Process
         orderingTerms: state.orderingBuilders.union(ordering.orderingBuilders),
         joinBuilders: state.joinBuilders.union(ordering.joinBuilders)));
   }
+}
+""");
+  }
+
+  String get managerGetter {
+    return '''${_dbClassName}Manager managers => ${_dbClassName}Manager(this);''';
+  }
+
+  void addTable(DriftTable table) {
+    _addedTables.add(table);
+  }
+
+  void write() {
+    for (var table in _addedTables) {
+      _writeTableManagers(table);
+    }
+    final leaf = _scope.leaf();
+    final tableManagerGetters = StringBuffer();
+
+    for (var table in _addedTables) {
+      tableManagerGetters.writeln(
+          "${table.entityInfoName}TableManager get ${table.dbGetterName} => ${table.entityInfoName}TableManager(_db, _db.${table.dbGetterName});");
+    }
+
+    leaf.write("""
+class ${_dbClassName}Manager {
+  final $_dbClassName _db;
+
+  ${_dbClassName}Manager(this._db);
+
+  $tableManagerGetters
 }
 """);
   }
