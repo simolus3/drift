@@ -66,20 +66,19 @@ class ComposableOrdering implements HasJoinBuilders {
   @override
   final Set<JoinBuilder> joinBuilders;
   @override
-  void addJoinBuilder(JoinBuilder builder) {
-    joinBuilders.add(builder);
+  void addJoinBuilders(Set<JoinBuilder> builders) {
+    joinBuilders.addAll(builders);
   }
 
   /// Create a new [ComposableOrdering] for a column without any joins
   ComposableOrdering.simple(this.orderingBuilders) : joinBuilders = {};
 
   /// Create a new [ComposableOrdering] for a column with joins
-  ComposableOrdering.withJoin(this.orderingBuilders, this.joinBuilders);
+  ComposableOrdering._(this.orderingBuilders, this.joinBuilders);
 
   /// Combine two orderings with THEN
   ComposableOrdering operator &(ComposableOrdering other) {
-    return ComposableOrdering.withJoin(
-        orderingBuilders.union(other.orderingBuilders),
+    return ComposableOrdering._(orderingBuilders.union(other.orderingBuilders),
         joinBuilders.union(other.joinBuilders));
   }
 
@@ -90,13 +89,8 @@ class ComposableOrdering implements HasJoinBuilders {
 }
 
 /// The class that orchestrates the composition of orderings
-///
-///
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// Create an ordering composer with an empty state
-  OrderingComposer.empty(super.db, super.table) : super.empty();
-
-  /// Create an ordering composer using another composers state
-  OrderingComposer.withAliasedTable(super.data) : super.withAliasedTable();
+  OrderingComposer(super.db, super.table);
 }

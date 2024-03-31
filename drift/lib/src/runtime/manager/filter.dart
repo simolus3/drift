@@ -117,7 +117,7 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
 
 /// Defines a class which is used to wrap a column with a type converter to only expose filter functions
 class ColumnWithTypeConverterFilters<CUSTOM, T extends Object> {
-  /// Similar to [ColumnFilters] but for columns with type converters
+  /// Similar to [ColumnFilters] but for columns with type converters\
   ColumnWithTypeConverterFilters(this.column);
 
   /// Column that this [ColumnWithTypeConverterFilters] wraps
@@ -159,8 +159,8 @@ class ComposableFilter implements HasJoinBuilders {
   @override
   final Set<JoinBuilder> joinBuilders;
   @override
-  void addJoinBuilder(JoinBuilder builder) {
-    joinBuilders.add(builder);
+  void addJoinBuilders(Set<JoinBuilder> builders) {
+    joinBuilders.addAll(builders);
   }
 
   /// The expression that will be applied to the query
@@ -204,20 +204,11 @@ class ComposableFilter implements HasJoinBuilders {
       joinBuilders,
     );
   }
-
-  /// Returns a copy of this filter with the given joins and usedAliases
-  ComposableFilter copyWithJoins(Set<JoinBuilder> joinBuilders) {
-    return ComposableFilter.withJoin(
-        expression, joinBuilders.union(this.joinBuilders));
-  }
 }
 
 /// The class that orchestrates the composition of filtering
 class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// Create a filter composer with an empty state
-  FilterComposer.empty(super.db, super.table) : super.empty();
-
-  /// Create a filter composer using another composers state
-  FilterComposer.withAliasedTable(super.data) : super.withAliasedTable();
+  FilterComposer(super.db, super.table);
 }

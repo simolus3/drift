@@ -3,73 +3,40 @@ part of 'manager.dart';
 
 /// A class that holds the state for a query composer
 @internal
-class ComposerState<DB extends GeneratedDatabase, T extends Table>
-    implements HasJoinBuilders {
+class ComposerState<DB extends GeneratedDatabase, T extends Table> {
   /// The database that the query will be executed on
   final DB db;
 
   /// The table that the query will be executed on
   final T table;
-
-  @override
-  final Set<JoinBuilder> joinBuilders;
-  @override
-  void addJoinBuilder(JoinBuilder builder) {
-    joinBuilders.add(builder);
-  }
-
-  /// Get a random alias for a table
-  String _getRandomAlias(TableInfo table) {
-    var aliasName = '${table.actualTableName}__${Random().nextInt(4294967296)}';
-    while (joinBuilders.map((e) => (e.aliasedName)).contains(aliasName)) {
-      aliasName = '${table.actualTableName}__${Random().nextInt(4294967296)}';
-      continue;
-    }
-    return aliasName;
-  }
-
-  /// Create a new query composer state
-  ComposerState._(this.db, this.table, Set<JoinBuilder>? joinBuilders)
-      : joinBuilders = joinBuilders ?? {};
-}
-
-@internal
-class AliasedComposerBuilder<DB extends GeneratedDatabase, RT extends Table,
-    CT extends Table> {
-  ComposerState<DB, RT> state;
-  CT aliasedTable;
-  AliasedComposerBuilder(
-    this.state,
-    this.aliasedTable,
+  ComposerState._(
+    this.db,
+    this.table,
   );
 }
 
 /// Base class for all composers
 ///
-/// Any class that can be composed using the `&` or `|` operator is called a composable,
-/// and must implement the [HasJoinBuilders] interface. [ComposableFilter] and [ComposableOrdering] are examples of composable classes.
+/// Any class that can be composed using the `&` or `|` operator is called a composable.
+/// [ComposableFilter] and [ComposableOrdering] are examples of composable classes.
 ///
 /// The [Composer] class is a top level manager for this operation.
 /// ```dart
 /// filter((f) => f.id.equals(1) & f.name.equals('Bob'));
 /// ```
-/// `f` in this example is a [Composer] object, and `f.id.equals(1) & f.name.equals('Bob')` is a [ComposableFilter] object.
+/// `f` in this example is a [Composer] object, and `f.id.equals(1)` returns a [ComposableFilter] object.
 ///
 /// The [Composer] class is responsible for creating joins between tables, and passing them down to the composable classes.
-/// This is done to ensure that duplicate joins are never created.
 ///
 /// The [ComposerState] that is held in this class only holds temporary state, as the final state will be held in the composable classes.
-/// E.G. In the example above, the resulting [ComposableFilter] object is returned, and the [FilterComposer] is discarded.
+/// E.G. In the example above, only the resulting [ComposableFilter] object is returned, and the [FilterComposer] is discarded.
 ///
 @internal
 sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
   /// The state of the composer
   final ComposerState<DB, CT> state;
 
-  Composer.withAliasedTable(AliasedComposerBuilder<DB, dynamic, CT> data)
-      : state = ComposerState._(
-            data.state.db, data.aliasedTable, data.state.joinBuilders);
-  Composer.empty(DB db, CT table) : state = ComposerState._(db, table, {});
+  Composer(DB db, CT table) : state = ComposerState._(db, table);
 
   /// Method for create a join between two tables
   B referenced<RT extends Table, QC extends Composer<DB, RT>,
@@ -78,53 +45,38 @@ sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
     required RT referencedTable,
     required GeneratedColumn Function(RT) getReferencedColumn,
     required B Function(QC) builder,
-    required QC Function(AliasedComposerBuilder<DB, CT, RT> data)
-        getReferencedQueryComposer,
+    required QC Function(DB db, RT table) getReferencedComposer,
   }) {
-    // Create an alias of the referenced table
-    // We will never use `referencedTable` again, only the alias
-    final aliasedReferencedTable = state.db.alias(referencedTable as TableInfo,
-        state._getRandomAlias(referencedTable)) as RT;
-
-    // We are a function to get the column of the current table,
-    // This is so that if the `table` in `state` is an alias,
-    // The user can't supply a column that does not have an alias
-    // E.G. db.table.id instead of state.table.id
+    // The name of the alias will be created using the following logic:
+    // "currentTableName__currentColumnName__referencedColumnName__referencedTableName"
+    // This is to ensure that the alias is unique
     final currentColumn = getCurrentColumn(state.table);
-
-    // We are using a function to get the column of the referenced table
-    // This is so that the user cant by mistake use a column of a table that is not aliased
-    final referencedColumn = getReferencedColumn(aliasedReferencedTable);
+    final tempReferencedColumn = getReferencedColumn(referencedTable);
+    final aliasName =
+        '${currentColumn.tableName}__${currentColumn.name}__${tempReferencedColumn.tableName}__${tempReferencedColumn.name}';
+    final aliasedReferencedTable =
+        state.db.alias(referencedTable as TableInfo, aliasName);
+    final aliasedReferencedColumn =
+        getReferencedColumn(aliasedReferencedTable as RT);
 
     // Create a join builder for the referenced table
     final joinBuilder = JoinBuilder(
       currentTable: state.table,
-      referencedTable: aliasedReferencedTable,
       currentColumn: currentColumn,
-      referencedColumn: referencedColumn,
+      referencedTable: aliasedReferencedTable,
+      referencedColumn: aliasedReferencedColumn,
     );
-
-    // Add the join builder to the state
-    state.addJoinBuilder(joinBuilder);
 
     // Get the query composer for the referenced table, passing in the aliased
     // table and all the join builders
-    final referencedQueryComposer = getReferencedQueryComposer(
-        AliasedComposerBuilder(this.state, aliasedReferencedTable));
+    final referencedComposer =
+        getReferencedComposer(state.db, aliasedReferencedTable);
 
     // Run the user provided builder with the referencedQueryComposer
     // This may return a filter or ordering, but we only enforce that it's
     // a HasJoinBuilders
-    final result = builder(referencedQueryComposer);
-
-    // At this point it is possible that the result has created more joins
-    // that state doesnt have, it is also possible that the result is missing
-    // the `joinBuilder` we create above.
-    // We will combine both sets and set it to `state.joinBuilders` and `result.joinBuilders`
-    for (var joinBuilder in result.joinBuilders.union(state.joinBuilders)) {
-      state.addJoinBuilder(joinBuilder);
-      result.addJoinBuilder(joinBuilder);
-    }
+    final result = builder(referencedComposer);
+    result.addJoinBuilders({joinBuilder});
 
     return result;
   }

@@ -9,6 +9,23 @@ extension on DriftColumn {
   }
 }
 
+class Names {
+  final String filterComposer;
+  final String orderingComposer;
+  final String processedTableManager;
+  final String tableManagerWithFiltering;
+  final String tableManagerWithOrdering;
+  final String rootTableManager;
+
+  Names(String name)
+      : filterComposer = '${name}FilterComposer',
+        orderingComposer = '${name}OrderingComposer',
+        processedTableManager = '${name}ProcessedTableManager',
+        tableManagerWithFiltering = '${name}TableManagerWithFiltering',
+        tableManagerWithOrdering = '${name}ProcessedTableManagerWithOrdering',
+        rootTableManager = '${name}TableManager';
+}
+
 class ManagerWriter {
   final Scope _scope;
   final String _dbClassName;
@@ -28,16 +45,13 @@ class ManagerWriter {
 
       // The type this column stores
       final innerColumnType = leaf.dartCode(leaf.innerColumnType(col.sqlType));
+      filters.writeln(
+          "ColumnFilters<$innerColumnType> get $getterName => ColumnFilters(state.table.${col.nameInDart});");
 
-      if (col.typeConverter == null) {
-        filters.writeln(
-            "ColumnFilters<$innerColumnType> get $getterName => ColumnFilters(state.table.${col.nameInDart});");
-      } else {
-        filters.writeln(
-            "ColumnFilters<$innerColumnType> get ${getterName}Value => ColumnFilters(state.table.${col.nameInDart});");
+      if (col.typeConverter != null) {
         final mappedType = leaf.dartCode(leaf.writer.dartType(col));
         filters.writeln(
-            "ColumnWithTypeConverterFilters<$mappedType,$innerColumnType> get $getterName => ColumnWithTypeConverterFilters(state.table.${col.nameInDart});");
+            "ColumnWithTypeConverterFilters<$mappedType,$innerColumnType> get ${getterName}Ref => ColumnWithTypeConverterFilters(state.table.${col.nameInDart});");
       }
 
       orderings.writeln(
@@ -51,37 +65,32 @@ class ManagerWriter {
         if (referencedCol != null) {
           if (referencedCol.owner is DriftTable) {
             final referencedTableGetter = referencedCol.owner.dbGetterName;
-            final referencedEntityInfoName = referencedCol.owner.entityInfoName;
+            final referencedTableName =
+                Names(referencedCol.owner.entityInfoName);
 
             if (referencedTableGetter != null) {
               filters.write('''
-
 ComposableFilter ${col.nameInDart}Filter(
-          ComposableFilter Function(${referencedEntityInfoName}FilterComposer f) f) {
+          ComposableFilter Function(${referencedTableName.filterComposer} f) f) {
         return referenced(
             referencedTable: state.db.$referencedTableGetter,
             getCurrentColumn: (f) => f.${col.nameInDart},
             getReferencedColumn: (f) => f.${referencedCol.nameInDart},
-            getReferencedQueryComposer: (data) =>
-                ${referencedEntityInfoName}FilterComposer.withAliasedTable(data),
+            getReferencedComposer: (db, table) => ${referencedTableName.filterComposer}(db, table),
             builder: f);
           }
-          
           ''');
 
               orderings.write('''
-
 ComposableOrdering ${col.nameInDart}OrderBy(
-          ComposableOrdering Function(${referencedEntityInfoName}OrderingComposer o) o) {
+          ComposableOrdering Function(${referencedTableName.orderingComposer} o) o) {
         return referenced(
             referencedTable: state.db.$referencedTableGetter,
             getCurrentColumn: (f) => f.${col.nameInDart},
             getReferencedColumn: (f) => f.${referencedCol.nameInDart},
-            getReferencedQueryComposer: (data) =>
-                ${referencedEntityInfoName}OrderingComposer.withAliasedTable(data),
+            getReferencedComposer: (db, table) => ${referencedTableName.orderingComposer}(db, table),
             builder: o);
           }
-          
           ''');
             }
           }
@@ -89,78 +98,96 @@ ComposableOrdering ${col.nameInDart}OrderBy(
       }
     }
 
+    final names = Names(table.entityInfoName);
+
     leaf.write("""
 
-class ${table.entityInfoName}FilterComposer extends FilterComposer<$_dbClassName, ${table.entityInfoName}> {
-  ${table.entityInfoName}FilterComposer.empty(super.db, super.table) : super.empty();
-  ${table.entityInfoName}FilterComposer.withAliasedTable(super.data) : super.withAliasedTable();
+
+
+
+
+
+
+class ${names.filterComposer}
+    extends FilterComposer<$_dbClassName, ${table.entityInfoName}> {
+  ${names.filterComposer}(super.db, super.table);
 
   $filters
+
 }
 
-class ${table.entityInfoName}OrderingComposer extends OrderingComposer<$_dbClassName, ${table.entityInfoName}> {
-  ${table.entityInfoName}OrderingComposer.empty(super.db, super.table) : super.empty();
-  ${table.entityInfoName}OrderingComposer.withAliasedTable(super.data) : super.withAliasedTable();
+class ${names.orderingComposer}
+    extends OrderingComposer<$_dbClassName, ${table.entityInfoName}> {
+  ${names.orderingComposer}(super.db, super.table);
 
   $orderings
+
+
 }
 
-class ${table.entityInfoName}ProcessedTableManager extends ProcessedTableManager<$_dbClassName,
-    ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
-  ${table.entityInfoName}ProcessedTableManager(super.data);
+class ${names.processedTableManager} extends ProcessedTableManager<
+    $_dbClassName,
+    ${table.entityInfoName},
+    ${table.nameOfRowClass},
+    ${names.filterComposer},
+    ${names.orderingComposer}> {
+  ${names.processedTableManager}(super.data);
 }
 
-class ${table.entityInfoName}ProcessedTableManagerWithFiltering extends ProcessedTableManager<$_dbClassName,
-    ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
-  ${table.entityInfoName}ProcessedTableManagerWithFiltering(super.data);
-
-  ${table.entityInfoName}ProcessedTableManager filter(
-      ComposableFilter Function(${table.entityInfoName}FilterComposer f) f) {
-    final filter = f(state.filteringComposer);
-    return ${table.entityInfoName}ProcessedTableManager(state.copyWith(
-        filter: filter.expression,
-        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
-  }
+class ${names.tableManagerWithFiltering}
+    extends TableManagerWithFiltering<
+    $_dbClassName,
+    ${table.entityInfoName},
+    ${table.nameOfRowClass},
+    ${names.filterComposer},
+    ${names.orderingComposer},
+    ${names.processedTableManager}> {
+  ${names.tableManagerWithFiltering}(super.state,
+      {required super.getChildManager});
 }
 
-class ${table.entityInfoName}ProcessedTableManagerWithOrdering extends ProcessedTableManager<$_dbClassName,
-    ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
-  ${table.entityInfoName}ProcessedTableManagerWithOrdering(super.data);
-
-  ${table.entityInfoName}ProcessedTableManager orderBy(
-      ComposableOrdering Function(${table.entityInfoName}OrderingComposer o) o) {
-    final ordering = o(state.orderingComposer);
-    return ${table.entityInfoName}ProcessedTableManager(state.copyWith(
-        orderingTerms: state.orderingBuilders.union(ordering.orderingBuilders),
-        joinBuilders: state.joinBuilders.union(ordering.joinBuilders)));
-  }
+class ${names.tableManagerWithOrdering}
+    extends TableManagerWithOrdering<
+    $_dbClassName,
+    ${table.entityInfoName},
+    ${table.nameOfRowClass},
+    ${names.filterComposer},
+    ${names.orderingComposer},
+    ${names.processedTableManager}> {
+  ${names.tableManagerWithOrdering}(super.state,
+      {required super.getChildManager});
 }
 
-class ${table.entityInfoName}TableManager extends RootTableManager<$_dbClassName,
-    ${table.entityInfoName}, ${table.nameOfRowClass}, ${table.entityInfoName}FilterComposer, ${table.entityInfoName}OrderingComposer> {
-  ${table.entityInfoName}TableManager($_dbClassName db, ${table.entityInfoName} table)
-      : super(TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer: ${table.entityInfoName}FilterComposer.empty(db, table),
-            orderingComposer: ${table.entityInfoName}OrderingComposer.empty(db, table)));
-
-  ${table.entityInfoName}ProcessedTableManagerWithOrdering filter(
-      ComposableFilter Function(${table.entityInfoName}FilterComposer f) f) {
-    final filter = f(state.filteringComposer);
-    return ${table.entityInfoName}ProcessedTableManagerWithOrdering(state.copyWith(
-        filter: filter.expression,
-        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
-  }
-
-    ${table.entityInfoName}ProcessedTableManagerWithFiltering orderBy(
-      ComposableOrdering Function(${table.entityInfoName}OrderingComposer o) o) {
-    final ordering = o(state.orderingComposer);
-    return ${table.entityInfoName}ProcessedTableManagerWithFiltering(state.copyWith(
-        orderingTerms: state.orderingBuilders.union(ordering.orderingBuilders),
-        joinBuilders: state.joinBuilders.union(ordering.joinBuilders)));
-  }
+class ${names.rootTableManager} extends RootTableManager<
+    $_dbClassName,
+    ${table.entityInfoName},
+    ${table.nameOfRowClass},
+    ${names.filterComposer},
+    ${names.orderingComposer},
+    ${names.processedTableManager},
+    ${names.tableManagerWithFiltering},
+    ${names.tableManagerWithOrdering}> {
+  ${names.rootTableManager}($_dbClassName db, ${table.entityInfoName} table)
+      : super(
+            TableManagerState(
+                db: db,
+                table: table,
+                filteringComposer:
+                    ${names.filterComposer}(db, table),
+                orderingComposer:
+                    ${names.orderingComposer}(db, table)),
+            getChildManagerWithFiltering: (f) =>
+                ${names.tableManagerWithFiltering}(
+                  f,
+                  getChildManager: (f) =>
+                      ${names.processedTableManager}(f),
+                ),
+            getChildManagerWithOrdering: (f) =>
+                ${names.tableManagerWithOrdering}(f,
+                    getChildManager: (f) =>
+                        ${names.processedTableManager}(f)));
 }
+
 """);
   }
 

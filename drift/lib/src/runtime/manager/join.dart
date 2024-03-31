@@ -34,12 +34,13 @@ class JoinBuilder {
   bool operator ==(covariant JoinBuilder other) {
     if (identical(this, other)) return true;
 
-    return other.aliasedName == aliasedName;
+    return other.currentColumn == currentColumn &&
+        other.referencedColumn == referencedColumn;
   }
 
   @override
   int get hashCode {
-    return aliasedName.hashCode;
+    return currentColumn.hashCode ^ referencedColumn.hashCode;
   }
 
   /// Build a join from this join builder
@@ -56,5 +57,5 @@ abstract interface class HasJoinBuilders {
   Set<JoinBuilder> get joinBuilders;
 
   /// Add a join builder to this class
-  void addJoinBuilder(JoinBuilder builder);
+  void addJoinBuilders(Set<JoinBuilder> builders);
 }

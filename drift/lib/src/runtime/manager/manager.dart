@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
@@ -53,7 +52,7 @@ class TableManagerState<
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
   /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
-  TableManagerState({
+  const TableManagerState({
     required this.db,
     required this.table,
     required this.filteringComposer,
@@ -62,10 +61,9 @@ class TableManagerState<
     this.distinct,
     this.limit,
     this.offset,
-    Set<OrderingBuilder>? orderingTerms,
-    Set<JoinBuilder>? joinBuilders,
-  })  : orderingBuilders = orderingTerms ?? {},
-        joinBuilders = joinBuilders ?? {};
+    this.orderingBuilders = const {},
+    this.joinBuilders = const {},
+  });
 
   /// Copy this state with the given values
   TableManagerState<DB, T, DT, FS, OS> copyWith({
@@ -73,7 +71,7 @@ class TableManagerState<
     int? limit,
     int? offset,
     Expression<bool>? filter,
-    Set<OrderingBuilder>? orderingTerms,
+    Set<OrderingBuilder>? orderingBuilders,
     Set<JoinBuilder>? joinBuilders,
   }) {
     return TableManagerState(
@@ -83,7 +81,7 @@ class TableManagerState<
       orderingComposer: orderingComposer,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
-      orderingTerms: orderingTerms ?? this.orderingBuilders,
+      orderingBuilders: orderingBuilders ?? this.orderingBuilders,
       distinct: distinct ?? this.distinct,
       limit: limit ?? this.limit,
       offset: offset ?? this.offset,
@@ -186,42 +184,108 @@ abstract class BaseTableManager<
   final TableManagerState<DB, T, DT, FS, OS> state;
 
   /// Create a new [BaseTableManager] instance
-  BaseTableManager(this.state);
+  const BaseTableManager(this.state);
 }
 
-/// Defines the top level manager for a table
-abstract class RootTableManager<
-        DB extends GeneratedDatabase,
-        T extends TableInfo,
-        D extends DataClass,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>>
-    extends BaseTableManager<DB, T, D, FS, OS> {
-  /// Top level manager for a table.
-  /// This class contains the top level manager functions for the table.
-  RootTableManager(super.state);
-  Future<int> insert(Insertable<D> item) =>
-      state.db.into(state._tableAsTableInfo).insert(item);
-  Future<void> insertAllBatch(List<Insertable<D>> items) => state.db
-      .batch((batch) => batch.insertAll(state._tableAsTableInfo, items));
-  Future<List<D>> getAll() => state.buildSelectStatement().get();
-  Stream<List<D>> watchAll() => state.buildSelectStatement().watch();
-  // Future<int> deleteAll() => state.buildDeleteStatement().go();
-}
-
-/// Defines a manager for a table that can be used to build queries
-abstract class ProcessedTableManager<
-        DB extends GeneratedDatabase,
-        T extends TableInfo,
-        D extends DataClass,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>>
-    extends BaseTableManager<DB, T, D, FS, OS> {
-  /// A table manager which uses it's internal state to build queries
-  ProcessedTableManager(super.state);
+/// Mixin that adds processed functions to a table manager
+/// Is used to act on a table manager that has filtering/ordering applied
+mixin ProcessedTableManagerMixin<
+    DB extends GeneratedDatabase,
+    T extends TableInfo,
+    D extends DataClass,
+    FS extends FilterComposer<DB, T>,
+    OS extends OrderingComposer<DB, T>> on BaseTableManager<DB, T, D, FS, OS> {
   Future<D> getSingle() => state.buildSelectStatement().getSingle();
   Stream<D> watchSingle() => state.buildSelectStatement().watchSingle();
   Future<List<D>> get() => state.buildSelectStatement().get();
   Stream<List<D>> watch() => state.buildSelectStatement().watch();
   // Future<int> delete() => state.buildDeleteStatement().go();
+}
+
+/// A table manager that only has functions to return items based on the state build by parent managers
+class ProcessedTableManager<
+        DB extends GeneratedDatabase,
+        T extends TableInfo,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>>
+    extends BaseTableManager<DB, T, D, FS, OS>
+    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+  /// A table manager that only has functions to return items based on the state build by parent managers
+  ProcessedTableManager(super.state);
+}
+
+/// A table manager that has methods to filter the query
+class TableManagerWithFiltering<
+        DB extends GeneratedDatabase,
+        T extends TableInfo,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, D, FS, OS>>
+    extends BaseTableManager<DB, T, D, FS, OS>
+    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+  final C Function(TableManagerState<DB, T, D, FS, OS>) getChildManager;
+  const TableManagerWithFiltering(super.state, {required this.getChildManager});
+  C filter(ComposableFilter Function(FilterComposer f) f) {
+    final filter = f(state.filteringComposer);
+    return getChildManager(state.copyWith(
+        filter: filter.expression,
+        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
+  }
+}
+
+/// A table manager that has methods to order the query
+class TableManagerWithOrdering<
+        DB extends GeneratedDatabase,
+        T extends TableInfo,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, D, FS, OS>>
+    extends BaseTableManager<DB, T, D, FS, OS>
+    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+  final C Function(TableManagerState<DB, T, D, FS, OS>) getChildManager;
+  const TableManagerWithOrdering(super.state, {required this.getChildManager});
+  C orderBy(ComposableOrdering Function(OrderingComposer o) o) {
+    final orderings = o(state.orderingComposer);
+    return getChildManager(state.copyWith(
+        orderingBuilders: orderings.orderingBuilders,
+        joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
+  }
+}
+
+/// A table manager with top level function for creating, reading, updating, and deleting items
+class RootTableManager<
+        DB extends GeneratedDatabase,
+        T extends TableInfo,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, D, FS, OS>,
+        CF extends TableManagerWithFiltering<DB, T, D, FS, OS, C>,
+        CO extends TableManagerWithOrdering<DB, T, D, FS, OS, C>>
+    extends BaseTableManager<DB, T, D, FS, OS>
+    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+  final CF Function(TableManagerState<DB, T, D, FS, OS>)
+      getChildManagerWithFiltering;
+  final CO Function(TableManagerState<DB, T, D, FS, OS>)
+      getChildManagerWithOrdering;
+
+  const RootTableManager(super.state,
+      {required this.getChildManagerWithFiltering,
+      required this.getChildManagerWithOrdering});
+  CF filter(ComposableFilter Function(FilterComposer f) f) {
+    final filter = f(state.filteringComposer);
+    return getChildManagerWithFiltering(state.copyWith(
+        filter: filter.expression,
+        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
+  }
+
+  CO orderBy(ComposableOrdering Function(OrderingComposer o) o) {
+    final orderings = o(state.orderingComposer);
+    return getChildManagerWithOrdering(state.copyWith(
+        orderingBuilders: orderings.orderingBuilders,
+        joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
+  }
 }
