@@ -33,7 +33,7 @@ class ManagerWriter {
 
   ManagerWriter(this._scope, this._dbClassName) : _addedTables = [];
 
-  void _writeTableManagers(DriftTable table) {
+  void _writeTableManagers(DriftTable table, List<DriftTable> otherTables) {
     final leaf = _scope.leaf();
 
     final filters = StringBuffer();
@@ -98,6 +98,40 @@ ComposableOrdering ${col.nameInDart}OrderBy(
       }
     }
 
+    // Any other table who has a reference to this table should have a back ref created for it
+    for (var otherTable in otherTables) {
+      for (var otherColumn in otherTable.columns) {
+        if (otherColumn.isForeignKey) {
+          final foreignKey = otherColumn.constraints
+              .whereType<ForeignKeyReference>()
+              .firstOrNull;
+          // Check if this is a foreign key
+          if (foreignKey == null) {
+            continue;
+          }
+          // Check if the foreign key references this table
+          final thisColumn = foreignKey.otherColumn;
+          final thisTable = thisColumn.owner;
+
+          final otherColumnName = Names(otherTable.entityInfoName);
+          // Check if the foreign key references this table
+          if (thisTable is DriftTable &&
+              table.schemaName == thisTable.schemaName) {
+            filters.write('''
+ComposableFilter ${("referenced ${otherTable.dbGetterName} ${otherColumn.nameInDart}").camelCase}(
+          ComposableFilter Function(${otherColumnName.filterComposer} f) f) {
+        return referenced(
+            getCurrentColumn: (f) => f.${thisColumn.nameInDart},
+            referencedTable: state.db.${otherTable.dbGetterName},
+            getReferencedColumn: (f) => f.${otherColumn.nameInDart},
+            getReferencedComposer: (db, table) => ${otherColumnName.filterComposer}(db, table),
+            builder: f);
+          }
+          ''');
+          }
+        }
+      }
+    }
     final names = Names(table.entityInfoName);
 
     leaf.write("""
@@ -201,7 +235,7 @@ class ${names.rootTableManager} extends RootTableManager<
 
   void write() {
     for (var table in _addedTables) {
-      _writeTableManagers(table);
+      _writeTableManagers(table, _addedTables);
     }
     final leaf = _scope.leaf();
     final tableManagerGetters = StringBuffer();
