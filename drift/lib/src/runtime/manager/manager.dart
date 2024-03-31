@@ -149,30 +149,29 @@ class TableManagerState<
     }
   }
 
-  /// Build a delete statement based on the manager state
+  // Build a delete statement based on the manager state
   // DeleteStatement buildDeleteStatement() {
-  //   // Being that drift doesnt support joins on deletes, if there are any joins we will use 2 queries
+  //   // If there are any joins we will have to use a subquery to get the rowIds
   //   final DeleteStatement deleteStatement;
-  //   // Check if there are any joins
-  //   if (_joins.isEmpty) {
-  //     // If there are no joins, we can just use a single delete statement
+  //   if (joinBuilders.isEmpty) {
   //     deleteStatement = db.delete(_tableAsTableInfo);
-  //     if (filter?.expression != null) {
-  //       deleteStatement.where((_) => filter!.expression);
+  //     if (filter != null) {
+  //       deleteStatement.where((_) => filter!);
   //     }
   //   } else {
   //     // If there are joins, we need to use a subquery to get the rowIds
-  //     final selectOnlyRowIdStatement =
-  //         _buildJoinedStatement(onlyWithRowId: true);
+  //     final selectOnlyRowIdStatement = buildSelectStatement();
   //     deleteStatement = db.delete(_tableAsTableInfo)
-  //       ..where(
-  //           (_) => _tableAsTableInfo.rowId.isInQuery(selectOnlyRowIdStatement));
+  //       ..where((_) =>
+  //           _tableAsTableInfo.rowId.isInQuery(_buildJoinedSelectStatement()));
   //   }
   //   return deleteStatement;
   // }
 }
 
-/// Defines the base class for a table manager
+/// Base class for all table managers
+/// Most of this classes functionality is kept in a seperate [TableManagerState] class
+/// This is so that the state can be passed down to lower level managers
 @internal
 abstract class BaseTableManager<
     DB extends GeneratedDatabase,
@@ -187,18 +186,32 @@ abstract class BaseTableManager<
   const BaseTableManager(this.state);
 }
 
-/// Mixin that adds processed functions to a table manager
-/// Is used to act on a table manager that has filtering/ordering applied
+/// Mixin for adding select functionality to a table manager
 mixin ProcessedTableManagerMixin<
-    DB extends GeneratedDatabase,
-    T extends TableInfo,
-    D extends DataClass,
-    FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>> on BaseTableManager<DB, T, D, FS, OS> {
+        DB extends GeneratedDatabase,
+        T extends TableInfo,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>>
+    on BaseTableManager<DB, T, D, FS, OS>
+    implements
+        MultiSelectable<D>,
+        SingleSelectable<D>,
+        SingleOrNullSelectable<D> {
+  @override
   Future<D> getSingle() => state.buildSelectStatement().getSingle();
+  @override
   Stream<D> watchSingle() => state.buildSelectStatement().watchSingle();
+  @override
   Future<List<D>> get() => state.buildSelectStatement().get();
+  @override
   Stream<List<D>> watch() => state.buildSelectStatement().watch();
+  @override
+  Future<D?> getSingleOrNull() =>
+      state.buildSelectStatement().getSingleOrNull();
+  @override
+  Stream<D?> watchSingleOrNull() =>
+      state.buildSelectStatement().watchSingleOrNull();
   // Future<int> delete() => state.buildDeleteStatement().go();
 }
 
@@ -225,6 +238,7 @@ class TableManagerWithFiltering<
         C extends ProcessedTableManager<DB, T, D, FS, OS>>
     extends BaseTableManager<DB, T, D, FS, OS>
     with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+  /// Callback for
   final C Function(TableManagerState<DB, T, D, FS, OS>) getChildManager;
   const TableManagerWithFiltering(super.state, {required this.getChildManager});
   C filter(ComposableFilter Function(FS f) f) {

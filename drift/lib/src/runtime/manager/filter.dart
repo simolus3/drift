@@ -16,7 +16,7 @@ class ColumnFilters<T extends Object> {
   ColumnFilters(this.column);
 
   /// Column that this [ColumnFilters] wraps
-  GeneratedColumn<T> column;
+  Expression<T> column;
 
   /// Create a filter that checks if the column is null.
   ComposableFilter isNull() => ComposableFilter.simple(column.isNull());
@@ -28,9 +28,21 @@ class ColumnFilters<T extends Object> {
   ComposableFilter equals(T value) =>
       ComposableFilter.simple(column.equals(value));
 
+  /// Create a filter that checks if the column is in a list of values.
+
+  ComposableFilter isIn(List<T> values) =>
+      ComposableFilter.simple(column.isIn(values));
+
+  /// Create a filter that checks if the column is not in a list of values.
+  ComposableFilter isNotIn(List<T> values) =>
+      ComposableFilter.simple(column.isNotIn(values));
+
   /// Shortcut for [equals]
   ComposableFilter call(T value) =>
       ComposableFilter.simple(column.equals(value));
+
+  /// Nested column for filtering on the count of a column
+  ColumnFilters<int> get count => ColumnFilters(column.count());
 }
 
 /// Built in filters for int/double columns
@@ -58,6 +70,21 @@ extension NumFilters<T extends num> on ColumnFilters<T> {
   /// Create a filter to check if the column is not between two values
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._reversed();
+
+  /// Nested column for filtering on the average of a column
+  ColumnFilters<double> get avg => ColumnFilters(column.avg());
+
+  /// Nested column for filtering on the max item of a column
+  ColumnFilters<T> get max => ColumnFilters(column.max());
+
+  /// Nested column for filtering on the min item of a column
+  ColumnFilters<T> get min => ColumnFilters(column.min());
+
+  /// Nested column for filtering on the sum of a column
+  ColumnFilters<T> get sum => ColumnFilters(column.sum());
+
+  /// Nested column for filtering on the total of a column
+  ColumnFilters<double> get total => ColumnFilters(column.total());
 }
 
 /// Built in filters for BigInt columns
@@ -85,6 +112,21 @@ extension BigIntFilters<T extends BigInt> on ColumnFilters<T> {
   /// Create a filter to check if the column is not between two values
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._reversed();
+
+  /// Nested column for filtering on the average of a column
+  ColumnFilters<double> get avg => ColumnFilters(column.avg());
+
+  /// Nested column for filtering on the max item of a column
+  ColumnFilters<T> get max => ColumnFilters(column.max());
+
+  /// Nested column for filtering on the min item of a column
+  ColumnFilters<T> get min => ColumnFilters(column.min());
+
+  /// Nested column for filtering on the sum of a column
+  ColumnFilters<BigInt> get sum => ColumnFilters(column.sum());
+
+  /// Nested column for filtering on the total of a column
+  ColumnFilters<double> get total => ColumnFilters(column.total());
 }
 
 /// Built in filters for String columns
@@ -137,22 +179,6 @@ class ColumnWithTypeConverterFilters<CUSTOM, T extends Object> {
   ComposableFilter call(CUSTOM value) =>
       ComposableFilter.simple(column.equalsValue(value));
 }
-
-// extension CustomFilters<CUSTOM, T extends Object,
-//         C extends GeneratedColumnWithTypeConverter<CUSTOM, T>>
-//     on ColumnFilters<T, C> {
-//   /// Create a filter that checks if the column equals the columns custom type
-//   ComposableFilter equals(CUSTOM value) =>
-//       ComposableFilter.simple(column.equalsValue(value));
-
-//   /// Create a filter that checks if the column equals the value of the columns custom type
-//   ComposableFilter equalsValue(T value) =>
-//       ComposableFilter.simple(column.equals(value));
-
-//   /// Shortcut for [equals]
-//   ComposableFilter call(CUSTOM value) =>
-//       ComposableFilter.simple(column.equalsValue(value));
-// }
 
 /// Defines a class that can be used to compose filters for a column
 class ComposableFilter implements HasJoinBuilders {

@@ -26,7 +26,6 @@ export 'src/runtime/manager/manager.dart'
         ComposerState,
         HasJoinBuilders,
         Composer,
-        AliasedComposerBuilder,
         BaseTableManager;
 export 'src/utils/lazy_database.dart';
 
