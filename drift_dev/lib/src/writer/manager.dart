@@ -22,7 +22,7 @@ class Names {
         orderingComposer = '${name}OrderingComposer',
         processedTableManager = '${name}ProcessedTableManager',
         tableManagerWithFiltering = '${name}TableManagerWithFiltering',
-        tableManagerWithOrdering = '${name}ProcessedTableManagerWithOrdering',
+        tableManagerWithOrdering = '${name}TableManagerWithOrdering',
         rootTableManager = '${name}TableManager';
 }
 
@@ -32,6 +32,54 @@ class ManagerWriter {
   final List<DriftTable> _addedTables;
 
   ManagerWriter(this._scope, this._dbClassName) : _addedTables = [];
+
+  void writeManagers(TextEmitter leaf, DriftTable table) {
+    final names = Names(table.entityInfoName);
+
+    // Write the ProcessedTableManager
+    leaf
+      ..write('class ${names.processedTableManager} extends ')
+      ..writeDriftRef('ProcessedTableManager')
+      ..writeln(
+          '<$_dbClassName,${table.entityInfoName},${table.nameOfRowClass},${names.filterComposer},${names.orderingComposer}> {')
+      ..writeln('const ${names.processedTableManager}(super.state);')
+      ..writeln('}');
+
+    // Write the TableManagerWithFiltering
+    leaf
+      ..write('class ${names.tableManagerWithFiltering} extends ')
+      ..writeDriftRef('TableManagerWithFiltering')
+      ..writeln(
+          '<$_dbClassName,${table.entityInfoName},${table.nameOfRowClass},${names.filterComposer},${names.orderingComposer},${names.processedTableManager}> {')
+      ..writeln(
+          'const ${names.tableManagerWithFiltering}(super.state,{required super.getChildManager});')
+      ..writeln('}');
+
+    // Write the TableManagerWithOrdering
+    leaf
+      ..write('class ${names.tableManagerWithOrdering} extends ')
+      ..writeDriftRef('TableManagerWithOrdering')
+      ..writeln(
+          '<$_dbClassName,${table.entityInfoName},${table.nameOfRowClass},${names.filterComposer},${names.orderingComposer},${names.processedTableManager}> {')
+      ..writeln(
+          'const ${names.tableManagerWithOrdering}(super.state,{required super.getChildManager});')
+      ..writeln('}');
+    // Write the Root Table Manager
+    leaf
+      ..write('class ${names.rootTableManager} extends ')
+      ..writeDriftRef('RootTableManager')
+      ..writeln(
+          '<$_dbClassName,${table.entityInfoName},${table.nameOfRowClass},${names.filterComposer},${names.orderingComposer},${names.processedTableManager},${names.tableManagerWithFiltering},${names.tableManagerWithOrdering}> {')
+      ..writeln(
+          '${names.rootTableManager}($_dbClassName db, ${table.entityInfoName} table)')
+      ..writeln(": super(")
+      ..writeDriftRef("TableManagerState")
+      ..write(
+          """(db: db, table: table, filteringComposer:${names.filterComposer}(db, table),orderingComposer:${names.orderingComposer}(db, table)),
+            getChildManagerWithFiltering: (f) => ${names.tableManagerWithFiltering}(f,getChildManager: (f) => ${names.processedTableManager}(f)),
+            getChildManagerWithOrdering: (f) => ${names.tableManagerWithOrdering}(f,getChildManager: (f) =>${names.processedTableManager}(f)));""")
+      ..writeln('}');
+  }
 
   void _writeTableManagers(DriftTable table, List<DriftTable> otherTables) {
     final leaf = _scope.leaf();
@@ -157,72 +205,8 @@ class ${names.orderingComposer}
   $orderings
 
 
-}
-
-class ${names.processedTableManager} extends ProcessedTableManager<
-    $_dbClassName,
-    ${table.entityInfoName},
-    ${table.nameOfRowClass},
-    ${names.filterComposer},
-    ${names.orderingComposer}> {
-  ${names.processedTableManager}(super.data);
-}
-
-class ${names.tableManagerWithFiltering}
-    extends TableManagerWithFiltering<
-    $_dbClassName,
-    ${table.entityInfoName},
-    ${table.nameOfRowClass},
-    ${names.filterComposer},
-    ${names.orderingComposer},
-    ${names.processedTableManager}> {
-  ${names.tableManagerWithFiltering}(super.state,
-      {required super.getChildManager});
-}
-
-class ${names.tableManagerWithOrdering}
-    extends TableManagerWithOrdering<
-    $_dbClassName,
-    ${table.entityInfoName},
-    ${table.nameOfRowClass},
-    ${names.filterComposer},
-    ${names.orderingComposer},
-    ${names.processedTableManager}> {
-  ${names.tableManagerWithOrdering}(super.state,
-      {required super.getChildManager});
-}
-
-class ${names.rootTableManager} extends RootTableManager<
-    $_dbClassName,
-    ${table.entityInfoName},
-    ${table.nameOfRowClass},
-    ${names.filterComposer},
-    ${names.orderingComposer},
-    ${names.processedTableManager},
-    ${names.tableManagerWithFiltering},
-    ${names.tableManagerWithOrdering}> {
-  ${names.rootTableManager}($_dbClassName db, ${table.entityInfoName} table)
-      : super(
-            TableManagerState(
-                db: db,
-                table: table,
-                filteringComposer:
-                    ${names.filterComposer}(db, table),
-                orderingComposer:
-                    ${names.orderingComposer}(db, table)),
-            getChildManagerWithFiltering: (f) =>
-                ${names.tableManagerWithFiltering}(
-                  f,
-                  getChildManager: (f) =>
-                      ${names.processedTableManager}(f),
-                ),
-            getChildManagerWithOrdering: (f) =>
-                ${names.tableManagerWithOrdering}(f,
-                    getChildManager: (f) =>
-                        ${names.processedTableManager}(f)));
-}
-
-""");
+}""");
+    writeManagers(leaf, table);
   }
 
   String get managerGetter {

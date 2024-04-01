@@ -272,7 +272,7 @@ class ProcessedTableManager<
     extends BaseTableManager<DB, T, D, FS, OS>
     with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
   /// A table manager that only has functions to return items based on the state build by parent managers
-  ProcessedTableManager(super.state);
+  const ProcessedTableManager(super.state);
 }
 
 /// A table manager that has methods to filter the query
