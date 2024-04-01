@@ -230,6 +230,7 @@ abstract class BaseTableManager<
 
   /// Create a new [BaseTableManager] instance
   const BaseTableManager(this.state);
+  Future<int> delete() => state.buildDeleteStatement().go();
 }
 
 /// Mixin for adding select functionality to a table manager
@@ -258,7 +259,7 @@ mixin ProcessedTableManagerMixin<
   @override
   Stream<D?> watchSingleOrNull() =>
       state.buildSelectStatement().watchSingleOrNull();
-  // Future<int> delete() => state.buildDeleteStatement().go();
+  Future<int> delete() => state.buildDeleteStatement().go();
 }
 
 /// A table manager that only has functions to return items based on the state build by parent managers
