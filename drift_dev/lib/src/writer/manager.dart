@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/writer.dart';
-import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 
 extension on DriftColumn {
@@ -267,18 +266,48 @@ class _TableNames {
           'const $tableManagerWithOrdering(super.state,{required super.getChildManager});')
       ..writeln('}');
     // Write the Root Table Manager
+
+    // We need to build a function type which will create insertable items
+    // We then need to create the actual function
+
+    final companionClassName = leaf.dartCode(leaf.companionType(table));
+    final createInsertableFunctionTypeDef =
+        StringBuffer("$companionClassName Function({");
+    final createInsertableFunctionArgs = StringBuffer("({");
+    final createInsertableFunctionBody =
+        StringBuffer("=> $companionClassName.insert(");
+
+    for (final column in table.columns) {
+      final value = leaf.drift('Value');
+      final param = column.nameInDart;
+      final typeName = leaf.dartCode(leaf.dartType(column));
+      createInsertableFunctionBody.write('$param: $param,');
+      if (!column.isImplicitRowId && table.isColumnRequiredForInsert(column)) {
+        createInsertableFunctionTypeDef.write('required $typeName $param,');
+        createInsertableFunctionArgs.write('required $typeName $param,');
+      } else {
+        createInsertableFunctionTypeDef.write('$value<$typeName> $param,');
+        createInsertableFunctionArgs
+            .write('$value<$typeName> $param = const $value.absent(),');
+      }
+    }
+    createInsertableFunctionTypeDef.write('})');
+    createInsertableFunctionArgs.write('})');
+    createInsertableFunctionBody.write(")");
+
     leaf
       ..write('class $rootTableManager extends ')
       ..writeDriftRef('RootTableManager')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$tableManagerWithFiltering,$tableManagerWithOrdering> {')
+          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$tableManagerWithFiltering,$tableManagerWithOrdering, $createInsertableFunctionTypeDef> {')
       ..writeln('$rootTableManager($dbClassName db, $tableClassName table)')
       ..writeln(": super(")
       ..writeDriftRef("TableManagerState")
       ..write(
           """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table)),
             getChildManagerWithFiltering: (f) => $tableManagerWithFiltering(f,getChildManager: (f) => $processedTableManager(f)),
-            getChildManagerWithOrdering: (f) => $tableManagerWithOrdering(f,getChildManager: (f) =>$processedTableManager(f)));""")
+            getChildManagerWithOrdering: (f) => $tableManagerWithOrdering(f,getChildManager: (f) =>$processedTableManager(f))
+            ,createInsertable: $createInsertableFunctionArgs$createInsertableFunctionBody);""")
       ..writeln('}');
   }
 
@@ -348,49 +377,36 @@ class _TableNames {
         }
       }
     }
-    // If there arey duplicate filters or orderings, remove both of them, use filterName and orderingName as the key
-    final filterNames = <String>[];
-    final filtersToRemove = <String>[];
-    final orderingNames = <String>[];
-    final orderingsToRemove = <String>[];
-    for (var c in columns) {
-      for (var f in c.filters) {
-        filterNames.add(f.filterName);
-      }
-      for (var o in c.orderings) {
-        orderingNames.add(o.orderingName);
-      }
-    }
-    filterNames.addAll(backRefFilters.map((e) => e.filterName));
 
-    // Add any filter or ordering that has a duplicate name to the remove list
-    for (var c in columns) {
-      for (var f in c.filters) {
-        if (filterNames.count(f.filterName) > 1) {
-          filtersToRemove.add(f.filterName);
-        }
-      }
-      for (var o in c.orderings) {
-        if (orderingNames.count(o.orderingName) > 1) {
-          orderingsToRemove.add(o.orderingName);
-        }
-      }
-    }
     // Remove the filters and orderings that have duplicates
-
     // TODO: Add warnings for duplicate filters and orderings
-    for (var c in columns) {
-      c.filters.removeWhere((e) => filtersToRemove.contains(e.filterName));
-      c.orderings
-          .removeWhere((e) => orderingsToRemove.contains(e.orderingName));
+    List<String> duplicates(List<String> items) {
+      final seen = <String>{};
+      final duplicates = <String>[];
+      for (var item in items) {
+        if (!seen.add(item)) {
+          duplicates.add(item);
+        }
+      }
+      return duplicates;
     }
-    backRefFilters.removeWhere((e) => filtersToRemove.contains(e.filterName));
-  }
-}
 
-extension on List<String> {
-  int count(String element) {
-    return where((e) => e == element).length;
+    final filterNamesToRemove = duplicates(columns
+            .map((e) => e.filters.map((e) => e.filterName))
+            .expand((e) => e)
+            .toList() +
+        backRefFilters.map((e) => e.filterName).toList());
+    final orderingNamesToRemove = duplicates(columns
+        .map((e) => e.orderings.map((e) => e.orderingName))
+        .expand((e) => e)
+        .toList());
+    for (var c in columns) {
+      c.filters.removeWhere((e) => filterNamesToRemove.contains(e.filterName));
+      c.orderings
+          .removeWhere((e) => orderingNamesToRemove.contains(e.orderingName));
+    }
+    backRefFilters
+        .removeWhere((e) => filterNamesToRemove.contains(e.filterName));
   }
 }
 

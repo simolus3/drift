@@ -323,34 +323,59 @@ class TableManagerWithOrdering<
 }
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
-class RootTableManager<
-        DB extends GeneratedDatabase,
-        T extends TableInfo,
-        D extends DataClass,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS>,
-        CF extends TableManagerWithFiltering<DB, T, D, FS, OS, C>,
-        CO extends TableManagerWithOrdering<DB, T, D, FS, OS, C>>
-    extends BaseTableManager<DB, T, D, FS, OS>
-    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+abstract class RootTableManager<
+    DB extends GeneratedDatabase,
+    T extends TableInfo,
+    D extends DataClass,
+    FS extends FilterComposer<DB, T>,
+    OS extends OrderingComposer<DB, T>,
+    C extends ProcessedTableManager<DB, T, D, FS, OS>,
+    CF extends TableManagerWithFiltering<DB, T, D, FS, OS, C>,
+    CO extends TableManagerWithOrdering<DB, T, D, FS, OS, C>,
+    CI extends Function> extends BaseTableManager<DB, T, D, FS, OS> {
   final CF Function(TableManagerState<DB, T, D, FS, OS>)
       _getChildManagerWithFiltering;
   final CO Function(TableManagerState<DB, T, D, FS, OS>)
       _getChildManagerWithOrdering;
+  final CI _createInsertable;
 
-  const RootTableManager(super.state,
+  RootTableManager(super.state,
       {required CF Function(TableManagerState<DB, T, D, FS, OS>)
           getChildManagerWithFiltering,
       required CO Function(TableManagerState<DB, T, D, FS, OS>)
-          getChildManagerWithOrdering})
+          getChildManagerWithOrdering,
+      required CI createInsertable})
       : _getChildManagerWithFiltering = getChildManagerWithFiltering,
-        _getChildManagerWithOrdering = getChildManagerWithOrdering;
+        _getChildManagerWithOrdering = getChildManagerWithOrdering,
+        _createInsertable = createInsertable;
   CO filter(ComposableFilter Function(FS f) f) {
     final filter = f(state.filteringComposer);
     return _getChildManagerWithOrdering(state.copyWith(
         filter: filter.expression,
         joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
+  }
+
+  CO all() {
+    return _getChildManagerWithOrdering(state);
+  }
+
+  Future<int> create(
+    Insertable<D> Function(CI o) f,
+    InsertMode? mode,
+    UpsertClause<Table, dynamic>? onConflict,
+  ) {
+    return state.db
+        .into(state.table)
+        .insert(f(_createInsertable), mode: mode, onConflict: onConflict);
+  }
+
+  Future<void> bulkCreate(
+    Iterable<Insertable<D>> Function(CI o) f,
+    InsertMode? mode,
+    UpsertClause<Table, dynamic>? onConflict,
+  ) {
+    return state.db.batch((b) => b.insertAll(state.table, f(_createInsertable),
+        mode: mode, onConflict: onConflict));
   }
 
   CF orderBy(ComposableOrdering Function(OS o) o) {
