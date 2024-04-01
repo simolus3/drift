@@ -30,10 +30,10 @@ class TableManagerState<
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>> {
-  /// The database that the query will be executed on
+  /// The database that the query will be exeCCted on
   final DB db;
 
-  /// The table that the query will be executed on
+  /// The table that the query will be exeCCted on
   final T table;
 
   /// The expression that will be applied to the query
@@ -234,17 +234,18 @@ abstract class BaseTableManager<
 }
 
 /// Mixin for adding select functionality to a table manager
-mixin ProcessedTableManagerMixin<
+abstract class ProcessedTableManager<
         DB extends GeneratedDatabase,
         T extends TableInfo,
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>>
-    on BaseTableManager<DB, T, D, FS, OS>
+    extends BaseTableManager<DB, T, D, FS, OS>
     implements
         MultiSelectable<D>,
         SingleSelectable<D>,
         SingleOrNullSelectable<D> {
+  const ProcessedTableManager(super.state);
   @override
   Future<D> getSingle() => state.buildSelectStatement().getSingle();
   @override
@@ -259,33 +260,19 @@ mixin ProcessedTableManagerMixin<
   @override
   Stream<D?> watchSingleOrNull() =>
       state.buildSelectStatement().watchSingleOrNull();
+
   Future<int> delete() => state.buildDeleteStatement().go();
 }
 
-/// A table manager that only has functions to return items based on the state build by parent managers
-class ProcessedTableManager<
-        DB extends GeneratedDatabase,
-        T extends TableInfo,
-        D extends DataClass,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>>
-    extends BaseTableManager<DB, T, D, FS, OS>
-    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
-  /// A table manager that only has functions to return items based on the state build by parent managers
-  const ProcessedTableManager(super.state);
-}
-
 /// A table manager that has methods to filter the query
-class TableManagerWithFiltering<
+abstract class TableManagerWithFiltering<
         DB extends GeneratedDatabase,
         T extends TableInfo,
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
         C extends ProcessedTableManager<DB, T, D, FS, OS>>
-    extends BaseTableManager<DB, T, D, FS, OS>
-    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
-  /// Callback for
+    extends ProcessedTableManager<DB, T, D, FS, OS> {
   final C Function(TableManagerState<DB, T, D, FS, OS>) _getChildManager;
   const TableManagerWithFiltering(super.state,
       {required C Function(TableManagerState<DB, T, D, FS, OS>)
@@ -300,15 +287,14 @@ class TableManagerWithFiltering<
 }
 
 /// A table manager that has methods to order the query
-class TableManagerWithOrdering<
+abstract class TableManagerWithOrdering<
         DB extends GeneratedDatabase,
         T extends TableInfo,
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
         C extends ProcessedTableManager<DB, T, D, FS, OS>>
-    extends BaseTableManager<DB, T, D, FS, OS>
-    with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
+    extends ProcessedTableManager<DB, T, D, FS, OS> {
   final C Function(TableManagerState<DB, T, D, FS, OS>) _getChildManager;
   const TableManagerWithOrdering(super.state,
       {required C Function(TableManagerState<DB, T, D, FS, OS>)
@@ -338,7 +324,6 @@ abstract class RootTableManager<
   final CO Function(TableManagerState<DB, T, D, FS, OS>)
       _getChildManagerWithOrdering;
   final CI _createInsertable;
-
   RootTableManager(super.state,
       {required CF Function(TableManagerState<DB, T, D, FS, OS>)
           getChildManagerWithFiltering,
@@ -369,6 +354,15 @@ abstract class RootTableManager<
         .insert(f(_createInsertable), mode: mode, onConflict: onConflict);
   }
 
+  Future<D> createReturning(
+    Insertable<D> Function(CI o) f,
+    InsertMode? mode,
+    UpsertClause<Table, dynamic>? onConflict,
+  ) {
+    return state.db.into(state.table).insertReturning(f(_createInsertable),
+        mode: mode, onConflict: onConflict) as Future<D>;
+  }
+
   Future<void> bulkCreate(
     Iterable<Insertable<D>> Function(CI o) f,
     InsertMode? mode,
@@ -376,6 +370,10 @@ abstract class RootTableManager<
   ) {
     return state.db.batch((b) => b.insertAll(state.table, f(_createInsertable),
         mode: mode, onConflict: onConflict));
+  }
+
+  Future<bool> replace(Insertable<D> entry) {
+    return state.db.update(state.table).replace(entry);
   }
 
   CF orderBy(ComposableOrdering Function(OS o) o) {

@@ -3,12 +3,6 @@ import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 
-extension on DriftColumn {
-  bool get isForeignKey {
-    return constraints.whereType<ForeignKeyReference>().isNotEmpty;
-  }
-}
-
 abstract class _Filter {
   final String filterName;
   _Filter(
@@ -190,6 +184,7 @@ class _TableNames {
   /// Columns with their names, filters and orderings
   final List<_ColumnNames> columns;
 
+  /// Filters for back references
   final List<_ReferencedFilter> backRefFilters;
 
   _TableNames(this.table)
@@ -207,7 +202,7 @@ class _TableNames {
         backRefFilters = [],
         columns = [];
 
-  void writeManager(TextEmitter leaf, String dbClassName) {
+  void _writeFilterComposer(TextEmitter leaf, String dbClassName) {
     // Write the FilterComposer
     leaf
       ..write('class $filterComposer extends ')
@@ -223,7 +218,9 @@ class _TableNames {
       f.writeFilter(leaf);
     }
     leaf.writeln('}');
+  }
 
+  void _writeOrderingComposer(TextEmitter leaf, String dbClassName) {
     // Write the OrderingComposer
     leaf
       ..write('class $orderingComposer extends ')
@@ -236,8 +233,9 @@ class _TableNames {
       }
     }
     leaf.writeln('}');
+  }
 
-    // Write the ProcessedTableManager
+  void _writeProcessedTableManager(TextEmitter leaf, String dbClassName) {
     leaf
       ..write('class $processedTableManager extends ')
       ..writeDriftRef('ProcessedTableManager')
@@ -245,8 +243,9 @@ class _TableNames {
           '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer> {')
       ..writeln('const $processedTableManager(super.state);')
       ..writeln('}');
+  }
 
-    // Write the TableManagerWithFiltering
+  void _writeTableManagerWithFiltering(TextEmitter leaf, String dbClassName) {
     leaf
       ..write('class $tableManagerWithFiltering extends ')
       ..writeDriftRef('TableManagerWithFiltering')
@@ -255,33 +254,42 @@ class _TableNames {
       ..writeln(
           'const $tableManagerWithFiltering(super.state,{required super.getChildManager});')
       ..writeln('}');
+  }
 
-    // Write the TableManagerWithOrdering
+  void _writeTableManagerWithOrdering(TextEmitter leaf, String dbClassName) {
     leaf
       ..write('class $tableManagerWithOrdering extends ')
       ..writeDriftRef('TableManagerWithOrdering')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager> {')
+          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager>{')
       ..writeln(
           'const $tableManagerWithOrdering(super.state,{required super.getChildManager});')
       ..writeln('}');
-    // Write the Root Table Manager
+  }
 
-    // We need to build a function type which will create insertable items
-    // We then need to create the actual function
-
+  void _writeRootTable(TextEmitter leaf, String dbClassName) {
     final companionClassName = leaf.dartCode(leaf.companionType(table));
+    // final updateCompanionTypedef = StringBuffer(
+    //     'typedef $updateCompanionTypedefName = $companionClassName Function({');
     final createInsertableFunctionTypeDef =
-        StringBuffer("$companionClassName Function({");
-    final createInsertableFunctionArgs = StringBuffer("({");
+        StringBuffer('$companionClassName Function({');
+    // final updateCompanionArguments = StringBuffer('({');
+    final createInsertableFunctionArgs = StringBuffer('({');
+    // final updateCompanionBody = StringBuffer('=> $companionClassName(');
     final createInsertableFunctionBody =
-        StringBuffer("=> $companionClassName.insert(");
-
+        StringBuffer('=> $companionClassName.insert(');
     for (final column in table.columns) {
       final value = leaf.drift('Value');
       final param = column.nameInDart;
       final typeName = leaf.dartCode(leaf.dartType(column));
-      createInsertableFunctionBody.write('$param: $param,');
+
+      // The update companion has no required fields, they are all defaulted to absent
+      // updateCompanionTypedef.write('$value<$typeName> $param,');
+      // updateCompanionArguments
+      //     .write('$value<$typeName> $param = const $value.absent(),');
+      // updateCompanionBody.write('$param: $param,');
+
+      // The insert compantion has some required arguments and some that are defaulted to absent
       if (!column.isImplicitRowId && table.isColumnRequiredForInsert(column)) {
         createInsertableFunctionTypeDef.write('required $typeName $param,');
         createInsertableFunctionArgs.write('required $typeName $param,');
@@ -290,16 +298,28 @@ class _TableNames {
         createInsertableFunctionArgs
             .write('$value<$typeName> $param = const $value.absent(),');
       }
+      createInsertableFunctionBody.write('$param: $param,');
     }
+
+    // Close
+    // updateCompanionTypedef.write('})');
     createInsertableFunctionTypeDef.write('})');
     createInsertableFunctionArgs.write('})');
     createInsertableFunctionBody.write(")");
+
+    // leaf.writeln(updateCompanionTypedef);
+    // leaf.writeln(insertCompanionTypedef);
+
+    // updateCompanionArguments.write('})');
+    // insertCompanionArguments.write('})');
+    // updateCompanionBody.write(")");
+    // insertCompanionBody.write(")");
 
     leaf
       ..write('class $rootTableManager extends ')
       ..writeDriftRef('RootTableManager')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$tableManagerWithFiltering,$tableManagerWithOrdering, $createInsertableFunctionTypeDef> {')
+          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$tableManagerWithFiltering,$tableManagerWithOrdering,$createInsertableFunctionTypeDef>   {')
       ..writeln('$rootTableManager($dbClassName db, $tableClassName table)')
       ..writeln(": super(")
       ..writeDriftRef("TableManagerState")
@@ -309,6 +329,15 @@ class _TableNames {
             getChildManagerWithOrdering: (f) => $tableManagerWithOrdering(f,getChildManager: (f) =>$processedTableManager(f))
             ,createInsertable: $createInsertableFunctionArgs$createInsertableFunctionBody);""")
       ..writeln('}');
+  }
+
+  void writeManager(TextEmitter leaf, String dbClassName) {
+    _writeFilterComposer(leaf, dbClassName);
+    _writeOrderingComposer(leaf, dbClassName);
+    _writeProcessedTableManager(leaf, dbClassName);
+    _writeTableManagerWithFiltering(leaf, dbClassName);
+    _writeTableManagerWithOrdering(leaf, dbClassName);
+    _writeRootTable(leaf, dbClassName);
   }
 
   void addFiltersAndOrderings(List<DriftTable> tables, TextEmitter leaf) {
