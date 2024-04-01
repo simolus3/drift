@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/writer.dart';
+import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 
 extension on DriftColumn {
@@ -10,14 +11,18 @@ extension on DriftColumn {
 }
 
 abstract class _Filter {
+  final String filterName;
+  _Filter(
+    this.filterName,
+  );
+
   void writeFilter(TextEmitter leaf);
 }
 
 class _RegularFilter extends _Filter {
   final String fieldGetter;
   final String type;
-  final String filterName;
-  _RegularFilter(this.fieldGetter, this.type, this.filterName);
+  _RegularFilter(this.fieldGetter, this.type, super.filterName);
 
   @override
   void writeFilter(TextEmitter leaf) {
@@ -32,10 +37,9 @@ class _RegularFilter extends _Filter {
 class _FilterWithConverter extends _Filter {
   final String fieldGetter;
   final String type;
-  final String filterName;
   final String converterType;
   _FilterWithConverter(
-      this.fieldGetter, this.type, this.filterName, this.converterType);
+      this.fieldGetter, this.type, super.filterName, this.converterType);
 
   @override
   void writeFilter(TextEmitter leaf) {
@@ -54,10 +58,9 @@ class _FilterWithConverter extends _Filter {
 
 class _ReferencedFilter extends _Filter {
   final String fieldGetter;
-  final String filterName;
   final _TableNames referencedTable;
   final _ColumnNames referencedColumn;
-  _ReferencedFilter(this.fieldGetter, this.filterName, this.referencedTable,
+  _ReferencedFilter(this.fieldGetter, super.filterName, this.referencedTable,
       this.referencedColumn);
 
   @override
@@ -79,14 +82,17 @@ return referenced(
 }
 
 abstract class _Ordering {
+  final String orderingName;
+
+  _Ordering(this.orderingName);
+
   void writeOrdering(TextEmitter leaf);
 }
 
 class _RegularOrdering extends _Ordering {
   final String fieldGetter;
   final String type;
-  final String orderingName;
-  _RegularOrdering(this.fieldGetter, this.type, this.orderingName);
+  _RegularOrdering(this.fieldGetter, this.type, super.orderingName);
 
   @override
   void writeOrdering(TextEmitter leaf) {
@@ -100,11 +106,10 @@ class _RegularOrdering extends _Ordering {
 
 class _ReferencedOrdering extends _Ordering {
   final String fieldGetter;
-  final String orderingName;
   final _TableNames referencedTable;
   final _ColumnNames referencedColumn;
-  _ReferencedOrdering(this.fieldGetter, this.orderingName, this.referencedTable,
-      this.referencedColumn);
+  _ReferencedOrdering(this.fieldGetter, super.orderingName,
+      this.referencedTable, this.referencedColumn);
 
   @override
   void writeOrdering(TextEmitter leaf) {
@@ -343,6 +348,49 @@ class _TableNames {
         }
       }
     }
+    // If there arey duplicate filters or orderings, remove both of them, use filterName and orderingName as the key
+    final filterNames = <String>[];
+    final filtersToRemove = <String>[];
+    final orderingNames = <String>[];
+    final orderingsToRemove = <String>[];
+    for (var c in columns) {
+      for (var f in c.filters) {
+        filterNames.add(f.filterName);
+      }
+      for (var o in c.orderings) {
+        orderingNames.add(o.orderingName);
+      }
+    }
+    filterNames.addAll(backRefFilters.map((e) => e.filterName));
+
+    // Add any filter or ordering that has a duplicate name to the remove list
+    for (var c in columns) {
+      for (var f in c.filters) {
+        if (filterNames.count(f.filterName) > 1) {
+          filtersToRemove.add(f.filterName);
+        }
+      }
+      for (var o in c.orderings) {
+        if (orderingNames.count(o.orderingName) > 1) {
+          orderingsToRemove.add(o.orderingName);
+        }
+      }
+    }
+    // Remove the filters and orderings that have duplicates
+
+    // TODO: Add warnings for duplicate filters and orderings
+    for (var c in columns) {
+      c.filters.removeWhere((e) => filtersToRemove.contains(e.filterName));
+      c.orderings
+          .removeWhere((e) => orderingsToRemove.contains(e.orderingName));
+    }
+    backRefFilters.removeWhere((e) => filtersToRemove.contains(e.filterName));
+  }
+}
+
+extension on List<String> {
+  int count(String element) {
+    return where((e) => e == element).length;
   }
 }
 
