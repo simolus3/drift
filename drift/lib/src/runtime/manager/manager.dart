@@ -6,6 +6,23 @@ part 'filter.dart';
 part 'join.dart';
 part 'ordering.dart';
 
+sealed class _StatementType<T extends Table, DT extends DataClass> {
+  const _StatementType();
+}
+
+class _SimpleResult<T extends Table, DT extends DataClass>
+    extends _StatementType<T, DT> {
+  final SimpleSelectStatement<T, DT> statement;
+  const _SimpleResult(this.statement);
+}
+
+class _JoinedResult<T extends Table, DT extends DataClass>
+    extends _StatementType<T, DT> {
+  final JoinedSelectStatement<T, DT> statement;
+
+  const _JoinedResult(this.statement);
+}
+
 /// Defines a class that holds the state for a [BaseTableManager]
 class TableManagerState<
     DB extends GeneratedDatabase,
@@ -92,81 +109,110 @@ class TableManagerState<
   /// This is needed due to dart's limitations with generics
   TableInfo<T, DT> get _tableAsTableInfo => table as TableInfo<T, DT>;
 
-  /// Builds a joined  select statement, should be used when joins are present
-  /// Will order, filter, and limit the statement using the state
-  JoinedSelectStatement _buildJoinedSelectStatement() {
-    // Build the joins
+  /// Builds a select statement with the given target columns, or all columns if none are provided
+  _StatementType<T, DT> _buildSelectStatement(
+      {Iterable<Column>? targetColumns,
+      required bool addJoins,
+      required bool applyFilters,
+      required bool applyOrdering,
+      required bool applyLimit}) {
     final joins = joinBuilders.map((e) => e.buildJoin()).toList();
 
-    // Create the joined statement
-    final statement =
-        db.select(_tableAsTableInfo, distinct: distinct ?? false).join(joins);
-
-    // Apply the expression to the statement
-    if (filter != null) {
-      statement.where(filter!);
+    // If there are no joins and we are returning all columns, we can use a simple select statement
+    if (targetColumns == null && !addJoins) {
+      final simpleStatement =
+          db.select(_tableAsTableInfo, distinct: distinct ?? false);
+      // Apply the expression to the statement
+      if (applyFilters && filter != null) {
+        simpleStatement.where((_) => filter!);
+      }
+      // Add orderings
+      if (applyOrdering) {
+        simpleStatement.orderBy(
+            orderingBuilders.map((e) => (_) => e.buildTerm()).toList());
+      }
+      // Set the limit and offset
+      if (applyLimit && limit != null) {
+        simpleStatement.limit(limit!, offset: offset);
+      }
+      return _SimpleResult(simpleStatement);
+    } else {
+      JoinedSelectStatement<T, DT> joinedStatement;
+      // If we are only selecting specific columns, we can use a selectOnly statement
+      if (targetColumns != null) {
+        joinedStatement =
+            (db.selectOnly(_tableAsTableInfo, distinct: distinct ?? false)
+              ..addColumns(targetColumns));
+        // Add the joins to the statement
+        if (addJoins) {
+          joinedStatement =
+              joinedStatement.join(joins) as JoinedSelectStatement<T, DT>;
+        }
+      } else {
+        joinedStatement = db
+            .select(_tableAsTableInfo, distinct: distinct ?? false)
+            .join(joins) as JoinedSelectStatement<T, DT>;
+      }
+      // Apply the expression to the statement
+      if (applyFilters && filter != null) {
+        joinedStatement.where(filter!);
+      }
+      // Add orderings
+      if (applyOrdering) {
+        joinedStatement
+            .orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
+      }
+      // Set the limit and offset
+      if (applyLimit && limit != null) {
+        joinedStatement.limit(limit!, offset: offset);
+      }
+      return _JoinedResult(joinedStatement);
     }
-
-    // Add orderings
-    statement.orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
-
-    // Set the limit and offset
-    if (limit != null) {
-      statement.limit(limit!, offset: offset);
-    }
-    return statement;
-  }
-
-  /// Builds a simple select statement, this should be used when there are no joins
-  /// Will order, filter, and limit the statement using the state
-  SimpleSelectStatement<T, DT> _buildSimpleSelectStatement() {
-    // Create the statement
-    final statement = db.select(_tableAsTableInfo, distinct: distinct ?? false);
-
-    // Apply the expression to the statement
-    if (filter != null) {
-      statement.where((_) => filter!);
-    }
-
-    // Add orderings
-    statement
-        .orderBy(orderingBuilders.map((e) => (_) => e.buildTerm()).toList());
-
-    // Set the limit and offset
-    if (limit != null) {
-      statement.limit(limit!, offset: offset);
-    }
-    return statement;
   }
 
   /// Build a select statement based on the manager state
-  Selectable<DT> buildSelectStatement() {
-    if (joinBuilders.isEmpty) {
-      return _buildSimpleSelectStatement();
-    } else {
-      return _buildJoinedSelectStatement()
-          .map((p0) => p0.readTable(_tableAsTableInfo));
-    }
+  Selectable<DT> buildSelectStatement(
+      {Iterable<Column>? targetColumns,
+      bool addJoins = true,
+      bool applyFilters = true,
+      bool applyOrdering = true,
+      bool applyLimit = true}) {
+    final result = _buildSelectStatement(
+        targetColumns: targetColumns,
+        addJoins: addJoins,
+        applyFilters: applyFilters,
+        applyOrdering: applyOrdering,
+        applyLimit: applyLimit);
+    return switch (result) {
+      _SimpleResult() => result.statement,
+      _JoinedResult() =>
+        result.statement.map((p0) => p0.readTable(_tableAsTableInfo))
+    };
   }
 
   // Build a delete statement based on the manager state
-  // DeleteStatement buildDeleteStatement() {
-  //   // If there are any joins we will have to use a subquery to get the rowIds
-  //   final DeleteStatement deleteStatement;
-  //   if (joinBuilders.isEmpty) {
-  //     deleteStatement = db.delete(_tableAsTableInfo);
-  //     if (filter != null) {
-  //       deleteStatement.where((_) => filter!);
-  //     }
-  //   } else {
-  //     // If there are joins, we need to use a subquery to get the rowIds
-  //     final selectOnlyRowIdStatement = buildSelectStatement();
-  //     deleteStatement = db.delete(_tableAsTableInfo)
-  //       ..where((_) =>
-  //           _tableAsTableInfo.rowId.isInQuery(_buildJoinedSelectStatement()));
-  //   }
-  //   return deleteStatement;
-  // }
+  DeleteStatement buildDeleteStatement() {
+    // If there are any joins we will have to use a subquery to get the rowIds
+    final DeleteStatement deleteStatement;
+    if (joinBuilders.isEmpty) {
+      deleteStatement = db.delete(_tableAsTableInfo);
+      if (filter != null) {
+        deleteStatement.where((_) => filter!);
+      }
+    } else {
+      deleteStatement = db.delete(_tableAsTableInfo);
+      for (var col in _tableAsTableInfo.primaryKey) {
+        final subquery = _buildSelectStatement(
+            targetColumns: [col],
+            addJoins: true,
+            applyFilters: true,
+            applyOrdering: false,
+            applyLimit: false) as _JoinedResult<T, DT>;
+        deleteStatement.where((tbl) => col.isInQuery(subquery.statement));
+      }
+    }
+    return deleteStatement;
+  }
 }
 
 /// Base class for all table managers
