@@ -240,30 +240,9 @@ class _TableNames {
       ..write('class $processedTableManager extends ')
       ..writeDriftRef('ProcessedTableManager')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer> {')
-      ..writeln('const $processedTableManager(super.state);')
-      ..writeln('}');
-  }
-
-  void _writeTableManagerWithFiltering(TextEmitter leaf, String dbClassName) {
-    leaf
-      ..write('class $tableManagerWithFiltering extends ')
-      ..writeDriftRef('TableManagerWithFiltering')
-      ..writeln(
           '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager> {')
       ..writeln(
-          'const $tableManagerWithFiltering(super.state,{required super.getChildManager});')
-      ..writeln('}');
-  }
-
-  void _writeTableManagerWithOrdering(TextEmitter leaf, String dbClassName) {
-    leaf
-      ..write('class $tableManagerWithOrdering extends ')
-      ..writeDriftRef('TableManagerWithOrdering')
-      ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager>{')
-      ..writeln(
-          'const $tableManagerWithOrdering(super.state,{required super.getChildManager});')
+          'const $processedTableManager(super.state,super.getChildManager);')
       ..writeln('}');
   }
 
@@ -319,14 +298,12 @@ class _TableNames {
       ..write('class $rootTableManager extends ')
       ..writeDriftRef('RootTableManager')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$tableManagerWithFiltering,$tableManagerWithOrdering,$createInsertableFunctionTypeDef>   {')
+          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$createInsertableFunctionTypeDef>   {')
       ..writeln('$rootTableManager($dbClassName db, $tableClassName table)')
       ..writeln(": super(")
       ..writeDriftRef("TableManagerState")
       ..write(
-          """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table)),
-            getChildManagerWithFiltering: (f) => $tableManagerWithFiltering(f,getChildManager: (f) => $processedTableManager(f)),
-            getChildManagerWithOrdering: (f) => $tableManagerWithOrdering(f,getChildManager: (f) =>$processedTableManager(f))
+          """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table))
             ,createInsertable: $createInsertableFunctionArgs$createInsertableFunctionBody);""")
       ..writeln('}');
   }
@@ -335,8 +312,6 @@ class _TableNames {
     _writeFilterComposer(leaf, dbClassName);
     _writeOrderingComposer(leaf, dbClassName);
     _writeProcessedTableManager(leaf, dbClassName);
-    _writeTableManagerWithFiltering(leaf, dbClassName);
-    _writeTableManagerWithOrdering(leaf, dbClassName);
     _writeRootTable(leaf, dbClassName);
   }
 
