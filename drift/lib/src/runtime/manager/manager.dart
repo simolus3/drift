@@ -239,11 +239,14 @@ class TableManagerWithFiltering<
     extends BaseTableManager<DB, T, D, FS, OS>
     with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
   /// Callback for
-  final C Function(TableManagerState<DB, T, D, FS, OS>) getChildManager;
-  const TableManagerWithFiltering(super.state, {required this.getChildManager});
+  final C Function(TableManagerState<DB, T, D, FS, OS>) _getChildManager;
+  const TableManagerWithFiltering(super.state,
+      {required C Function(TableManagerState<DB, T, D, FS, OS>)
+          getChildManager})
+      : _getChildManager = getChildManager;
   C filter(ComposableFilter Function(FS f) f) {
     final filter = f(state.filteringComposer);
-    return getChildManager(state.copyWith(
+    return _getChildManager(state.copyWith(
         filter: filter.expression,
         joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
   }
@@ -259,11 +262,14 @@ class TableManagerWithOrdering<
         C extends ProcessedTableManager<DB, T, D, FS, OS>>
     extends BaseTableManager<DB, T, D, FS, OS>
     with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
-  final C Function(TableManagerState<DB, T, D, FS, OS>) getChildManager;
-  const TableManagerWithOrdering(super.state, {required this.getChildManager});
+  final C Function(TableManagerState<DB, T, D, FS, OS>) _getChildManager;
+  const TableManagerWithOrdering(super.state,
+      {required C Function(TableManagerState<DB, T, D, FS, OS>)
+          getChildManager})
+      : _getChildManager = getChildManager;
   C orderBy(ComposableOrdering Function(OS o) o) {
     final orderings = o(state.orderingComposer);
-    return getChildManager(state.copyWith(
+    return _getChildManager(state.copyWith(
         orderingBuilders: orderings.orderingBuilders,
         joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
   }
@@ -282,23 +288,27 @@ class RootTableManager<
     extends BaseTableManager<DB, T, D, FS, OS>
     with ProcessedTableManagerMixin<DB, T, D, FS, OS> {
   final CF Function(TableManagerState<DB, T, D, FS, OS>)
-      getChildManagerWithFiltering;
+      _getChildManagerWithFiltering;
   final CO Function(TableManagerState<DB, T, D, FS, OS>)
-      getChildManagerWithOrdering;
+      _getChildManagerWithOrdering;
 
   const RootTableManager(super.state,
-      {required this.getChildManagerWithFiltering,
-      required this.getChildManagerWithOrdering});
-  CF filter(ComposableFilter Function(FS f) f) {
+      {required CF Function(TableManagerState<DB, T, D, FS, OS>)
+          getChildManagerWithFiltering,
+      required CO Function(TableManagerState<DB, T, D, FS, OS>)
+          getChildManagerWithOrdering})
+      : _getChildManagerWithFiltering = getChildManagerWithFiltering,
+        _getChildManagerWithOrdering = getChildManagerWithOrdering;
+  CO filter(ComposableFilter Function(FS f) f) {
     final filter = f(state.filteringComposer);
-    return getChildManagerWithFiltering(state.copyWith(
+    return _getChildManagerWithOrdering(state.copyWith(
         filter: filter.expression,
         joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
   }
 
-  CO orderBy(ComposableOrdering Function(OS o) o) {
+  CF orderBy(ComposableOrdering Function(OS o) o) {
     final orderings = o(state.orderingComposer);
-    return getChildManagerWithOrdering(state.copyWith(
+    return _getChildManagerWithFiltering(state.copyWith(
         orderingBuilders: orderings.orderingBuilders,
         joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
   }
