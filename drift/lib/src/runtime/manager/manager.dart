@@ -228,27 +228,32 @@ abstract class BaseTableManager<
     C extends ProcessedTableManager<DB, T, DT, FS, OS, C>> {
   /// The state for this manager
   final TableManagerState<DB, T, DT, FS, OS> state;
-  final C Function(TableManagerState<DB, T, DT, FS, OS>) _getChildManager;
+  final C Function(TableManagerState<DB, T, DT, FS, OS>,
+      BaseTableManager<DB, T, DT, FS, OS, C>) getChildManager;
 
   /// Create a new [BaseTableManager] instance
-  const BaseTableManager(this.state, this._getChildManager);
+  const BaseTableManager(this.state, this.getChildManager);
   Future<int> delete() => state.buildDeleteStatement().go();
 
   C orderBy(ComposableOrdering Function(OS o) o) {
     final orderings = o(state.orderingComposer);
-    return _getChildManager(state.copyWith(
-        orderingBuilders:
-            orderings.orderingBuilders.union(state.orderingBuilders),
-        joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
+    return getChildManager(
+        state.copyWith(
+            orderingBuilders:
+                orderings.orderingBuilders.union(state.orderingBuilders),
+            joinBuilders: state.joinBuilders.union(orderings.joinBuilders)),
+        this);
   }
 
   C filter(ComposableFilter Function(FS f) f) {
     final filter = f(state.filteringComposer);
-    return _getChildManager(state.copyWith(
-        filter: state.filter == null
-            ? filter.expression
-            : filter.expression & state.filter!,
-        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
+    return getChildManager(
+        state.copyWith(
+            filter: state.filter == null
+                ? filter.expression
+                : filter.expression & state.filter!,
+            joinBuilders: state.joinBuilders.union(filter.joinBuilders)),
+        this);
   }
 }
 
@@ -300,7 +305,7 @@ abstract class RootTableManager<
       : _createInsertable = createInsertable;
 
   C all() {
-    return _getChildManager(state);
+    return getChildManager(state, this);
   }
 
   Future<int> create(Insertable<D> Function(CI o) f,

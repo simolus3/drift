@@ -304,7 +304,7 @@ class _TableNames {
       ..writeDriftRef("TableManagerState")
       ..write(
           """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table))
-            ,createInsertable: $createInsertableFunctionArgs$createInsertableFunctionBody);""")
+            ,(p0,p1) => $processedTableManager(p0,p1.getChildManager),createInsertable: $createInsertableFunctionArgs$createInsertableFunctionBody);""")
       ..writeln('}');
   }
 
