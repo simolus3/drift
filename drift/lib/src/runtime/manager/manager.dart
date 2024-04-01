@@ -346,8 +346,8 @@ abstract class RootTableManager<
 
   Future<int> create(
     Insertable<D> Function(CI o) f,
-    InsertMode? mode,
-    UpsertClause<Table, dynamic>? onConflict,
+    {InsertMode? mode,
+    UpsertClause<Table, dynamic>? onConflict},
   ) {
     return state.db
         .into(state.table)
@@ -356,8 +356,8 @@ abstract class RootTableManager<
 
   Future<D> createReturning(
     Insertable<D> Function(CI o) f,
-    InsertMode? mode,
-    UpsertClause<Table, dynamic>? onConflict,
+    {InsertMode? mode,
+    UpsertClause<Table, dynamic>? onConflict},
   ) {
     return state.db.into(state.table).insertReturning(f(_createInsertable),
         mode: mode, onConflict: onConflict) as Future<D>;
@@ -365,8 +365,8 @@ abstract class RootTableManager<
 
   Future<void> bulkCreate(
     Iterable<Insertable<D>> Function(CI o) f,
-    InsertMode? mode,
-    UpsertClause<Table, dynamic>? onConflict,
+    {InsertMode? mode,
+    UpsertClause<Table, dynamic>? onConflict},
   ) {
     return state.db.batch((b) => b.insertAll(state.table, f(_createInsertable),
         mode: mode, onConflict: onConflict));
