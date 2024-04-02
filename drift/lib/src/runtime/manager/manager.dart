@@ -29,7 +29,9 @@ class TableManagerState<
     T extends Table,
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>> {
+    OS extends OrderingComposer<DB, T>,
+    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CH>,
+    CH extends C Function(TableManagerState<DB, T, DT, FS, OS, C, CH>)> {
   /// The database that the query will be exeCCted on
   final DB db;
 
@@ -66,6 +68,9 @@ class TableManagerState<
   /// which will be applied to the statement when its eventually created
   final OS orderingComposer;
 
+  /// This function is used internaly to return a new instance of the child manager
+  final CH _getChildManagerBuilder;
+
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
   /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
@@ -74,16 +79,17 @@ class TableManagerState<
     required this.table,
     required this.filteringComposer,
     required this.orderingComposer,
+    required CH getChildManagerBuilder,
     this.filter,
     this.distinct,
     this.limit,
     this.offset,
     this.orderingBuilders = const {},
     this.joinBuilders = const {},
-  });
+  }) : _getChildManagerBuilder = getChildManagerBuilder;
 
   /// Copy this state with the given values
-  TableManagerState<DB, T, DT, FS, OS> copyWith({
+  TableManagerState<DB, T, DT, FS, OS, C, CH> copyWith({
     bool? distinct,
     int? limit,
     int? offset,
@@ -96,6 +102,7 @@ class TableManagerState<
       table: table,
       filteringComposer: filteringComposer,
       orderingComposer: orderingComposer,
+      getChildManagerBuilder: _getChildManagerBuilder,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
@@ -221,55 +228,51 @@ class TableManagerState<
 @internal
 abstract class BaseTableManager<
     DB extends GeneratedDatabase,
-    T extends TableInfo,
+    T extends Table,
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C>> {
+    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CH>,
+    CH extends C Function(TableManagerState<DB, T, DT, FS, OS, C, CH>)> {
   /// The state for this manager
-  final TableManagerState<DB, T, DT, FS, OS> state;
-  final C Function(TableManagerState<DB, T, DT, FS, OS>,
-      BaseTableManager<DB, T, DT, FS, OS, C>) getChildManager;
+  final TableManagerState<DB, T, DT, FS, OS, C, CH> state;
 
   /// Create a new [BaseTableManager] instance
-  const BaseTableManager(this.state, this.getChildManager);
+  BaseTableManager(this.state);
   Future<int> delete() => state.buildDeleteStatement().go();
 
   C orderBy(ComposableOrdering Function(OS o) o) {
     final orderings = o(state.orderingComposer);
-    return getChildManager(
-        state.copyWith(
-            orderingBuilders:
-                orderings.orderingBuilders.union(state.orderingBuilders),
-            joinBuilders: state.joinBuilders.union(orderings.joinBuilders)),
-        this);
+    return state._getChildManagerBuilder(state.copyWith(
+        orderingBuilders:
+            state.orderingBuilders.union(orderings.orderingBuilders),
+        joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
   }
 
   C filter(ComposableFilter Function(FS f) f) {
     final filter = f(state.filteringComposer);
-    return getChildManager(
-        state.copyWith(
-            filter: state.filter == null
-                ? filter.expression
-                : filter.expression & state.filter!,
-            joinBuilders: state.joinBuilders.union(filter.joinBuilders)),
-        this);
+    return state._getChildManagerBuilder(state.copyWith(
+        filter: state.filter == null
+            ? filter.expression
+            : filter.expression & state.filter!,
+        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
   }
 }
 
 abstract class ProcessedTableManager<
         DB extends GeneratedDatabase,
-        T extends TableInfo,
+        T extends Table,
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C>>
-    extends BaseTableManager<DB, T, D, FS, OS, C>
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CH>,
+        CH extends C Function(TableManagerState<DB, T, D, FS, OS, C, CH>)>
+    extends BaseTableManager<DB, T, D, FS, OS, C, CH>
     implements
         MultiSelectable<D>,
         SingleSelectable<D>,
         SingleOrNullSelectable<D> {
-  const ProcessedTableManager(super.state, super.getChildManager);
+  ProcessedTableManager(super.state);
 
   @override
   Future<D> getSingle() => state.buildSelectStatement().getSingle();
@@ -291,43 +294,39 @@ abstract class ProcessedTableManager<
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
 abstract class RootTableManager<
-    DB extends GeneratedDatabase,
-    T extends TableInfo,
-    D extends DataClass,
-    FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, D, FS, OS, C>,
-    CI extends Function> extends BaseTableManager<DB, T, D, FS, OS, C> {
-  final CI _createInsertable;
-
-  RootTableManager(super.state, super.getChildManager,
-      {required CI createInsertable})
-      : _createInsertable = createInsertable;
+        DB extends GeneratedDatabase,
+        T extends Table,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CH>,
+        CH extends C Function(TableManagerState<DB, T, D, FS, OS, C, CH>)>
+    extends BaseTableManager<DB, T, D, FS, OS, C, CH> {
+  RootTableManager(super.state);
 
   C all() {
-    return getChildManager(state, this);
+    return state._getChildManagerBuilder(state);
   }
 
-  Future<int> create(Insertable<D> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-    return state.db
-        .into(state.table)
-        .insert(f(_createInsertable), mode: mode, onConflict: onConflict);
-  }
+  // Future<int> create(Insertable<D> Function(CI o) f,
+  //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
+  //   return state.db.into(state.table)
+  //       .insert(f(_createInsertable), mode: mode, onConflict: onConflict);
+  // }
 
-  Future<D> createReturning(Insertable<D> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-    return state.db.into(state.table).insertReturning(f(_createInsertable),
-        mode: mode, onConflict: onConflict) as Future<D>;
-  }
+  // Future<D> createReturning(Insertable<D> Function(CI o) f,
+  //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
+  //   return state.db.into(state.table).insertReturning(f(_createInsertable),
+  //       mode: mode, onConflict: onConflict) as Future<D>;
+  // }
 
-  Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-    return state.db.batch((b) => b.insertAll(state.table, f(_createInsertable),
-        mode: mode, onConflict: onConflict));
-  }
+  // Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
+  //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
+  //   return state.db.batch((b) => b.insertAll(state.table, f(_createInsertable),
+  //       mode: mode, onConflict: onConflict));
+  // }
 
-  Future<bool> replace(Insertable<D> entry) {
-    return state.db.update(state.table).replace(entry);
-  }
+  // Future<bool> replace(Insertable<D> entry) {
+  //   return state.db.update(state.table).replace(entry);
+  // }
 }
