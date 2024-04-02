@@ -176,6 +176,16 @@ class _TableNames {
   /// E.G `categories`
   final String tableGetterName;
 
+  /// Name of the typedef for the insertCompanionBuilder
+  ///
+  /// E.G. `insertCompanionBuilder`
+  final String insertCompanionBuilderTypeDefName;
+
+  /// Name of the arguments for the updateCompanionBuilder
+  ///
+  /// E.G. `updateCompanionBuilderTypeDef`
+  final String updateCompanionBuilderTypeDefName;
+
   /// Name of the class that cooresponds to a table row
   ///
   /// E.G `Category`
@@ -196,6 +206,10 @@ class _TableNames {
         tableManagerWithOrdering =
             '${table.entityInfoName}TableManagerWithOrdering',
         rootTableManager = '${table.entityInfoName}TableManager',
+        insertCompanionBuilderTypeDefName =
+            '${table.entityInfoName}InsertCompanionBuilder',
+        updateCompanionBuilderTypeDefName =
+            '${table.entityInfoName}UpdateCompanionBuilder',
         rowClassName = table.nameOfRowClass,
         tableClassName = table.entityInfoName,
         tableGetterName = table.dbGetterName,
@@ -240,71 +254,72 @@ class _TableNames {
       ..write('class $processedTableManager extends ')
       ..writeDriftRef('ProcessedTableManager')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager> {')
-      ..writeln(
-          'const $processedTableManager(super.state,super.getChildManager);')
+          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$insertCompanionBuilderTypeDefName,$updateCompanionBuilderTypeDefName> {')
+      ..writeln('const $processedTableManager(super.state);')
       ..writeln('}');
   }
 
   void _writeRootTable(TextEmitter leaf, String dbClassName) {
     final companionClassName = leaf.dartCode(leaf.companionType(table));
-    // final updateCompanionTypedef = StringBuffer(
-    //     'typedef $updateCompanionTypedefName = $companionClassName Function({');
-    final createInsertableFunctionTypeDef =
-        StringBuffer('$companionClassName Function({');
-    // final updateCompanionArguments = StringBuffer('({');
-    final createInsertableFunctionArgs = StringBuffer('({');
-    // final updateCompanionBody = StringBuffer('=> $companionClassName(');
-    final createInsertableFunctionBody =
+
+    final updateCompanionBuilderTypeDef = StringBuffer(
+        'typedef $updateCompanionBuilderTypeDefName = $companionClassName Function({');
+    final insertCompanionBuilderTypeDef = StringBuffer(
+        'typedef $insertCompanionBuilderTypeDefName =  $companionClassName Function({');
+
+    final updateCompanionBuilderArguments = StringBuffer('({');
+    final insertCompanionBuilderArguments = StringBuffer('({');
+
+    final updateCompanionBuilderBody = StringBuffer('=> $companionClassName(');
+    final insertCompanionBuilderBody =
         StringBuffer('=> $companionClassName.insert(');
+
     for (final column in table.columns) {
       final value = leaf.drift('Value');
       final param = column.nameInDart;
       final typeName = leaf.dartCode(leaf.dartType(column));
 
       // The update companion has no required fields, they are all defaulted to absent
-      // updateCompanionTypedef.write('$value<$typeName> $param,');
-      // updateCompanionArguments
-      //     .write('$value<$typeName> $param = const $value.absent(),');
-      // updateCompanionBody.write('$param: $param,');
+      updateCompanionBuilderTypeDef.write('$value<$typeName> $param,');
+      updateCompanionBuilderArguments
+          .write('$value<$typeName> $param = const $value.absent(),');
+      updateCompanionBuilderBody.write('$param: $param,');
 
       // The insert compantion has some required arguments and some that are defaulted to absent
       if (!column.isImplicitRowId && table.isColumnRequiredForInsert(column)) {
-        createInsertableFunctionTypeDef.write('required $typeName $param,');
-        createInsertableFunctionArgs.write('required $typeName $param,');
+        insertCompanionBuilderTypeDef.write('required $typeName $param,');
+        insertCompanionBuilderArguments.write('required $typeName $param,');
       } else {
-        createInsertableFunctionTypeDef.write('$value<$typeName> $param,');
-        createInsertableFunctionArgs
+        insertCompanionBuilderTypeDef.write('$value<$typeName> $param,');
+        insertCompanionBuilderArguments
             .write('$value<$typeName> $param = const $value.absent(),');
       }
-      createInsertableFunctionBody.write('$param: $param,');
+      insertCompanionBuilderBody.write('$param: $param,');
     }
 
     // Close
     // updateCompanionTypedef.write('})');
-    createInsertableFunctionTypeDef.write('})');
-    createInsertableFunctionArgs.write('})');
-    createInsertableFunctionBody.write(")");
-
-    // leaf.writeln(updateCompanionTypedef);
-    // leaf.writeln(insertCompanionTypedef);
-
-    // updateCompanionArguments.write('})');
-    // insertCompanionArguments.write('})');
-    // updateCompanionBody.write(")");
-    // insertCompanionBody.write(")");
+    insertCompanionBuilderTypeDef.write('});');
+    updateCompanionBuilderTypeDef.write('});');
+    insertCompanionBuilderArguments.write('})');
+    updateCompanionBuilderArguments.write('})');
+    insertCompanionBuilderBody.write(")");
+    updateCompanionBuilderBody.write(")");
+    leaf.writeln(insertCompanionBuilderTypeDef);
+    leaf.writeln(updateCompanionBuilderTypeDef);
 
     leaf
       ..write('class $rootTableManager extends ')
       ..writeDriftRef('RootTableManager')
       ..writeln(
-          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$createInsertableFunctionTypeDef>   {')
+          '<$dbClassName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$insertCompanionBuilderTypeDefName,$updateCompanionBuilderTypeDefName>   {')
       ..writeln('$rootTableManager($dbClassName db, $tableClassName table)')
       ..writeln(": super(")
       ..writeDriftRef("TableManagerState")
       ..write(
-          """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table))
-            ,(p0,p1) => $processedTableManager(p0,p1.getChildManager),createInsertable: $createInsertableFunctionArgs$createInsertableFunctionBody);""")
+          """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table),
+            getChildManagerBuilder :(p0) => $processedTableManager(p0),getUpdateCompanionBuilder: $updateCompanionBuilderArguments$updateCompanionBuilderBody,
+            getInsertCompanionBuilder:$insertCompanionBuilderArguments$insertCompanionBuilderBody));""")
       ..writeln('}');
   }
 

@@ -30,8 +30,9 @@ class TableManagerState<
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI>,
-    CI extends CompanionBuilder<DT>> {
+    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
+    CI extends Function,
+    CU extends Function> {
   /// The database that the query will be exeCCted on
   final DB db;
 
@@ -69,12 +70,16 @@ class TableManagerState<
   final OS orderingComposer;
 
   /// This function is used internaly to return a new instance of the child manager
-  final C Function(TableManagerState<DB, T, DT, FS, OS, C, CI>)
+  final C Function(TableManagerState<DB, T, DT, FS, OS, C, CI, CU>)
       _getChildManagerBuilder;
 
-  /// This function will return a class which contains a function which
-  ///
-  final CI _getInsertableCompanionBuilder;
+  /// This function is passed to the user to create a companion
+  /// for inserting data into the table
+  final CI _getInsertCompanionBuilder;
+
+  /// This function is passed to the user to create a companion
+  /// for updating data in the table
+  final CU _getUpdateCompanionBuilder;
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
@@ -84,9 +89,10 @@ class TableManagerState<
     required this.table,
     required this.filteringComposer,
     required this.orderingComposer,
-    required C Function(TableManagerState<DB, T, DT, FS, OS, C, CI>)
+    required C Function(TableManagerState<DB, T, DT, FS, OS, C, CI, CU>)
         getChildManagerBuilder,
-    required CI getInsertableCompanionBuilder,
+    required CI getInsertCompanionBuilder,
+    required CU getUpdateCompanionBuilder,
     this.filter,
     this.distinct,
     this.limit,
@@ -94,10 +100,11 @@ class TableManagerState<
     this.orderingBuilders = const {},
     this.joinBuilders = const {},
   })  : _getChildManagerBuilder = getChildManagerBuilder,
-        _getInsertableCompanionBuilder = getInsertableCompanionBuilder;
+        _getInsertCompanionBuilder = getInsertCompanionBuilder,
+        _getUpdateCompanionBuilder = getUpdateCompanionBuilder;
 
   /// Copy this state with the given values
-  TableManagerState<DB, T, DT, FS, OS, C, CI> copyWith({
+  TableManagerState<DB, T, DT, FS, OS, C, CI, CU> copyWith({
     bool? distinct,
     int? limit,
     int? offset,
@@ -111,7 +118,8 @@ class TableManagerState<
       filteringComposer: filteringComposer,
       orderingComposer: orderingComposer,
       getChildManagerBuilder: _getChildManagerBuilder,
-      getInsertableCompanionBuilder: _getInsertableCompanionBuilder,
+      getInsertCompanionBuilder: _getInsertCompanionBuilder,
+      getUpdateCompanionBuilder: _getUpdateCompanionBuilder,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
@@ -241,13 +249,14 @@ abstract class BaseTableManager<
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI>,
-    CI extends CompanionBuilder<DT>> {
+    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
+    CI extends Function,
+    CU extends Function> {
   /// The state for this manager
-  final TableManagerState<DB, T, DT, FS, OS, C, CI> state;
+  final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> state;
 
   /// Create a new [BaseTableManager] instance
-  BaseTableManager(this.state);
+  const BaseTableManager(this.state);
   Future<int> delete() => state.buildDeleteStatement().go();
 
   C orderBy(ComposableOrdering Function(OS o) o) {
@@ -274,14 +283,15 @@ abstract class ProcessedTableManager<
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI>,
-        CI extends CompanionBuilder<D>>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CI>
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
+        CI extends Function,
+        CU extends Function>
+    extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU>
     implements
         MultiSelectable<D>,
         SingleSelectable<D>,
         SingleOrNullSelectable<D> {
-  ProcessedTableManager(super.state);
+  const ProcessedTableManager(super.state);
 
   @override
   Future<D> getSingle() => state.buildSelectStatement().getSingle();
@@ -303,48 +313,44 @@ abstract class ProcessedTableManager<
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
 abstract class RootTableManager<
-        DB extends GeneratedDatabase,
-        T extends Table,
-        D extends DataClass,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI>,
-        CI extends CompanionBuilder<D>>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CI> {
-  RootTableManager(super.state);
+    DB extends GeneratedDatabase,
+    T extends Table,
+    D extends DataClass,
+    FS extends FilterComposer<DB, T>,
+    OS extends OrderingComposer<DB, T>,
+    C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
+    CI extends Function,
+    CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
+  const RootTableManager(super.state);
 
   C all() {
     return state._getChildManagerBuilder(state);
   }
 
-  // Future<int> create(Insertable<D> Function(CI o) f,
-  //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-  //   (state._getInsertableCompanionBuilder.create() as CI).companion = f;
+  Future<int> create(Insertable<D> Function(CI o) f,
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+    return state.db.into(state._tableAsTableInfo).insert(
+        f(state._getInsertCompanionBuilder),
+        mode: mode,
+        onConflict: onConflict);
+  }
 
-  //   return state.db
-  //       .into(state.table)
-  //       .insert(f(_createInsertable), mode: mode, onConflict: onConflict);
-  // }
+  Future<D> createReturning(Insertable<D> Function(CI o) f,
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+    return state.db.into(state._tableAsTableInfo).insertReturning(
+        f(state._getInsertCompanionBuilder),
+        mode: mode,
+        onConflict: onConflict);
+  }
 
-  // Future<D> createReturning(Insertable<D> Function(CI o) f,
-  //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-  //   return state.db.into(state.table).insertReturning(f(_createInsertable),
-  //       mode: mode, onConflict: onConflict) as Future<D>;
-  // }
+  Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+    return state.db.batch((b) => b.insertAll(
+        state._tableAsTableInfo, f(state._getInsertCompanionBuilder),
+        mode: mode, onConflict: onConflict));
+  }
 
-  // Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
-  //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-  //   return state.db.batch((b) => b.insertAll(state.table, f(_createInsertable),
-  //       mode: mode, onConflict: onConflict));
-  // }
-
-  // Future<bool> replace(Insertable<D> entry) {
-  //   return state.db.update(state.table).replace(entry);
-  // }
-}
-
-abstract class CompanionBuilder<D> {
-  late final UpdateCompanion<D> companion;
-  Function get insert;
-  Function get create;
+  Future<bool> replace(Insertable<D> entry) {
+    return state.db.update(state._tableAsTableInfo).replace(entry);
+  }
 }
