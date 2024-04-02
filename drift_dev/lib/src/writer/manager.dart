@@ -9,7 +9,7 @@ abstract class _Filter {
     this.filterName,
   );
 
-  void writeFilter(TextEmitter leaf);
+  void writeFilter(TextEmitter leaf, bool isModular);
 }
 
 class _RegularFilter extends _Filter {
@@ -18,7 +18,7 @@ class _RegularFilter extends _Filter {
   _RegularFilter(this.fieldGetter, this.type, super.filterName);
 
   @override
-  void writeFilter(TextEmitter leaf) {
+  void writeFilter(TextEmitter leaf, bool isModular) {
     leaf
       ..writeDriftRef("ColumnFilters")
       ..write("<$type> get $filterName =>")
@@ -35,7 +35,7 @@ class _FilterWithConverter extends _Filter {
       this.fieldGetter, this.type, super.filterName, this.converterType);
 
   @override
-  void writeFilter(TextEmitter leaf) {
+  void writeFilter(TextEmitter leaf, bool isModular) {
     leaf
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..write("<$converterType,$type> get $filterName =>")
@@ -57,7 +57,10 @@ class _ReferencedFilter extends _Filter {
       this.referencedColumn);
 
   @override
-  void writeFilter(TextEmitter leaf) {
+  void writeFilter(TextEmitter leaf, bool isModular) {
+    final String referencedTableGetter = isModular
+        ? "state.db.resultSet<${referencedTable.tableClassName}>('${referencedTable.table.schemaName}')"
+        : "state.db.${referencedTable.tableGetterName}";
     leaf
       ..writeDriftRef("ComposableFilter")
       ..write(" $filterName(")
@@ -65,7 +68,7 @@ class _ReferencedFilter extends _Filter {
       ..writeln(" Function( ${referencedTable.filterComposer} f) f) {")
       ..writeln('''
 return referenced(
-            referencedTable: state.db.${referencedTable.tableGetterName},
+            referencedTable: $referencedTableGetter,
             getCurrentColumn: (f) => f.$fieldGetter,
             getReferencedColumn: (f) => f.${referencedColumn.fieldGetter},
             getReferencedComposer: (db, table) => ${referencedTable.filterComposer}(db, table),
@@ -79,7 +82,7 @@ abstract class _Ordering {
 
   _Ordering(this.orderingName);
 
-  void writeOrdering(TextEmitter leaf);
+  void writeOrdering(TextEmitter leaf, bool isModular);
 }
 
 class _RegularOrdering extends _Ordering {
@@ -88,7 +91,7 @@ class _RegularOrdering extends _Ordering {
   _RegularOrdering(this.fieldGetter, this.type, super.orderingName);
 
   @override
-  void writeOrdering(TextEmitter leaf) {
+  void writeOrdering(TextEmitter leaf, bool isModular) {
     leaf
       ..writeDriftRef("ColumnOrderings")
       ..write(" get $orderingName =>")
@@ -105,7 +108,11 @@ class _ReferencedOrdering extends _Ordering {
       this.referencedTable, this.referencedColumn);
 
   @override
-  void writeOrdering(TextEmitter leaf) {
+  void writeOrdering(TextEmitter leaf, bool isModular) {
+    final String referencedTableGetter = isModular
+        ? "state.db.resultSet<${referencedTable.tableClassName}>('${referencedTable.table.schemaName}')"
+        : "state.db.${referencedTable.tableGetterName}";
+
     leaf
       ..writeDriftRef("ComposableOrdering")
       ..write(" $orderingName(")
@@ -113,7 +120,7 @@ class _ReferencedOrdering extends _Ordering {
       ..writeln(" Function( ${referencedTable.orderingComposer} o) o) {")
       ..writeln('''
 return referenced(
-            referencedTable: state.db.${referencedTable.tableGetterName},
+            referencedTable: $referencedTableGetter,
             getCurrentColumn: (f) => f.$fieldGetter,
             getReferencedColumn: (f) => f.${referencedColumn.fieldGetter},
             getReferencedComposer: (db, table) => ${referencedTable.orderingComposer}(db, table),
@@ -135,6 +142,9 @@ class _ColumnNames {
 class _TableNames {
   /// The current table
   final DriftTable table;
+
+  /// Generation Scope
+  final Scope _scope;
 
   /// The name of the filter composer class
   ///
@@ -197,19 +207,20 @@ class _TableNames {
   /// Filters for back references
   final List<_ReferencedFilter> backRefFilters;
 
-  _TableNames(this.table)
-      : filterComposer = '${table.entityInfoName}FilterComposer',
-        orderingComposer = '${table.entityInfoName}OrderingComposer',
-        processedTableManager = '${table.entityInfoName}ProcessedTableManager',
+  _TableNames(this.table, this._scope)
+      : filterComposer = '\$${table.entityInfoName}FilterComposer',
+        orderingComposer = '\$${table.entityInfoName}OrderingComposer',
+        processedTableManager =
+            '\$${table.entityInfoName}ProcessedTableManager',
         tableManagerWithFiltering =
-            '${table.entityInfoName}TableManagerWithFiltering',
+            '\$${table.entityInfoName}TableManagerWithFiltering',
         tableManagerWithOrdering =
-            '${table.entityInfoName}TableManagerWithOrdering',
-        rootTableManager = '${table.entityInfoName}TableManager',
+            '\$${table.entityInfoName}TableManagerWithOrdering',
+        rootTableManager = '\$${table.entityInfoName}TableManager',
         insertCompanionBuilderTypeDefName =
-            '${table.entityInfoName}InsertCompanionBuilder',
+            '\$${table.entityInfoName}InsertCompanionBuilder',
         updateCompanionBuilderTypeDefName =
-            '${table.entityInfoName}UpdateCompanionBuilder',
+            '\$${table.entityInfoName}UpdateCompanionBuilder',
         rowClassName = table.nameOfRowClass,
         tableClassName = table.entityInfoName,
         tableGetterName = table.dbGetterName,
@@ -225,11 +236,11 @@ class _TableNames {
       ..writeln('$filterComposer(super.db, super.table);');
     for (var c in columns) {
       for (var f in c.filters) {
-        f.writeFilter(leaf);
+        f.writeFilter(leaf, _scope.generationOptions.isModular);
       }
     }
     for (var f in backRefFilters) {
-      f.writeFilter(leaf);
+      f.writeFilter(leaf, _scope.generationOptions.isModular);
     }
     leaf.writeln('}');
   }
@@ -243,7 +254,7 @@ class _TableNames {
       ..writeln('$orderingComposer(super.db, super.table);');
     for (var c in columns) {
       for (var o in c.orderings) {
-        o.writeOrdering(leaf);
+        o.writeOrdering(leaf, _scope.generationOptions.isModular);
       }
     }
     leaf.writeln('}');
@@ -354,7 +365,7 @@ class _TableNames {
           ?.otherColumn;
       final referencedTable = referencedCol?.owner;
       if (referencedCol != null && referencedTable is DriftTable) {
-        final referencedTableNames = _TableNames(referencedTable);
+        final referencedTableNames = _TableNames(referencedTable, _scope);
         final referencedColumnNames =
             _ColumnNames(referencedCol.nameInDart, [], []);
         c.filters.add(_ReferencedFilter(c.fieldGetter, "${c.fieldGetter}Ref",
@@ -368,7 +379,7 @@ class _TableNames {
       columns.add(c);
     }
     for (var otherTable in tables) {
-      final otherTableNames = _TableNames(otherTable);
+      final otherTableNames = _TableNames(otherTable, _scope);
 
       /// We are adding backrefs now, skip the current table
       if (otherTableNames.tableClassName == tableClassName) {
@@ -381,7 +392,7 @@ class _TableNames {
             ?.otherColumn;
         final referencedTable = referencedCol?.owner;
         if (referencedCol != null && referencedTable is DriftTable) {
-          final referencedTableNames = _TableNames(referencedTable);
+          final referencedTableNames = _TableNames(referencedTable, _scope);
           final referencedColumnNames =
               _ColumnNames(referencedCol.nameInDart, [], []);
 
@@ -432,9 +443,11 @@ class _TableNames {
 class ManagerWriter {
   final Scope _scope;
   final String _dbClassName;
-  final List<DriftTable> _addedTables;
+  late final List<DriftTable> _addedTables;
 
-  ManagerWriter(this._scope, this._dbClassName) : _addedTables = [];
+  ManagerWriter(this._scope, this._dbClassName) {
+    _addedTables = [];
+  }
 
   String get managerGetter {
     return '''$_dbMangerName get managers => $_dbMangerName(this);''';
@@ -450,14 +463,19 @@ class ManagerWriter {
     final leaf = _scope.leaf();
     final tableNames = <_TableNames>[];
     for (var table in _addedTables) {
-      final t = _TableNames(table);
+      final t = _TableNames(table, _scope);
       t.addFiltersAndOrderings(_addedTables, leaf);
-      t.writeManager(leaf, _dbClassName);
       tableNames.add(t);
     }
+
     final tableManagerGetters = StringBuffer();
 
     for (var table in tableNames) {
+      table.writeManager(
+          leaf,
+          _scope.generationOptions.isModular
+              ? _scope.drift("GeneratedDatabase")
+              : _dbClassName);
       tableManagerGetters.writeln(
           "${table.rootTableManager} get ${table.tableGetterName} => ${table.rootTableManager}(_db, _db.${table.tableGetterName});");
     }
