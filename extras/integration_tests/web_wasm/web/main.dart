@@ -90,7 +90,7 @@ Future<Uint8List?> _initializeDatabase() async {
 
       // Let's first open a custom WasmDatabase, the way it would have been
       // done before WasmDatabase.open.
-      final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('sqlite3.wasm'));
+      final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
       final fs = await IndexedDbFileSystem.open(dbName: dbName);
       sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
 

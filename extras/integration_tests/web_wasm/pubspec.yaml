@@ -13,7 +13,7 @@ dependencies:
   shelf: ^1.4.1
   shelf_proxy: ^1.0.4
   path: ^1.8.3
-  js: ^0.6.7
+  js: ^0.7.0
   package_config: ^2.1.0
   async: ^2.11.0
   http: ^1.0.0
