@@ -39,21 +39,16 @@ class DatabaseWriter {
   void write() {
     final elements = input.resolvedAccessor.availableElements;
 
-    final managerWriter = ManagerWriter(scope.child(), dbClassName);
-
     // Write data classes, companions and info classes
     if (!scope.generationOptions.isModular) {
       for (final reference in elements) {
         if (reference is DriftTable) {
           TableWriter(reference, scope.child()).writeInto();
-          managerWriter.addTable(reference);
         } else if (reference is DriftView) {
           ViewWriter(reference, scope.child(), this).write();
         }
       }
     }
-
-    managerWriter.write();
 
     // Write the database class
     final dbScope = scope.child();
@@ -152,6 +147,12 @@ class DatabaseWriter {
             isAccessor: false);
       }
     }
+
+    final managerWriter = ManagerWriter(scope.child(), dbScope, dbClassName);
+    for (var table in elements.whereType<DriftTable>()) {
+      managerWriter.addTable(table);
+    }
+    managerWriter.write();
 
     firstLeaf.writeln(managerWriter.managerGetter);
 
