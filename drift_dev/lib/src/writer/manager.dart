@@ -256,7 +256,6 @@ class _TableNames {
   }
 
   void _writeProcessedTableManager(TextEmitter leaf, String dbClassName) {
-    print(table.entityInfoName);
     leaf
       ..write('class $processedTableManager extends ')
       ..writeDriftRef('ProcessedTableManager')
