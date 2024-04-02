@@ -30,8 +30,8 @@ class TableManagerState<
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CH>,
-    CH extends C Function(TableManagerState<DB, T, DT, FS, OS, C, CH>)> {
+    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI>,
+    CI extends CompanionBuilder<DT>> {
   /// The database that the query will be exeCCted on
   final DB db;
 
@@ -69,7 +69,12 @@ class TableManagerState<
   final OS orderingComposer;
 
   /// This function is used internaly to return a new instance of the child manager
-  final CH _getChildManagerBuilder;
+  final C Function(TableManagerState<DB, T, DT, FS, OS, C, CI>)
+      _getChildManagerBuilder;
+
+  /// This function will return a class which contains a function which
+  ///
+  final CI _getInsertableCompanionBuilder;
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
@@ -79,17 +84,20 @@ class TableManagerState<
     required this.table,
     required this.filteringComposer,
     required this.orderingComposer,
-    required CH getChildManagerBuilder,
+    required C Function(TableManagerState<DB, T, DT, FS, OS, C, CI>)
+        getChildManagerBuilder,
+    required CI getInsertableCompanionBuilder,
     this.filter,
     this.distinct,
     this.limit,
     this.offset,
     this.orderingBuilders = const {},
     this.joinBuilders = const {},
-  }) : _getChildManagerBuilder = getChildManagerBuilder;
+  })  : _getChildManagerBuilder = getChildManagerBuilder,
+        _getInsertableCompanionBuilder = getInsertableCompanionBuilder;
 
   /// Copy this state with the given values
-  TableManagerState<DB, T, DT, FS, OS, C, CH> copyWith({
+  TableManagerState<DB, T, DT, FS, OS, C, CI> copyWith({
     bool? distinct,
     int? limit,
     int? offset,
@@ -103,6 +111,7 @@ class TableManagerState<
       filteringComposer: filteringComposer,
       orderingComposer: orderingComposer,
       getChildManagerBuilder: _getChildManagerBuilder,
+      getInsertableCompanionBuilder: _getInsertableCompanionBuilder,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
@@ -232,10 +241,10 @@ abstract class BaseTableManager<
     DT extends DataClass,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CH>,
-    CH extends C Function(TableManagerState<DB, T, DT, FS, OS, C, CH>)> {
+    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI>,
+    CI extends CompanionBuilder<DT>> {
   /// The state for this manager
-  final TableManagerState<DB, T, DT, FS, OS, C, CH> state;
+  final TableManagerState<DB, T, DT, FS, OS, C, CI> state;
 
   /// Create a new [BaseTableManager] instance
   BaseTableManager(this.state);
@@ -265,9 +274,9 @@ abstract class ProcessedTableManager<
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CH>,
-        CH extends C Function(TableManagerState<DB, T, D, FS, OS, C, CH>)>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CH>
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI>,
+        CI extends CompanionBuilder<D>>
+    extends BaseTableManager<DB, T, D, FS, OS, C, CI>
     implements
         MultiSelectable<D>,
         SingleSelectable<D>,
@@ -299,9 +308,9 @@ abstract class RootTableManager<
         D extends DataClass,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CH>,
-        CH extends C Function(TableManagerState<DB, T, D, FS, OS, C, CH>)>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CH> {
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI>,
+        CI extends CompanionBuilder<D>>
+    extends BaseTableManager<DB, T, D, FS, OS, C, CI> {
   RootTableManager(super.state);
 
   C all() {
@@ -310,7 +319,10 @@ abstract class RootTableManager<
 
   // Future<int> create(Insertable<D> Function(CI o) f,
   //     {InsertMode? mode, UpsertClause<Table, dynamic>? onConflict}) {
-  //   return state.db.into(state.table)
+  //   (state._getInsertableCompanionBuilder.create() as CI).companion = f;
+
+  //   return state.db
+  //       .into(state.table)
   //       .insert(f(_createInsertable), mode: mode, onConflict: onConflict);
   // }
 
@@ -329,4 +341,10 @@ abstract class RootTableManager<
   // Future<bool> replace(Insertable<D> entry) {
   //   return state.db.update(state.table).replace(entry);
   // }
+}
+
+abstract class CompanionBuilder<D> {
+  late final UpdateCompanion<D> companion;
+  Function get insert;
+  Function get create;
 }
