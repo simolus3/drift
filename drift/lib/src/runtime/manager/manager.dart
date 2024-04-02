@@ -135,7 +135,7 @@ class TableManagerState<
 
   /// Builds a select statement with the given target columns, or all columns if none are provided
   _StatementType<T, DT> _buildSelectStatement(
-      {Iterable<Column>? targetColumns,
+      {Iterable<Expression>? targetColumns,
       required bool addJoins,
       required bool applyFilters,
       required bool applyOrdering,
@@ -214,9 +214,41 @@ class TableManagerState<
     };
   }
 
+  UpdateStatement<T, DT> buildUpdateStatement() {
+    final UpdateStatement<T, DT> deleteStatement;
+    if (joinBuilders.isEmpty) {
+      deleteStatement = db.update(_tableAsTableInfo);
+      if (filter != null) {
+        deleteStatement.where((_) => filter!);
+      }
+    } else {
+      deleteStatement = db.update(_tableAsTableInfo);
+      for (var col in _tableAsTableInfo.primaryKey) {
+        final subquery = _buildSelectStatement(
+            targetColumns: [col],
+            addJoins: true,
+            applyFilters: true,
+            applyOrdering: false,
+            applyLimit: false) as _JoinedResult<T, DT>;
+        deleteStatement.where((tbl) => col.isInQuery(subquery.statement));
+      }
+    }
+    return deleteStatement;
+  }
+
+  Future<int> count() {
+    final count = countAll();
+    final result = _buildSelectStatement(
+        targetColumns: [count],
+        addJoins: true,
+        applyFilters: true,
+        applyOrdering: false,
+        applyLimit: false) as _JoinedResult;
+    return result.statement.map((row) => row.read(count)!).getSingle();
+  }
+
   // Build a delete statement based on the manager state
   DeleteStatement buildDeleteStatement() {
-    // If there are any joins we will have to use a subquery to get the rowIds
     final DeleteStatement deleteStatement;
     if (joinBuilders.isEmpty) {
       deleteStatement = db.delete(_tableAsTableInfo);
@@ -259,6 +291,7 @@ abstract class BaseTableManager<
   const BaseTableManager(this.state);
   Future<int> delete() => state.buildDeleteStatement().go();
 
+  /// Add ordering to the statement
   C orderBy(ComposableOrdering Function(OS o) o) {
     final orderings = o(state.orderingComposer);
     return state._getChildManagerBuilder(state.copyWith(
@@ -267,6 +300,7 @@ abstract class BaseTableManager<
         joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
   }
 
+  /// Add a filter to the statement
   C filter(ComposableFilter Function(FS f) f) {
     final filter = f(state.filteringComposer);
     return state._getChildManagerBuilder(state.copyWith(
@@ -275,6 +309,10 @@ abstract class BaseTableManager<
             : filter.expression & state.filter!,
         joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
   }
+
+  Future<int> count() => state.count();
+  Future<int> write(Insertable<DT> Function(CU o) f) =>
+      state.buildUpdateStatement().write(f(state._getUpdateCompanionBuilder));
 }
 
 abstract class ProcessedTableManager<
@@ -323,9 +361,7 @@ abstract class RootTableManager<
     CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
   const RootTableManager(super.state);
 
-  C all() {
-    return state._getChildManagerBuilder(state);
-  }
+  C all() => state._getChildManagerBuilder(state);
 
   Future<int> create(Insertable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
