@@ -396,9 +396,11 @@ class _TableNames {
           // If we are referencing the current table, add a back ref
           if (referencedTableNames.table.entityInfoName ==
               table.entityInfoName) {
+            final backRefName = referencedCol.referenceName ??
+                "${otherTableNames.table.dbGetterName}Refs";
             backRefFilters.add(_ReferencedFilter(
                 referencedColumnNames.fieldGetter,
-                "${otherTableNames.table.dbGetterName}Refs",
+                backRefName,
                 otherTableNames,
                 referencedColumnNames));
           }

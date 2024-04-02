@@ -472,6 +472,7 @@ class ColumnParser {
         documentationComment: docString,
         constraints: foundConstraints,
         customConstraints: foundCustomConstraint,
+        referenceName: _readJsonKey(element),
       ),
       referencesColumnInSameTable: referencesColumnInSameTable,
     );
@@ -505,6 +506,22 @@ class ColumnParser {
     if (object == null) return null;
 
     return object.computeConstantValue()!.getField('key')!.toStringValue();
+  }
+
+  String? _readReferenceName(Element getter) {
+    final annotations = getter.metadata;
+    final object = annotations.firstWhereOrNull((e) {
+      final value = e.computeConstantValue();
+      final valueType = value?.type;
+
+      return valueType is InterfaceType &&
+          isFromDrift(valueType) &&
+          valueType.element.name == 'ReferenceName';
+    });
+
+    if (object == null) return null;
+
+    return object.computeConstantValue()!.getField('name')!.toStringValue();
   }
 
   Future<List<DriftColumnConstraint>> _driftConstraintsFromCustomConstraints({

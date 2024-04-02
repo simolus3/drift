@@ -409,3 +409,34 @@ class JsonKey {
   /// generated json. See the documentation for [JsonKey] for details.
   const JsonKey(this.key);
 }
+
+/// Annotation to use on reference columns inside of a [Table] to define the name
+/// of the filters and orderings for the reverse relation.
+///
+/// Example:
+/// ```dart
+/// class TodoEntries extends Table {
+///   IntColumn get id => integer().autoIncrement()();
+///   TextColumn get body => text()();
+///   @ReferenceName("categories")
+///   IntColumn get category => integer().nullable().references(Categories, #id)();
+/// }
+/// class Categories extends Table {
+///   IntColumn get id => integer().autoIncrement()();
+/// }
+/// /// Filter all Categories which contain a TodoEntries with a body of "Todo"
+/// categories.filter((f) => f.categories((f) => f.body("Todo")))
+///
+/// ```
+/// When these aren't specified, drift will use the referenced tables name followed by `Refs`.
+/// If a reference name clashes with other fields on the table, the generator will show a warning,
+/// and filters and orderings wont be generated
+class ReferenceName {
+  /// The name that this reference will use when generating filters and ordering in the reverse direction
+  /// for [ReferenceName] for details.
+  final String name;
+
+  /// Annotation to use on reference columns inside of a [Table] to define the name
+  /// of the filters and orderings for the reverse relation.
+  const ReferenceName(this.name);
+}
