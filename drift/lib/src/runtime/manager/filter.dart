@@ -45,6 +45,7 @@ class ColumnFilters<T extends Object> {
   ColumnFilters<int> get count => ColumnFilters(column.count());
 }
 
+/// Built in filters for bool columns
 extension BoolFilters on ColumnFilters<bool> {
   /// Create a filter to check if the column is bigger than a value
   ComposableFilter isTrue(bool value) =>

@@ -214,15 +214,16 @@ class TableManagerState<
     };
   }
 
+  /// Build an update statement based on the manager state
   UpdateStatement<T, DT> buildUpdateStatement() {
-    final UpdateStatement<T, DT> deleteStatement;
+    final UpdateStatement<T, DT> updateStatement;
     if (joinBuilders.isEmpty) {
-      deleteStatement = db.update(_tableAsTableInfo);
+      updateStatement = db.update(_tableAsTableInfo);
       if (filter != null) {
-        deleteStatement.where((_) => filter!);
+        updateStatement.where((_) => filter!);
       }
     } else {
-      deleteStatement = db.update(_tableAsTableInfo);
+      updateStatement = db.update(_tableAsTableInfo);
       for (var col in _tableAsTableInfo.primaryKey) {
         final subquery = _buildSelectStatement(
             targetColumns: [col],
@@ -230,12 +231,13 @@ class TableManagerState<
             applyFilters: true,
             applyOrdering: false,
             applyLimit: false) as _JoinedResult<T, DT>;
-        deleteStatement.where((tbl) => col.isInQuery(subquery.statement));
+        updateStatement.where((tbl) => col.isInQuery(subquery.statement));
       }
     }
-    return deleteStatement;
+    return updateStatement;
   }
 
+  /// Count the number of rows that would be returned by the built statement
   Future<int> count() {
     final count = countAll();
     final result = _buildSelectStatement(
@@ -247,7 +249,7 @@ class TableManagerState<
     return result.statement.map((row) => row.read(count)!).getSingle();
   }
 
-  // Build a delete statement based on the manager state
+  /// Build a delete statement based on the manager state
   DeleteStatement buildDeleteStatement() {
     final DeleteStatement deleteStatement;
     if (joinBuilders.isEmpty) {
@@ -285,36 +287,63 @@ abstract class BaseTableManager<
     CI extends Function,
     CU extends Function> {
   /// The state for this manager
-  final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> state;
+  final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> $state;
 
   /// Create a new [BaseTableManager] instance
-  const BaseTableManager(this.state);
-  Future<int> delete() => state.buildDeleteStatement().go();
+  const BaseTableManager(this.$state);
+
+  /// Deletes all rows matched by built statement
+  ///
+  /// Returns the amount of rows that were deleted by this statement directly
+  /// (not including additional rows that might be affected through triggers or
+  /// foreign key constraints).
+  Future<int> delete() => $state.buildDeleteStatement().go();
 
   /// Add ordering to the statement
   C orderBy(ComposableOrdering Function(OS o) o) {
-    final orderings = o(state.orderingComposer);
-    return state._getChildManagerBuilder(state.copyWith(
+    final orderings = o($state.orderingComposer);
+    return $state._getChildManagerBuilder($state.copyWith(
         orderingBuilders:
-            state.orderingBuilders.union(orderings.orderingBuilders),
-        joinBuilders: state.joinBuilders.union(orderings.joinBuilders)));
+            $state.orderingBuilders.union(orderings.orderingBuilders),
+        joinBuilders: $state.joinBuilders.union(orderings.joinBuilders)));
   }
 
   /// Add a filter to the statement
   C filter(ComposableFilter Function(FS f) f) {
-    final filter = f(state.filteringComposer);
-    return state._getChildManagerBuilder(state.copyWith(
-        filter: state.filter == null
+    final filter = f($state.filteringComposer);
+    return $state._getChildManagerBuilder($state.copyWith(
+        filter: $state.filter == null
             ? filter.expression
-            : filter.expression & state.filter!,
-        joinBuilders: state.joinBuilders.union(filter.joinBuilders)));
+            : filter.expression & $state.filter!,
+        joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
   }
 
-  Future<int> count() => state.count();
+  /// Add a limit to the statement
+  C limit(int limit, {int? offset}) {
+    return $state
+        ._getChildManagerBuilder($state.copyWith(limit: limit, offset: offset));
+  }
+
+  /// Return the count of rows matched by the built statement
+  Future<int> count() => $state.count();
+
+  /// Writes all non-null fields from the entity into the columns of all rows
+  /// that match the [filter] clause. Warning: That also means that, when you're
+  /// not setting a where clause explicitly, this method will update all rows in
+  /// the [$state.table].
+  ///
+  /// The fields that are null on the entity object will not be changed by
+  /// this operation, they will be ignored.
+  ///
+  /// Returns the amount of rows that have been affected by this operation.
+  ///
+  /// See also: [RootTableManager.replace], which does not require [filter] statements and
+  /// supports setting fields back to null.
   Future<int> write(Insertable<DT> Function(CU o) f) =>
-      state.buildUpdateStatement().write(f(state._getUpdateCompanionBuilder));
+      $state.buildUpdateStatement().write(f($state._getUpdateCompanionBuilder));
 }
 
+/// A table manager that can be used to select rows from a table
 abstract class ProcessedTableManager<
         DB extends GeneratedDatabase,
         T extends Table,
@@ -329,24 +358,61 @@ abstract class ProcessedTableManager<
         MultiSelectable<D>,
         SingleSelectable<D>,
         SingleOrNullSelectable<D> {
-  const ProcessedTableManager(super.state);
+  /// Create a new [ProcessedTableManager] instance
+  const ProcessedTableManager(super.$state);
 
+  /// Executes this statement, like [get], but only returns one
+  /// value. If the query returns no or too many rows, the returned future will
+  /// complete with an error.
+  ///
+  /// Be aware that this operation won't put a limit clause on this statement,
+  /// if that's needed you would have to do use [limit]:
+  /// You should only use this method if you know the query won't have more than
+  /// one row, for instance because you used `limit(1)` or you know the filters
+  /// you've applied will only match one row.
+  ///
+  /// See also: [getSingleOrNull], which returns `null` instead of
+  /// throwing if the query completes with no rows.
   @override
-  Future<D> getSingle() => state.buildSelectStatement().getSingle();
+  Future<D> getSingle() => $state.buildSelectStatement().getSingle();
+
+  /// Creates an auto-updating stream of this statement, similar to
+  /// [watch]. However, it is assumed that the query will only emit
+  /// one result, so instead of returning a `Stream<List<D>>`, this returns a
+  /// `Stream<D>`. If, at any point, the query emits no or more than one rows,
+  /// an error will be added to the stream instead.
   @override
-  Stream<D> watchSingle() => state.buildSelectStatement().watchSingle();
+  Stream<D> watchSingle() => $state.buildSelectStatement().watchSingle();
+
+  /// Executes the statement and returns the first all rows as a list.
   @override
-  Future<List<D>> get() => state.buildSelectStatement().get();
+  Future<List<D>> get() => $state.buildSelectStatement().get();
+
+  /// Creates an auto-updating stream of the result that emits new items
+  /// whenever any table used in this statement changes.
   @override
-  Stream<List<D>> watch() => state.buildSelectStatement().watch();
+  Stream<List<D>> watch() => $state.buildSelectStatement().watch();
+
+  /// Executes this statement, like [get], but only returns one
+  /// value. If the result too many values, this method will throw. If no
+  /// row is returned, `null` will be returned instead.
+  ///
+  /// See also: [getSingle], which can be used if the query will
+  /// always evaluate to exactly one row.
   @override
   Future<D?> getSingleOrNull() =>
-      state.buildSelectStatement().getSingleOrNull();
+      $state.buildSelectStatement().getSingleOrNull();
+
+  /// Creates an auto-updating stream of this statement, similar to
+  /// [watch]. However, it is assumed that the query will only
+  /// emit one result, so instead of returning a `Stream<List<D>>`, this
+  /// returns a `Stream<D?>`. If the query emits more than one row at
+  /// some point, an error will be emitted to the stream instead.
+  /// If the query emits zero rows at some point, `null` will be added
+  /// to the stream instead.
   @override
   Stream<D?> watchSingleOrNull() =>
-      state.buildSelectStatement().watchSingleOrNull();
-
-  Future<int> delete() => state.buildDeleteStatement().go();
+      $state.buildSelectStatement().watchSingleOrNull();
 }
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
@@ -359,34 +425,102 @@ abstract class RootTableManager<
     C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
     CI extends Function,
     CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
-  const RootTableManager(super.state);
+  /// Create a new [RootTableManager] instance
+  const RootTableManager(super.$state);
 
-  C all() => state._getChildManagerBuilder(state);
+  /// Select all rows from the table
+  C all() => $state._getChildManagerBuilder($state);
 
+  /// Creates a new row in the table using the given function
+  ///
+  /// By default, an exception will be thrown if another row with the same
+  /// primary key already exists. This behavior can be overridden with [mode],
+  /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
+  ///
+  /// To apply a partial or custom update in case of a conflict, you can also
+  /// use an [upsert clause](https://sqlite.org/lang_UPSERT.html) by using
+  /// [onConflict]. See [InsertStatement.insert] for more information.
+  ///
+  /// By default, the [onConflict] clause will only consider the table's primary
+  /// key. If you have additional columns with uniqueness constraints, you have
+  /// to manually add them to the clause's [DoUpdate.target].
+  ///
+  /// Returns the `rowid` of the inserted row. For tables with an auto-increment
+  /// column, the `rowid` is the generated value of that column. The returned
+  /// value can be inaccurate when [onConflict] is set and the insert behaved
+  /// like an update.
+  ///
+  /// If the table doesn't have a `rowid`, you can't rely on the return value.
+  /// Still, the future will always complete with an error if the insert fails.
   Future<int> create(Insertable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
-    return state.db.into(state._tableAsTableInfo).insert(
-        f(state._getInsertCompanionBuilder),
+    return $state.db.into($state._tableAsTableInfo).insert(
+        f($state._getInsertCompanionBuilder),
         mode: mode,
         onConflict: onConflict);
   }
 
+  /// Inserts a row into the table and returns it.
+  ///
+  /// Depending on the [InsertMode] or the [DoUpdate] `onConflict` clause, the
+  /// insert statement may not actually insert a row into the database. Since
+  /// this function was declared to return a non-nullable row, it throws an
+  /// exception in that case. Use [createReturningOrNull] when performing an
+  /// insert with an insert mode like [InsertMode.insertOrIgnore] or when using
+  /// a [DoUpdate] with a `where` clause clause.
   Future<D> createReturning(Insertable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
-    return state.db.into(state._tableAsTableInfo).insertReturning(
-        f(state._getInsertCompanionBuilder),
+    return $state.db.into($state._tableAsTableInfo).insertReturning(
+        f($state._getInsertCompanionBuilder),
         mode: mode,
         onConflict: onConflict);
   }
 
+  /// Inserts a row into the table and returns it.
+  ///
+  /// When no row was inserted and no exception was thrown, for instance because
+  /// [InsertMode.insertOrIgnore] was used or because the upsert clause had a
+  /// `where` clause that didn't match, `null` is returned instead.
+  Future<D?> createReturningOrNull(Insertable<D> Function(CI o) f,
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+    return $state.db.into($state._tableAsTableInfo).insertReturningOrNull(
+        f($state._getInsertCompanionBuilder),
+        mode: mode,
+        onConflict: onConflict);
+  }
+
+  /// Create multiple rows in the table using the given function
+  ///
+  /// All fields in a row that don't have a default value or auto-increment
+  /// must be set and non-null. Otherwise, an [InvalidDataException] will be
+  /// thrown.
+  /// By default, an exception will be thrown if another row with the same
+  /// primary key already exists. This behavior can be overridden with [mode],
+  /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
+  /// Using [bulkCreate] will not disable primary keys or any column constraint
+  /// checks.
+  /// [onConflict] can be used to create an upsert clause for engines that
+  /// support it. For details and examples, see [InsertStatement.insert].
   Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
-    return state.db.batch((b) => b.insertAll(
-        state._tableAsTableInfo, f(state._getInsertCompanionBuilder),
+    return $state.db.batch((b) => b.insertAll(
+        $state._tableAsTableInfo, f($state._getInsertCompanionBuilder),
         mode: mode, onConflict: onConflict));
   }
 
-  Future<bool> replace(Insertable<D> entry) {
-    return state.db.update(state._tableAsTableInfo).replace(entry);
+  /// Replaces the old version of [entity] that is stored in the database with
+  /// the fields of the [entity] provided here. This implicitly applies a
+  /// [filter] clause to rows with the same primary key as [entity], so that only
+  /// the row representing outdated data will be replaced.
+  ///
+  /// If [entity] has absent values (set to null on the [DataClass] or
+  /// explicitly to absent on the [UpdateCompanion]), and a default value for
+  /// the field exists, that default value will be used. Otherwise, the field
+  /// will be reset to null. This behavior is different to [write], which simply
+  /// ignores such fields without changing them in the database.
+  ///
+  /// Returns true if a row was affected by this operation.
+  Future<bool> replace(Insertable<D> entity) {
+    return $state.db.update($state._tableAsTableInfo).replace(entity);
   }
 }

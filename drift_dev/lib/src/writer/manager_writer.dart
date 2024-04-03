@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:drift_dev/src/writer/modules.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 
 abstract class _FilterWriter {
@@ -36,7 +37,7 @@ class _RegularFilterWriter extends _FilterWriter {
       ..writeDriftRef("ColumnFilters")
       ..write("<$type> get $filterName =>")
       ..writeDriftRef("ColumnFilters")
-      ..write("(state.table.$fieldGetter);");
+      ..write("(\$state.table.$fieldGetter);");
   }
 }
 
@@ -63,15 +64,15 @@ class _FilterWithConverterWriter extends _FilterWriter {
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..write("<$converterType,$type> get $filterName =>")
       ..writeDriftRef("ColumnWithTypeConverterFilters")
-      ..writeln("(state.table.$fieldGetter);");
+      ..writeln("(\$state.table.$fieldGetter);");
   }
 }
 
 class _ReferencedFilter extends _FilterWriter {
   /// The full function used to get the referenced table
   ///
-  /// E.G `state.db.resultSet<$CategoryTable>('categories')`
-  /// or `state.db.categories`
+  /// E.G `\$state.db.resultSet<$CategoryTable>('categories')`
+  /// or `\$state.db.categories`
   final String referencedTableField;
 
   /// The getter for the column on the referenced table
@@ -100,14 +101,18 @@ class _ReferencedFilter extends _FilterWriter {
       ..write(" $filterName(")
       ..writeDriftRef("ComposableFilter")
       ..writeln(" Function( $referencedFilterComposer f) f) {")
-      ..write('''
-return referenced(
-            referencedTable: $referencedTableField,
-            getCurrentColumn: (f) => f.$fieldGetter,
-            getReferencedColumn: (f) => f.$referencedColumnGetter,
-            getReferencedComposer: (db, table) => $referencedFilterComposer(db, table),
-            builder: f);
-          }''');
+      ..write("return ")
+      ..writeUriRef(
+          Uri.parse('package:drift/internal/manager.dart'), 'composeWithJoins')
+      ..writeln('(')
+      ..writeln("\$state: \$state,")
+      ..writeln("referencedTable: $referencedTableField,")
+      ..writeln("getCurrentColumn: (f) => f.$fieldGetter,")
+      ..writeln("getReferencedColumn: (f) => f.$referencedColumnGetter,")
+      ..writeln(
+          "getReferencedComposer: (db, table) => $referencedFilterComposer(db, table),")
+      ..writeln("builder: f);")
+      ..writeln("}");
   }
 }
 
@@ -145,15 +150,15 @@ class _RegularOrderingWriter extends _OrderingWriter {
       ..writeDriftRef("ColumnOrderings")
       ..write(" get $orderingName =>")
       ..writeDriftRef("ColumnOrderings")
-      ..write("(state.table.$fieldGetter);");
+      ..write("(\$state.table.$fieldGetter);");
   }
 }
 
 class _ReferencedOrderingWriter extends _OrderingWriter {
   /// The full function used to get the referenced table
   ///
-  /// E.G `state.db.resultSet<$CategoryTable>('categories')`
-  /// or `state.db.categories`
+  /// E.G `\$state.db.resultSet<$CategoryTable>('categories')`
+  /// or `\$state.db.categories`
   final String referencedTableField;
 
   /// The getter for the column on the referenced table
@@ -180,14 +185,18 @@ class _ReferencedOrderingWriter extends _OrderingWriter {
       ..write(" $orderingName(")
       ..writeDriftRef("ComposableOrdering")
       ..writeln(" Function( $referencedOrderingComposer o) o) {")
-      ..writeln('''
-return referenced(
-            referencedTable: $referencedTableField,
-            getCurrentColumn: (f) => f.$fieldGetter,
-            getReferencedColumn: (f) => f.$referencedColumnGetter,
-            getReferencedComposer: (db, table) => $referencedOrderingComposer(db, table),
-            builder: o);
-          }''');
+      ..write("return ")
+      ..writeUriRef(
+          Uri.parse('package:drift/internal/manager.dart'), 'composeWithJoins')
+      ..writeln('(')
+      ..writeln("\$state: \$state,")
+      ..writeln("referencedTable: $referencedTableField,")
+      ..writeln("getCurrentColumn: (f) => f.$fieldGetter,")
+      ..writeln("getReferencedColumn: (f) => f.$referencedColumnGetter,")
+      ..writeln(
+          "getReferencedComposer: (db, table) => $referencedOrderingComposer(db, table),")
+      ..writeln("builder: o);")
+      ..writeln("}");
   }
 }
 
@@ -315,7 +324,7 @@ class _TableWriter {
       ..writeDriftRef('ProcessedTableManager')
       ..writeln(
           '<$databaseGenericName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$insertCompanionBuilderTypeDefName,$updateCompanionBuilderTypeDefName> {')
-      ..writeln('const $processedTableManager(super.state);')
+      ..writeln('const $processedTableManager(super.\$state);')
       ..writeln('}');
   }
 
@@ -478,8 +487,8 @@ class _TableWriter {
             _TableWriter(referencedTable, scope, dbScope, databaseGenericName);
         final referencedColumnNames = _ColumnWriter(referencedCol.nameInDart);
         final String referencedTableField = scope.generationOptions.isModular
-            ? "state.db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
-            : "state.db.${referencedTable.dbGetterName}";
+            ? "\$state.db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
+            : "\$state.db.${referencedTable.dbGetterName}";
 
         c.filters.add(_ReferencedFilter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
@@ -506,8 +515,8 @@ class _TableWriter {
               _TableWriter(ot, scope, dbScope, databaseGenericName);
           final referencedColumnNames = _ColumnWriter(oc.nameInDart);
           final String referencedTableField = scope.generationOptions.isModular
-              ? "state.db.resultSet<${referencedTableNames.tableClassName}>('${ot.schemaName}')"
-              : "state.db.${ot.dbGetterName}";
+              ? "\$state.db.resultSet<${referencedTableNames.tableClassName}>('${ot.schemaName}')"
+              : "\$state.db.${ot.dbGetterName}";
 
           final filterName = oc.referenceName ??
               "${referencedTableNames.table.dbGetterName}Refs";
@@ -582,17 +591,30 @@ class ManagerWriter {
   /// Write the manager to a provider [TextEmitter]
   void write() {
     final leaf = _scope.leaf();
-    final tableNames = <_TableWriter>[];
-    for (var table in _addedTables) {
-      tableNames.add(_TableWriter(table, _scope, _dbScope, databaseGenericName)
-        ..addFiltersAndOrderings(_addedTables));
+
+    // When generating with modular generation, we need to add the imports
+    // for the internal `resultSet` helper
+    if (_scope.generationOptions.isModular) {
+      leaf.refUri(ModularAccessorWriter.modularSupport, '');
     }
+
+    // Write the manager class for each table
+    final tableWriters = <_TableWriter>[];
+    for (var table in _addedTables) {
+      tableWriters.add(
+          _TableWriter(table, _scope, _dbScope, databaseGenericName)
+            ..addFiltersAndOrderings(_addedTables));
+    }
+
+    // Write each tables manager to the leaf and append the getter to the main manager
     final tableManagerGetters = StringBuffer();
-    for (var table in tableNames) {
+    for (var table in tableWriters) {
       table.writeManager(leaf);
       tableManagerGetters.writeln(
           "${table.rootTableManager} get ${table.table.dbGetterName} => ${table.rootTableManager}(_db, _db.${table.table.dbGetterName});");
     }
+
+    // Write the main manager class
     leaf
       ..writeln('class $databaseManagerName{')
       ..writeln('final $_dbClassName _db;')
