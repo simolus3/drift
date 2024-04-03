@@ -148,13 +148,16 @@ class DatabaseWriter {
       }
     }
 
-    final managerWriter = ManagerWriter(scope.child(), dbScope, dbClassName);
-    for (var table in elements.whereType<DriftTable>()) {
-      managerWriter.addTable(table);
+    // Write the main database manager & all the managers for tables
+    if (scope.options.generateManager) {
+      final managerWriter = ManagerWriter(scope.child(), dbScope, dbClassName);
+      for (var table in elements.whereType<DriftTable>()) {
+        managerWriter.addTable(table);
+      }
+      managerWriter.write();
+      // Add getter for the manager to the database class
+      firstLeaf.writeln(managerWriter.managerGetter);
     }
-    managerWriter.write();
-
-    firstLeaf.writeln(managerWriter.managerGetter);
 
     // Write implementation for query methods
     for (final query in input.availableRegularQueries) {
