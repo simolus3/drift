@@ -457,7 +457,6 @@ class ColumnParser {
       customConstraints: foundCustomConstraint,
       sourceForCustomConstraints: customConstraintSource,
     ));
-
     return PendingColumnInformation(
       DriftColumn(
         sqlType: columnType,
@@ -472,7 +471,7 @@ class ColumnParser {
         documentationComment: docString,
         constraints: foundConstraints,
         customConstraints: foundCustomConstraint,
-        referenceName: _readJsonKey(element),
+        referenceName: _readReferenceName(element),
       ),
       referencesColumnInSameTable: referencesColumnInSameTable,
     );
