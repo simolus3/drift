@@ -68,7 +68,7 @@ class _FilterWithConverterWriter extends _FilterWriter {
   }
 }
 
-class _ReferencedFilter extends _FilterWriter {
+class _ReferencedFilterWriter extends _FilterWriter {
   /// The full function used to get the referenced table
   ///
   /// E.G `\$state.db.resultSet<$CategoryTable>('categories')`
@@ -86,7 +86,7 @@ class _ReferencedFilter extends _FilterWriter {
   final String referencedFilterComposer;
 
   /// A class used for building filters for referenced tables
-  _ReferencedFilter(
+  _ReferencedFilterWriter(
     super.filterName, {
     required this.referencedTableField,
     required this.referencedColumnGetter,
@@ -280,7 +280,7 @@ class _TableWriter {
   final List<_ColumnWriter> columns;
 
   /// Filters for back references
-  final List<_ReferencedFilter> backRefFilters;
+  final List<_ReferencedFilterWriter> backRefFilters;
 
   _TableWriter(this.table, this.scope, this.dbScope, this.databaseGenericName)
       : backRefFilters = [],
@@ -490,7 +490,7 @@ class _TableWriter {
             ? "\$state.db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
             : "\$state.db.${referencedTable.dbGetterName}";
 
-        c.filters.add(_ReferencedFilter(c.fieldGetter,
+        c.filters.add(_ReferencedFilterWriter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
             referencedColumnGetter: referencedColumnNames.fieldGetter,
             referencedFilterComposer: referencedTableNames.filterComposer,
@@ -521,7 +521,7 @@ class _TableWriter {
           final filterName = oc.referenceName ??
               "${referencedTableNames.table.dbGetterName}Refs";
 
-          backRefFilters.add(_ReferencedFilter(filterName,
+          backRefFilters.add(_ReferencedFilterWriter(filterName,
               fieldGetter: reference.$2.nameInDart,
               referencedColumnGetter: referencedColumnNames.fieldGetter,
               referencedFilterComposer: referencedTableNames.filterComposer,

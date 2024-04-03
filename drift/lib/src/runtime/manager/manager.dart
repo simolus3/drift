@@ -244,8 +244,8 @@ class TableManagerState<
         targetColumns: [count],
         addJoins: true,
         applyFilters: true,
-        applyOrdering: false,
-        applyLimit: false) as _JoinedResult;
+        applyOrdering: true,
+        applyLimit: true) as _JoinedResult;
     return result.statement.map((row) => row.read(count)!).getSingle();
   }
 
@@ -264,8 +264,8 @@ class TableManagerState<
             targetColumns: [col],
             addJoins: true,
             applyFilters: true,
-            applyOrdering: false,
-            applyLimit: false) as _JoinedResult<T, DT>;
+            applyOrdering: true,
+            applyLimit: true) as _JoinedResult<T, DT>;
         deleteStatement.where((tbl) => col.isInQuery(subquery.statement));
       }
     }
@@ -339,8 +339,9 @@ abstract class BaseTableManager<
   ///
   /// See also: [RootTableManager.replace], which does not require [filter] statements and
   /// supports setting fields back to null.
-  Future<int> write(DT Function(CU o) f) =>
-      $state.buildUpdateStatement().write(f($state._getUpdateCompanionBuilder));
+  Future<int> write(DT Function(CU o) f) => $state
+      .buildUpdateStatement()
+      .write(f($state._getUpdateCompanionBuilder) as Insertable<DT>);
 }
 
 /// A table manager that can be used to select rows from a table
@@ -455,7 +456,7 @@ abstract class RootTableManager<
   Future<int> create(D Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insert(
-        f($state._getInsertCompanionBuilder),
+        f($state._getInsertCompanionBuilder) as Insertable<D>,
         mode: mode,
         onConflict: onConflict);
   }
@@ -471,7 +472,7 @@ abstract class RootTableManager<
   Future<D> createReturning(D Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insertReturning(
-        f($state._getInsertCompanionBuilder),
+        f($state._getInsertCompanionBuilder) as Insertable<D>,
         mode: mode,
         onConflict: onConflict);
   }
@@ -484,7 +485,7 @@ abstract class RootTableManager<
   Future<D?> createReturningOrNull(D Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insertReturningOrNull(
-        f($state._getInsertCompanionBuilder),
+        f($state._getInsertCompanionBuilder) as Insertable<D>,
         mode: mode,
         onConflict: onConflict);
   }
@@ -503,8 +504,8 @@ abstract class RootTableManager<
   /// support it. For details and examples, see [InsertStatement.insert].
   Future<void> bulkCreate(Iterable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
-    return $state.db.batch((b) => b.insertAll(
-        $state._tableAsTableInfo, f($state._getInsertCompanionBuilder),
+    return $state.db.batch((b) => b.insertAll($state._tableAsTableInfo,
+        f($state._getInsertCompanionBuilder) as Iterable<Insertable<D>>,
         mode: mode, onConflict: onConflict));
   }
 
@@ -521,6 +522,8 @@ abstract class RootTableManager<
   ///
   /// Returns true if a row was affected by this operation.
   Future<bool> replace(D entity) {
-    return $state.db.update($state._tableAsTableInfo).replace(entity);
+    return $state.db
+        .update($state._tableAsTableInfo)
+        .replace(entity as Insertable<D>);
   }
 }
