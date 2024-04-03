@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 // ignore: implementation_imports
 import 'package:drift/src/runtime/executor/stream_queries.dart';
-import 'package:drift_dev/src/writer/manager.dart';
+import 'package:drift_dev/src/writer/manager_writer.dart';
 import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';
 

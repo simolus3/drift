@@ -2,29 +2,32 @@
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 
-abstract class _Filter {
+abstract class _FilterWriter {
   /// The getter for the column on this table
   ///
-  /// E.G `id`
+  /// E.G `id` in `table.id`
   final String fieldGetter;
 
   /// The getter for the columns filter
   ///
-  /// E.G `id`
+  /// E.G `id` in `f.id.equals(5)`
   final String filterName;
 
-  /// Abstract class for all filters
-  _Filter(this.filterName, {required this.fieldGetter});
+  /// An abstract class for all filters
+  _FilterWriter(this.filterName, {required this.fieldGetter});
 
+  /// Write the filter to a provider [TextEmitter]
   void writeFilter(TextEmitter leaf);
 }
 
-class _RegularFilter extends _Filter {
-  /// The type that this filter is for
+class _RegularFilterWriter extends _FilterWriter {
+  /// The type that this column is
+  ///
+  /// E.G `int`, `String`, etc
   final String type;
 
-  /// A class for regular filters
-  _RegularFilter(super.filterName,
+  /// A class used for writing `ColumnFilters` with regular types
+  _RegularFilterWriter(super.filterName,
       {required super.fieldGetter, required this.type});
 
   @override
@@ -37,15 +40,19 @@ class _RegularFilter extends _Filter {
   }
 }
 
-class _FilterWithConverter extends _Filter {
-  /// The type that this filter is for
+class _FilterWithConverterWriter extends _FilterWriter {
+  /// The type that this column is
+  ///
+  /// E.G `int`, `String`, etc
   final String type;
 
-  /// The type of the converter
+  /// The type of the user provided converter
+  ///
+  /// E.G `Color` etc
   final String converterType;
 
-  /// A class for filters with converters
-  _FilterWithConverter(super.filterName,
+  /// A class used for writing `ColumnFilters` with custom converters
+  _FilterWithConverterWriter(super.filterName,
       {required super.fieldGetter,
       required this.type,
       required this.converterType});
@@ -57,16 +64,10 @@ class _FilterWithConverter extends _Filter {
       ..write("<$converterType,$type> get $filterName =>")
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..writeln("(state.table.$fieldGetter);");
-    leaf
-      ..writeDriftRef("ColumnFilters")
-      ..write("<$type> get ${filterName}Value =>")
-      ..writeDriftRef("ColumnFilters")
-      ..writeln("(state.table.$fieldGetter);");
   }
 }
 
-/// A class for filters that reference other tables
-class _ReferencedFilter extends _Filter {
+class _ReferencedFilter extends _FilterWriter {
   /// The full function used to get the referenced table
   ///
   /// E.G `state.db.resultSet<$CategoryTable>('categories')`
@@ -75,7 +76,7 @@ class _ReferencedFilter extends _Filter {
 
   /// The getter for the column on the referenced table
   ///
-  /// E.G `id`
+  /// E.G `id` in `table.id`
   final String referencedColumnGetter;
 
   /// The name of the referenced table's filter composer
@@ -83,6 +84,7 @@ class _ReferencedFilter extends _Filter {
   /// E.G `CategoryFilterComposer`
   final String referencedFilterComposer;
 
+  /// A class used for building filters for referenced tables
   _ReferencedFilter(
     super.filterName, {
     required this.referencedTableField,
@@ -109,29 +111,32 @@ return referenced(
   }
 }
 
-abstract class _Ordering {
+abstract class _OrderingWriter {
   /// The getter for the column on this table
   ///
-  /// E.G `id`
+  /// E.G `id` in `table.id`
   final String fieldGetter;
 
   /// The getter for the columns ordering
   ///
-  /// E.G `id`
+  /// E.G `id` in `f.id.equals(5)`
   final String orderingName;
 
   /// Abstract class for all orderings
-  _Ordering(this.orderingName, {required this.fieldGetter});
+  _OrderingWriter(this.orderingName, {required this.fieldGetter});
 
+  /// Write the ordering to a provider [TextEmitter]
   void writeOrdering(TextEmitter leaf);
 }
 
-class _RegularOrdering extends _Ordering {
-  /// The type that this ordering is for
+class _RegularOrderingWriter extends _OrderingWriter {
+  /// The type that this column is
+  ///
+  /// E.G `int`, `String`, etc
   final String type;
 
-  /// A class for regular orderings
-  _RegularOrdering(super.orderingName,
+  /// A class used for writing `ColumnOrderings` with regular types
+  _RegularOrderingWriter(super.orderingName,
       {required super.fieldGetter, required this.type});
 
   @override
@@ -144,7 +149,7 @@ class _RegularOrdering extends _Ordering {
   }
 }
 
-class _ReferencedOrdering extends _Ordering {
+class _ReferencedOrderingWriter extends _OrderingWriter {
   /// The full function used to get the referenced table
   ///
   /// E.G `state.db.resultSet<$CategoryTable>('categories')`
@@ -153,7 +158,7 @@ class _ReferencedOrdering extends _Ordering {
 
   /// The getter for the column on the referenced table
   ///
-  /// E.G `id`
+  /// E.G `id` in `table.id`
   final String referencedColumnGetter;
 
   /// The name of the referenced table's ordering composer
@@ -161,7 +166,8 @@ class _ReferencedOrdering extends _Ordering {
   /// E.G `CategoryOrderingComposer`
   final String referencedOrderingComposer;
 
-  _ReferencedOrdering(super.orderingName,
+  /// A class used for building orderings for referenced tables
+  _ReferencedOrderingWriter(super.orderingName,
       {required this.referencedTableField,
       required this.referencedColumnGetter,
       required this.referencedOrderingComposer,
@@ -185,19 +191,25 @@ return referenced(
   }
 }
 
-class _ColumnNames {
+class _ColumnWriter {
   /// The getter for the field
   ///
-  /// E.G `id`
+  /// E.G `id` in `table.id`
   final String fieldGetter;
-  final List<_Filter> filters;
-  final List<_Ordering> orderings;
-  _ColumnNames(this.fieldGetter)
+
+  /// List of filters for this column
+  final List<_FilterWriter> filters;
+
+  /// List of orderings for this column
+  final List<_OrderingWriter> orderings;
+
+  /// A class used for writing filters and orderings for columns
+  _ColumnWriter(this.fieldGetter)
       : filters = [],
         orderings = [];
 }
 
-class _TableNames {
+class _TableWriter {
   /// The current table
   final DriftTable table;
 
@@ -255,13 +267,13 @@ class _TableNames {
   /// E.G. `i5.$GeneratedDatabase`
   final String databaseGenericName;
 
-  /// Columns with their names, filters and orderings
-  final List<_ColumnNames> columns;
+  /// Writers for the columns of this table
+  final List<_ColumnWriter> columns;
 
   /// Filters for back references
   final List<_ReferencedFilter> backRefFilters;
 
-  _TableNames(this.table, this.scope, this.dbScope, this.databaseGenericName)
+  _TableWriter(this.table, this.scope, this.dbScope, this.databaseGenericName)
       : backRefFilters = [],
         columns = [];
 
@@ -307,52 +319,66 @@ class _TableNames {
       ..writeln('}');
   }
 
-  void _writeRootTable(TextEmitter leaf) {
-    final companionClassName = leaf.dartCode(leaf.companionType(table));
+  /// Build the builder for a companion class
+  /// This is used to build the insert and update companions
+  /// Returns a tuple with the typedef and the builder
+  /// Use [isUpdate] to determine if the builder is for an update or insert companion
+  (String, String) _companionBuilder(String typedefName,
+      {required bool isUpdate}) {
+    final companionClassName = scope.dartCode(scope.companionType(table));
 
-    final updateCompanionBuilderTypeDef = StringBuffer(
-        'typedef $updateCompanionBuilderTypeDefName = $companionClassName Function({');
-    final insertCompanionBuilderTypeDef = StringBuffer(
-        'typedef $insertCompanionBuilderTypeDefName =  $companionClassName Function({');
+    final companionBuilderTypeDef =
+        StringBuffer('typedef $typedefName = $companionClassName Function({');
 
-    final updateCompanionBuilderArguments = StringBuffer('({');
-    final insertCompanionBuilderArguments = StringBuffer('({');
+    final companionBuilderArguments = StringBuffer('({');
 
-    final updateCompanionBuilderBody = StringBuffer('=> $companionClassName(');
-    final insertCompanionBuilderBody =
-        StringBuffer('=> $companionClassName.insert(');
-
-    for (final column in table.columns) {
-      final value = leaf.drift('Value');
-      final param = column.nameInDart;
-      final typeName = leaf.dartCode(leaf.dartType(column));
-
-      // The update companion has no required fields, they are all defaulted to absent
-      updateCompanionBuilderTypeDef.write('$value<$typeName> $param,');
-      updateCompanionBuilderArguments
-          .write('$value<$typeName> $param = const $value.absent(),');
-      updateCompanionBuilderBody.write('$param: $param,');
-
-      // The insert compantion has some required arguments and some that are defaulted to absent
-      if (!column.isImplicitRowId && table.isColumnRequiredForInsert(column)) {
-        insertCompanionBuilderTypeDef.write('required $typeName $param,');
-        insertCompanionBuilderArguments.write('required $typeName $param,');
-      } else {
-        insertCompanionBuilderTypeDef.write('$value<$typeName> $param,');
-        insertCompanionBuilderArguments
-            .write('$value<$typeName> $param = const $value.absent(),');
-      }
-      insertCompanionBuilderBody.write('$param: $param,');
+    final StringBuffer companionBuilderBody;
+    if (isUpdate) {
+      companionBuilderBody = StringBuffer('=> $companionClassName(');
+    } else {
+      companionBuilderBody = StringBuffer('=> $companionClassName.insert(');
     }
 
-    // Close
-    // updateCompanionTypedef.write('})');
-    insertCompanionBuilderTypeDef.write('});');
-    updateCompanionBuilderTypeDef.write('});');
-    insertCompanionBuilderArguments.write('})');
-    updateCompanionBuilderArguments.write('})');
-    insertCompanionBuilderBody.write(")");
-    updateCompanionBuilderBody.write(")");
+    for (final column in table.columns) {
+      final value = scope.drift('Value');
+      final param = column.nameInDart;
+      final typeName = scope.dartCode(scope.dartType(column));
+
+      companionBuilderBody.write('$param: $param,');
+
+      if (isUpdate) {
+        // The update companion has no required fields, they are all defaulted to absent
+        companionBuilderTypeDef.write('$value<$typeName> $param,');
+        companionBuilderArguments
+            .write('$value<$typeName> $param = const $value.absent(),');
+      } else {
+        // The insert compantion has some required arguments and some that are defaulted to absent
+        if (!column.isImplicitRowId &&
+            table.isColumnRequiredForInsert(column)) {
+          companionBuilderTypeDef.write('required $typeName $param,');
+          companionBuilderArguments.write('required $typeName $param,');
+        } else {
+          companionBuilderTypeDef.write('$value<$typeName> $param,');
+          companionBuilderArguments
+              .write('$value<$typeName> $param = const $value.absent(),');
+        }
+      }
+    }
+    companionBuilderTypeDef.write('});');
+    companionBuilderArguments.write('})');
+    companionBuilderBody.write(")");
+    return (
+      companionBuilderTypeDef.toString(),
+      companionBuilderArguments.toString() + companionBuilderBody.toString()
+    );
+  }
+
+  void _writeRootTable(TextEmitter leaf) {
+    final (insertCompanionBuilderTypeDef, insertCompanionBuilder) =
+        _companionBuilder(insertCompanionBuilderTypeDefName, isUpdate: false);
+    final (updateCompanionBuilderTypeDef, updateCompanionBuilder) =
+        _companionBuilder(updateCompanionBuilderTypeDefName, isUpdate: true);
+
     leaf.writeln(insertCompanionBuilderTypeDef);
     leaf.writeln(updateCompanionBuilderTypeDef);
 
@@ -367,11 +393,12 @@ class _TableNames {
       ..writeDriftRef("TableManagerState")
       ..write(
           """(db: db, table: table, filteringComposer:$filterComposer(db, table),orderingComposer:$orderingComposer(db, table),
-            getChildManagerBuilder :(p0) => $processedTableManager(p0),getUpdateCompanionBuilder: $updateCompanionBuilderArguments$updateCompanionBuilderBody,
-            getInsertCompanionBuilder:$insertCompanionBuilderArguments$insertCompanionBuilderBody));""")
+            getChildManagerBuilder :(p0) => $processedTableManager(p0),getUpdateCompanionBuilder: $updateCompanionBuilder,
+            getInsertCompanionBuilder:$insertCompanionBuilder));""")
       ..writeln('}');
   }
 
+  /// Write the manager for this table, with all the filters and orderings
   void writeManager(TextEmitter leaf) {
     _writeFilterComposer(leaf);
     _writeOrderingComposer(leaf);
@@ -379,6 +406,7 @@ class _TableNames {
     _writeRootTable(leaf);
   }
 
+  /// Add filters and orderings for the columns of this table
   void addFiltersAndOrderings(List<DriftTable> tables) {
     // Utility function to get the referenced table and column
     (DriftTable, DriftColumn)? getReferencedTableAndColumn(
@@ -395,10 +423,22 @@ class _TableNames {
       return null;
     }
 
+    // Utility function to get the duplicates in a list
+    List<String> duplicates(List<String> items) {
+      final seen = <String>{};
+      final duplicates = <String>[];
+      for (var item in items) {
+        if (!seen.add(item)) {
+          duplicates.add(item);
+        }
+      }
+      return duplicates;
+    }
+
     /// First add the filters and orderings for the columns
     /// of the current table
     for (var column in table.columns) {
-      final c = _ColumnNames(column.nameInDart);
+      final c = _ColumnWriter(column.nameInDart);
 
       // The type that this column is (int, string, etc)
       final innerColumnType =
@@ -411,31 +451,32 @@ class _TableNames {
       // If the column has a type converter, add a filter with a converter
       if (column.typeConverter != null) {
         final converterType = scope.dartCode(scope.writer.dartType(column));
-        c.filters.add(_FilterWithConverter(c.fieldGetter,
+        c.filters.add(_RegularFilterWriter("${c.fieldGetter}Value",
+            type: innerColumnType, fieldGetter: c.fieldGetter));
+        c.filters.add(_FilterWithConverterWriter(c.fieldGetter,
             converterType: converterType,
             fieldGetter: c.fieldGetter,
             type: innerColumnType));
       } else {
-        c.filters.add(_RegularFilter(
-            c.fieldGetter + (isForeignKey ? "Value" : ""),
+        c.filters.add(_RegularFilterWriter(
+            c.fieldGetter + (isForeignKey ? "Id" : ""),
             type: innerColumnType,
             fieldGetter: c.fieldGetter));
       }
 
       // Add the ordering for the column
-      c.orderings.add(_RegularOrdering(
-          c.fieldGetter + (isForeignKey ? "Value" : ""),
+      c.orderings.add(_RegularOrderingWriter(
+          c.fieldGetter + (isForeignKey ? "Id" : ""),
           type: innerColumnType,
           fieldGetter: c.fieldGetter));
 
       /// If this column is a foreign key to another table, add a filter and ordering
       /// for the referenced table
-
       if (referenced != null) {
         final (referencedTable, referencedCol) = referenced;
         final referencedTableNames =
-            _TableNames(referencedTable, scope, dbScope, databaseGenericName);
-        final referencedColumnNames = _ColumnNames(referencedCol.nameInDart);
+            _TableWriter(referencedTable, scope, dbScope, databaseGenericName);
+        final referencedColumnNames = _ColumnWriter(referencedCol.nameInDart);
         final String referencedTableField = scope.generationOptions.isModular
             ? "state.db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
             : "state.db.${referencedTable.dbGetterName}";
@@ -445,7 +486,7 @@ class _TableNames {
             referencedColumnGetter: referencedColumnNames.fieldGetter,
             referencedFilterComposer: referencedTableNames.filterComposer,
             referencedTableField: referencedTableField));
-        c.orderings.add(_ReferencedOrdering(c.fieldGetter,
+        c.orderings.add(_ReferencedOrderingWriter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
             referencedColumnGetter: referencedColumnNames.fieldGetter,
             referencedOrderingComposer: referencedTableNames.orderingComposer,
@@ -462,8 +503,8 @@ class _TableNames {
         if (reference != null &&
             reference.$1.entityInfoName == table.entityInfoName) {
           final referencedTableNames =
-              _TableNames(ot, scope, dbScope, databaseGenericName);
-          final referencedColumnNames = _ColumnNames(oc.nameInDart);
+              _TableWriter(ot, scope, dbScope, databaseGenericName);
+          final referencedColumnNames = _ColumnWriter(oc.nameInDart);
           final String referencedTableField = scope.generationOptions.isModular
               ? "state.db.resultSet<${referencedTableNames.tableClassName}>('${ot.schemaName}')"
               : "state.db.${ot.dbGetterName}";
@@ -479,38 +520,27 @@ class _TableNames {
         }
       }
     }
+
     // Remove the filters and orderings that have duplicates
     // TODO: Add warnings for duplicate filters and orderings
-    List<String> duplicates(List<String> items) {
-      final seen = <String>{};
-      final duplicates = <String>[];
-      for (var item in items) {
-        if (!seen.add(item)) {
-          duplicates.add(item);
-        }
-      }
-      return duplicates;
-    }
-
-    // Gather which filters and orderings are duplicates
-    final filterNamesToRemove = duplicates(columns
+    final duplicatedFilterNames = duplicates(columns
             .map((e) => e.filters.map((e) => e.filterName))
             .expand((e) => e)
             .toList() +
         backRefFilters.map((e) => e.filterName).toList());
-    final orderingNamesToRemove = duplicates(columns
+    final duplicatedOrderingNames = duplicates(columns
         .map((e) => e.orderings.map((e) => e.orderingName))
         .expand((e) => e)
         .toList());
-
     // Remove the duplicates
     for (var c in columns) {
-      c.filters.removeWhere((e) => filterNamesToRemove.contains(e.filterName));
+      c.filters
+          .removeWhere((e) => duplicatedFilterNames.contains(e.filterName));
       c.orderings
-          .removeWhere((e) => orderingNamesToRemove.contains(e.orderingName));
+          .removeWhere((e) => duplicatedOrderingNames.contains(e.orderingName));
     }
     backRefFilters
-        .removeWhere((e) => filterNamesToRemove.contains(e.filterName));
+        .removeWhere((e) => duplicatedFilterNames.contains(e.filterName));
   }
 }
 
@@ -520,14 +550,19 @@ class ManagerWriter {
   final String _dbClassName;
   late final List<DriftTable> _addedTables;
 
+  /// Class used to write a manager for a database
   ManagerWriter(this._scope, this._dbScope, this._dbClassName) {
     _addedTables = [];
   }
 
+  /// Add a table to the manager
   void addTable(DriftTable table) {
     _addedTables.add(table);
   }
 
+  /// The generic of the database that the manager will use
+  /// Will be `GeneratedDatabase` if modular generation is enabled
+  /// or the name of the database class if not
   String get databaseGenericName {
     if (_scope.generationOptions.isModular) {
       return _scope.drift("GeneratedDatabase");
@@ -536,37 +571,33 @@ class ManagerWriter {
     }
   }
 
+  /// The name of the manager class
   String get databaseManagerName => '${_dbClassName}Manager';
 
+  /// The getter for the manager that will be added to the database
   String get managerGetter {
     return '$databaseManagerName get managers => $databaseManagerName(this);';
   }
 
+  /// Write the manager to a provider [TextEmitter]
   void write() {
     final leaf = _scope.leaf();
-    final tableNames = <_TableNames>[];
-
+    final tableNames = <_TableWriter>[];
     for (var table in _addedTables) {
-      tableNames.add(_TableNames(table, _scope, _dbScope, databaseGenericName)
+      tableNames.add(_TableWriter(table, _scope, _dbScope, databaseGenericName)
         ..addFiltersAndOrderings(_addedTables));
     }
-
     final tableManagerGetters = StringBuffer();
-
     for (var table in tableNames) {
       table.writeManager(leaf);
       tableManagerGetters.writeln(
           "${table.rootTableManager} get ${table.table.dbGetterName} => ${table.rootTableManager}(_db, _db.${table.table.dbGetterName});");
     }
-
-    leaf.write("""
-class $databaseManagerName{
-  final $_dbClassName _db;
-
-  $databaseManagerName(this._db);
-
-  $tableManagerGetters
-}
-""");
+    leaf
+      ..writeln('class $databaseManagerName{')
+      ..writeln('final $_dbClassName _db;')
+      ..writeln('$databaseManagerName(this._db);')
+      ..writeln(tableManagerGetters)
+      ..writeln('}');
   }
 }
