@@ -404,6 +404,10 @@ class _TableNames {
       final innerColumnType =
           scope.dartCode(scope.innerColumnType(column.sqlType));
 
+      // Get the referenced table and column if this column is a foreign key
+      final referenced = getReferencedTableAndColumn(column, tables);
+      final isForeignKey = referenced != null;
+
       // If the column has a type converter, add a filter with a converter
       if (column.typeConverter != null) {
         final converterType = scope.dartCode(scope.writer.dartType(column));
@@ -412,17 +416,21 @@ class _TableNames {
             fieldGetter: c.fieldGetter,
             type: innerColumnType));
       } else {
-        c.filters.add(_RegularFilter(c.fieldGetter,
-            type: innerColumnType, fieldGetter: c.fieldGetter));
+        c.filters.add(_RegularFilter(
+            c.fieldGetter + (isForeignKey ? "Value" : ""),
+            type: innerColumnType,
+            fieldGetter: c.fieldGetter));
       }
 
       // Add the ordering for the column
-      c.orderings.add(_RegularOrdering(c.fieldGetter,
-          type: innerColumnType, fieldGetter: c.fieldGetter));
+      c.orderings.add(_RegularOrdering(
+          c.fieldGetter + (isForeignKey ? "Value" : ""),
+          type: innerColumnType,
+          fieldGetter: c.fieldGetter));
 
       /// If this column is a foreign key to another table, add a filter and ordering
       /// for the referenced table
-      final referenced = getReferencedTableAndColumn(column, tables);
+
       if (referenced != null) {
         final (referencedTable, referencedCol) = referenced;
         final referencedTableNames =
@@ -432,12 +440,12 @@ class _TableNames {
             ? "state.db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
             : "state.db.${referencedTable.dbGetterName}";
 
-        c.filters.add(_ReferencedFilter("${c.fieldGetter}Ref",
+        c.filters.add(_ReferencedFilter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
             referencedColumnGetter: referencedColumnNames.fieldGetter,
             referencedFilterComposer: referencedTableNames.filterComposer,
             referencedTableField: referencedTableField));
-        c.orderings.add(_ReferencedOrdering("${c.fieldGetter}Ref",
+        c.orderings.add(_ReferencedOrdering(c.fieldGetter,
             fieldGetter: c.fieldGetter,
             referencedColumnGetter: referencedColumnNames.fieldGetter,
             referencedOrderingComposer: referencedTableNames.orderingComposer,
