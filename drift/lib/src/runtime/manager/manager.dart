@@ -270,13 +270,6 @@ abstract class BaseTableManager<
   /// Create a new [BaseTableManager] instance
   const BaseTableManager(this.$state);
 
-  /// Deletes all rows matched by built statement
-  ///
-  /// Returns the amount of rows that were deleted by this statement directly
-  /// (not including additional rows that might be affected through triggers or
-  /// foreign key constraints).
-  Future<int> delete() => $state.buildDeleteStatement().go();
-
   /// Set the distinct flag on the statement to true
   /// This will ensure that only distinct rows are returned
   C distict() {
@@ -345,6 +338,13 @@ abstract class ProcessedTableManager<
   /// Create a new [ProcessedTableManager] instance
   const ProcessedTableManager(super.$state);
 
+  /// Deletes all rows matched by built statement
+  ///
+  /// Returns the amount of rows that were deleted by this statement directly
+  /// (not including additional rows that might be affected through triggers or
+  /// foreign key constraints).
+  Future<int> delete() => $state.buildDeleteStatement().go();
+
   /// Executes this statement, like [get], but only returns one
   /// value. If the query returns no or too many rows, the returned future will
   /// complete with an error.
@@ -411,6 +411,14 @@ abstract class RootTableManager<
     CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
   /// Create a new [RootTableManager] instance
   const RootTableManager(super.$state);
+
+  /// Deletes all rows matched by built statement
+  ///
+  /// Returns the amount of rows that were deleted by this statement directly
+  /// (not including additional rows that might be affected through triggers or
+  /// foreign key constraints).
+  Future<int> delete(Insertable<D> entity) =>
+      $state.db.delete($state._tableAsTableInfo).delete(entity);
 
   /// Select all rows from the table
   C all() => $state._getChildManagerBuilder($state);

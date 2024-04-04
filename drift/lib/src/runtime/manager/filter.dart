@@ -29,11 +29,11 @@ class ColumnFilters<T extends Object> {
 
   /// Create a filter that checks if the column is in a list of values.
 
-  ComposableFilter isIn(List<T> values) =>
+  ComposableFilter isIn(Iterable<T> values) =>
       ComposableFilter(column.isIn(values));
 
   /// Create a filter that checks if the column is not in a list of values.
-  ComposableFilter isNotIn(List<T> values) =>
+  ComposableFilter isNotIn(Iterable<T> values) =>
       ComposableFilter(column.isNotIn(values));
 
   /// Shortcut for [equals]
