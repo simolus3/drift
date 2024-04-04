@@ -101,10 +101,7 @@ class _ReferencedFilterWriter extends _FilterWriter {
       ..write(" $filterName(")
       ..writeDriftRef("ComposableFilter")
       ..writeln(" Function( $referencedFilterComposer f) f) {")
-      ..write("return ")
-      ..writeUriRef(
-          Uri.parse('package:drift/internal/manager.dart'), 'composeWithJoins')
-      ..writeln('(')
+      ..write("return \$composeWithJoins(")
       ..writeln("\$db: \$db,")
       ..writeln("\$table: \$table,")
       ..writeln("referencedTable: $referencedTableField,")
@@ -186,10 +183,7 @@ class _ReferencedOrderingWriter extends _OrderingWriter {
       ..write(" $orderingName(")
       ..writeDriftRef("ComposableOrdering")
       ..writeln(" Function( $referencedOrderingComposer o) o) {")
-      ..write("return ")
-      ..writeUriRef(
-          Uri.parse('package:drift/internal/manager.dart'), 'composeWithJoins')
-      ..writeln('(')
+      ..write("return \$composeWithJoins(")
       ..writeln("\$db: \$db,")
       ..writeln("\$table: \$table,")
       ..writeln("referencedTable: $referencedTableField,")
