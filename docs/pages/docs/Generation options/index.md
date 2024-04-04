@@ -6,7 +6,7 @@ data:
 template: layouts/docs/list
 path: docs/advanced-features/builder_options/
 aliases:
- - "options/"
+  - "options/"
 ---
 
 The `drift_dev` package supports a range of options that control how code
@@ -19,6 +19,7 @@ advice on which options to use.
 
 To use the options, create a `build.yaml` file in the root of your project (e.g. next
 to your `pubspec.yaml`):
+
 ```yaml
 # build.yaml. This file is quite powerful, see https://pub.dev/packages/build_config
 
@@ -34,59 +35,60 @@ targets:
 
 At the moment, drift supports these options:
 
-* `write_from_json_string_constructor`: boolean. Adds a `.fromJsonString` factory
-   constructor to generated data classes. By default, we only write a `.fromJson`
-   constructor that takes a `Map<String, dynamic>`.
-* `override_hash_and_equals_in_result_sets`: boolean. When drift generates another class
-   to hold the result of generated select queries, this flag controls whether drift should
-   override `operator ==` and `hashCode` in those classes. In recent versions, it will also
-   override `toString` if this option is enabled.
-* `skip_verification_code`: Generated tables contain a significant chunk of code to verify integrity
+- `write_from_json_string_constructor`: boolean. Adds a `.fromJsonString` factory
+  constructor to generated data classes. By default, we only write a `.fromJson`
+  constructor that takes a `Map<String, dynamic>`.
+- `override_hash_and_equals_in_result_sets`: boolean. When drift generates another class
+  to hold the result of generated select queries, this flag controls whether drift should
+  override `operator ==` and `hashCode` in those classes. In recent versions, it will also
+  override `toString` if this option is enabled.
+- `skip_verification_code`: Generated tables contain a significant chunk of code to verify integrity
   of inserted data and report detailed errors when the integrity is violated. If you're only using
   inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
   generated code.
-* `use_data_class_name_for_companions`: By default, the name for [companion classes]({{ "../Dart API/writes.md#updates-and-deletes" | pageUrl }})
+- `use_data_class_name_for_companions`: By default, the name for [companion classes]({{ "../Dart API/writes.md#updates-and-deletes" | pageUrl }})
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
-* `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a
+- `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a
   `.drift` file from and to json, use their sql name instead of the generated Dart getter name
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   You can always override the json key by using a `JSON KEY` column constraint
   (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).
-* `use_sql_column_name_as_json_key` (defaults to false): Uses the column name in SQL as the JSON key for serialization,
+- `use_sql_column_name_as_json_key` (defaults to false): Uses the column name in SQL as the JSON key for serialization,
   regardless of whether the table was defined in a drift file or not.
-* `generate_connect_constructor` (deprecated): Generates a named `connect()` constructor on database classes
+- `generate_connect_constructor` (deprecated): Generates a named `connect()` constructor on database classes
   that takes a `DatabaseConnection` instead of a `QueryExecutor`.
   This option was deprecated in drift 2.5 because `DatabaseConnection` now implements `QueryExecutor`.
-* `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
-   data classes.
-* `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
+- `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
+  data classes.
+- `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
   by default. You can make them mutable by setting `mutable_classes: true`.
-* `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
-* `apply_converters_on_variables` (defaults to `true`): Applies type converters to variables in compiled statements.
-* `generate_values_in_copy_with` (defaults to `true`): Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set
+- `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
+- `apply_converters_on_variables` (defaults to `true`): Applies type converters to variables in compiled statements.
+- `generate_values_in_copy_with` (defaults to `true`): Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set
   columns back to null (by using `Value(null)`). Passing `null` was ignored before, making it impossible to set columns
   to `null`.
-* `named_parameters`: Generates named parameters for named variables in SQL queries.
-* `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
-* `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders]({{ '../SQL API/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
+- `named_parameters`: Generates named parameters for named variables in SQL queries.
+- `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
+- `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders]({{ '../SQL API/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
-* `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
+- `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
   For more information on these modes, see [datetime options]({{ '../Dart API/tables.md#datetime-options' | pageUrl }}).
-* `case_from_dart_to_sql` (defaults to `snake_case`): Controls how the table and column names are re-cased from the Dart identifiers.
-  The possible values are  `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
-* `write_to_columns_mixins`: Whether the `toColumns` method should be written as a mixin instead of being added directly to the data class.
-   This is useful when using [existing row classes]({{ '../custom_row_classes.md' | pageUrl }}), as the mixin is generated for those as well.
-* `has_separate_analyzer`: This option is only relevant when using the `drift_dev:not_shared` builder, which needs to use a less efficient
+- `case_from_dart_to_sql` (defaults to `snake_case`): Controls how the table and column names are re-cased from the Dart identifiers.
+  The possible values are `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
+- `write_to_columns_mixins`: Whether the `toColumns` method should be written as a mixin instead of being added directly to the data class.
+  This is useful when using [existing row classes]({{ '../custom_row_classes.md' | pageUrl }}), as the mixin is generated for those as well.
+- `has_separate_analyzer`: This option is only relevant when using the `drift_dev:not_shared` builder, which needs to use a less efficient
   analysis implementation than the other builders by default. After also applying `drift_dev:analyzer` to the same build target, this option
   can be enabled to speed up builds. This option has no effect with the default or the modular builder.
-* `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
+- `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
   unresolved references in your Dart tables) will cause the build to fail.
-* `preamble`: This option is useful when using drift [as a standalone part builder](#using-drift-classes-in-other-builders) or when running a
+- `preamble`: This option is useful when using drift [as a standalone part builder](#using-drift-classes-in-other-builders) or when running a
   [modular build](#modular-code-generation). In these setups, the `preamble` option defined by the [source_gen package](https://pub.dev/packages/source_gen#preamble)
   would have no effect, which is why it has been added as an option for the drift builders.
+- `generate_manager`: When enabled (defaults to `true`), managers will be generated for each table in the database. These managers help perform simple actions without boilerplate.
 
 ## Assumed SQL environment
 
@@ -151,7 +153,7 @@ targets:
 
 ### Available extensions
 
-__Note__: This enables extensions in the analyzer for custom queries only. For instance, when the `json1` extension is
+**Note**: This enables extensions in the analyzer for custom queries only. For instance, when the `json1` extension is
 enabled, the [`json`](https://www.sqlite.org/json1.html) functions can be used in drift files. This doesn't necessarily
 mean that those functions are supported at runtime! Both extensions are available on iOS 11 or later. On Android, they're
 only available when using a `NativeDatabase`.
@@ -176,9 +178,9 @@ We currently support the following extensions:
 - [json1](https://www.sqlite.org/json1.html): Support static analysis for `json_` functions in moor files
 - [fts5](https://www.sqlite.org/fts5.html): Support `CREATE VIRTUAL TABLE` statements for `fts5` tables and the `MATCH` operator.
   Functions like `highlight` or `bm25` are available as well.
-- `rtree`: Static analysis support for the [R*Tree](https://www.sqlite.org/rtree.html) extension.
+- `rtree`: Static analysis support for the [R\*Tree](https://www.sqlite.org/rtree.html) extension.
   Enabling this option is safe when using a `NativeDatabase` with `sqlite3_flutter_libs`,
-  which compiles sqlite3 with the R*Tree extension enabled.
+  which compiles sqlite3 with the R\*Tree extension enabled.
 - `moor_ffi`: Enables support for functions that are only available when using a `NativeDatabase`. This contains `pow`, `sqrt` and a variety
   of trigonometric functions. Details on those functions are available [here]({{ "../Platforms/vm.md#moor-only-functions" | pageUrl }}).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
