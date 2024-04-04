@@ -158,7 +158,9 @@ class TableManagerState<
 
       simpleStatement
           .orderBy(orderingBuilders.map((e) => (_) => e.buildTerm()).toList());
-      simpleStatement.limit(limit!, offset: offset);
+      if (limit != null) {
+        simpleStatement.limit(limit!, offset: offset);
+      }
 
       return _SimpleResult(simpleStatement);
     } else {
@@ -184,7 +186,9 @@ class TableManagerState<
 
       joinedStatement
           .orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
-      joinedStatement.limit(limit!, offset: offset);
+      if (limit != null) {
+        joinedStatement.limit(limit!, offset: offset);
+      }
 
       return _JoinedResult(joinedStatement);
     }
