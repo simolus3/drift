@@ -9,11 +9,10 @@ class JoinBuilder {
   /// The referenced table that will be joined
   final Table referencedTable;
 
-  /// The column of the current database which will be use to create the join
+  /// The column of the [currentTable] which will be use to create the join
   final GeneratedColumn currentColumn;
 
-  /// The column of the referenced database which will be use to create the join
-
+  /// The column of the [referencedTable] which will be use to create the join
   final GeneratedColumn referencedColumn;
 
   /// Class that describes how a ordering that is being
@@ -46,16 +45,34 @@ class JoinBuilder {
   /// Build a join from this join builder
   Join buildJoin() {
     return leftOuterJoin(
-        referencedTable, currentColumn.equalsExp(referencedColumn));
+        referencedTable, currentColumn.equalsExp(referencedColumn),
+        useColumns: false);
   }
 }
 
 /// An interface for classes that hold join builders
+/// Typically used by classes whose composition requires joins
+/// to be created
+///
+/// Example:
+/// ```dart
+/// categories.filter((f) => f.todos((f) => f.dueDate.isBefore(DateTime.now())))
+/// ```
+///
+/// In the above example, f.todos() returns a [ComposableFilter] object, which
+/// is a subclass of [HasJoinBuilders].
+/// This resulting where expression will require a join to be created
+/// between the `categories` and `todos` table.
+///
+/// This interface is used to ensure that the [ComposableFilter] object will have
+/// the information needed to create the join.
 @internal
 abstract interface class HasJoinBuilders {
   /// The join builders that are associated with this class
   Set<JoinBuilder> get joinBuilders;
 
   /// Add a join builder to this class
-  void addJoinBuilders(Set<JoinBuilder> builders);
+  void addJoinBuilders(Set<JoinBuilder> builders) {
+    joinBuilders.addAll(builders);
+  }
 }

@@ -411,7 +411,7 @@ class JsonKey {
 }
 
 /// Annotation to use on reference columns inside of a [Table] to define the name
-/// of the filters and orderings for the reverse relation.
+/// that the manager will use when refering to this relation in the reverse.
 ///
 /// Example:
 /// ```dart
@@ -424,11 +424,11 @@ class JsonKey {
 /// class Categories extends Table {
 ///   IntColumn get id => integer().autoIncrement()();
 /// }
-/// /// Filter all Categories which contain a TodoEntries with a body of "Todo"
+/// /// The manager will now use the name `categories`
 /// categories.filter((f) => f.categories((f) => f.body("Todo")))
 ///
 /// ```
-/// When these aren't specified, drift will use the referenced tables name followed by `Refs`.
+/// When these aren't specified, the manager will use the referenced tables name followed by `Refs`.
 /// If a reference name clashes with other fields on the table, the generator will show a warning,
 /// and filters and orderings wont be generated
 class ReferenceName {

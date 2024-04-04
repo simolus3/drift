@@ -24,6 +24,14 @@ class _JoinedResult<T extends Table, DT extends DataClass>
 }
 
 /// Defines a class that holds the state for a [BaseTableManager]
+///
+/// It holds the state for manager of [T] table in [DB] database, used to return [DT] data classes/rows.
+/// It holds the [FS] Filters and [OS] Orderings for the manager.
+///
+/// It also holds the [CI] and [CU] functions that are used to create companion builders for inserting and updating data.
+/// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
+///
+/// The [C] generic refers to the type of the child manager that will be created when a filter/ordering is applied
 class TableManagerState<
     DB extends GeneratedDatabase,
     T extends Table,
@@ -135,30 +143,23 @@ class TableManagerState<
 
   /// Builds a select statement with the given target columns, or all columns if none are provided
   _StatementType<T, DT> _buildSelectStatement(
-      {Iterable<Expression>? targetColumns,
-      required bool addJoins,
-      required bool applyFilters,
-      required bool applyOrdering,
-      required bool applyLimit}) {
+      {Iterable<Expression>? targetColumns}) {
     final joins = joinBuilders.map((e) => e.buildJoin()).toList();
 
     // If there are no joins and we are returning all columns, we can use a simple select statement
-    if (targetColumns == null && !addJoins) {
+    if (joins.isEmpty && targetColumns == null) {
       final simpleStatement =
           db.select(_tableAsTableInfo, distinct: distinct ?? false);
       // Apply the expression to the statement
-      if (applyFilters && filter != null) {
+      if (filter != null) {
         simpleStatement.where((_) => filter!);
       }
-      // Add orderings
-      if (applyOrdering) {
-        simpleStatement.orderBy(
-            orderingBuilders.map((e) => (_) => e.buildTerm()).toList());
-      }
-      // Set the limit and offset
-      if (applyLimit && limit != null) {
-        simpleStatement.limit(limit!, offset: offset);
-      }
+      // Apply orderings and limits
+
+      simpleStatement
+          .orderBy(orderingBuilders.map((e) => (_) => e.buildTerm()).toList());
+      simpleStatement.limit(limit!, offset: offset);
+
       return _SimpleResult(simpleStatement);
     } else {
       JoinedSelectStatement<T, DT> joinedStatement;
@@ -168,45 +169,30 @@ class TableManagerState<
             (db.selectOnly(_tableAsTableInfo, distinct: distinct ?? false)
               ..addColumns(targetColumns));
         // Add the joins to the statement
-        if (addJoins) {
-          joinedStatement =
-              joinedStatement.join(joins) as JoinedSelectStatement<T, DT>;
-        }
+        joinedStatement =
+            joinedStatement.join(joins) as JoinedSelectStatement<T, DT>;
       } else {
         joinedStatement = db
             .select(_tableAsTableInfo, distinct: distinct ?? false)
             .join(joins) as JoinedSelectStatement<T, DT>;
       }
       // Apply the expression to the statement
-      if (applyFilters && filter != null) {
+      if (filter != null) {
         joinedStatement.where(filter!);
       }
-      // Add orderings
-      if (applyOrdering) {
-        joinedStatement
-            .orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
-      }
-      // Set the limit and offset
-      if (applyLimit && limit != null) {
-        joinedStatement.limit(limit!, offset: offset);
-      }
+      // Apply orderings and limits
+
+      joinedStatement
+          .orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
+      joinedStatement.limit(limit!, offset: offset);
+
       return _JoinedResult(joinedStatement);
     }
   }
 
   /// Build a select statement based on the manager state
-  Selectable<DT> buildSelectStatement(
-      {Iterable<Column>? targetColumns,
-      bool addJoins = true,
-      bool applyFilters = true,
-      bool applyOrdering = true,
-      bool applyLimit = true}) {
-    final result = _buildSelectStatement(
-        targetColumns: targetColumns,
-        addJoins: addJoins,
-        applyFilters: applyFilters,
-        applyOrdering: applyOrdering,
-        applyLimit: applyLimit);
+  Selectable<DT> buildSelectStatement() {
+    final result = _buildSelectStatement();
     return switch (result) {
       _SimpleResult() => result.statement,
       _JoinedResult() =>
@@ -225,12 +211,8 @@ class TableManagerState<
     } else {
       updateStatement = db.update(_tableAsTableInfo);
       for (var col in _tableAsTableInfo.primaryKey) {
-        final subquery = _buildSelectStatement(
-            targetColumns: [col],
-            addJoins: true,
-            applyFilters: true,
-            applyOrdering: false,
-            applyLimit: false) as _JoinedResult<T, DT>;
+        final subquery =
+            _buildSelectStatement(targetColumns: [col]) as _JoinedResult<T, DT>;
         updateStatement.where((tbl) => col.isInQuery(subquery.statement));
       }
     }
@@ -240,12 +222,8 @@ class TableManagerState<
   /// Count the number of rows that would be returned by the built statement
   Future<int> count() {
     final count = countAll();
-    final result = _buildSelectStatement(
-        targetColumns: [count],
-        addJoins: true,
-        applyFilters: true,
-        applyOrdering: true,
-        applyLimit: true) as _JoinedResult;
+    final result =
+        _buildSelectStatement(targetColumns: [count]) as _JoinedResult;
     return result.statement.map((row) => row.read(count)!).getSingle();
   }
 
@@ -260,12 +238,8 @@ class TableManagerState<
     } else {
       deleteStatement = db.delete(_tableAsTableInfo);
       for (var col in _tableAsTableInfo.primaryKey) {
-        final subquery = _buildSelectStatement(
-            targetColumns: [col],
-            addJoins: true,
-            applyFilters: true,
-            applyOrdering: true,
-            applyLimit: true) as _JoinedResult<T, DT>;
+        final subquery =
+            _buildSelectStatement(targetColumns: [col]) as _JoinedResult<T, DT>;
         deleteStatement.where((tbl) => col.isInQuery(subquery.statement));
       }
     }
@@ -298,6 +272,12 @@ abstract class BaseTableManager<
   /// (not including additional rows that might be affected through triggers or
   /// foreign key constraints).
   Future<int> delete() => $state.buildDeleteStatement().go();
+
+  /// Set the distinct flag on the statement to true
+  /// This will ensure that only distinct rows are returned
+  C distict() {
+    return $state._getChildManagerBuilder($state.copyWith(distinct: true));
+  }
 
   /// Add ordering to the statement
   C orderBy(ComposableOrdering Function(OS o) o) {

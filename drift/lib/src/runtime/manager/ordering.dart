@@ -5,12 +5,7 @@ class ColumnOrderings<T extends Object> {
   /// This class is a wrapper on top of the generated column class
   ///
   /// It's used to expose ordering functions for a column
-  ///
-  /// ```dart
-  /// extension on FilterComposer<DateTime>{
-  ///  FitlerBuilder after2000() => isAfter(DateTime(2000));
-  ///}
-  /// ```
+
   ColumnOrderings(this.column);
 
   /// Column that this [ColumnOrderings] wraps
@@ -20,13 +15,13 @@ class ColumnOrderings<T extends Object> {
   ///
   /// 10 -> 1 | Z -> A | Dec 31 -> Jan 1
   ComposableOrdering asc() =>
-      ComposableOrdering.simple({OrderingBuilder(OrderingMode.asc, column)});
+      ComposableOrdering({OrderingBuilder(OrderingMode.asc, column)});
 
   /// Sort this column in descending order
   ///
   ///  1 -> 10 | A -> Z | Jan 1 -> Dec 31
   ComposableOrdering desc() =>
-      ComposableOrdering.simple({OrderingBuilder(OrderingMode.desc, column)});
+      ComposableOrdering({OrderingBuilder(OrderingMode.desc, column)});
 }
 
 /// Defines a class which will hold the information needed to create an ordering
@@ -60,18 +55,16 @@ class OrderingBuilder {
 ///
 /// Multiple orderings can be composed together using the `&` operator.
 /// The orderings will be executed from left to right.
-class ComposableOrdering implements HasJoinBuilders {
+/// See [HasJoinBuilders] for more information
+/// on how joins are stored
+class ComposableOrdering extends HasJoinBuilders {
   /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
   @override
   final Set<JoinBuilder> joinBuilders;
-  @override
-  void addJoinBuilders(Set<JoinBuilder> builders) {
-    joinBuilders.addAll(builders);
-  }
 
   /// Create a new [ComposableOrdering] for a column without any joins
-  ComposableOrdering.simple(this.orderingBuilders) : joinBuilders = {};
+  ComposableOrdering(this.orderingBuilders) : joinBuilders = {};
 
   /// Create a new [ComposableOrdering] for a column with joins
   ComposableOrdering._(this.orderingBuilders, this.joinBuilders);
@@ -92,5 +85,5 @@ class ComposableOrdering implements HasJoinBuilders {
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// Create an ordering composer with an empty state
-  OrderingComposer(super.db, super.table);
+  OrderingComposer(super.$db, super.$table);
 }

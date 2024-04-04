@@ -37,7 +37,7 @@ class _RegularFilterWriter extends _FilterWriter {
       ..writeDriftRef("ColumnFilters")
       ..write("<$type> get $filterName =>")
       ..writeDriftRef("ColumnFilters")
-      ..write("(\$state.table.$fieldGetter);");
+      ..write("(\$table.$fieldGetter);");
   }
 }
 
@@ -64,15 +64,15 @@ class _FilterWithConverterWriter extends _FilterWriter {
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..write("<$converterType,$type> get $filterName =>")
       ..writeDriftRef("ColumnWithTypeConverterFilters")
-      ..writeln("(\$state.table.$fieldGetter);");
+      ..writeln("(\$table.$fieldGetter);");
   }
 }
 
 class _ReferencedFilterWriter extends _FilterWriter {
   /// The full function used to get the referenced table
   ///
-  /// E.G `\$state.db.resultSet<$CategoryTable>('categories')`
-  /// or `\$state.db.categories`
+  /// E.G `\$db.resultSet<$CategoryTable>('categories')`
+  /// or `\$db.categories`
   final String referencedTableField;
 
   /// The getter for the column on the referenced table
@@ -105,7 +105,8 @@ class _ReferencedFilterWriter extends _FilterWriter {
       ..writeUriRef(
           Uri.parse('package:drift/internal/manager.dart'), 'composeWithJoins')
       ..writeln('(')
-      ..writeln("\$state: \$state,")
+      ..writeln("\$db: \$db,")
+      ..writeln("\$table: \$table,")
       ..writeln("referencedTable: $referencedTableField,")
       ..writeln("getCurrentColumn: (f) => f.$fieldGetter,")
       ..writeln("getReferencedColumn: (f) => f.$referencedColumnGetter,")
@@ -150,15 +151,15 @@ class _RegularOrderingWriter extends _OrderingWriter {
       ..writeDriftRef("ColumnOrderings")
       ..write(" get $orderingName =>")
       ..writeDriftRef("ColumnOrderings")
-      ..write("(\$state.table.$fieldGetter);");
+      ..write("(\$table.$fieldGetter);");
   }
 }
 
 class _ReferencedOrderingWriter extends _OrderingWriter {
   /// The full function used to get the referenced table
   ///
-  /// E.G `\$state.db.resultSet<$CategoryTable>('categories')`
-  /// or `\$state.db.categories`
+  /// E.G `\$db.resultSet<$CategoryTable>('categories')`
+  /// or `\$db.categories`
   final String referencedTableField;
 
   /// The getter for the column on the referenced table
@@ -189,7 +190,8 @@ class _ReferencedOrderingWriter extends _OrderingWriter {
       ..writeUriRef(
           Uri.parse('package:drift/internal/manager.dart'), 'composeWithJoins')
       ..writeln('(')
-      ..writeln("\$state: \$state,")
+      ..writeln("\$db: \$db,")
+      ..writeln("\$table: \$table,")
       ..writeln("referencedTable: $referencedTableField,")
       ..writeln("getCurrentColumn: (f) => f.$fieldGetter,")
       ..writeln("getReferencedColumn: (f) => f.$referencedColumnGetter,")
@@ -487,8 +489,8 @@ class _TableWriter {
             _TableWriter(referencedTable, scope, dbScope, databaseGenericName);
         final referencedColumnNames = _ColumnWriter(referencedCol.nameInDart);
         final String referencedTableField = scope.generationOptions.isModular
-            ? "\$state.db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
-            : "\$state.db.${referencedTable.dbGetterName}";
+            ? "\$db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
+            : "\$db.${referencedTable.dbGetterName}";
 
         c.filters.add(_ReferencedFilterWriter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
@@ -515,8 +517,8 @@ class _TableWriter {
               _TableWriter(ot, scope, dbScope, databaseGenericName);
           final referencedColumnNames = _ColumnWriter(oc.nameInDart);
           final String referencedTableField = scope.generationOptions.isModular
-              ? "\$state.db.resultSet<${referencedTableNames.tableClassName}>('${ot.schemaName}')"
-              : "\$state.db.${ot.dbGetterName}";
+              ? "\$db.resultSet<${referencedTableNames.tableClassName}>('${ot.schemaName}')"
+              : "\$db.${ot.dbGetterName}";
 
           final filterName = oc.referenceName ??
               "${referencedTableNames.table.dbGetterName}Refs";
