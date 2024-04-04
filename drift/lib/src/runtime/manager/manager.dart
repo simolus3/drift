@@ -323,9 +323,8 @@ abstract class BaseTableManager<
   ///
   /// See also: [RootTableManager.replace], which does not require [filter] statements and
   /// supports setting fields back to null.
-  Future<int> write(DT Function(CU o) f) => $state
-      .buildUpdateStatement()
-      .write(f($state._getUpdateCompanionBuilder) as Insertable<DT>);
+  Future<int> write(Insertable<DT> Function(CU o) f) =>
+      $state.buildUpdateStatement().write(f($state._getUpdateCompanionBuilder));
 }
 
 /// A table manager that can be used to select rows from a table
@@ -437,10 +436,10 @@ abstract class RootTableManager<
   ///
   /// If the table doesn't have a `rowid`, you can't rely on the return value.
   /// Still, the future will always complete with an error if the insert fails.
-  Future<int> create(D Function(CI o) f,
+  Future<int> create(Insertable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insert(
-        f($state._getInsertCompanionBuilder) as Insertable<D>,
+        f($state._getInsertCompanionBuilder),
         mode: mode,
         onConflict: onConflict);
   }
@@ -453,10 +452,10 @@ abstract class RootTableManager<
   /// exception in that case. Use [createReturningOrNull] when performing an
   /// insert with an insert mode like [InsertMode.insertOrIgnore] or when using
   /// a [DoUpdate] with a `where` clause clause.
-  Future<D> createReturning(D Function(CI o) f,
+  Future<D> createReturning(Insertable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insertReturning(
-        f($state._getInsertCompanionBuilder) as Insertable<D>,
+        f($state._getInsertCompanionBuilder),
         mode: mode,
         onConflict: onConflict);
   }
@@ -466,10 +465,10 @@ abstract class RootTableManager<
   /// When no row was inserted and no exception was thrown, for instance because
   /// [InsertMode.insertOrIgnore] was used or because the upsert clause had a
   /// `where` clause that didn't match, `null` is returned instead.
-  Future<D?> createReturningOrNull(D Function(CI o) f,
+  Future<D?> createReturningOrNull(Insertable<D> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insertReturningOrNull(
-        f($state._getInsertCompanionBuilder) as Insertable<D>,
+        f($state._getInsertCompanionBuilder),
         mode: mode,
         onConflict: onConflict);
   }
@@ -486,10 +485,10 @@ abstract class RootTableManager<
   /// checks.
   /// [onConflict] can be used to create an upsert clause for engines that
   /// support it. For details and examples, see [InsertStatement.insert].
-  Future<void> bulkCreate(Iterable<D> Function(CI o) f,
+  Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
-    return $state.db.batch((b) => b.insertAll($state._tableAsTableInfo,
-        f($state._getInsertCompanionBuilder) as Iterable<Insertable<D>>,
+    return $state.db.batch((b) => b.insertAll(
+        $state._tableAsTableInfo, f($state._getInsertCompanionBuilder),
         mode: mode, onConflict: onConflict));
   }
 
@@ -505,9 +504,7 @@ abstract class RootTableManager<
   /// ignores such fields without changing them in the database.
   ///
   /// Returns true if a row was affected by this operation.
-  Future<bool> replace(D entity) {
-    return $state.db
-        .update($state._tableAsTableInfo)
-        .replace(entity as Insertable<D>);
+  Future<bool> replace(Insertable<D> entity) {
+    return $state.db.update($state._tableAsTableInfo).replace(entity);
   }
 }
