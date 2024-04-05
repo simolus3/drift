@@ -32,9 +32,10 @@ class Users extends Table with TableInfo<Users, UsersData> {
   @override
   List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => $name;
+  static const String $name = 'users';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -250,9 +251,10 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
   @override
   List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
-  String get aliasedName => _alias ?? 'groups';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'groups';
+  String get actualTableName => $name;
+  static const String $name = 'groups';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -603,9 +605,10 @@ class Notes extends Table
   @override
   List<GeneratedColumn> get $columns => [title, content, searchTerms];
   @override
-  String get aliasedName => _alias ?? 'notes';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'notes';
+  String get actualTableName => $name;
+  static const String $name = 'notes';
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
