@@ -409,10 +409,7 @@ class _GeneratesConstDataClasses extends Matcher {
 
     final parsed = parseFile(
       path: '/foo.dart',
-      featureSet: FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(2, 12, 0),
-        flags: const [],
-      ),
+      featureSet: FeatureSet.latestLanguageVersion(),
       resourceProvider: resourceProvider,
       throwIfDiagnostics: true,
     ).unit;
