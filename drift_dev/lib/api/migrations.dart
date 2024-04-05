@@ -11,8 +11,18 @@ export 'package:drift_dev/src/services/schema/verifier_common.dart'
     show SchemaMismatch;
 
 abstract class SchemaVerifier {
-  factory SchemaVerifier(SchemaInstantiationHelper helper) =
-      VerifierImplementation;
+  /// Creates a schema verifier for the drift-generated [helper].
+  ///
+  /// See [tests] for more information.
+  /// The optional [setup] parameter is used internally by the verifier for
+  /// every database connection it opens. This can be used to, for instance,
+  /// register custom functions expected by your database.
+  ///
+  /// [tests]: https://drift.simonbinder.eu/docs/migrations/tests/
+  factory SchemaVerifier(
+    SchemaInstantiationHelper helper, {
+    void Function(Database raw)? setup,
+  }) = VerifierImplementation;
 
   /// Creates a [DatabaseConnection] that contains empty tables created for the
   /// known schema [version].
