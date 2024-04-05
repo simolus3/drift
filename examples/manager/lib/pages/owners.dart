@@ -1,10 +1,8 @@
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:manager/database.dart';
 import 'package:manager/main.dart';
-import 'package:manager/tables.dart';
 
 class OwnersPage extends HookConsumerWidget {
   const OwnersPage({super.key});
@@ -27,7 +25,7 @@ class OwnersPage extends HookConsumerWidget {
                 onPressed: () {
                   db.managers.owner.delete(product);
                 },
-                icon: Icon(Icons.delete)),
+                icon: const Icon(Icons.delete)),
           );
         },
       );
@@ -45,11 +43,11 @@ class OwnersPage extends HookConsumerWidget {
                   final nameTextController = useTextEditingController();
 
                   return SimpleDialog(
-                    title: Text("Add Owner"),
+                    title: const Text("Add Owner"),
                     children: [
                       TextField(
                         controller: nameTextController,
-                        decoration: InputDecoration(labelText: "Name"),
+                        decoration: const InputDecoration(labelText: "Name"),
                       ),
                       ElevatedButton(
                           onPressed: () {
@@ -58,13 +56,13 @@ class OwnersPage extends HookConsumerWidget {
                                 ));
                             Navigator.of(ctx).pop();
                           },
-                          child: Text("Add"))
+                          child: const Text("Add"))
                     ],
                   );
                 });
               });
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: body,
     );

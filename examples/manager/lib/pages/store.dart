@@ -1,4 +1,3 @@
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -36,7 +35,7 @@ class StorePage extends HookConsumerWidget {
                 onPressed: () {
                   db.managers.store.delete(store);
                 },
-                icon: Icon(Icons.delete)),
+                icon: const Icon(Icons.delete)),
           );
         },
       );
@@ -55,14 +54,14 @@ class StorePage extends HookConsumerWidget {
                   final owner = useState<OwnerData?>(null);
 
                   return SimpleDialog(
-                    title: Text("Add Store"),
+                    title: const Text("Add Store"),
                     children: [
                       TextField(
                         controller: nameTextController,
-                        decoration: InputDecoration(labelText: "Name"),
+                        decoration: const InputDecoration(labelText: "Name"),
                       ),
                       ListTile(
-                          title: Text("Owner"),
+                          title: const Text("Owner"),
                           subtitle: Text(owner.value?.name ?? "Select Owner"),
                           onTap: () {
                             showDialog(
@@ -74,7 +73,7 @@ class StorePage extends HookConsumerWidget {
                                   final data = useStream(stream);
 
                                   return SimpleDialog(
-                                    title: Text("Select Owner"),
+                                    title: const Text("Select Owner"),
                                     children: [
                                       if (data.hasData)
                                         for (final o in data.data!)
@@ -98,13 +97,13 @@ class StorePage extends HookConsumerWidget {
                                 owner: owner.value!.id));
                             Navigator.of(ctx).pop();
                           },
-                          child: Text("Add"))
+                          child: const Text("Add"))
                     ],
                   );
                 });
               });
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: body,
     );

@@ -960,7 +960,7 @@ class $$ProductsTableFilterComposer
       ColumnWithTypeConverterFilters($table.color);
   ComposableFilter listings(
       ComposableFilter Function($$ListingsTableFilterComposer f) f) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.listings,
@@ -1063,7 +1063,7 @@ class $$OwnerTableFilterComposer
   ColumnFilters<String> get name => ColumnFilters($table.name);
   ComposableFilter stores(
       ComposableFilter Function($$StoreTableFilterComposer f) f) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.store,
@@ -1146,7 +1146,7 @@ class $$StoreTableFilterComposer
   ColumnFilters<int> get ownerId => ColumnFilters($table.owner);
   ComposableFilter owner(
       ComposableFilter Function($$OwnerTableFilterComposer f) f) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.owner,
@@ -1159,7 +1159,7 @@ class $$StoreTableFilterComposer
 
   ComposableFilter listings(
       ComposableFilter Function($$ListingsTableFilterComposer f) f) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.listings,
@@ -1179,7 +1179,7 @@ class $$StoreTableOrderingComposer
   ColumnOrderings get ownerId => ColumnOrderings($table.owner);
   ComposableOrdering owner(
       ComposableOrdering Function($$OwnerTableOrderingComposer o) o) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.owner,
@@ -1260,7 +1260,7 @@ class $$ListingsTableFilterComposer
   ColumnFilters<int> get productId => ColumnFilters($table.product);
   ComposableFilter product(
       ComposableFilter Function($$ProductsTableFilterComposer f) f) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.products,
@@ -1274,7 +1274,7 @@ class $$ListingsTableFilterComposer
   ColumnFilters<int> get storeId => ColumnFilters($table.store);
   ComposableFilter store(
       ComposableFilter Function($$StoreTableFilterComposer f) f) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.store,
@@ -1295,7 +1295,7 @@ class $$ListingsTableOrderingComposer
   ColumnOrderings get productId => ColumnOrderings($table.product);
   ComposableOrdering product(
       ComposableOrdering Function($$ProductsTableOrderingComposer o) o) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.products,
@@ -1309,7 +1309,7 @@ class $$ListingsTableOrderingComposer
   ColumnOrderings get storeId => ColumnOrderings($table.store);
   ComposableOrdering store(
       ComposableOrdering Function($$StoreTableOrderingComposer o) o) {
-    return composeWithJoins(
+    return $composeWithJoins(
         $db: $db,
         $table: $table,
         referencedTable: $db.store,

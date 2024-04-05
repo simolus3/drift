@@ -33,9 +33,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-dependency_overrides:
-  drift_dev:
-    path: C:/Users/dicke/drift/drift_dev
-  drift:
-    path: C:/Users/dicke/drift/drift

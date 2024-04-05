@@ -1,4 +1,3 @@
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -43,7 +42,7 @@ class ListingPage extends HookConsumerWidget {
                 onPressed: () {
                   db.managers.products.delete(product);
                 },
-                icon: Icon(Icons.delete)),
+                icon: const Icon(Icons.delete)),
             leading: CircleAvatar(
               backgroundColor: product.color,
             ),
@@ -66,14 +65,14 @@ class ListingPage extends HookConsumerWidget {
                   final store = useState<StoreData?>(null);
 
                   return SimpleDialog(
-                    title: Text("Add Listing"),
+                    title: const Text("Add Listing"),
                     children: [
                       TextField(
                         controller: priceTextController,
-                        decoration: InputDecoration(labelText: "Price"),
+                        decoration: const InputDecoration(labelText: "Price"),
                       ),
                       ListTile(
-                        title: Text("Product"),
+                        title: const Text("Product"),
                         subtitle: product.value == null
                             ? null
                             : Text(product.value!.name),
@@ -86,7 +85,7 @@ class ListingPage extends HookConsumerWidget {
                                       db.managers.products.all().watch());
                                   final items = data.data ?? [];
                                   return SimpleDialog(
-                                    title: Text("Select Product"),
+                                    title: const Text("Select Product"),
                                     children: [
                                       ...items.map((e) => ListTile(
                                             title: Text(e.name),
@@ -102,7 +101,7 @@ class ListingPage extends HookConsumerWidget {
                         },
                       ),
                       ListTile(
-                        title: Text("Store"),
+                        title: const Text("Store"),
                         subtitle: store.value == null
                             ? null
                             : Text(store.value!.name),
@@ -115,7 +114,7 @@ class ListingPage extends HookConsumerWidget {
                                       db.managers.store.all().watch());
                                   final items = data.data ?? [];
                                   return SimpleDialog(
-                                    title: Text("Select Store"),
+                                    title: const Text("Select Store"),
                                     children: [
                                       ...items.map((e) => ListTile(
                                             title: Text(e.name),
@@ -138,13 +137,13 @@ class ListingPage extends HookConsumerWidget {
                                 store: store.value!.id));
                             Navigator.of(ctx).pop();
                           },
-                          child: Text("Add"))
+                          child: const Text("Add"))
                     ],
                   );
                 });
               });
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: body,
     );

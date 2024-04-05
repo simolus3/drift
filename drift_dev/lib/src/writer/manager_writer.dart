@@ -411,6 +411,17 @@ class _TableWriter {
     _writeRootTable(leaf);
   }
 
+  String _referenceTable(DriftTable table) {
+    if (scope.generationOptions.isModular) {
+      final extension = scope.refUri(
+          ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer');
+      final type = scope.dartCode(scope.entityInfoType(table));
+      return "$extension(\$db).resultSet<$type>('${table.schemaName}')";
+    } else {
+      return '\$db.${table.dbGetterName}';
+    }
+  }
+
   /// Add filters and orderings for the columns of this table
   void addFiltersAndOrderings(List<DriftTable> tables) {
     // Utility function to get the referenced table and column
@@ -482,9 +493,7 @@ class _TableWriter {
         final referencedTableNames =
             _TableWriter(referencedTable, scope, dbScope, databaseGenericName);
         final referencedColumnNames = _ColumnWriter(referencedCol.nameInDart);
-        final String referencedTableField = scope.generationOptions.isModular
-            ? "\$db.resultSet<${referencedTableNames.tableClassName}>('${referencedTable.schemaName}')"
-            : "\$db.${referencedTable.dbGetterName}";
+        final referencedTableField = _referenceTable(referencedTable);
 
         c.filters.add(_ReferencedFilterWriter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
@@ -510,9 +519,7 @@ class _TableWriter {
           final referencedTableNames =
               _TableWriter(ot, scope, dbScope, databaseGenericName);
           final referencedColumnNames = _ColumnWriter(oc.nameInDart);
-          final String referencedTableField = scope.generationOptions.isModular
-              ? "\$db.resultSet<${referencedTableNames.tableClassName}>('${ot.schemaName}')"
-              : "\$db.${ot.dbGetterName}";
+          final referencedTableField = _referenceTable(ot);
 
           final filterName = oc.referenceName ??
               "${referencedTableNames.table.dbGetterName}Refs";
@@ -587,12 +594,6 @@ class ManagerWriter {
   /// Write the manager to a provider [TextEmitter]
   void write() {
     final leaf = _scope.leaf();
-
-    // When generating with modular generation, we need to add the imports
-    // for the internal `resultSet` helper
-    if (_scope.generationOptions.isModular) {
-      leaf.refUri(ModularAccessorWriter.modularSupport, '');
-    }
 
     // Write the manager class for each table
     final tableWriters = <_TableWriter>[];

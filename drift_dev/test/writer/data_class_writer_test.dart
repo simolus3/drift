@@ -5,7 +5,6 @@ import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:collection/collection.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

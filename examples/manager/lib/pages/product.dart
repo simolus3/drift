@@ -27,7 +27,7 @@ class ProductPage extends HookConsumerWidget {
                 onPressed: () {
                   db.managers.products.delete(product);
                 },
-                icon: Icon(Icons.delete)),
+                icon: const Icon(Icons.delete)),
             leading: CircleAvatar(
               backgroundColor: product.color,
             ),
@@ -51,21 +51,21 @@ class ProductPage extends HookConsumerWidget {
                   final releaseDate = useState<DateTime?>(null);
 
                   return SimpleDialog(
-                    title: Text("Add Product"),
+                    title: const Text("Add Product"),
                     children: [
                       TextField(
                         controller: nameTextController,
-                        decoration: InputDecoration(labelText: "Name"),
+                        decoration: const InputDecoration(labelText: "Name"),
                       ),
                       TextField(
                         controller: descriptionTextController,
-                        decoration: InputDecoration(labelText: "Description"),
+                        decoration: const InputDecoration(labelText: "Description"),
                       ),
                       ListTile(
                         leading: CircleAvatar(
                           backgroundColor: color.value,
                         ),
-                        title: Text("Color"),
+                        title: const Text("Color"),
                         onTap: () {
                           showColorPickerDialog(
                                   context, color.value ?? Colors.blue)
@@ -73,8 +73,8 @@ class ProductPage extends HookConsumerWidget {
                         },
                       ),
                       ListTile(
-                        leading: Icon(Icons.calendar_month),
-                        title: Text("Date"),
+                        leading: const Icon(Icons.calendar_month),
+                        title: const Text("Date"),
                         subtitle: releaseDate.value != null
                             ? Text(releaseDate.value.toString())
                             : null,
@@ -98,13 +98,13 @@ class ProductPage extends HookConsumerWidget {
                                 releaseDate: releaseDate.value!));
                             Navigator.of(ctx).pop();
                           },
-                          child: Text("Add"))
+                          child: const Text("Add"))
                     ],
                   );
                 });
               });
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: body,
     );
