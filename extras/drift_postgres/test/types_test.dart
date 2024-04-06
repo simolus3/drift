@@ -26,19 +26,19 @@ void main() {
     return row.read(expression)!;
   }
 
+  void testWith<T extends Object>(CustomSqlType<T>? type, T value) {
+    test('with variable', () async {
+      final variable = Variable(value, type);
+      expect(await eval(variable), value);
+    });
+
+    test('with constant', () async {
+      final constant = Constant(value, type);
+      expect(await eval(constant), value);
+    });
+  }
+
   group('custom types pass through', () {
-    void testWith<T extends Object>(CustomSqlType<T> type, T value) {
-      test('with variable', () async {
-        final variable = Variable(value, type);
-        expect(await eval(variable), value);
-      });
-
-      test('with constant', () async {
-        final constant = Constant(value, type);
-        expect(await eval(constant), value);
-      });
-    }
-
     group('uuid', () => testWith(PgTypes.uuid, Uuid().v4obj()));
     group(
       'interval',
@@ -59,6 +59,8 @@ void main() {
           PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0))),
     );
   });
+
+  group('bytea', () => testWith(null, Uint8List.fromList([1, 2, 3, 4, 5])));
 
   test('compare datetimes', () async {
     final time = DateTime.now();
