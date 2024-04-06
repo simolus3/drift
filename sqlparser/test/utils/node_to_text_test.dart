@@ -568,6 +568,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('SELECT a -> b');
       testFormat('SELECT a ->> b');
     });
+
+    test('blob literal', () {
+      testFormat(
+          "select typeof(X'0100000300000000000000000000803F000000000000003F0000803F');");
+    });
   });
 
   test('identifiers', () {

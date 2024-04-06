@@ -1114,6 +1114,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitStringLiteral(StringLiteral e, void arg) {
+    if (e.isBinary) {
+      symbol('X', spaceBefore: true);
+    }
     _stringLiteral(e.value);
   }
 
