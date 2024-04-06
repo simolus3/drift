@@ -124,7 +124,7 @@ final class SqlTypes {
       } else {
         // BLOB literals are string literals containing hexadecimal data and
         // preceded by a single "x" or "X" character. Example: X'53514C697465'
-        return "x'${hex.encode(dart)}'";
+        return "x'$hexString'";
       }
     } else if (dart is DriftAny) {
       return mapToSqlLiteral(dart.rawSqlValue);
