@@ -301,9 +301,6 @@ abstract class BaseTableManager<
         ._getChildManagerBuilder($state.copyWith(limit: limit, offset: offset));
   }
 
-  /// Return the count of rows matched by the built statement
-  Future<int> count() => $state.count();
-
   /// Writes all non-null fields from the entity into the columns of all rows
   /// that match the [filter] clause. Warning: That also means that, when you're
   /// not setting a where clause explicitly, this method will update all rows in
@@ -337,6 +334,12 @@ abstract class ProcessedTableManager<
         SingleOrNullSelectable<D> {
   /// Create a new [ProcessedTableManager] instance
   const ProcessedTableManager(super.$state);
+
+  /// Return the count of rows matched by the built statement
+  /// When counting rows, the query will only count distinct rows by default
+  Future<int> count([bool distinct = true]) {
+    return $state.copyWith(distinct: true).count();
+  }
 
   /// Deletes all rows matched by built statement
   ///
