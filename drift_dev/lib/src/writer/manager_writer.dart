@@ -331,7 +331,6 @@ class _TableWriter {
   /// Use [isUpdate] to determine if the builder is for an update or insert companion
   (String, String) _companionBuilder(String typedefName,
       {required bool isUpdate}) {
-    ;
     final companionClassName = scope.dartCode(scope.companionType(table));
 
     final companionBuilderTypeDef =
