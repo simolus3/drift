@@ -197,7 +197,7 @@ class _ReferencedOrderingWriter extends _OrderingWriter {
   }
 }
 
-class _ColumnWriter {
+class _ColumnManagerWriter {
   /// The getter for the field
   ///
   /// E.G `id` in `table.id`
@@ -210,12 +210,12 @@ class _ColumnWriter {
   final List<_OrderingWriter> orderings;
 
   /// A class used for writing filters and orderings for columns
-  _ColumnWriter(this.fieldGetter)
+  _ColumnManagerWriter(this.fieldGetter)
       : filters = [],
         orderings = [];
 }
 
-class _TableWriter {
+class _TableManagerWriter {
   /// The current table
   final DriftTable table;
 
@@ -268,18 +268,23 @@ class _TableWriter {
   /// E.G. `i5.$Category`
   String get rowClassName => dbScope.dartCode(dbScope.writer.rowType(table));
 
+  /// Whether this table has a custom row class
+  /// We use this row to determine if we should generate a manager for this table
+  bool get hasCustomRowClass => table.existingRowClass != null;
+
   /// The name of the database class
   ///
   /// E.G. `i5.$GeneratedDatabase`
   final String databaseGenericName;
 
   /// Writers for the columns of this table
-  final List<_ColumnWriter> columns;
+  final List<_ColumnManagerWriter> columns;
 
   /// Filters for back references
   final List<_ReferencedFilterWriter> backRefFilters;
 
-  _TableWriter(this.table, this.scope, this.dbScope, this.databaseGenericName)
+  _TableManagerWriter(
+      this.table, this.scope, this.dbScope, this.databaseGenericName)
       : backRefFilters = [],
         columns = [];
 
@@ -455,7 +460,7 @@ class _TableWriter {
     /// First add the filters and orderings for the columns
     /// of the current table
     for (var column in table.columns) {
-      final c = _ColumnWriter(column.nameInDart);
+      final c = _ColumnManagerWriter(column.nameInDart);
 
       // The type that this column is (int, string, etc)
       final innerColumnType =
@@ -491,9 +496,10 @@ class _TableWriter {
       /// for the referenced table
       if (referenced != null) {
         final (referencedTable, referencedCol) = referenced;
-        final referencedTableNames =
-            _TableWriter(referencedTable, scope, dbScope, databaseGenericName);
-        final referencedColumnNames = _ColumnWriter(referencedCol.nameInDart);
+        final referencedTableNames = _TableManagerWriter(
+            referencedTable, scope, dbScope, databaseGenericName);
+        final referencedColumnNames =
+            _ColumnManagerWriter(referencedCol.nameInDart);
         final referencedTableField = _referenceTable(referencedTable);
 
         c.filters.add(_ReferencedFilterWriter(c.fieldGetter,
@@ -518,8 +524,8 @@ class _TableWriter {
         if (reference != null &&
             reference.$1.entityInfoName == table.entityInfoName) {
           final referencedTableNames =
-              _TableWriter(ot, scope, dbScope, databaseGenericName);
-          final referencedColumnNames = _ColumnWriter(oc.nameInDart);
+              _TableManagerWriter(ot, scope, dbScope, databaseGenericName);
+          final referencedColumnNames = _ColumnManagerWriter(oc.nameInDart);
           final referencedTableField = _referenceTable(ot);
 
           final filterName = oc.referenceName ??
@@ -535,7 +541,6 @@ class _TableWriter {
     }
 
     // Remove the filters and orderings that have duplicates
-    // TODO: Add warnings for duplicate filters and orderings
     final duplicatedFilterNames = duplicates(columns
             .map((e) => e.filters.map((e) => e.filterName))
             .expand((e) => e)
@@ -545,15 +550,20 @@ class _TableWriter {
         .map((e) => e.orderings.map((e) => e.orderingName))
         .expand((e) => e)
         .toList());
-    // Remove the duplicates
-    for (var c in columns) {
-      c.filters
+    if (duplicatedFilterNames.isNotEmpty ||
+        duplicatedOrderingNames.isNotEmpty) {
+      print(
+          "The code generator encountered an issue while attempting to create filters/orderings for $tableClassName manager. The following filters/orderings were not created ${(duplicatedFilterNames + duplicatedOrderingNames).toSet()}. Use the @ReferenceName() annotation to resolve this issue.");
+      // Remove the duplicates
+      for (var c in columns) {
+        c.filters
+            .removeWhere((e) => duplicatedFilterNames.contains(e.filterName));
+        c.orderings.removeWhere(
+            (e) => duplicatedOrderingNames.contains(e.orderingName));
+      }
+      backRefFilters
           .removeWhere((e) => duplicatedFilterNames.contains(e.filterName));
-      c.orderings
-          .removeWhere((e) => duplicatedOrderingNames.contains(e.orderingName));
     }
-    backRefFilters
-        .removeWhere((e) => duplicatedFilterNames.contains(e.filterName));
   }
 }
 
@@ -596,16 +606,16 @@ class ManagerWriter {
   void write() {
     final leaf = _scope.leaf();
 
-    // Remove tables that use custom row classes
-    _addedTables.removeWhere((t) => t.existingRowClass != null);
-
-    // Write the manager class for each table
-    final tableWriters = <_TableWriter>[];
+    // create the manager class for each table
+    final tableWriters = <_TableManagerWriter>[];
     for (var table in _addedTables) {
       tableWriters.add(
-          _TableWriter(table, _scope, _dbScope, databaseGenericName)
+          _TableManagerWriter(table, _scope, _dbScope, databaseGenericName)
             ..addFiltersAndOrderings(_addedTables));
     }
+
+    // Remove ones that have custom row classes
+    tableWriters.removeWhere((t) => !t.hasCustomRowClass);
 
     // Write each tables manager to the leaf and append the getter to the main manager
     final tableManagerGetters = StringBuffer();
