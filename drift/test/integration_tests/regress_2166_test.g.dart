@@ -184,10 +184,88 @@ class _SomeTableCompanion extends UpdateCompanion<_SomeTableData> {
 
 abstract class _$_SomeDb extends GeneratedDatabase {
   _$_SomeDb(QueryExecutor e) : super(e);
+  _$_SomeDbManager get managers => _$_SomeDbManager(this);
   late final $_SomeTableTable someTable = $_SomeTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [someTable];
+}
+
+class $$_SomeTableTableFilterComposer
+    extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get id => ColumnFilters($table.id);
+  ColumnFilters<String> get name => ColumnFilters($table.name);
+}
+
+class $$_SomeTableTableOrderingComposer
+    extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableOrderingComposer(super.db, super.table);
+  ColumnOrderings get id => ColumnOrderings($table.id);
+  ColumnOrderings get name => ColumnOrderings($table.name);
+}
+
+class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<
+    _$_SomeDb,
+    $_SomeTableTable,
+    _SomeTableData,
+    $$_SomeTableTableFilterComposer,
+    $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableProcessedTableManager,
+    $$_SomeTableTableInsertCompanionBuilder,
+    $$_SomeTableTableUpdateCompanionBuilder> {
+  const $$_SomeTableTableProcessedTableManager(super.$state);
+}
+
+typedef $$_SomeTableTableInsertCompanionBuilder = _SomeTableCompanion Function({
+  Value<int> id,
+  Value<String?> name,
+});
+typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
+  Value<int> id,
+  Value<String?> name,
+});
+
+class $$_SomeTableTableTableManager extends RootTableManager<
+    _$_SomeDb,
+    $_SomeTableTable,
+    _SomeTableData,
+    $$_SomeTableTableFilterComposer,
+    $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableProcessedTableManager,
+    $$_SomeTableTableInsertCompanionBuilder,
+    $$_SomeTableTableUpdateCompanionBuilder> {
+  $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$_SomeTableTableFilterComposer(db, table),
+            orderingComposer: $$_SomeTableTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$_SomeTableTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+            }) =>
+                _SomeTableCompanion(
+                  id: id,
+                  name: name,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+            }) =>
+                _SomeTableCompanion.insert(
+                  id: id,
+                  name: name,
+                )));
+}
+
+class _$_SomeDbManager {
+  final _$_SomeDb _db;
+  _$_SomeDbManager(this._db);
+  $$_SomeTableTableTableManager get someTable =>
+      $$_SomeTableTableTableManager(_db, _db.someTable);
 }

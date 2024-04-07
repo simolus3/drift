@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/modules.dart';
+import 'package:drift_dev/src/writer/tables/update_companion_writer.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 
 abstract class _FilterWriter {
@@ -330,6 +331,7 @@ class _TableWriter {
   /// Use [isUpdate] to determine if the builder is for an update or insert companion
   (String, String) _companionBuilder(String typedefName,
       {required bool isUpdate}) {
+    ;
     final companionClassName = scope.dartCode(scope.companionType(table));
 
     final companionBuilderTypeDef =
@@ -344,7 +346,7 @@ class _TableWriter {
       companionBuilderBody = StringBuffer('=> $companionClassName.insert(');
     }
 
-    for (final column in table.columns) {
+    for (final column in UpdateCompanionWriter(table, scope).columns) {
       final value = scope.drift('Value');
       final param = column.nameInDart;
       final typeName = scope.dartCode(scope.dartType(column));
@@ -594,6 +596,9 @@ class ManagerWriter {
   /// Write the manager to a provider [TextEmitter]
   void write() {
     final leaf = _scope.leaf();
+
+    // Remove tables that use custom row classes
+    _addedTables.removeWhere((t) => t.existingRowClass != null);
 
     // Write the manager class for each table
     final tableWriters = <_TableWriter>[];
