@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
@@ -231,6 +233,22 @@ class TableManagerState<
     return result.statement.map((row) => row.read(count)!).getSingle();
   }
 
+  /// Check if any rows exists using the built statement
+  Future<bool> exists() async {
+    final result = _buildSelectStatement();
+    final BaseSelectStatement statement;
+    switch (result) {
+      case _SimpleResult():
+        statement = result.statement;
+      case _JoinedResult():
+        statement = result.statement;
+    }
+    final query = existsQuery(statement);
+    final existsStatement = db.selectOnly(_tableAsTableInfo)
+      ..addColumns([query]);
+    return (await existsStatement.map((p0) => p0.read(query)).getSingle())!;
+  }
+
   /// Build a delete statement based on the manager state
   DeleteStatement buildDeleteStatement() {
     final DeleteStatement deleteStatement;
@@ -340,6 +358,9 @@ abstract class ProcessedTableManager<
   Future<int> count([bool distinct = true]) {
     return $state.copyWith(distinct: true).count();
   }
+
+  /// Checks whether any rows exist
+  Future<bool> exists() => $state.exists();
 
   /// Deletes all rows matched by built statement
   ///
