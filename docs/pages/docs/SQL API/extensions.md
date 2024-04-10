@@ -78,3 +78,35 @@ The `bm25`, `highlight` and `snippet` functions from fts5 can also be used in cu
 
 It's not possible to declare fts5 tables, or queries on fts5 tables, in Dart.
 You can learn more about the fts5 extension on [sqlite.org](https://www.sqlite.org/fts5.html).
+
+## geopoly
+The Geopoly module is an alternative interface to the [R-Tree](https://www.sqlite.org/rtree.html) extension 
+that uses the [GeoJSON](https://geojson.org/) notation ([RFC-7946](https://datatracker.ietf.org/doc/html/rfc7946)) 
+to describe two-dimensional polygons.
+Geopoly includes functions for detecting when one polygon is contained within or overlaps with another, 
+for computing the area enclosed by a polygon, 
+for doing linear transformations of polygons, 
+for rendering polygons as [SVG](https://en.wikipedia.org/wiki/SVG), 
+and other similar operations.
+
+To enable the fts5 extension in drift files and compiled queries, modify the
+[build options]({{ "../Generation options/index.md" | pageUrl }}) to include
+`geopoly` in the `sqlite_module` section.
+
+An example of creating a virtual table using this extension:
+```sql
+create virtual table geo using geopoly(geoID, a, b);
+```
+Sqlite will accept any types in additional columns (`geoID`, `a`, `b` from the example above), 
+so `drift` will generate a `DriftAny` type for these columns, which is not always convenient. 
+To avoid this, you can add types as in this example:
+```sql
+create virtual table geo using geopoly (
+    geoID INTEGER not null,
+    a INTEGER,
+    b
+);
+```
+This will add hints to column types and then the Dart code will be more convenient to use
+
+You can learn more about the geopoly extension on [sqlite.org](https://www.sqlite.org/geopoly.html).
