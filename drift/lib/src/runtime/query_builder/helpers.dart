@@ -54,7 +54,7 @@ extension WithTypes<T extends Object> on Expression<T> {
   /// Creates a variable with a matching [driftSqlType].
   Variable<T> variable(T? value) {
     return switch (driftSqlType) {
-      CustomSqlType<T> custom => Variable(value, custom),
+      UserDefinedSqlType<T> custom => Variable(value, custom),
       _ => Variable(value),
     };
   }

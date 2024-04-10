@@ -158,6 +158,7 @@ class Value<T> {
   /// This constructor should only be used when [T] is not nullable. If [T] were
   /// nullable, there wouldn't be a clear interpretation for a `null` [value].
   /// See the overall documentation on [Value] for details.
+  @Deprecated('Use Value.absentIfNull instead')
   const Value.ofNullable(T? value)
       : assert(
           value != null || null is! T,
@@ -165,6 +166,15 @@ class Value<T> {
           'null value could be both absent and present.',
         ),
         _value = value,
+        present = value != null;
+
+  /// Create a value that is absent if [value] is `null` and [present] if it's
+  /// not.
+  ///
+  /// The functionality is equiavalent to the following:
+  /// `x != null ? Value(x) : Value.absent()`.
+  const Value.absentIfNull(T? value)
+      : _value = value,
         present = value != null;
 
   @override

@@ -68,7 +68,7 @@ class TableWrite {
   int get hashCode => 37 * table.hashCode + kind.hashCode;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is TableWrite && other.table == table && other.kind == kind;
   }
 }

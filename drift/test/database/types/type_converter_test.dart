@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../../generated/converter.dart';
+import '../../generated/todos.dart';
 
 enum _MyEnum { one, two, three }
 
@@ -32,6 +33,16 @@ void main() {
       expect(customCodec.toSql(key), '"custom"');
       expect(customCodec.fromSql(value), key);
     });
+  });
+
+  test('TypeConverter.extensionType', () {
+    final converter = TypeConverter.extensionType<RowId, int>();
+
+    expect(converter.toSql(RowId(123)), 123);
+    expect(converter.fromSql(15), RowId(15));
+    expect(converter.fromSql(15), 15);
+    expect(converter.fromJson(16), RowId(16));
+    expect(converter.toJson(RowId(124)), 124);
   });
 
   group('enum name', () {

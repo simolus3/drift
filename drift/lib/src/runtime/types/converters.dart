@@ -47,6 +47,35 @@ abstract class TypeConverter<D, S> {
       json: json,
     );
   }
+
+  /// A type converter mapping [extension types] to their underlying
+  /// representation to store them in databases.
+  ///
+  /// Here, [ExtType] is the extension type to use in Dart classes, and [Inner]
+  /// is the underlying type stored in the database. For instance, if you had
+  /// a type to represent ids in a database:
+  ///
+  /// ```dart
+  /// extension type IdNumber(int id) {}
+  /// ```
+  ///
+  /// You could use `TypeConverter.extensionType<IdNumber, int>()` in a column
+  /// definition:
+  ///
+  /// ```dart
+  /// class Users extends Table {
+  ///   IntColumn get id => integer()
+  ///       .autoIncrement()
+  ///       .map(TypeConverter.extensionType<IdNumber, int>())();
+  ///   TextColumn get name => text()();
+  /// }
+  /// ```
+  ///
+  /// [extension types]: https://dart.dev/language/extension-types
+  static JsonTypeConverter<ExtType, Inner>
+      extensionType<ExtType, Inner extends Object>() {
+    return _ExtensionTypeConverter();
+  }
 }
 
 /// A mixin for [TypeConverter]s that should also apply to drift's builtin
@@ -263,4 +292,18 @@ class _NullWrappingTypeConverterWithJson<D, S extends Object, J extends Object>
   J? toJson(D? value) {
     return value == null ? null : requireToJson(value);
   }
+}
+
+class _ExtensionTypeConverter<ExtType, Inner extends Object>
+    extends TypeConverter<ExtType, Inner>
+    with JsonTypeConverter<ExtType, Inner> {
+  const _ExtensionTypeConverter();
+
+  @override
+  ExtType fromSql(Inner fromDb) {
+    return fromDb as ExtType;
+  }
+
+  @override
+  Inner toSql(ExtType value) => value as Inner;
 }

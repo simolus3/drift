@@ -1,4 +1,9 @@
-## 0.34.1-dev
+## 3.35.0-dev
+
+- Fix parsing binary literals.
+- Drift extensions: Allow custom class names for `CREATE VIEW` statements.
+
+## 0.34.1
 
 - Allow selecting from virtual tables using the table-valued function
   syntax.

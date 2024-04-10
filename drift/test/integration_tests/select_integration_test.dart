@@ -26,7 +26,7 @@ void main() {
     final rows = await (db.select(db.users)
           ..orderBy([(_) => OrderingTerm.random()]))
         .get();
-    expect(rows.isSorted((a, b) => a.id.compareTo(b.id)), isFalse);
+    expect(rows.isSorted((a, b) => a.id.id.compareTo(b.id.id)), isFalse);
   });
 
   test('can select view', () async {
@@ -35,7 +35,7 @@ void main() {
     await db.todosTable.insertOne(TodosTableCompanion.insert(
         content: 'some content',
         title: const Value('title'),
-        category: Value(category.id)));
+        category: Value(category.id.id)));
 
     final result = await db.todoWithCategoryView.select().getSingle();
     expect(

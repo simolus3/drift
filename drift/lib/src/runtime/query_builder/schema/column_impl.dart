@@ -162,7 +162,7 @@ class GeneratedColumn<T extends Object> extends Column<T> {
 
       // these custom constraints refer to builtin constraints from drift
       if (!isSerial && _defaultConstraints != null) {
-        _defaultConstraints!(into);
+        _defaultConstraints(into);
       }
     } else if ($customConstraints?.isNotEmpty == true) {
       into.buffer

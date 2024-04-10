@@ -290,7 +290,7 @@ class Scanner {
     }
 
     final value = source
-        .substring(_startOffset + 1, _currentOffset - 1)
+        .substring(_startOffset + (binary ? 2 : 1), _currentOffset - 1)
         .replaceAll("''", "'");
     tokens.add(StringLiteralToken(value, _currentSpan, binary: binary));
   }

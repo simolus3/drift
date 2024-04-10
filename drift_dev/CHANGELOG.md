@@ -1,4 +1,12 @@
-## 2.15.1-dev
+## 2.17.0-dev
+
+- Fix drift using the wrong import alias in generated part files.
+- Add the `use_sql_column_name_as_json_key` builder option.
+- Add a `setup` parameter to `SchemaVerifier`. It is called when the verifier
+  creates database connections (similar to the callback on `NativeDatabase`)
+  and can be used to register custom functions.
+
+## 2.16.0
 
 - Keep import alias when referencing existing elements in generated code
   ([#2845](https://github.com/simolus3/drift/issues/2845)).

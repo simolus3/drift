@@ -559,4 +559,11 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     _visitCommaSeparated(node.elements);
     _childEntities([node.rightBracket]);
   }
+
+  @override
+  void visitTypeArgumentList(TypeArgumentList node) {
+    _builder.addText('<');
+    _visitCommaSeparated(node.arguments);
+    _builder.addText('>');
+  }
 }

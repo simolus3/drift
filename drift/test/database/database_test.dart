@@ -72,7 +72,7 @@ void main() {
     final executor = MockExecutor();
     final db = TodoDb(executor);
 
-    await db.someDao.todosForUser(user: 1).get();
+    await db.someDao.todosForUser(user: RowId(1)).get();
 
     verify(executor.runSelect(argThat(contains('SELECT t.* FROM todos')), [1]));
   });

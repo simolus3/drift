@@ -36,6 +36,25 @@ void main() {
     );
   });
 
+  test('parses a CREATE VIEW statement with a custom Dart name', () {
+    testStatement(
+      'CREATE VIEW my_view AS DartClass AS SELECT 1',
+      CreateViewStatement(
+        viewName: 'my_view',
+        query: SelectStatement(
+          columns: [
+            ExpressionResultColumn(expression: NumericLiteral(1)),
+          ],
+        ),
+        driftTableName: DriftTableName(
+          overriddenDataClassName: 'DartClass',
+          useExistingDartClass: false,
+        ),
+      ),
+      driftMode: true,
+    );
+  });
+
   test('parses a complex CREATE View statement', () {
     testStatement(
       'CREATE VIEW IF NOT EXISTS my_complex_view (ids, name, count, type) AS '

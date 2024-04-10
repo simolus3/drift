@@ -428,6 +428,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _ifNotExists(e.ifNotExists);
 
     identifier(e.viewName);
+    e.driftTableName?.accept(this, arg);
 
     if (e.columns != null) {
       symbol('(', spaceBefore: true);
@@ -1113,6 +1114,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitStringLiteral(StringLiteral e, void arg) {
+    if (e.isBinary) {
+      symbol('X', spaceBefore: true);
+    }
     _stringLiteral(e.value);
   }
 

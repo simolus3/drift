@@ -2294,25 +2294,28 @@ class Parser {
         supportAs ? const [TokenType.as, TokenType.$with] : [TokenType.$with];
 
     if (enableDriftExtensions && (_match(types))) {
-      final first = _previous;
-      final useExisting = _previous.type == TokenType.$with;
-      final name =
-          _consumeIdentifier('Expected the name for the data class').identifier;
-      String? constructorName;
-
-      if (_matchOne(TokenType.dot)) {
-        constructorName = _consumeIdentifier(
-                'Expected name of the constructor to use after the dot')
-            .identifier;
-      }
-
-      return DriftTableName(
-        useExistingDartClass: useExisting,
-        overriddenDataClassName: name,
-        constructorName: constructorName,
-      )..setSpan(first, _previous);
+      return _startedDriftTableName(_previous);
     }
     return null;
+  }
+
+  DriftTableName _startedDriftTableName(Token first) {
+    final useExisting = _previous.type == TokenType.$with;
+    final name =
+        _consumeIdentifier('Expected the name for the data class').identifier;
+    String? constructorName;
+
+    if (_matchOne(TokenType.dot)) {
+      constructorName = _consumeIdentifier(
+              'Expected name of the constructor to use after the dot')
+          .identifier;
+    }
+
+    return DriftTableName(
+      useExistingDartClass: useExisting,
+      overriddenDataClassName: name,
+      constructorName: constructorName,
+    )..setSpan(first, _previous);
   }
 
   /// Parses a "CREATE TRIGGER" statement, assuming that the create token has
@@ -2409,17 +2412,33 @@ class Parser {
     final ifNotExists = _ifNotExists();
     final name = _consumeIdentifier('Expected a name for this view');
 
-    // Don't allow the "AS ClassName" syntax for views since it causes an
-    // ambiguity with the regular view syntax.
-    final driftTableName = _driftTableName(supportAs: false);
+    DriftTableName? driftTableName;
+    var skippedToSelect = false;
 
-    List<String>? columnNames;
-    if (_matchOne(TokenType.leftParen)) {
-      columnNames = _columnNames();
-      _consume(TokenType.rightParen, 'Expected closing bracket');
+    if (enableDriftExtensions) {
+      if (_check(TokenType.$with)) {
+        driftTableName = _driftTableName();
+      } else if (_matchOne(TokenType.as)) {
+        // This can either be a data class name or the beginning of the select
+        if (_check(TokenType.identifier)) {
+          // It's a data class name
+          driftTableName = _startedDriftTableName(_previous);
+        } else {
+          // No, we'll expect the SELECT next.
+          skippedToSelect = true;
+        }
+      }
     }
 
-    _consume(TokenType.as, 'Expected AS SELECT');
+    List<String>? columnNames;
+    if (!skippedToSelect) {
+      if (_matchOne(TokenType.leftParen)) {
+        columnNames = _columnNames();
+        _consume(TokenType.rightParen, 'Expected closing bracket');
+      }
+
+      _consume(TokenType.as, 'Expected AS SELECT');
+    }
 
     final query = _fullSelect();
     if (query == null) {

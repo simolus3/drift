@@ -16,7 +16,7 @@ final _dataOfTodoEntry = {
 };
 
 const _todoEntry = TodoEntry(
-  id: 10,
+  id: RowId(10),
   title: 'A todo title',
   content: 'Content',
   category: 3,
@@ -126,7 +126,7 @@ void main() {
         }
       ];
       const resolved = TodoEntry(
-        id: 10,
+        id: RowId(10),
         title: null,
         content: 'Content',
         category: null,
@@ -198,7 +198,7 @@ void main() {
     expect(
       category,
       const Category(
-        id: 1,
+        id: RowId(1),
         description: 'description',
         descriptionInUpperCase: 'DESCRIPTION',
         priority: CategoryPriority.high,
@@ -232,7 +232,7 @@ void main() {
 
     expect(rows, [
       TodoEntry(
-        id: 10,
+        id: RowId(10),
         title: null,
         content: 'Content',
         category: null,

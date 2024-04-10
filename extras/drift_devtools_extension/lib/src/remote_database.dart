@@ -120,7 +120,8 @@ class RemoteDatabase {
       isAlive: isAlive,
       scope: {'db': database.database.id!},
     );
-    final value = await eval.retrieveFullValueAsString(stringVal);
+    final value = await eval.service
+        .retrieveFullStringValue(eval.isolateRef!.id!, stringVal);
 
     final description = DatabaseDescription.fromJson(json.decode(value!));
 

@@ -55,7 +55,7 @@ void main() {
   group('generates replace statements', () {
     test('regular', () async {
       await db.update(db.todosTable).replace(const TodoEntry(
-            id: 3,
+            id: RowId(3),
             title: 'Title',
             content: 'Updated content',
             status: TodoStatus.workInProgress,
@@ -71,7 +71,7 @@ void main() {
     test('applies default values', () async {
       await db.update(db.users).replace(
             UsersCompanion(
-              id: const Value(3),
+              id: const Value(RowId(3)),
               name: const Value('Hummingbird'),
               profilePicture: Value(Uint8List(0)),
             ),
@@ -167,14 +167,14 @@ void main() {
 
   group('update on table instances', () {
     test('update()', () async {
-      await db.users.update().write(const UsersCompanion(id: Value(3)));
+      await db.users.update().write(const UsersCompanion(id: Value(RowId(3))));
 
       verify(executor.runUpdate('UPDATE "users" SET "id" = ?;', [3]));
     });
 
     test('replace', () async {
       await db.categories.replaceOne(const CategoriesCompanion(
-          id: Value(3), description: Value('new name')));
+          id: Value(RowId(3)), description: Value('new name')));
 
       verify(executor.runUpdate(
           'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
@@ -205,7 +205,7 @@ void main() {
 
     expect(rows, const [
       Category(
-        id: 3,
+        id: RowId(3),
         description: 'test',
         priority: CategoryPriority.low,
         descriptionInUpperCase: 'TEST',

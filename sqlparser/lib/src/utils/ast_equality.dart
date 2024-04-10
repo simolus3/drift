@@ -642,7 +642,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   @override
   void visitStringLiteral(StringLiteral e, void arg) {
     final current = _currentAs<StringLiteral>(e);
-    _assert(current.value == e.value, e);
+    _assert(current.value == e.value && current.isBinary == e.isBinary, e);
     _checkChildren(e);
   }
 

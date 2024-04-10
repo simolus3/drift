@@ -109,7 +109,7 @@ class _GeneratesSqlMatcher extends Matcher {
 
     final argsMatchState = <String, Object?>{};
     if (_matchVariables != null &&
-        !_matchVariables!.matches(ctx.boundVariables, argsMatchState)) {
+        !_matchVariables.matches(ctx.boundVariables, argsMatchState)) {
       matchState['vars'] = ctx.boundVariables;
       matchState['vars_match'] = argsMatchState;
       matches = false;

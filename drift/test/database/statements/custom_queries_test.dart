@@ -23,7 +23,7 @@ void main() {
   group('compiled custom queries', () {
     // defined query: SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1
     test('work with arrays', () async {
-      await db.withIn('one', 'two', [1, 2, 3]).get();
+      await db.withIn('one', 'two', [RowId(1), RowId(2), RowId(3)]).get();
 
       verify(
         executor.runSelect(

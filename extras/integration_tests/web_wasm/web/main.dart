@@ -18,6 +18,7 @@ TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
 
 InitializationMode initializationMode = InitializationMode.none;
+int schemaVersion = 1;
 
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
@@ -30,6 +31,10 @@ void main() {
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
   _addCallbackForWebDriver('enable_initialization', (arg) async {
     initializationMode = InitializationMode.values.byName(arg!);
+    return true;
+  });
+  _addCallbackForWebDriver('set_schema_version', (arg) async {
+    schemaVersion = int.parse(arg!);
     return true;
   });
   _addCallbackForWebDriver('delete_database', (arg) async {
@@ -85,7 +90,7 @@ Future<Uint8List?> _initializeDatabase() async {
 
       // Let's first open a custom WasmDatabase, the way it would have been
       // done before WasmDatabase.open.
-      final sqlite3 = await WasmSqlite3.loadFromUrl(Uri.parse('sqlite3.wasm'));
+      final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
       final fs = await IndexedDbFileSystem.open(dbName: dbName);
       sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
 
@@ -150,7 +155,7 @@ Future<void> _open(String? implementationName) async {
         db.createFunction(
           functionName: 'database_host',
           function: (args) => 'document',
-          argumentCount: const AllowedArgumentCount(1),
+          argumentCount: const AllowedArgumentCount(0),
         );
       },
     );
@@ -158,7 +163,8 @@ Future<void> _open(String? implementationName) async {
     connection = result.resolvedExecutor;
   }
 
-  final db = openedDatabase = TestDatabase(connection);
+  final db =
+      openedDatabase = TestDatabase(connection)..schemaVersion = schemaVersion;
 
   // Make sure it works!
   await db.customSelect('SELECT database_host()').get();

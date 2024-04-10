@@ -4,8 +4,10 @@ talking to PostgreSQL databases by using the `postgres` package.
 ## Using this
 
 For general notes on using drift, see [this guide](https://drift.simonbinder.eu/getting-started/).
+Detailed docs on getting started with `drift_postgres` are available [here](https://drift.simonbinder.eu/docs/platforms/postgres/#setup).
 
 To use drift_postgres, add this to your `pubspec.yaml`
+
 ```yaml
 dependencies:
   drift: "$latest version"
@@ -23,6 +25,21 @@ final database = AppDatabase(PgDatabase(
     password: 'postgres',
   ),
 ));
+```
+
+Also, consider adding builder options to make drift generate postgres-specific code:
+
+```yaml
+# build.yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialects:
+              - sqlite # remove this line if you only need postgres
+              - postgres
 ```
 
 ## Running tests

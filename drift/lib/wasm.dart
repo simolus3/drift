@@ -7,15 +7,17 @@
 library drift.wasm;
 
 import 'dart:async';
-import 'dart:html';
+import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:drift/src/web/wasm_setup.dart';
+import 'package:web/web.dart'
+    show DedicatedWorkerGlobalScope, SharedWorkerGlobalScope;
 import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
 import 'src/sqlite3/database.dart';
+import 'src/web/wasm_setup.dart';
 import 'src/web/wasm_setup/dedicated_worker.dart';
 import 'src/web/wasm_setup/shared_worker.dart';
 import 'src/web/wasm_setup/types.dart';
@@ -205,12 +207,15 @@ class WasmDatabase extends DelegatedDatabase {
   static void workerMainForOpen({
     WasmDatabaseSetup? setupAllDatabases,
   }) {
-    final self = WorkerGlobalScope.instance;
+    final self = globalContext;
 
-    if (self is DedicatedWorkerGlobalScope) {
-      DedicatedDriftWorker(self, setupAllDatabases).start();
-    } else if (self is SharedWorkerGlobalScope) {
-      SharedDriftWorker(self, setupAllDatabases).start();
+    if (self.instanceOfString('DedicatedWorkerGlobalScope')) {
+      DedicatedDriftWorker(
+              self as DedicatedWorkerGlobalScope, setupAllDatabases)
+          .start();
+    } else if (self.instanceOfString('SharedWorkerGlobalScope')) {
+      SharedDriftWorker(self as SharedWorkerGlobalScope, setupAllDatabases)
+          .start();
     }
   }
 }

@@ -267,6 +267,120 @@ extension ItemToInsertable on i1.Item {
       result.writer,
     );
   });
+
+  test(
+    'generates fromJson and toJson with the sql column names as json keys',
+    () async {
+      final writer = await emulateDriftBuild(
+        options: const BuilderOptions({
+          'use_sql_column_name_as_json_key': true,
+        }),
+        inputs: const {
+          'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+class MyTable extends Table {
+  TextColumn get myFirstColumn => text()();
+  IntColumn get mySecondColumn => integer()();
+}
+
+
+@DriftDatabase(
+  tables: [MyTable],
+)
+class Database extends _$Database {}
+'''
+        },
+      );
+
+      checkOutputs({
+        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+  factory MyTableData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MyTableData(
+      myFirstColumn: serializer.fromJson<String>(json['my_first_column']),
+      mySecondColumn: serializer.fromJson<int>(json['my_second_column']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'my_first_column': serializer.toJson<String>(myFirstColumn),
+      'my_second_column': serializer.toJson<int>(mySecondColumn),
+    };
+  }
+
+''')),
+      }, writer.dartOutputs, writer.writer);
+    },
+    tags: 'analyzer',
+  );
+
+  test(
+    'It should use the provided names for the data classes and the companion class',
+    () async {
+      final writer = await emulateDriftBuild(
+        inputs: const {
+          'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+@DataClassName('FirstDataClass', companion: 'FirstCompanionClass')
+class FirstTable extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+@DataClassName.custom(name: 'SecondDataClass', companion: 'SecondCompanionClass')
+class SecondTable extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+@DataClassName.custom(companion: 'ThirdCompanionClass')
+class ThirdTable extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+@DriftDatabase(
+  tables: [FirstTable, SecondTable, ThirdTable],
+)
+class Database extends _$Database {}
+'''
+        },
+      );
+
+      checkOutputs({
+        'a|lib/main.drift.dart': decodedMatches(allOf([
+          contains(
+            'class FirstDataClass extends DataClass implements Insertable<FirstDataClass> {',
+          ),
+          contains(
+            'class FirstTableCompanion extends UpdateCompanion<FirstDataClass> {',
+          ),
+          contains(
+            'class SecondDataClass extends DataClass implements Insertable<SecondDataClass> {',
+          ),
+          contains(
+            'class SecondTableCompanion extends UpdateCompanion<SecondDataClass> {',
+          ),
+          contains(
+            'class ThirdTableData extends DataClass implements Insertable<ThirdTableData> {',
+          ),
+          contains(
+            'class ThirdTableCompanion extends UpdateCompanion<ThirdTableData> {',
+          ),
+        ])),
+      }, writer.dartOutputs, writer.writer);
+    },
+    tags: 'analyzer',
+  );
 }
 
 class _GeneratesConstDataClasses extends Matcher {

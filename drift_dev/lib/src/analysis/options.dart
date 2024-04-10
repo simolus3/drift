@@ -45,13 +45,19 @@ class DriftOptions {
       defaultValue: true)
   final bool useColumnNameAsJsonKeyWhenDefinedInMoorFile;
 
+  /// Uses the sql column name as the json key instead of the name in dart.
+  ///
+  /// Overrides [useColumnNameAsJsonKeyWhenDefinedInMoorFile] when set to `true`.
+  @JsonKey(name: 'use_sql_column_name_as_json_key', defaultValue: false)
+  final bool useSqlColumnNameAsJsonKey;
+
   /// Generate a `connect` constructor in database superclasses.
   ///
   /// This makes drift generate a constructor for database classes that takes a
   /// `DatabaseConnection` instead of just a `QueryExecutor` - meaning that
   /// stream queries can also be shared across multiple database instances.
   /// Starting from drift 2.5, the database connection class implements the
-  /// `QueryExecutor` interface, making this option unecessary.
+  /// `QueryExecutor` interface, making this option unnecessary.
   @JsonKey(name: 'generate_connect_constructor', defaultValue: false)
   final bool generateConnectConstructor;
 
@@ -120,6 +126,7 @@ class DriftOptions {
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
+    this.useSqlColumnNameAsJsonKey = false,
     this.generateConnectConstructor = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
@@ -147,6 +154,7 @@ class DriftOptions {
     required this.skipVerificationCode,
     required this.useDataClassNameForCompanions,
     required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
+    required this.useSqlColumnNameAsJsonKey,
     required this.generateConnectConstructor,
     required this.dataClassToCompanions,
     required this.generateMutableClasses,

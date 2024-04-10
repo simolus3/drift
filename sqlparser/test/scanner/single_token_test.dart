@@ -86,6 +86,26 @@ void main() {
     );
   });
 
+  test('binary string literal', () {
+    final scanner = Scanner("X'1234' x'5678'");
+    scanner.scanTokens();
+
+    expect(scanner.tokens, hasLength(3));
+    expect(
+      scanner.tokens[0],
+      const TypeMatcher<StringLiteralToken>()
+          .having((token) => token.binary, 'binary', isTrue)
+          .having((token) => token.value, 'value', '1234'),
+    );
+    expect(
+      scanner.tokens[1],
+      const TypeMatcher<StringLiteralToken>()
+          .having((token) => token.binary, 'binary', isTrue)
+          .having((token) => token.value, 'value', '5678'),
+    );
+    expect(scanner.tokens[2].type, TokenType.eof);
+  });
+
   group('parses numeric literals', () {
     void checkLiteral(String lexeme, NumericToken other, num value) {
       final scanner = Scanner(lexeme)..scanTokens();

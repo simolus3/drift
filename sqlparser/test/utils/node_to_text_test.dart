@@ -107,6 +107,14 @@ CREATE VIEW my_view (foo, bar) AS SELECT * FROM t1;
       testFormat('''
 CREATE VIEW my_view AS SELECT * FROM t1;
       ''');
+
+      testFormat('''
+CREATE VIEW my_view AS Foo (foo, bar) AS SELECT * FROM t1;
+      ''');
+
+      testFormat('''
+CREATE VIEW my_view WITH Foo.constr (foo, bar) AS SELECT * FROM t1;
+      ''');
     });
 
     group('table', () {
@@ -559,6 +567,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     test('json', () {
       testFormat('SELECT a -> b');
       testFormat('SELECT a ->> b');
+    });
+
+    test('blob literal', () {
+      testFormat(
+          "select typeof(X'0100000300000000000000000000803F000000000000003F0000803F');");
     });
   });
 

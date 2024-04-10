@@ -109,7 +109,7 @@ void main() {
       expect(
         entry,
         const Category(
-          id: 1,
+          id: RowId(1),
           description: 'Description',
           priority: CategoryPriority.low,
           descriptionInUpperCase: 'DESCRIPTION',

@@ -1,4 +1,12 @@
-## 2.16.0-dev
+## 2.17.0-dev
+
+- Adds `companion` entry to `DataClassName` to override the name of the
+  generated companion class.
+- Add the `TypeConverter.extensionType` factory to create type converters for
+  extension types.
+- Fix invalid SQL syntax being generated for `BLOB` literals on postgres.
+
+## 2.16.0
 
 - When a migration throws, the database will now block subsequent operations
   instead of potentially allowing them to operate on a database in an
@@ -12,6 +20,9 @@
 - Improve stack traces for errors happening on drift isolates (which includes
   usages of `NativeDatabase.createInBackground`).
 - Don't cache `EXPLAIN` statements, avoiding schema locks.
+- Deprecate `Value.ofNullable` in favor of `Value.absentIfNull`, which is more
+  explicit about its behavior and allows nullable types too.
+- Migrate `WasmDatabase` to `dart:js_interop` and `package:web`.
 
 ## 2.15.0
 

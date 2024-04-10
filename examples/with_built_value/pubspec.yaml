@@ -3,7 +3,7 @@ publish_to: none
 version: 1.0.0
 
 environment:
-  sdk: '>=2.14.0 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
   drift: ^2.11.0

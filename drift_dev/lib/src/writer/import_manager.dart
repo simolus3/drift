@@ -31,12 +31,22 @@ class ImportManagerForPartFiles extends ImportManager {
     // Part files can't add their own imports, so try to find the element in an
     // existing import.
     for (final MapEntry(:key, :value) in _namedImports.entries) {
-      if (value.containsKey(elementName)) {
+      final foundHere = value[elementName];
+      if (foundHere != null && _matchingUrl(definitionUri, foundHere)) {
         return key;
       }
     }
 
     return null;
+  }
+
+  static bool _matchingUrl(Uri wanted, Element target) {
+    final targetUri = target.librarySource?.uri;
+    if (targetUri == null || targetUri.scheme != wanted.scheme) {
+      return false;
+    }
+
+    return true;
   }
 }
 

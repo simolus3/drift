@@ -4,8 +4,14 @@ import 'package:uuid/uuid.dart';
 
 part 'todos.g.dart';
 
+extension type RowId._(int id) {
+  const RowId(this.id);
+}
+
 mixin AutoIncrement on Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer()
+      .autoIncrement()
+      .map(TypeConverter.extensionType<RowId, int>())();
 }
 
 @DataClassName('TodoEntry')

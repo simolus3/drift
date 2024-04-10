@@ -40,7 +40,11 @@ enum Browser {
 
   Future<Process> spawnDriver() async {
     return switch (this) {
-      firefox => Process.start('geckodriver', []),
+      firefox => Process.start('geckodriver', []).then((result) async {
+          // geckodriver seems to take a while to initialize
+          await Future.delayed(const Duration(seconds: 1));
+          return result;
+        }),
       chrome =>
         Process.start('chromedriver', ['--port=4444', '--url-base=/wd/hub']),
     };
@@ -155,6 +159,20 @@ void main() {
 
               final finalImpls = await driver.probeImplementations();
               expect(finalImpls.existing, isEmpty);
+            });
+
+            test('migrations', () async {
+              await driver.openDatabase(entry);
+              await driver.insertIntoDatabase();
+              await driver.waitForTableUpdate();
+
+              await driver.closeDatabase();
+              await driver.driver.refresh();
+
+              await driver.setSchemaVersion(2);
+              await driver.openDatabase(entry);
+              // The migration adds a row
+              expect(await driver.amountOfRows, 2);
             });
           }
 

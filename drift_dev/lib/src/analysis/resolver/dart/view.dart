@@ -9,6 +9,7 @@ import 'package:recase/recase.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
 import '../resolver.dart';
+import '../shared/data_class.dart';
 import 'helper.dart';
 
 class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
@@ -26,7 +27,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       discovered.ownId,
       DriftDeclaration.dartElement(discovered.dartElement),
       columns: columns,
-      nameOfRowClass: dataClassInfo.enforcedName,
+      nameOfRowClass: dataClassInfo.enforcedName ??
+          dataClassNameForClassName(discovered.dartElement.name),
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       entityInfoName: '\$${discovered.dartElement.name}View',

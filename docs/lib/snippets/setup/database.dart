@@ -31,7 +31,12 @@ class TodoItems extends Table {
 
 @DriftDatabase(tables: [TodoItems])
 class AppDatabase extends _$AppDatabase {
+// #enddocregion open
+  // After generating code, this class needs to define a `schemaVersion` getter
+  // and a constructor telling drift where the database should be stored.
+  // These are described in the getting started guide: https://drift.simonbinder.eu/getting-started/#open
 // #enddocregion before_generation
+// #docregion open
   AppDatabase() : super(_openConnection());
 
   @override

@@ -98,7 +98,7 @@ void main() {
       ExecuteQuery(StatementMethod.select, 'SELECT ?', [BigInt.one]),
     );
 
-    final mapped = protocol.deserialize(protocol.serialize(request)!);
+    final mapped = _checkSimpleRoundtrip(protocol, request);
     expect(
       mapped,
       isA<Request>().having((e) => e.id, 'id', 1).having(
@@ -107,6 +107,27 @@ void main() {
             isA<ExecuteQuery>()
                 .having((e) => e.method, 'method', StatementMethod.select)
                 .having((e) => e.args, 'args', [isA<BigInt>()]),
+          ),
+    );
+
+    final response = SuccessResponse(
+        1,
+        SelectResult([
+          {'col': BigInt.one}
+        ]));
+    final mappedResponse = _checkSimpleRoundtrip(protocol, response);
+    expect(
+      mappedResponse,
+      isA<SuccessResponse>().having((e) => e.requestId, 'requestId', 1).having(
+            (e) => e.response,
+            'response',
+            isA<SelectResult>().having(
+              (e) => e.rows,
+              'rows',
+              ([
+                {'col': BigInt.one}
+              ]),
+            ),
           ),
     );
   });
@@ -242,6 +263,12 @@ void _checkSimple(Object? object) {
   } else {
     fail('Invalid message over wire: $object');
   }
+}
+
+Message _checkSimpleRoundtrip(DriftProtocol protocol, Message source) {
+  final serialized = protocol.serialize(source);
+  _checkSimple(serialized);
+  return protocol.deserialize(serialized!);
 }
 
 extension<T> on StreamChannel<T> {

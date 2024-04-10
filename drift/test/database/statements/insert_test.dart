@@ -56,7 +56,7 @@ void main() {
   test('generates insert or replace statements', () async {
     await db.into(db.todosTable).insert(
         const TodoEntry(
-          id: 113,
+          id: RowId(113),
           content: 'Done',
         ),
         mode: InsertMode.insertOrReplace);
@@ -263,6 +263,22 @@ void main() {
     ));
   });
 
+  test('can ignore conflict target', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoUpdate((old) {
+            return TodosTableCompanion.custom(
+                content: const Variable('important: ') + old.content);
+          }, target: []),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO "todos" ("content") VALUES (?) '
+      'ON CONFLICT DO UPDATE SET "content" = ? || "content"',
+      argThat(equals(['my content', 'important: '])),
+    ));
+  });
+
   test(
     'can use multiple upsert targets',
     () async {
@@ -389,7 +405,8 @@ void main() {
     when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(3));
 
     final id = await db.into(db.todosTable).insertOnConflictUpdate(
-        TodosTableCompanion.insert(content: 'content', id: const Value(3)));
+        TodosTableCompanion.insert(
+            content: 'content', id: const Value(RowId(3))));
 
     verify(executor.runInsert(
       'INSERT INTO "todos" ("id", "content") VALUES (?, ?) '
@@ -599,7 +616,7 @@ void main() {
       expect(
         row,
         const Category(
-          id: 1,
+          id: RowId(1),
           description: 'description',
           descriptionInUpperCase: 'DESCRIPTION',
           priority: CategoryPriority.medium,

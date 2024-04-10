@@ -38,16 +38,17 @@ CREATE INDEX b_idx /* comment should be stripped */ ON b (foo, upper(foo));
     final result = await emulateDriftBuild(
       inputs: {
         'a|lib/main.dart': r'''
+import 'dart:io' as io;
 import 'package:drift/drift.dart' as drift;
 import 'tables.dart' as tables;
 
-@drift.DriftDatabase(tables: [tables.Texts])
+@drift.DriftDatabase(tables: [tables.Files])
 class MyDatabase extends _$MyDatabase {}
 ''',
         'a|lib/tables.dart': '''
 import 'package:drift/drift.dart';
 
-class Texts extends Table {
+class Files extends Table {
   TextColumn get content => text()();
 }
 ''',
@@ -59,12 +60,12 @@ class Texts extends Table {
       'a|lib/main.drift.dart': decodedMatches(
         allOf(
           contains(
-            r'class $TextsTable extends tables.Texts with '
-            r'drift.TableInfo<$TextsTable, Text>',
+            r'class $FilesTable extends tables.Files with '
+            r'drift.TableInfo<$FilesTable, File>',
           ),
           contains(
-            'class Text extends drift.DataClass implements '
-            'drift.Insertable<Text>',
+            'class File extends drift.DataClass implements '
+            'drift.Insertable<File>',
           ),
         ),
       ),

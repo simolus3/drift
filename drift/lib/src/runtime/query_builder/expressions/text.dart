@@ -137,10 +137,31 @@ extension StringExpressionOperators on Expression<String> {
   /// and [length] can be negative to return a section of the string before
   /// [start].
   Expression<String> substr(int start, [int? length]) {
+    return substrExpr(
+        Constant(start), length != null ? Constant(length) : null);
+  }
+
+  /// Calls the [`substr`](https://sqlite.org/lang_corefunc.html#substr)
+  /// function with arbitrary expressions as arguments.
+  ///
+  /// For instance, this call uses [substrExpr] to remove the last 5 characters
+  /// from a column. As this depends on its [StringExpressionOperators.length],
+  /// it needs to use expressions:
+  ///
+  /// ```dart
+  /// update(table).write(TableCompanion.custom(
+  ///   column: column.substrExpr(Variable(1), column.length - Variable(5))
+  /// ));
+  /// ```
+  ///
+  /// When both [start] and [length] are Dart values (e.g. [Variable]s or
+  /// [Constant]s), consider using [substr] instead.
+  Expression<String> substrExpr(Expression<int> start,
+      [Expression<int>? length]) {
     return FunctionCallExpression('SUBSTR', [
       this,
-      Constant<int>(start),
-      if (length != null) Constant<int>(length),
+      start,
+      if (length != null) length,
     ]);
   }
 }

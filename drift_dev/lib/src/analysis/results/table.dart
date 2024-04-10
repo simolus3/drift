@@ -32,6 +32,9 @@ class DriftTable extends DriftElementWithResultSet {
   @override
   final String nameOfRowClass;
 
+  @override
+  final String? nameOfCompanionClass;
+
   final bool withoutRowId;
 
   /// Information about the virtual table creating statement backing this table,
@@ -69,6 +72,7 @@ class DriftTable extends DriftElementWithResultSet {
     required this.columns,
     required this.baseDartName,
     required this.nameOfRowClass,
+    this.nameOfCompanionClass,
     this.references = const [],
     this.existingRowClass,
     this.customParentClass,
