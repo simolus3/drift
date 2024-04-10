@@ -18,7 +18,7 @@ SELECT * FROM key_values WHERE value IN (SELECT value FROM key_values WHERE valu
 ''';
 
   final fs = <Future>[];
-  
+
   for (var i = 0; i < _numQueries; i++) {
     fs.add(
       _db.customSelect(queryToBench, variables: [Variable(uuid.v4())]).get(),

@@ -25,7 +25,7 @@ Future<void> main() async {
 
   output.writeAsStringSync(json.encode(tracker.timings));
 
-  // Make sure the process exits. Otherwise, unclosed resources from the 
+  // Make sure the process exits. Otherwise, unclosed resources from the
   // benchmarks will keep the process alive.
   exit(0);
 }
