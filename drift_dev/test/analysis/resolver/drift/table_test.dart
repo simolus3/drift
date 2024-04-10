@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/column.dart';
 import 'package:drift_dev/src/analysis/results/table.dart';
+import 'package:drift_dev/src/analysis/results/types.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -286,8 +287,13 @@ class MyType implements CustomSqlType<String> {}
     final table = file.analyzedElements.single as DriftTable;
     final column = table.columns.single;
 
-    expect(column.sqlType.isCustom, isTrue);
-    expect(column.sqlType.custom?.dartType.toString(), 'String');
-    expect(column.sqlType.custom?.expression.toString(), 'MyType()');
+    switch (column.sqlType) {
+      case ColumnDriftType():
+      case ColumnGeopolyPolygonType():
+        fail('expect custom type');
+      case ColumnCustomType(:final custom):
+        expect(custom.dartType.toString(), 'String');
+        expect(custom.expression.toString(), 'MyType()');
+    }
   });
 }

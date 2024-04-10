@@ -198,17 +198,20 @@ class ElementSerializer {
   }
 
   Map<String, Object?> _serializeColumnType(ColumnType type) {
-    final custom = type.custom;
-
-    return {
-      if (custom != null)
-        'custom': {
-          'dart': _serializeType(custom.dartType),
-          'expression': custom.expression.toJson(),
-        }
-      else
-        'builtin': type.builtin.name,
-    };
+    switch (type) {
+      case ColumnGeopolyPolygonType():
+      case ColumnDriftType():
+        return {
+          'builtin': type.builtin.name,
+        };
+      case ColumnCustomType(:final custom):
+        return {
+          'custom': {
+            'dart': _serializeType(custom.dartType),
+            'expression': custom.expression.toJson(),
+          }
+        };
+    }
   }
 
   Map<String, Object?> _serializeColumn(DriftColumn column) {

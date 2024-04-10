@@ -26,6 +26,7 @@ class Writer extends _NodeOrWriter {
   final GenerationOptions generationOptions;
 
   TextEmitter get header => _header;
+
   TextEmitter get imports => _imports;
 
   @override
@@ -51,6 +52,7 @@ class Writer extends _NodeOrWriter {
   }
 
   Scope child() => _root.child();
+
   TextEmitter leaf() => _root.leaf();
 }
 
@@ -142,12 +144,13 @@ abstract class _NodeOrWriter {
     return AnnotatedDartCode.build((b) {
       AnnotatedDartCode sqlDartType;
 
-      if (converter.sqlType.isCustom) {
-        sqlDartType =
-            AnnotatedDartCode.type(converter.sqlType.custom!.dartType);
-      } else {
-        sqlDartType =
-            AnnotatedDartCode([dartTypeNames[converter.sqlType.builtin]!]);
+      switch (converter.sqlType) {
+        case ColumnDriftType():
+        case ColumnGeopolyPolygonType():
+          sqlDartType =
+              AnnotatedDartCode([dartTypeNames[converter.sqlType.builtin]!]);
+        case ColumnCustomType(:final custom):
+          sqlDartType = AnnotatedDartCode.type(custom.dartType);
       }
 
       final className = converter.alsoAppliesToJsonConversion
@@ -204,12 +207,13 @@ abstract class _NodeOrWriter {
   /// This type does not respect type converters or arrays.
   AnnotatedDartCode innerColumnType(ColumnType type, {bool nullable = false}) {
     return AnnotatedDartCode.build((b) {
-      final custom = type.custom;
-
-      if (custom != null) {
-        b.addDartType(custom.dartType);
-      } else {
-        b.addTopLevel(dartTypeNames[type.builtin]!);
+      switch (type) {
+        case ColumnGeopolyPolygonType(:final dartType):
+          b.addTopLevel(dartType);
+        case ColumnDriftType():
+          b.addTopLevel(dartTypeNames[type.builtin]!);
+        case ColumnCustomType(:final custom):
+          b.addDartType(custom.dartType);
       }
 
       if (nullable) {
@@ -240,12 +244,16 @@ abstract class _NodeOrWriter {
         b.addCode(expression);
       }
 
-      if (column.sqlType.isCustom) {
-        // Also specify the custom type since it can't be inferred from the
-        // value passed to the variable.
-        b
-          ..addText(', ')
-          ..addCode(column.sqlType.custom!.expression);
+      switch (column.sqlType) {
+        case ColumnDriftType():
+        case ColumnGeopolyPolygonType():
+          break;
+        case ColumnCustomType(:final custom):
+          // Also specify the custom type since it can't be inferred from the
+          // value passed to the variable.
+          b
+            ..addText(', ')
+            ..addCode(custom.expression);
       }
 
       b.addText(')');
@@ -421,6 +429,7 @@ class TextEmitter extends _Node {
   TextEmitter(Scope super.parent) : writer = parent.writer;
 
   void write(Object? object) => buffer.write(object);
+
   void writeln(Object? object) => buffer.writeln(object);
 
   void writeUriRef(Uri definition, String element) {

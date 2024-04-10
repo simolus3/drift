@@ -488,7 +488,7 @@ DartType regularColumnType(
 
 extension on TypeProvider {
   DartType typeFor(ColumnType type, KnownDriftTypes knownTypes) {
-    if (type.custom case CustomColumnType custom) {
+    if (type case ColumnCustomType(:final custom)) {
       return custom.dartType;
     }
 

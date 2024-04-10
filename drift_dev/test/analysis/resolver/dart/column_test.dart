@@ -254,8 +254,14 @@ class TestTable extends Table {
     final column = table.columns.single;
 
     expect(column.sqlType.builtin, DriftSqlType.any);
-    expect(column.sqlType.custom?.dartType.toString(), 'List<String>');
-    expect(column.sqlType.custom?.expression.toString(), 'StringArrayType()');
+    switch (column.sqlType) {
+      case ColumnDriftType():
+      case ColumnGeopolyPolygonType():
+        break;
+      case ColumnCustomType(:final custom):
+        expect(custom.dartType.toString(), 'List<String>');
+        expect(custom.expression.toString(), 'StringArrayType()');
+    }
   });
 
   group('customConstraint analysis', () {

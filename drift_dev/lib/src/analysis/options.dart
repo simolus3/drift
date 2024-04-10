@@ -400,6 +400,19 @@ enum SqlModule {
   rtree,
 
   spellfix1,
+
+  /// The Geopoly module is an alternative interface to the R-Tree extension
+  /// that uses the GeoJSON notation (RFC-7946)
+  /// to describe two-dimensional polygons.
+  ///
+  /// Geopoly includes functions for detecting
+  /// when one polygon is contained within or overlaps with another,
+  /// for computing the area enclosed by a polygon
+  /// for doing linear transformations of polygons,
+  /// for rendering polygons as SVG, and other similar operations.
+  ///
+  /// See more: https://www.sqlite.org/geopoly.html
+  geopoly,
 }
 
 /// The possible values for the case of the table and column names.

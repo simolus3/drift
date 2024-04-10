@@ -13,6 +13,7 @@ class DataClassWriter {
   bool get isInsertable => table is DriftTable;
 
   final TextEmitter _emitter;
+
   StringBuffer get _buffer => _emitter.buffer;
 
   DataClassWriter(this.table, this.scope) : _emitter = scope.leaf();
@@ -341,11 +342,13 @@ class RowMappingWriter {
       final columnName = column.nameInSql;
       final rawData = "data['\${effectivePrefix}$columnName']";
 
-      String sqlType;
-      if (column.sqlType.custom case CustomColumnType custom) {
-        sqlType = writer.dartCode(custom.expression);
-      } else {
-        sqlType = writer.drift(column.sqlType.builtin.toString());
+      final String sqlType;
+      switch (column.sqlType) {
+        case ColumnDriftType():
+        case ColumnGeopolyPolygonType():
+          sqlType = writer.drift(column.sqlType.builtin.toString());
+        case ColumnCustomType(:final custom):
+          sqlType = writer.dartCode(custom.expression);
       }
 
       var loadType = '$databaseGetter.typeMapping.read($sqlType, $rawData)';

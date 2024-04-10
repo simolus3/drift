@@ -76,9 +76,12 @@ class TypeMapping {
     var type = _driftTypeToParser(column.sqlType.builtin)
         .withNullable(column.nullable);
 
-    if (column.sqlType.isCustom) {
-      type = type.addHint(CustomTypeHint(column.sqlType.custom!));
-    }
+    type = switch (column.sqlType) {
+      ColumnDriftType() => type,
+      ColumnCustomType(:final custom) => type.addHint(CustomTypeHint(custom)),
+      ColumnGeopolyPolygonType() => type.addHint(const IsGeopolyPolygon()),
+    };
+
     if (column.typeConverter case AppliedTypeConverter c) {
       type = type.addHint(TypeConverterHint(c));
     }
@@ -145,6 +148,10 @@ class TypeMapping {
     final customHint = type.hint<CustomTypeHint>();
     if (customHint != null) {
       return ColumnType.custom(customHint.type);
+    }
+
+    if (type.hint<IsGeopolyPolygon>() != null) {
+      return const ColumnType.geopolyPolygon();
     }
 
     return ColumnType.drift(_toDefaultType(type));
