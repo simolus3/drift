@@ -305,6 +305,18 @@ class $TodosTableTable extends TodosTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _someFloatMeta =
+      const VerificationMeta('someFloat');
+  @override
+  late final GeneratedColumn<double> someFloat = GeneratedColumn<double>(
+      'some_float', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _someInt64Meta =
+      const VerificationMeta('someInt64');
+  @override
+  late final GeneratedColumn<BigInt> someInt64 = GeneratedColumn<BigInt>(
+      'some_int64', aliasedName, true,
+      type: DriftSqlType.bigInt, requiredDuringInsert: false);
   static const VerificationMeta _categoryMeta =
       const VerificationMeta('category');
   @override
@@ -322,7 +334,7 @@ class $TodosTableTable extends TodosTable
           .withConverter<TodoStatus?>($TodosTableTable.$converterstatusn);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, content, targetDate, category, status];
+      [id, title, content, targetDate, someFloat, someInt64, category, status];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -349,6 +361,14 @@ class $TodosTableTable extends TodosTable
           _targetDateMeta,
           targetDate.isAcceptableOrUnknown(
               data['target_date']!, _targetDateMeta));
+    }
+    if (data.containsKey('some_float')) {
+      context.handle(_someFloatMeta,
+          someFloat.isAcceptableOrUnknown(data['some_float']!, _someFloatMeta));
+    }
+    if (data.containsKey('some_int64')) {
+      context.handle(_someInt64Meta,
+          someInt64.isAcceptableOrUnknown(data['some_int64']!, _someInt64Meta));
     }
     if (data.containsKey('category')) {
       context.handle(_categoryMeta,
@@ -377,6 +397,10 @@ class $TodosTableTable extends TodosTable
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
       targetDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
+      someFloat: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}some_float']),
+      someInt64: attachedDatabase.typeMapping
+          .read(DriftSqlType.bigInt, data['${effectivePrefix}some_int64']),
       category: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category']),
       status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
@@ -403,6 +427,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String? title;
   final String content;
   final DateTime? targetDate;
+  final double? someFloat;
+  final BigInt? someInt64;
   final int? category;
   final TodoStatus? status;
   const TodoEntry(
@@ -410,6 +436,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       this.title,
       required this.content,
       this.targetDate,
+      this.someFloat,
+      this.someInt64,
       this.category,
       this.status});
   @override
@@ -424,6 +452,12 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     map['content'] = Variable<String>(content);
     if (!nullToAbsent || targetDate != null) {
       map['target_date'] = Variable<DateTime>(targetDate);
+    }
+    if (!nullToAbsent || someFloat != null) {
+      map['some_float'] = Variable<double>(someFloat);
+    }
+    if (!nullToAbsent || someInt64 != null) {
+      map['some_int64'] = Variable<BigInt>(someInt64);
     }
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<int>(category);
@@ -444,6 +478,12 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       targetDate: targetDate == null && nullToAbsent
           ? const Value.absent()
           : Value(targetDate),
+      someFloat: someFloat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(someFloat),
+      someInt64: someInt64 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(someInt64),
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
@@ -461,6 +501,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       title: serializer.fromJson<String?>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
+      someFloat: serializer.fromJson<double?>(json['someFloat']),
+      someInt64: serializer.fromJson<BigInt?>(json['someInt64']),
       category: serializer.fromJson<int?>(json['category']),
       status: $TodosTableTable.$converterstatusn
           .fromJson(serializer.fromJson<String?>(json['status'])),
@@ -479,6 +521,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'title': serializer.toJson<String?>(title),
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
+      'someFloat': serializer.toJson<double?>(someFloat),
+      'someInt64': serializer.toJson<BigInt?>(someInt64),
       'category': serializer.toJson<int?>(category),
       'status': serializer
           .toJson<String?>($TodosTableTable.$converterstatusn.toJson(status)),
@@ -490,6 +534,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           Value<String?> title = const Value.absent(),
           String? content,
           Value<DateTime?> targetDate = const Value.absent(),
+          Value<double?> someFloat = const Value.absent(),
+          Value<BigInt?> someInt64 = const Value.absent(),
           Value<int?> category = const Value.absent(),
           Value<TodoStatus?> status = const Value.absent()}) =>
       TodoEntry(
@@ -497,6 +543,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
         title: title.present ? title.value : this.title,
         content: content ?? this.content,
         targetDate: targetDate.present ? targetDate.value : this.targetDate,
+        someFloat: someFloat.present ? someFloat.value : this.someFloat,
+        someInt64: someInt64.present ? someInt64.value : this.someInt64,
         category: category.present ? category.value : this.category,
         status: status.present ? status.value : this.status,
       );
@@ -507,6 +555,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
+          ..write('someFloat: $someFloat, ')
+          ..write('someInt64: $someInt64, ')
           ..write('category: $category, ')
           ..write('status: $status')
           ..write(')'))
@@ -514,8 +564,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, title, content, targetDate, category, status);
+  int get hashCode => Object.hash(
+      id, title, content, targetDate, someFloat, someInt64, category, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -524,6 +574,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           other.title == this.title &&
           other.content == this.content &&
           other.targetDate == this.targetDate &&
+          other.someFloat == this.someFloat &&
+          other.someInt64 == this.someInt64 &&
           other.category == this.category &&
           other.status == this.status);
 }
@@ -533,6 +585,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   final Value<String?> title;
   final Value<String> content;
   final Value<DateTime?> targetDate;
+  final Value<double?> someFloat;
+  final Value<BigInt?> someInt64;
   final Value<int?> category;
   final Value<TodoStatus?> status;
   const TodosTableCompanion({
@@ -540,6 +594,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.targetDate = const Value.absent(),
+    this.someFloat = const Value.absent(),
+    this.someInt64 = const Value.absent(),
     this.category = const Value.absent(),
     this.status = const Value.absent(),
   });
@@ -548,6 +604,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.title = const Value.absent(),
     required String content,
     this.targetDate = const Value.absent(),
+    this.someFloat = const Value.absent(),
+    this.someInt64 = const Value.absent(),
     this.category = const Value.absent(),
     this.status = const Value.absent(),
   }) : content = Value(content);
@@ -556,6 +614,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     Expression<String>? title,
     Expression<String>? content,
     Expression<DateTime>? targetDate,
+    Expression<double>? someFloat,
+    Expression<BigInt>? someInt64,
     Expression<int>? category,
     Expression<String>? status,
   }) {
@@ -564,6 +624,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (targetDate != null) 'target_date': targetDate,
+      if (someFloat != null) 'some_float': someFloat,
+      if (someInt64 != null) 'some_int64': someInt64,
       if (category != null) 'category': category,
       if (status != null) 'status': status,
     });
@@ -574,6 +636,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       Value<String?>? title,
       Value<String>? content,
       Value<DateTime?>? targetDate,
+      Value<double?>? someFloat,
+      Value<BigInt?>? someInt64,
       Value<int?>? category,
       Value<TodoStatus?>? status}) {
     return TodosTableCompanion(
@@ -581,6 +645,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       title: title ?? this.title,
       content: content ?? this.content,
       targetDate: targetDate ?? this.targetDate,
+      someFloat: someFloat ?? this.someFloat,
+      someInt64: someInt64 ?? this.someInt64,
       category: category ?? this.category,
       status: status ?? this.status,
     );
@@ -601,6 +667,12 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     if (targetDate.present) {
       map['target_date'] = Variable<DateTime>(targetDate.value);
     }
+    if (someFloat.present) {
+      map['some_float'] = Variable<double>(someFloat.value);
+    }
+    if (someInt64.present) {
+      map['some_int64'] = Variable<BigInt>(someInt64.value);
+    }
     if (category.present) {
       map['category'] = Variable<int>(category.value);
     }
@@ -618,6 +690,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
+          ..write('someFloat: $someFloat, ')
+          ..write('someInt64: $someInt64, ')
           ..write('category: $category, ')
           ..write('status: $status')
           ..write(')'))
@@ -1890,6 +1964,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
           title: row.readNullable<String>('title'),
           content: row.read<String>('content'),
           targetDate: row.readNullable<DateTime>('target_date'),
+          someFloat: row.readNullable<double>('some_float'),
+          someInt64: row.readNullable<BigInt>('some_int64'),
           category: row.readNullable<int>('category'),
           status: NullAwareTypeConverter.wrapFromSql(
               $TodosTableTable.$converterstatus,
@@ -2070,6 +2146,8 @@ class $$TodosTableTableFilterComposer
   ColumnFilters<String> get title => ColumnFilters($table.title);
   ColumnFilters<String> get content => ColumnFilters($table.content);
   ColumnFilters<DateTime> get targetDate => ColumnFilters($table.targetDate);
+  ColumnFilters<double> get someFloat => ColumnFilters($table.someFloat);
+  ColumnFilters<BigInt> get someInt64 => ColumnFilters($table.someInt64);
   ColumnFilters<int> get categoryId => ColumnFilters($table.category);
   ComposableFilter category(
       ComposableFilter Function($$CategoriesTableFilterComposer f) f) {
@@ -2096,6 +2174,8 @@ class $$TodosTableTableOrderingComposer
   ColumnOrderings get title => ColumnOrderings($table.title);
   ColumnOrderings get content => ColumnOrderings($table.content);
   ColumnOrderings get targetDate => ColumnOrderings($table.targetDate);
+  ColumnOrderings get someFloat => ColumnOrderings($table.someFloat);
+  ColumnOrderings get someInt64 => ColumnOrderings($table.someInt64);
   ColumnOrderings get categoryId => ColumnOrderings($table.category);
   ComposableOrdering category(
       ComposableOrdering Function($$CategoriesTableOrderingComposer o) o) {
@@ -2130,6 +2210,8 @@ typedef $$TodosTableTableInsertCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   required String content,
   Value<DateTime?> targetDate,
+  Value<double?> someFloat,
+  Value<BigInt?> someInt64,
   Value<int?> category,
   Value<TodoStatus?> status,
 });
@@ -2138,6 +2220,8 @@ typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   Value<String> content,
   Value<DateTime?> targetDate,
+  Value<double?> someFloat,
+  Value<BigInt?> someInt64,
   Value<int?> category,
   Value<TodoStatus?> status,
 });
@@ -2164,6 +2248,8 @@ class $$TodosTableTableTableManager extends RootTableManager<
               Value<String?> title = const Value.absent(),
               Value<String> content = const Value.absent(),
               Value<DateTime?> targetDate = const Value.absent(),
+              Value<double?> someFloat = const Value.absent(),
+              Value<BigInt?> someInt64 = const Value.absent(),
               Value<int?> category = const Value.absent(),
               Value<TodoStatus?> status = const Value.absent(),
             }) =>
@@ -2172,6 +2258,8 @@ class $$TodosTableTableTableManager extends RootTableManager<
                   title: title,
                   content: content,
                   targetDate: targetDate,
+                  someFloat: someFloat,
+                  someInt64: someInt64,
                   category: category,
                   status: status,
                 ),
@@ -2180,6 +2268,8 @@ class $$TodosTableTableTableManager extends RootTableManager<
               Value<String?> title = const Value.absent(),
               required String content,
               Value<DateTime?> targetDate = const Value.absent(),
+              Value<double?> someFloat = const Value.absent(),
+              Value<BigInt?> someInt64 = const Value.absent(),
               Value<int?> category = const Value.absent(),
               Value<TodoStatus?> status = const Value.absent(),
             }) =>
@@ -2188,6 +2278,8 @@ class $$TodosTableTableTableManager extends RootTableManager<
                   title: title,
                   content: content,
                   targetDate: targetDate,
+                  someFloat: someFloat,
+                  someInt64: someInt64,
                   category: category,
                   status: status,
                 )));
@@ -2532,6 +2624,8 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   final String? title;
   final String content;
   final DateTime? targetDate;
+  final double? someFloat;
+  final BigInt? someInt64;
   final int? category;
   final TodoStatus? status;
   final RowId catId;
@@ -2542,14 +2636,16 @@ class AllTodosWithCategoryResult extends CustomResultSet {
     this.title,
     required this.content,
     this.targetDate,
+    this.someFloat,
+    this.someInt64,
     this.category,
     this.status,
     required this.catId,
     required this.catDesc,
   }) : super(row);
   @override
-  int get hashCode => Object.hash(
-      id, title, content, targetDate, category, status, catId, catDesc);
+  int get hashCode => Object.hash(id, title, content, targetDate, someFloat,
+      someInt64, category, status, catId, catDesc);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2558,6 +2654,8 @@ class AllTodosWithCategoryResult extends CustomResultSet {
           other.title == this.title &&
           other.content == this.content &&
           other.targetDate == this.targetDate &&
+          other.someFloat == this.someFloat &&
+          other.someInt64 == this.someInt64 &&
           other.category == this.category &&
           other.status == this.status &&
           other.catId == this.catId &&
@@ -2569,6 +2667,8 @@ class AllTodosWithCategoryResult extends CustomResultSet {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
+          ..write('someFloat: $someFloat, ')
+          ..write('someInt64: $someInt64, ')
           ..write('category: $category, ')
           ..write('status: $status, ')
           ..write('catId: $catId, ')

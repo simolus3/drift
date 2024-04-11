@@ -38,18 +38,78 @@ class ColumnFilters<T extends Object> {
 
   /// Shortcut for [equals]
   ComposableFilter call(T value) => ComposableFilter(column.equals(value));
+}
 
-  /// Nested column for filtering on the count of a column
-  ColumnFilters<int> get count => ColumnFilters(column.count());
+enum _StringFilterTypes { contains, startsWith, endsWith }
+
+/// Built in filters for int/double columns
+extension StringFilters<T extends String> on ColumnFilters<String> {
+  /// This function helps handle case insensitivity in like expressions
+  /// This helps handle all the possible scenarios:
+  /// 1. If a user hasn't set the database to be case sensitive in like expressions
+  ///    Then we are ok with having the query be performed on upper case values
+  /// 2. If a user has set the database to be case sensitive in like expressions
+  ///    We still can perform a case insensitive search by default. We have all filters
+  ///    use `{bool caseInsensitive = true}` which will perform a case insensitive search
+  /// 3. If a user has set the database to be case sensitive in like expressions and wan't
+  ///    to perform a case sensitive search, they can pass `caseInsensitive = false` manually
+  ///
+  /// We are using the default of {bool caseInsensitive = true}, so that users who haven't set
+  /// the database to be case sensitive wont be confues why their like expressions are case insensitive
+  Expression<bool> _buildExpression(
+      _StringFilterTypes type, String value, bool caseInsensitive) {
+    final Expression<String> column;
+    if (caseInsensitive) {
+      value = value.toUpperCase();
+      column = this.column.upper();
+    } else {
+      column = this.column;
+    }
+    switch (type) {
+      case _StringFilterTypes.contains:
+        return column.like('%$value%');
+      case _StringFilterTypes.startsWith:
+        return column.like('$value%');
+      case _StringFilterTypes.endsWith:
+        return column.like('%$value');
+    }
+  }
+
+  /// Create a filter to check if the this text column contains a substring
+  /// {@template drift.manager.likeCaseSensitivity}
+  /// Sqlite performs a case insensitive text search by default
+  ///
+  /// If you have set the database to use case sensitive in like expressions, you can
+  /// pass [caseInsensitive] as false to perform a case sensitive search
+  /// See https://www.sqlitetutorial.net/sqlite-like/ for more information
+  /// {@endtemplate}
+  ComposableFilter contains(T value, {bool caseInsensitive = true}) {
+    return ComposableFilter(
+        _buildExpression(_StringFilterTypes.contains, value, caseInsensitive));
+  }
+
+  /// Create a filter to check if the this text column starts with a substring
+  /// {@macro drift.manager.likeCaseSensitivity}
+  ComposableFilter startsWith(T value, {bool caseInsensitive = true}) {
+    return ComposableFilter(_buildExpression(
+        _StringFilterTypes.startsWith, value, caseInsensitive));
+  }
+
+  /// Create a filter to check if the this text column ends with a substring
+  /// {@macro drift.manager.likeCaseSensitivity}
+  ComposableFilter endsWith(T value, {bool caseInsensitive = true}) {
+    return ComposableFilter(
+        _buildExpression(_StringFilterTypes.endsWith, value, caseInsensitive));
+  }
 }
 
 /// Built in filters for bool columns
 extension BoolFilters on ColumnFilters<bool> {
   /// Create a filter to check if the column is bigger than a value
-  ComposableFilter isTrue(bool value) => ComposableFilter(column.equals(true));
+  ComposableFilter isTrue() => ComposableFilter(column.equals(true));
 
   /// Create a filter to check if the column is small than a value
-  ComposableFilter isFalse(bool value) => ComposableFilter(column.equals(true));
+  ComposableFilter isFalse() => ComposableFilter(column.equals(false));
 }
 
 /// Built in filters for int/double columns
@@ -71,27 +131,16 @@ extension NumFilters<T extends num> on ColumnFilters<T> {
       ComposableFilter(column.isSmallerOrEqualValue(value));
 
   /// Create a filter to check if the column is between two values
+  /// This is done inclusively, so the column can be equal to the lower or higher value
+  /// E.G isBetween(1, 3) will return true for 1, 2, and 3
   ComposableFilter isBetween(T lower, T higher) =>
       ComposableFilter(column.isBetweenValues(lower, higher));
 
   /// Create a filter to check if the column is not between two values
+  /// This is done inclusively, so the column will not be equal to the lower or higher value
+  /// E.G isNotBetween(1, 3) will return false for 1, 2, and 3
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._invert();
-
-  /// Nested column for filtering on the average of a column
-  ColumnFilters<double> get avg => ColumnFilters(column.avg());
-
-  /// Nested column for filtering on the max item of a column
-  ColumnFilters<T> get max => ColumnFilters(column.max());
-
-  /// Nested column for filtering on the min item of a column
-  ColumnFilters<T> get min => ColumnFilters(column.min());
-
-  /// Nested column for filtering on the sum of a column
-  ColumnFilters<T> get sum => ColumnFilters(column.sum());
-
-  /// Nested column for filtering on the total of a column
-  ColumnFilters<double> get total => ColumnFilters(column.total());
 }
 
 /// Built in filters for BigInt columns
@@ -113,30 +162,19 @@ extension BigIntFilters<T extends BigInt> on ColumnFilters<T> {
       ComposableFilter(column.isSmallerOrEqualValue(value));
 
   /// Create a filter to check if the column is between two values
+  /// This is done inclusively, so the column can be equal to the lower or higher value
+  /// E.G isBetween(1, 3) will return true for 1, 2, and 3
   ComposableFilter isBetween(T lower, T higher) =>
       ComposableFilter(column.isBetweenValues(lower, higher));
 
   /// Create a filter to check if the column is not between two values
+  /// This is done inclusively, so the column will not be equal to the lower or higher value
+  /// E.G isNotBetween(1, 3) will return false for 1, 2, and 3
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._invert();
-
-  /// Nested column for filtering on the average of a column
-  ColumnFilters<double> get avg => ColumnFilters(column.avg());
-
-  /// Nested column for filtering on the max item of a column
-  ColumnFilters<T> get max => ColumnFilters(column.max());
-
-  /// Nested column for filtering on the min item of a column
-  ColumnFilters<T> get min => ColumnFilters(column.min());
-
-  /// Nested column for filtering on the sum of a column
-  ColumnFilters<BigInt> get sum => ColumnFilters(column.sum());
-
-  /// Nested column for filtering on the total of a column
-  ColumnFilters<double> get total => ColumnFilters(column.total());
 }
 
-/// Built in filters for String columns
+/// Built in filters for DateTime columns
 extension DateFilters<T extends DateTime> on ColumnFilters<T> {
   /// Create a filter to check if the column is after a [DateTime]
   ComposableFilter isAfter(T value) =>
@@ -155,11 +193,14 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
       ComposableFilter(column.isSmallerOrEqualValue(value));
 
   /// Create a filter to check if the column is between 2 [DateTime]s
-
+  /// This is done inclusively, so the column can be equal to the lower or higher value
+  /// E.G isBetween(1, 3) will return true for 1, 2, and 3
   ComposableFilter isBetween(T lower, T higher) =>
       ComposableFilter(column.isBetweenValues(lower, higher));
 
   /// Create a filter to check if the column is not between 2 [DateTime]s
+  /// This is done inclusively, so the column will not be equal to the lower or higher value
+  /// E.G isNotBetween(1, 3) will return false for 1, 2, and 3
   ComposableFilter isNotBetween(T lower, T higher) =>
       isBetween(lower, higher)._invert();
 }
@@ -185,6 +226,14 @@ class ColumnWithTypeConverterFilters<CUSTOM, T extends Object> {
   /// Shortcut for [equals]
   ComposableFilter call(CUSTOM value) =>
       ComposableFilter(column.equalsValue(value));
+
+  /// Create a filter that checks if the column is in a list of values.
+  ComposableFilter isIn(Iterable<CUSTOM> values) =>
+      ComposableFilter(column.isInValues(values));
+
+  /// Create a filter that checks if the column is not in a list of values.
+  ComposableFilter isNotIn(Iterable<CUSTOM> values) =>
+      ComposableFilter(column.isNotInValues(values));
 }
 
 /// This class is wrapper on the expression class
