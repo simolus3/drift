@@ -59,7 +59,8 @@ class ProductPage extends HookConsumerWidget {
                       ),
                       TextField(
                         controller: descriptionTextController,
-                        decoration: const InputDecoration(labelText: "Description"),
+                        decoration:
+                            const InputDecoration(labelText: "Description"),
                       ),
                       ListTile(
                         leading: CircleAvatar(

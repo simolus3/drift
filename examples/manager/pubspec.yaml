@@ -33,3 +33,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+dependency_overrides:
+  drift_dev:
+    path: ../../drift_dev
+  drift:
+    path: ../../drift

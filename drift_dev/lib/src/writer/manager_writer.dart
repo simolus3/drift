@@ -615,7 +615,7 @@ class ManagerWriter {
     }
 
     // Remove ones that have custom row classes
-    tableWriters.removeWhere((t) => !t.hasCustomRowClass);
+    tableWriters.removeWhere((t) => t.hasCustomRowClass);
 
     // Write each tables manager to the leaf and append the getter to the main manager
     final tableManagerGetters = StringBuffer();

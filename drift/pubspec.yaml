@@ -40,3 +40,6 @@ dev_dependencies:
   shelf: ^1.3.0
   test_descriptor: ^2.0.1
   vm_service: ^13.0.0
+dependency_overrides:
+  drift_dev:
+    path: ../drift_dev
