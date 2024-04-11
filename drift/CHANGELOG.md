@@ -4,6 +4,7 @@
   generated companion class.
 - Add the `TypeConverter.extensionType` factory to create type converters for
   extension types.
+- Fix invalid SQL syntax being generated for `BLOB` literals on postgres.
 
 ## 2.16.0
 

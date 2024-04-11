@@ -13,8 +13,9 @@ Expando<List<Input>> expectedSchema = Expando();
 class VerifierImplementation implements SchemaVerifier {
   final SchemaInstantiationHelper helper;
   final Random _random = Random();
+  final void Function(Database)? setup;
 
-  VerifierImplementation(this.helper);
+  VerifierImplementation(this.helper, {this.setup});
 
   @override
   Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
@@ -57,14 +58,20 @@ class VerifierImplementation implements SchemaVerifier {
     return buffer.toString();
   }
 
+  Database _setupDatabase(String uri) {
+    final database = sqlite3.open(uri, uri: true);
+    setup?.call(database);
+    return database;
+  }
+
   @override
   Future<InitializedSchema> schemaAt(int version) async {
     // Use distinct executors for setup and use, allowing us to close the helper
     // db here and avoid creating it twice.
     // https://www.sqlite.org/inmemorydb.html#sharedmemdb
     final uri = 'file:mem${_randomString()}?mode=memory&cache=shared';
-    final dbForSetup = sqlite3.open(uri, uri: true);
-    final dbForUse = sqlite3.open(uri, uri: true);
+    final dbForSetup = _setupDatabase(uri);
+    final dbForUse = _setupDatabase(uri);
 
     final executor = NativeDatabase.opened(dbForSetup);
     final db = helper.databaseForVersion(executor, version);
@@ -74,7 +81,7 @@ class VerifierImplementation implements SchemaVerifier {
     await db.close();
 
     return InitializedSchema(dbForUse, () {
-      final db = sqlite3.open(uri, uri: true);
+      final db = _setupDatabase(uri);
       return DatabaseConnection(NativeDatabase.opened(db));
     });
   }

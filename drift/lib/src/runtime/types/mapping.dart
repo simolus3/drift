@@ -115,9 +115,17 @@ final class SqlTypes {
         return (dart.millisecondsSinceEpoch ~/ 1000).toString();
       }
     } else if (dart is Uint8List) {
-      // BLOB literals are string literals containing hexadecimal data and
-      // preceded by a single "x" or "X" character. Example: X'53514C697465'
-      return "x'${hex.encode(dart)}'";
+      final String hexString = hex.encode(dart);
+
+      if (dialect == SqlDialect.postgres) {
+        // Postgres BYTEA hex format
+        // https://www.postgresql.org/docs/current/datatype-binary.html#DATATYPE-BINARY-BYTEA-HEX-FORMAT
+        return "'\\x$hexString'::bytea";
+      } else {
+        // BLOB literals are string literals containing hexadecimal data and
+        // preceded by a single "x" or "X" character. Example: X'53514C697465'
+        return "x'$hexString'";
+      }
     } else if (dart is DriftAny) {
       return mapToSqlLiteral(dart.rawSqlValue);
     }
