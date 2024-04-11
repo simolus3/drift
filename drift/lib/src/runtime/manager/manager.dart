@@ -230,7 +230,10 @@ class TableManagerState<
     final count = countAll();
     final result =
         _buildSelectStatement(targetColumns: [count]) as _JoinedResult;
-    return result.statement.map((row) => row.read(count)!).getSingle();
+    return result.statement
+        .map((row) => row.read(count)!)
+        .get()
+        .then((value) => value.firstOrNull ?? 0);
   }
 
   /// Check if any rows exists using the built statement
@@ -331,7 +334,7 @@ abstract class BaseTableManager<
   ///
   /// See also: [RootTableManager.replace], which does not require [filter] statements and
   /// supports setting fields back to null.
-  Future<int> write(Insertable<DT> Function(CU o) f) =>
+  Future<int> update(Insertable<DT> Function(CU o) f) =>
       $state.buildUpdateStatement().write(f($state._getUpdateCompanionBuilder));
 }
 
@@ -441,8 +444,7 @@ abstract class RootTableManager<
   /// Returns the amount of rows that were deleted by this statement directly
   /// (not including additional rows that might be affected through triggers or
   /// foreign key constraints).
-  Future<int> delete(Insertable<D> entity) =>
-      $state.db.delete($state._tableAsTableInfo).delete(entity);
+  Future<int> delete() => $state.db.delete($state._tableAsTableInfo).go();
 
   /// Select all rows from the table
   C all() => $state._getChildManagerBuilder($state);
@@ -532,7 +534,7 @@ abstract class RootTableManager<
   /// If [entity] has absent values (set to null on the [DataClass] or
   /// explicitly to absent on the [UpdateCompanion]), and a default value for
   /// the field exists, that default value will be used. Otherwise, the field
-  /// will be reset to null. This behavior is different to [write], which simply
+  /// will be reset to null. This behavior is different to [update], which simply
   /// ignores such fields without changing them in the database.
   ///
   /// Returns true if a row was affected by this operation.
