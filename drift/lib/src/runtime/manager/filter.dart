@@ -77,11 +77,12 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
 
   /// Create a filter to check if the this text column contains a substring
   /// {@template drift.manager.likeCaseSensitivity}
-  /// Sqlite performs a case insensitive text search by default
   ///
-  /// If you have set the database to use case sensitive in like expressions, you can
-  /// pass [caseInsensitive] as false to perform a case sensitive search
-  /// See https://www.sqlitetutorial.net/sqlite-like/ for more information
+  /// Setting [caseInsensitive] to false will have no effect unless the database in configured to use
+  /// case sensitive like expressions.
+  ///
+  /// See https://www.sqlitetutorial.net/sqlite-like/ for more information on how
+  /// to the like expression works.
   /// {@endtemplate}
   ComposableFilter contains(T value, {bool caseInsensitive = true}) {
     return ComposableFilter(
