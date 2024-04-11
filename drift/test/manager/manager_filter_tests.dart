@@ -180,16 +180,16 @@ void main() {
   });
 
   test('manager - query number', () async {
-    final objId1 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         someFloat: Value(5.0),
         targetDate: Value(DateTime.now().add(Duration(days: 1)))));
-    final objId2 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         targetDate: Value(DateTime.now().add(Duration(days: 2)))));
-    final objId3 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         someFloat: Value(3.0),
@@ -292,16 +292,16 @@ void main() {
   });
 
   test('manager - query int64', () async {
-    final objId1 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         someInt64: Value(BigInt.from(5.0)),
         targetDate: Value(DateTime.now().add(Duration(days: 1)))));
-    final objId2 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         targetDate: Value(DateTime.now().add(Duration(days: 2)))));
-    final objId3 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         someInt64: Value(BigInt.from(3.0)),
@@ -347,17 +347,17 @@ void main() {
   });
 
   test('manager - query bool', () async {
-    final objId1 = await db.managers.users.create((o) => o(
+    await db.managers.users.create((o) => o(
         name: "John Doe",
         profilePicture: Uint8List(0),
         isAwesome: Value(true),
         creationTime: Value(DateTime.now().add(Duration(days: 1)))));
-    final objId2 = await db.managers.users.create((o) => o(
+    await db.managers.users.create((o) => o(
         name: "Jane Doe1",
         profilePicture: Uint8List(0),
         isAwesome: Value(false),
         creationTime: Value(DateTime.now().add(Duration(days: 2)))));
-    final objId3 = await db.managers.users.create((o) => o(
+    await db.managers.users.create((o) => o(
         name: "Jane Doe2",
         profilePicture: Uint8List(0),
         isAwesome: Value(true),
@@ -375,16 +375,16 @@ void main() {
     final day1 = DateTime.now().add(Duration(days: 1));
     final day2 = DateTime.now().add(Duration(days: 2));
     final day3 = DateTime.now().add(Duration(days: 3));
-    final objId1 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         someFloat: Value(5.0),
         targetDate: Value(day1)));
-    final objId2 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         targetDate: Value(day2)));
-    final objId3 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open),
         someFloat: Value(3.0),
@@ -428,16 +428,16 @@ void main() {
   });
 
   test('manager - query custom column', () async {
-    final objId1 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open)));
-    final objId2 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.open)));
-    final objId3 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.workInProgress)));
-    final objId4 = await db.managers.todosTable.create((o) => o(
+    await db.managers.todosTable.create((o) => o(
         content: "Get that math homework done",
         status: Value(TodoStatus.done)));
 
