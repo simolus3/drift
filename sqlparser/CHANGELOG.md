@@ -1,6 +1,8 @@
 ## 3.35.0-dev
 
 - Fix parsing binary literals.
+- Expand support for `IN` expressions, they now support tuples on the left-hand
+  side and the shorthand syntax for table references and table-valued functions.
 - Drift extensions: Allow custom class names for `CREATE VIEW` statements.
 
 ## 0.34.1

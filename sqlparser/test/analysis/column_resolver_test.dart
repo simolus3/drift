@@ -363,4 +363,10 @@ SELECT * FROM cars
 
     expect(select.resolvedColumns?.map((e) => e.name), ['literal', 'bar']);
   });
+
+  test('error for nonexisting table in IN expression', () {
+    final query = engine.analyze('SELECT 1 IN no_such_table');
+    query.expectError('no_such_table',
+        type: AnalysisErrorType.referencedUnknownTable);
+  });
 }
