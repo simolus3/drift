@@ -81,7 +81,7 @@ to store todo items for a todo list app.
 Everything there is to know about defining tables in Dart is described on the [Dart tables]({{'Dart API/tables.md' | pageUrl}}) page.
 If you prefer using SQL to define your tables, drift supports that too! You can read all about the [SQL API]({{ 'SQL API/index.md' | pageUrl }}) here.
 
-For now, the contents of `database.dart` are:
+For now, populate the contents of `database.dart` with:
 
 {% include "blocks/snippet" snippets = snippets name = 'before_generation' %}
 
@@ -97,10 +97,11 @@ After running either command, the `database.g.dart` file containing the generate
 class will have been generated.
 You will now see errors related to missing overrides and a missing constructor. The constructor
 is responsible for telling drift how to open the database. The `schemaVersion` getter is relevant
-for migrations after changing the database, we can leave it at `1` for now. The database class
-now looks like this:
-<a name="open">
-{% include "blocks/snippet" snippets = snippets name = 'open' %}
+for migrations after changing the database, we can leave it at `1` for now. Update `database.dart`
+so it now looks like this:
+
+<a name="open"></a>
+{% include "blocks/snippet" snippets = snippets name = 'after_generation' %}
 
 The Android-specific workarounds are necessary because sqlite3 attempts to use `/tmp` to store
 private data on unix-like systems, which is forbidden on Android. We also use this opportunity
