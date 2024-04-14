@@ -345,7 +345,6 @@ class RowMappingWriter {
       final String sqlType;
       switch (column.sqlType) {
         case ColumnDriftType():
-        case ColumnGeopolyPolygonType():
           sqlType = writer.drift(column.sqlType.builtin.toString());
         case ColumnCustomType(:final custom):
           sqlType = writer.dartCode(custom.expression);

@@ -7,8 +7,8 @@ import '../../test_utils.dart';
 void main() {
   late TestBackend state;
 
-  setUpAll(() {
-    state = TestBackend(const {
+  setUpAll(() async {
+    state = await TestBackend.init(const {
       'a|lib/invalid_no_unnamed_constructor.dart': '''
 import 'package:drift/drift.dart';
 
@@ -408,7 +408,7 @@ class Companies extends Table {
   });
 
   test('handles `ANY` columns', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'row.dart';
 
@@ -528,7 +528,7 @@ class FooData {
 
   group('records as row types', () {
     test('supported with explicit record', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
@@ -562,7 +562,7 @@ class Users extends Table {
     });
 
     test('supported with implicit record', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/a.dart': '''
 import 'package:drift/drift.dart';

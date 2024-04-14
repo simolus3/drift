@@ -8,7 +8,7 @@ import '../../test_utils.dart';
 void main() {
   group('reports a warning', () {
     test('when the table is not a class type', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -26,7 +26,7 @@ class Foo extends Table {
     });
 
     test('when the column is not a symbol literal', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -48,7 +48,7 @@ class Foo extends Table {
     });
 
     test('includes referenced table in database', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -78,7 +78,7 @@ class Database {}
     });
 
     test('when the referenced column does not exist', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -106,7 +106,7 @@ class Database {}
   });
 
   test('resolves reference', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -149,7 +149,7 @@ class Database {}
   });
 
   test('resolves self-references', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';

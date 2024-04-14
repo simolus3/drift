@@ -14,7 +14,7 @@ enum Fruit {
 void main() {
   group('warns about invalid type converter value', () {
     test('in table definition', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'enum.dart';
 
@@ -38,7 +38,7 @@ CREATE TABLE a (
     });
 
     test('for query', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'enum.dart';
 

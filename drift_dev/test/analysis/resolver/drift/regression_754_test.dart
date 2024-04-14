@@ -6,7 +6,7 @@ import '../../test_utils.dart';
 void main() {
   // Regression test for https://github.com/simolus3/drift/issues/754
   test('supports fts5 tables with external content', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/a.drift': '''
 CREATE TABLE tbl(a INTEGER PRIMARY KEY, b TEXT, c TEXT);
 CREATE VIRTUAL TABLE fts_idx USING fts5(b, c, content='tbl', content_rowid='a');

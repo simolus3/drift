@@ -73,8 +73,7 @@ class DiscoverStep {
           _file.discovery = NotADartLibrary();
           break;
         }
-        final finder =
-            _FindDartElements(this, library, await _driver.loadKnownTypes());
+        final finder = _FindDartElements(this, library, _driver.knownTypes);
         await finder.find();
 
         _file.errorsDuringDiscovery.addAll(finder.errors);

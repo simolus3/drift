@@ -5,7 +5,7 @@ import 'test_utils.dart';
 
 void main() {
   test('gracefully handles daos with invalid types', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/bar.dart': '''
 import 'package:drift/drift.dart';
 

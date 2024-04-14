@@ -8,7 +8,7 @@ import 'test_utils.dart';
 
 void main() {
   test('handles cyclic imports', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/entry.dart': '''
 import 'package:drift/drift.dart';
 
@@ -42,7 +42,7 @@ CREATE TABLE bars (
   group("reports error when an import can't be found", () {
     for (final extension in const ['drift', 'moor']) {
       test('in $extension files', () async {
-        final backend = TestBackend.inTest({
+        final backend = await TestBackend.inTest({
           'a|lib/a.$extension': '''
 import 'b.$extension';
 ''',
@@ -56,7 +56,7 @@ import 'b.$extension';
     }
 
     test('in a dart file', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -74,7 +74,7 @@ class Database {
   });
 
   test('resolves tables and queries', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/database.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -178,7 +178,7 @@ class ProgrammingLanguages extends Table {
   });
 
   test('still supports .moor files', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -203,7 +203,7 @@ CREATE TABLE users (
   });
 
   test('supports multiple references between same entities', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -231,7 +231,7 @@ class ThisTable extends Table {
   });
 
   test('supports references across files', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/this_table.dart': '''
 import 'package:drift/drift.dart';
 
@@ -272,7 +272,7 @@ class OtherTable extends Table {
   });
 
   test('reports sensible error for missing table', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 getCompanyCustomersCount:
   SELECT COUNT(*) AS "count"

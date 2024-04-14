@@ -7,7 +7,7 @@ import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:collection/collection.dart';
 
-import '../../driver/driver.dart';
+import '../../backend.dart';
 import '../../driver/error.dart';
 import '../../results/results.dart';
 import '../resolver.dart';
@@ -32,6 +32,7 @@ class KnownDriftTypes {
   final InterfaceElement jsonTypeConverter;
   final InterfaceType driftAny;
   final InterfaceType uint8List;
+  final InterfaceType geopolyPolygon;
 
   KnownDriftTypes._(
     this.helperLibrary,
@@ -47,6 +48,7 @@ class KnownDriftTypes {
     this.driftAccessor,
     this.driftAny,
     this.uint8List,
+    this.geopolyPolygon,
   );
 
   /// Constructs the set of known drift types from a helper library, which is
@@ -73,6 +75,8 @@ class KnownDriftTypes {
           .defaultInstantiation,
       (exportNamespace.get('Uint8List') as InterfaceElement)
           .defaultInstantiation,
+      (exportNamespace.get('GeopolyPolygon') as InterfaceElement)
+          .defaultInstantiation,
     );
   }
 
@@ -98,8 +102,8 @@ class KnownDriftTypes {
     return type?.asInstanceOf(converter);
   }
 
-  static Future<KnownDriftTypes> resolve(DriftAnalysisDriver driver) async {
-    final library = await driver.backend.readDart(uri);
+  static Future<KnownDriftTypes> resolve(DriftBackend backend) async {
+    final library = await backend.readDart(uri);
 
     return KnownDriftTypes._fromLibrary(library);
   }
@@ -256,7 +260,7 @@ class DataClassInformation {
           useRowClass.getField('constructor')!.toStringValue()!;
       final generateInsertable =
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
-      final helper = await resolver.resolver.driver.loadKnownTypes();
+      final helper = resolver.resolver.driver.knownTypes;
 
       if (type is InterfaceType) {
         final found = FoundDartClass(type.element, type.typeArguments);

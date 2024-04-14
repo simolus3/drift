@@ -53,7 +53,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
   Future<TableReferenceInDartView?> _getStaticReference(
       FieldElement field) async {
     final type = field.type;
-    final knownTypes = await resolver.driver.loadKnownTypes();
+    final knownTypes = resolver.driver.knownTypes;
     final typeSystem = field.library.typeSystem;
 
     if (type is! InterfaceType ||

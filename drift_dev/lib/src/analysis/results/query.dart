@@ -750,7 +750,7 @@ final class ScalarResultColumn extends ResultColumn
 
   int get _columnTypeCompatibilityHash {
     final custom = switch (sqlType) {
-      ColumnDriftType() || ColumnGeopolyPolygonType() => null,
+      ColumnDriftType() => null,
       ColumnCustomType(:final custom) => custom,
     };
 

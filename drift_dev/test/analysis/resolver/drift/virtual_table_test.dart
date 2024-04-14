@@ -7,7 +7,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('supports virtual tables across drift files', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/table.drift': '''
 CREATE TABLE example_table (
@@ -43,7 +43,7 @@ exampleSearch: SELECT example_table.**, s.* FROM example_table
   });
 
   test('query virtual tables with unknown function', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/table.drift': '''
 CREATE TABLE example_table (
@@ -72,7 +72,7 @@ SELECT rowid, highlight(example_table_search, 0, '[match]', '[match]') name,
   });
 
   test('supports spellfix1 tables', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {'a|lib/a.drift': 'CREATE VIRTUAL TABLE demo USING spellfix1;'},
       options: DriftOptions.defaults(
         dialect: DialectOptions(

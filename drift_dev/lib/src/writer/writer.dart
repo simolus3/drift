@@ -147,7 +147,6 @@ abstract class _NodeOrWriter {
 
       switch (converter.sqlType) {
         case ColumnDriftType():
-        case ColumnGeopolyPolygonType():
           sqlDartType =
               AnnotatedDartCode([dartTypeNames[converter.sqlType.builtin]!]);
         case ColumnCustomType(:final custom):
@@ -209,8 +208,6 @@ abstract class _NodeOrWriter {
   AnnotatedDartCode innerColumnType(ColumnType type, {bool nullable = false}) {
     return AnnotatedDartCode.build((b) {
       switch (type) {
-        case ColumnGeopolyPolygonType(:final dartType):
-          b.addTopLevel(dartType);
         case ColumnDriftType():
           b.addTopLevel(dartTypeNames[type.builtin]!);
         case ColumnCustomType(:final custom):
@@ -247,7 +244,6 @@ abstract class _NodeOrWriter {
 
       switch (column.sqlType) {
         case ColumnDriftType():
-        case ColumnGeopolyPolygonType():
           break;
         case ColumnCustomType(:final custom):
           // Also specify the custom type since it can't be inferred from the

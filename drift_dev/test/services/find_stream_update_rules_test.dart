@@ -7,7 +7,7 @@ import '../analysis/test_utils.dart';
 
 void main() {
   test('finds update rules for triggers', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE users (
   id INTEGER NOT NULL PRIMARY KEY,
@@ -51,7 +51,7 @@ class MyDatabase {}
   });
 
   test('finds update rules for foreign key constraint', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE a (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

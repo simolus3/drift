@@ -8,7 +8,7 @@ const _options = DriftOptions.defaults(modules: [SqlModule.fts5]);
 void main() {
   group('reports error', () {
     test('for missing content table', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/main.drift': '''
 CREATE VIRTUAL TABLE fts USING fts5(a, c, content=tbl);
 ''',
@@ -23,7 +23,7 @@ CREATE VIRTUAL TABLE fts USING fts5(a, c, content=tbl);
     });
 
     test('for invalid rowid of content table', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/main.drift': '''
 CREATE TABLE tbl (a, b, c, my_pk INTEGER PRIMARY KEY);
 
@@ -39,7 +39,7 @@ CREATE VIRTUAL TABLE fts USING fts5(a, c, content=tbl, content_rowid=d);
     });
 
     test('when referencing an unknown column', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/main.drift': '''
 CREATE TABLE tbl (a, b, c, d INTEGER PRIMARY KEY);
 
@@ -54,7 +54,7 @@ CREATE VIRTUAL TABLE fts USING fts5(e, c, content=tbl, content_rowid=d);
   });
 
   test('finds referenced table', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/main.drift': '''
 CREATE TABLE tbl (a, b, c, d INTEGER PRIMARY KEY);
 

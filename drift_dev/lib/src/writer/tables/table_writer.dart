@@ -213,7 +213,6 @@ abstract class TableOrViewWriter {
 
     switch (column.sqlType) {
       case ColumnDriftType():
-      case ColumnGeopolyPolygonType():
         additionalParams['type'] =
             emitter.drift(column.sqlType.builtin.toString());
       case ColumnCustomType(:final custom):

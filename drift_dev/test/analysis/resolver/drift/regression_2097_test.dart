@@ -8,7 +8,7 @@ import '../../test_utils.dart';
 void main() {
   // https://github.com/simolus3/drift/issues/2097#issuecomment-1273008383
   test('virtual columns are not required for inserts', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'foo|lib/a.drift': r'''
 CREATE TABLE IF NOT EXISTS nodes (

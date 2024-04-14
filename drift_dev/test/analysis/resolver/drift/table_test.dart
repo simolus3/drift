@@ -8,7 +8,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('reports foreign keys in drift model', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE a (
   foo INTEGER PRIMARY KEY,
@@ -56,7 +56,7 @@ CREATE TABLE b (
   });
 
   test('recognizes aliases to rowid', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/a.drift': '''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY,
@@ -84,7 +84,7 @@ CREATE TABLE b (
   });
 
   test('parses enum columns', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
          import 'enum.dart';
 
@@ -168,7 +168,7 @@ CREATE TABLE b (
   });
 
   test('does not allow converters for enum columns', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
          import 'enum.dart';
 
@@ -200,7 +200,7 @@ CREATE TABLE b (
   });
 
   test('does not allow enum types for non-enums', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
          import 'enum.dart';
 
@@ -223,7 +223,7 @@ CREATE TABLE b (
   });
 
   test('supports JSON KEY annotation', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE waybills (
     parent    INT      JSON KEY parentDoc        NULL,
@@ -244,7 +244,7 @@ CREATE TABLE waybills (
   });
 
   test('recognizes documentation comments', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE IF NOT EXISTS currencies (
   -- The name of this currency
@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS currencies (
   });
 
   test('can use custom types', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'b.dart';
 
@@ -289,7 +289,6 @@ class MyType implements CustomSqlType<String> {}
 
     switch (column.sqlType) {
       case ColumnDriftType():
-      case ColumnGeopolyPolygonType():
         fail('expect custom type');
       case ColumnCustomType(:final custom):
         expect(custom.dartType.toString(), 'String');

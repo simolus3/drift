@@ -5,7 +5,7 @@ import 'test_utils.dart';
 
 void main() {
   test('finds dart expressions', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.drift': '''
 import 'foo.dart';
 
@@ -26,7 +26,7 @@ var expr_0 = const MyConverter();
 
   test('only includes direct imports if no Dart expressions are used',
       () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.drift': '''
 import 'foo.dart';
 import '2.drift';
@@ -48,7 +48,7 @@ import 'bar.dart';
   });
 
   test('finds nested dart imports', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'b.drift';
 
@@ -72,7 +72,7 @@ import 'import.dart';
   });
 
   test('does not throw for invalid import', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'b.drift';
 import 'does_not_exist.drift';
@@ -96,8 +96,8 @@ import 'c.drift';
     expect(result.temporaryDartFile, isNot(contains('import')));
   });
 
-  test('throws if entrypoint does not exist', () {
-    final backend = TestBackend.inTest({});
+  test('throws if entrypoint does not exist', () async {
+    final backend = await TestBackend.inTest({});
 
     expect(
       () =>
@@ -106,8 +106,8 @@ import 'c.drift';
     );
   });
 
-  test('throws if entrypoint is invalid', () {
-    final backend = TestBackend.inTest({
+  test('throws if entrypoint is invalid', () async {
+    final backend = await TestBackend.inTest({
       'a|lib/main.drift': '! this not a valid drift file !',
     });
 

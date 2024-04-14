@@ -1,5 +1,5 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
@@ -79,15 +79,6 @@ final class SqlTypes {
 
     if (dartValue is DriftAny) {
       return dartValue.rawSqlValue;
-    }
-
-    if (dartValue is GeopolyPolygon) {
-      switch (dartValue) {
-        case _StringGeopolyPolygon(:final value):
-          return value;
-        case _BlobGeopolyPolygon(:final value):
-          return value;
-      }
     }
 
     return dartValue;
@@ -550,26 +541,4 @@ final class _ByDialectType<T extends Object> implements DialectAwareSqlType<T> {
   String sqlTypeName(GenerationContext context) {
     return _selectType(context.typeMapping).sqlTypeName(context);
   }
-}
-
-/// https://www.sqlite.org/geopoly.html
-/// In Geopoly, a polygon can be text or a blob
-sealed class GeopolyPolygon {
-  const GeopolyPolygon._();
-
-  const factory GeopolyPolygon.text(String value) = _StringGeopolyPolygon;
-
-  const factory GeopolyPolygon.blob(Uint8List value) = _BlobGeopolyPolygon;
-}
-
-final class _StringGeopolyPolygon extends GeopolyPolygon {
-  final String value;
-
-  const _StringGeopolyPolygon(this.value) : super._();
-}
-
-final class _BlobGeopolyPolygon extends GeopolyPolygon {
-  final Uint8List value;
-
-  const _BlobGeopolyPolygon(this.value) : super._();
 }

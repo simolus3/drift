@@ -9,7 +9,7 @@ void main() {
   late TestBackend backend;
 
   setUpAll(() async {
-    backend = TestBackend({
+    backend = await TestBackend.init({
       'a|lib/main.dart': '''
         import 'package:drift/drift.dart';
 

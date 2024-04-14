@@ -44,19 +44,11 @@ sealed class ColumnType {
   /// all.
   final DriftSqlType builtin;
 
-  /// Details about the custom type, if one is present.
-  // CustomColumnType? get custom => switch (this) {
-  //       ColumnDriftType() || ColumnGeopolyPolygonType() => null,
-  //       ColumnCustomType(:final custom) => custom,
-  //     };
-
   const ColumnType._(this.builtin);
 
   const factory ColumnType.drift(DriftSqlType builtin) = ColumnDriftType;
 
   const factory ColumnType.custom(CustomColumnType custom) = ColumnCustomType;
-
-  const factory ColumnType.geopolyPolygon() = ColumnGeopolyPolygonType;
 }
 
 final class ColumnDriftType extends ColumnType {
@@ -67,13 +59,6 @@ final class ColumnCustomType extends ColumnType {
   final CustomColumnType custom;
 
   const ColumnCustomType(this.custom) : super._(DriftSqlType.any);
-}
-
-final class ColumnGeopolyPolygonType extends ColumnType {
-  const ColumnGeopolyPolygonType() : super._(DriftSqlType.any);
-
-  DartTopLevelSymbol get dartType =>
-      DartTopLevelSymbol('GeopolyPolygon', AnnotatedDartCode.drift);
 }
 
 extension OperationOnTypes on HasType {

@@ -77,7 +77,7 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
               type.builtin == DriftSqlType.int
                   ? EnumType.intEnum
                   : EnumType.textEnum,
-              await resolver.driver.loadKnownTypes(),
+              resolver.driver.knownTypes,
             );
           }
         }

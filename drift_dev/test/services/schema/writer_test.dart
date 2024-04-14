@@ -14,7 +14,7 @@ import '../../analysis/test_utils.dart';
 
 void main() {
   test('writer integration test', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'main.dart';
 

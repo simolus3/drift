@@ -9,7 +9,7 @@ import 'utils.dart';
 
 void main() {
   test('respects explicit type arguments', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': '''
 bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
       ''',
@@ -29,7 +29,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
   });
 
   test('can read from builtin tables', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/main.drift': '''
 testQuery: SELECT * FROM sqlite_schema;
       ''',
@@ -43,7 +43,7 @@ testQuery: SELECT * FROM sqlite_schema;
   });
 
   test('reads REQUIRED syntax', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': '''
 bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
       ''',
@@ -64,7 +64,7 @@ bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
   });
 
   test('infers result set for views', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': r'''
 CREATE VIEW my_view AS SELECT 'foo', 2;
 
@@ -90,7 +90,7 @@ query: SELECT * FROM my_view;
   });
 
   test('infers nested result set for views', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': r'''
 CREATE VIEW my_view AS SELECT 'foo', 2;
 
@@ -123,7 +123,7 @@ query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
   });
 
   test('infers nested result sets for custom result sets', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': r'''
 query: SELECT 1 AS a, b.** FROM (SELECT 2 AS b, 3 AS c) AS b;
       ''',
@@ -154,7 +154,7 @@ query: SELECT 1 AS a, b.** FROM (SELECT 2 AS b, 3 AS c) AS b;
 
   for (final dateTimeAsText in [false, true]) {
     test('analyzing date times (stored as text: $dateTimeAsText)', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'foo|lib/foo.drift': r'''
 CREATE TABLE foo (
@@ -202,7 +202,7 @@ q3: SELECT datetime('now');
   }
 
   test('resolves nested result sets', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': r'''
 CREATE TABLE points (
   id INTEGER NOT NULL PRIMARY KEY,
@@ -243,7 +243,7 @@ FROM routes
   });
 
   test('resolves nullability of aliases in nested result sets', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/main.drift': r'''
 CREATE TABLE tableA1 (id INTEGER);
 CREATE TABLE tableB1 (id INTEGER);
@@ -285,7 +285,7 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
 
   test('supports custom functions', () async {
     final withoutOptions =
-        TestBackend.inTest({'a|lib/a.drift': 'a: SELECT my_function();'});
+        await TestBackend.inTest({'a|lib/a.drift': 'a: SELECT my_function();'});
     var result = await withoutOptions.analyze('package:a/a.drift');
     expect(result.allErrors, [
       isDriftError('Function my_function could not be found')
@@ -294,14 +294,13 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
           .withSpan('my_function()'),
     ]);
 
-    final withOptions =
-        TestBackend.inTest({'a|lib/a.drift': 'a: SELECT my_function(?, ?);'},
-            options: DriftOptions.defaults(
-              sqliteAnalysisOptions: SqliteAnalysisOptions(knownFunctions: {
-                'my_function':
-                    KnownSqliteFunction.fromJson('boolean (int, text)')
-              }),
-            ));
+    final withOptions = await TestBackend.inTest(
+        {'a|lib/a.drift': 'a: SELECT my_function(?, ?);'},
+        options: DriftOptions.defaults(
+          sqliteAnalysisOptions: SqliteAnalysisOptions(knownFunctions: {
+            'my_function': KnownSqliteFunction.fromJson('boolean (int, text)')
+          }),
+        ));
     result = await withOptions.analyze('package:a/a.drift');
 
     withOptions.expectNoErrors();
@@ -318,7 +317,7 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
   });
 
   test('can cast to DATETIME and BOOLEAN', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
 ''',
@@ -337,7 +336,7 @@ a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
   });
 
   test('can cast to enum type', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'enum.dart';
 

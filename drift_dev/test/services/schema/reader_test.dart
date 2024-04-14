@@ -95,7 +95,7 @@ CREATE VIEW user_ids AS SELECT id FROM users;
 }
 
 Future<List<DriftElement>> _analyzeAndSerialize(String source) async {
-  final state = TestBackend.inTest({'a|lib/a.drift': source});
+  final state = await TestBackend.inTest({'a|lib/a.drift': source});
   final file = await state.analyze('package:a/a.drift');
 
   final writer = SchemaWriter(file.analyzedElements.toList());

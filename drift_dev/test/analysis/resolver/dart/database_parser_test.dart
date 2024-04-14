@@ -7,7 +7,7 @@ void main() {
   final mainUri = Uri.parse('package:a/main.dart');
 
   test('parses schema version getter', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -27,7 +27,7 @@ class MyDatabase extends _$MyDatabase {
   });
 
   test('parses schema version field', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -47,7 +47,7 @@ class MyDatabase extends _$MyDatabase {
   });
 
   test('does not warn about missing tables parameter', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -69,7 +69,7 @@ class MyDatabase2 extends _$MyDatabase {
   });
 
   test('supports inheritance for daos', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/database.dart': r'''
 import 'package:drift/drift.dart';
 
@@ -115,7 +115,7 @@ class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
   });
 
   test('only includes duplicate elements once', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 

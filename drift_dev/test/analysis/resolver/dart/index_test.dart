@@ -5,7 +5,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('resolves index', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -41,7 +41,7 @@ class MyTable extends Table {
   });
 
   test('warns about missing columns', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 

@@ -7,7 +7,7 @@ import '../../test_utils.dart';
 void main() {
   group('reports a warning', () {
     test('when the table is not a class type', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -29,7 +29,7 @@ class Foo extends Table {
     });
 
     test('when the table is not a symbol literal', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -54,7 +54,7 @@ class Foo extends Table {
     });
 
     test('when the referenced table does not exist', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -83,7 +83,7 @@ class Foo extends Table {
   });
 
   test('resolves reference', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -116,7 +116,7 @@ class Foo extends Table {
   });
 
   test('resolves self-references', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 

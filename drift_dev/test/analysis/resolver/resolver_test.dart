@@ -7,7 +7,7 @@ import '../test_utils.dart';
 void main() {
   group('from clean state', () {
     test('resolves simple tables', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.drift': '''
 CREATE TABLE a (
   foo INTEGER PRIMARY KEY,
@@ -42,7 +42,7 @@ CREATE TABLE b (
 
   group('references', () {
     test('self', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.drift': '''
 CREATE TABLE a (
   foo INTEGER PRIMARY KEY,
@@ -61,7 +61,7 @@ CREATE TABLE a (
     });
 
     test('across files', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'b.drift';
 
@@ -93,7 +93,7 @@ CREATE TABLE b (
     });
 
     test('for triggers', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'b.drift';
 
@@ -133,7 +133,7 @@ CREATE TABLE deleted_b (
 
     group('non-existing', () {
       test('from table', () async {
-        final backend = TestBackend.inTest({
+        final backend = await TestBackend.inTest({
           'a|lib/a.drift': '''
 CREATE TABLE a (
   foo INTEGER PRIMARY KEY,
@@ -151,7 +151,7 @@ CREATE TABLE a (
             [isDriftError('`b` could not be found in any import.')]);
       });
       test('in a trigger', () async {
-        final backend = TestBackend.inTest(const {
+        final backend = await TestBackend.inTest(const {
           'foo|lib/a.drift': '''
 CREATE TRIGGER IF NOT EXISTS foo BEFORE DELETE ON bar BEGIN
 END;
@@ -172,7 +172,7 @@ END;
   });
 
   test('emits warning on invalid import', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': "import 'b.drift';",
     });
 

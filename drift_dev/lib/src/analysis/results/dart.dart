@@ -143,8 +143,6 @@ class AnnotatedDartCodeBuilder {
             addTopLevel(dartTypeNames[hasType.sqlType.builtin]!);
           case ColumnCustomType(:final custom):
             addDartType(custom.dartType);
-          case ColumnGeopolyPolygonType(:final dartType):
-            addTopLevel(dartType);
         }
         if (hasType.nullable) addText('?');
       }

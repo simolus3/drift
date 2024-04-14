@@ -9,7 +9,7 @@ void main() {
   test(
       'It should rename the table and column name to its snake case version by default',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -36,7 +36,7 @@ class Database {}
 
   test('It should rename the table and column name to its snake case version',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -64,7 +64,7 @@ class Database {}
   });
 
   test('It should not rename the table and column name', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -93,7 +93,7 @@ class Database {}
   });
   test('It should rename the table and column name to its camel case version',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -122,7 +122,7 @@ class Database {}
   test(
       'It should rename the table and column name to its constant case version',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -150,7 +150,7 @@ class Database {}
   });
   test('It should rename the table and column name to its pascal case version',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -178,7 +178,7 @@ class Database {}
   });
   test('It should rename the table and column name to its lower case version',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -207,7 +207,7 @@ class Database {}
   });
   test('It should rename the table and column name to its upper case version',
       () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -235,7 +235,7 @@ class Database {}
   });
 
   test('recognizes custom column types', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -256,7 +256,6 @@ class TestTable extends Table {
     expect(column.sqlType.builtin, DriftSqlType.any);
     switch (column.sqlType) {
       case ColumnDriftType():
-      case ColumnGeopolyPolygonType():
         break;
       case ColumnCustomType(:final custom):
         expect(custom.dartType.toString(), 'List<String>');
@@ -266,7 +265,7 @@ class TestTable extends Table {
 
   group('customConstraint analysis', () {
     test('reports errors', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -285,7 +284,7 @@ class TestTable extends Table {
     });
 
     test('resolves foreign key references', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -326,7 +325,7 @@ class TestTable extends Table {
     });
 
     test('warns about missing `NOT NULL`', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -345,7 +344,7 @@ class TestTable extends Table {
     });
 
     test('applies constraints', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 

@@ -200,20 +200,17 @@ class ElementSerializer {
   }
 
   Map<String, Object?> _serializeColumnType(ColumnType type) {
-    switch (type) {
-      case ColumnGeopolyPolygonType():
-      case ColumnDriftType():
-        return {
+    return switch (type) {
+      ColumnDriftType() => {
           'builtin': type.builtin.name,
-        };
-      case ColumnCustomType(:final custom):
-        return {
+        },
+      ColumnCustomType(:final custom) => {
           'custom': {
             'dart': _serializeType(custom.dartType),
             'expression': custom.expression.toJson(),
           }
-        };
-    }
+        },
+    };
   }
 
   Map<String, Object?> _serializeColumn(DriftColumn column) {

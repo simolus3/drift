@@ -4,7 +4,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('can define abstract tables', () async {
-    final test = TestBackend.inTest({
+    final test = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 

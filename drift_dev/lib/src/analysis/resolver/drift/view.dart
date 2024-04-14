@@ -27,7 +27,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
         ? null
         : await createTypeResolver(
             allReferences,
-            await resolver.driver.loadKnownTypes(),
+            resolver.driver.knownTypes,
           );
 
     final context = engine.analyzeNode(

@@ -8,7 +8,7 @@ import 'utils.dart';
 
 void main() {
   test('recognizes existing row classes', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -35,7 +35,7 @@ class MyRow {
   });
 
   test('can use named constructors', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -75,7 +75,7 @@ class MyRow {
   });
 
   test("warns if existing row classes don't exist", () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -91,7 +91,7 @@ foo WITH MyRow: SELECT 'hello world', 2;
   });
 
   test('resolves existing row class', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -122,7 +122,7 @@ class MyRow {
 
   group('matches', () {
     test('single column type', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 foo WITH int: SELECT 1 AS r;
 ''',
@@ -139,7 +139,7 @@ foo WITH int: SELECT 1 AS r;
     });
 
     test('single table', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -166,7 +166,7 @@ typedef MyRow = TblData;
     });
 
     test('single table with custom row class', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -195,7 +195,7 @@ class MyTableRow {
     });
 
     test('alternative to table class', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -229,7 +229,7 @@ class MyQueryRow {
 
     group('nested column', () {
       test('single column into field', () async {
-        final state = TestBackend.inTest({
+        final state = await TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -263,7 +263,7 @@ class MyQueryRow {
       });
 
       test('single column into single-element record', () async {
-        final state = TestBackend.inTest({
+        final state = await TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -298,7 +298,7 @@ class MyQueryRow {
       });
 
       test('custom result set', () async {
-        final state = TestBackend.inTest(
+        final state = await TestBackend.inTest(
           {
             'a|lib/a.drift': '''
 import 'a.dart';
@@ -344,7 +344,7 @@ class JsonStructure {
       });
 
       test('table', () async {
-        final state = TestBackend.inTest({
+        final state = await TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -382,7 +382,7 @@ class MyRow {
       });
 
       test('table as alternative to row class', () async {
-        final state = TestBackend.inTest(
+        final state = await TestBackend.inTest(
           {
             'a|lib/a.drift': '''
 import 'a.dart';
@@ -425,7 +425,7 @@ class MyRow {
 
     group('nested LIST query', () {
       test('single column type', () async {
-        final state = TestBackend.inTest({
+        final state = await TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -461,7 +461,7 @@ class MyQueryRow {
       });
 
       test('custom result set with class', () async {
-        final state = TestBackend.inTest({
+        final state = await TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -503,7 +503,7 @@ class MyNestedTable {
       });
 
       test('custom result set with record', () async {
-        final state = TestBackend.inTest(
+        final state = await TestBackend.inTest(
           {
             'a|lib/a.drift': '''
 import 'a.dart';
@@ -545,7 +545,7 @@ class MyRow {
     });
 
     test('into record', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/a.drift': '''
 import 'a.dart';
@@ -586,7 +586,7 @@ typedef MyRow = (int, List<TblData>);
     test(
       'default record',
       () async {
-        final state = TestBackend.inTest(
+        final state = await TestBackend.inTest(
           {
             'a|lib/a.drift': '''
 import 'a.dart';
@@ -625,7 +625,7 @@ foo WITH Record: SELECT 1 AS a, LIST(SELECT * FROM tbl) AS b FROM tbl;
     );
 
     test('mix', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -685,7 +685,7 @@ class MyRow {
 
   group('error', () {
     test('when the specified class has no default constructor', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -705,7 +705,7 @@ class MyRow {
     });
 
     test('when the desired constructor does not exist', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -725,7 +725,7 @@ class MyRow {
     });
 
     test('when there is a parameter with no matching column', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -745,7 +745,7 @@ class MyRow {
     });
 
     test('when a record has too many positional fields', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/a.drift': '''
 import 'a.dart';
@@ -767,7 +767,7 @@ typedef MyRow = (int, String, DateTime);
     });
 
     test('when a record has an unmatched named field', () async {
-      final state = TestBackend.inTest(
+      final state = await TestBackend.inTest(
         {
           'a|lib/a.drift': '''
 import 'a.dart';
@@ -788,7 +788,7 @@ typedef MyRow = (int, {String d});
     });
 
     test('when there is a type mismatch on a scalar column', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -808,7 +808,7 @@ class MyRow {
     });
 
     test('when a list column is not a list', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'a.dart';
 
@@ -832,7 +832,7 @@ class MyRow {
     test(
       'when there is a type mismatch on a nested scalar column',
       () async {
-        final state = TestBackend.inTest({
+        final state = await TestBackend.inTest({
           'a|lib/a.drift': '''
 import 'a.dart';
 

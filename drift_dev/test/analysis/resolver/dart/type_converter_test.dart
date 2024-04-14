@@ -6,8 +6,8 @@ import '../../test_utils.dart';
 void main() {
   late TestBackend state;
 
-  setUp(() {
-    state = TestBackend({
+  setUp(() async {
+    state = await TestBackend.init({
       'a|lib/json.dart': '''
 import 'package:drift/drift.dart';
 

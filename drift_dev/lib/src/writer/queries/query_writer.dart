@@ -209,7 +209,6 @@ class QueryWriter {
     String code;
 
     switch (column.sqlType) {
-      case ColumnGeopolyPolygonType():
       case ColumnDriftType():
         final method = isNullable ? 'readNullable' : 'read';
         code = 'row.$method<$rawDartType>($dartLiteral)';

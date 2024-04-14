@@ -11,8 +11,8 @@ void main() {
   late TestBackend backend;
   late FileState state;
 
-  setUpAll(() {
-    backend = TestBackend({
+  setUpAll(() async {
+    backend = await TestBackend.init({
       'a|lib/main.dart': r'''
       import 'package:drift/drift.dart';
 

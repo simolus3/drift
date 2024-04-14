@@ -5,7 +5,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('can use existing row classes in drift files', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/db.drift': '''
 import 'rows.dart';
 
@@ -61,7 +61,7 @@ class ExistingForView {
   });
 
   test('can use generic row classes', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/generic.dart': '''
 //@dart=2.13
 typedef StringRow = GenericRow<String>;
@@ -105,7 +105,7 @@ CREATE TABLE drift_ints (
 
   group('can use records', () {
     test('with explicit structure', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 import 'helper.dart';
 
@@ -135,7 +135,7 @@ typedef MyRecord = ({String foo, int? bar});
     });
 
     test('implicitly', () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'a|lib/a.drift': '''
 CREATE TABLE foo (
   foo TEXT NOT NULL,
