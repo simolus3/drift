@@ -100,7 +100,7 @@ is responsible for telling drift how to open the database. The `schemaVersion` g
 for migrations after changing the database, we can leave it at `1` for now. Update `database.dart`
 so it now looks like this:
 
-<a name="after_generation">
+<a name="open"></a>
 {% include "blocks/snippet" snippets = snippets name = 'after_generation' %}
 
 The Android-specific workarounds are necessary because sqlite3 attempts to use `/tmp` to store
