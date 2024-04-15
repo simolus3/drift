@@ -4,6 +4,7 @@
 - Expand support for `IN` expressions, they now support tuples on the left-hand
   side and the shorthand syntax for table references and table-valued functions.
 - Drift extensions: Allow custom class names for `CREATE VIEW` statements.
+- Drift extensions: Support the `INT64` hint for `CREATE TABLE` statements.
 
 ## 0.34.1
 
