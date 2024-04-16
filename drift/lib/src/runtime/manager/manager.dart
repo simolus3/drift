@@ -152,6 +152,7 @@ class TableManagerState<
     if (joins.isEmpty && targetColumns == null) {
       final simpleStatement =
           db.select(_tableAsTableInfo, distinct: distinct ?? false);
+
       // Apply the expression to the statement
       if (filter != null) {
         simpleStatement.where((_) => filter!);
@@ -249,7 +250,12 @@ class TableManagerState<
     final query = existsQuery(statement);
     final existsStatement = db.selectOnly(_tableAsTableInfo)
       ..addColumns([query]);
-    return (await existsStatement.map((p0) => p0.read(query)).getSingle())!;
+    return (await existsStatement
+        .map((p0) => p0.read(query))
+        .get()
+        .then((value) {
+      return value.firstOrNull ?? false;
+    }));
   }
 
   /// Build a delete statement based on the manager state

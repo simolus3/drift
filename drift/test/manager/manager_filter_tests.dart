@@ -519,5 +519,23 @@ void main() {
                 ))
             .count(),
         completion(4));
+
+    // Use backreference
+    expect(
+        db.managers.categories
+            .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
+            .getSingle()
+            .then((value) => value.description),
+        completion("School"));
+
+    // Nested backreference
+    expect(
+        db.managers.categories
+            .filter((f) => f.todos((f) => f.category(
+                (f) => f.todos((f) => f.title.equals("Math Homework")))))
+            .distict()
+            .getSingle()
+            .then((value) => value.description),
+        completion("School"));
   });
 }

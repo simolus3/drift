@@ -2510,7 +2510,7 @@ class $$CategoriesTableFilterComposer
       get priority => ColumnWithTypeConverterFilters($table.priority);
   ColumnFilters<String> get descriptionInUpperCase =>
       ColumnFilters($table.descriptionInUpperCase);
-  ComposableFilter todosTableRefs(
+  ComposableFilter todos(
       ComposableFilter Function($$TodosTableTableFilterComposer f) f) {
     return $composeWithJoins(
         $db: $db,
