@@ -24,9 +24,6 @@ class TodosTable extends Table with AutoIncrement {
   @JsonKey('target_date')
   DateTimeColumn get targetDate => dateTime().nullable().unique()();
 
-  RealColumn get someFloat => real().nullable()();
-  Int64Column get someInt64 => int64().nullable()();
-
   IntColumn get category => integer().references(Categories, #id).nullable()();
 
   TextColumn get status => textEnum<TodoStatus>().nullable()();
@@ -88,6 +85,22 @@ class TableWithoutPK extends Table {
 
   TextColumn get custom =>
       text().map(const CustomConverter()).clientDefault(_uuid.v4)();
+}
+
+class TableWithEveryColumnType extends Table with AutoIncrement {
+  BoolColumn get aBool => boolean().nullable()();
+  DateTimeColumn get aDateTime => dateTime().nullable()();
+  TextColumn get aText => text().nullable()();
+  IntColumn get anInt => integer().nullable()();
+  Int64Column get anInt64 => int64().nullable()();
+  RealColumn get aReal => real().nullable()();
+  BlobColumn get aBlob => blob().nullable()();
+  IntColumn get anIntEnum => intEnum<TodoStatus>().nullable()();
+  TextColumn get aTextWithConverter => text()
+      .named('insert')
+      .map(const CustomJsonConverter())
+      .nullable()
+      .nullable()();
 }
 
 class CustomRowClass {
@@ -251,6 +264,7 @@ const uuidType = DialectAwareSqlType<UuidValue>.via(
     TableWithoutPK,
     PureDefaults,
     WithCustomType,
+    TableWithEveryColumnType
   ],
   views: [
     CategoryTodoCountView,

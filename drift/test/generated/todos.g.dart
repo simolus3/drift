@@ -305,18 +305,6 @@ class $TodosTableTable extends TodosTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _someFloatMeta =
-      const VerificationMeta('someFloat');
-  @override
-  late final GeneratedColumn<double> someFloat = GeneratedColumn<double>(
-      'some_float', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
-  static const VerificationMeta _someInt64Meta =
-      const VerificationMeta('someInt64');
-  @override
-  late final GeneratedColumn<BigInt> someInt64 = GeneratedColumn<BigInt>(
-      'some_int64', aliasedName, true,
-      type: DriftSqlType.bigInt, requiredDuringInsert: false);
   static const VerificationMeta _categoryMeta =
       const VerificationMeta('category');
   @override
@@ -334,7 +322,7 @@ class $TodosTableTable extends TodosTable
           .withConverter<TodoStatus?>($TodosTableTable.$converterstatusn);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, content, targetDate, someFloat, someInt64, category, status];
+      [id, title, content, targetDate, category, status];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -361,14 +349,6 @@ class $TodosTableTable extends TodosTable
           _targetDateMeta,
           targetDate.isAcceptableOrUnknown(
               data['target_date']!, _targetDateMeta));
-    }
-    if (data.containsKey('some_float')) {
-      context.handle(_someFloatMeta,
-          someFloat.isAcceptableOrUnknown(data['some_float']!, _someFloatMeta));
-    }
-    if (data.containsKey('some_int64')) {
-      context.handle(_someInt64Meta,
-          someInt64.isAcceptableOrUnknown(data['some_int64']!, _someInt64Meta));
     }
     if (data.containsKey('category')) {
       context.handle(_categoryMeta,
@@ -397,10 +377,6 @@ class $TodosTableTable extends TodosTable
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
       targetDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
-      someFloat: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}some_float']),
-      someInt64: attachedDatabase.typeMapping
-          .read(DriftSqlType.bigInt, data['${effectivePrefix}some_int64']),
       category: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category']),
       status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
@@ -427,8 +403,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String? title;
   final String content;
   final DateTime? targetDate;
-  final double? someFloat;
-  final BigInt? someInt64;
   final int? category;
   final TodoStatus? status;
   const TodoEntry(
@@ -436,8 +410,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       this.title,
       required this.content,
       this.targetDate,
-      this.someFloat,
-      this.someInt64,
       this.category,
       this.status});
   @override
@@ -452,12 +424,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     map['content'] = Variable<String>(content);
     if (!nullToAbsent || targetDate != null) {
       map['target_date'] = Variable<DateTime>(targetDate);
-    }
-    if (!nullToAbsent || someFloat != null) {
-      map['some_float'] = Variable<double>(someFloat);
-    }
-    if (!nullToAbsent || someInt64 != null) {
-      map['some_int64'] = Variable<BigInt>(someInt64);
     }
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<int>(category);
@@ -478,12 +444,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       targetDate: targetDate == null && nullToAbsent
           ? const Value.absent()
           : Value(targetDate),
-      someFloat: someFloat == null && nullToAbsent
-          ? const Value.absent()
-          : Value(someFloat),
-      someInt64: someInt64 == null && nullToAbsent
-          ? const Value.absent()
-          : Value(someInt64),
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
@@ -501,8 +461,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       title: serializer.fromJson<String?>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
-      someFloat: serializer.fromJson<double?>(json['someFloat']),
-      someInt64: serializer.fromJson<BigInt?>(json['someInt64']),
       category: serializer.fromJson<int?>(json['category']),
       status: $TodosTableTable.$converterstatusn
           .fromJson(serializer.fromJson<String?>(json['status'])),
@@ -521,8 +479,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'title': serializer.toJson<String?>(title),
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
-      'someFloat': serializer.toJson<double?>(someFloat),
-      'someInt64': serializer.toJson<BigInt?>(someInt64),
       'category': serializer.toJson<int?>(category),
       'status': serializer
           .toJson<String?>($TodosTableTable.$converterstatusn.toJson(status)),
@@ -534,8 +490,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           Value<String?> title = const Value.absent(),
           String? content,
           Value<DateTime?> targetDate = const Value.absent(),
-          Value<double?> someFloat = const Value.absent(),
-          Value<BigInt?> someInt64 = const Value.absent(),
           Value<int?> category = const Value.absent(),
           Value<TodoStatus?> status = const Value.absent()}) =>
       TodoEntry(
@@ -543,8 +497,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
         title: title.present ? title.value : this.title,
         content: content ?? this.content,
         targetDate: targetDate.present ? targetDate.value : this.targetDate,
-        someFloat: someFloat.present ? someFloat.value : this.someFloat,
-        someInt64: someInt64.present ? someInt64.value : this.someInt64,
         category: category.present ? category.value : this.category,
         status: status.present ? status.value : this.status,
       );
@@ -555,8 +507,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
-          ..write('someFloat: $someFloat, ')
-          ..write('someInt64: $someInt64, ')
           ..write('category: $category, ')
           ..write('status: $status')
           ..write(')'))
@@ -564,8 +514,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, title, content, targetDate, someFloat, someInt64, category, status);
+  int get hashCode =>
+      Object.hash(id, title, content, targetDate, category, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -574,8 +524,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           other.title == this.title &&
           other.content == this.content &&
           other.targetDate == this.targetDate &&
-          other.someFloat == this.someFloat &&
-          other.someInt64 == this.someInt64 &&
           other.category == this.category &&
           other.status == this.status);
 }
@@ -585,8 +533,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   final Value<String?> title;
   final Value<String> content;
   final Value<DateTime?> targetDate;
-  final Value<double?> someFloat;
-  final Value<BigInt?> someInt64;
   final Value<int?> category;
   final Value<TodoStatus?> status;
   const TodosTableCompanion({
@@ -594,8 +540,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.targetDate = const Value.absent(),
-    this.someFloat = const Value.absent(),
-    this.someInt64 = const Value.absent(),
     this.category = const Value.absent(),
     this.status = const Value.absent(),
   });
@@ -604,8 +548,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.title = const Value.absent(),
     required String content,
     this.targetDate = const Value.absent(),
-    this.someFloat = const Value.absent(),
-    this.someInt64 = const Value.absent(),
     this.category = const Value.absent(),
     this.status = const Value.absent(),
   }) : content = Value(content);
@@ -614,8 +556,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     Expression<String>? title,
     Expression<String>? content,
     Expression<DateTime>? targetDate,
-    Expression<double>? someFloat,
-    Expression<BigInt>? someInt64,
     Expression<int>? category,
     Expression<String>? status,
   }) {
@@ -624,8 +564,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (targetDate != null) 'target_date': targetDate,
-      if (someFloat != null) 'some_float': someFloat,
-      if (someInt64 != null) 'some_int64': someInt64,
       if (category != null) 'category': category,
       if (status != null) 'status': status,
     });
@@ -636,8 +574,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       Value<String?>? title,
       Value<String>? content,
       Value<DateTime?>? targetDate,
-      Value<double?>? someFloat,
-      Value<BigInt?>? someInt64,
       Value<int?>? category,
       Value<TodoStatus?>? status}) {
     return TodosTableCompanion(
@@ -645,8 +581,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       title: title ?? this.title,
       content: content ?? this.content,
       targetDate: targetDate ?? this.targetDate,
-      someFloat: someFloat ?? this.someFloat,
-      someInt64: someInt64 ?? this.someInt64,
       category: category ?? this.category,
       status: status ?? this.status,
     );
@@ -667,12 +601,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     if (targetDate.present) {
       map['target_date'] = Variable<DateTime>(targetDate.value);
     }
-    if (someFloat.present) {
-      map['some_float'] = Variable<double>(someFloat.value);
-    }
-    if (someInt64.present) {
-      map['some_int64'] = Variable<BigInt>(someInt64.value);
-    }
     if (category.present) {
       map['category'] = Variable<int>(category.value);
     }
@@ -690,8 +618,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
-          ..write('someFloat: $someFloat, ')
-          ..write('someInt64: $someInt64, ')
           ..write('category: $category, ')
           ..write('status: $status')
           ..write(')'))
@@ -1714,6 +1640,538 @@ class WithCustomTypeCompanion extends UpdateCompanion<WithCustomTypeData> {
   }
 }
 
+class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
+    with
+        TableInfo<$TableWithEveryColumnTypeTable,
+            TableWithEveryColumnTypeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TableWithEveryColumnTypeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumnWithTypeConverter<RowId, int> id = GeneratedColumn<
+              int>('id', aliasedName, false,
+          hasAutoIncrement: true,
+          type: DriftSqlType.int,
+          requiredDuringInsert: false,
+          defaultConstraints:
+              GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      .withConverter<RowId>($TableWithEveryColumnTypeTable.$converterid);
+  static const VerificationMeta _aBoolMeta = const VerificationMeta('aBool');
+  @override
+  late final GeneratedColumn<bool> aBool = GeneratedColumn<bool>(
+      'a_bool', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("a_bool" IN (0, 1))'));
+  static const VerificationMeta _aDateTimeMeta =
+      const VerificationMeta('aDateTime');
+  @override
+  late final GeneratedColumn<DateTime> aDateTime = GeneratedColumn<DateTime>(
+      'a_date_time', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _aTextMeta = const VerificationMeta('aText');
+  @override
+  late final GeneratedColumn<String> aText = GeneratedColumn<String>(
+      'a_text', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _anIntMeta = const VerificationMeta('anInt');
+  @override
+  late final GeneratedColumn<int> anInt = GeneratedColumn<int>(
+      'an_int', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _anInt64Meta =
+      const VerificationMeta('anInt64');
+  @override
+  late final GeneratedColumn<BigInt> anInt64 = GeneratedColumn<BigInt>(
+      'an_int64', aliasedName, true,
+      type: DriftSqlType.bigInt, requiredDuringInsert: false);
+  static const VerificationMeta _aRealMeta = const VerificationMeta('aReal');
+  @override
+  late final GeneratedColumn<double> aReal = GeneratedColumn<double>(
+      'a_real', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _aBlobMeta = const VerificationMeta('aBlob');
+  @override
+  late final GeneratedColumn<Uint8List> aBlob = GeneratedColumn<Uint8List>(
+      'a_blob', aliasedName, true,
+      type: DriftSqlType.blob, requiredDuringInsert: false);
+  static const VerificationMeta _anIntEnumMeta =
+      const VerificationMeta('anIntEnum');
+  @override
+  late final GeneratedColumnWithTypeConverter<TodoStatus?, int> anIntEnum =
+      GeneratedColumn<int>('an_int_enum', aliasedName, true,
+              type: DriftSqlType.int, requiredDuringInsert: false)
+          .withConverter<TodoStatus?>(
+              $TableWithEveryColumnTypeTable.$converteranIntEnumn);
+  static const VerificationMeta _aTextWithConverterMeta =
+      const VerificationMeta('aTextWithConverter');
+  @override
+  late final GeneratedColumnWithTypeConverter<MyCustomObject?, String>
+      aTextWithConverter = GeneratedColumn<String>('insert', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<MyCustomObject?>(
+              $TableWithEveryColumnTypeTable.$converteraTextWithConvertern);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        aBool,
+        aDateTime,
+        aText,
+        anInt,
+        anInt64,
+        aReal,
+        aBlob,
+        anIntEnum,
+        aTextWithConverter
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'table_with_every_column_type';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<TableWithEveryColumnTypeData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    context.handle(_idMeta, const VerificationResult.success());
+    if (data.containsKey('a_bool')) {
+      context.handle(
+          _aBoolMeta, aBool.isAcceptableOrUnknown(data['a_bool']!, _aBoolMeta));
+    }
+    if (data.containsKey('a_date_time')) {
+      context.handle(
+          _aDateTimeMeta,
+          aDateTime.isAcceptableOrUnknown(
+              data['a_date_time']!, _aDateTimeMeta));
+    }
+    if (data.containsKey('a_text')) {
+      context.handle(
+          _aTextMeta, aText.isAcceptableOrUnknown(data['a_text']!, _aTextMeta));
+    }
+    if (data.containsKey('an_int')) {
+      context.handle(
+          _anIntMeta, anInt.isAcceptableOrUnknown(data['an_int']!, _anIntMeta));
+    }
+    if (data.containsKey('an_int64')) {
+      context.handle(_anInt64Meta,
+          anInt64.isAcceptableOrUnknown(data['an_int64']!, _anInt64Meta));
+    }
+    if (data.containsKey('a_real')) {
+      context.handle(
+          _aRealMeta, aReal.isAcceptableOrUnknown(data['a_real']!, _aRealMeta));
+    }
+    if (data.containsKey('a_blob')) {
+      context.handle(
+          _aBlobMeta, aBlob.isAcceptableOrUnknown(data['a_blob']!, _aBlobMeta));
+    }
+    context.handle(_anIntEnumMeta, const VerificationResult.success());
+    context.handle(_aTextWithConverterMeta, const VerificationResult.success());
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TableWithEveryColumnTypeData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TableWithEveryColumnTypeData(
+      id: $TableWithEveryColumnTypeTable.$converterid.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!),
+      aBool: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}a_bool']),
+      aDateTime: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}a_date_time']),
+      aText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}a_text']),
+      anInt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}an_int']),
+      anInt64: attachedDatabase.typeMapping
+          .read(DriftSqlType.bigInt, data['${effectivePrefix}an_int64']),
+      aReal: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}a_real']),
+      aBlob: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}a_blob']),
+      anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}an_int_enum'])),
+      aTextWithConverter: $TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .fromSql(attachedDatabase.typeMapping
+              .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
+    );
+  }
+
+  @override
+  $TableWithEveryColumnTypeTable createAlias(String alias) {
+    return $TableWithEveryColumnTypeTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<RowId, int, int> $converterid =
+      TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<TodoStatus, int, int> $converteranIntEnum =
+      const EnumIndexConverter<TodoStatus>(TodoStatus.values);
+  static JsonTypeConverter2<TodoStatus?, int?, int?> $converteranIntEnumn =
+      JsonTypeConverter2.asNullable($converteranIntEnum);
+  static JsonTypeConverter2<MyCustomObject, String, Map<dynamic, dynamic>>
+      $converteraTextWithConverter = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<dynamic, dynamic>?>
+      $converteraTextWithConvertern =
+      JsonTypeConverter2.asNullable($converteraTextWithConverter);
+}
+
+class TableWithEveryColumnTypeData extends DataClass
+    implements Insertable<TableWithEveryColumnTypeData> {
+  final RowId id;
+  final bool? aBool;
+  final DateTime? aDateTime;
+  final String? aText;
+  final int? anInt;
+  final BigInt? anInt64;
+  final double? aReal;
+  final Uint8List? aBlob;
+  final TodoStatus? anIntEnum;
+  final MyCustomObject? aTextWithConverter;
+  const TableWithEveryColumnTypeData(
+      {required this.id,
+      this.aBool,
+      this.aDateTime,
+      this.aText,
+      this.anInt,
+      this.anInt64,
+      this.aReal,
+      this.aBlob,
+      this.anIntEnum,
+      this.aTextWithConverter});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    {
+      map['id'] =
+          Variable<int>($TableWithEveryColumnTypeTable.$converterid.toSql(id));
+    }
+    if (!nullToAbsent || aBool != null) {
+      map['a_bool'] = Variable<bool>(aBool);
+    }
+    if (!nullToAbsent || aDateTime != null) {
+      map['a_date_time'] = Variable<DateTime>(aDateTime);
+    }
+    if (!nullToAbsent || aText != null) {
+      map['a_text'] = Variable<String>(aText);
+    }
+    if (!nullToAbsent || anInt != null) {
+      map['an_int'] = Variable<int>(anInt);
+    }
+    if (!nullToAbsent || anInt64 != null) {
+      map['an_int64'] = Variable<BigInt>(anInt64);
+    }
+    if (!nullToAbsent || aReal != null) {
+      map['a_real'] = Variable<double>(aReal);
+    }
+    if (!nullToAbsent || aBlob != null) {
+      map['a_blob'] = Variable<Uint8List>(aBlob);
+    }
+    if (!nullToAbsent || anIntEnum != null) {
+      map['an_int_enum'] = Variable<int>(
+          $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(anIntEnum));
+    }
+    if (!nullToAbsent || aTextWithConverter != null) {
+      map['insert'] = Variable<String>($TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .toSql(aTextWithConverter));
+    }
+    return map;
+  }
+
+  TableWithEveryColumnTypeCompanion toCompanion(bool nullToAbsent) {
+    return TableWithEveryColumnTypeCompanion(
+      id: Value(id),
+      aBool:
+          aBool == null && nullToAbsent ? const Value.absent() : Value(aBool),
+      aDateTime: aDateTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aDateTime),
+      aText:
+          aText == null && nullToAbsent ? const Value.absent() : Value(aText),
+      anInt:
+          anInt == null && nullToAbsent ? const Value.absent() : Value(anInt),
+      anInt64: anInt64 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anInt64),
+      aReal:
+          aReal == null && nullToAbsent ? const Value.absent() : Value(aReal),
+      aBlob:
+          aBlob == null && nullToAbsent ? const Value.absent() : Value(aBlob),
+      anIntEnum: anIntEnum == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anIntEnum),
+      aTextWithConverter: aTextWithConverter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aTextWithConverter),
+    );
+  }
+
+  factory TableWithEveryColumnTypeData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TableWithEveryColumnTypeData(
+      id: $TableWithEveryColumnTypeTable.$converterid
+          .fromJson(serializer.fromJson<int>(json['id'])),
+      aBool: serializer.fromJson<bool?>(json['aBool']),
+      aDateTime: serializer.fromJson<DateTime?>(json['aDateTime']),
+      aText: serializer.fromJson<String?>(json['aText']),
+      anInt: serializer.fromJson<int?>(json['anInt']),
+      anInt64: serializer.fromJson<BigInt?>(json['anInt64']),
+      aReal: serializer.fromJson<double?>(json['aReal']),
+      aBlob: serializer.fromJson<Uint8List?>(json['aBlob']),
+      anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn
+          .fromJson(serializer.fromJson<int?>(json['anIntEnum'])),
+      aTextWithConverter: $TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .fromJson(serializer
+              .fromJson<Map<dynamic, dynamic>?>(json['aTextWithConverter'])),
+    );
+  }
+  factory TableWithEveryColumnTypeData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TableWithEveryColumnTypeData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer
+          .toJson<int>($TableWithEveryColumnTypeTable.$converterid.toJson(id)),
+      'aBool': serializer.toJson<bool?>(aBool),
+      'aDateTime': serializer.toJson<DateTime?>(aDateTime),
+      'aText': serializer.toJson<String?>(aText),
+      'anInt': serializer.toJson<int?>(anInt),
+      'anInt64': serializer.toJson<BigInt?>(anInt64),
+      'aReal': serializer.toJson<double?>(aReal),
+      'aBlob': serializer.toJson<Uint8List?>(aBlob),
+      'anIntEnum': serializer.toJson<int?>($TableWithEveryColumnTypeTable
+          .$converteranIntEnumn
+          .toJson(anIntEnum)),
+      'aTextWithConverter': serializer.toJson<Map<dynamic, dynamic>?>(
+          $TableWithEveryColumnTypeTable.$converteraTextWithConvertern
+              .toJson(aTextWithConverter)),
+    };
+  }
+
+  TableWithEveryColumnTypeData copyWith(
+          {RowId? id,
+          Value<bool?> aBool = const Value.absent(),
+          Value<DateTime?> aDateTime = const Value.absent(),
+          Value<String?> aText = const Value.absent(),
+          Value<int?> anInt = const Value.absent(),
+          Value<BigInt?> anInt64 = const Value.absent(),
+          Value<double?> aReal = const Value.absent(),
+          Value<Uint8List?> aBlob = const Value.absent(),
+          Value<TodoStatus?> anIntEnum = const Value.absent(),
+          Value<MyCustomObject?> aTextWithConverter = const Value.absent()}) =>
+      TableWithEveryColumnTypeData(
+        id: id ?? this.id,
+        aBool: aBool.present ? aBool.value : this.aBool,
+        aDateTime: aDateTime.present ? aDateTime.value : this.aDateTime,
+        aText: aText.present ? aText.value : this.aText,
+        anInt: anInt.present ? anInt.value : this.anInt,
+        anInt64: anInt64.present ? anInt64.value : this.anInt64,
+        aReal: aReal.present ? aReal.value : this.aReal,
+        aBlob: aBlob.present ? aBlob.value : this.aBlob,
+        anIntEnum: anIntEnum.present ? anIntEnum.value : this.anIntEnum,
+        aTextWithConverter: aTextWithConverter.present
+            ? aTextWithConverter.value
+            : this.aTextWithConverter,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TableWithEveryColumnTypeData(')
+          ..write('id: $id, ')
+          ..write('aBool: $aBool, ')
+          ..write('aDateTime: $aDateTime, ')
+          ..write('aText: $aText, ')
+          ..write('anInt: $anInt, ')
+          ..write('anInt64: $anInt64, ')
+          ..write('aReal: $aReal, ')
+          ..write('aBlob: $aBlob, ')
+          ..write('anIntEnum: $anIntEnum, ')
+          ..write('aTextWithConverter: $aTextWithConverter')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, aBool, aDateTime, aText, anInt, anInt64,
+      aReal, $driftBlobEquality.hash(aBlob), anIntEnum, aTextWithConverter);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TableWithEveryColumnTypeData &&
+          other.id == this.id &&
+          other.aBool == this.aBool &&
+          other.aDateTime == this.aDateTime &&
+          other.aText == this.aText &&
+          other.anInt == this.anInt &&
+          other.anInt64 == this.anInt64 &&
+          other.aReal == this.aReal &&
+          $driftBlobEquality.equals(other.aBlob, this.aBlob) &&
+          other.anIntEnum == this.anIntEnum &&
+          other.aTextWithConverter == this.aTextWithConverter);
+}
+
+class TableWithEveryColumnTypeCompanion
+    extends UpdateCompanion<TableWithEveryColumnTypeData> {
+  final Value<RowId> id;
+  final Value<bool?> aBool;
+  final Value<DateTime?> aDateTime;
+  final Value<String?> aText;
+  final Value<int?> anInt;
+  final Value<BigInt?> anInt64;
+  final Value<double?> aReal;
+  final Value<Uint8List?> aBlob;
+  final Value<TodoStatus?> anIntEnum;
+  final Value<MyCustomObject?> aTextWithConverter;
+  const TableWithEveryColumnTypeCompanion({
+    this.id = const Value.absent(),
+    this.aBool = const Value.absent(),
+    this.aDateTime = const Value.absent(),
+    this.aText = const Value.absent(),
+    this.anInt = const Value.absent(),
+    this.anInt64 = const Value.absent(),
+    this.aReal = const Value.absent(),
+    this.aBlob = const Value.absent(),
+    this.anIntEnum = const Value.absent(),
+    this.aTextWithConverter = const Value.absent(),
+  });
+  TableWithEveryColumnTypeCompanion.insert({
+    this.id = const Value.absent(),
+    this.aBool = const Value.absent(),
+    this.aDateTime = const Value.absent(),
+    this.aText = const Value.absent(),
+    this.anInt = const Value.absent(),
+    this.anInt64 = const Value.absent(),
+    this.aReal = const Value.absent(),
+    this.aBlob = const Value.absent(),
+    this.anIntEnum = const Value.absent(),
+    this.aTextWithConverter = const Value.absent(),
+  });
+  static Insertable<TableWithEveryColumnTypeData> custom({
+    Expression<int>? id,
+    Expression<bool>? aBool,
+    Expression<DateTime>? aDateTime,
+    Expression<String>? aText,
+    Expression<int>? anInt,
+    Expression<BigInt>? anInt64,
+    Expression<double>? aReal,
+    Expression<Uint8List>? aBlob,
+    Expression<int>? anIntEnum,
+    Expression<String>? aTextWithConverter,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (aBool != null) 'a_bool': aBool,
+      if (aDateTime != null) 'a_date_time': aDateTime,
+      if (aText != null) 'a_text': aText,
+      if (anInt != null) 'an_int': anInt,
+      if (anInt64 != null) 'an_int64': anInt64,
+      if (aReal != null) 'a_real': aReal,
+      if (aBlob != null) 'a_blob': aBlob,
+      if (anIntEnum != null) 'an_int_enum': anIntEnum,
+      if (aTextWithConverter != null) 'insert': aTextWithConverter,
+    });
+  }
+
+  TableWithEveryColumnTypeCompanion copyWith(
+      {Value<RowId>? id,
+      Value<bool?>? aBool,
+      Value<DateTime?>? aDateTime,
+      Value<String?>? aText,
+      Value<int?>? anInt,
+      Value<BigInt?>? anInt64,
+      Value<double?>? aReal,
+      Value<Uint8List?>? aBlob,
+      Value<TodoStatus?>? anIntEnum,
+      Value<MyCustomObject?>? aTextWithConverter}) {
+    return TableWithEveryColumnTypeCompanion(
+      id: id ?? this.id,
+      aBool: aBool ?? this.aBool,
+      aDateTime: aDateTime ?? this.aDateTime,
+      aText: aText ?? this.aText,
+      anInt: anInt ?? this.anInt,
+      anInt64: anInt64 ?? this.anInt64,
+      aReal: aReal ?? this.aReal,
+      aBlob: aBlob ?? this.aBlob,
+      anIntEnum: anIntEnum ?? this.anIntEnum,
+      aTextWithConverter: aTextWithConverter ?? this.aTextWithConverter,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(
+          $TableWithEveryColumnTypeTable.$converterid.toSql(id.value));
+    }
+    if (aBool.present) {
+      map['a_bool'] = Variable<bool>(aBool.value);
+    }
+    if (aDateTime.present) {
+      map['a_date_time'] = Variable<DateTime>(aDateTime.value);
+    }
+    if (aText.present) {
+      map['a_text'] = Variable<String>(aText.value);
+    }
+    if (anInt.present) {
+      map['an_int'] = Variable<int>(anInt.value);
+    }
+    if (anInt64.present) {
+      map['an_int64'] = Variable<BigInt>(anInt64.value);
+    }
+    if (aReal.present) {
+      map['a_real'] = Variable<double>(aReal.value);
+    }
+    if (aBlob.present) {
+      map['a_blob'] = Variable<Uint8List>(aBlob.value);
+    }
+    if (anIntEnum.present) {
+      map['an_int_enum'] = Variable<int>($TableWithEveryColumnTypeTable
+          .$converteranIntEnumn
+          .toSql(anIntEnum.value));
+    }
+    if (aTextWithConverter.present) {
+      map['insert'] = Variable<String>($TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .toSql(aTextWithConverter.value));
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TableWithEveryColumnTypeCompanion(')
+          ..write('id: $id, ')
+          ..write('aBool: $aBool, ')
+          ..write('aDateTime: $aDateTime, ')
+          ..write('aText: $aText, ')
+          ..write('anInt: $anInt, ')
+          ..write('anInt64: $anInt64, ')
+          ..write('aReal: $aReal, ')
+          ..write('aBlob: $aBlob, ')
+          ..write('anIntEnum: $anIntEnum, ')
+          ..write('aTextWithConverter: $aTextWithConverter')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class CategoryTodoCountViewData extends DataClass {
   final int? categoryId;
   final String? description;
@@ -1946,6 +2404,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable(this);
   late final $PureDefaultsTable pureDefaults = $PureDefaultsTable(this);
   late final $WithCustomTypeTable withCustomType = $WithCustomTypeTable(this);
+  late final $TableWithEveryColumnTypeTable tableWithEveryColumnType =
+      $TableWithEveryColumnTypeTable(this);
   late final $CategoryTodoCountViewView categoryTodoCountView =
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
@@ -1964,8 +2424,6 @@ abstract class _$TodoDb extends GeneratedDatabase {
           title: row.readNullable<String>('title'),
           content: row.read<String>('content'),
           targetDate: row.readNullable<DateTime>('target_date'),
-          someFloat: row.readNullable<double>('some_float'),
-          someInt64: row.readNullable<BigInt>('some_int64'),
           category: row.readNullable<int>('category'),
           status: NullAwareTypeConverter.wrapFromSql(
               $TodosTableTable.$converterstatus,
@@ -2034,6 +2492,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         tableWithoutPK,
         pureDefaults,
         withCustomType,
+        tableWithEveryColumnType,
         categoryTodoCountView,
         todoWithCategoryView
       ];
@@ -2146,8 +2605,6 @@ class $$TodosTableTableFilterComposer
   ColumnFilters<String> get title => ColumnFilters($table.title);
   ColumnFilters<String> get content => ColumnFilters($table.content);
   ColumnFilters<DateTime> get targetDate => ColumnFilters($table.targetDate);
-  ColumnFilters<double> get someFloat => ColumnFilters($table.someFloat);
-  ColumnFilters<BigInt> get someInt64 => ColumnFilters($table.someInt64);
   ColumnFilters<int> get categoryId => ColumnFilters($table.category);
   ComposableFilter category(
       ComposableFilter Function($$CategoriesTableFilterComposer f) f) {
@@ -2174,8 +2631,6 @@ class $$TodosTableTableOrderingComposer
   ColumnOrderings get title => ColumnOrderings($table.title);
   ColumnOrderings get content => ColumnOrderings($table.content);
   ColumnOrderings get targetDate => ColumnOrderings($table.targetDate);
-  ColumnOrderings get someFloat => ColumnOrderings($table.someFloat);
-  ColumnOrderings get someInt64 => ColumnOrderings($table.someInt64);
   ColumnOrderings get categoryId => ColumnOrderings($table.category);
   ComposableOrdering category(
       ComposableOrdering Function($$CategoriesTableOrderingComposer o) o) {
@@ -2210,8 +2665,6 @@ typedef $$TodosTableTableInsertCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   required String content,
   Value<DateTime?> targetDate,
-  Value<double?> someFloat,
-  Value<BigInt?> someInt64,
   Value<int?> category,
   Value<TodoStatus?> status,
 });
@@ -2220,8 +2673,6 @@ typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   Value<String> content,
   Value<DateTime?> targetDate,
-  Value<double?> someFloat,
-  Value<BigInt?> someInt64,
   Value<int?> category,
   Value<TodoStatus?> status,
 });
@@ -2248,8 +2699,6 @@ class $$TodosTableTableTableManager extends RootTableManager<
               Value<String?> title = const Value.absent(),
               Value<String> content = const Value.absent(),
               Value<DateTime?> targetDate = const Value.absent(),
-              Value<double?> someFloat = const Value.absent(),
-              Value<BigInt?> someInt64 = const Value.absent(),
               Value<int?> category = const Value.absent(),
               Value<TodoStatus?> status = const Value.absent(),
             }) =>
@@ -2258,8 +2707,6 @@ class $$TodosTableTableTableManager extends RootTableManager<
                   title: title,
                   content: content,
                   targetDate: targetDate,
-                  someFloat: someFloat,
-                  someInt64: someInt64,
                   category: category,
                   status: status,
                 ),
@@ -2268,8 +2715,6 @@ class $$TodosTableTableTableManager extends RootTableManager<
               Value<String?> title = const Value.absent(),
               required String content,
               Value<DateTime?> targetDate = const Value.absent(),
-              Value<double?> someFloat = const Value.absent(),
-              Value<BigInt?> someInt64 = const Value.absent(),
               Value<int?> category = const Value.absent(),
               Value<TodoStatus?> status = const Value.absent(),
             }) =>
@@ -2278,8 +2723,6 @@ class $$TodosTableTableTableManager extends RootTableManager<
                   title: title,
                   content: content,
                   targetDate: targetDate,
-                  someFloat: someFloat,
-                  someInt64: someInt64,
                   category: category,
                   status: status,
                 )));
@@ -2602,6 +3045,155 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
                 )));
 }
 
+class $$TableWithEveryColumnTypeTableFilterComposer
+    extends FilterComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
+  $$TableWithEveryColumnTypeTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  ColumnWithTypeConverterFilters<RowId, int> get id =>
+      ColumnWithTypeConverterFilters($table.id);
+  ColumnFilters<bool> get aBool => ColumnFilters($table.aBool);
+  ColumnFilters<DateTime> get aDateTime => ColumnFilters($table.aDateTime);
+  ColumnFilters<String> get aText => ColumnFilters($table.aText);
+  ColumnFilters<int> get anInt => ColumnFilters($table.anInt);
+  ColumnFilters<BigInt> get anInt64 => ColumnFilters($table.anInt64);
+  ColumnFilters<double> get aReal => ColumnFilters($table.aReal);
+  ColumnFilters<Uint8List> get aBlob => ColumnFilters($table.aBlob);
+  ColumnFilters<int> get anIntEnumValue => ColumnFilters($table.anIntEnum);
+  ColumnWithTypeConverterFilters<TodoStatus?, int> get anIntEnum =>
+      ColumnWithTypeConverterFilters($table.anIntEnum);
+  ColumnFilters<String> get aTextWithConverterValue =>
+      ColumnFilters($table.aTextWithConverter);
+  ColumnWithTypeConverterFilters<MyCustomObject?, String>
+      get aTextWithConverter =>
+          ColumnWithTypeConverterFilters($table.aTextWithConverter);
+}
+
+class $$TableWithEveryColumnTypeTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
+  $$TableWithEveryColumnTypeTableOrderingComposer(super.db, super.table);
+  ColumnOrderings get id => ColumnOrderings($table.id);
+  ColumnOrderings get aBool => ColumnOrderings($table.aBool);
+  ColumnOrderings get aDateTime => ColumnOrderings($table.aDateTime);
+  ColumnOrderings get aText => ColumnOrderings($table.aText);
+  ColumnOrderings get anInt => ColumnOrderings($table.anInt);
+  ColumnOrderings get anInt64 => ColumnOrderings($table.anInt64);
+  ColumnOrderings get aReal => ColumnOrderings($table.aReal);
+  ColumnOrderings get aBlob => ColumnOrderings($table.aBlob);
+  ColumnOrderings get anIntEnum => ColumnOrderings($table.anIntEnum);
+  ColumnOrderings get aTextWithConverter =>
+      ColumnOrderings($table.aTextWithConverter);
+}
+
+class $$TableWithEveryColumnTypeTableProcessedTableManager
+    extends ProcessedTableManager<
+        _$TodoDb,
+        $TableWithEveryColumnTypeTable,
+        TableWithEveryColumnTypeData,
+        $$TableWithEveryColumnTypeTableFilterComposer,
+        $$TableWithEveryColumnTypeTableOrderingComposer,
+        $$TableWithEveryColumnTypeTableProcessedTableManager,
+        $$TableWithEveryColumnTypeTableInsertCompanionBuilder,
+        $$TableWithEveryColumnTypeTableUpdateCompanionBuilder> {
+  const $$TableWithEveryColumnTypeTableProcessedTableManager(super.$state);
+}
+
+typedef $$TableWithEveryColumnTypeTableInsertCompanionBuilder
+    = TableWithEveryColumnTypeCompanion Function({
+  Value<RowId> id,
+  Value<bool?> aBool,
+  Value<DateTime?> aDateTime,
+  Value<String?> aText,
+  Value<int?> anInt,
+  Value<BigInt?> anInt64,
+  Value<double?> aReal,
+  Value<Uint8List?> aBlob,
+  Value<TodoStatus?> anIntEnum,
+  Value<MyCustomObject?> aTextWithConverter,
+});
+typedef $$TableWithEveryColumnTypeTableUpdateCompanionBuilder
+    = TableWithEveryColumnTypeCompanion Function({
+  Value<RowId> id,
+  Value<bool?> aBool,
+  Value<DateTime?> aDateTime,
+  Value<String?> aText,
+  Value<int?> anInt,
+  Value<BigInt?> anInt64,
+  Value<double?> aReal,
+  Value<Uint8List?> aBlob,
+  Value<TodoStatus?> anIntEnum,
+  Value<MyCustomObject?> aTextWithConverter,
+});
+
+class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TableWithEveryColumnTypeTable,
+    TableWithEveryColumnTypeData,
+    $$TableWithEveryColumnTypeTableFilterComposer,
+    $$TableWithEveryColumnTypeTableOrderingComposer,
+    $$TableWithEveryColumnTypeTableProcessedTableManager,
+    $$TableWithEveryColumnTypeTableInsertCompanionBuilder,
+    $$TableWithEveryColumnTypeTableUpdateCompanionBuilder> {
+  $$TableWithEveryColumnTypeTableTableManager(
+      _$TodoDb db, $TableWithEveryColumnTypeTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer:
+                $$TableWithEveryColumnTypeTableFilterComposer(db, table),
+            orderingComposer:
+                $$TableWithEveryColumnTypeTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$TableWithEveryColumnTypeTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<bool?> aBool = const Value.absent(),
+              Value<DateTime?> aDateTime = const Value.absent(),
+              Value<String?> aText = const Value.absent(),
+              Value<int?> anInt = const Value.absent(),
+              Value<BigInt?> anInt64 = const Value.absent(),
+              Value<double?> aReal = const Value.absent(),
+              Value<Uint8List?> aBlob = const Value.absent(),
+              Value<TodoStatus?> anIntEnum = const Value.absent(),
+              Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+            }) =>
+                TableWithEveryColumnTypeCompanion(
+                  id: id,
+                  aBool: aBool,
+                  aDateTime: aDateTime,
+                  aText: aText,
+                  anInt: anInt,
+                  anInt64: anInt64,
+                  aReal: aReal,
+                  aBlob: aBlob,
+                  anIntEnum: anIntEnum,
+                  aTextWithConverter: aTextWithConverter,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<bool?> aBool = const Value.absent(),
+              Value<DateTime?> aDateTime = const Value.absent(),
+              Value<String?> aText = const Value.absent(),
+              Value<int?> anInt = const Value.absent(),
+              Value<BigInt?> anInt64 = const Value.absent(),
+              Value<double?> aReal = const Value.absent(),
+              Value<Uint8List?> aBlob = const Value.absent(),
+              Value<TodoStatus?> anIntEnum = const Value.absent(),
+              Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+            }) =>
+                TableWithEveryColumnTypeCompanion.insert(
+                  id: id,
+                  aBool: aBool,
+                  aDateTime: aDateTime,
+                  aText: aText,
+                  anInt: anInt,
+                  anInt64: anInt64,
+                  aReal: aReal,
+                  aBlob: aBlob,
+                  anIntEnum: anIntEnum,
+                  aTextWithConverter: aTextWithConverter,
+                )));
+}
+
 class _$TodoDbManager {
   final _$TodoDb _db;
   _$TodoDbManager(this._db);
@@ -2617,6 +3209,9 @@ class _$TodoDbManager {
       $$PureDefaultsTableTableManager(_db, _db.pureDefaults);
   $$WithCustomTypeTableTableManager get withCustomType =>
       $$WithCustomTypeTableTableManager(_db, _db.withCustomType);
+  $$TableWithEveryColumnTypeTableTableManager get tableWithEveryColumnType =>
+      $$TableWithEveryColumnTypeTableTableManager(
+          _db, _db.tableWithEveryColumnType);
 }
 
 class AllTodosWithCategoryResult extends CustomResultSet {
@@ -2624,8 +3219,6 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   final String? title;
   final String content;
   final DateTime? targetDate;
-  final double? someFloat;
-  final BigInt? someInt64;
   final int? category;
   final TodoStatus? status;
   final RowId catId;
@@ -2636,16 +3229,14 @@ class AllTodosWithCategoryResult extends CustomResultSet {
     this.title,
     required this.content,
     this.targetDate,
-    this.someFloat,
-    this.someInt64,
     this.category,
     this.status,
     required this.catId,
     required this.catDesc,
   }) : super(row);
   @override
-  int get hashCode => Object.hash(id, title, content, targetDate, someFloat,
-      someInt64, category, status, catId, catDesc);
+  int get hashCode => Object.hash(
+      id, title, content, targetDate, category, status, catId, catDesc);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2654,8 +3245,6 @@ class AllTodosWithCategoryResult extends CustomResultSet {
           other.title == this.title &&
           other.content == this.content &&
           other.targetDate == this.targetDate &&
-          other.someFloat == this.someFloat &&
-          other.someInt64 == this.someInt64 &&
           other.category == this.category &&
           other.status == this.status &&
           other.catId == this.catId &&
@@ -2667,8 +3256,6 @@ class AllTodosWithCategoryResult extends CustomResultSet {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('targetDate: $targetDate, ')
-          ..write('someFloat: $someFloat, ')
-          ..write('someInt64: $someInt64, ')
           ..write('category: $category, ')
           ..write('status: $status, ')
           ..write('catId: $catId, ')
