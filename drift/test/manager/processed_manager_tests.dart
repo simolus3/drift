@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:test/expect.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
