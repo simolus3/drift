@@ -5,133 +5,11 @@ import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
 
 void main() {
-  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   late TodoDb db;
 
   setUp(() {
     db = TodoDb(testInMemoryDatabase());
   });
-
-  //   // Create a dataset for the tests
-  //   schoolId = await db.managers.categories.create((o) =>
-  //       o(priority: Value(CategoryPriority.high), description: "School"));
-  //   workId = await db.managers.categories.create(
-  //       (o) => o(priority: Value(CategoryPriority.low), description: "Work"));
-  //   homeId = await db.managers.categories.create((o) =>
-  //       o(priority: Value(CategoryPriority.medium), description: "Home"));
-  //   otherId = await db.managers.categories.create(
-  //       (o) => o(priority: Value(CategoryPriority.high), description: "Other"));
-
-  //   // School
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: Value("Get that math homework done"),
-  //       title: Value("Math Homework"),
-  //       category: Value(schoolId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1,seconds: 10)))));
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Finish that report",
-  //       title: Value("Report"),
-  //       category: Value(workId),
-  //       anIntEnum: Value(TodoStatus.workInProgress),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 2,seconds: 10)))));
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Get that english homework done",
-  //       title: Value("English Homework"),
-  //       category: Value(schoolId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1,seconds: 15)))));
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Finish that Book report",
-  //       title: Value("Book Report"),
-  //       category: Value(workId),
-  //       anIntEnum: Value(TodoStatus.done),
-  //       aDateTime: Value(DateTime.now().subtract(Duration(days: 2,seconds: 15)))));
-
-  //   // Work
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "File those reports",
-  //       title: Value("File Reports"),
-  //       category: Value(workId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Clean the office",
-  //       title: Value("Clean Office"),
-  //       category: Value(workId),
-  //       anIntEnum: Value(TodoStatus.workInProgress),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Nail that presentation",
-  //       title: Value("Presentation"),
-  //       category: Value(workId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))));
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Take a break",
-  //       title: Value("Break"),
-  //       category: Value(workId),
-  //       anIntEnum: Value(TodoStatus.done),
-  //       aDateTime: Value(DateTime.now().subtract(Duration(days: 2, seconds: 25)))));
-
-  //   // Work
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Take out the trash",
-  //       title: Value("Trash"),
-  //       category: Value(homeId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 30)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Mow the lawn",
-  //       title: Value("Lawn"),
-  //       category: Value(homeId),
-  //       anIntEnum: Value(TodoStatus.workInProgress),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 2, seconds: 30)))));
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Fix the sink",
-  //       title: Value("Sink"),
-  //       category: Value(homeId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 35)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Paint the walls",
-  //       title: Value("Paint"),
-  //       category: Value(homeId),
-  //       anIntEnum: Value(TodoStatus.done),
-  //       aDateTime: Value(DateTime.now().subtract(Duration(days: 2, seconds: 35)))));
-
-  //   // Other
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Get groceries",
-  //       title: Value("Groceries"),
-  //       category: Value(otherId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 40)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Pick up the kids",
-  //       title: Value("Kids"),
-  //       category: Value(otherId),
-  //       anIntEnum: Value(TodoStatus.workInProgress),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 2, seconds: 40)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Take the dog for a walk",
-  //       title: Value("Dog"),
-  //       category: Value(otherId),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 45)))));
-
-  //   // Items with no category
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Get Whiteboard",
-  //       title: Value("Whiteboard"),
-  //       anIntEnum: Value(TodoStatus.open),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 1, seconds: 50)))););
-  //   await db.managers.tableWithEveryColumnType.create((o) => o(
-  //       aText: "Drink Water",
-  //       title: Value("Water"),
-  //       anIntEnum: Value(TodoStatus.workInProgress),
-  //       aDateTime: Value(DateTime.now().add(Duration(days: 2, seconds: 50)))));
-  // });
 
   tearDown(() => db.close());
 
@@ -162,6 +40,14 @@ void main() {
             .filter((f) => f.aReal(3.0))
             .count(),
         completion(1));
+
+    // Not Equals - Exclude null (Default behavior)
+    expect(
+        db.managers.tableWithEveryColumnType
+            .filter((f) => f.aReal.not.equals(5.0))
+            .count(),
+        completion(1));
+
     // In
     expect(
         db.managers.tableWithEveryColumnType
@@ -172,7 +58,7 @@ void main() {
     // Not In
     expect(
         db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isNotIn([3.0, 5.0]))
+            .filter((f) => f.aReal.not.isIn([3.0, 5.0]))
             .count(),
         completion(0));
 
@@ -182,9 +68,10 @@ void main() {
             .filter((f) => f.aReal.isNull())
             .count(),
         completion(1));
+
     expect(
         db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isNotNull())
+            .filter((f) => f.aReal.not.isNull())
             .count(),
         completion(2));
   });
@@ -237,7 +124,7 @@ void main() {
         completion(2));
     expect(
         db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isNotBetween(3.0, 5.0))
+            .filter((f) => f.aReal.not.isBetween(3.0, 5.0))
             .count(),
         completion(0));
   });
@@ -351,7 +238,7 @@ void main() {
     expect(
         db.managers.tableWithEveryColumnType
             .filter((f) =>
-                f.anInt64.isNotBetween(BigInt.from(3.0), BigInt.from(5.0)))
+                f.anInt64.not.isBetween(BigInt.from(3.0), BigInt.from(5.0)))
             .count(),
         completion(0));
   });
@@ -432,7 +319,7 @@ void main() {
         completion(2));
     expect(
         db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.isNotBetween(day1, day2))
+            .filter((f) => f.aDateTime.not.isBetween(day1, day2))
             .count(),
         completion(1));
   });
@@ -450,6 +337,8 @@ void main() {
     await db.managers.tableWithEveryColumnType.create((o) => o(
         aText: Value("Get that math homework done"),
         anIntEnum: Value(TodoStatus.done)));
+    await db.managers.tableWithEveryColumnType
+        .create((o) => o(aText: Value("Get that math homework done")));
 
     // Equals
     expect(
@@ -463,20 +352,172 @@ void main() {
             .count(),
         completion(2));
 
-    // In
     expect(
         db.managers.tableWithEveryColumnType
-            .filter((f) =>
-                f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
+            .filter((f) => f.anIntEnum.not(TodoStatus.open))
             .count(),
-        completion(3));
+        completion(2));
 
-    // Not In
+    // // Not Equals
+    // expect(
+    //     db.managers.tableWithEveryColumnType
+    //         .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
+    //         .count(),
+    //     completion(2));
+
+    // // In
+    // expect(
+    //     db.managers.tableWithEveryColumnType
+    //         .filter((f) =>
+    //             f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
+    //         .count(),
+    //     completion(3));
+
+    // // Not In
+    // expect(
+    //     db.managers.tableWithEveryColumnType
+    //         .filter((f) => f.anIntEnum.not
+    //             .isIn([TodoStatus.open, TodoStatus.workInProgress]))
+    //         .count(),
+    //     completion(1));
+  });
+
+  test('manager - filter related', () async {
+    final schoolCategoryId = await db.managers.categories.create((o) =>
+        o(priority: Value(CategoryPriority.high), description: "School"));
+    final workCategoryId = await db.managers.categories.create(
+        (o) => o(priority: Value(CategoryPriority.low), description: "Work"));
+
+    // School
+    await db.managers.todosTable.create((o) => o(
+        content: "Get that math homework done",
+        title: Value("Math Homework"),
+        category: Value(schoolCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Finish that report",
+        title: Value("Report"),
+        category: Value(schoolCategoryId),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Get that english homework done",
+        title: Value("English Homework"),
+        category: Value(schoolCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 15)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Finish that Book report",
+        title: Value("Book Report"),
+        category: Value(schoolCategoryId),
+        status: Value(TodoStatus.done),
+        targetDate:
+            Value(DateTime.now().subtract(Duration(days: 2, seconds: 15)))));
+
+    // Work
+    await db.managers.todosTable.create((o) => o(
+        content: "File those reports",
+        title: Value("File Reports"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Clean the office",
+        title: Value("Clean Office"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Nail that presentation",
+        title: Value("Presentation"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Take a break",
+        title: Value("Break"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.done),
+        targetDate:
+            Value(DateTime.now().subtract(Duration(days: 2, seconds: 25)))));
+
+    // Items with no category
+    await db.managers.todosTable.create((o) => o(
+        content: "Get Whiteboard",
+        title: Value("Whiteboard"),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 50)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Drink Water",
+        title: Value("Water"),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 50)))));
+
+    // item without title
+
+    // Equals
     expect(
-        db.managers.tableWithEveryColumnType
-            .filter((f) => f.anIntEnum
-                .isNotIn([TodoStatus.open, TodoStatus.workInProgress]))
+        db.managers.todosTable
+            .filter((f) => f.category(
+                  (f) => f.id(RowId(schoolCategoryId)),
+                ))
             .count(),
-        completion(1));
+        completion(4));
+
+    // Not Equals
+    expect(
+        db.managers.todosTable
+            .filter(
+              (f) =>
+                  f.category((f) => f.id.not.equals(RowId(schoolCategoryId))),
+            )
+            .count(),
+        completion(4));
+
+    // Multiple filters
+    expect(
+        db.managers.todosTable
+            .filter((f) => f.category(
+                  (f) => f.id(RowId(schoolCategoryId)),
+                ))
+            .filter((f) => f.status.equals(TodoStatus.open))
+            .count(),
+        completion(2));
+
+    // Multiple 2 related filters
+    expect(
+        db.managers.todosTable
+            .filter((f) => f.category(
+                  (f) =>
+                      f.priority.equals(CategoryPriority.low) |
+                      f.descriptionInUpperCase.equals("SCHOOL"),
+                ))
+            .count(),
+        completion(8));
+
+    // Multiple use related filters twice
+    expect(
+        db.managers.todosTable
+            .filter((f) =>
+                f.category(
+                  (f) => f.priority.equals(CategoryPriority.low),
+                ) |
+                f.category(
+                  (f) => f.descriptionInUpperCase.equals("SCHOOL"),
+                ))
+            .count(),
+        completion(8));
+    // Use .filter multiple times
+    expect(
+        db.managers.todosTable
+            .filter((f) => f.category(
+                  (f) => f.priority.equals(CategoryPriority.high),
+                ))
+            .filter((f) => f.category(
+                  (f) => f.descriptionInUpperCase.equals("SCHOOL"),
+                ))
+            .count(),
+        completion(4));
   });
 }

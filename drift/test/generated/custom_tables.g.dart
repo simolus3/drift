@@ -2139,12 +2139,13 @@ class $ConfigTableFilterComposer
   ColumnFilters<String> get configKey => ColumnFilters($table.configKey);
   ColumnFilters<DriftAny> get configValue => ColumnFilters($table.configValue);
   ColumnFilters<int> get syncStateValue => ColumnFilters($table.syncState);
-  ColumnWithTypeConverterFilters<SyncType?, int> get syncState =>
+  ColumnWithTypeConverterFilters<SyncType?, SyncType, int> get syncState =>
       ColumnWithTypeConverterFilters($table.syncState);
   ColumnFilters<int> get syncStateImplicitValue =>
       ColumnFilters($table.syncStateImplicit);
-  ColumnWithTypeConverterFilters<SyncType?, int> get syncStateImplicit =>
-      ColumnWithTypeConverterFilters($table.syncStateImplicit);
+  ColumnWithTypeConverterFilters<SyncType?, SyncType, int>
+      get syncStateImplicit =>
+          ColumnWithTypeConverterFilters($table.syncStateImplicit);
 }
 
 class $ConfigTableOrderingComposer

@@ -61,9 +61,11 @@ class _FilterWithConverterWriter extends _FilterWriter {
 
   @override
   void writeFilter(TextEmitter leaf) {
+    final nonNullableConverterType = converterType.replaceFirst("?", "");
     leaf
       ..writeDriftRef("ColumnWithTypeConverterFilters")
-      ..write("<$converterType,$type> get $filterName =>")
+      ..write(
+          "<$converterType,$nonNullableConverterType,$type> get $filterName =>")
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..writeln("(\$table.$fieldGetter);");
   }
