@@ -348,6 +348,9 @@ abstract class BaseTableManager<
   Future<int> count([bool distinct = true]) {
     return $state.copyWith(distinct: true).count();
   }
+
+  /// Checks whether any rows exist
+  Future<bool> exists() => $state.exists();
 }
 
 /// A table manager that can be used to select rows from a table
@@ -367,9 +370,6 @@ abstract class ProcessedTableManager<
         SingleOrNullSelectable<D> {
   /// Create a new [ProcessedTableManager] instance
   const ProcessedTableManager(super.$state);
-
-  /// Checks whether any rows exist
-  Future<bool> exists() => $state.exists();
 
   /// Deletes all rows matched by built statement
   ///
