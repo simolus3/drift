@@ -564,4 +564,16 @@ abstract class RootTableManager<
   Future<bool> replace(Insertable<D> entity) {
     return $state.db.update($state._tableAsTableInfo).replace(entity);
   }
+
+  /// Replace multiple rows in the table
+  ///
+  /// If any of the [entities] has an absent value (set to null on the [DataClass] or
+  /// explicitly to absent on the [UpdateCompanion]), and a default value for
+  /// the field exists, that default value will be used. Otherwise, the field
+  /// will be reset to null. This behavior is different to [update], which simply
+  /// ignores such fields without changing them in the database.
+  Future<void> bulkReplace(Iterable<Insertable<D>> entities) {
+    return $state.db
+        .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
+  }
 }
