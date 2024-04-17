@@ -729,8 +729,8 @@ class $$TodoCategoriesTableFilterComposer
 class $$TodoCategoriesTableOrderingComposer
     extends OrderingComposer<_$Database, $TodoCategoriesTable> {
   $$TodoCategoriesTableOrderingComposer(super.db, super.table);
-  ColumnOrderings get id => ColumnOrderings($table.id);
-  ColumnOrderings get name => ColumnOrderings($table.name);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<String> get name => ColumnOrderings($table.name);
 }
 
 class $$TodoCategoriesTableProcessedTableManager extends ProcessedTableManager<
@@ -818,10 +818,10 @@ class $$TodoItemsTableFilterComposer
 class $$TodoItemsTableOrderingComposer
     extends OrderingComposer<_$Database, $TodoItemsTable> {
   $$TodoItemsTableOrderingComposer(super.db, super.table);
-  ColumnOrderings get id => ColumnOrderings($table.id);
-  ColumnOrderings get title => ColumnOrderings($table.title);
-  ColumnOrderings get content => ColumnOrderings($table.content);
-  ColumnOrderings get categoryIdId => ColumnOrderings($table.categoryId);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<String> get title => ColumnOrderings($table.title);
+  ColumnOrderings<String> get content => ColumnOrderings($table.content);
+  ColumnOrderings<int> get categoryIdId => ColumnOrderings($table.categoryId);
   ComposableOrdering categoryId(
       ComposableOrdering Function($$TodoCategoriesTableOrderingComposer o) o) {
     return $composeWithJoins(
@@ -835,7 +835,8 @@ class $$TodoItemsTableOrderingComposer
         builder: o);
   }
 
-  ColumnOrderings get generatedText => ColumnOrderings($table.generatedText);
+  ColumnOrderings<String> get generatedText =>
+      ColumnOrderings($table.generatedText);
 }
 
 class $$TodoItemsTableProcessedTableManager extends ProcessedTableManager<

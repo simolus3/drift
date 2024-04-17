@@ -49,9 +49,10 @@ class $$BuyableItemsTableFilterComposer
 class $$BuyableItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings get description => i0.ColumnOrderings($table.description);
-  i0.ColumnOrderings get price => i0.ColumnOrderings($table.price);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get description =>
+      i0.ColumnOrderings($table.description);
+  i0.ColumnOrderings<int> get price => i0.ColumnOrderings($table.price);
 }
 
 class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -142,7 +143,7 @@ class $$ShoppingCartsTableFilterComposer
 class $$ShoppingCartsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
 }
 
 class $$ShoppingCartsTableProcessedTableManager
@@ -237,7 +238,7 @@ class $$ShoppingCartEntriesTableFilterComposer extends i0
 class $$ShoppingCartEntriesTableOrderingComposer extends i0
     .OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable> {
   $$ShoppingCartEntriesTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get shoppingCartId =>
+  i0.ColumnOrderings<int> get shoppingCartId =>
       i0.ColumnOrderings($table.shoppingCart);
   i0.ComposableOrdering shoppingCart(
       i0.ComposableOrdering Function($$ShoppingCartsTableOrderingComposer o)
@@ -254,7 +255,7 @@ class $$ShoppingCartEntriesTableOrderingComposer extends i0
         builder: o);
   }
 
-  i0.ColumnOrderings get itemId => i0.ColumnOrderings($table.item);
+  i0.ColumnOrderings<int> get itemId => i0.ColumnOrderings($table.item);
   i0.ComposableOrdering item(
       i0.ComposableOrdering Function($$BuyableItemsTableOrderingComposer o) o) {
     return $composeWithJoins(

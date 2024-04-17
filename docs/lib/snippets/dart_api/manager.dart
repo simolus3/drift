@@ -35,7 +35,7 @@ extension ManagerExamples on AppDatabase {
         .filter((f) => f.id.isIn([1, 2, 3]))
         .update((o) => o(content: Value('New Content')));
   }
-  // #docregion manager_update
+  // #enddocregion manager_update
 
   // #docregion manager_replace
   Future<void> replaceTodoItems() async {
@@ -50,7 +50,7 @@ extension ManagerExamples on AppDatabase {
     objs = objs.map((o) => o.copyWith(content: 'New Content')).toList();
     await managers.todoItems.bulkReplace(objs);
   }
-  // #docregion manager_replace
+  // #enddocregion manager_replace
 
   // #docregion manager_delete
   Future<void> deleteTodoItems() async {
@@ -60,5 +60,143 @@ extension ManagerExamples on AppDatabase {
     // Delete a single item
     await managers.todoItems.filter((f) => f.id(5)).delete();
   }
-  // #docregion manager_delete
+  // #enddocregion manager_delete
+
+  // #docregion manager_select
+  Future<void> selectTodoItems() async {
+    // Get all items
+    managers.todoItems.get();
+
+    // A stream of all the todo items, updated in real-time
+    managers.todoItems.watch();
+
+    // To get a single item, apply a filter and call `getSingle`
+    await managers.todoItems.filter((f) => f.id(1)).getSingle();
+  }
+  // #enddocregion manager_select
+
+  // #docregion manager_filter
+  Future<void> filterTodoItems() async {
+    // All items with a title of "Title"
+    await managers.todoItems.filter((f) => f.title("Title")).get();
+
+    // All items with a title of "Title" and content of "Content"
+    await managers.todoItems
+        .filter((f) => f.title("Title") & f.content("Content"))
+        .get();
+
+    // All items with a title of "Title" or content that is not null
+    await managers.todoItems
+        .filter((f) => f.title("Title") | f.content.not.isNull())
+        .get();
+  }
+  // #enddocregion manager_filter
+
+  // #docregion manager_type_specific_filter
+  Future filterWithType() async {
+    // Filter all items created since 7 days ago
+    await managers.todoItems
+        .filter((f) =>
+            f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))))
+        .get();
+
+    // Filter all items with a title that starts with "Title"
+    await managers.todoItems.filter((f) => f.title.startsWith('Title')).get();
+  }
+// #enddocregion manager_type_specific_filter
+
+// #docregion manager_ordering
+  Future orderWithType() async {
+    // Order all items by their creation date in ascending order
+    await managers.todoItems.orderBy((o) => o.createdAt.asc()).get();
+
+    // Order all items by their title in ascending order and then by their content in ascending order
+    await managers.todoItems
+        .orderBy((o) => o.title.asc() & o.content.asc())
+        .get();
+  }
+// #enddocregion manager_ordering
+
+// #docregion manager_count
+  Future count() async {
+    // Count all items
+    await managers.todoItems.count();
+
+    // Count all items with a title of "Title"
+    await managers.todoItems.filter((f) => f.title("Title")).count();
+  }
+// #enddocregion manager_count
+
+// #docregion manager_exists
+  Future exists() async {
+    // Check if any items exist
+    await managers.todoItems.exists();
+
+    // Check if any items with a title of "Title" exist
+    await managers.todoItems.filter((f) => f.title("Title")).exists();
+  }
+// #enddocregion manager_exists
 }
+
+// #docregion manager_filter_extensions
+// Extend drifts built-in filters by combining the existing filters to create a new one
+// or by creating a new filter from scratch
+extension After2000Filter on ColumnFilters<DateTime> {
+  // Create a new filter by combining existing filters
+  ComposableFilter after2000orBefore1900() =>
+      isAfter(DateTime(2000)) | isBefore(DateTime(1900));
+
+  // Create a new filter from scratch using the `column` property
+  ComposableFilter filterOnUnixEpoch(int value) =>
+      ComposableFilter(column.unixepoch.equals(value), inverted: inverted);
+}
+
+Future filterWithExtension(AppDatabase db) async {
+  // Use the custom filters on any column that is of type DateTime
+  await db.managers.todoItems
+      .filter((f) => f.createdAt.after2000orBefore1900())
+      .get();
+
+  // Use the custom filter on the `unixepoch` column
+  await db.managers.todoItems
+      .filter((f) => f.createdAt.filterOnUnixEpoch(0))
+      .get();
+}
+// #enddocregion manager_filter_extensions
+
+// #docregion manager_ordering_extensions
+// Extend drifts built-in orderings by create a new ordering from scratch
+extension After2000Ordering on ColumnOrderings<DateTime> {
+  ComposableOrdering byUnixEpoch() => ColumnOrderings(column.unixepoch).asc();
+}
+
+Future orderingWithExtension(AppDatabase db) async {
+  // Use the custom orderings on any column that is of type DateTime
+  await db.managers.todoItems.orderBy((f) => f.createdAt.byUnixEpoch()).get();
+}
+// #enddocregion manager_ordering_extensions
+
+// #docregion manager_custom_filter
+// Extend the generated table filter composer to add a custom filter
+extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
+  ComposableFilter noContentOrBefore2000() =>
+      (content.isNull() | createdAt.isBefore(DateTime(2000)));
+}
+
+Future customFilter(AppDatabase db) async {
+  // Use the custom filter on the `TodoItems` table
+  await db.managers.todoItems.filter((f) => f.noContentOrBefore2000()).get();
+}
+// #enddocregion manager_custom_filter
+
+// #docregion manager_custom_ordering
+// Extend the generated table filter composer to add a custom filter
+extension ContentThenCreationDataX on $$TodoItemsTableOrderingComposer {
+  ComposableOrdering contentThenCreatedAt() => content.asc() & createdAt.asc();
+}
+
+Future customOrdering(AppDatabase db) async {
+  // Use the custom ordering on the `TodoItems` table
+  await db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt()).get();
+}
+// #enddocregion manager_custom_ordering

@@ -31,9 +31,10 @@ class $$BuyableItemsTableFilterComposer
 class $$BuyableItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings get description => i0.ColumnOrderings($table.description);
-  i0.ColumnOrderings get price => i0.ColumnOrderings($table.price);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get description =>
+      i0.ColumnOrderings($table.description);
+  i0.ColumnOrderings<int> get price => i0.ColumnOrderings($table.price);
 }
 
 class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -115,8 +116,8 @@ class $$ShoppingCartsTableFilterComposer
 class $$ShoppingCartsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings get entries => i0.ColumnOrderings($table.entries);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get entries => i0.ColumnOrderings($table.entries);
 }
 
 class $$ShoppingCartsTableProcessedTableManager

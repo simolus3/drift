@@ -1981,8 +1981,8 @@ class $WithDefaultsFilterComposer
 class $WithDefaultsOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WithDefaults> {
   $WithDefaultsOrderingComposer(super.db, super.table);
-  ColumnOrderings get a => ColumnOrderings($table.a);
-  ColumnOrderings get b => ColumnOrderings($table.b);
+  ColumnOrderings<String> get a => ColumnOrderings($table.a);
+  ColumnOrderings<int> get b => ColumnOrderings($table.b);
 }
 
 class $WithDefaultsProcessedTableManager extends ProcessedTableManager<
@@ -2058,9 +2058,9 @@ class $WithConstraintsFilterComposer
 class $WithConstraintsOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WithConstraints> {
   $WithConstraintsOrderingComposer(super.db, super.table);
-  ColumnOrderings get a => ColumnOrderings($table.a);
-  ColumnOrderings get b => ColumnOrderings($table.b);
-  ColumnOrderings get c => ColumnOrderings($table.c);
+  ColumnOrderings<String> get a => ColumnOrderings($table.a);
+  ColumnOrderings<int> get b => ColumnOrderings($table.b);
+  ColumnOrderings<double> get c => ColumnOrderings($table.c);
 }
 
 class $WithConstraintsProcessedTableManager extends ProcessedTableManager<
@@ -2151,10 +2151,11 @@ class $ConfigTableFilterComposer
 class $ConfigTableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, ConfigTable> {
   $ConfigTableOrderingComposer(super.db, super.table);
-  ColumnOrderings get configKey => ColumnOrderings($table.configKey);
-  ColumnOrderings get configValue => ColumnOrderings($table.configValue);
-  ColumnOrderings get syncState => ColumnOrderings($table.syncState);
-  ColumnOrderings get syncStateImplicit =>
+  ColumnOrderings<String> get configKey => ColumnOrderings($table.configKey);
+  ColumnOrderings<DriftAny> get configValue =>
+      ColumnOrderings($table.configValue);
+  ColumnOrderings<int> get syncState => ColumnOrderings($table.syncState);
+  ColumnOrderings<int> get syncStateImplicit =>
       ColumnOrderings($table.syncStateImplicit);
 }
 
@@ -2243,10 +2244,10 @@ class $MytableFilterComposer extends FilterComposer<_$CustomTablesDb, Mytable> {
 class $MytableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, Mytable> {
   $MytableOrderingComposer(super.db, super.table);
-  ColumnOrderings get someid => ColumnOrderings($table.someid);
-  ColumnOrderings get sometext => ColumnOrderings($table.sometext);
-  ColumnOrderings get isInserting => ColumnOrderings($table.isInserting);
-  ColumnOrderings get somedate => ColumnOrderings($table.somedate);
+  ColumnOrderings<int> get someid => ColumnOrderings($table.someid);
+  ColumnOrderings<String> get sometext => ColumnOrderings($table.sometext);
+  ColumnOrderings<bool> get isInserting => ColumnOrderings($table.isInserting);
+  ColumnOrderings<DateTime> get somedate => ColumnOrderings($table.somedate);
 }
 
 class $MytableProcessedTableManager extends ProcessedTableManager<
@@ -2325,9 +2326,9 @@ class $EmailFilterComposer extends FilterComposer<_$CustomTablesDb, Email> {
 
 class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
   $EmailOrderingComposer(super.db, super.table);
-  ColumnOrderings get sender => ColumnOrderings($table.sender);
-  ColumnOrderings get title => ColumnOrderings($table.title);
-  ColumnOrderings get body => ColumnOrderings($table.body);
+  ColumnOrderings<String> get sender => ColumnOrderings($table.sender);
+  ColumnOrderings<String> get title => ColumnOrderings($table.title);
+  ColumnOrderings<String> get body => ColumnOrderings($table.body);
 }
 
 class $EmailProcessedTableManager extends ProcessedTableManager<
@@ -2407,8 +2408,8 @@ class $WeirdTableFilterComposer
 class $WeirdTableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WeirdTable> {
   $WeirdTableOrderingComposer(super.db, super.table);
-  ColumnOrderings get sqlClass => ColumnOrderings($table.sqlClass);
-  ColumnOrderings get textColumn => ColumnOrderings($table.textColumn);
+  ColumnOrderings<int> get sqlClass => ColumnOrderings($table.sqlClass);
+  ColumnOrderings<String> get textColumn => ColumnOrderings($table.textColumn);
 }
 
 class $WeirdTableProcessedTableManager extends ProcessedTableManager<

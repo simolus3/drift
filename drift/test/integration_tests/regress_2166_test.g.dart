@@ -203,8 +203,8 @@ class $$_SomeTableTableFilterComposer
 class $$_SomeTableTableOrderingComposer
     extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
   $$_SomeTableTableOrderingComposer(super.db, super.table);
-  ColumnOrderings get id => ColumnOrderings($table.id);
-  ColumnOrderings get name => ColumnOrderings($table.name);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<String> get name => ColumnOrderings($table.name);
 }
 
 class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<

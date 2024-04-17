@@ -9,7 +9,7 @@ class ColumnOrderings<T extends Object> {
   ColumnOrderings(this.column);
 
   /// Column that this [ColumnOrderings] wraps
-  GeneratedColumn<T> column;
+  Expression<T> column;
 
   /// Sort this column in ascending order
   ///
@@ -30,7 +30,7 @@ class OrderingBuilder {
   final OrderingMode mode;
 
   /// The column that the ordering is applied to
-  final GeneratedColumn column;
+  final Expression<Object> column;
 
   /// Create a new ordering builder, will be used by the [TableManagerState] to create [OrderingTerm]s
   OrderingBuilder(this.mode, this.column);

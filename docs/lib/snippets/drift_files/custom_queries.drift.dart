@@ -53,8 +53,8 @@ class $$CategoriesTableFilterComposer
 class $$CategoriesTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
   $$CategoriesTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings get name => i0.ColumnOrderings($table.name);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get name => i0.ColumnOrderings($table.name);
 }
 
 class $$CategoriesTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -143,10 +143,10 @@ class $$TodoItemsTableFilterComposer
 class $$TodoItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
   $$TodoItemsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings get title => i0.ColumnOrderings($table.title);
-  i0.ColumnOrderings get content => i0.ColumnOrderings($table.content);
-  i0.ColumnOrderings get categoryId => i0.ColumnOrderings($table.category);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get title => i0.ColumnOrderings($table.title);
+  i0.ColumnOrderings<String> get content => i0.ColumnOrderings($table.content);
+  i0.ColumnOrderings<int> get categoryId => i0.ColumnOrderings($table.category);
   i0.ComposableOrdering category(
       i0.ComposableOrdering Function($$CategoriesTableOrderingComposer o) o) {
     return $composeWithJoins(
@@ -161,7 +161,8 @@ class $$TodoItemsTableOrderingComposer
         builder: o);
   }
 
-  i0.ColumnOrderings get dueDate => i0.ColumnOrderings($table.dueDate);
+  i0.ColumnOrderings<DateTime> get dueDate =>
+      i0.ColumnOrderings($table.dueDate);
 }
 
 class $$TodoItemsTableProcessedTableManager extends i0.ProcessedTableManager<
