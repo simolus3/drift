@@ -23,11 +23,27 @@ instructions.
 
 ### Filtering across tables
 
+### Ordering
+
 ## Updates
+We can use the manager to update rows in bulk or individual rows that meet a certain condition.
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_update' %}
+
+We can also replace an entire row with a new one. Or even replace multiple rows at once.
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_replace' %}
 
 ## Creating rows
+The manager includes a method for quickly inserting rows into a table.
+We can insert a single row or multiple rows at once.
 
-{% include "blocks/snippet" snippets = snippets name = 'create' %}
+{% include "blocks/snippet" snippets = snippets name = 'manager_create' %}
+
 
 ## Deleting rows
+We may also delete rows from a table using the manager.
+Any rows that meet the specified condition will be deleted.
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_delete' %}
 
