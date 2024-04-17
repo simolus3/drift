@@ -105,6 +105,24 @@ void main() {
             .then((value) => value.description),
         completion("Hello"));
 
+    // Bulk Replace
+    await db.managers.categories.bulkReplace([
+      obj1.copyWith(description: "Hello"),
+      obj2.copyWith(description: "World")
+    ]);
+    expect(
+        db.managers.categories
+            .filter(((f) => f.id(obj1.id)))
+            .getSingle()
+            .then((value) => value.description),
+        completion("Hello"));
+    expect(
+        db.managers.categories
+            .filter(((f) => f.id(obj2.id)))
+            .getSingle()
+            .then((value) => value.description),
+        completion("World"));
+
     // Update All Rows
     final update2 = db.managers.categories
         .update((o) => o(priority: Value(CategoryPriority.high)));
