@@ -29,18 +29,16 @@ void main() {
         aReal: Value(3.0),
         aDateTime: Value(DateTime.now().add(Duration(days: 3)))));
     // Test count
-    expect(db.managers.tableWithEveryColumnType.all().count(), completion(3));
+    expect(db.managers.tableWithEveryColumnType.count(), completion(3));
     // Test get
     expect(
         db.managers.tableWithEveryColumnType
-            .all()
             .get()
             .then((value) => value.length),
         completion(3));
     // Test getSingle with limit
     expect(
         db.managers.tableWithEveryColumnType
-            .all()
             .limit(1, offset: 1)
             .getSingle()
             .then((value) => value.id),

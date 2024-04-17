@@ -533,7 +533,6 @@ void main() {
         db.managers.categories
             .filter((f) => f.todos((f) => f.category(
                 (f) => f.todos((f) => f.title.equals("Math Homework")))))
-            .distict()
             .getSingle()
             .then((value) => value.description),
         completion("School"));

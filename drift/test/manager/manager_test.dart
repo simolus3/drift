@@ -16,19 +16,19 @@ void main() {
 
   test('manager - create', () async {
     // Initial count should be 0
-    expect(db.managers.categories.all().count(), completion(0));
+    expect(db.managers.categories.count(), completion(0));
 
     // Creating a row should return the id
     final create1 = db.managers.categories.create(
         (o) => o(priority: Value(CategoryPriority.high), description: "High"));
     expect(create1, completion(1));
-    expect(db.managers.categories.all().count(), completion(1));
+    expect(db.managers.categories.count(), completion(1));
 
     // Creating another row should increment the id
     final create2 = db.managers.categories.create(
         (o) => o(priority: Value(CategoryPriority.low), description: "Low"));
     expect(create2, completion(2));
-    expect(db.managers.categories.all().count(), completion(2));
+    expect(db.managers.categories.count(), completion(2));
 
     // Using an existing id should throw an exception
     final create3 = db.managers.categories.create((o) => o(
@@ -47,7 +47,7 @@ void main() {
         onConflict: DoNothing());
     // The is incorrect when using onConflict
     expect(create4, completion(2));
-    expect(db.managers.categories.all().count(), completion(2));
+    expect(db.managers.categories.count(), completion(2));
 
     // Likewise, test that mode is passed to the create method
     final create5 = db.managers.categories.create(
@@ -59,13 +59,13 @@ void main() {
 
     // The is incorrect when using mode
     expect(create5, completion(2));
-    expect(db.managers.categories.all().count(), completion(2));
+    expect(db.managers.categories.count(), completion(2));
 
     // Test the other create methods
     final create6 = db.managers.categories.createReturning((o) =>
         o(priority: Value(CategoryPriority.high), description: "Other High"));
     expect(create6, completion(isA<Category>()));
-    expect(db.managers.categories.all().count(), completion(3));
+    expect(db.managers.categories.count(), completion(3));
 
     // Will return null because the description is not unique
     final create7 = db.managers.categories.createReturningOrNull(
@@ -84,7 +84,7 @@ void main() {
               priority: Value(CategoryPriority.medium),
               description: "Super Medium")
         ]);
-    expect(db.managers.categories.all().count(), completion(6));
+    expect(db.managers.categories.count(), completion(6));
   });
 
   test('manager - update', () async {
@@ -135,11 +135,11 @@ void main() {
     final delete1 =
         db.managers.categories.filter(((f) => f.id(obj1.id))).delete();
     expect(delete1, completion(1));
-    expect(db.managers.categories.all().count(), completion(1));
+    expect(db.managers.categories.count(), completion(1));
 
     // Delete all rows
     final delete2 = db.managers.categories.delete();
     expect(delete2, completion(1));
-    expect(db.managers.categories.all().count(), completion(0));
+    expect(db.managers.categories.count(), completion(0));
   });
 }

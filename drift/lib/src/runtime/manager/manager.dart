@@ -283,24 +283,28 @@ class TableManagerState<
 /// This is so that the state can be passed down to lower level managers
 @internal
 abstract class BaseTableManager<
-    DB extends GeneratedDatabase,
-    T extends Table,
-    DT extends DataClass,
-    FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
-    CI extends Function,
-    CU extends Function> {
+        DB extends GeneratedDatabase,
+        T extends Table,
+        DT extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
+        CI extends Function,
+        CU extends Function>
+    implements
+        MultiSelectable<DT>,
+        SingleSelectable<DT>,
+        SingleOrNullSelectable<DT> {
   /// The state for this manager
   final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> $state;
 
   /// Create a new [BaseTableManager] instance
   const BaseTableManager(this.$state);
 
-  /// Set the distinct flag on the statement to true
-  /// This will ensure that only distinct rows are returned
-  C distict() {
-    return $state._getChildManagerBuilder($state.copyWith(distinct: true));
+  /// Add a limit to the statement
+  C limit(int limit, {int? offset}) {
+    return $state
+        ._getChildManagerBuilder($state.copyWith(limit: limit, offset: offset));
   }
 
   /// Add ordering to the statement
@@ -320,12 +324,6 @@ abstract class BaseTableManager<
             ? filter.expression
             : filter.expression & $state.filter!,
         joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
-  }
-
-  /// Add a limit to the statement
-  C limit(int limit, {int? offset}) {
-    return $state
-        ._getChildManagerBuilder($state.copyWith(limit: limit, offset: offset));
   }
 
   /// Writes all non-null fields from the entity into the columns of all rows
@@ -351,25 +349,6 @@ abstract class BaseTableManager<
 
   /// Checks whether any rows exist
   Future<bool> exists() => $state.exists();
-}
-
-/// A table manager that can be used to select rows from a table
-abstract class ProcessedTableManager<
-        DB extends GeneratedDatabase,
-        T extends Table,
-        D extends DataClass,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
-        CI extends Function,
-        CU extends Function>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU>
-    implements
-        MultiSelectable<D>,
-        SingleSelectable<D>,
-        SingleOrNullSelectable<D> {
-  /// Create a new [ProcessedTableManager] instance
-  const ProcessedTableManager(super.$state);
 
   /// Deletes all rows matched by built statement
   ///
@@ -390,25 +369,47 @@ abstract class ProcessedTableManager<
   ///
   /// See also: [getSingleOrNull], which returns `null` instead of
   /// throwing if the query completes with no rows.
+  ///
+  /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Future<D> getSingle() => $state.buildSelectStatement().getSingle();
+  Future<DT> getSingle() =>
+      $state.copyWith(distinct: true).buildSelectStatement().getSingle();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only emit
   /// one result, so instead of returning a `Stream<List<D>>`, this returns a
   /// `Stream<D>`. If, at any point, the query emits no or more than one rows,
   /// an error will be added to the stream instead.
+  ///
+  /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Stream<D> watchSingle() => $state.buildSelectStatement().watchSingle();
+  Stream<DT> watchSingle() =>
+      $state.copyWith(distinct: true).buildSelectStatement().watchSingle();
 
   /// Executes the statement and returns the first all rows as a list.
+  ///
+  /// Use [limit] and [offset] to limit the number of rows returned
+  /// An offset will only be applied if a limit is also set
+  /// Set [distinct] to true to ensure that only distinct rows are returned
   @override
-  Future<List<D>> get() => $state.buildSelectStatement().get();
+  Future<List<DT>> get({bool distinct = false, int? limit, int? offset}) =>
+      $state
+          .copyWith(distinct: distinct, limit: limit, offset: offset)
+          .buildSelectStatement()
+          .get();
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
+  ///
+  /// Use [limit] and [offset] to limit the number of rows returned
+  /// An offset will only be applied if a limit is also set
+  /// Set [distinct] to true to ensure that only distinct rows are returned
   @override
-  Stream<List<D>> watch() => $state.buildSelectStatement().watch();
+  Stream<List<DT>> watch({bool distinct = false, int? limit, int? offset}) =>
+      $state
+          .copyWith(distinct: distinct, limit: limit, offset: offset)
+          .buildSelectStatement()
+          .watch();
 
   /// Executes this statement, like [get], but only returns one
   /// value. If the result too many values, this method will throw. If no
@@ -416,9 +417,11 @@ abstract class ProcessedTableManager<
   ///
   /// See also: [getSingle], which can be used if the query will
   /// always evaluate to exactly one row.
+  ///
+  /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Future<D?> getSingleOrNull() =>
-      $state.buildSelectStatement().getSingleOrNull();
+  Future<DT?> getSingleOrNull() =>
+      $state.copyWith(distinct: true).buildSelectStatement().getSingleOrNull();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only
@@ -427,9 +430,33 @@ abstract class ProcessedTableManager<
   /// some point, an error will be emitted to the stream instead.
   /// If the query emits zero rows at some point, `null` will be added
   /// to the stream instead.
+  ///
+  /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Stream<D?> watchSingleOrNull() =>
-      $state.buildSelectStatement().watchSingleOrNull();
+  Stream<DT?> watchSingleOrNull() => $state
+      .copyWith(distinct: true)
+      .buildSelectStatement()
+      .watchSingleOrNull();
+}
+
+/// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
+//  As of now this is identical to [BaseTableManager] but it's kept seperate for future extensibility
+class ProcessedTableManager<
+        DB extends GeneratedDatabase,
+        T extends Table,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
+        CI extends Function,
+        CU extends Function>
+    extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU>
+    implements
+        MultiSelectable<D>,
+        SingleSelectable<D>,
+        SingleOrNullSelectable<D> {
+  /// Create a new [ProcessedTableManager] instance
+  const ProcessedTableManager(super.$state);
 }
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
@@ -444,16 +471,6 @@ abstract class RootTableManager<
     CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
   /// Create a new [RootTableManager] instance
   const RootTableManager(super.$state);
-
-  /// Deletes all rows matched by built statement
-  ///
-  /// Returns the amount of rows that were deleted by this statement directly
-  /// (not including additional rows that might be affected through triggers or
-  /// foreign key constraints).
-  Future<int> delete() => $state.db.delete($state._tableAsTableInfo).go();
-
-  /// Select all rows from the table
-  C all() => $state._getChildManagerBuilder($state);
 
   /// Creates a new row in the table using the given function
   ///
