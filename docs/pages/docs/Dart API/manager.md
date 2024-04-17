@@ -36,6 +36,18 @@ Type specific filters for `int`, `double`, `Int64`, `DateTime` and `String` are 
 
 
 ### Filtering across tables
+You can filter across references to other tables by using the generated reference filters. You can nest these as deep as you'd like and the manager will take care of adding the aliased joins behind the scenes.
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_filter_forward_references' %}
+
+You can also filter across back references. This is useful when you have a one-to-many relationship and want to filter the parent table based on the child table. 
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_filter_back_references' %}
+
+The code generator will name this filterset using the name of the table that is being referenced. If there are multiple references to the same table, the code generator will print an error and wont generate the filterset.  
+Use the `@ReferenceName(...)` on the foreign key to specify a custom name for the filterset.
+
+{% include "blocks/snippet" snippets = snippets name = 'reference_name_example' %}
 
 ### Ordering
 

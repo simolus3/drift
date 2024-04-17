@@ -78,42 +78,34 @@ extension ManagerExamples on AppDatabase {
   // #docregion manager_filter
   Future<void> filterTodoItems() async {
     // All items with a title of "Title"
-    await managers.todoItems.filter((f) => f.title("Title")).get();
+    managers.todoItems.filter((f) => f.title("Title"));
 
     // All items with a title of "Title" and content of "Content"
-    await managers.todoItems
-        .filter((f) => f.title("Title") & f.content("Content"))
-        .get();
+    managers.todoItems.filter((f) => f.title("Title") & f.content("Content"));
 
     // All items with a title of "Title" or content that is not null
-    await managers.todoItems
-        .filter((f) => f.title("Title") | f.content.not.isNull())
-        .get();
+    managers.todoItems.filter((f) => f.title("Title") | f.content.not.isNull());
   }
   // #enddocregion manager_filter
 
   // #docregion manager_type_specific_filter
   Future filterWithType() async {
     // Filter all items created since 7 days ago
-    await managers.todoItems
-        .filter((f) =>
-            f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))))
-        .get();
+    managers.todoItems.filter(
+        (f) => f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))));
 
     // Filter all items with a title that starts with "Title"
-    await managers.todoItems.filter((f) => f.title.startsWith('Title')).get();
+    managers.todoItems.filter((f) => f.title.startsWith('Title'));
   }
 // #enddocregion manager_type_specific_filter
 
 // #docregion manager_ordering
   Future orderWithType() async {
     // Order all items by their creation date in ascending order
-    await managers.todoItems.orderBy((o) => o.createdAt.asc()).get();
+    managers.todoItems.orderBy((o) => o.createdAt.asc());
 
     // Order all items by their title in ascending order and then by their content in ascending order
-    await managers.todoItems
-        .orderBy((o) => o.title.asc() & o.content.asc())
-        .get();
+    managers.todoItems.orderBy((o) => o.title.asc() & o.content.asc());
   }
 // #enddocregion manager_ordering
 
@@ -136,6 +128,35 @@ extension ManagerExamples on AppDatabase {
     await managers.todoItems.filter((f) => f.title("Title")).exists();
   }
 // #enddocregion manager_exists
+
+// #docregion manager_filter_forward_references
+  Future relationalFilter() async {
+    // Get all items with a category description of "School"
+    managers.todoItems
+        .filter((f) => f.category((f) => f.description("School")));
+
+    // These can be combined with other filters
+    // For example, get all items with a title of "Title" or a category description of "School"
+    await managers.todoItems
+        .filter(
+          (f) => f.title("Title") | f.category((f) => f.description("School")),
+        )
+        .exists();
+  }
+// #enddocregion manager_filter_forward_references
+
+// #docregion manager_filter_forward_references
+  Future reverseRelationalFilter() async {
+    // Get the category that has a todo item with an id of 1
+    managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)));
+
+    // These can be combined with other filters
+    // For example, get all categories with a description of "School" or a todo item with an id of 1
+    managers.todoCategory.filter(
+      (f) => f.description("School") | f.todoItemsRefs((f) => f.id(1)),
+    );
+  }
+// #enddocregion manager_filter_forward_references
 }
 
 // #docregion manager_filter_extensions
@@ -153,14 +174,10 @@ extension After2000Filter on ColumnFilters<DateTime> {
 
 Future filterWithExtension(AppDatabase db) async {
   // Use the custom filters on any column that is of type DateTime
-  await db.managers.todoItems
-      .filter((f) => f.createdAt.after2000orBefore1900())
-      .get();
+  db.managers.todoItems.filter((f) => f.createdAt.after2000orBefore1900());
 
   // Use the custom filter on the `unixepoch` column
-  await db.managers.todoItems
-      .filter((f) => f.createdAt.filterOnUnixEpoch(0))
-      .get();
+  db.managers.todoItems.filter((f) => f.createdAt.filterOnUnixEpoch(0));
 }
 // #enddocregion manager_filter_extensions
 
@@ -172,7 +189,7 @@ extension After2000Ordering on ColumnOrderings<DateTime> {
 
 Future orderingWithExtension(AppDatabase db) async {
   // Use the custom orderings on any column that is of type DateTime
-  await db.managers.todoItems.orderBy((f) => f.createdAt.byUnixEpoch()).get();
+  db.managers.todoItems.orderBy((f) => f.createdAt.byUnixEpoch());
 }
 // #enddocregion manager_ordering_extensions
 
@@ -185,7 +202,7 @@ extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
 
 Future customFilter(AppDatabase db) async {
   // Use the custom filter on the `TodoItems` table
-  await db.managers.todoItems.filter((f) => f.noContentOrBefore2000()).get();
+  db.managers.todoItems.filter((f) => f.noContentOrBefore2000());
 }
 // #enddocregion manager_custom_filter
 
@@ -197,6 +214,20 @@ extension ContentThenCreationDataX on $$TodoItemsTableOrderingComposer {
 
 Future customOrdering(AppDatabase db) async {
   // Use the custom ordering on the `TodoItems` table
-  await db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt()).get();
+  db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
 // #enddocregion manager_custom_ordering
+
+// #docregion reference_name_example
+class User extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  @ReferenceName("users")
+  IntColumn get group => integer().nullable().references(Group, #id)();
+}
+
+class Group extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+// #enddocregion reference_name_example
