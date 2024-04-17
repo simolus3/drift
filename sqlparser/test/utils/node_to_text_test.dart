@@ -485,6 +485,9 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     test('in', () {
       testFormat('SELECT x IN (SELECT * FROM foo);');
       testFormat('SELECT x NOT IN (SELECT * FROM foo);');
+      testFormat('SELECT x IN foo');
+      testFormat('SELECT x IN json_each(bar)');
+      testFormat('SELECT x IN :array');
     });
 
     test('boolean literals', () {

@@ -160,6 +160,22 @@ final Map<String, Expression> _testCases = {
       ],
     ),
   ),
+  'x IN json_each(bar)': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: TableValuedFunction(
+      'json_each',
+      ExprFunctionParameters(
+        parameters: [
+          Reference(columnName: 'bar'),
+        ],
+      ),
+    ),
+  ),
+  'x NOT IN "table"': InExpression(
+    not: true,
+    left: Reference(columnName: 'x'),
+    inside: TableReference('table'),
+  ),
   'CAST(3 + 4 AS TEXT)': CastExpression(
     BinaryExpression(
       NumericLiteral(3.0),
