@@ -149,7 +149,7 @@ class _RegularOrderingWriter extends _OrderingWriter {
   void writeOrdering(TextEmitter leaf) {
     leaf
       ..writeDriftRef("ColumnOrderings")
-      ..write(" get $orderingName =>")
+      ..write("<$type>  get $orderingName =>")
       ..writeDriftRef("ColumnOrderings")
       ..write("(\$table.$fieldGetter);");
   }
