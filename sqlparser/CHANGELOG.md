@@ -1,4 +1,4 @@
-## 3.35.0-dev
+## 3.35.0
 
 - Fix parsing binary literals.
 - Expand support for `IN` expressions, they now support tuples on the left-hand
