@@ -186,6 +186,9 @@ We currently support the following extensions:
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)
   module is available. Note that this is not the case for most sqlite3 builds,
   including the ones shipping with `sqlite3_flutter_libs`.
+- `geopoly`: Assumes that the [geopoly](https://www.sqlite.org/geopoly.html)
+  module is available. Note that this is not the case for most sqlite3 builds,
+  including the ones shipping with `sqlite3_flutter_libs`.
 
 ### Known custom functions
 

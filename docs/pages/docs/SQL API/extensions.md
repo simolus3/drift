@@ -89,7 +89,7 @@ for doing linear transformations of polygons,
 for rendering polygons as [SVG](https://en.wikipedia.org/wiki/SVG), 
 and other similar operations.
 
-To enable the fts5 extension in drift files and compiled queries, modify the
+To enable the `geopoly` extension in drift files and compiled queries, modify the
 [build options]({{ "../Generation options/index.md" | pageUrl }}) to include
 `geopoly` in the `sqlite_module` section.
 
