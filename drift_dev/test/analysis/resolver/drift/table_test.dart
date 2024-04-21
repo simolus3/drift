@@ -290,4 +290,21 @@ class MyType implements CustomSqlType<String> {}
     expect(column.sqlType.custom?.dartType.toString(), 'String');
     expect(column.sqlType.custom?.expression.toString(), 'MyType()');
   });
+
+  test('recognizes bigint columns', () async {
+    final state = TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE TABLE foo (
+  bar INT64 NOT NULL
+);
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final column = table.columns.single;
+    expect(column.sqlType.builtin, DriftSqlType.bigInt);
+  });
 }

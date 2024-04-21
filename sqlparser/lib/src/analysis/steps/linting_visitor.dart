@@ -200,6 +200,56 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitInExpression(InExpression e, void arg) {
+    final expectedColumns = switch (e.left) {
+      Tuple(:var expressions) => expressions.length,
+      _ => 1,
+    };
+
+    switch (e.inside) {
+      case Tuple tuple:
+        for (final element in tuple.expressions) {
+          final actualColumns = switch (element) {
+            Tuple(:var expressions) => expressions.length,
+            _ => 1,
+          };
+
+          if (expectedColumns != actualColumns) {
+            context.reportError(AnalysisError(
+              type: AnalysisErrorType.other,
+              message: 'Expected $expectedColumns columns in this entry, got '
+                  '$actualColumns',
+              relevantNode: element,
+            ));
+          }
+        }
+      case SubQuery subquery:
+        final columns = subquery.select.resolvedColumns;
+        if (columns != null && columns.length != expectedColumns) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: 'The subquery must return $expectedColumns columns, '
+                'it returns ${columns.length}',
+            relevantNode: subquery,
+          ));
+        }
+      case TableOrSubquery table:
+        final columns =
+            table.availableResultSet?.resultSet.resultSet?.resolvedColumns;
+        if (columns != null && columns.length != expectedColumns) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: 'To be used in this `IN` expression, this table must '
+                'have $expectedColumns columns (it has ${columns.length}).',
+            relevantNode: table,
+          ));
+        }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitIsExpression(IsExpression e, void arg) {
     if (e.distinctFromSyntax && options.version < SqliteVersion.v3_39) {
       // `IS NOT DISTINCT FROM` is the same thing as `IS`
@@ -526,9 +576,9 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         isAllowed = !comparisons.any((e) => !isRowValue(e));
       }
     } else if (parent is InExpression) {
-      // In expressions are tricky. The rhs can always be a row value, but the
-      // lhs can only be a row value if the rhs is a subquery
-      isAllowed = e == parent.inside || parent.inside is SubQuery;
+      // For in expressions we have a more accurate analysis on whether tuples
+      // are allowed that looks at both the LHS and the RHS.
+      isAllowed = true;
     } else if (parent is SetComponent) {
       isAllowed = true;
     }

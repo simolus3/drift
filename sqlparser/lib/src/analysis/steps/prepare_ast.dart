@@ -137,6 +137,14 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitInExpression(InExpression e, void arg) {
+    // The RHS can use everything from the parent scope, but it can't add new
+    // table references that would be visible to others.
+    e.scope = StatementScope(e.scope);
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitNumberedVariable(NumberedVariable e, void arg) {
     _foundVariables.add(e);
     visitChildren(e, arg);

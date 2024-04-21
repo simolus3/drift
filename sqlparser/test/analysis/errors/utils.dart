@@ -2,10 +2,10 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 extension ExpectErrors on AnalysisContext {
-  void expectError(String lexeme, {AnalysisErrorType? type}) {
+  void expectError(String lexeme, {AnalysisErrorType? type, message}) {
     expect(
       errors,
-      [analysisErrorWith(lexeme: lexeme, type: type)],
+      [analysisErrorWith(lexeme: lexeme, type: type, message: message)],
     );
   }
 

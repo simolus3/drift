@@ -427,9 +427,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   @override
   void visitInExpression(InExpression e, TypeExpectation arg) {
     session._checkAndResolve(e, const ResolvedType.bool(), arg);
-    session._addRelation(NullableIfSomeOtherIs(e, e.childNodes));
 
-    session._addRelation(CopyTypeFrom(e.inside, e.left, array: true));
+    if (e.inside case Expression inExpr) {
+      session._addRelation(NullableIfSomeOtherIs(e, [e.left, inExpr]));
+      session._addRelation(CopyTypeFrom(inExpr, e.left, array: true));
+    }
 
     visitChildren(e, const NoTypeExpectation());
   }

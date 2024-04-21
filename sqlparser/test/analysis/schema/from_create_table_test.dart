@@ -103,7 +103,7 @@ void main() {
         SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
     final stmt = engine.parse('''
     CREATE TABLE foo (
-      a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL
+      a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL, e INT64
     )
     ''').rootNode;
 
@@ -114,6 +114,7 @@ void main() {
       ResolvedType(type: BasicType.int, hints: [IsDateTime()], nullable: true),
       ResolvedType(type: BasicType.int, hints: [IsDateTime()], nullable: true),
       ResolvedType(type: BasicType.int, hints: [IsBoolean()], nullable: false),
+      ResolvedType(type: BasicType.int, hints: [IsBigInt()], nullable: true),
     ]);
   });
 

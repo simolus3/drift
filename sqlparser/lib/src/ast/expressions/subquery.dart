@@ -2,7 +2,7 @@ part of '../ast.dart';
 
 /// A subquery, which is an expression. It is expected that the inner query
 /// only returns one column and one row.
-class SubQuery extends Expression {
+class SubQuery extends Expression implements InExpressionTarget {
   BaseSelectStatement select;
 
   SubQuery({required this.select});
