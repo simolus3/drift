@@ -238,6 +238,9 @@ class TestBackend extends DriftBackend {
   }
 
   @override
+  bool get canReadDart => true;
+
+  @override
   Future<LibraryElement> readDart(Uri uri) async {
     await ensureHasDartAnalyzer();
     final result =

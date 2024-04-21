@@ -97,6 +97,9 @@ class AnalysisContextBackend extends DriftBackend {
   }
 
   @override
+  bool get canReadDart => true;
+
+  @override
   Future<LibraryElement> readDart(Uri uri) async {
     final result = await context.currentSession.getLibraryByUri(uri.toString());
     if (result is LibraryElementResult) {

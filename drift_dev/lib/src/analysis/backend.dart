@@ -19,6 +19,8 @@ abstract class DriftBackend {
     return element.source!.uri;
   }
 
+  bool get canReadDart;
+
   /// Resolves a Dart library by its uri.
   ///
   /// This should also be able to resolve SDK libraries.

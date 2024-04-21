@@ -102,10 +102,14 @@ class KnownDriftTypes {
     return type?.asInstanceOf(converter);
   }
 
-  static Future<KnownDriftTypes> resolve(DriftBackend backend) async {
-    final library = await backend.readDart(uri);
+  static Future<KnownDriftTypes?> resolve(DriftBackend backend) async {
+    if (backend.canReadDart) {
+      final library = await backend.readDart(uri);
 
-    return KnownDriftTypes._fromLibrary(library);
+      return KnownDriftTypes._fromLibrary(library);
+    }
+
+    return null;
   }
 
   static final Uri uri = Uri.parse('package:drift/src/drift_dev_helper.dart');

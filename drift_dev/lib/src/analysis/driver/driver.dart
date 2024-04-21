@@ -63,13 +63,15 @@ class DriftAnalysisDriver {
 
   AnalysisResultCacheReader? cacheReader;
 
-  final KnownDriftTypes knownTypes;
+  final KnownDriftTypes? _knownTypes;
+
+  KnownDriftTypes get knownTypes => _knownTypes!;
 
   @visibleForTesting
   DriftAnalysisDriver(
     this.backend,
     this.options,
-    this.knownTypes, {
+    this._knownTypes, {
     bool isTesting = false,
   }) : _isTesting = isTesting;
 

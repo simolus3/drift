@@ -92,6 +92,9 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   }
 
   @override
+  bool get canReadDart => false;
+
+  @override
   Future<LibraryElement> readDart(Uri uri) async {
     _noAnalyzer();
   }
