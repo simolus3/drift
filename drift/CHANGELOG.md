@@ -1,4 +1,4 @@
-## 2.17.0-dev
+## 2.17.0
 
 - Adds `companion` entry to `DataClassName` to override the name of the
   generated companion class.

@@ -140,7 +140,7 @@ abstract class _TransactionExecutor extends _BaseExecutor
 
     if (_closed) {
       throw StateError(
-          "A tranaction was used after being closed. Please check that you're "
+          "A transaction was used after being closed. Please check that you're "
           'awaiting all database operations inside a `transaction` block.');
     }
   }
