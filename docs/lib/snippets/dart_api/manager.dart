@@ -1,6 +1,46 @@
 import 'package:drift/drift.dart';
 
-import '../setup/database.dart';
+part 'manager.g.dart';
+
+class TodoItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text().withLength(min: 6, max: 32)();
+  TextColumn get content => text().named('body')();
+  IntColumn get category =>
+      integer().nullable().references(TodoCategory, #id)();
+  DateTimeColumn get createdAt => dateTime().nullable()();
+}
+
+class TodoCategory extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get description => text()();
+}
+
+// #docregion user_group_tables
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get groupId => integer().nullable().references(Groups, #id)();
+}
+
+class Groups extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  @ReferenceName("administeredGroups")
+  IntColumn get admin => integer().nullable().references(Users, #id)();
+  @ReferenceName("ownedGroups")
+  IntColumn get owner => integer().references(Users, #id)();
+}
+
+// #enddocregion user_group_tables
+
+@DriftDatabase(tables: [TodoItems, TodoCategory, Groups, Users])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase(super.e);
+  @override
+  int get schemaVersion => 1;
+}
 
 extension ManagerExamples on AppDatabase {
   // #docregion manager_create
@@ -145,7 +185,7 @@ extension ManagerExamples on AppDatabase {
   }
 // #enddocregion manager_filter_forward_references
 
-// #docregion manager_filter_forward_references
+// #docregion manager_filter_back_references
   Future reverseRelationalFilter() async {
     // Get the category that has a todo item with an id of 1
     managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)));
@@ -156,7 +196,19 @@ extension ManagerExamples on AppDatabase {
       (f) => f.description("School") | f.todoItemsRefs((f) => f.id(1)),
     );
   }
-// #enddocregion manager_filter_forward_references
+// #enddocregion manager_filter_back_references
+
+// #docregion manager_filter_custom_back_references
+  Future reverseNamedRelationalFilter() async {
+    // Get all users who are administrators of a group with a name containing "Business"
+    // or who own a group with an id of 1, 2, 4, or 5
+    managers.users.filter(
+      (f) =>
+          f.administeredGroups((f) => f.name.contains("Business")) |
+          f.ownedGroups((f) => f.id.isIn([1, 2, 4, 5])),
+    );
+  }
+// #enddocregion manager_filter_custom_back_references
 }
 
 // #docregion manager_filter_extensions
@@ -217,17 +269,3 @@ Future customOrdering(AppDatabase db) async {
   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
 // #enddocregion manager_custom_ordering
-
-// #docregion reference_name_example
-class User extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
-  @ReferenceName("users")
-  IntColumn get group => integer().nullable().references(Group, #id)();
-}
-
-class Group extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
-}
-// #enddocregion reference_name_example

@@ -48,10 +48,16 @@ You can also filter across back references. This is useful when you have a one-t
 
 {% include "blocks/snippet" snippets = snippets name = 'manager_filter_back_references' %}
 
-The code generator will name this filterset using the name of the table that is being referenced. If there are multiple references to the same table, the code generator will print an error and wont generate the filterset.  
-Use the `@ReferenceName(...)` on the foreign key to specify a custom name for the filterset.
+The code generator will name this filterset using the name of the table that is being referenced. In the above example, the filterset is named `todoItemsRefs`, because the `TodoItems` table is being referenced.
+However, you can also specify a custom name for the filterset using the `@ReferenceName(...)` annotation on the foreign key. This may be necessary if you have multiple references to the same table, take the following example:
 
-{% include "blocks/snippet" snippets = snippets name = 'reference_name_example' %}
+{% include "blocks/snippet" snippets = snippets name = 'user_group_tables' %}
+
+We can now use them in a query like this:
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_filter_custom_back_references' %}
+
+In this example, had we not specified a custom name for the reference, the code generator would have named both filtersets `userRefs` for both references to the `User` table. This would have caused a conflict. By specifying a custom name, we can avoid this issue.
 
 
 ### Ordering
