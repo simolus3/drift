@@ -101,15 +101,17 @@ void main() {
             db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
       ]);
 
-      final stringArray = jsonGroupArray(db.todosTable.id);
-      final binaryArray = jsonbGroupArray(db.todosTable.id).json();
+      final stringArray = jsonGroupArray(db.todosTable.id,
+          orderBy: OrderBy([OrderingTerm.desc(db.todosTable.id)]));
+      final binaryArray = jsonbGroupArray(db.todosTable.id,
+          orderBy: OrderBy([OrderingTerm.asc(db.todosTable.id)])).json();
       query
         ..groupBy([db.categories.id])
         ..addColumns([stringArray, binaryArray]);
 
       final row = await query.getSingle();
-      expect(json.decode(row.read(stringArray)!), unorderedEquals([1, 3]));
-      expect(json.decode(row.read(binaryArray)!), unorderedEquals([1, 3]));
+      expect(json.decode(row.read(stringArray)!), [3, 1]);
+      expect(json.decode(row.read(binaryArray)!), [1, 3]);
     });
 
     test('json_group_object', () async {

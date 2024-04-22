@@ -43,6 +43,17 @@ void main() {
     test('aggregates', () {
       expect(jsonGroupArray(column), generates('json_group_array(col)'));
       expect(
+        jsonGroupArray(
+          column,
+          orderBy: OrderBy([OrderingTerm.desc(column)]),
+          filter: column.length.isBiggerOrEqualValue(10),
+        ),
+        generates(
+          'json_group_array(col ORDER BY col DESC) FILTER (WHERE LENGTH(col) >= ?)',
+          [10],
+        ),
+      );
+      expect(
         jsonGroupObject({
           Variable('foo'): column,
           Variable('bar'): Constant(3),
@@ -84,6 +95,17 @@ void main() {
 
     test('aggregates', () {
       expect(jsonbGroupArray(column), generates('jsonb_group_array(col)'));
+      expect(
+        jsonbGroupArray(
+          column,
+          orderBy: OrderBy([OrderingTerm.desc(column)]),
+          filter: column.length.isBiggerOrEqualValue(10),
+        ),
+        generates(
+          'jsonb_group_array(col ORDER BY col DESC) FILTER (WHERE LENGTH(col) >= ?)',
+          [10],
+        ),
+      );
       expect(
         jsonbGroupObject({
           Variable('foo'): column,

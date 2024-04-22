@@ -1,3 +1,10 @@
+## 2.18.0-dev
+
+- Add `AggregateFunctionExpression` to write custom [aggregate function](https://www.sqlite.org/lang_aggfunc.html)
+  invocations in the Dart query builder.
+- The `json_group_array` and `jsonb_group_array` functions now contain an `orderBy`
+  and `filter` parameter.
+
 ## 2.17.0
 
 - Adds `companion` entry to `DataClassName` to override the name of the
