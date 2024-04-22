@@ -583,6 +583,8 @@ class MyDatabase {
       return everyElement(
         anyOf(
           isA<AssetId>().having((e) => e.extension, 'extension', '.json'),
+          // Allow reading SDK or other package assets to set up the analyzer.
+          isA<AssetId>().having((e) => e.package, 'package', isNot('a')),
           other,
         ),
       );
