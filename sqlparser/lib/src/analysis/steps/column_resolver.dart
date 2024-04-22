@@ -171,6 +171,16 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   }
 
   @override
+  void visitInExpression(InExpression e, ColumnResolverContext arg) {
+    if (e.inside case Queryable query) {
+      _handle(query, [], arg);
+      visitExcept(e, e.inside, arg);
+    } else {
+      super.visitInExpression(e, arg);
+    }
+  }
+
+  @override
   void visitUpdateStatement(UpdateStatement e, ColumnResolverContext arg) {
     // Resolve CTEs first
     e.withClause?.accept(this, arg);

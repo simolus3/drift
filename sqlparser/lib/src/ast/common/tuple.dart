@@ -3,7 +3,7 @@ part of '../ast.dart';
 /// A tuple of values, denotes in brackets. `(<expr>, ..., <expr>)`.
 ///
 /// In sqlite, this is also called a "row value".
-class Tuple extends Expression {
+class Tuple extends Expression implements InExpressionTarget {
   /// The expressions appearing in this tuple.
   List<Expression> expressions;
 

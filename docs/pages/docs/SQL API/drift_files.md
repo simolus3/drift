@@ -116,8 +116,10 @@ to determine the column type based on the declared type name.
 Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
 `bool` or `DateTime` as their Dart counterpart.
 Booleans are stored as `INTEGER` (either `0` or `1`). Datetimes are stored as
-unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) depending on a configurable
-build option.
+unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) [depending on a configurable build option]({{ '../Dart API/tables.md#datetime-options' | pageUrl }}).
+For integers that should be represented as a `BigInt` in Dart (i.e. to have better compatibility with large numbers when compiling to JS),
+define the column with the `INT64` type.
+
 Dart enums can automatically be stored by their index by using an `ENUM()` type
 referencing the Dart enum class:
 

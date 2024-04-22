@@ -27,7 +27,7 @@ abstract class ReferenceScope {
   /// All available result sets that can also be seen in child scopes.
   ///
   /// Usually, this is the same list as the result sets being declared in this
-  /// scope. However, some exceptions apply (see e.g. [SubqueryInFromScope]).
+  /// scope. However, some exceptions apply (see e.g. [SourceScope]).
   Iterable<ResultSetAvailableInStatement> get resultSetAvailableToChildScopes =>
       const Iterable.empty();
 
@@ -167,8 +167,8 @@ mixin _HasParentScope on ReferenceScope {
 ///    them in a [StatementScope] as well.
 ///  - subqueries appearing in a `FROM` clause _can't_ see outer columns and
 ///    tables. These statements are also wrapped in a [StatementScope], but a
-///    [SubqueryInFromScope] is insertted as an intermediatet scope to prevent
-///    the inner scope from seeing the outer columns.
+///    [SourceScope] is inserted as an intermediate scope to prevent the inner
+///    scope from seeing the outer columns.
 
 class StatementScope extends ReferenceScope with _HasParentScope {
   final ReferenceScope parent;

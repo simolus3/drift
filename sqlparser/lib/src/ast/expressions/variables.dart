@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-abstract class Variable extends Expression {
+abstract class Variable extends Expression implements InExpressionTarget {
   int? resolvedIndex;
 }
 
