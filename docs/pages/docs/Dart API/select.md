@@ -114,14 +114,14 @@ Of course, you can also join multiple tables:
 
 {% include "blocks/snippet" snippets = snippets name = 'otherTodosInSameCategory' %}
 
-## Parsing results
+### Parsing results
 
 Calling `get()` or `watch` on a select statement with join returns a `Future` or `Stream` of
 `List<TypedResult>`, respectively. Each `TypedResult` represents a row from which data can be
 read. It contains a `rawData` getter to obtain the raw columns. But more importantly, the
 `readTable` method can be used to read a data class from a table.
 
-In the example query above, we can read the todo entry and the category from each row like this:
+In the example query above, we've read the todo entry and the category from each row like this:
 
 {% include "blocks/snippet" snippets = snippets name = 'results' %}
 

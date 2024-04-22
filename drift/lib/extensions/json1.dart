@@ -144,8 +144,13 @@ extension JsonExtensions on Expression<String> {
 /// all emails in that folder.
 /// This string could be turned back into a list with
 /// `(json.decode(row.read(subjects)!) as List).cast<String>()`.
-Expression<String> jsonGroupArray(Expression value) {
-  return FunctionCallExpression('json_group_array', [value]);
+Expression<String> jsonGroupArray(
+  Expression value, {
+  OrderBy? orderBy,
+  Expression<bool>? filter,
+}) {
+  return AggregateFunctionExpression('json_group_array', [value],
+      orderBy: orderBy, filter: filter);
 }
 
 /// Returns a binary representation of a JSON array containing the result of
@@ -153,8 +158,13 @@ Expression<String> jsonGroupArray(Expression value) {
 ///
 /// See [jsonGroupArray], the variant of this function returning a textual
 /// description, for more details and an example.
-Expression<Uint8List> jsonbGroupArray(Expression value) {
-  return FunctionCallExpression('jsonb_group_array', [value]);
+Expression<Uint8List> jsonbGroupArray(
+  Expression value, {
+  OrderBy? orderBy,
+  Expression<bool>? filter,
+}) {
+  return AggregateFunctionExpression('jsonb_group_array', [value],
+      orderBy: orderBy, filter: filter);
 }
 
 List<Expression> _groupObjectArgs(Map<Expression<String>, Expression> values) {

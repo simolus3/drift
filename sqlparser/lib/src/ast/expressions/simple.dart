@@ -180,10 +180,9 @@ class InExpression extends Expression {
   /// against. From the sqlite grammar, we support [Tuple] and a [SubQuery].
   /// We also support a [Variable] as syntax sugar - it will be expanded into a
   /// tuple of variables at runtime.
-  Expression inside;
+  InExpressionTarget inside;
 
-  InExpression({this.not = false, required this.left, required this.inside})
-      : assert(inside is Tuple || inside is Variable || inside is SubQuery);
+  InExpression({this.not = false, required this.left, required this.inside});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -191,7 +190,7 @@ class InExpression extends Expression {
   }
 
   @override
-  List<Expression> get childNodes => [left, inside];
+  List<AstNode> get childNodes => [left, inside];
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
@@ -199,6 +198,19 @@ class InExpression extends Expression {
     inside = transformer.transformChild(inside, this, arg);
   }
 }
+
+/// Possible values for the right-hand side of an [InExpression].
+///
+/// Valid subclasses are:
+///  - [Tuple], to check whether the LHS is equal to any of the elements in the
+///    tuple.
+///  - [SubQuery], to check whether the LHS is equal to any of the rows returned
+///    by the subquery.
+///  - [TableReference] and [TableValuedFunction], a short-hand for [SubQuery]s
+///    if the table or function only return one column.
+///  - [Variable] (only if drift extensions are enabled), drift's generator
+///    turns this into a tuple of variables at runtime.
+abstract class InExpressionTarget implements AstNode {}
 
 class Parentheses extends Expression {
   Token? openingLeft;

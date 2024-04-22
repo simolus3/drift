@@ -41,7 +41,7 @@ abstract class TableOrSubquery extends Queryable {
 /// set.
 class TableReference extends TableOrSubquery
     with ReferenceOwner
-    implements Renamable, ResolvesToResultSet {
+    implements Renamable, ResolvesToResultSet, InExpressionTarget {
   final String? schemaName;
   final String tableName;
   Token? tableNameToken;
@@ -213,7 +213,12 @@ class UsingConstraint extends JoinConstraint {
 }
 
 class TableValuedFunction extends Queryable
-    implements TableOrSubquery, SqlInvocation, Renamable, ResolvesToResultSet {
+    implements
+        TableOrSubquery,
+        SqlInvocation,
+        Renamable,
+        ResolvesToResultSet,
+        InExpressionTarget {
   @override
   final String name;
 

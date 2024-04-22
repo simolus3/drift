@@ -511,7 +511,20 @@ class Parser {
       final not = _matchOne(TokenType.not);
       _matchOne(TokenType.$in);
 
-      final inside = _variableOrNull() ?? _consumeTuple(orSubQuery: true);
+      InExpressionTarget inside;
+      if (_variableOrNull() case var variable?) {
+        inside = variable;
+      } else if (_check(TokenType.leftParen)) {
+        inside = _consumeTuple(orSubQuery: true) as InExpressionTarget;
+      } else {
+        final target = _tableOrSubquery();
+        // TableOrSubquery is either a table reference, a table-valued function,
+        // or a Subquery. We don't support subqueries, but they can't be parsed
+        // here because we would have entered the tuple case above.
+        assert(target is! SubQuery);
+        inside = target as InExpressionTarget;
+      }
+
       return InExpression(left: left, inside: inside, not: not)
         ..setSpan(left.first!, _previous);
     }

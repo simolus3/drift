@@ -30,6 +30,9 @@ There are a couple of things that should be kept in mind when working with trans
   on the transaction after it has been closed! This can cause data loss or runtime crashes.
   Drift contains some runtime checks against this misuse and will throw an exception when a transaction
   is used after being closed.
+  A transaction is active during all asynchronous calls made in a `transaction` block, so transactions
+  also can't schedule timers or other operations using the database (as those would try to use the
+  transaction after the main `transaction` block has completed).
 2. __Different behavior of stream queries__: Inside a `transaction` callback, stream queries behave
 differently. If you're creating streams inside a transaction, check the next section to learn how
 they behave.

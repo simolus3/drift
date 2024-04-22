@@ -40,8 +40,8 @@ SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
   sqlite3: fd89671d969f3e73efe503ce203e28b016b58f68
-  sqlite3_flutter_libs: 00a50503d69f7ab0fe85a5ff25b33082f4df4ce9
+  sqlite3_flutter_libs: 01f6f1a7e23e5b22dcbeb49fddab75ecfc1de530
 
-PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
+PODFILE CHECKSUM: 54c2ee7490cf98371b4d49ae3114180468e1140c
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.14.3
