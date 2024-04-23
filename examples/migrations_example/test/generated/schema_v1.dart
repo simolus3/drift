@@ -18,9 +18,10 @@ class Users extends Table with TableInfo<Users, UsersData> {
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  String get aliasedName => _alias ?? 'users';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'users';
+  String get actualTableName => $name;
+  static const String $name = 'users';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override

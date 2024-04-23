@@ -20,6 +20,8 @@ export 'src/runtime/query_builder/query_builder.dart'
     hide CaseWhenExpressionWithBase, BaseCaseWhenExpression;
 export 'src/runtime/types/converters.dart';
 export 'src/runtime/types/mapping.dart' hide BaseSqlType, UserDefinedSqlType;
+export 'src/runtime/manager/manager.dart'
+    hide JoinBuilder, HasJoinBuilders, Composer, BaseTableManager;
 export 'src/utils/lazy_database.dart';
 
 /// A [ListEquality] instance used by generated drift code for the `==` and

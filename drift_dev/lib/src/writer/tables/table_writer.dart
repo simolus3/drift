@@ -46,7 +46,6 @@ abstract class TableOrViewWriter {
       final typeName =
           emitter.dartCode(emitter.writer.converterType(converter));
       final code = emitter.dartCode(converter.expression);
-
       buffer.write('static $typeName ${converter.fieldName} = $code;');
 
       // Generate wrappers for non-nullable type converters that are applied to
