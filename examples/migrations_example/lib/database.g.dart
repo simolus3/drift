@@ -282,7 +282,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
       'deleted', aliasedName, true,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
-      $customConstraints: 'DEFAULT FALSE',
+      $customConstraints: 'NULL DEFAULT FALSE',
       defaultValue: const CustomExpression('FALSE'));
   static const VerificationMeta _ownerMeta = const VerificationMeta('owner');
   late final GeneratedColumn<int> owner = GeneratedColumn<int>(

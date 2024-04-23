@@ -69,6 +69,10 @@ class DriftColumn implements HasType {
   /// set.
   final AnnotatedDartCode? clientDefaultCode;
 
+  /// If this column references another column, this column will contain the name
+  /// that the filters and orderings should use to denote the reverse direction
+  final String? referenceName;
+
   @override
   final AppliedTypeConverter? typeConverter;
 
@@ -92,6 +96,7 @@ class DriftColumn implements HasType {
     this.documentationComment,
     this.constraints = const [],
     this.customConstraints,
+    this.referenceName,
     bool foreignConverter = false,
   }) {
     if (typeConverter != null && !foreignConverter) {

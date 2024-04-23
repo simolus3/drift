@@ -93,6 +93,7 @@ class GenerateUtilsCommand extends Command {
     final options = DriftOptions.fromJson({
       ...cli.project.moorOptions.toJson(),
       ...schema.options,
+      'generate_manager': false,
     });
 
     final writer = Writer(

@@ -1640,6 +1640,538 @@ class WithCustomTypeCompanion extends UpdateCompanion<WithCustomTypeData> {
   }
 }
 
+class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
+    with
+        TableInfo<$TableWithEveryColumnTypeTable,
+            TableWithEveryColumnTypeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TableWithEveryColumnTypeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumnWithTypeConverter<RowId, int> id = GeneratedColumn<
+              int>('id', aliasedName, false,
+          hasAutoIncrement: true,
+          type: DriftSqlType.int,
+          requiredDuringInsert: false,
+          defaultConstraints:
+              GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      .withConverter<RowId>($TableWithEveryColumnTypeTable.$converterid);
+  static const VerificationMeta _aBoolMeta = const VerificationMeta('aBool');
+  @override
+  late final GeneratedColumn<bool> aBool = GeneratedColumn<bool>(
+      'a_bool', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("a_bool" IN (0, 1))'));
+  static const VerificationMeta _aDateTimeMeta =
+      const VerificationMeta('aDateTime');
+  @override
+  late final GeneratedColumn<DateTime> aDateTime = GeneratedColumn<DateTime>(
+      'a_date_time', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _aTextMeta = const VerificationMeta('aText');
+  @override
+  late final GeneratedColumn<String> aText = GeneratedColumn<String>(
+      'a_text', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _anIntMeta = const VerificationMeta('anInt');
+  @override
+  late final GeneratedColumn<int> anInt = GeneratedColumn<int>(
+      'an_int', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _anInt64Meta =
+      const VerificationMeta('anInt64');
+  @override
+  late final GeneratedColumn<BigInt> anInt64 = GeneratedColumn<BigInt>(
+      'an_int64', aliasedName, true,
+      type: DriftSqlType.bigInt, requiredDuringInsert: false);
+  static const VerificationMeta _aRealMeta = const VerificationMeta('aReal');
+  @override
+  late final GeneratedColumn<double> aReal = GeneratedColumn<double>(
+      'a_real', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _aBlobMeta = const VerificationMeta('aBlob');
+  @override
+  late final GeneratedColumn<Uint8List> aBlob = GeneratedColumn<Uint8List>(
+      'a_blob', aliasedName, true,
+      type: DriftSqlType.blob, requiredDuringInsert: false);
+  static const VerificationMeta _anIntEnumMeta =
+      const VerificationMeta('anIntEnum');
+  @override
+  late final GeneratedColumnWithTypeConverter<TodoStatus?, int> anIntEnum =
+      GeneratedColumn<int>('an_int_enum', aliasedName, true,
+              type: DriftSqlType.int, requiredDuringInsert: false)
+          .withConverter<TodoStatus?>(
+              $TableWithEveryColumnTypeTable.$converteranIntEnumn);
+  static const VerificationMeta _aTextWithConverterMeta =
+      const VerificationMeta('aTextWithConverter');
+  @override
+  late final GeneratedColumnWithTypeConverter<MyCustomObject?, String>
+      aTextWithConverter = GeneratedColumn<String>('insert', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<MyCustomObject?>(
+              $TableWithEveryColumnTypeTable.$converteraTextWithConvertern);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        aBool,
+        aDateTime,
+        aText,
+        anInt,
+        anInt64,
+        aReal,
+        aBlob,
+        anIntEnum,
+        aTextWithConverter
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'table_with_every_column_type';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<TableWithEveryColumnTypeData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    context.handle(_idMeta, const VerificationResult.success());
+    if (data.containsKey('a_bool')) {
+      context.handle(
+          _aBoolMeta, aBool.isAcceptableOrUnknown(data['a_bool']!, _aBoolMeta));
+    }
+    if (data.containsKey('a_date_time')) {
+      context.handle(
+          _aDateTimeMeta,
+          aDateTime.isAcceptableOrUnknown(
+              data['a_date_time']!, _aDateTimeMeta));
+    }
+    if (data.containsKey('a_text')) {
+      context.handle(
+          _aTextMeta, aText.isAcceptableOrUnknown(data['a_text']!, _aTextMeta));
+    }
+    if (data.containsKey('an_int')) {
+      context.handle(
+          _anIntMeta, anInt.isAcceptableOrUnknown(data['an_int']!, _anIntMeta));
+    }
+    if (data.containsKey('an_int64')) {
+      context.handle(_anInt64Meta,
+          anInt64.isAcceptableOrUnknown(data['an_int64']!, _anInt64Meta));
+    }
+    if (data.containsKey('a_real')) {
+      context.handle(
+          _aRealMeta, aReal.isAcceptableOrUnknown(data['a_real']!, _aRealMeta));
+    }
+    if (data.containsKey('a_blob')) {
+      context.handle(
+          _aBlobMeta, aBlob.isAcceptableOrUnknown(data['a_blob']!, _aBlobMeta));
+    }
+    context.handle(_anIntEnumMeta, const VerificationResult.success());
+    context.handle(_aTextWithConverterMeta, const VerificationResult.success());
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TableWithEveryColumnTypeData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TableWithEveryColumnTypeData(
+      id: $TableWithEveryColumnTypeTable.$converterid.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!),
+      aBool: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}a_bool']),
+      aDateTime: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}a_date_time']),
+      aText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}a_text']),
+      anInt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}an_int']),
+      anInt64: attachedDatabase.typeMapping
+          .read(DriftSqlType.bigInt, data['${effectivePrefix}an_int64']),
+      aReal: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}a_real']),
+      aBlob: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}a_blob']),
+      anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.int, data['${effectivePrefix}an_int_enum'])),
+      aTextWithConverter: $TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .fromSql(attachedDatabase.typeMapping
+              .read(DriftSqlType.string, data['${effectivePrefix}insert'])),
+    );
+  }
+
+  @override
+  $TableWithEveryColumnTypeTable createAlias(String alias) {
+    return $TableWithEveryColumnTypeTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<RowId, int, int> $converterid =
+      TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<TodoStatus, int, int> $converteranIntEnum =
+      const EnumIndexConverter<TodoStatus>(TodoStatus.values);
+  static JsonTypeConverter2<TodoStatus?, int?, int?> $converteranIntEnumn =
+      JsonTypeConverter2.asNullable($converteranIntEnum);
+  static JsonTypeConverter2<MyCustomObject, String, Map<dynamic, dynamic>>
+      $converteraTextWithConverter = const CustomJsonConverter();
+  static JsonTypeConverter2<MyCustomObject?, String?, Map<dynamic, dynamic>?>
+      $converteraTextWithConvertern =
+      JsonTypeConverter2.asNullable($converteraTextWithConverter);
+}
+
+class TableWithEveryColumnTypeData extends DataClass
+    implements Insertable<TableWithEveryColumnTypeData> {
+  final RowId id;
+  final bool? aBool;
+  final DateTime? aDateTime;
+  final String? aText;
+  final int? anInt;
+  final BigInt? anInt64;
+  final double? aReal;
+  final Uint8List? aBlob;
+  final TodoStatus? anIntEnum;
+  final MyCustomObject? aTextWithConverter;
+  const TableWithEveryColumnTypeData(
+      {required this.id,
+      this.aBool,
+      this.aDateTime,
+      this.aText,
+      this.anInt,
+      this.anInt64,
+      this.aReal,
+      this.aBlob,
+      this.anIntEnum,
+      this.aTextWithConverter});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    {
+      map['id'] =
+          Variable<int>($TableWithEveryColumnTypeTable.$converterid.toSql(id));
+    }
+    if (!nullToAbsent || aBool != null) {
+      map['a_bool'] = Variable<bool>(aBool);
+    }
+    if (!nullToAbsent || aDateTime != null) {
+      map['a_date_time'] = Variable<DateTime>(aDateTime);
+    }
+    if (!nullToAbsent || aText != null) {
+      map['a_text'] = Variable<String>(aText);
+    }
+    if (!nullToAbsent || anInt != null) {
+      map['an_int'] = Variable<int>(anInt);
+    }
+    if (!nullToAbsent || anInt64 != null) {
+      map['an_int64'] = Variable<BigInt>(anInt64);
+    }
+    if (!nullToAbsent || aReal != null) {
+      map['a_real'] = Variable<double>(aReal);
+    }
+    if (!nullToAbsent || aBlob != null) {
+      map['a_blob'] = Variable<Uint8List>(aBlob);
+    }
+    if (!nullToAbsent || anIntEnum != null) {
+      map['an_int_enum'] = Variable<int>(
+          $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(anIntEnum));
+    }
+    if (!nullToAbsent || aTextWithConverter != null) {
+      map['insert'] = Variable<String>($TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .toSql(aTextWithConverter));
+    }
+    return map;
+  }
+
+  TableWithEveryColumnTypeCompanion toCompanion(bool nullToAbsent) {
+    return TableWithEveryColumnTypeCompanion(
+      id: Value(id),
+      aBool:
+          aBool == null && nullToAbsent ? const Value.absent() : Value(aBool),
+      aDateTime: aDateTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aDateTime),
+      aText:
+          aText == null && nullToAbsent ? const Value.absent() : Value(aText),
+      anInt:
+          anInt == null && nullToAbsent ? const Value.absent() : Value(anInt),
+      anInt64: anInt64 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anInt64),
+      aReal:
+          aReal == null && nullToAbsent ? const Value.absent() : Value(aReal),
+      aBlob:
+          aBlob == null && nullToAbsent ? const Value.absent() : Value(aBlob),
+      anIntEnum: anIntEnum == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anIntEnum),
+      aTextWithConverter: aTextWithConverter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aTextWithConverter),
+    );
+  }
+
+  factory TableWithEveryColumnTypeData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TableWithEveryColumnTypeData(
+      id: $TableWithEveryColumnTypeTable.$converterid
+          .fromJson(serializer.fromJson<int>(json['id'])),
+      aBool: serializer.fromJson<bool?>(json['aBool']),
+      aDateTime: serializer.fromJson<DateTime?>(json['aDateTime']),
+      aText: serializer.fromJson<String?>(json['aText']),
+      anInt: serializer.fromJson<int?>(json['anInt']),
+      anInt64: serializer.fromJson<BigInt?>(json['anInt64']),
+      aReal: serializer.fromJson<double?>(json['aReal']),
+      aBlob: serializer.fromJson<Uint8List?>(json['aBlob']),
+      anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn
+          .fromJson(serializer.fromJson<int?>(json['anIntEnum'])),
+      aTextWithConverter: $TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .fromJson(serializer
+              .fromJson<Map<dynamic, dynamic>?>(json['aTextWithConverter'])),
+    );
+  }
+  factory TableWithEveryColumnTypeData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TableWithEveryColumnTypeData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer
+          .toJson<int>($TableWithEveryColumnTypeTable.$converterid.toJson(id)),
+      'aBool': serializer.toJson<bool?>(aBool),
+      'aDateTime': serializer.toJson<DateTime?>(aDateTime),
+      'aText': serializer.toJson<String?>(aText),
+      'anInt': serializer.toJson<int?>(anInt),
+      'anInt64': serializer.toJson<BigInt?>(anInt64),
+      'aReal': serializer.toJson<double?>(aReal),
+      'aBlob': serializer.toJson<Uint8List?>(aBlob),
+      'anIntEnum': serializer.toJson<int?>($TableWithEveryColumnTypeTable
+          .$converteranIntEnumn
+          .toJson(anIntEnum)),
+      'aTextWithConverter': serializer.toJson<Map<dynamic, dynamic>?>(
+          $TableWithEveryColumnTypeTable.$converteraTextWithConvertern
+              .toJson(aTextWithConverter)),
+    };
+  }
+
+  TableWithEveryColumnTypeData copyWith(
+          {RowId? id,
+          Value<bool?> aBool = const Value.absent(),
+          Value<DateTime?> aDateTime = const Value.absent(),
+          Value<String?> aText = const Value.absent(),
+          Value<int?> anInt = const Value.absent(),
+          Value<BigInt?> anInt64 = const Value.absent(),
+          Value<double?> aReal = const Value.absent(),
+          Value<Uint8List?> aBlob = const Value.absent(),
+          Value<TodoStatus?> anIntEnum = const Value.absent(),
+          Value<MyCustomObject?> aTextWithConverter = const Value.absent()}) =>
+      TableWithEveryColumnTypeData(
+        id: id ?? this.id,
+        aBool: aBool.present ? aBool.value : this.aBool,
+        aDateTime: aDateTime.present ? aDateTime.value : this.aDateTime,
+        aText: aText.present ? aText.value : this.aText,
+        anInt: anInt.present ? anInt.value : this.anInt,
+        anInt64: anInt64.present ? anInt64.value : this.anInt64,
+        aReal: aReal.present ? aReal.value : this.aReal,
+        aBlob: aBlob.present ? aBlob.value : this.aBlob,
+        anIntEnum: anIntEnum.present ? anIntEnum.value : this.anIntEnum,
+        aTextWithConverter: aTextWithConverter.present
+            ? aTextWithConverter.value
+            : this.aTextWithConverter,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TableWithEveryColumnTypeData(')
+          ..write('id: $id, ')
+          ..write('aBool: $aBool, ')
+          ..write('aDateTime: $aDateTime, ')
+          ..write('aText: $aText, ')
+          ..write('anInt: $anInt, ')
+          ..write('anInt64: $anInt64, ')
+          ..write('aReal: $aReal, ')
+          ..write('aBlob: $aBlob, ')
+          ..write('anIntEnum: $anIntEnum, ')
+          ..write('aTextWithConverter: $aTextWithConverter')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, aBool, aDateTime, aText, anInt, anInt64,
+      aReal, $driftBlobEquality.hash(aBlob), anIntEnum, aTextWithConverter);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TableWithEveryColumnTypeData &&
+          other.id == this.id &&
+          other.aBool == this.aBool &&
+          other.aDateTime == this.aDateTime &&
+          other.aText == this.aText &&
+          other.anInt == this.anInt &&
+          other.anInt64 == this.anInt64 &&
+          other.aReal == this.aReal &&
+          $driftBlobEquality.equals(other.aBlob, this.aBlob) &&
+          other.anIntEnum == this.anIntEnum &&
+          other.aTextWithConverter == this.aTextWithConverter);
+}
+
+class TableWithEveryColumnTypeCompanion
+    extends UpdateCompanion<TableWithEveryColumnTypeData> {
+  final Value<RowId> id;
+  final Value<bool?> aBool;
+  final Value<DateTime?> aDateTime;
+  final Value<String?> aText;
+  final Value<int?> anInt;
+  final Value<BigInt?> anInt64;
+  final Value<double?> aReal;
+  final Value<Uint8List?> aBlob;
+  final Value<TodoStatus?> anIntEnum;
+  final Value<MyCustomObject?> aTextWithConverter;
+  const TableWithEveryColumnTypeCompanion({
+    this.id = const Value.absent(),
+    this.aBool = const Value.absent(),
+    this.aDateTime = const Value.absent(),
+    this.aText = const Value.absent(),
+    this.anInt = const Value.absent(),
+    this.anInt64 = const Value.absent(),
+    this.aReal = const Value.absent(),
+    this.aBlob = const Value.absent(),
+    this.anIntEnum = const Value.absent(),
+    this.aTextWithConverter = const Value.absent(),
+  });
+  TableWithEveryColumnTypeCompanion.insert({
+    this.id = const Value.absent(),
+    this.aBool = const Value.absent(),
+    this.aDateTime = const Value.absent(),
+    this.aText = const Value.absent(),
+    this.anInt = const Value.absent(),
+    this.anInt64 = const Value.absent(),
+    this.aReal = const Value.absent(),
+    this.aBlob = const Value.absent(),
+    this.anIntEnum = const Value.absent(),
+    this.aTextWithConverter = const Value.absent(),
+  });
+  static Insertable<TableWithEveryColumnTypeData> custom({
+    Expression<int>? id,
+    Expression<bool>? aBool,
+    Expression<DateTime>? aDateTime,
+    Expression<String>? aText,
+    Expression<int>? anInt,
+    Expression<BigInt>? anInt64,
+    Expression<double>? aReal,
+    Expression<Uint8List>? aBlob,
+    Expression<int>? anIntEnum,
+    Expression<String>? aTextWithConverter,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (aBool != null) 'a_bool': aBool,
+      if (aDateTime != null) 'a_date_time': aDateTime,
+      if (aText != null) 'a_text': aText,
+      if (anInt != null) 'an_int': anInt,
+      if (anInt64 != null) 'an_int64': anInt64,
+      if (aReal != null) 'a_real': aReal,
+      if (aBlob != null) 'a_blob': aBlob,
+      if (anIntEnum != null) 'an_int_enum': anIntEnum,
+      if (aTextWithConverter != null) 'insert': aTextWithConverter,
+    });
+  }
+
+  TableWithEveryColumnTypeCompanion copyWith(
+      {Value<RowId>? id,
+      Value<bool?>? aBool,
+      Value<DateTime?>? aDateTime,
+      Value<String?>? aText,
+      Value<int?>? anInt,
+      Value<BigInt?>? anInt64,
+      Value<double?>? aReal,
+      Value<Uint8List?>? aBlob,
+      Value<TodoStatus?>? anIntEnum,
+      Value<MyCustomObject?>? aTextWithConverter}) {
+    return TableWithEveryColumnTypeCompanion(
+      id: id ?? this.id,
+      aBool: aBool ?? this.aBool,
+      aDateTime: aDateTime ?? this.aDateTime,
+      aText: aText ?? this.aText,
+      anInt: anInt ?? this.anInt,
+      anInt64: anInt64 ?? this.anInt64,
+      aReal: aReal ?? this.aReal,
+      aBlob: aBlob ?? this.aBlob,
+      anIntEnum: anIntEnum ?? this.anIntEnum,
+      aTextWithConverter: aTextWithConverter ?? this.aTextWithConverter,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(
+          $TableWithEveryColumnTypeTable.$converterid.toSql(id.value));
+    }
+    if (aBool.present) {
+      map['a_bool'] = Variable<bool>(aBool.value);
+    }
+    if (aDateTime.present) {
+      map['a_date_time'] = Variable<DateTime>(aDateTime.value);
+    }
+    if (aText.present) {
+      map['a_text'] = Variable<String>(aText.value);
+    }
+    if (anInt.present) {
+      map['an_int'] = Variable<int>(anInt.value);
+    }
+    if (anInt64.present) {
+      map['an_int64'] = Variable<BigInt>(anInt64.value);
+    }
+    if (aReal.present) {
+      map['a_real'] = Variable<double>(aReal.value);
+    }
+    if (aBlob.present) {
+      map['a_blob'] = Variable<Uint8List>(aBlob.value);
+    }
+    if (anIntEnum.present) {
+      map['an_int_enum'] = Variable<int>($TableWithEveryColumnTypeTable
+          .$converteranIntEnumn
+          .toSql(anIntEnum.value));
+    }
+    if (aTextWithConverter.present) {
+      map['insert'] = Variable<String>($TableWithEveryColumnTypeTable
+          .$converteraTextWithConvertern
+          .toSql(aTextWithConverter.value));
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TableWithEveryColumnTypeCompanion(')
+          ..write('id: $id, ')
+          ..write('aBool: $aBool, ')
+          ..write('aDateTime: $aDateTime, ')
+          ..write('aText: $aText, ')
+          ..write('anInt: $anInt, ')
+          ..write('anInt64: $anInt64, ')
+          ..write('aReal: $aReal, ')
+          ..write('aBlob: $aBlob, ')
+          ..write('anIntEnum: $anIntEnum, ')
+          ..write('aTextWithConverter: $aTextWithConverter')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class CategoryTodoCountViewData extends DataClass {
   final int? categoryId;
   final String? description;
@@ -1864,6 +2396,7 @@ class $TodoWithCategoryViewView
 
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(e);
+  _$TodoDbManager get managers => _$TodoDbManager(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $TodosTableTable todosTable = $TodosTableTable(this);
   late final $UsersTable users = $UsersTable(this);
@@ -1871,6 +2404,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable(this);
   late final $PureDefaultsTable pureDefaults = $PureDefaultsTable(this);
   late final $WithCustomTypeTable withCustomType = $WithCustomTypeTable(this);
+  late final $TableWithEveryColumnTypeTable tableWithEveryColumnType =
+      $TableWithEveryColumnTypeTable(this);
   late final $CategoryTodoCountViewView categoryTodoCountView =
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
@@ -1957,9 +2492,730 @@ abstract class _$TodoDb extends GeneratedDatabase {
         tableWithoutPK,
         pureDefaults,
         withCustomType,
+        tableWithEveryColumnType,
         categoryTodoCountView,
         todoWithCategoryView
       ];
+}
+
+class $$CategoriesTableFilterComposer
+    extends FilterComposer<_$TodoDb, $CategoriesTable> {
+  $$CategoriesTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
+      ColumnWithTypeConverterFilters($table.id);
+  ColumnFilters<String> get description => ColumnFilters($table.description);
+  ColumnFilters<int> get priorityValue => ColumnFilters($table.priority);
+  ColumnWithTypeConverterFilters<CategoryPriority, CategoryPriority, int>
+      get priority => ColumnWithTypeConverterFilters($table.priority);
+  ColumnFilters<String> get descriptionInUpperCase =>
+      ColumnFilters($table.descriptionInUpperCase);
+  ComposableFilter todos(
+      ComposableFilter Function($$TodosTableTableFilterComposer f) f) {
+    return $composeWithJoins(
+        $db: $db,
+        $table: $table,
+        referencedTable: $db.todosTable,
+        getCurrentColumn: (f) => f.id,
+        getReferencedColumn: (f) => f.category,
+        getReferencedComposer: (db, table) =>
+            $$TodosTableTableFilterComposer(db, table),
+        builder: f);
+  }
+}
+
+class $$CategoriesTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $CategoriesTable> {
+  $$CategoriesTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<String> get description =>
+      ColumnOrderings($table.description);
+  ColumnOrderings<int> get priority => ColumnOrderings($table.priority);
+  ColumnOrderings<String> get descriptionInUpperCase =>
+      ColumnOrderings($table.descriptionInUpperCase);
+}
+
+class $$CategoriesTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $CategoriesTable,
+    Category,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableProcessedTableManager,
+    $$CategoriesTableInsertCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder> {
+  const $$CategoriesTableProcessedTableManager(super.$state);
+}
+
+typedef $$CategoriesTableInsertCompanionBuilder = CategoriesCompanion Function({
+  Value<RowId> id,
+  required String description,
+  Value<CategoryPriority> priority,
+});
+typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
+  Value<RowId> id,
+  Value<String> description,
+  Value<CategoryPriority> priority,
+});
+
+class $$CategoriesTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $CategoriesTable,
+    Category,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableProcessedTableManager,
+    $$CategoriesTableInsertCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder> {
+  $$CategoriesTableTableManager(_$TodoDb db, $CategoriesTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$CategoriesTableFilterComposer(db, table),
+            orderingComposer: $$CategoriesTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$CategoriesTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<String> description = const Value.absent(),
+              Value<CategoryPriority> priority = const Value.absent(),
+            }) =>
+                CategoriesCompanion(
+                  id: id,
+                  description: description,
+                  priority: priority,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              required String description,
+              Value<CategoryPriority> priority = const Value.absent(),
+            }) =>
+                CategoriesCompanion.insert(
+                  id: id,
+                  description: description,
+                  priority: priority,
+                )));
+}
+
+class $$TodosTableTableFilterComposer
+    extends FilterComposer<_$TodoDb, $TodosTableTable> {
+  $$TodosTableTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
+      ColumnWithTypeConverterFilters($table.id);
+  ColumnFilters<String> get title => ColumnFilters($table.title);
+  ColumnFilters<String> get content => ColumnFilters($table.content);
+  ColumnFilters<DateTime> get targetDate => ColumnFilters($table.targetDate);
+  ColumnFilters<int> get categoryId => ColumnFilters($table.category);
+  ComposableFilter category(
+      ComposableFilter Function($$CategoriesTableFilterComposer f) f) {
+    return $composeWithJoins(
+        $db: $db,
+        $table: $table,
+        referencedTable: $db.categories,
+        getCurrentColumn: (f) => f.category,
+        getReferencedColumn: (f) => f.id,
+        getReferencedComposer: (db, table) =>
+            $$CategoriesTableFilterComposer(db, table),
+        builder: f);
+  }
+
+  ColumnFilters<String> get statusValue => ColumnFilters($table.status);
+  ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, String> get status =>
+      ColumnWithTypeConverterFilters($table.status);
+}
+
+class $$TodosTableTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $TodosTableTable> {
+  $$TodosTableTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<String> get title => ColumnOrderings($table.title);
+  ColumnOrderings<String> get content => ColumnOrderings($table.content);
+  ColumnOrderings<DateTime> get targetDate =>
+      ColumnOrderings($table.targetDate);
+  ColumnOrderings<int> get categoryId => ColumnOrderings($table.category);
+  ComposableOrdering category(
+      ComposableOrdering Function($$CategoriesTableOrderingComposer o) o) {
+    return $composeWithJoins(
+        $db: $db,
+        $table: $table,
+        referencedTable: $db.categories,
+        getCurrentColumn: (f) => f.category,
+        getReferencedColumn: (f) => f.id,
+        getReferencedComposer: (db, table) =>
+            $$CategoriesTableOrderingComposer(db, table),
+        builder: o);
+  }
+
+  ColumnOrderings<String> get status => ColumnOrderings($table.status);
+}
+
+class $$TodosTableTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $TodosTableTable,
+    TodoEntry,
+    $$TodosTableTableFilterComposer,
+    $$TodosTableTableOrderingComposer,
+    $$TodosTableTableProcessedTableManager,
+    $$TodosTableTableInsertCompanionBuilder,
+    $$TodosTableTableUpdateCompanionBuilder> {
+  const $$TodosTableTableProcessedTableManager(super.$state);
+}
+
+typedef $$TodosTableTableInsertCompanionBuilder = TodosTableCompanion Function({
+  Value<RowId> id,
+  Value<String?> title,
+  required String content,
+  Value<DateTime?> targetDate,
+  Value<int?> category,
+  Value<TodoStatus?> status,
+});
+typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
+  Value<RowId> id,
+  Value<String?> title,
+  Value<String> content,
+  Value<DateTime?> targetDate,
+  Value<int?> category,
+  Value<TodoStatus?> status,
+});
+
+class $$TodosTableTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TodosTableTable,
+    TodoEntry,
+    $$TodosTableTableFilterComposer,
+    $$TodosTableTableOrderingComposer,
+    $$TodosTableTableProcessedTableManager,
+    $$TodosTableTableInsertCompanionBuilder,
+    $$TodosTableTableUpdateCompanionBuilder> {
+  $$TodosTableTableTableManager(_$TodoDb db, $TodosTableTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$TodosTableTableFilterComposer(db, table),
+            orderingComposer: $$TodosTableTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$TodosTableTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<String?> title = const Value.absent(),
+              Value<String> content = const Value.absent(),
+              Value<DateTime?> targetDate = const Value.absent(),
+              Value<int?> category = const Value.absent(),
+              Value<TodoStatus?> status = const Value.absent(),
+            }) =>
+                TodosTableCompanion(
+                  id: id,
+                  title: title,
+                  content: content,
+                  targetDate: targetDate,
+                  category: category,
+                  status: status,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<String?> title = const Value.absent(),
+              required String content,
+              Value<DateTime?> targetDate = const Value.absent(),
+              Value<int?> category = const Value.absent(),
+              Value<TodoStatus?> status = const Value.absent(),
+            }) =>
+                TodosTableCompanion.insert(
+                  id: id,
+                  title: title,
+                  content: content,
+                  targetDate: targetDate,
+                  category: category,
+                  status: status,
+                )));
+}
+
+class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
+  $$UsersTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
+      ColumnWithTypeConverterFilters($table.id);
+  ColumnFilters<String> get name => ColumnFilters($table.name);
+  ColumnFilters<bool> get isAwesome => ColumnFilters($table.isAwesome);
+  ColumnFilters<Uint8List> get profilePicture =>
+      ColumnFilters($table.profilePicture);
+  ColumnFilters<DateTime> get creationTime =>
+      ColumnFilters($table.creationTime);
+}
+
+class $$UsersTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $UsersTable> {
+  $$UsersTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<String> get name => ColumnOrderings($table.name);
+  ColumnOrderings<bool> get isAwesome => ColumnOrderings($table.isAwesome);
+  ColumnOrderings<Uint8List> get profilePicture =>
+      ColumnOrderings($table.profilePicture);
+  ColumnOrderings<DateTime> get creationTime =>
+      ColumnOrderings($table.creationTime);
+}
+
+class $$UsersTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  const $$UsersTableProcessedTableManager(super.$state);
+}
+
+typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
+  Value<RowId> id,
+  required String name,
+  Value<bool> isAwesome,
+  required Uint8List profilePicture,
+  Value<DateTime> creationTime,
+});
+typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
+  Value<RowId> id,
+  Value<String> name,
+  Value<bool> isAwesome,
+  Value<Uint8List> profilePicture,
+  Value<DateTime> creationTime,
+});
+
+class $$UsersTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  $$UsersTableTableManager(_$TodoDb db, $UsersTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$UsersTableFilterComposer(db, table),
+            orderingComposer: $$UsersTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$UsersTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<String> name = const Value.absent(),
+              Value<bool> isAwesome = const Value.absent(),
+              Value<Uint8List> profilePicture = const Value.absent(),
+              Value<DateTime> creationTime = const Value.absent(),
+            }) =>
+                UsersCompanion(
+                  id: id,
+                  name: name,
+                  isAwesome: isAwesome,
+                  profilePicture: profilePicture,
+                  creationTime: creationTime,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              required String name,
+              Value<bool> isAwesome = const Value.absent(),
+              required Uint8List profilePicture,
+              Value<DateTime> creationTime = const Value.absent(),
+            }) =>
+                UsersCompanion.insert(
+                  id: id,
+                  name: name,
+                  isAwesome: isAwesome,
+                  profilePicture: profilePicture,
+                  creationTime: creationTime,
+                )));
+}
+
+class $$SharedTodosTableFilterComposer
+    extends FilterComposer<_$TodoDb, $SharedTodosTable> {
+  $$SharedTodosTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get todo => ColumnFilters($table.todo);
+  ColumnFilters<int> get user => ColumnFilters($table.user);
+}
+
+class $$SharedTodosTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $SharedTodosTable> {
+  $$SharedTodosTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<int> get todo => ColumnOrderings($table.todo);
+  ColumnOrderings<int> get user => ColumnOrderings($table.user);
+}
+
+class $$SharedTodosTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $SharedTodosTable,
+    SharedTodo,
+    $$SharedTodosTableFilterComposer,
+    $$SharedTodosTableOrderingComposer,
+    $$SharedTodosTableProcessedTableManager,
+    $$SharedTodosTableInsertCompanionBuilder,
+    $$SharedTodosTableUpdateCompanionBuilder> {
+  const $$SharedTodosTableProcessedTableManager(super.$state);
+}
+
+typedef $$SharedTodosTableInsertCompanionBuilder = SharedTodosCompanion
+    Function({
+  required int todo,
+  required int user,
+  Value<int> rowid,
+});
+typedef $$SharedTodosTableUpdateCompanionBuilder = SharedTodosCompanion
+    Function({
+  Value<int> todo,
+  Value<int> user,
+  Value<int> rowid,
+});
+
+class $$SharedTodosTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $SharedTodosTable,
+    SharedTodo,
+    $$SharedTodosTableFilterComposer,
+    $$SharedTodosTableOrderingComposer,
+    $$SharedTodosTableProcessedTableManager,
+    $$SharedTodosTableInsertCompanionBuilder,
+    $$SharedTodosTableUpdateCompanionBuilder> {
+  $$SharedTodosTableTableManager(_$TodoDb db, $SharedTodosTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$SharedTodosTableFilterComposer(db, table),
+            orderingComposer: $$SharedTodosTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$SharedTodosTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> todo = const Value.absent(),
+              Value<int> user = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                SharedTodosCompanion(
+                  todo: todo,
+                  user: user,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required int todo,
+              required int user,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                SharedTodosCompanion.insert(
+                  todo: todo,
+                  user: user,
+                  rowid: rowid,
+                )));
+}
+
+class $$PureDefaultsTableFilterComposer
+    extends FilterComposer<_$TodoDb, $PureDefaultsTable> {
+  $$PureDefaultsTableFilterComposer(super.db, super.table);
+  ColumnFilters<String> get txtValue => ColumnFilters($table.txt);
+  ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
+      get txt => ColumnWithTypeConverterFilters($table.txt);
+}
+
+class $$PureDefaultsTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $PureDefaultsTable> {
+  $$PureDefaultsTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<String> get txt => ColumnOrderings($table.txt);
+}
+
+class $$PureDefaultsTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $PureDefaultsTable,
+    PureDefault,
+    $$PureDefaultsTableFilterComposer,
+    $$PureDefaultsTableOrderingComposer,
+    $$PureDefaultsTableProcessedTableManager,
+    $$PureDefaultsTableInsertCompanionBuilder,
+    $$PureDefaultsTableUpdateCompanionBuilder> {
+  const $$PureDefaultsTableProcessedTableManager(super.$state);
+}
+
+typedef $$PureDefaultsTableInsertCompanionBuilder = PureDefaultsCompanion
+    Function({
+  Value<MyCustomObject?> txt,
+  Value<int> rowid,
+});
+typedef $$PureDefaultsTableUpdateCompanionBuilder = PureDefaultsCompanion
+    Function({
+  Value<MyCustomObject?> txt,
+  Value<int> rowid,
+});
+
+class $$PureDefaultsTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $PureDefaultsTable,
+    PureDefault,
+    $$PureDefaultsTableFilterComposer,
+    $$PureDefaultsTableOrderingComposer,
+    $$PureDefaultsTableProcessedTableManager,
+    $$PureDefaultsTableInsertCompanionBuilder,
+    $$PureDefaultsTableUpdateCompanionBuilder> {
+  $$PureDefaultsTableTableManager(_$TodoDb db, $PureDefaultsTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$PureDefaultsTableFilterComposer(db, table),
+            orderingComposer: $$PureDefaultsTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$PureDefaultsTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<MyCustomObject?> txt = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                PureDefaultsCompanion(
+                  txt: txt,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<MyCustomObject?> txt = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                PureDefaultsCompanion.insert(
+                  txt: txt,
+                  rowid: rowid,
+                )));
+}
+
+class $$WithCustomTypeTableFilterComposer
+    extends FilterComposer<_$TodoDb, $WithCustomTypeTable> {
+  $$WithCustomTypeTableFilterComposer(super.db, super.table);
+  ColumnFilters<UuidValue> get id => ColumnFilters($table.id);
+}
+
+class $$WithCustomTypeTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $WithCustomTypeTable> {
+  $$WithCustomTypeTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<UuidValue> get id => ColumnOrderings($table.id);
+}
+
+class $$WithCustomTypeTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $WithCustomTypeTable,
+    WithCustomTypeData,
+    $$WithCustomTypeTableFilterComposer,
+    $$WithCustomTypeTableOrderingComposer,
+    $$WithCustomTypeTableProcessedTableManager,
+    $$WithCustomTypeTableInsertCompanionBuilder,
+    $$WithCustomTypeTableUpdateCompanionBuilder> {
+  const $$WithCustomTypeTableProcessedTableManager(super.$state);
+}
+
+typedef $$WithCustomTypeTableInsertCompanionBuilder = WithCustomTypeCompanion
+    Function({
+  required UuidValue id,
+  Value<int> rowid,
+});
+typedef $$WithCustomTypeTableUpdateCompanionBuilder = WithCustomTypeCompanion
+    Function({
+  Value<UuidValue> id,
+  Value<int> rowid,
+});
+
+class $$WithCustomTypeTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $WithCustomTypeTable,
+    WithCustomTypeData,
+    $$WithCustomTypeTableFilterComposer,
+    $$WithCustomTypeTableOrderingComposer,
+    $$WithCustomTypeTableProcessedTableManager,
+    $$WithCustomTypeTableInsertCompanionBuilder,
+    $$WithCustomTypeTableUpdateCompanionBuilder> {
+  $$WithCustomTypeTableTableManager(_$TodoDb db, $WithCustomTypeTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$WithCustomTypeTableFilterComposer(db, table),
+            orderingComposer: $$WithCustomTypeTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$WithCustomTypeTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<UuidValue> id = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                WithCustomTypeCompanion(
+                  id: id,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required UuidValue id,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                WithCustomTypeCompanion.insert(
+                  id: id,
+                  rowid: rowid,
+                )));
+}
+
+class $$TableWithEveryColumnTypeTableFilterComposer
+    extends FilterComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
+  $$TableWithEveryColumnTypeTableFilterComposer(super.db, super.table);
+  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
+      ColumnWithTypeConverterFilters($table.id);
+  ColumnFilters<bool> get aBool => ColumnFilters($table.aBool);
+  ColumnFilters<DateTime> get aDateTime => ColumnFilters($table.aDateTime);
+  ColumnFilters<String> get aText => ColumnFilters($table.aText);
+  ColumnFilters<int> get anInt => ColumnFilters($table.anInt);
+  ColumnFilters<BigInt> get anInt64 => ColumnFilters($table.anInt64);
+  ColumnFilters<double> get aReal => ColumnFilters($table.aReal);
+  ColumnFilters<Uint8List> get aBlob => ColumnFilters($table.aBlob);
+  ColumnFilters<int> get anIntEnumValue => ColumnFilters($table.anIntEnum);
+  ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, int> get anIntEnum =>
+      ColumnWithTypeConverterFilters($table.anIntEnum);
+  ColumnFilters<String> get aTextWithConverterValue =>
+      ColumnFilters($table.aTextWithConverter);
+  ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
+      get aTextWithConverter =>
+          ColumnWithTypeConverterFilters($table.aTextWithConverter);
+}
+
+class $$TableWithEveryColumnTypeTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
+  $$TableWithEveryColumnTypeTableOrderingComposer(super.db, super.table);
+  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  ColumnOrderings<bool> get aBool => ColumnOrderings($table.aBool);
+  ColumnOrderings<DateTime> get aDateTime => ColumnOrderings($table.aDateTime);
+  ColumnOrderings<String> get aText => ColumnOrderings($table.aText);
+  ColumnOrderings<int> get anInt => ColumnOrderings($table.anInt);
+  ColumnOrderings<BigInt> get anInt64 => ColumnOrderings($table.anInt64);
+  ColumnOrderings<double> get aReal => ColumnOrderings($table.aReal);
+  ColumnOrderings<Uint8List> get aBlob => ColumnOrderings($table.aBlob);
+  ColumnOrderings<int> get anIntEnum => ColumnOrderings($table.anIntEnum);
+  ColumnOrderings<String> get aTextWithConverter =>
+      ColumnOrderings($table.aTextWithConverter);
+}
+
+class $$TableWithEveryColumnTypeTableProcessedTableManager
+    extends ProcessedTableManager<
+        _$TodoDb,
+        $TableWithEveryColumnTypeTable,
+        TableWithEveryColumnTypeData,
+        $$TableWithEveryColumnTypeTableFilterComposer,
+        $$TableWithEveryColumnTypeTableOrderingComposer,
+        $$TableWithEveryColumnTypeTableProcessedTableManager,
+        $$TableWithEveryColumnTypeTableInsertCompanionBuilder,
+        $$TableWithEveryColumnTypeTableUpdateCompanionBuilder> {
+  const $$TableWithEveryColumnTypeTableProcessedTableManager(super.$state);
+}
+
+typedef $$TableWithEveryColumnTypeTableInsertCompanionBuilder
+    = TableWithEveryColumnTypeCompanion Function({
+  Value<RowId> id,
+  Value<bool?> aBool,
+  Value<DateTime?> aDateTime,
+  Value<String?> aText,
+  Value<int?> anInt,
+  Value<BigInt?> anInt64,
+  Value<double?> aReal,
+  Value<Uint8List?> aBlob,
+  Value<TodoStatus?> anIntEnum,
+  Value<MyCustomObject?> aTextWithConverter,
+});
+typedef $$TableWithEveryColumnTypeTableUpdateCompanionBuilder
+    = TableWithEveryColumnTypeCompanion Function({
+  Value<RowId> id,
+  Value<bool?> aBool,
+  Value<DateTime?> aDateTime,
+  Value<String?> aText,
+  Value<int?> anInt,
+  Value<BigInt?> anInt64,
+  Value<double?> aReal,
+  Value<Uint8List?> aBlob,
+  Value<TodoStatus?> anIntEnum,
+  Value<MyCustomObject?> aTextWithConverter,
+});
+
+class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TableWithEveryColumnTypeTable,
+    TableWithEveryColumnTypeData,
+    $$TableWithEveryColumnTypeTableFilterComposer,
+    $$TableWithEveryColumnTypeTableOrderingComposer,
+    $$TableWithEveryColumnTypeTableProcessedTableManager,
+    $$TableWithEveryColumnTypeTableInsertCompanionBuilder,
+    $$TableWithEveryColumnTypeTableUpdateCompanionBuilder> {
+  $$TableWithEveryColumnTypeTableTableManager(
+      _$TodoDb db, $TableWithEveryColumnTypeTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer:
+                $$TableWithEveryColumnTypeTableFilterComposer(db, table),
+            orderingComposer:
+                $$TableWithEveryColumnTypeTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$TableWithEveryColumnTypeTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<bool?> aBool = const Value.absent(),
+              Value<DateTime?> aDateTime = const Value.absent(),
+              Value<String?> aText = const Value.absent(),
+              Value<int?> anInt = const Value.absent(),
+              Value<BigInt?> anInt64 = const Value.absent(),
+              Value<double?> aReal = const Value.absent(),
+              Value<Uint8List?> aBlob = const Value.absent(),
+              Value<TodoStatus?> anIntEnum = const Value.absent(),
+              Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+            }) =>
+                TableWithEveryColumnTypeCompanion(
+                  id: id,
+                  aBool: aBool,
+                  aDateTime: aDateTime,
+                  aText: aText,
+                  anInt: anInt,
+                  anInt64: anInt64,
+                  aReal: aReal,
+                  aBlob: aBlob,
+                  anIntEnum: anIntEnum,
+                  aTextWithConverter: aTextWithConverter,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<RowId> id = const Value.absent(),
+              Value<bool?> aBool = const Value.absent(),
+              Value<DateTime?> aDateTime = const Value.absent(),
+              Value<String?> aText = const Value.absent(),
+              Value<int?> anInt = const Value.absent(),
+              Value<BigInt?> anInt64 = const Value.absent(),
+              Value<double?> aReal = const Value.absent(),
+              Value<Uint8List?> aBlob = const Value.absent(),
+              Value<TodoStatus?> anIntEnum = const Value.absent(),
+              Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+            }) =>
+                TableWithEveryColumnTypeCompanion.insert(
+                  id: id,
+                  aBool: aBool,
+                  aDateTime: aDateTime,
+                  aText: aText,
+                  anInt: anInt,
+                  anInt64: anInt64,
+                  aReal: aReal,
+                  aBlob: aBlob,
+                  anIntEnum: anIntEnum,
+                  aTextWithConverter: aTextWithConverter,
+                )));
+}
+
+class _$TodoDbManager {
+  final _$TodoDb _db;
+  _$TodoDbManager(this._db);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db, _db.categories);
+  $$TodosTableTableTableManager get todosTable =>
+      $$TodosTableTableTableManager(_db, _db.todosTable);
+  $$UsersTableTableManager get users =>
+      $$UsersTableTableManager(_db, _db.users);
+  $$SharedTodosTableTableManager get sharedTodos =>
+      $$SharedTodosTableTableManager(_db, _db.sharedTodos);
+  $$PureDefaultsTableTableManager get pureDefaults =>
+      $$PureDefaultsTableTableManager(_db, _db.pureDefaults);
+  $$WithCustomTypeTableTableManager get withCustomType =>
+      $$WithCustomTypeTableTableManager(_db, _db.withCustomType);
+  $$TableWithEveryColumnTypeTableTableManager get tableWithEveryColumnType =>
+      $$TableWithEveryColumnTypeTableTableManager(
+          _db, _db.tableWithEveryColumnType);
 }
 
 class AllTodosWithCategoryResult extends CustomResultSet {
