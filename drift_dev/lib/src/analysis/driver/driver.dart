@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import '../options.dart';
 import '../backend.dart';
 import '../drift_native_functions.dart';
+import '../options.dart';
 import '../resolver/dart/helper.dart';
 import '../resolver/discover.dart';
 import '../resolver/drift/sqlparser/mapping.dart';
@@ -62,10 +63,32 @@ class DriftAnalysisDriver {
 
   AnalysisResultCacheReader? cacheReader;
 
-  KnownDriftTypes? _knownTypes;
+  final KnownDriftTypes? _knownTypes;
 
-  DriftAnalysisDriver(this.backend, this.options, {bool isTesting = false})
-      : _isTesting = isTesting;
+  KnownDriftTypes get knownTypes => _knownTypes!;
+
+  @visibleForTesting
+  DriftAnalysisDriver(
+    this.backend,
+    this.options,
+    this._knownTypes, {
+    bool isTesting = false,
+  }) : _isTesting = isTesting;
+
+  static Future<DriftAnalysisDriver> init(
+    DriftBackend backend,
+    DriftOptions options, {
+    bool isTesting = false,
+  }) async {
+    final driver = DriftAnalysisDriver(
+      backend,
+      options,
+      await KnownDriftTypes.resolve(backend),
+      isTesting: isTesting,
+    );
+
+    return driver;
+  }
 
   SqlEngine newSqlEngine() {
     return SqlEngine(
@@ -83,15 +106,11 @@ class DriftAnalysisDriver {
           if (options.hasModule(SqlModule.rtree)) const RTreeExtension(),
           if (options.hasModule(SqlModule.spellfix1))
             const Spellfix1Extension(),
+          if (options.hasModule(SqlModule.geopoly)) const GeopolyExtension(),
         ],
         version: options.sqliteVersion,
       ),
     );
-  }
-
-  /// Loads types important for Drift analysis.
-  Future<KnownDriftTypes> loadKnownTypes() async {
-    return _knownTypes ??= await KnownDriftTypes.resolve(this);
   }
 
   /// For a given file under [uri], attempts to restore serialized analysis
@@ -358,6 +377,7 @@ abstract class AnalysisResultCacheReader {
   Future<CachedDiscoveryResults?> readDiscovery(Uri uri);
 
   Future<LibraryElement?> readTypeHelperFor(Uri uri);
+
   Future<String?> readElementCacheFor(Uri uri);
 }
 

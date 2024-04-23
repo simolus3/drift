@@ -20,7 +20,7 @@ query: INSERT INTO foo VALUES (?, ?, ?)
 
 void main() {
   test('does not support newer sqlite features by default', () async {
-    final state = TestBackend.inTest(_content);
+    final state = await TestBackend.inTest(_content);
 
     final file = await state.analyze('package:a/main.drift');
     expect(
@@ -38,7 +38,7 @@ void main() {
   });
 
   test('supports newer sqlite features', () async {
-    final state = TestBackend.inTest(
+    final state = await TestBackend.inTest(
       _content,
       options: const DriftOptions.defaults(
         sqliteAnalysisOptions: SqliteAnalysisOptions(

@@ -41,6 +41,7 @@ class ResolvedType {
       this.hints = const [],
       this.nullable = false,
       this.isArray = false});
+
   const ResolvedType.bool({bool? nullable = false})
       : this(
             type: BasicType.int,
@@ -111,6 +112,7 @@ abstract class TypeHint {
 
   @override
   int get hashCode => runtimeType.hashCode;
+
   @override
   bool operator ==(Object other) => other.runtimeType == runtimeType;
 }
@@ -129,6 +131,12 @@ class IsDateTime extends TypeHint {
 /// be mapped to Dart as a [BigInt].
 class IsBigInt extends TypeHint {
   const IsBigInt();
+}
+
+/// This could be a `blob` or `text` depending on the context
+/// https://www.sqlite.org/geopoly.html
+class IsGeopolyPolygon extends TypeHint {
+  const IsGeopolyPolygon();
 }
 
 /// Result of resolving a type. This can either have the resolved [type] set,
@@ -152,10 +160,12 @@ class ResolveResult {
   const ResolveResult(this.type)
       : needsContext = false,
         unknown = false;
+
   const ResolveResult.needsContext()
       : type = null,
         needsContext = true,
         unknown = false;
+
   const ResolveResult.unknown()
       : type = null,
         needsContext = false,

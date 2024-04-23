@@ -1,13 +1,14 @@
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/column.dart';
 import 'package:drift_dev/src/analysis/results/table.dart';
+import 'package:drift_dev/src/analysis/results/types.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
 
 void main() {
   test('reports foreign keys in drift model', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE a (
   foo INTEGER PRIMARY KEY,
@@ -55,7 +56,7 @@ CREATE TABLE b (
   });
 
   test('recognizes aliases to rowid', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/a.drift': '''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY,
@@ -83,7 +84,7 @@ CREATE TABLE b (
   });
 
   test('parses enum columns', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
          import 'enum.dart';
 
@@ -167,7 +168,7 @@ CREATE TABLE b (
   });
 
   test('does not allow converters for enum columns', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
          import 'enum.dart';
 
@@ -199,7 +200,7 @@ CREATE TABLE b (
   });
 
   test('does not allow enum types for non-enums', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
          import 'enum.dart';
 
@@ -222,7 +223,7 @@ CREATE TABLE b (
   });
 
   test('supports JSON KEY annotation', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE waybills (
     parent    INT      JSON KEY parentDoc        NULL,
@@ -243,7 +244,7 @@ CREATE TABLE waybills (
   });
 
   test('recognizes documentation comments', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE IF NOT EXISTS currencies (
   -- The name of this currency
@@ -265,7 +266,7 @@ CREATE TABLE IF NOT EXISTS currencies (
   });
 
   test('can use custom types', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 import 'b.dart';
 
@@ -286,13 +287,17 @@ class MyType implements CustomSqlType<String> {}
     final table = file.analyzedElements.single as DriftTable;
     final column = table.columns.single;
 
-    expect(column.sqlType.isCustom, isTrue);
-    expect(column.sqlType.custom?.dartType.toString(), 'String');
-    expect(column.sqlType.custom?.expression.toString(), 'MyType()');
+    switch (column.sqlType) {
+      case ColumnDriftType():
+        fail('expect custom type');
+      case ColumnCustomType(:final custom):
+        expect(custom.dartType.toString(), 'String');
+        expect(custom.expression.toString(), 'MyType()');
+    }
   });
 
   test('recognizes bigint columns', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
 CREATE TABLE foo (
   bar INT64 NOT NULL

@@ -36,7 +36,7 @@ abstract class HasType {
 /// appears where an array is expected or has a type converter applied to it.
 /// [HasType] is the interface for sql-typed elements and is implemented by
 /// columns.
-class ColumnType {
+sealed class ColumnType {
   /// The builtin drift type used by this column.
   ///
   /// Even though it's unused there, custom types also have this field set -
@@ -44,14 +44,21 @@ class ColumnType {
   /// all.
   final DriftSqlType builtin;
 
-  /// Details about the custom type, if one is present.
-  final CustomColumnType? custom;
+  const ColumnType._(this.builtin);
 
-  bool get isCustom => custom != null;
+  const factory ColumnType.drift(DriftSqlType builtin) = ColumnDriftType;
 
-  const ColumnType.drift(this.builtin) : custom = null;
+  const factory ColumnType.custom(CustomColumnType custom) = ColumnCustomType;
+}
 
-  ColumnType.custom(CustomColumnType this.custom) : builtin = DriftSqlType.any;
+final class ColumnDriftType extends ColumnType {
+  const ColumnDriftType(super.builtin) : super._();
+}
+
+final class ColumnCustomType extends ColumnType {
+  final CustomColumnType custom;
+
+  const ColumnCustomType(this.custom) : super._(DriftSqlType.any);
 }
 
 extension OperationOnTypes on HasType {

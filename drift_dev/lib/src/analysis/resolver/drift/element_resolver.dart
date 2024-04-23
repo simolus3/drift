@@ -37,7 +37,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     }
 
-    final knownTypes = await resolver.driver.loadKnownTypes();
+    final knownTypes = resolver.driver.knownTypes;
     return readCustomType(
       knownTypes.helperLibrary,
       expression,
@@ -64,7 +64,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     }
 
-    final knownTypes = await resolver.driver.loadKnownTypes();
+    final knownTypes = resolver.driver.knownTypes;
     return readTypeConverter(
       knownTypes.helperLibrary,
       expression,
@@ -153,7 +153,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
           innerType,
           false,
           this,
-          await resolver.driver.loadKnownTypes(),
+          resolver.driver.knownTypes,
         );
       }
     }
@@ -166,7 +166,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       ));
       return null;
     } else {
-      final knownTypes = await resolver.driver.loadKnownTypes();
+      final knownTypes = resolver.driver.knownTypes;
       return validateExistingClass(columns, foundDartClass,
           source.constructorName ?? '', false, this, knownTypes);
     }

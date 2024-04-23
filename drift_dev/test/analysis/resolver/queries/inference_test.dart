@@ -6,7 +6,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('experimental inference - integration test', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/a.drift': '''
 CREATE TABLE artists (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

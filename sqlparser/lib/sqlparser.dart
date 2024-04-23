@@ -5,6 +5,7 @@ export 'src/analysis/analysis.dart';
 export 'src/analysis/types/join_analysis.dart';
 export 'src/ast/ast.dart';
 export 'src/engine/module/fts5.dart' show Fts5Extension, Fts5Table;
+export 'src/engine/module/geopoly.dart' show GeopolyExtension;
 export 'src/engine/module/json1.dart' show Json1Extension;
 export 'src/engine/module/math.dart' show BuiltInMathExtension;
 export 'src/engine/module/rtree.dart' show RTreeExtension;

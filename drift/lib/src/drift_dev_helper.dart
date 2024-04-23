@@ -7,3 +7,5 @@ export 'runtime/query_builder/query_builder.dart' show TableInfo;
 
 export 'dsl/dsl.dart'
     show Table, TableIndex, View, DriftDatabase, DriftAccessor;
+
+export '../extensions/geopoly.dart';

@@ -6,7 +6,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('can analyze Dart view', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 

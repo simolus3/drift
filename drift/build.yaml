@@ -29,6 +29,7 @@ targets:
               modules:
                 - json1
                 - fts5
+                - geopoly
       build_web_compilers:entrypoint:
         generate_for:
           - "web/drift_worker.dart"
@@ -59,3 +60,4 @@ targets:
               modules:
                 - json1
                 - fts5
+                - geopoly

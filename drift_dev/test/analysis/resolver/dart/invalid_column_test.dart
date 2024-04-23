@@ -7,7 +7,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('warns about invalid column', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
         import 'package:drift/drift.dart';
 

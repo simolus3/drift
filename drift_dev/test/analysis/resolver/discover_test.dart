@@ -8,7 +8,7 @@ import '../test_utils.dart';
 void main() {
   group('drift files', () {
     test('finds local elements', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/main.drift': '''
 CREATE TABLE foo (bar INTEGER);
 
@@ -41,7 +41,7 @@ CREATE VIEW my_view AS SELECT whatever FROM unknown_table;
     });
 
     test('reports syntax errors', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/main.drift': '''
 CREATE TABLE valid_1 (bar INTEGER);
 
@@ -64,7 +64,7 @@ CREATE TABLE valid_2 (bar INTEGER);
     });
 
     test('warns about duplicate elements', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/main.drift': '''
 CREATE TABLE a (id INTEGER);
 CREATE VIEW a AS VALUES(1,2,3);
@@ -82,7 +82,7 @@ CREATE VIEW a AS VALUES(1,2,3);
 
     group('imports', () {
       test('are resolved', () async {
-        final backend = TestBackend.inTest({
+        final backend = await TestBackend.inTest({
           'a|lib/a.drift': "import 'b.drift';",
           'a|lib/b.drift': "CREATE TABLE foo (bar INTEGER);",
         });
@@ -106,7 +106,7 @@ CREATE VIEW a AS VALUES(1,2,3);
       });
 
       test('can handle circular imports', () async {
-        final backend = TestBackend.inTest({
+        final backend = await TestBackend.inTest({
           'a|lib/a.drift': "import 'a.drift'; import 'b.drift';",
           'a|lib/b.drift': "import 'a.drift';",
         });
@@ -119,7 +119,7 @@ CREATE VIEW a AS VALUES(1,2,3);
 
   group('dart files', () {
     test('fails for part files', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.dart': '''
 part of 'b.dart';
 ''',
@@ -136,7 +136,7 @@ part 'a.dart';
     });
 
     test('finds tables', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -172,7 +172,7 @@ class Groups extends Table {
     });
 
     test('ignores abstract tables', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -208,7 +208,7 @@ abstract class BaseRelationTable extends Table {
     });
 
     test('table name errors', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/expr.dart': '''
 import 'package:drift/drift.dart';
 
@@ -239,7 +239,7 @@ class InvalidGetter extends Table {
     });
 
     test('warns about duplicate elements', () async {
-      final backend = TestBackend.inTest({
+      final backend = await TestBackend.inTest({
         'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 

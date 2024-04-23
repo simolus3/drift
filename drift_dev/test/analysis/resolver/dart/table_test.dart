@@ -8,8 +8,8 @@ import '../../test_utils.dart';
 void main() {
   late TestBackend backend;
 
-  setUpAll(() {
-    backend = TestBackend({
+  setUpAll(() async {
+    backend = await TestBackend.init({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -335,7 +335,7 @@ class Pianos extends Table {
   });
 
   test('reads custom constraints from table', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -377,7 +377,7 @@ class WithConstraints extends Table {
   });
 
   test('warns about foreign key references from customConstraints', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 
@@ -410,7 +410,7 @@ class WithConstraints extends Table {
   });
 
   test('can resolve references from import', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/topic.dart': '''
 import 'package:drift/drift.dart';
 
@@ -452,7 +452,7 @@ class Videos extends Table {
   });
 
   test('supports autoIncrement on int64 columns', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''
 import 'package:drift/drift.dart';
 

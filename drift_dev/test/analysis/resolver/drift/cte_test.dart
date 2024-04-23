@@ -6,7 +6,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('parse nested CTE', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/test.drift': '''
 test:
 SELECT
@@ -38,7 +38,7 @@ SELECT
   });
 
   test('recognizes CTE clause', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/test.drift': '''
 test:
 WITH RECURSIVE
@@ -70,7 +70,7 @@ WITH RECURSIVE
   });
 
   test('finds the underlying table when aliased through CTE', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/test.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,

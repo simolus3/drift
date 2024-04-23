@@ -6,7 +6,7 @@ import 'test_utils.dart';
 
 void main() {
   test('analyzes views referencing Dart tables', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/db.dart': '''
 import 'package:drift/drift.dart';
 import 'dart:io';

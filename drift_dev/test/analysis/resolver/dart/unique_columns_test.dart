@@ -7,7 +7,7 @@ void main() {
   final mainUri = Uri.parse('package:a/main.dart');
 
   test('does not allow autoIncrement() to have a unique constraint', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -29,7 +29,7 @@ class Test extends Table {
   });
 
   test('does not allow primary key to have a unique constraint', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -55,7 +55,7 @@ class Test extends Table {
   test(
       'does not allow primary key to have a unique constraint through override',
       () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -84,7 +84,7 @@ class Test extends Table {
   });
 
   test('warns about duplicate unique declarations', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
@@ -108,7 +108,7 @@ class Test extends Table {
   });
 
   test('parses unique key definitions', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 

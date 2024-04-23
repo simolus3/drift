@@ -8,7 +8,7 @@ import '../../test_utils.dart';
 
 void main() {
   Future<Iterable<SqlQuery>> analyzeQueries(String driftFile) async {
-    final state = TestBackend.inTest({'a|lib/a.drift': driftFile});
+    final state = await TestBackend.inTest({'a|lib/a.drift': driftFile});
 
     final result = await state.analyze('package:a/a.drift');
     return result.fileAnalysis!.resolvedQueries.values;

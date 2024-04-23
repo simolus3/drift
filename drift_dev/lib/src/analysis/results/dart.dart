@@ -131,18 +131,19 @@ class AnnotatedDartCodeBuilder {
   void addDriftType(HasType hasType) {
     void addNonListType() {
       final converter = hasType.typeConverter;
-      final customType = hasType.sqlType.custom;
 
       if (converter != null) {
         final nullable = converter.canBeSkippedForNulls && hasType.nullable;
 
         addDartType(converter.dartType);
         if (nullable) addText('?');
-      } else if (customType != null) {
-        addDartType(customType.dartType);
-        if (hasType.nullable) addText('?');
       } else {
-        addTopLevel(dartTypeNames[hasType.sqlType.builtin]!);
+        switch (hasType.sqlType) {
+          case ColumnDriftType():
+            addTopLevel(dartTypeNames[hasType.sqlType.builtin]!);
+          case ColumnCustomType(:final custom):
+            addDartType(custom.dartType);
+        }
         if (hasType.nullable) addText('?');
       }
     }

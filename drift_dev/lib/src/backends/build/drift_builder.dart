@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../../analysis/custom_result_class.dart';
@@ -102,7 +103,7 @@ class DriftBuilder extends Builder {
 
   @override
   Future<void> build(BuildStep buildStep) async {
-    final run = _DriftBuildRun(options, generationMode, buildStep);
+    final run = await _DriftBuildRun.init(options, generationMode, buildStep);
     await run.run();
   }
 }
@@ -133,18 +134,31 @@ class _DriftBuildRun {
   Set<Uri> analyzedUris = {};
   bool _didPrintWarning = false;
 
-  _DriftBuildRun(this.options, this.mode, this.buildStep)
-      : driver = DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
-          ..cacheReader = BuildCacheReader(
-            buildStep,
-            // The discovery and analyzer builders will have emitted IR for
-            // every relevant file in a previous build step that this builder
-            // has a dependency on.
-            findsResolvedElementsReliably:
-                !mode.embeddedAnalyzer || options.hasDriftAnalyzer,
-            findsLocalElementsReliably:
-                !mode.embeddedAnalyzer || options.hasDriftAnalyzer,
-          );
+  @visibleForTesting
+  _DriftBuildRun(this.options, this.mode, this.buildStep, this.driver);
+
+  static Future<_DriftBuildRun> init(
+    DriftOptions options,
+    DriftGenerationMode mode,
+    BuildStep buildStep,
+  ) async {
+    return _DriftBuildRun(
+      options,
+      mode,
+      buildStep,
+      await DriftAnalysisDriver.init(DriftBuildBackend(buildStep), options)
+        ..cacheReader = BuildCacheReader(
+          buildStep,
+          // The discovery and analyzer builders will have emitted IR for
+          // every relevant file in a previous build step that this builder
+          // has a dependency on.
+          findsResolvedElementsReliably:
+              !mode.embeddedAnalyzer || options.hasDriftAnalyzer,
+          findsLocalElementsReliably:
+              !mode.embeddedAnalyzer || options.hasDriftAnalyzer,
+        ),
+    );
+  }
 
   Future<void> run() async {
     await _warnAboutDeprecatedOptions();

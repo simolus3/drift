@@ -76,7 +76,7 @@ q: SELECT * FROM t WHERE i IN ?1;
   });
 
   test('warns about default values outside of expressions', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/a.drift': r'''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
@@ -96,7 +96,7 @@ all ($limit = 3): SELECT * FROM foo LIMIT $limit;
   });
 
   test('warns when placeholder are used in insert with columns', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'foo|lib/a.drift': r'''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
@@ -118,7 +118,7 @@ in: INSERT INTO foo (id) $placeholder;
   test(
     'warns when nested results appear in compound statements',
     () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
@@ -142,7 +142,7 @@ all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
   test(
     'warns when nested query appear in nested query',
     () async {
-      final state = TestBackend.inTest({
+      final state = await TestBackend.inTest({
         'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
@@ -175,7 +175,7 @@ all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
     }
 
     test('in top-level queries', () async {
-      state = TestBackend.inTest({
+      state = await TestBackend.inTest({
         'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -189,7 +189,7 @@ test: INSERT INTO foo VALUES (?)
     });
 
     test('in CREATE TRIGGER statements', () async {
-      state = TestBackend.inTest({
+      state = await TestBackend.inTest({
         'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -205,7 +205,7 @@ END;
     });
 
     test('in @create statements', () async {
-      state = TestBackend.inTest({
+      state = await TestBackend.inTest({
         'foo|lib/a.drift': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,

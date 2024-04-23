@@ -5,7 +5,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('select from view', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'foo|lib/a.drift': '''
 CREATE TABLE artists (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

@@ -39,6 +39,9 @@ class DriftBuildBackend extends DriftBackend {
   }
 
   @override
+  bool get canReadDart => true;
+
+  @override
   Future<LibraryElement> readDart(Uri uri) async {
     if (uri.scheme == 'dart') {
       final name = 'dart.${uri.path}';

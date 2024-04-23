@@ -11,6 +11,7 @@ import 'update_companion_writer.dart';
 /// Both classes need to generate column getters and a mapping function.
 abstract class TableOrViewWriter {
   DriftElementWithResultSet get tableOrView;
+
   TextEmitter get emitter;
 
   StringBuffer get buffer => emitter.buffer;
@@ -209,12 +210,12 @@ abstract class TableOrViewWriter {
       }
     }
 
-    if (column.sqlType.isCustom) {
-      additionalParams['type'] =
-          emitter.dartCode(column.sqlType.custom!.expression);
-    } else {
-      additionalParams['type'] =
-          emitter.drift(column.sqlType.builtin.toString());
+    switch (column.sqlType) {
+      case ColumnDriftType():
+        additionalParams['type'] =
+            emitter.drift(column.sqlType.builtin.toString());
+      case ColumnCustomType(:final custom):
+        additionalParams['type'] = emitter.dartCode(custom.expression);
     }
 
     if (isRequiredForInsert != null) {

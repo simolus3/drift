@@ -1,5 +1,5 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';

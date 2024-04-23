@@ -21,7 +21,7 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   final logger = Logger('extractDriftElementsFromDatabase');
   final uri = Uri.parse('db.drift');
   final backend = _SingleFileNoAnalyzerBackend(logger, uri);
-  final driver = DriftAnalysisDriver(
+  final driver = await DriftAnalysisDriver.init(
     backend,
     DriftOptions.defaults(
       sqliteAnalysisOptions: SqliteAnalysisOptions(
@@ -90,6 +90,9 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   Future<String> readAsString(Uri uri) {
     return Future.value(contents);
   }
+
+  @override
+  bool get canReadDart => false;
 
   @override
   Future<LibraryElement> readDart(Uri uri) async {

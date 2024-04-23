@@ -19,7 +19,7 @@ class FileAnalyzer {
 
   Future<FileAnalysisResult> runAnalysisOn(FileState state) async {
     final result = FileAnalysisResult();
-    final knownTypes = await driver.loadKnownTypes();
+    final knownTypes = driver.knownTypes;
 
     if (state.extension == '.dart') {
       for (final elementAnalysis in state.analysis.values) {

@@ -344,7 +344,7 @@ class ColumnParser {
             .apply(getter.name.lexeme);
     ColumnType columnType;
 
-    final helper = await _resolver.resolver.driver.loadKnownTypes();
+    final helper = _resolver.resolver.driver.knownTypes;
 
     if (foundStartMethod == _startCustom) {
       final expression = remainingExpr.argumentList.arguments.single;

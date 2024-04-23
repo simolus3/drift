@@ -75,7 +75,7 @@ sqlite:
   });
 
   test('reports error about table when module is not imported', () async {
-    final backend = TestBackend.inTest({
+    final backend = await TestBackend.inTest({
       'a|lib/a.drift': 'CREATE VIRTUAL TABLE place_spellfix USING spellfix1;',
     });
 

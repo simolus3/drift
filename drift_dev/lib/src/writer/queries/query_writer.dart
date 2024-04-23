@@ -2,10 +2,10 @@ import 'package:drift/drift.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
-import '../../analysis/resolver/queries/nested_queries.dart';
-import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
 import '../../analysis/resolver/queries/explicit_alias_transformer.dart';
+import '../../analysis/resolver/queries/nested_queries.dart';
+import '../../analysis/results/results.dart';
 import '../../utils/string_escaper.dart';
 import '../writer.dart';
 import 'result_set_writer.dart';
@@ -31,6 +31,7 @@ class QueryWriter {
 
   late final ExplicitAliasTransformer _transformer;
   final TextEmitter _emitter;
+
   StringBuffer get _buffer => _emitter.buffer;
 
   DriftOptions get options => scope.writer.options;
@@ -207,13 +208,14 @@ class QueryWriter {
         _emitter.dartCode(_emitter.innerColumnType(column.sqlType));
     String code;
 
-    if (column.sqlType.isCustom) {
-      final method = isNullable ? 'readNullableWithType' : 'readWithType';
-      final typeImpl = _emitter.dartCode(column.sqlType.custom!.expression);
-      code = 'row.$method<$rawDartType>($typeImpl, $dartLiteral)';
-    } else {
-      final method = isNullable ? 'readNullable' : 'read';
-      code = 'row.$method<$rawDartType>($dartLiteral)';
+    switch (column.sqlType) {
+      case ColumnDriftType():
+        final method = isNullable ? 'readNullable' : 'read';
+        code = 'row.$method<$rawDartType>($dartLiteral)';
+      case ColumnCustomType(:final custom):
+        final method = isNullable ? 'readNullableWithType' : 'readWithType';
+        final typeImpl = _emitter.dartCode(custom.expression);
+        code = 'row.$method<$rawDartType>($typeImpl, $dartLiteral)';
     }
 
     final converter = column.typeConverter;
@@ -759,6 +761,7 @@ class _ExpandedDeclarationWriter {
 class _ExpandedVariableWriter {
   final SqlQuery query;
   final TextEmitter _emitter;
+
   StringBuffer get _buffer => _emitter.buffer;
 
   _ExpandedVariableWriter(this.query, this._emitter);

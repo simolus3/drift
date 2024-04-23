@@ -200,16 +200,16 @@ class ElementSerializer {
   }
 
   Map<String, Object?> _serializeColumnType(ColumnType type) {
-    final custom = type.custom;
-
-    return {
-      if (custom != null)
-        'custom': {
-          'dart': _serializeType(custom.dartType),
-          'expression': custom.expression.toJson(),
-        }
-      else
-        'builtin': type.builtin.name,
+    return switch (type) {
+      ColumnDriftType() => {
+          'builtin': type.builtin.name,
+        },
+      ColumnCustomType(:final custom) => {
+          'custom': {
+            'dart': _serializeType(custom.dartType),
+            'expression': custom.expression.toJson(),
+          }
+        },
     };
   }
 

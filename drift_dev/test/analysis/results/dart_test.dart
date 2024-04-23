@@ -8,7 +8,7 @@ import '../test_utils.dart';
 void main() {
   late TestBackend tester;
 
-  setUpAll(() => tester = TestBackend({}));
+  setUpAll(() async => tester = await TestBackend.init({}));
   tearDownAll(() => tester.dispose());
 
   group('from AST', () {

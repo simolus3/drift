@@ -5,7 +5,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('reports an error when importing a part file into .drift', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/base.dart': '''
       import 'package:drift/drift.dart';
 

@@ -5,7 +5,7 @@ import '../../test_utils.dart';
 
 void main() {
   test('drift files can import original dart source', () async {
-    final state = TestBackend.inTest({
+    final state = await TestBackend.inTest({
       'a|lib/base.dart': r'''
 import 'package:drift/drift.dart';
 

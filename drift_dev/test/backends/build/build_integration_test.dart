@@ -578,11 +578,15 @@ class MyDatabase {
     };
     final outputs = await emulateDriftBuild(inputs: inputs);
     final readAssets = outputs.readAssetsByBuilder;
+    // Allow reading SDK or other package assets to set up the analyzer.
+    final isFromExternalPackage =
+        isA<AssetId>().having((e) => e.package, 'package', isNot('a'));
 
     Matcher onlyReadsJsonsAnd(dynamic other) {
       return everyElement(
         anyOf(
           isA<AssetId>().having((e) => e.extension, 'extension', '.json'),
+          isFromExternalPackage,
           other,
         ),
       );
@@ -606,7 +610,8 @@ class MyDatabase {
     // However, the discover builder should not read other drift files.
     for (final input in inputs.keys) {
       if (input.endsWith('.drift')) {
-        expectReadsForBuilder(input, DriftDiscover, [makeAssetId(input)]);
+        expectReadsForBuilder(input, DriftDiscover,
+            everyElement(anyOf(makeAssetId(input), isFromExternalPackage)));
       } else {
         expectReadsForBuilder(
           input,
