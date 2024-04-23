@@ -1,3 +1,7 @@
+## 0.36.0-dev
+
+- Add support for the geopoly module.
+
 ## 0.35.0
 
 - Fix parsing binary literals.
