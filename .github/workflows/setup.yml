@@ -34,7 +34,7 @@ jobs:
           melos bootstrap --scope drift
           dart run drift/tool/download_sqlite3.dart
       - name: Upload built sqlite3 binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         # we only need these artifacts on Linux since we run unit tests on Linux only
         if: runner.os == 'Linux'
         with:
