@@ -517,7 +517,7 @@ class Parser {
       } else if (_check(TokenType.leftParen)) {
         inside = _consumeTuple(orSubQuery: true) as InExpressionTarget;
       } else {
-        final target = _tableOrSubquery();
+        final target = _tableOrSubquery(allowAlias: false);
         // TableOrSubquery is either a table reference, a table-valued function,
         // or a Subquery. We don't support subqueries, but they can't be parsed
         // here because we would have entered the tuple case above.
@@ -1383,18 +1383,18 @@ class Parser {
     return _joinClause(start) ?? start;
   }
 
-  TableOrSubquery _tableOrSubquery() {
+  TableOrSubquery _tableOrSubquery({bool allowAlias = true}) {
     // this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
     // we currently only support regular tables, table functions and nested
     // selects
-    final tableRef = _tableReferenceOrNull();
+    final tableRef = _tableReferenceOrNull(allowAlias: allowAlias);
     if (tableRef != null) {
       // this is a bit hacky. If the table reference only consists of one
       // identifer and it's followed by a (, it's a table-valued function
       if (tableRef.as == null && _matchOne(TokenType.leftParen)) {
         final params = _functionParameters();
         _consume(TokenType.rightParen, 'Expected closing parenthesis');
-        final alias = _as();
+        final alias = allowAlias ? _as() : null;
 
         return TableValuedFunction(tableRef.tableName, params,
             as: alias?.identifier)
@@ -1408,7 +1408,7 @@ class Parser {
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 
-      final alias = _as();
+      final alias = allowAlias ? _as() : null;
       return SelectStatementAsSource(
           statement: innerStmt, as: alias?.identifier)
         ..setSpan(first, _previous);
@@ -1417,9 +1417,11 @@ class Parser {
     _error('Expected a table name or a nested select statement');
   }
 
-  TableReference? _tableReferenceOrNull() {
+  TableReference? _tableReferenceOrNull({bool allowAlias = true}) {
     _suggestHint(const TableNameDescription());
-    if (_check(TokenType.identifier)) return _tableReference();
+    if (_check(TokenType.identifier)) {
+      return _tableReference(allowAlias: allowAlias);
+    }
     return null;
   }
 

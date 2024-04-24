@@ -1,3 +1,8 @@
+## 0.35.1
+
+- Fix `IN` expressions accepting aliases, causing some queries to get parsed
+  incorrectly.
+
 ## 0.35.0
 
 - Fix parsing binary literals.
