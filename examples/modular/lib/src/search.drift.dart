@@ -204,6 +204,84 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
   }
 }
 
+class $SearchInPostsFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsFilterComposer(super.db, super.table);
+  i0.ColumnFilters<String> get author => i0.ColumnFilters($table.author);
+  i0.ColumnFilters<String> get content => i0.ColumnFilters($table.content);
+}
+
+class $SearchInPostsOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsOrderingComposer(super.db, super.table);
+  i0.ColumnOrderings<String> get author => i0.ColumnOrderings($table.author);
+  i0.ColumnOrderings<String> get content => i0.ColumnOrderings($table.content);
+}
+
+class $SearchInPostsProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    $SearchInPostsFilterComposer,
+    $SearchInPostsOrderingComposer,
+    $SearchInPostsProcessedTableManager,
+    $SearchInPostsInsertCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder> {
+  const $SearchInPostsProcessedTableManager(super.$state);
+}
+
+typedef $SearchInPostsInsertCompanionBuilder = i1.SearchInPostsCompanion
+    Function({
+  required String author,
+  required String content,
+  i0.Value<int> rowid,
+});
+typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
+    Function({
+  i0.Value<String> author,
+  i0.Value<String> content,
+  i0.Value<int> rowid,
+});
+
+class $SearchInPostsTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    $SearchInPostsFilterComposer,
+    $SearchInPostsOrderingComposer,
+    $SearchInPostsProcessedTableManager,
+    $SearchInPostsInsertCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder> {
+  $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $SearchInPostsFilterComposer(db, table),
+            orderingComposer: $SearchInPostsOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $SearchInPostsProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<String> author = const i0.Value.absent(),
+              i0.Value<String> content = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i1.SearchInPostsCompanion(
+                  author: author,
+                  content: content,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required String author,
+              required String content,
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i1.SearchInPostsCompanion.insert(
+                  author: author,
+                  content: content,
+                  rowid: rowid,
+                )));
+}
+
 i0.Trigger get postsInsert => i0.Trigger(
     'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
     'posts_insert');
