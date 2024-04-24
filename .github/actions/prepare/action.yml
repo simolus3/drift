@@ -13,7 +13,7 @@ runs:
 
     # Setup sqlite3
     - name: Download sqlite3
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: sqlite3
         path: /tmp/sqlite/out/
@@ -28,7 +28,7 @@ runs:
       shell: bash
 
     # Setup Dart packages
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       with:
         path: "${{ env.PUB_CACHE }}"
         key: dart-dependencies-${{ inputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
