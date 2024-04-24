@@ -187,6 +187,82 @@ class WordsCompanion extends i0.UpdateCompanion<i1.Word> {
   }
 }
 
+class $$WordsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
+  $$WordsTableFilterComposer(super.db, super.table);
+  i0.ColumnFilters<String> get word => i0.ColumnFilters($table.word);
+  i0.ColumnFilters<int> get usages => i0.ColumnFilters($table.usages);
+}
+
+class $$WordsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
+  $$WordsTableOrderingComposer(super.db, super.table);
+  i0.ColumnOrderings<String> get word => i0.ColumnOrderings($table.word);
+  i0.ColumnOrderings<int> get usages => i0.ColumnOrderings($table.usages);
+}
+
+class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$WordsTable,
+    i1.Word,
+    $$WordsTableFilterComposer,
+    $$WordsTableOrderingComposer,
+    $$WordsTableProcessedTableManager,
+    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableUpdateCompanionBuilder> {
+  const $$WordsTableProcessedTableManager(super.$state);
+}
+
+typedef $$WordsTableInsertCompanionBuilder = i1.WordsCompanion Function({
+  required String word,
+  i0.Value<int> usages,
+  i0.Value<int> rowid,
+});
+typedef $$WordsTableUpdateCompanionBuilder = i1.WordsCompanion Function({
+  i0.Value<String> word,
+  i0.Value<int> usages,
+  i0.Value<int> rowid,
+});
+
+class $$WordsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$WordsTable,
+    i1.Word,
+    $$WordsTableFilterComposer,
+    $$WordsTableOrderingComposer,
+    $$WordsTableProcessedTableManager,
+    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableUpdateCompanionBuilder> {
+  $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$WordsTableFilterComposer(db, table),
+            orderingComposer: $$WordsTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$WordsTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<String> word = const i0.Value.absent(),
+              i0.Value<int> usages = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i1.WordsCompanion(
+                  word: word,
+                  usages: usages,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required String word,
+              i0.Value<int> usages = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i1.WordsCompanion.insert(
+                  word: word,
+                  usages: usages,
+                  rowid: rowid,
+                )));
+}
+
 class $MatchResultsTable extends i2.MatchResults
     with i0.TableInfo<$MatchResultsTable, i1.MatchResult> {
   @override
@@ -443,4 +519,93 @@ class MatchResultsCompanion extends i0.UpdateCompanion<i1.MatchResult> {
           ..write(')'))
         .toString();
   }
+}
+
+class $$MatchResultsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
+  $$MatchResultsTableFilterComposer(super.db, super.table);
+  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
+  i0.ColumnFilters<String> get teamA => i0.ColumnFilters($table.teamA);
+  i0.ColumnFilters<String> get teamB => i0.ColumnFilters($table.teamB);
+  i0.ColumnFilters<bool> get teamAWon => i0.ColumnFilters($table.teamAWon);
+}
+
+class $$MatchResultsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
+  $$MatchResultsTableOrderingComposer(super.db, super.table);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get teamA => i0.ColumnOrderings($table.teamA);
+  i0.ColumnOrderings<String> get teamB => i0.ColumnOrderings($table.teamB);
+  i0.ColumnOrderings<bool> get teamAWon => i0.ColumnOrderings($table.teamAWon);
+}
+
+class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$MatchResultsTable,
+    i1.MatchResult,
+    $$MatchResultsTableFilterComposer,
+    $$MatchResultsTableOrderingComposer,
+    $$MatchResultsTableProcessedTableManager,
+    $$MatchResultsTableInsertCompanionBuilder,
+    $$MatchResultsTableUpdateCompanionBuilder> {
+  const $$MatchResultsTableProcessedTableManager(super.$state);
+}
+
+typedef $$MatchResultsTableInsertCompanionBuilder = i1.MatchResultsCompanion
+    Function({
+  i0.Value<int> id,
+  required String teamA,
+  required String teamB,
+  required bool teamAWon,
+});
+typedef $$MatchResultsTableUpdateCompanionBuilder = i1.MatchResultsCompanion
+    Function({
+  i0.Value<int> id,
+  i0.Value<String> teamA,
+  i0.Value<String> teamB,
+  i0.Value<bool> teamAWon,
+});
+
+class $$MatchResultsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$MatchResultsTable,
+    i1.MatchResult,
+    $$MatchResultsTableFilterComposer,
+    $$MatchResultsTableOrderingComposer,
+    $$MatchResultsTableProcessedTableManager,
+    $$MatchResultsTableInsertCompanionBuilder,
+    $$MatchResultsTableUpdateCompanionBuilder> {
+  $$MatchResultsTableTableManager(
+      i0.GeneratedDatabase db, i1.$MatchResultsTable table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$MatchResultsTableFilterComposer(db, table),
+            orderingComposer: $$MatchResultsTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$MatchResultsTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              i0.Value<String> teamA = const i0.Value.absent(),
+              i0.Value<String> teamB = const i0.Value.absent(),
+              i0.Value<bool> teamAWon = const i0.Value.absent(),
+            }) =>
+                i1.MatchResultsCompanion(
+                  id: id,
+                  teamA: teamA,
+                  teamB: teamB,
+                  teamAWon: teamAWon,
+                ),
+            getInsertCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              required String teamA,
+              required String teamB,
+              required bool teamAWon,
+            }) =>
+                i1.MatchResultsCompanion.insert(
+                  id: id,
+                  teamA: teamA,
+                  teamB: teamB,
+                  teamAWon: teamAWon,
+                )));
 }

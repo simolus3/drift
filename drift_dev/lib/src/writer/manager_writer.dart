@@ -497,7 +497,7 @@ class _TableManagerWriter {
 
       /// If this column is a foreign key to another table, add a filter and ordering
       /// for the referenced table
-      if (referenced != null) {
+      if (referenced != null && !referenced.$1.hasExistingRowClass) {
         final (referencedTable, referencedCol) = referenced;
         final referencedTableNames = _TableManagerWriter(
             referencedTable, scope, dbScope, databaseGenericName);

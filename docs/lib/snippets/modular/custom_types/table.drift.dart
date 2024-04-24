@@ -220,3 +220,90 @@ class PeriodicRemindersCompanion
         .toString();
   }
 }
+
+class $$PeriodicRemindersTableFilterComposer extends i0
+    .FilterComposer<i0.GeneratedDatabase, i1.$PeriodicRemindersTable> {
+  $$PeriodicRemindersTableFilterComposer(super.db, super.table);
+  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
+  i0.ColumnFilters<Duration> get frequency =>
+      i0.ColumnFilters($table.frequency);
+  i0.ColumnFilters<String> get reminder => i0.ColumnFilters($table.reminder);
+}
+
+class $$PeriodicRemindersTableOrderingComposer extends i0
+    .OrderingComposer<i0.GeneratedDatabase, i1.$PeriodicRemindersTable> {
+  $$PeriodicRemindersTableOrderingComposer(super.db, super.table);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<Duration> get frequency =>
+      i0.ColumnOrderings($table.frequency);
+  i0.ColumnOrderings<String> get reminder =>
+      i0.ColumnOrderings($table.reminder);
+}
+
+class $$PeriodicRemindersTableProcessedTableManager
+    extends i0.ProcessedTableManager<
+        i0.GeneratedDatabase,
+        i1.$PeriodicRemindersTable,
+        i1.PeriodicReminder,
+        $$PeriodicRemindersTableFilterComposer,
+        $$PeriodicRemindersTableOrderingComposer,
+        $$PeriodicRemindersTableProcessedTableManager,
+        $$PeriodicRemindersTableInsertCompanionBuilder,
+        $$PeriodicRemindersTableUpdateCompanionBuilder> {
+  const $$PeriodicRemindersTableProcessedTableManager(super.$state);
+}
+
+typedef $$PeriodicRemindersTableInsertCompanionBuilder
+    = i1.PeriodicRemindersCompanion Function({
+  i0.Value<int> id,
+  i0.Value<Duration> frequency,
+  required String reminder,
+});
+typedef $$PeriodicRemindersTableUpdateCompanionBuilder
+    = i1.PeriodicRemindersCompanion Function({
+  i0.Value<int> id,
+  i0.Value<Duration> frequency,
+  i0.Value<String> reminder,
+});
+
+class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$PeriodicRemindersTable,
+    i1.PeriodicReminder,
+    $$PeriodicRemindersTableFilterComposer,
+    $$PeriodicRemindersTableOrderingComposer,
+    $$PeriodicRemindersTableProcessedTableManager,
+    $$PeriodicRemindersTableInsertCompanionBuilder,
+    $$PeriodicRemindersTableUpdateCompanionBuilder> {
+  $$PeriodicRemindersTableTableManager(
+      i0.GeneratedDatabase db, i1.$PeriodicRemindersTable table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer:
+                $$PeriodicRemindersTableFilterComposer(db, table),
+            orderingComposer:
+                $$PeriodicRemindersTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$PeriodicRemindersTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              i0.Value<Duration> frequency = const i0.Value.absent(),
+              i0.Value<String> reminder = const i0.Value.absent(),
+            }) =>
+                i1.PeriodicRemindersCompanion(
+                  id: id,
+                  frequency: frequency,
+                  reminder: reminder,
+                ),
+            getInsertCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              i0.Value<Duration> frequency = const i0.Value.absent(),
+              required String reminder,
+            }) =>
+                i1.PeriodicRemindersCompanion.insert(
+                  id: id,
+                  frequency: frequency,
+                  reminder: reminder,
+                )));
+}
