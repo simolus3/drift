@@ -54,6 +54,40 @@ final Map<String, AstNode> testCases = {
     ],
     from: TableReference('tbl'),
   ),
+  'SELECT col IN tbl AS in_tbl': SelectStatement(columns: [
+    ExpressionResultColumn(
+      expression: InExpression(
+        left: Reference(columnName: 'col'),
+        inside: TableReference('tbl'),
+      ),
+      as: 'in_tbl',
+    ),
+  ]),
+  'SELECT col IN (SELECT 2) AS in_select': SelectStatement(columns: [
+    ExpressionResultColumn(
+      expression: InExpression(
+        left: Reference(columnName: 'col'),
+        inside: SubQuery(
+          select: SelectStatement(
+            columns: [ExpressionResultColumn(expression: NumericLiteral(2))],
+          ),
+        ),
+      ),
+      as: 'in_select',
+    ),
+  ]),
+  'SELECT col IN tbl_valued() AS in_select': SelectStatement(columns: [
+    ExpressionResultColumn(
+      expression: InExpression(
+        left: Reference(columnName: 'col'),
+        inside: TableValuedFunction(
+          'tbl_valued',
+          ExprFunctionParameters(parameters: []),
+        ),
+      ),
+      as: 'in_select',
+    ),
+  ]),
 };
 
 void main() {

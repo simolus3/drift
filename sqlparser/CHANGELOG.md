@@ -1,6 +1,8 @@
 ## 0.36.0-dev
 
 - Add support for the geopoly module.
+- Fix `IN` expressions accepting aliases, causing some queries to get parsed
+  incorrectly.
 
 ## 0.35.0
 
