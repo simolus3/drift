@@ -1,3 +1,8 @@
+## 1.2.1
+
+- Fix `isOpen` so that it properly returns false after the underlying postgres
+  connection has been closed.
+
 ## 1.2.0
 
 - Drift's comparable expression operators are now available for expressions
