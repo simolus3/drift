@@ -1973,16 +1973,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
 class $WithDefaultsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsFilterComposer(super.db, super.table);
-  ColumnFilters<String> get a => ColumnFilters($table.a);
-  ColumnFilters<int> get b => ColumnFilters($table.b);
+  $WithDefaultsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<String> get a => $columnFilter($table.a);
+  ColumnFilters<int> get b => $columnFilter($table.b);
 }
 
 class $WithDefaultsOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get a => ColumnOrderings($table.a);
-  ColumnOrderings<int> get b => ColumnOrderings($table.b);
+  $WithDefaultsOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<String> get a => $columnOrdering($table.a);
+  ColumnOrderings<int> get b => $columnOrdering($table.b);
 }
 
 class $WithDefaultsProcessedTableManager extends ProcessedTableManager<
@@ -2049,18 +2049,19 @@ class $WithDefaultsTableManager extends RootTableManager<
 
 class $WithConstraintsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsFilterComposer(super.db, super.table);
-  ColumnFilters<String> get a => ColumnFilters($table.a);
-  ColumnFilters<int> get b => ColumnFilters($table.b);
-  ColumnFilters<double> get c => ColumnFilters($table.c);
+  $WithConstraintsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<String> get a => $columnFilter($table.a);
+  ColumnFilters<int> get b => $columnFilter($table.b);
+  ColumnFilters<double> get c => $columnFilter($table.c);
 }
 
 class $WithConstraintsOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get a => ColumnOrderings($table.a);
-  ColumnOrderings<int> get b => ColumnOrderings($table.b);
-  ColumnOrderings<double> get c => ColumnOrderings($table.c);
+  $WithConstraintsOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<String> get a => $columnOrdering($table.a);
+  ColumnOrderings<int> get b => $columnOrdering($table.b);
+  ColumnOrderings<double> get c => $columnOrdering($table.c);
 }
 
 class $WithConstraintsProcessedTableManager extends ProcessedTableManager<
@@ -2135,28 +2136,28 @@ class $WithConstraintsTableManager extends RootTableManager<
 
 class $ConfigTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableFilterComposer(super.db, super.table);
-  ColumnFilters<String> get configKey => ColumnFilters($table.configKey);
-  ColumnFilters<DriftAny> get configValue => ColumnFilters($table.configValue);
-  ColumnFilters<int> get syncStateValue => ColumnFilters($table.syncState);
+  $ConfigTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<String> get configKey => $columnFilter($table.configKey);
+  ColumnFilters<DriftAny> get configValue => $columnFilter($table.configValue);
+  ColumnFilters<int> get syncStateValue => $columnFilter($table.syncState);
   ColumnWithTypeConverterFilters<SyncType?, SyncType, int> get syncState =>
-      ColumnWithTypeConverterFilters($table.syncState);
+      $columnFilterWithTypeConverter($table.syncState);
   ColumnFilters<int> get syncStateImplicitValue =>
-      ColumnFilters($table.syncStateImplicit);
+      $columnFilter($table.syncStateImplicit);
   ColumnWithTypeConverterFilters<SyncType?, SyncType, int>
       get syncStateImplicit =>
-          ColumnWithTypeConverterFilters($table.syncStateImplicit);
+          $columnFilterWithTypeConverter($table.syncStateImplicit);
 }
 
 class $ConfigTableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get configKey => ColumnOrderings($table.configKey);
+  $ConfigTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<String> get configKey => $columnOrdering($table.configKey);
   ColumnOrderings<DriftAny> get configValue =>
-      ColumnOrderings($table.configValue);
-  ColumnOrderings<int> get syncState => ColumnOrderings($table.syncState);
+      $columnOrdering($table.configValue);
+  ColumnOrderings<int> get syncState => $columnOrdering($table.syncState);
   ColumnOrderings<int> get syncStateImplicit =>
-      ColumnOrderings($table.syncStateImplicit);
+      $columnOrdering($table.syncStateImplicit);
 }
 
 class $ConfigTableProcessedTableManager extends ProcessedTableManager<
@@ -2234,20 +2235,20 @@ class $ConfigTableTableManager extends RootTableManager<
 }
 
 class $MytableFilterComposer extends FilterComposer<_$CustomTablesDb, Mytable> {
-  $MytableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get someid => ColumnFilters($table.someid);
-  ColumnFilters<String> get sometext => ColumnFilters($table.sometext);
-  ColumnFilters<bool> get isInserting => ColumnFilters($table.isInserting);
-  ColumnFilters<DateTime> get somedate => ColumnFilters($table.somedate);
+  $MytableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get someid => $columnFilter($table.someid);
+  ColumnFilters<String> get sometext => $columnFilter($table.sometext);
+  ColumnFilters<bool> get isInserting => $columnFilter($table.isInserting);
+  ColumnFilters<DateTime> get somedate => $columnFilter($table.somedate);
 }
 
 class $MytableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, Mytable> {
-  $MytableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get someid => ColumnOrderings($table.someid);
-  ColumnOrderings<String> get sometext => ColumnOrderings($table.sometext);
-  ColumnOrderings<bool> get isInserting => ColumnOrderings($table.isInserting);
-  ColumnOrderings<DateTime> get somedate => ColumnOrderings($table.somedate);
+  $MytableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<int> get someid => $columnOrdering($table.someid);
+  ColumnOrderings<String> get sometext => $columnOrdering($table.sometext);
+  ColumnOrderings<bool> get isInserting => $columnOrdering($table.isInserting);
+  ColumnOrderings<DateTime> get somedate => $columnOrdering($table.somedate);
 }
 
 class $MytableProcessedTableManager extends ProcessedTableManager<
@@ -2318,17 +2319,17 @@ class $MytableTableManager extends RootTableManager<
 }
 
 class $EmailFilterComposer extends FilterComposer<_$CustomTablesDb, Email> {
-  $EmailFilterComposer(super.db, super.table);
-  ColumnFilters<String> get sender => ColumnFilters($table.sender);
-  ColumnFilters<String> get title => ColumnFilters($table.title);
-  ColumnFilters<String> get body => ColumnFilters($table.body);
+  $EmailFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<String> get sender => $columnFilter($table.sender);
+  ColumnFilters<String> get title => $columnFilter($table.title);
+  ColumnFilters<String> get body => $columnFilter($table.body);
 }
 
 class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
-  $EmailOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get sender => ColumnOrderings($table.sender);
-  ColumnOrderings<String> get title => ColumnOrderings($table.title);
-  ColumnOrderings<String> get body => ColumnOrderings($table.body);
+  $EmailOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<String> get sender => $columnOrdering($table.sender);
+  ColumnOrderings<String> get title => $columnOrdering($table.title);
+  ColumnOrderings<String> get body => $columnOrdering($table.body);
 }
 
 class $EmailProcessedTableManager extends ProcessedTableManager<
@@ -2400,16 +2401,16 @@ class $EmailTableManager extends RootTableManager<
 
 class $WeirdTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get sqlClass => ColumnFilters($table.sqlClass);
-  ColumnFilters<String> get textColumn => ColumnFilters($table.textColumn);
+  $WeirdTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get sqlClass => $columnFilter($table.sqlClass);
+  ColumnFilters<String> get textColumn => $columnFilter($table.textColumn);
 }
 
 class $WeirdTableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get sqlClass => ColumnOrderings($table.sqlClass);
-  ColumnOrderings<String> get textColumn => ColumnOrderings($table.textColumn);
+  $WeirdTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<int> get sqlClass => $columnOrdering($table.sqlClass);
+  ColumnOrderings<String> get textColumn => $columnOrdering($table.textColumn);
 }
 
 class $WeirdTableProcessedTableManager extends ProcessedTableManager<

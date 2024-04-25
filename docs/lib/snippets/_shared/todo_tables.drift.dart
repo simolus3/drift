@@ -303,52 +303,45 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
 
 class $$TodoItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
-  $$TodoItemsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get title => i0.ColumnFilters($table.title);
-  i0.ColumnFilters<String> get content => i0.ColumnFilters($table.content);
-  i0.ColumnFilters<int> get categoryId => i0.ColumnFilters($table.category);
-  i0.ComposableFilter category(
-      i0.ComposableFilter Function(i1.$$CategoriesTableFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable: i3.ReadDatabaseContainer($db)
-            .resultSet<i1.$CategoriesTable>('categories'),
-        getCurrentColumn: (f) => f.category,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$$CategoriesTableFilterComposer(db, table),
-        builder: f);
-  }
-
-  i0.ColumnFilters<DateTime> get dueDate => i0.ColumnFilters($table.dueDate);
+  $$TodoItemsTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get title => $columnFilter($table.title);
+  i0.ColumnFilters<String> get content => $columnFilter($table.content);
+  i0.ColumnFilters<int> get categoryId => $columnFilter($table.category);
+  i1.$$CategoriesTableFilterComposer get category => i1
+      .$$CategoriesTableFilterComposer(
+          $db,
+          i3.ReadDatabaseContainer($db)
+              .resultSet<i1.$CategoriesTable>('categories'),
+          $joinBuilder:
+              $buildJoinForTable(
+                  getCurrentColumn: (t) => t.category,
+                  referencedTable: i3.ReadDatabaseContainer($db)
+                      .resultSet<i1.$CategoriesTable>('categories'),
+                  getReferencedColumn: (t) => t.id));
+  i0.ColumnFilters<DateTime> get dueDate => $columnFilter($table.dueDate);
 }
 
 class $$TodoItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
-  $$TodoItemsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get title => i0.ColumnOrderings($table.title);
-  i0.ColumnOrderings<String> get content => i0.ColumnOrderings($table.content);
-  i0.ColumnOrderings<int> get categoryId => i0.ColumnOrderings($table.category);
-  i0.ComposableOrdering category(
-      i0.ComposableOrdering Function(i1.$$CategoriesTableOrderingComposer o)
-          o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable: i3.ReadDatabaseContainer($db)
-            .resultSet<i1.$CategoriesTable>('categories'),
-        getCurrentColumn: (f) => f.category,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$$CategoriesTableOrderingComposer(db, table),
-        builder: o);
-  }
-
+  $$TodoItemsTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<String> get title => i0.$columnOrdering($table.title);
+  i0.ColumnOrderings<String> get content => i0.$columnOrdering($table.content);
+  i0.ColumnOrderings<int> get categoryId => i0.$columnOrdering($table.category);
+  i1.$$CategoriesTableOrderingComposer get category =>
+      i1.$$CategoriesTableOrderingComposer(
+          $db,
+          i3.ReadDatabaseContainer($db)
+              .resultSet<i1.$CategoriesTable>('categories'),
+          $joinBuilder: $buildJoinForTable(
+              getCurrentColumn: (t) => t.category,
+              referencedTable: i3.ReadDatabaseContainer($db)
+                  .resultSet<i1.$CategoriesTable>('categories'),
+              getReferencedColumn: (t) => t.id));
   i0.ColumnOrderings<DateTime> get dueDate =>
-      i0.ColumnOrderings($table.dueDate);
+      i0.$columnOrdering($table.dueDate);
 }
 
 class $$TodoItemsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -601,16 +594,18 @@ class CategoriesCompanion extends i0.UpdateCompanion<i1.Category> {
 
 class $$CategoriesTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
-  $$CategoriesTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get name => i0.ColumnFilters($table.name);
+  $$CategoriesTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get name => $columnFilter($table.name);
 }
 
 class $$CategoriesTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
-  $$CategoriesTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get name => i0.ColumnOrderings($table.name);
+  $$CategoriesTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<String> get name => i0.$columnOrdering($table.name);
 }
 
 class $$CategoriesTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -847,18 +842,17 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
 
 class $$UsersTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<DateTime> get birthDate =>
-      i0.ColumnFilters($table.birthDate);
+  $$UsersTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<DateTime> get birthDate => $columnFilter($table.birthDate);
 }
 
 class $$UsersTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  $$UsersTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
   i0.ColumnOrderings<DateTime> get birthDate =>
-      i0.ColumnOrderings($table.birthDate);
+      i0.$columnOrdering($table.birthDate);
 }
 
 class $$UsersTableProcessedTableManager extends i0.ProcessedTableManager<

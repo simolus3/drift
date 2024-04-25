@@ -37,7 +37,7 @@ class _RegularFilterWriter extends _FilterWriter {
     leaf
       ..writeDriftRef("ColumnFilters")
       ..write("<$type> get $filterName =>")
-      ..writeDriftRef("ColumnFilters")
+      ..write("\$columnFilter")
       ..write("(\$table.$fieldGetter);");
   }
 }
@@ -66,7 +66,7 @@ class _FilterWithConverterWriter extends _FilterWriter {
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..write(
           "<$converterType,$nonNullableConverterType,$type> get $filterName =>")
-      ..writeDriftRef("ColumnWithTypeConverterFilters")
+      ..writeDriftRef("\$columnFilterWithTypeConverter")
       ..writeln("(\$table.$fieldGetter);");
   }
 }
@@ -88,6 +88,11 @@ class _ReferencedFilterWriter extends _FilterWriter {
   /// E.G `CategoryFilterComposer`
   final String referencedFilterComposer;
 
+  /// Whether this is a reverse reference
+  /// This is used to determine of the filter should
+  /// use a callback or return the related filterset directly
+  final bool isReverseReference;
+
   /// A class used for building filters for referenced tables
   _ReferencedFilterWriter(
     super.filterName, {
@@ -95,25 +100,42 @@ class _ReferencedFilterWriter extends _FilterWriter {
     required this.referencedColumnGetter,
     required this.referencedFilterComposer,
     required super.fieldGetter,
+    this.isReverseReference = false,
   });
 
   @override
   void writeFilter(TextEmitter leaf) {
-    leaf
-      ..writeDriftRef("ComposableFilter")
-      ..write(" $filterName(")
-      ..writeDriftRef("ComposableFilter")
-      ..writeln(" Function( $referencedFilterComposer f) f) {")
-      ..write("return \$composeWithJoins(")
-      ..writeln("\$db: \$db,")
-      ..writeln("\$table: \$table,")
-      ..writeln("referencedTable: $referencedTableField,")
-      ..writeln("getCurrentColumn: (f) => f.$fieldGetter,")
-      ..writeln("getReferencedColumn: (f) => f.$referencedColumnGetter,")
-      ..writeln(
-          "getReferencedComposer: (db, table) => $referencedFilterComposer(db, table),")
-      ..writeln("builder: f);")
-      ..writeln("}");
+    final referencedFilterComposerBuffer = StringBuffer();
+
+    // Write the filter composer for the referenced table
+    // This handles the join and the filter for the referenced table
+    referencedFilterComposerBuffer
+      ..write(
+          "final $referencedFilterComposer composer = $referencedFilterComposer(")
+      ..write("\$db, $referencedTableField,")
+      ..write('\$joinBuilder: \$buildJoinForTable(')
+      ..write("getCurrentColumn: (t) => t.$fieldGetter,")
+      ..write(
+        "referencedTable: $referencedTableField,",
+      )
+      ..write("getReferencedColumn: (t) => t.$referencedColumnGetter))");
+    // If it is a reverse reference, we include a callback to the filter
+    // e.g `f.categories((f) => f.id(1))`
+    // Otherwise we return the filter directly
+    // e.g `f.category.id(1)`
+    if (isReverseReference) {
+      leaf
+        ..writeDriftRef("ComposableFilter")
+        ..write(" $filterName(")
+        ..writeDriftRef("ComposableFilter")
+        ..writeln(" Function( $referencedFilterComposer f) f) {")
+        ..write("$referencedFilterComposerBuffer;")
+        ..writeln("return f(composer);")
+        ..writeln("}");
+    } else {
+      leaf.write(
+          "$referencedFilterComposer get $filterName { $referencedFilterComposerBuffer; return composer; }");
+    }
   }
 }
 
@@ -150,7 +172,7 @@ class _RegularOrderingWriter extends _OrderingWriter {
     leaf
       ..writeDriftRef("ColumnOrderings")
       ..write("<$type>  get $orderingName =>")
-      ..writeDriftRef("ColumnOrderings")
+      ..writeDriftRef("\$columnOrdering")
       ..write("(\$table.$fieldGetter);");
   }
 }
@@ -178,24 +200,18 @@ class _ReferencedOrderingWriter extends _OrderingWriter {
       required this.referencedColumnGetter,
       required this.referencedOrderingComposer,
       required super.fieldGetter});
-
   @override
   void writeOrdering(TextEmitter leaf) {
     leaf
-      ..writeDriftRef("ComposableOrdering")
-      ..write(" $orderingName(")
-      ..writeDriftRef("ComposableOrdering")
-      ..writeln(" Function( $referencedOrderingComposer o) o) {")
-      ..write("return \$composeWithJoins(")
-      ..writeln("\$db: \$db,")
-      ..writeln("\$table: \$table,")
-      ..writeln("referencedTable: $referencedTableField,")
-      ..writeln("getCurrentColumn: (f) => f.$fieldGetter,")
-      ..writeln("getReferencedColumn: (f) => f.$referencedColumnGetter,")
-      ..writeln(
-          "getReferencedComposer: (db, table) => $referencedOrderingComposer(db, table),")
-      ..writeln("builder: o);")
-      ..writeln("}");
+      ..write(
+          "$referencedOrderingComposer get $orderingName => $referencedOrderingComposer(")
+      ..write("\$db, $referencedTableField,")
+      ..write('\$joinBuilder: \$buildJoinForTable(')
+      ..write("getCurrentColumn: (t) => t.$fieldGetter,")
+      ..write(
+        "referencedTable: $referencedTableField,",
+      )
+      ..write("getReferencedColumn: (t) => t.$referencedColumnGetter));");
   }
 }
 
@@ -297,7 +313,8 @@ class _TableManagerWriter {
       ..write('class $filterComposer extends ')
       ..writeDriftRef('FilterComposer')
       ..writeln('<$databaseGenericName,$tableClassName> {')
-      ..writeln('$filterComposer(super.db, super.table);');
+      ..writeln(
+          '$filterComposer(super.\$db, super.\$table,{super.\$joinBuilder});');
     for (var c in columns) {
       for (var f in c.filters) {
         f.writeFilter(leaf);
@@ -315,7 +332,8 @@ class _TableManagerWriter {
       ..write('class $orderingComposer extends ')
       ..writeDriftRef('OrderingComposer')
       ..writeln('<$databaseGenericName,$tableClassName> {')
-      ..writeln('$orderingComposer(super.db, super.table);');
+      ..writeln(
+          '$orderingComposer(super.\$db, super.\$table,{super.\$joinBuilder});');
     for (var c in columns) {
       for (var o in c.orderings) {
         o.writeOrdering(leaf);
@@ -541,7 +559,8 @@ class _TableManagerWriter {
               referencedColumnGetter: referencedColumnNames.fieldGetter,
               referencedFilterComposer:
                   scope.dartCode(referencedTableNames.filterComposer),
-              referencedTableField: referencedTableField));
+              referencedTableField: referencedTableField,
+              isReverseReference: true));
         }
       }
     }

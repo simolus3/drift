@@ -225,21 +225,22 @@ class PeriodicRemindersCompanion
 
 class $PeriodicRemindersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
-  $PeriodicRemindersFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<Duration> get frequency =>
-      i0.ColumnFilters($table.frequency);
-  i0.ColumnFilters<String> get reminder => i0.ColumnFilters($table.reminder);
+  $PeriodicRemindersFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<Duration> get frequency => $columnFilter($table.frequency);
+  i0.ColumnFilters<String> get reminder => $columnFilter($table.reminder);
 }
 
 class $PeriodicRemindersOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
-  $PeriodicRemindersOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  $PeriodicRemindersOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
   i0.ColumnOrderings<Duration> get frequency =>
-      i0.ColumnOrderings($table.frequency);
+      i0.$columnOrdering($table.frequency);
   i0.ColumnOrderings<String> get reminder =>
-      i0.ColumnOrderings($table.reminder);
+      i0.$columnOrdering($table.reminder);
 }
 
 class $PeriodicRemindersProcessedTableManager extends i0.ProcessedTableManager<

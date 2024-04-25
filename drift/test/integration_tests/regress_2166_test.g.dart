@@ -195,16 +195,18 @@ abstract class _$_SomeDb extends GeneratedDatabase {
 
 class $$_SomeTableTableFilterComposer
     extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get id => ColumnFilters($table.id);
-  ColumnFilters<String> get name => ColumnFilters($table.name);
+  $$_SomeTableTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<int> get id => $columnFilter($table.id);
+  ColumnFilters<String> get name => $columnFilter($table.name);
 }
 
 class $$_SomeTableTableOrderingComposer
     extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get id => ColumnOrderings($table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($table.name);
+  $$_SomeTableTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get name => $columnOrdering($table.name);
 }
 
 class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<

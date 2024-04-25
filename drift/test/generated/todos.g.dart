@@ -2500,39 +2500,39 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
 class $$CategoriesTableFilterComposer
     extends FilterComposer<_$TodoDb, $CategoriesTable> {
-  $$CategoriesTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  $$CategoriesTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
-      ColumnWithTypeConverterFilters($table.id);
-  ColumnFilters<String> get description => ColumnFilters($table.description);
-  ColumnFilters<int> get priorityValue => ColumnFilters($table.priority);
+      $columnFilterWithTypeConverter($table.id);
+  ColumnFilters<String> get description => $columnFilter($table.description);
+  ColumnFilters<int> get priorityValue => $columnFilter($table.priority);
   ColumnWithTypeConverterFilters<CategoryPriority, CategoryPriority, int>
-      get priority => ColumnWithTypeConverterFilters($table.priority);
+      get priority => $columnFilterWithTypeConverter($table.priority);
   ColumnFilters<String> get descriptionInUpperCase =>
-      ColumnFilters($table.descriptionInUpperCase);
+      $columnFilter($table.descriptionInUpperCase);
   ComposableFilter todos(
       ComposableFilter Function($$TodosTableTableFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable: $db.todosTable,
-        getCurrentColumn: (f) => f.id,
-        getReferencedColumn: (f) => f.category,
-        getReferencedComposer: (db, table) =>
-            $$TodosTableTableFilterComposer(db, table),
-        builder: f);
+    final $$TodosTableTableFilterComposer composer =
+        $$TodosTableTableFilterComposer($db, $db.todosTable,
+            $joinBuilder: $buildJoinForTable(
+                getCurrentColumn: (t) => t.id,
+                referencedTable: $db.todosTable,
+                getReferencedColumn: (t) => t.category));
+    return f(composer);
   }
 }
 
 class $$CategoriesTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $CategoriesTable> {
-  $$CategoriesTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get id => ColumnOrderings($table.id);
+  $$CategoriesTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
   ColumnOrderings<String> get description =>
-      ColumnOrderings($table.description);
-  ColumnOrderings<int> get priority => ColumnOrderings($table.priority);
+      $columnOrdering($table.description);
+  ColumnOrderings<int> get priority => $columnOrdering($table.priority);
   ColumnOrderings<String> get descriptionInUpperCase =>
-      ColumnOrderings($table.descriptionInUpperCase);
+      $columnOrdering($table.descriptionInUpperCase);
 }
 
 class $$CategoriesTableProcessedTableManager extends ProcessedTableManager<
@@ -2599,55 +2599,47 @@ class $$CategoriesTableTableManager extends RootTableManager<
 
 class $$TodosTableTableFilterComposer
     extends FilterComposer<_$TodoDb, $TodosTableTable> {
-  $$TodosTableTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  $$TodosTableTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
-      ColumnWithTypeConverterFilters($table.id);
-  ColumnFilters<String> get title => ColumnFilters($table.title);
-  ColumnFilters<String> get content => ColumnFilters($table.content);
-  ColumnFilters<DateTime> get targetDate => ColumnFilters($table.targetDate);
-  ColumnFilters<int> get categoryId => ColumnFilters($table.category);
-  ComposableFilter category(
-      ComposableFilter Function($$CategoriesTableFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable: $db.categories,
-        getCurrentColumn: (f) => f.category,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            $$CategoriesTableFilterComposer(db, table),
-        builder: f);
+      $columnFilterWithTypeConverter($table.id);
+  ColumnFilters<String> get title => $columnFilter($table.title);
+  ColumnFilters<String> get content => $columnFilter($table.content);
+  ColumnFilters<DateTime> get targetDate => $columnFilter($table.targetDate);
+  ColumnFilters<int> get categoryId => $columnFilter($table.category);
+  $$CategoriesTableFilterComposer get category {
+    final $$CategoriesTableFilterComposer composer =
+        $$CategoriesTableFilterComposer($db, $db.categories,
+            $joinBuilder: $buildJoinForTable(
+                getCurrentColumn: (t) => t.category,
+                referencedTable: $db.categories,
+                getReferencedColumn: (t) => t.id));
+    return composer;
   }
 
-  ColumnFilters<String> get statusValue => ColumnFilters($table.status);
+  ColumnFilters<String> get statusValue => $columnFilter($table.status);
   ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, String> get status =>
-      ColumnWithTypeConverterFilters($table.status);
+      $columnFilterWithTypeConverter($table.status);
 }
 
 class $$TodosTableTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $TodosTableTable> {
-  $$TodosTableTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get id => ColumnOrderings($table.id);
-  ColumnOrderings<String> get title => ColumnOrderings($table.title);
-  ColumnOrderings<String> get content => ColumnOrderings($table.content);
+  $$TodosTableTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get title => $columnOrdering($table.title);
+  ColumnOrderings<String> get content => $columnOrdering($table.content);
   ColumnOrderings<DateTime> get targetDate =>
-      ColumnOrderings($table.targetDate);
-  ColumnOrderings<int> get categoryId => ColumnOrderings($table.category);
-  ComposableOrdering category(
-      ComposableOrdering Function($$CategoriesTableOrderingComposer o) o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable: $db.categories,
-        getCurrentColumn: (f) => f.category,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            $$CategoriesTableOrderingComposer(db, table),
-        builder: o);
-  }
-
-  ColumnOrderings<String> get status => ColumnOrderings($table.status);
+      $columnOrdering($table.targetDate);
+  ColumnOrderings<int> get categoryId => $columnOrdering($table.category);
+  $$CategoriesTableOrderingComposer get category =>
+      $$CategoriesTableOrderingComposer($db, $db.categories,
+          $joinBuilder: $buildJoinForTable(
+              getCurrentColumn: (t) => t.category,
+              referencedTable: $db.categories,
+              getReferencedColumn: (t) => t.id));
+  ColumnOrderings<String> get status => $columnOrdering($table.status);
 }
 
 class $$TodosTableTableProcessedTableManager extends ProcessedTableManager<
@@ -2731,28 +2723,28 @@ class $$TodosTableTableTableManager extends RootTableManager<
 }
 
 class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
-  $$UsersTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  $$UsersTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
-      ColumnWithTypeConverterFilters($table.id);
-  ColumnFilters<String> get name => ColumnFilters($table.name);
-  ColumnFilters<bool> get isAwesome => ColumnFilters($table.isAwesome);
+      $columnFilterWithTypeConverter($table.id);
+  ColumnFilters<String> get name => $columnFilter($table.name);
+  ColumnFilters<bool> get isAwesome => $columnFilter($table.isAwesome);
   ColumnFilters<Uint8List> get profilePicture =>
-      ColumnFilters($table.profilePicture);
+      $columnFilter($table.profilePicture);
   ColumnFilters<DateTime> get creationTime =>
-      ColumnFilters($table.creationTime);
+      $columnFilter($table.creationTime);
 }
 
 class $$UsersTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $UsersTable> {
-  $$UsersTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get id => ColumnOrderings($table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($table.name);
-  ColumnOrderings<bool> get isAwesome => ColumnOrderings($table.isAwesome);
+  $$UsersTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get name => $columnOrdering($table.name);
+  ColumnOrderings<bool> get isAwesome => $columnOrdering($table.isAwesome);
   ColumnOrderings<Uint8List> get profilePicture =>
-      ColumnOrderings($table.profilePicture);
+      $columnOrdering($table.profilePicture);
   ColumnOrderings<DateTime> get creationTime =>
-      ColumnOrderings($table.creationTime);
+      $columnOrdering($table.creationTime);
 }
 
 class $$UsersTableProcessedTableManager extends ProcessedTableManager<
@@ -2831,16 +2823,18 @@ class $$UsersTableTableManager extends RootTableManager<
 
 class $$SharedTodosTableFilterComposer
     extends FilterComposer<_$TodoDb, $SharedTodosTable> {
-  $$SharedTodosTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get todo => ColumnFilters($table.todo);
-  ColumnFilters<int> get user => ColumnFilters($table.user);
+  $$SharedTodosTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<int> get todo => $columnFilter($table.todo);
+  ColumnFilters<int> get user => $columnFilter($table.user);
 }
 
 class $$SharedTodosTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $SharedTodosTable> {
-  $$SharedTodosTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get todo => ColumnOrderings($table.todo);
-  ColumnOrderings<int> get user => ColumnOrderings($table.user);
+  $$SharedTodosTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get todo => $columnOrdering($table.todo);
+  ColumnOrderings<int> get user => $columnOrdering($table.user);
 }
 
 class $$SharedTodosTableProcessedTableManager extends ProcessedTableManager<
@@ -2909,16 +2903,18 @@ class $$SharedTodosTableTableManager extends RootTableManager<
 
 class $$PureDefaultsTableFilterComposer
     extends FilterComposer<_$TodoDb, $PureDefaultsTable> {
-  $$PureDefaultsTableFilterComposer(super.db, super.table);
-  ColumnFilters<String> get txtValue => ColumnFilters($table.txt);
+  $$PureDefaultsTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<String> get txtValue => $columnFilter($table.txt);
   ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
-      get txt => ColumnWithTypeConverterFilters($table.txt);
+      get txt => $columnFilterWithTypeConverter($table.txt);
 }
 
 class $$PureDefaultsTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $PureDefaultsTable> {
-  $$PureDefaultsTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get txt => ColumnOrderings($table.txt);
+  $$PureDefaultsTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<String> get txt => $columnOrdering($table.txt);
 }
 
 class $$PureDefaultsTableProcessedTableManager extends ProcessedTableManager<
@@ -2981,14 +2977,16 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
 
 class $$WithCustomTypeTableFilterComposer
     extends FilterComposer<_$TodoDb, $WithCustomTypeTable> {
-  $$WithCustomTypeTableFilterComposer(super.db, super.table);
-  ColumnFilters<UuidValue> get id => ColumnFilters($table.id);
+  $$WithCustomTypeTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<UuidValue> get id => $columnFilter($table.id);
 }
 
 class $$WithCustomTypeTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $WithCustomTypeTable> {
-  $$WithCustomTypeTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<UuidValue> get id => ColumnOrderings($table.id);
+  $$WithCustomTypeTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<UuidValue> get id => $columnOrdering($table.id);
 }
 
 class $$WithCustomTypeTableProcessedTableManager extends ProcessedTableManager<
@@ -3051,41 +3049,43 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
 
 class $$TableWithEveryColumnTypeTableFilterComposer
     extends FilterComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
-  $$TableWithEveryColumnTypeTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get idValue => ColumnFilters($table.id);
+  $$TableWithEveryColumnTypeTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
-      ColumnWithTypeConverterFilters($table.id);
-  ColumnFilters<bool> get aBool => ColumnFilters($table.aBool);
-  ColumnFilters<DateTime> get aDateTime => ColumnFilters($table.aDateTime);
-  ColumnFilters<String> get aText => ColumnFilters($table.aText);
-  ColumnFilters<int> get anInt => ColumnFilters($table.anInt);
-  ColumnFilters<BigInt> get anInt64 => ColumnFilters($table.anInt64);
-  ColumnFilters<double> get aReal => ColumnFilters($table.aReal);
-  ColumnFilters<Uint8List> get aBlob => ColumnFilters($table.aBlob);
-  ColumnFilters<int> get anIntEnumValue => ColumnFilters($table.anIntEnum);
+      $columnFilterWithTypeConverter($table.id);
+  ColumnFilters<bool> get aBool => $columnFilter($table.aBool);
+  ColumnFilters<DateTime> get aDateTime => $columnFilter($table.aDateTime);
+  ColumnFilters<String> get aText => $columnFilter($table.aText);
+  ColumnFilters<int> get anInt => $columnFilter($table.anInt);
+  ColumnFilters<BigInt> get anInt64 => $columnFilter($table.anInt64);
+  ColumnFilters<double> get aReal => $columnFilter($table.aReal);
+  ColumnFilters<Uint8List> get aBlob => $columnFilter($table.aBlob);
+  ColumnFilters<int> get anIntEnumValue => $columnFilter($table.anIntEnum);
   ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, int> get anIntEnum =>
-      ColumnWithTypeConverterFilters($table.anIntEnum);
+      $columnFilterWithTypeConverter($table.anIntEnum);
   ColumnFilters<String> get aTextWithConverterValue =>
-      ColumnFilters($table.aTextWithConverter);
+      $columnFilter($table.aTextWithConverter);
   ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
       get aTextWithConverter =>
-          ColumnWithTypeConverterFilters($table.aTextWithConverter);
+          $columnFilterWithTypeConverter($table.aTextWithConverter);
 }
 
 class $$TableWithEveryColumnTypeTableOrderingComposer
     extends OrderingComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
-  $$TableWithEveryColumnTypeTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get id => ColumnOrderings($table.id);
-  ColumnOrderings<bool> get aBool => ColumnOrderings($table.aBool);
-  ColumnOrderings<DateTime> get aDateTime => ColumnOrderings($table.aDateTime);
-  ColumnOrderings<String> get aText => ColumnOrderings($table.aText);
-  ColumnOrderings<int> get anInt => ColumnOrderings($table.anInt);
-  ColumnOrderings<BigInt> get anInt64 => ColumnOrderings($table.anInt64);
-  ColumnOrderings<double> get aReal => ColumnOrderings($table.aReal);
-  ColumnOrderings<Uint8List> get aBlob => ColumnOrderings($table.aBlob);
-  ColumnOrderings<int> get anIntEnum => ColumnOrderings($table.anIntEnum);
+  $$TableWithEveryColumnTypeTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<bool> get aBool => $columnOrdering($table.aBool);
+  ColumnOrderings<DateTime> get aDateTime => $columnOrdering($table.aDateTime);
+  ColumnOrderings<String> get aText => $columnOrdering($table.aText);
+  ColumnOrderings<int> get anInt => $columnOrdering($table.anInt);
+  ColumnOrderings<BigInt> get anInt64 => $columnOrdering($table.anInt64);
+  ColumnOrderings<double> get aReal => $columnOrdering($table.aReal);
+  ColumnOrderings<Uint8List> get aBlob => $columnOrdering($table.aBlob);
+  ColumnOrderings<int> get anIntEnum => $columnOrdering($table.anIntEnum);
   ColumnOrderings<String> get aTextWithConverter =>
-      ColumnOrderings($table.aTextWithConverter);
+      $columnOrdering($table.aTextWithConverter);
 }
 
 class $$TableWithEveryColumnTypeTableProcessedTableManager

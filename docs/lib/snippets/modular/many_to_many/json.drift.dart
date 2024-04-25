@@ -214,20 +214,22 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
 
 class $$ShoppingCartsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get entriesValue => i0.ColumnFilters($table.entries);
+  $$ShoppingCartsTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get entriesValue => $columnFilter($table.entries);
   i0.ColumnWithTypeConverterFilters<
       i3.ShoppingCartEntries,
       i3.ShoppingCartEntries,
-      String> get entries => i0.ColumnWithTypeConverterFilters($table.entries);
+      String> get entries => i0.$columnFilterWithTypeConverter($table.entries);
 }
 
 class $$ShoppingCartsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get entries => i0.ColumnOrderings($table.entries);
+  $$ShoppingCartsTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<String> get entries => i0.$columnOrdering($table.entries);
 }
 
 class $$ShoppingCartsTableProcessedTableManager

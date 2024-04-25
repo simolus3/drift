@@ -221,20 +221,21 @@ class BuyableItemsCompanion extends i0.UpdateCompanion<i1.BuyableItem> {
 
 class $$BuyableItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get description =>
-      i0.ColumnFilters($table.description);
-  i0.ColumnFilters<int> get price => i0.ColumnFilters($table.price);
+  $$BuyableItemsTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get description => $columnFilter($table.description);
+  i0.ColumnFilters<int> get price => $columnFilter($table.price);
 }
 
 class $$BuyableItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  $$BuyableItemsTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
   i0.ColumnOrderings<String> get description =>
-      i0.ColumnOrderings($table.description);
-  i0.ColumnOrderings<int> get price => i0.ColumnOrderings($table.price);
+      i0.$columnOrdering($table.description);
+  i0.ColumnOrderings<int> get price => i0.$columnOrdering($table.price);
 }
 
 class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<

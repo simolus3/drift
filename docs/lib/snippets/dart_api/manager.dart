@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-part 'manager.g.dart';
+part 'manageyr.dart';
 
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();

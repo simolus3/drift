@@ -21,51 +21,24 @@ sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
   /// The table that the query will be executed on
   final CT $table;
 
-  Composer(this.$db, this.$table);
+  /// If this composer was created by a referenced manager, this
+  /// holds the JoinBuilder that will be used to join the referenced table
+  /// to the current table
+  late final JoinBuilder? $joinBuilder;
 
-  /// Utility for creating a composer which contains the joins needed to
-  /// execute a query on a table that is referenced by a foreign key.
-  B $composeWithJoins<RT extends Table, QC extends Composer<DB, RT>,
-      B extends HasJoinBuilders>({
-    required DB $db,
-    required CT $table,
-    required GeneratedColumn Function(CT) getCurrentColumn,
-    required RT referencedTable,
-    required GeneratedColumn Function(RT) getReferencedColumn,
-    required B Function(QC) builder,
-    required QC Function(DB db, RT table) getReferencedComposer,
-  }) {
-    // The name of the alias will be created using the following logic:
-    // "currentTableName__currentColumnName__referencedColumnName__referencedTableName"
-    // This is to ensure that the alias is unique
-    final currentColumn = getCurrentColumn($table);
-    final tempReferencedColumn = getReferencedColumn(referencedTable);
-    final aliasName =
-        '${currentColumn.tableName}__${currentColumn.name}__${tempReferencedColumn.tableName}__${tempReferencedColumn.name}';
-    final aliasedReferencedTable =
-        $db.alias(referencedTable as TableInfo, aliasName);
-    final aliasedReferencedColumn =
-        getReferencedColumn(aliasedReferencedTable as RT);
+  Composer(this.$db, this.$table, {this.$joinBuilder});
 
-    // Create a join builder for the referenced table
-    final joinBuilder = JoinBuilder(
+  JoinBuilder $buildJoinForTable<C extends GeneratedColumn, RT extends Table,
+          RC extends GeneratedColumn>(
+      {required C Function(CT) getCurrentColumn,
+      required RT referencedTable,
+      required RC Function(RT) getReferencedColumn}) {
+    return JoinBuilder.withAlias(
+      db: $db,
       currentTable: $table,
-      currentColumn: currentColumn,
-      referencedTable: aliasedReferencedTable,
-      referencedColumn: aliasedReferencedColumn,
+      getCurrentColumn: getCurrentColumn,
+      referencedTable: referencedTable,
+      getReferencedColumn: getReferencedColumn,
     );
-
-    // Get the query composer for the referenced table, passing in the aliased
-    // table and all the join builders
-    final referencedComposer =
-        getReferencedComposer($db, aliasedReferencedTable);
-
-    // Run the user provided builder with the referencedQueryComposer
-    // This may return a filter or ordering, but we only enforce that it's
-    // a HasJoinBuilders
-    final result = builder(referencedComposer);
-    result.addJoinBuilders({joinBuilder});
-
-    return result;
   }
 }

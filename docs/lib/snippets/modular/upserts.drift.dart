@@ -189,16 +189,16 @@ class WordsCompanion extends i0.UpdateCompanion<i1.Word> {
 
 class $$WordsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<String> get word => i0.ColumnFilters($table.word);
-  i0.ColumnFilters<int> get usages => i0.ColumnFilters($table.usages);
+  $$WordsTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<String> get word => $columnFilter($table.word);
+  i0.ColumnFilters<int> get usages => $columnFilter($table.usages);
 }
 
 class $$WordsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<String> get word => i0.ColumnOrderings($table.word);
-  i0.ColumnOrderings<int> get usages => i0.ColumnOrderings($table.usages);
+  $$WordsTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnOrderings<String> get word => i0.$columnOrdering($table.word);
+  i0.ColumnOrderings<int> get usages => i0.$columnOrdering($table.usages);
 }
 
 class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -523,20 +523,22 @@ class MatchResultsCompanion extends i0.UpdateCompanion<i1.MatchResult> {
 
 class $$MatchResultsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get teamA => i0.ColumnFilters($table.teamA);
-  i0.ColumnFilters<String> get teamB => i0.ColumnFilters($table.teamB);
-  i0.ColumnFilters<bool> get teamAWon => i0.ColumnFilters($table.teamAWon);
+  $$MatchResultsTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get teamA => $columnFilter($table.teamA);
+  i0.ColumnFilters<String> get teamB => $columnFilter($table.teamB);
+  i0.ColumnFilters<bool> get teamAWon => $columnFilter($table.teamAWon);
 }
 
 class $$MatchResultsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get teamA => i0.ColumnOrderings($table.teamA);
-  i0.ColumnOrderings<String> get teamB => i0.ColumnOrderings($table.teamB);
-  i0.ColumnOrderings<bool> get teamAWon => i0.ColumnOrderings($table.teamAWon);
+  $$MatchResultsTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<String> get teamA => i0.$columnOrdering($table.teamA);
+  i0.ColumnOrderings<String> get teamB => i0.$columnOrdering($table.teamB);
+  i0.ColumnOrderings<bool> get teamAWon => i0.$columnOrdering($table.teamAWon);
 }
 
 class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<

@@ -6,22 +6,33 @@ class ColumnOrderings<T extends Object> {
   ///
   /// It's used to expose ordering functions for a column
 
-  ColumnOrderings(this.column);
+  ColumnOrderings(this.column, [this._joinBuilder]);
 
   /// Column that this [ColumnOrderings] wraps
   Expression<T> column;
+
+  /// If this column is part of a join, this will hold the join builder
+  final JoinBuilder? _joinBuilder;
+
+  /// Create a new [ComposableOrdering] for this column.
+  /// This is used to create lower level orderings
+  /// that can be composed together
+  ComposableOrdering $composableOrdering(Set<OrderingBuilder> orderings) {
+    return ComposableOrdering._(
+        orderings, _joinBuilder != null ? {_joinBuilder} : {});
+  }
 
   /// Sort this column in ascending order
   ///
   /// 10 -> 1 | Z -> A | Dec 31 -> Jan 1
   ComposableOrdering asc() =>
-      ComposableOrdering({OrderingBuilder(OrderingMode.asc, column)});
+      $composableOrdering({OrderingBuilder(OrderingMode.asc, column)});
 
   /// Sort this column in descending order
   ///
   ///  1 -> 10 | A -> Z | Jan 1 -> Dec 31
   ComposableOrdering desc() =>
-      ComposableOrdering({OrderingBuilder(OrderingMode.desc, column)});
+      $composableOrdering({OrderingBuilder(OrderingMode.desc, column)});
 }
 
 /// Defines a class which will hold the information needed to create an ordering
@@ -63,9 +74,6 @@ class ComposableOrdering extends HasJoinBuilders {
   @override
   final Set<JoinBuilder> joinBuilders;
 
-  /// Create a new [ComposableOrdering] for a column without any joins
-  ComposableOrdering(this.orderingBuilders) : joinBuilders = {};
-
   /// Create a new [ComposableOrdering] for a column with joins
   ComposableOrdering._(this.orderingBuilders, this.joinBuilders);
 
@@ -84,6 +92,11 @@ class ComposableOrdering extends HasJoinBuilders {
 /// The class that orchestrates the composition of orderings
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
+  /// Create a new [ColumnOrderings] for a column
+  ColumnOrderings<C> $columnOrdering<C extends Object>(Expression<C> column) {
+    return ColumnOrderings(column, $joinBuilder);
+  }
+
   /// Create an ordering composer with an empty state
-  OrderingComposer(super.$db, super.$table);
+  OrderingComposer(super.$db, super.$table, {super.$joinBuilder});
 }

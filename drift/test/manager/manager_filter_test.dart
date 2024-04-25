@@ -459,64 +459,40 @@ void main() {
     // Equals
     expect(
         db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) => f.id(RowId(schoolCategoryId)),
-                ))
+            .filter((f) => f.category.id(RowId(schoolCategoryId)))
             .count(),
         completion(4));
 
     // Not Equals
     expect(
         db.managers.todosTable
-            .filter(
-              (f) =>
-                  f.category((f) => f.id.not.equals(RowId(schoolCategoryId))),
-            )
+            .filter((f) => f.category.id.not(RowId(schoolCategoryId)))
             .count(),
         completion(4));
 
     // Multiple filters
     expect(
         db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) => f.id(RowId(schoolCategoryId)),
+            .filter((f) => f.category.id(
+                  RowId(schoolCategoryId),
                 ))
             .filter((f) => f.status.equals(TodoStatus.open))
             .count(),
         completion(2));
 
-    // Multiple 2 related filters
-    expect(
-        db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) =>
-                      f.priority.equals(CategoryPriority.low) |
-                      f.descriptionInUpperCase.equals("SCHOOL"),
-                ))
-            .count(),
-        completion(8));
-
     // Multiple use related filters twice
     expect(
         db.managers.todosTable
             .filter((f) =>
-                f.category(
-                  (f) => f.priority.equals(CategoryPriority.low),
-                ) |
-                f.category(
-                  (f) => f.descriptionInUpperCase.equals("SCHOOL"),
-                ))
+                f.category.priority(CategoryPriority.low) |
+                f.category.descriptionInUpperCase("SCHOOL"))
             .count(),
         completion(8));
     // Use .filter multiple times
     expect(
         db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) => f.priority.equals(CategoryPriority.high),
-                ))
-            .filter((f) => f.category(
-                  (f) => f.descriptionInUpperCase.equals("SCHOOL"),
-                ))
+            .filter((f) => f.category.priority.equals(CategoryPriority.high))
+            .filter((f) => f.category.descriptionInUpperCase("SCHOOL"))
             .count(),
         completion(4));
 
@@ -531,8 +507,8 @@ void main() {
     // Nested backreference
     expect(
         db.managers.categories
-            .filter((f) => f.todos((f) => f.category(
-                (f) => f.todos((f) => f.title.equals("Math Homework")))))
+            .filter((f) => f.todos((f) =>
+                f.category.todos((f) => f.title.equals("Math Homework"))))
             .getSingle()
             .then((value) => value.description),
         completion("School"));

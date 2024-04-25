@@ -24,6 +24,30 @@ class JoinBuilder {
       required this.currentColumn,
       required this.referencedColumn});
 
+  static JoinBuilder withAlias<T extends Table, C extends GeneratedColumn,
+          RT extends Table, RC extends GeneratedColumn>(
+      {required GeneratedDatabase db,
+      required T currentTable,
+      required C Function(T) getCurrentColumn,
+      required RT referencedTable,
+      required RC Function(RT) getReferencedColumn}) {
+    final currentColumn = getCurrentColumn(currentTable);
+    final referencedColumn = getReferencedColumn(referencedTable);
+    final aliasName =
+        '${currentColumn.tableName}__${currentColumn.name}__${referencedColumn.tableName}__${referencedColumn.name}';
+    final aliasedReferencedTable =
+        db.alias(referencedTable as TableInfo, aliasName);
+    final aliasedReferencedColumn =
+        getReferencedColumn(aliasedReferencedTable as RT);
+
+    return JoinBuilder(
+      currentTable: currentTable,
+      currentColumn: currentColumn,
+      referencedTable: aliasedReferencedTable,
+      referencedColumn: aliasedReferencedColumn,
+    );
+  }
+
   /// The name of the alias that this join will use
   String get aliasedName {
     return referencedColumn.tableName;
