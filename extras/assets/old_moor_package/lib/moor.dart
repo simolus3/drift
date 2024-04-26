@@ -11,7 +11,13 @@ export 'package:drift/drift.dart'
         driftRuntimeOptions,
         DriftDatabase,
         DriftAccessor,
-        DriftWrappedException;
+        DriftWrappedException,
+        JoinBuilder,
+        HasJoinBuilders,
+        ComposableOrdering,
+        OrderingBuilder,
+        Composer,
+        BaseTableManager;
 
 /// Use this class as an annotation to inform moor_generator that a database
 /// class should be generated using the specified [DriftDatabase.tables].
