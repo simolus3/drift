@@ -25,7 +25,6 @@ export 'src/runtime/manager/manager.dart'
         JoinBuilder,
         HasJoinBuilders,
         ComposableOrdering,
-        ColumnAggregate,
         OrderingBuilder,
         Composer,
         BaseTableManager;
