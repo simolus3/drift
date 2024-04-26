@@ -13,7 +13,7 @@ class ColumnFilters<T extends Object> {
   ///  ComposableFilter after2000() => isAfter(DateTime(2000));
   ///}
   /// ```
-  const ColumnFilters(this.column, [this.inverted = false, this._joinBuilder]);
+  const ColumnFilters(this.column, {this.inverted = false, this.joinBuilders});
 
   /// Column that this [ColumnFilters] wraps
   final Expression<T> column;
@@ -22,7 +22,7 @@ class ColumnFilters<T extends Object> {
   final bool inverted;
 
   /// If this column is part of a join, this will hold the join builder
-  final JoinBuilder? _joinBuilder;
+  final Set<JoinBuilder>? joinBuilders;
 
   /// Returns a copy of these column filters where all the filters are inverted
   /// ```dart
@@ -34,13 +34,14 @@ class ColumnFilters<T extends Object> {
   /// ```dart
   /// myColumn.not.equals(5) | myColumn.isNull(); // All columns that are null OR have a value that is not equal to 5 will be returned
   /// ```
-  ColumnFilters<T> get not => ColumnFilters(column, !inverted, _joinBuilder);
+  ColumnFilters<T> get not =>
+      ColumnFilters(column, inverted: !inverted, joinBuilders: joinBuilders);
 
   /// Create a composable filter from an expression, this is used to create
   /// lower level filters that can be composed together.
-  ComposableFilter $composableFilter(Expression<bool> expression) {
-    return ComposableFilter._(inverted ? expression.not() : expression,
-        _joinBuilder != null ? {_joinBuilder} : {});
+  ComposableFilter $composableFilter(Expression<bool>? expression) {
+    return ComposableFilter._(
+        inverted ? expression?.not() : expression, joinBuilders ?? {});
   }
 
   /// Create a filter that checks if the column equals a value.
@@ -247,8 +248,8 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
 
   /// Create a composable filter from an expression, this is used to create
   /// lower level filters that can be composed together.
-  ComposableFilter $composableFilter(Expression<bool> expression) {
-    return ComposableFilter._(inverted ? expression.not() : expression,
+  ComposableFilter $composableFilter(Expression<bool>? expression) {
+    return ComposableFilter._(inverted ? expression?.not() : expression,
         _joinBuilder != null ? {_joinBuilder} : {});
   }
 
@@ -293,23 +294,36 @@ class ComposableFilter extends HasJoinBuilders {
   final Set<JoinBuilder> joinBuilders;
 
   /// The expression that will be applied to the query
-  late final Expression<bool> expression;
+  Expression<bool>? expression;
 
   /// Create a new [ComposableFilter] for a column with joins
   ComposableFilter._(this.expression, this.joinBuilders);
 
   /// Combine two filters with an AND
   ComposableFilter operator &(ComposableFilter other) {
+    final combinedExpression = switch ((expression, other.expression)) {
+      (null, null) => null,
+      (null, var expression) => expression,
+      (var expression, null) => expression,
+      (_, _) => expression! & other.expression!,
+    };
+
     return ComposableFilter._(
-      expression & other.expression,
+      combinedExpression,
       joinBuilders.union(other.joinBuilders),
     );
   }
 
   /// Combine two filters with an OR
   ComposableFilter operator |(ComposableFilter other) {
+    final combinedExpression = switch ((expression, other.expression)) {
+      (null, null) => null,
+      (null, var expression) => expression,
+      (var expression, null) => expression,
+      (_, _) => expression! | other.expression!,
+    };
     return ComposableFilter._(
-      expression | other.expression,
+      combinedExpression,
       joinBuilders.union(other.joinBuilders),
     );
   }
@@ -328,11 +342,11 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     // is a waste of time, do the filter on the actual column
     if ($joinBuilder != null &&
         $joinBuilder!.referencedColumn == aliasedColumn) {
-      return ColumnFilters(
-          $joinBuilder!.currentColumn as GeneratedColumn<C>, false, null);
+      return ColumnFilters($joinBuilder!.currentColumn as GeneratedColumn<C>);
     }
 
-    return ColumnFilters(aliasedColumn, false, $joinBuilder);
+    return ColumnFilters(aliasedColumn,
+        joinBuilders: $joinBuilder != null ? {$joinBuilder!} : null);
   }
 
   /// Create a new filter composer with a column
@@ -346,6 +360,9 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
         _columnWithAlias(column);
     return ColumnWithTypeConverterFilters(aliasedColumn, false, $joinBuilder);
   }
+
+  /// A filter that includes all rows
+  ComposableFilter all() => ComposableFilter._(null, {});
 
   /// Create a filter composer with an empty state
   FilterComposer(super.$db, super.$table, {super.$joinBuilder});

@@ -6,20 +6,19 @@ class ColumnOrderings<T extends Object> {
   ///
   /// It's used to expose ordering functions for a column
 
-  ColumnOrderings(this.column, [this._joinBuilder]);
+  ColumnOrderings(this.column, {this.joinBuilders});
 
   /// Column that this [ColumnOrderings] wraps
   Expression<T> column;
 
   /// If this column is part of a join, this will hold the join builder
-  final JoinBuilder? _joinBuilder;
+  final Set<JoinBuilder>? joinBuilders;
 
   /// Create a new [ComposableOrdering] for this column.
   /// This is used to create lower level orderings
   /// that can be composed together
   ComposableOrdering $composableOrdering(Set<OrderingBuilder> orderings) {
-    return ComposableOrdering._(
-        orderings, _joinBuilder != null ? {_joinBuilder} : {});
+    return ComposableOrdering._(orderings, joinBuilders ?? {});
   }
 
   /// Sort this column in ascending order
@@ -105,11 +104,11 @@ class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     // is a waste of time, do the ordering on the actual column
     if ($joinBuilder != null &&
         $joinBuilder!.referencedColumn == aliasedColumn) {
-      return ColumnOrderings(
-          $joinBuilder!.currentColumn as GeneratedColumn<C>, null);
+      return ColumnOrderings($joinBuilder!.currentColumn as GeneratedColumn<C>);
     }
 
-    return ColumnOrderings(column, $joinBuilder);
+    return ColumnOrderings(column,
+        joinBuilders: $joinBuilder != null ? {$joinBuilder!} : null);
   }
 
   /// Create an ordering composer with an empty state

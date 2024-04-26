@@ -320,10 +320,16 @@ abstract class BaseTableManager<
   /// Add a filter to the statement
   C filter(ComposableFilter Function(FS f) f) {
     final filter = f($state.filteringComposer);
+    Expression<bool>? combinedFilter =
+        switch (($state.filter, filter.expression)) {
+      (null, null) => null,
+      (null, var filter) => filter,
+      (var filter, null) => filter,
+      (var filter1, var filter2) => filter1! & filter2!
+    };
+
     return $state._getChildManagerBuilder($state.copyWith(
-        filter: $state.filter == null
-            ? filter.expression
-            : filter.expression & $state.filter!,
+        filter: combinedFilter,
         joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
   }
 
