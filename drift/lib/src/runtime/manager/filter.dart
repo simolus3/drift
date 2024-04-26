@@ -362,7 +362,8 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
   }
 
   /// A filter that includes all rows
-  ComposableFilter all() => ComposableFilter._(null, {});
+  ComposableFilter all() =>
+      ComposableFilter._(null, $joinBuilder != null ? {$joinBuilder!} : {});
 
   /// Create a filter composer with an empty state
   FilterComposer(super.$db, super.$table, {super.$joinBuilder});
