@@ -918,7 +918,7 @@ class $$UsersTableFilterComposer
     return composer;
   }
 
-  ComposableFilter usersRefs(
+  ColumnAggregate usersRefs(
       ComposableFilter Function($$UsersTableFilterComposer f) f) {
     final $$UsersTableFilterComposer composer = $$UsersTableFilterComposer(
         $db, $db.users,
@@ -926,10 +926,10 @@ class $$UsersTableFilterComposer
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.users,
             getReferencedColumn: (t) => t.nextUser));
-    return f(composer);
+    return ColumnAggregate(f(composer));
   }
 
-  ComposableFilter groupsRefs(
+  ColumnAggregate groupsRefs(
       ComposableFilter Function($GroupsFilterComposer f) f) {
     final $GroupsFilterComposer composer = $GroupsFilterComposer(
         $db, $db.groups,
@@ -937,7 +937,7 @@ class $$UsersTableFilterComposer
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.groups,
             getReferencedColumn: (t) => t.owner));
-    return f(composer);
+    return ColumnAggregate(f(composer));
   }
 }
 

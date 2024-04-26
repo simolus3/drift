@@ -186,12 +186,12 @@ extension ManagerExamples on AppDatabase {
 // #docregion manager_filter_back_references
   Future reverseRelationalFilter() async {
     // Get the category that has a todo item with an id of 1
-    managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)));
+    managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)).any());
 
     // These can be combined with other filters
     // For example, get all categories with a description of "School" or a todo item with an id of 1
     managers.todoCategory.filter(
-      (f) => f.description("School") | f.todoItemsRefs((f) => f.id(1)),
+      (f) => f.description("School") | f.todoItemsRefs((f) => f.id(1)).any(),
     );
   }
 // #enddocregion manager_filter_back_references
@@ -202,8 +202,8 @@ extension ManagerExamples on AppDatabase {
     // or who own a group with an id of 1, 2, 4, or 5
     managers.users.filter(
       (f) =>
-          f.administeredGroups((f) => f.name.contains("Business")) |
-          f.ownedGroups((f) => f.id.isIn([1, 2, 4, 5])),
+          f.administeredGroups((f) => f.name.contains("Business")).any() |
+          f.ownedGroups((f) => f.id.isIn([1, 2, 4, 5])).any(),
     );
   }
 // #enddocregion manager_filter_custom_back_references

@@ -713,7 +713,7 @@ class $$TodoCategoriesTableFilterComposer
       {super.$joinBuilder});
   ColumnFilters<int> get id => $columnFilter($table.id);
   ColumnFilters<String> get name => $columnFilter($table.name);
-  ComposableFilter todoItemsRefs(
+  ColumnAggregate todoItemsRefs(
       ComposableFilter Function($$TodoItemsTableFilterComposer f) f) {
     final $$TodoItemsTableFilterComposer composer =
         $$TodoItemsTableFilterComposer($db, $db.todoItems,
@@ -721,7 +721,7 @@ class $$TodoCategoriesTableFilterComposer
                 getCurrentColumn: (t) => t.id,
                 referencedTable: $db.todoItems,
                 getReferencedColumn: (t) => t.categoryId));
-    return f(composer);
+    return ColumnAggregate(f(composer));
   }
 }
 

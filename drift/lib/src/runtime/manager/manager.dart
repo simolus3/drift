@@ -7,6 +7,7 @@ part 'composer.dart';
 part 'filter.dart';
 part 'join.dart';
 part 'ordering.dart';
+part 'aggregates.dart';
 
 sealed class _StatementType<T extends Table, DT extends DataClass> {
   const _StatementType();

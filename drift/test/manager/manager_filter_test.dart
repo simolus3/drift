@@ -462,7 +462,7 @@ void main() {
         db.managers.person
             .filter((f) =>
                 f.club.name("Book Club A") |
-                f.publishedBooks((f) => f.id(book2)))
+                f.publishedBooks((f) => f.id(book2)).any())
             .count(),
         completion(3));
 
@@ -476,7 +476,7 @@ void main() {
     // Use backreference
     expect(
         db.managers.person
-            .filter((f) => f.publishedBooks((f) => f.id(book2)))
+            .filter((f) => f.publishedBooks((f) => f.id(book2)).any())
             .count(),
         completion(1));
 
@@ -494,8 +494,10 @@ void main() {
     // Nested backreference
     expect(
         db.managers.bookClub
-            .filter((f) => f.personRefs(
-                (f) => f.club.personRefs((f) => f.name.equals("John Doe"))))
+            .filter((f) => f
+                .personRefs((f) =>
+                    f.club.personRefs((f) => f.name.equals("John Doe")).any())
+                .any())
             .count(),
         completion(1));
   });
@@ -617,7 +619,8 @@ void main() {
     // Use backreference
     expect(
         db.managers.categories
-            .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
+            .filter(
+                (f) => f.todos((f) => f.title.equals("Math Homework")).any())
             .getSingle()
             .then((value) => value.description),
         completion("School"));
@@ -625,8 +628,11 @@ void main() {
     // Nested backreference
     expect(
         db.managers.categories
-            .filter((f) => f.todos((f) =>
-                f.category.todos((f) => f.title.equals("Math Homework"))))
+            .filter((f) => f
+                .todos((f) => f.category
+                    .todos((f) => f.title.equals("Math Homework"))
+                    .any())
+                .any())
             .getSingle()
             .then((value) => value.description),
         completion("School"));

@@ -125,12 +125,12 @@ class _ReferencedFilterWriter extends _FilterWriter {
     // e.g `f.category.id(1)`
     if (isReverseReference) {
       leaf
-        ..writeDriftRef("ComposableFilter")
+        ..writeDriftRef("ColumnAggregate")
         ..write(" $filterName(")
         ..writeDriftRef("ComposableFilter")
         ..writeln(" Function( $referencedFilterComposer f) f) {")
         ..write("$referencedFilterComposerBuffer;")
-        ..writeln("return f(composer);")
+        ..writeln("return ColumnAggregate(f(composer));")
         ..writeln("}");
     } else {
       leaf.write(
