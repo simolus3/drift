@@ -242,7 +242,8 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
   /// myColumn.not.equals(5) | myColumn.isNull(); // All columns that are null OR have a value that is not equal to 5
   /// ```
   ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable, T>
-      get not => ColumnWithTypeConverterFilters(column, !inverted);
+      get not =>
+          ColumnWithTypeConverterFilters(column, !inverted, _joinBuilder);
 
   /// Create a composable filter from an expression, this is used to create
   /// lower level filters that can be composed together.
@@ -330,7 +331,7 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
           $joinBuilder!.currentColumn as GeneratedColumn<C>, false, null);
     }
 
-    return ColumnFilters(column, false, $joinBuilder);
+    return ColumnFilters(aliasedColumn, false, $joinBuilder);
   }
 
   /// Create a new filter composer with a column
@@ -342,7 +343,6 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     // otherwise, it's just a copy of the column
     GeneratedColumnWithTypeConverter<CustomType, C> aliasedColumn =
         _columnWithAlias(column);
-
     return ColumnWithTypeConverterFilters(aliasedColumn, false, $joinBuilder);
   }
 

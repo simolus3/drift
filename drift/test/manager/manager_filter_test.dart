@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -383,6 +385,121 @@ void main() {
   });
 
   test('manager - filter related', () async {
+    final bookClubA =
+        await db.managers.bookClub.create((o) => o(name: Value("Book Club A")));
+    final bookClubB =
+        await db.managers.bookClub.create((o) => o(name: Value("Book Club B")));
+
+    final member1 = await db.managers.person
+        .create((o) => o(name: Value("John Doe"), club: Value(bookClubA)));
+    final member2 = await db.managers.person
+        .create((o) => o(name: Value("Jane Doe"), club: Value(bookClubA)));
+    final member3 = await db.managers.person
+        .create((o) => o(name: Value("John Smith"), club: Value(bookClubB)));
+    final member4 = await db.managers.person
+        .create((o) => o(name: Value("Jane Smith"), club: Value(bookClubB)));
+    final member5 = await db.managers.person
+        .create((o) => o(name: Value("Martha Smith"), club: Value(bookClubB)));
+
+    final book1 = await db.managers.book.create((o) => o(
+        title: Value("Book 1"),
+        author: Value(member1),
+        publisher: Value(member2)));
+    final book2 = await db.managers.book.create((o) => o(
+        title: Value("Book 2"),
+        author: Value(member3),
+        publisher: Value(member4)));
+    final book3 = await db.managers.book.create((o) => o(
+        title: Value("Book 3"),
+        author: Value(member1),
+        publisher: Value(member4)));
+    final book4 = await db.managers.book.create((o) => o(
+        title: Value("Book 4"),
+        author: Value(member2),
+        publisher: Value(member3)));
+
+    // item without title
+
+    // Equals - ID
+    expect(db.managers.person.filter((f) => f.club.id(bookClubA)).count(),
+        completion(2));
+
+    // Not Equals - ID
+    expect(db.managers.person.filter((f) => f.club.id.not(bookClubA)).count(),
+        completion(3));
+
+    // Equals - Other column
+    expect(db.managers.person.filter((f) => f.club.name("Book Club A")).count(),
+        completion(2));
+
+    // Not Equals - Other column
+    expect(
+        db.managers.person
+            .filter((f) => f.club.name.not("Book Club A"))
+            .count(),
+        completion(3));
+
+    // Multiple filters
+    expect(
+        db.managers.person
+            .filter((f) => f.club.id(bookClubA))
+            .filter((f) => f.name.startsWith("Jane"))
+            .count(),
+        completion(1));
+    expect(
+        db.managers.person
+            .filter((f) => f.club.id(bookClubA) & f.name.startsWith("Jane"))
+            .count(),
+        completion(1));
+    expect(
+        db.managers.person
+            .filter((f) => f.club.id(bookClubA) | f.name.startsWith("Jane"))
+            .count(),
+        completion(3));
+
+    // Multiple use related filters twice
+    expect(
+        db.managers.person
+            .filter((f) =>
+                f.club.name("Book Club A") |
+                f.publishedBooks((f) => f.id(book2)))
+            .count(),
+        completion(3));
+
+    expect(
+        db.managers.person
+            .filter(
+                (f) => f.club.name("Book Club A") | f.club.name("Book Club B"))
+            .count(),
+        completion(5));
+
+    // Use backreference
+    expect(
+        db.managers.person
+            .filter((f) => f.publishedBooks((f) => f.id(book2)))
+            .count(),
+        completion(1));
+
+    // // Use forward reference on a single id, this should not use a join
+    ComposableFilter? filter;
+    expect(
+        db.managers.person.filter((f) {
+          final t = f.club.id(bookClubA);
+          filter = t;
+          return t;
+        }).count(),
+        completion(2));
+    expect(filter?.joinBuilders.length, 0);
+
+    // Nested backreference
+    expect(
+        db.managers.bookClub
+            .filter((f) => f.personRefs(
+                (f) => f.club.personRefs((f) => f.name.equals("John Doe"))))
+            .count(),
+        completion(1));
+  });
+  test('manager - filter related with custom type for primary key', () async {
     final schoolCategoryId = await db.managers.categories.create((o) =>
         o(priority: Value(CategoryPriority.high), description: "School"));
     final workCategoryId = await db.managers.categories.create(
@@ -460,58 +577,58 @@ void main() {
     expect(
         db.managers.todosTable
             .filter((f) => f.category.id(RowId(schoolCategoryId)))
-            .get()
-            .then((value) => value.length),
+            .count(),
         completion(4));
 
     // Not Equals
-    // expect(
-    //     db.managers.todosTable
-    //         .filter((f) => f.category.id.not(RowId(schoolCategoryId)))
-    //         .count(),
-    //     completion(4));
+    expect(
+        db.managers.todosTable
+            .filter((f) => f.category.id.not(RowId(schoolCategoryId)))
+            .count(),
+        completion(4));
 
-    // // Multiple filters
-    // expect(
-    //     db.managers.todosTable
-    //         .filter((f) => f.category.id(
-    //               RowId(schoolCategoryId),
-    //             ))
-    //         .filter((f) => f.status.equals(TodoStatus.open))
-    //         .count(),
-    //     completion(2));
+    // Multiple filters
+    expect(
+        db.managers.todosTable
+            .filter((f) => f.category.id(
+                  RowId(schoolCategoryId),
+                ))
+            .filter((f) => f.status.equals(TodoStatus.open))
+            .count(),
+        completion(2));
 
-    // // Multiple use related filters twice
-    // expect(
-    //     db.managers.todosTable
-    //         .filter((f) =>
-    //             f.category.priority(CategoryPriority.low) |
-    //             f.category.descriptionInUpperCase("SCHOOL"))
-    //         .count(),
-    //     completion(8));
-    // // Use .filter multiple times
-    // expect(
-    //     db.managers.todosTable
-    //         .filter((f) => f.category.priority.equals(CategoryPriority.high))
-    //         .filter((f) => f.category.descriptionInUpperCase("SCHOOL"))
-    //         .count(),
-    //     completion(4));
+    // Multiple use related filters twice
+    expect(
+        db.managers.todosTable
+            .filter((f) =>
+                f.category.priority(CategoryPriority.low) |
+                f.category.descriptionInUpperCase("SCHOOL"))
+            .count(),
+        completion(8));
 
-    // // Use backreference
-    // expect(
-    //     db.managers.categories
-    //         .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
-    //         .getSingle()
-    //         .then((value) => value.description),
-    //     completion("School"));
+    // Use .filter multiple times
+    expect(
+        db.managers.todosTable
+            .filter((f) => f.category.priority.equals(CategoryPriority.high))
+            .filter((f) => f.category.descriptionInUpperCase("SCHOOL"))
+            .count(),
+        completion(4));
 
-    // // Nested backreference
-    // expect(
-    //     db.managers.categories
-    //         .filter((f) => f.todos((f) =>
-    //             f.category.todos((f) => f.title.equals("Math Homework"))))
-    //         .getSingle()
-    //         .then((value) => value.description),
-    //     completion("School"));
+    // Use backreference
+    expect(
+        db.managers.categories
+            .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
+            .getSingle()
+            .then((value) => value.description),
+        completion("School"));
+
+    // Nested backreference
+    expect(
+        db.managers.categories
+            .filter((f) => f.todos((f) =>
+                f.category.todos((f) => f.title.equals("Math Homework"))))
+            .getSingle()
+            .then((value) => value.description),
+        completion("School"));
   });
 }

@@ -103,6 +103,26 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
       .nullable()();
 }
 
+class Person extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 6, max: 32).nullable()();
+  IntColumn get club => integer().references(BookClub, #id).nullable()();
+}
+
+class Book extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text().withLength(min: 6, max: 32).nullable()();
+  @ReferenceName('writtenBooks')
+  IntColumn get author => integer().references(Person, #id).nullable()();
+  @ReferenceName('publishedBooks')
+  IntColumn get publisher => integer().references(Person, #id).nullable()();
+}
+
+class BookClub extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 6, max: 32).nullable()();
+}
+
 class CustomRowClass {
   final int notReallyAnId;
   final double anotherName;
@@ -264,7 +284,10 @@ const uuidType = DialectAwareSqlType<UuidValue>.via(
     TableWithoutPK,
     PureDefaults,
     WithCustomType,
-    TableWithEveryColumnType
+    TableWithEveryColumnType,
+    Person,
+    Book,
+    BookClub,
   ],
   views: [
     CategoryTodoCountView,

@@ -2172,6 +2172,665 @@ class TableWithEveryColumnTypeCompanion
   }
 }
 
+class $BookClubTable extends BookClub
+    with TableInfo<$BookClubTable, BookClubData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BookClubTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'book_club';
+  @override
+  VerificationContext validateIntegrity(Insertable<BookClubData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BookClubData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BookClubData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+    );
+  }
+
+  @override
+  $BookClubTable createAlias(String alias) {
+    return $BookClubTable(attachedDatabase, alias);
+  }
+}
+
+class BookClubData extends DataClass implements Insertable<BookClubData> {
+  final int id;
+  final String? name;
+  const BookClubData({required this.id, this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    return map;
+  }
+
+  BookClubCompanion toCompanion(bool nullToAbsent) {
+    return BookClubCompanion(
+      id: Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+    );
+  }
+
+  factory BookClubData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BookClubData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String?>(json['name']),
+    );
+  }
+  factory BookClubData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      BookClubData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String?>(name),
+    };
+  }
+
+  BookClubData copyWith(
+          {int? id, Value<String?> name = const Value.absent()}) =>
+      BookClubData(
+        id: id ?? this.id,
+        name: name.present ? name.value : this.name,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('BookClubData(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BookClubData && other.id == this.id && other.name == this.name);
+}
+
+class BookClubCompanion extends UpdateCompanion<BookClubData> {
+  final Value<int> id;
+  final Value<String?> name;
+  const BookClubCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  BookClubCompanion.insert({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  static Insertable<BookClubData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  BookClubCompanion copyWith({Value<int>? id, Value<String?>? name}) {
+    return BookClubCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BookClubCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PersonTable extends Person with TableInfo<$PersonTable, PersonData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PersonTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _clubMeta = const VerificationMeta('club');
+  @override
+  late final GeneratedColumn<int> club = GeneratedColumn<int>(
+      'club', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES book_club (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, name, club];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'person';
+  @override
+  VerificationContext validateIntegrity(Insertable<PersonData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    }
+    if (data.containsKey('club')) {
+      context.handle(
+          _clubMeta, club.isAcceptableOrUnknown(data['club']!, _clubMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PersonData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PersonData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+      club: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}club']),
+    );
+  }
+
+  @override
+  $PersonTable createAlias(String alias) {
+    return $PersonTable(attachedDatabase, alias);
+  }
+}
+
+class PersonData extends DataClass implements Insertable<PersonData> {
+  final int id;
+  final String? name;
+  final int? club;
+  const PersonData({required this.id, this.name, this.club});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    if (!nullToAbsent || club != null) {
+      map['club'] = Variable<int>(club);
+    }
+    return map;
+  }
+
+  PersonCompanion toCompanion(bool nullToAbsent) {
+    return PersonCompanion(
+      id: Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      club: club == null && nullToAbsent ? const Value.absent() : Value(club),
+    );
+  }
+
+  factory PersonData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PersonData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String?>(json['name']),
+      club: serializer.fromJson<int?>(json['club']),
+    );
+  }
+  factory PersonData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      PersonData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String?>(name),
+      'club': serializer.toJson<int?>(club),
+    };
+  }
+
+  PersonData copyWith(
+          {int? id,
+          Value<String?> name = const Value.absent(),
+          Value<int?> club = const Value.absent()}) =>
+      PersonData(
+        id: id ?? this.id,
+        name: name.present ? name.value : this.name,
+        club: club.present ? club.value : this.club,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('PersonData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('club: $club')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, club);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PersonData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.club == this.club);
+}
+
+class PersonCompanion extends UpdateCompanion<PersonData> {
+  final Value<int> id;
+  final Value<String?> name;
+  final Value<int?> club;
+  const PersonCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.club = const Value.absent(),
+  });
+  PersonCompanion.insert({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.club = const Value.absent(),
+  });
+  static Insertable<PersonData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<int>? club,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (club != null) 'club': club,
+    });
+  }
+
+  PersonCompanion copyWith(
+      {Value<int>? id, Value<String?>? name, Value<int?>? club}) {
+    return PersonCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      club: club ?? this.club,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (club.present) {
+      map['club'] = Variable<int>(club.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('club: $club')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BookTable extends Book with TableInfo<$BookTable, BookData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BookTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<int> author = GeneratedColumn<int>(
+      'author', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES person (id)'));
+  static const VerificationMeta _publisherMeta =
+      const VerificationMeta('publisher');
+  @override
+  late final GeneratedColumn<int> publisher = GeneratedColumn<int>(
+      'publisher', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES person (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, title, author, publisher];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'book';
+  @override
+  VerificationContext validateIntegrity(Insertable<BookData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    }
+    if (data.containsKey('author')) {
+      context.handle(_authorMeta,
+          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
+    }
+    if (data.containsKey('publisher')) {
+      context.handle(_publisherMeta,
+          publisher.isAcceptableOrUnknown(data['publisher']!, _publisherMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BookData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BookData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      author: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}author']),
+      publisher: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}publisher']),
+    );
+  }
+
+  @override
+  $BookTable createAlias(String alias) {
+    return $BookTable(attachedDatabase, alias);
+  }
+}
+
+class BookData extends DataClass implements Insertable<BookData> {
+  final int id;
+  final String? title;
+  final int? author;
+  final int? publisher;
+  const BookData({required this.id, this.title, this.author, this.publisher});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || author != null) {
+      map['author'] = Variable<int>(author);
+    }
+    if (!nullToAbsent || publisher != null) {
+      map['publisher'] = Variable<int>(publisher);
+    }
+    return map;
+  }
+
+  BookCompanion toCompanion(bool nullToAbsent) {
+    return BookCompanion(
+      id: Value(id),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      author:
+          author == null && nullToAbsent ? const Value.absent() : Value(author),
+      publisher: publisher == null && nullToAbsent
+          ? const Value.absent()
+          : Value(publisher),
+    );
+  }
+
+  factory BookData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BookData(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String?>(json['title']),
+      author: serializer.fromJson<int?>(json['author']),
+      publisher: serializer.fromJson<int?>(json['publisher']),
+    );
+  }
+  factory BookData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      BookData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String?>(title),
+      'author': serializer.toJson<int?>(author),
+      'publisher': serializer.toJson<int?>(publisher),
+    };
+  }
+
+  BookData copyWith(
+          {int? id,
+          Value<String?> title = const Value.absent(),
+          Value<int?> author = const Value.absent(),
+          Value<int?> publisher = const Value.absent()}) =>
+      BookData(
+        id: id ?? this.id,
+        title: title.present ? title.value : this.title,
+        author: author.present ? author.value : this.author,
+        publisher: publisher.present ? publisher.value : this.publisher,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('BookData(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('publisher: $publisher')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, title, author, publisher);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BookData &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.author == this.author &&
+          other.publisher == this.publisher);
+}
+
+class BookCompanion extends UpdateCompanion<BookData> {
+  final Value<int> id;
+  final Value<String?> title;
+  final Value<int?> author;
+  final Value<int?> publisher;
+  const BookCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.publisher = const Value.absent(),
+  });
+  BookCompanion.insert({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.publisher = const Value.absent(),
+  });
+  static Insertable<BookData> custom({
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<int>? author,
+    Expression<int>? publisher,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (author != null) 'author': author,
+      if (publisher != null) 'publisher': publisher,
+    });
+  }
+
+  BookCompanion copyWith(
+      {Value<int>? id,
+      Value<String?>? title,
+      Value<int?>? author,
+      Value<int?>? publisher}) {
+    return BookCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      publisher: publisher ?? this.publisher,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<int>(author.value);
+    }
+    if (publisher.present) {
+      map['publisher'] = Variable<int>(publisher.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BookCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('publisher: $publisher')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class CategoryTodoCountViewData extends DataClass {
   final int? categoryId;
   final String? description;
@@ -2406,6 +3065,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final $WithCustomTypeTable withCustomType = $WithCustomTypeTable(this);
   late final $TableWithEveryColumnTypeTable tableWithEveryColumnType =
       $TableWithEveryColumnTypeTable(this);
+  late final $BookClubTable bookClub = $BookClubTable(this);
+  late final $PersonTable person = $PersonTable(this);
+  late final $BookTable book = $BookTable(this);
   late final $CategoryTodoCountViewView categoryTodoCountView =
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
@@ -2493,6 +3155,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
         pureDefaults,
         withCustomType,
         tableWithEveryColumnType,
+        bookClub,
+        person,
+        book,
         categoryTodoCountView,
         todoWithCategoryView
       ];
@@ -3186,6 +3851,312 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
                 )));
 }
 
+class $$BookClubTableFilterComposer
+    extends FilterComposer<_$TodoDb, $BookClubTable> {
+  $$BookClubTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get id => $columnFilter($table.id);
+  ColumnFilters<String> get name => $columnFilter($table.name);
+  ComposableFilter personRefs(
+      ComposableFilter Function($$PersonTableFilterComposer f) f) {
+    final $$PersonTableFilterComposer composer = $$PersonTableFilterComposer(
+        $db, $db.person,
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.person,
+            getReferencedColumn: (t) => t.club));
+    return f(composer);
+  }
+}
+
+class $$BookClubTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $BookClubTable> {
+  $$BookClubTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get name => $columnOrdering($table.name);
+}
+
+class $$BookClubTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $BookClubTable,
+    BookClubData,
+    $$BookClubTableFilterComposer,
+    $$BookClubTableOrderingComposer,
+    $$BookClubTableProcessedTableManager,
+    $$BookClubTableInsertCompanionBuilder,
+    $$BookClubTableUpdateCompanionBuilder> {
+  const $$BookClubTableProcessedTableManager(super.$state);
+}
+
+typedef $$BookClubTableInsertCompanionBuilder = BookClubCompanion Function({
+  Value<int> id,
+  Value<String?> name,
+});
+typedef $$BookClubTableUpdateCompanionBuilder = BookClubCompanion Function({
+  Value<int> id,
+  Value<String?> name,
+});
+
+class $$BookClubTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $BookClubTable,
+    BookClubData,
+    $$BookClubTableFilterComposer,
+    $$BookClubTableOrderingComposer,
+    $$BookClubTableProcessedTableManager,
+    $$BookClubTableInsertCompanionBuilder,
+    $$BookClubTableUpdateCompanionBuilder> {
+  $$BookClubTableTableManager(_$TodoDb db, $BookClubTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$BookClubTableFilterComposer(db, table),
+            orderingComposer: $$BookClubTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$BookClubTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+            }) =>
+                BookClubCompanion(
+                  id: id,
+                  name: name,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+            }) =>
+                BookClubCompanion.insert(
+                  id: id,
+                  name: name,
+                )));
+}
+
+class $$PersonTableFilterComposer
+    extends FilterComposer<_$TodoDb, $PersonTable> {
+  $$PersonTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get id => $columnFilter($table.id);
+  ColumnFilters<String> get name => $columnFilter($table.name);
+  $$BookClubTableFilterComposer get club {
+    final $$BookClubTableFilterComposer composer =
+        $$BookClubTableFilterComposer($db, $db.bookClub,
+            $joinBuilder: $buildJoinForTable(
+                getCurrentColumn: (t) => t.club,
+                referencedTable: $db.bookClub,
+                getReferencedColumn: (t) => t.id));
+    return composer;
+  }
+
+  ComposableFilter writtenBooks(
+      ComposableFilter Function($$BookTableFilterComposer f) f) {
+    final $$BookTableFilterComposer composer = $$BookTableFilterComposer(
+        $db, $db.book,
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.book,
+            getReferencedColumn: (t) => t.author));
+    return f(composer);
+  }
+
+  ComposableFilter publishedBooks(
+      ComposableFilter Function($$BookTableFilterComposer f) f) {
+    final $$BookTableFilterComposer composer = $$BookTableFilterComposer(
+        $db, $db.book,
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.book,
+            getReferencedColumn: (t) => t.publisher));
+    return f(composer);
+  }
+}
+
+class $$PersonTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $PersonTable> {
+  $$PersonTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get name => $columnOrdering($table.name);
+  $$BookClubTableOrderingComposer get club =>
+      $$BookClubTableOrderingComposer($db, $db.bookClub,
+          $joinBuilder: $buildJoinForTable(
+              getCurrentColumn: (t) => t.club,
+              referencedTable: $db.bookClub,
+              getReferencedColumn: (t) => t.id));
+}
+
+class $$PersonTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $PersonTable,
+    PersonData,
+    $$PersonTableFilterComposer,
+    $$PersonTableOrderingComposer,
+    $$PersonTableProcessedTableManager,
+    $$PersonTableInsertCompanionBuilder,
+    $$PersonTableUpdateCompanionBuilder> {
+  const $$PersonTableProcessedTableManager(super.$state);
+}
+
+typedef $$PersonTableInsertCompanionBuilder = PersonCompanion Function({
+  Value<int> id,
+  Value<String?> name,
+  Value<int?> club,
+});
+typedef $$PersonTableUpdateCompanionBuilder = PersonCompanion Function({
+  Value<int> id,
+  Value<String?> name,
+  Value<int?> club,
+});
+
+class $$PersonTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $PersonTable,
+    PersonData,
+    $$PersonTableFilterComposer,
+    $$PersonTableOrderingComposer,
+    $$PersonTableProcessedTableManager,
+    $$PersonTableInsertCompanionBuilder,
+    $$PersonTableUpdateCompanionBuilder> {
+  $$PersonTableTableManager(_$TodoDb db, $PersonTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$PersonTableFilterComposer(db, table),
+            orderingComposer: $$PersonTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$PersonTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+              Value<int?> club = const Value.absent(),
+            }) =>
+                PersonCompanion(
+                  id: id,
+                  name: name,
+                  club: club,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+              Value<int?> club = const Value.absent(),
+            }) =>
+                PersonCompanion.insert(
+                  id: id,
+                  name: name,
+                  club: club,
+                )));
+}
+
+class $$BookTableFilterComposer extends FilterComposer<_$TodoDb, $BookTable> {
+  $$BookTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get id => $columnFilter($table.id);
+  ColumnFilters<String> get title => $columnFilter($table.title);
+  $$PersonTableFilterComposer get author {
+    final $$PersonTableFilterComposer composer = $$PersonTableFilterComposer(
+        $db, $db.person,
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.author,
+            referencedTable: $db.person,
+            getReferencedColumn: (t) => t.id));
+    return composer;
+  }
+
+  $$PersonTableFilterComposer get publisher {
+    final $$PersonTableFilterComposer composer = $$PersonTableFilterComposer(
+        $db, $db.person,
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.publisher,
+            referencedTable: $db.person,
+            getReferencedColumn: (t) => t.id));
+    return composer;
+  }
+}
+
+class $$BookTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $BookTable> {
+  $$BookTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get title => $columnOrdering($table.title);
+  $$PersonTableOrderingComposer get author =>
+      $$PersonTableOrderingComposer($db, $db.person,
+          $joinBuilder: $buildJoinForTable(
+              getCurrentColumn: (t) => t.author,
+              referencedTable: $db.person,
+              getReferencedColumn: (t) => t.id));
+  $$PersonTableOrderingComposer get publisher =>
+      $$PersonTableOrderingComposer($db, $db.person,
+          $joinBuilder: $buildJoinForTable(
+              getCurrentColumn: (t) => t.publisher,
+              referencedTable: $db.person,
+              getReferencedColumn: (t) => t.id));
+}
+
+class $$BookTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $BookTable,
+    BookData,
+    $$BookTableFilterComposer,
+    $$BookTableOrderingComposer,
+    $$BookTableProcessedTableManager,
+    $$BookTableInsertCompanionBuilder,
+    $$BookTableUpdateCompanionBuilder> {
+  const $$BookTableProcessedTableManager(super.$state);
+}
+
+typedef $$BookTableInsertCompanionBuilder = BookCompanion Function({
+  Value<int> id,
+  Value<String?> title,
+  Value<int?> author,
+  Value<int?> publisher,
+});
+typedef $$BookTableUpdateCompanionBuilder = BookCompanion Function({
+  Value<int> id,
+  Value<String?> title,
+  Value<int?> author,
+  Value<int?> publisher,
+});
+
+class $$BookTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $BookTable,
+    BookData,
+    $$BookTableFilterComposer,
+    $$BookTableOrderingComposer,
+    $$BookTableProcessedTableManager,
+    $$BookTableInsertCompanionBuilder,
+    $$BookTableUpdateCompanionBuilder> {
+  $$BookTableTableManager(_$TodoDb db, $BookTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$BookTableFilterComposer(db, table),
+            orderingComposer: $$BookTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$BookTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> title = const Value.absent(),
+              Value<int?> author = const Value.absent(),
+              Value<int?> publisher = const Value.absent(),
+            }) =>
+                BookCompanion(
+                  id: id,
+                  title: title,
+                  author: author,
+                  publisher: publisher,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String?> title = const Value.absent(),
+              Value<int?> author = const Value.absent(),
+              Value<int?> publisher = const Value.absent(),
+            }) =>
+                BookCompanion.insert(
+                  id: id,
+                  title: title,
+                  author: author,
+                  publisher: publisher,
+                )));
+}
+
 class _$TodoDbManager {
   final _$TodoDb _db;
   _$TodoDbManager(this._db);
@@ -3204,6 +4175,11 @@ class _$TodoDbManager {
   $$TableWithEveryColumnTypeTableTableManager get tableWithEveryColumnType =>
       $$TableWithEveryColumnTypeTableTableManager(
           _db, _db.tableWithEveryColumnType);
+  $$BookClubTableTableManager get bookClub =>
+      $$BookClubTableTableManager(_db, _db.bookClub);
+  $$PersonTableTableManager get person =>
+      $$PersonTableTableManager(_db, _db.person);
+  $$BookTableTableManager get book => $$BookTableTableManager(_db, _db.book);
 }
 
 class AllTodosWithCategoryResult extends CustomResultSet {
