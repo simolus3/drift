@@ -13,6 +13,7 @@ import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
 import '../../writer/function_stubs_writer.dart';
 import '../../writer/import_manager.dart';
+import '../../writer/manager_writer.dart';
 import '../../writer/modules.dart';
 import '../../writer/tables/table_writer.dart';
 import '../../writer/tables/view_writer.dart';
@@ -294,6 +295,10 @@ class _DriftBuildRun {
 
       if (result is DriftTable) {
         TableWriter(result, writer.child()).writeInto();
+
+        final scope = writer.child();
+        final manager = ManagerWriter(scope, scope, '')..addTable(result);
+        manager.writeTableManagers();
       } else if (result is DriftView) {
         ViewWriter(result, writer.child(), null).write();
       } else if (result is DriftTrigger) {

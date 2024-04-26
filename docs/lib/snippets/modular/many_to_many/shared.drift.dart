@@ -218,3 +218,86 @@ class BuyableItemsCompanion extends i0.UpdateCompanion<i1.BuyableItem> {
         .toString();
   }
 }
+
+class $$BuyableItemsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableFilterComposer(super.db, super.table);
+  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
+  i0.ColumnFilters<String> get description =>
+      i0.ColumnFilters($table.description);
+  i0.ColumnFilters<int> get price => i0.ColumnFilters($table.price);
+}
+
+class $$BuyableItemsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableOrderingComposer(super.db, super.table);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
+  i0.ColumnOrderings<String> get description =>
+      i0.ColumnOrderings($table.description);
+  i0.ColumnOrderings<int> get price => i0.ColumnOrderings($table.price);
+}
+
+class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    $$BuyableItemsTableFilterComposer,
+    $$BuyableItemsTableOrderingComposer,
+    $$BuyableItemsTableProcessedTableManager,
+    $$BuyableItemsTableInsertCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder> {
+  const $$BuyableItemsTableProcessedTableManager(super.$state);
+}
+
+typedef $$BuyableItemsTableInsertCompanionBuilder = i1.BuyableItemsCompanion
+    Function({
+  i0.Value<int> id,
+  required String description,
+  required int price,
+});
+typedef $$BuyableItemsTableUpdateCompanionBuilder = i1.BuyableItemsCompanion
+    Function({
+  i0.Value<int> id,
+  i0.Value<String> description,
+  i0.Value<int> price,
+});
+
+class $$BuyableItemsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    $$BuyableItemsTableFilterComposer,
+    $$BuyableItemsTableOrderingComposer,
+    $$BuyableItemsTableProcessedTableManager,
+    $$BuyableItemsTableInsertCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder> {
+  $$BuyableItemsTableTableManager(
+      i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$BuyableItemsTableFilterComposer(db, table),
+            orderingComposer: $$BuyableItemsTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$BuyableItemsTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              i0.Value<String> description = const i0.Value.absent(),
+              i0.Value<int> price = const i0.Value.absent(),
+            }) =>
+                i1.BuyableItemsCompanion(
+                  id: id,
+                  description: description,
+                  price: price,
+                ),
+            getInsertCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              required String description,
+              required int price,
+            }) =>
+                i1.BuyableItemsCompanion.insert(
+                  id: id,
+                  description: description,
+                  price: price,
+                )));
+}

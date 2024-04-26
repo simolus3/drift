@@ -230,12 +230,14 @@ class _TableManagerWriter {
   /// The name of the filter composer class
   ///
   /// E.G `UserFilterComposer`
-  String get filterComposer => '\$${table.entityInfoName}FilterComposer';
+  AnnotatedDartCode get filterComposer =>
+      scope.generatedElement(table, '\$${table.entityInfoName}FilterComposer');
 
-  /// The name of the filter composer class
+  /// The name of the ordering composer class
   ///
   /// E.G `UserOrderingComposer`
-  String get orderingComposer => '\$${table.entityInfoName}OrderingComposer';
+  AnnotatedDartCode get orderingComposer => scope.generatedElement(
+      table, '\$${table.entityInfoName}OrderingComposer');
 
   /// The name of the processed table manager class
   ///
@@ -246,7 +248,7 @@ class _TableManagerWriter {
   /// The name of the root table manager class
   ///
   /// E.G `UserTableManager`
-  String get rootTableManager => '\$${table.entityInfoName}TableManager';
+  String get rootTableManager => ManagerWriter._rootManagerName(table);
 
   /// Name of the typedef for the insertCompanionBuilder
   ///
@@ -440,8 +442,7 @@ class _TableManagerWriter {
           .firstOrNull
           ?.otherColumn;
       if (referencedCol != null && referencedCol.owner is DriftTable) {
-        final referencedTable = tables.firstWhere(
-            (t) => t.entityInfoName == referencedCol.owner.entityInfoName);
+        final referencedTable = referencedCol.owner as DriftTable;
         return (referencedTable, referencedCol);
       }
       return null;
@@ -496,7 +497,7 @@ class _TableManagerWriter {
 
       /// If this column is a foreign key to another table, add a filter and ordering
       /// for the referenced table
-      if (referenced != null) {
+      if (referenced != null && !referenced.$1.hasExistingRowClass) {
         final (referencedTable, referencedCol) = referenced;
         final referencedTableNames = _TableManagerWriter(
             referencedTable, scope, dbScope, databaseGenericName);
@@ -507,12 +508,14 @@ class _TableManagerWriter {
         c.filters.add(_ReferencedFilterWriter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
             referencedColumnGetter: referencedColumnNames.fieldGetter,
-            referencedFilterComposer: referencedTableNames.filterComposer,
+            referencedFilterComposer:
+                scope.dartCode(referencedTableNames.filterComposer),
             referencedTableField: referencedTableField));
         c.orderings.add(_ReferencedOrderingWriter(c.fieldGetter,
             fieldGetter: c.fieldGetter,
             referencedColumnGetter: referencedColumnNames.fieldGetter,
-            referencedOrderingComposer: referencedTableNames.orderingComposer,
+            referencedOrderingComposer:
+                scope.dartCode(referencedTableNames.orderingComposer),
             referencedTableField: referencedTableField));
       }
       columns.add(c);
@@ -536,7 +539,8 @@ class _TableManagerWriter {
           backRefFilters.add(_ReferencedFilterWriter(filterName,
               fieldGetter: reference.$2.nameInDart,
               referencedColumnGetter: referencedColumnNames.fieldGetter,
-              referencedFilterComposer: referencedTableNames.filterComposer,
+              referencedFilterComposer:
+                  scope.dartCode(referencedTableNames.filterComposer),
               referencedTableField: referencedTableField));
         }
       }
@@ -604,8 +608,15 @@ class ManagerWriter {
     return '$databaseManagerName get managers => $databaseManagerName(this);';
   }
 
-  /// Write the manager to a provider [TextEmitter]
-  void write() {
+  static String _rootManagerName(DriftTable table) {
+    return '\$${table.entityInfoName}TableManager';
+  }
+
+  AnnotatedDartCode _referenceRootManager(DriftTable table) {
+    return _scope.generatedElement(table, _rootManagerName(table));
+  }
+
+  void writeTableManagers() {
     final leaf = _scope.leaf();
 
     // create the manager class for each table
@@ -620,19 +631,29 @@ class ManagerWriter {
     tableWriters.removeWhere((t) => t.hasCustomRowClass);
 
     // Write each tables manager to the leaf and append the getter to the main manager
-    final tableManagerGetters = StringBuffer();
     for (var table in tableWriters) {
       table.writeManager(leaf);
-      tableManagerGetters.writeln(
-          "${table.rootTableManager} get ${table.table.dbGetterName} => ${table.rootTableManager}(_db, _db.${table.table.dbGetterName});");
     }
+  }
 
-    // Write the main manager class
+  /// Writes the main manager class referencing the generated classes for each
+  /// table using a getter.
+  void writeMainClass() {
+    final leaf = _scope.leaf();
     leaf
       ..writeln('class $databaseManagerName{')
       ..writeln('final $_dbClassName _db;')
-      ..writeln('$databaseManagerName(this._db);')
-      ..writeln(tableManagerGetters)
-      ..writeln('}');
+      ..writeln('$databaseManagerName(this._db);');
+
+    for (final table in _addedTables) {
+      if (!table.hasExistingRowClass) {
+        final type = leaf.dartCode(_referenceRootManager(table));
+
+        leaf.writeln(
+            '$type get ${table.dbGetterName} => $type(_db, _db.${table.dbGetterName});');
+      }
+    }
+
+    leaf.writeln('}');
   }
 }

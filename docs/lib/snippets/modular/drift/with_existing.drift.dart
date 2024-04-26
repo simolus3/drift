@@ -310,6 +310,81 @@ class FriendsCompanion extends i0.UpdateCompanion<i2.Friend> {
   }
 }
 
+class $FriendsFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i2.Friends> {
+  $FriendsFilterComposer(super.db, super.table);
+  i0.ColumnFilters<int> get userAId => i0.ColumnFilters($table.userA);
+  i0.ColumnFilters<int> get userBId => i0.ColumnFilters($table.userB);
+}
+
+class $FriendsOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i2.Friends> {
+  $FriendsOrderingComposer(super.db, super.table);
+  i0.ColumnOrderings<int> get userAId => i0.ColumnOrderings($table.userA);
+  i0.ColumnOrderings<int> get userBId => i0.ColumnOrderings($table.userB);
+}
+
+class $FriendsProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i2.Friends,
+    i2.Friend,
+    $FriendsFilterComposer,
+    $FriendsOrderingComposer,
+    $FriendsProcessedTableManager,
+    $FriendsInsertCompanionBuilder,
+    $FriendsUpdateCompanionBuilder> {
+  const $FriendsProcessedTableManager(super.$state);
+}
+
+typedef $FriendsInsertCompanionBuilder = i2.FriendsCompanion Function({
+  required int userA,
+  required int userB,
+  i0.Value<int> rowid,
+});
+typedef $FriendsUpdateCompanionBuilder = i2.FriendsCompanion Function({
+  i0.Value<int> userA,
+  i0.Value<int> userB,
+  i0.Value<int> rowid,
+});
+
+class $FriendsTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i2.Friends,
+    i2.Friend,
+    $FriendsFilterComposer,
+    $FriendsOrderingComposer,
+    $FriendsProcessedTableManager,
+    $FriendsInsertCompanionBuilder,
+    $FriendsUpdateCompanionBuilder> {
+  $FriendsTableManager(i0.GeneratedDatabase db, i2.Friends table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $FriendsFilterComposer(db, table),
+            orderingComposer: $FriendsOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) => $FriendsProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> userA = const i0.Value.absent(),
+              i0.Value<int> userB = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i2.FriendsCompanion(
+                  userA: userA,
+                  userB: userB,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required int userA,
+              required int userB,
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i2.FriendsCompanion.insert(
+                  userA: userA,
+                  userB: userB,
+                  rowid: rowid,
+                )));
+}
+
 class WithExistingDrift extends i3.ModularAccessor {
   WithExistingDrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<i1.UserWithFriends> allFriendsOf(int id) {

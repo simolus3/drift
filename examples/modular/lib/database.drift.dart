@@ -10,6 +10,7 @@ import 'package:drift/internal/modular.dart' as i7;
 
 abstract class $Database extends i0.GeneratedDatabase {
   $Database(i0.QueryExecutor e) : super(e);
+  $DatabaseManager get managers => $DatabaseManager(this);
   late final i1.Users users = i1.Users(this);
   late final i2.Posts posts = i2.Posts(this);
   late final i3.SearchInPosts searchInPosts = i3.SearchInPosts(this);
@@ -68,4 +69,16 @@ abstract class $Database extends i0.GeneratedDatabase {
   @override
   i0.DriftDatabaseOptions get options =>
       const i0.DriftDatabaseOptions(storeDateTimeAsText: true);
+}
+
+class $DatabaseManager {
+  final $Database _db;
+  $DatabaseManager(this._db);
+  i1.$UsersTableManager get users => i1.$UsersTableManager(_db, _db.users);
+  i2.$PostsTableManager get posts => i2.$PostsTableManager(_db, _db.posts);
+  i3.$SearchInPostsTableManager get searchInPosts =>
+      i3.$SearchInPostsTableManager(_db, _db.searchInPosts);
+  i2.$LikesTableManager get likes => i2.$LikesTableManager(_db, _db.likes);
+  i1.$FollowsTableManager get follows =>
+      i1.$FollowsTableManager(_db, _db.follows);
 }
