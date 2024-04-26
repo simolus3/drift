@@ -360,28 +360,28 @@ void main() {
             .count(),
         completion(2));
 
-    // // Not Equals
-    // expect(
-    //     db.managers.tableWithEveryColumnType
-    //         .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
-    //         .count(),
-    //     completion(2));
+    // Not Equals
+    expect(
+        db.managers.tableWithEveryColumnType
+            .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
+            .count(),
+        completion(2));
 
-    // // In
-    // expect(
-    //     db.managers.tableWithEveryColumnType
-    //         .filter((f) =>
-    //             f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
-    //         .count(),
-    //     completion(3));
+    // In
+    expect(
+        db.managers.tableWithEveryColumnType
+            .filter((f) =>
+                f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
+            .count(),
+        completion(3));
 
-    // // Not In
-    // expect(
-    //     db.managers.tableWithEveryColumnType
-    //         .filter((f) => f.anIntEnum.not
-    //             .isIn([TodoStatus.open, TodoStatus.workInProgress]))
-    //         .count(),
-    //     completion(1));
+    // Not In
+    expect(
+        db.managers.tableWithEveryColumnType
+            .filter((f) => f.anIntEnum.not
+                .isIn([TodoStatus.open, TodoStatus.workInProgress]))
+            .count(),
+        completion(1));
   });
 
   test('manager - filter related', () async {
