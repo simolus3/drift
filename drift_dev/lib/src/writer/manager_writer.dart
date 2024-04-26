@@ -66,7 +66,7 @@ class _FilterWithConverterWriter extends _FilterWriter {
       ..writeDriftRef("ColumnWithTypeConverterFilters")
       ..write(
           "<$converterType,$nonNullableConverterType,$type> get $filterName =>")
-      ..writeDriftRef("\$columnFilterWithTypeConverter")
+      ..write("\$columnFilterWithTypeConverter")
       ..writeln("(\$table.$fieldGetter);");
   }
 }
@@ -172,7 +172,7 @@ class _RegularOrderingWriter extends _OrderingWriter {
     leaf
       ..writeDriftRef("ColumnOrderings")
       ..write("<$type>  get $orderingName =>")
-      ..writeDriftRef("\$columnOrdering")
+      ..write("\$columnOrdering")
       ..write("(\$table.$fieldGetter);");
   }
 }
@@ -494,24 +494,23 @@ class _TableManagerWriter {
       // If the column has a type converter, add a filter with a converter
       if (column.typeConverter != null) {
         final converterType = scope.dartCode(scope.writer.dartType(column));
-        c.filters.add(_RegularFilterWriter("${c.fieldGetter}Value",
-            type: innerColumnType, fieldGetter: c.fieldGetter));
         c.filters.add(_FilterWithConverterWriter(c.fieldGetter,
             converterType: converterType,
             fieldGetter: c.fieldGetter,
             type: innerColumnType));
-      } else {
-        c.filters.add(_RegularFilterWriter(
+      } else if (!isForeignKey) {
+        c.filters.add(_RegularFilterWriter(c.fieldGetter,
+            type: innerColumnType, fieldGetter: c.fieldGetter));
+      }
+
+      // Add the ordering for the column
+
+      if (!isForeignKey) {
+        c.orderings.add(_RegularOrderingWriter(
             c.fieldGetter + (isForeignKey ? "Id" : ""),
             type: innerColumnType,
             fieldGetter: c.fieldGetter));
       }
-
-      // Add the ordering for the column
-      c.orderings.add(_RegularOrderingWriter(
-          c.fieldGetter + (isForeignKey ? "Id" : ""),
-          type: innerColumnType,
-          fieldGetter: c.fieldGetter));
 
       /// If this column is a foreign key to another table, add a filter and ordering
       /// for the referenced table

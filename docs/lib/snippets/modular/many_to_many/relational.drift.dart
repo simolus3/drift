@@ -187,7 +187,7 @@ class $$ShoppingCartsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableOrderingComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
 }
 
 class $$ShoppingCartsTableProcessedTableManager
@@ -447,37 +447,39 @@ class $$ShoppingCartEntriesTableFilterComposer extends i0
     .FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable> {
   $$ShoppingCartEntriesTableFilterComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnFilters<int> get shoppingCartId =>
-      $columnFilter($table.shoppingCart);
-  i2.$$ShoppingCartsTableFilterComposer get shoppingCart =>
-      i2.$$ShoppingCartsTableFilterComposer(
-          $db,
-          i4.ReadDatabaseContainer($db)
-              .resultSet<i2.$ShoppingCartsTable>('shopping_carts'),
-          $joinBuilder: $buildJoinForTable(
-              getCurrentColumn: (t) => t.shoppingCart,
-              referencedTable: i4.ReadDatabaseContainer($db)
-                  .resultSet<i2.$ShoppingCartsTable>('shopping_carts'),
-              getReferencedColumn: (t) => t.id));
-  i0.ColumnFilters<int> get itemId => $columnFilter($table.item);
-  i1.$$BuyableItemsTableFilterComposer get item => i1
-      .$$BuyableItemsTableFilterComposer(
-          $db,
-          i4.ReadDatabaseContainer($db)
-              .resultSet<i1.$BuyableItemsTable>('buyable_items'),
-          $joinBuilder: $buildJoinForTable(
-              getCurrentColumn: (t) => t.item,
-              referencedTable: i4.ReadDatabaseContainer($db)
-                  .resultSet<i1.$BuyableItemsTable>('buyable_items'),
-              getReferencedColumn: (t) => t.id));
+  i2.$$ShoppingCartsTableFilterComposer get shoppingCart {
+    final i2.$$ShoppingCartsTableFilterComposer composer =
+        i2.$$ShoppingCartsTableFilterComposer(
+            $db,
+            i4.ReadDatabaseContainer($db)
+                .resultSet<i2.$ShoppingCartsTable>('shopping_carts'),
+            $joinBuilder: $buildJoinForTable(
+                getCurrentColumn: (t) => t.shoppingCart,
+                referencedTable: i4.ReadDatabaseContainer($db)
+                    .resultSet<i2.$ShoppingCartsTable>('shopping_carts'),
+                getReferencedColumn: (t) => t.id));
+    return composer;
+  }
+
+  i1.$$BuyableItemsTableFilterComposer get item {
+    final i1.$$BuyableItemsTableFilterComposer composer =
+        i1.$$BuyableItemsTableFilterComposer(
+            $db,
+            i4.ReadDatabaseContainer($db)
+                .resultSet<i1.$BuyableItemsTable>('buyable_items'),
+            $joinBuilder: $buildJoinForTable(
+                getCurrentColumn: (t) => t.item,
+                referencedTable: i4.ReadDatabaseContainer($db)
+                    .resultSet<i1.$BuyableItemsTable>('buyable_items'),
+                getReferencedColumn: (t) => t.id));
+    return composer;
+  }
 }
 
 class $$ShoppingCartEntriesTableOrderingComposer extends i0
     .OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable> {
   $$ShoppingCartEntriesTableOrderingComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnOrderings<int> get shoppingCartId =>
-      i0.$columnOrdering($table.shoppingCart);
   i2.$$ShoppingCartsTableOrderingComposer get shoppingCart =>
       i2.$$ShoppingCartsTableOrderingComposer(
           $db,
@@ -488,7 +490,6 @@ class $$ShoppingCartEntriesTableOrderingComposer extends i0
               referencedTable: i4.ReadDatabaseContainer($db)
                   .resultSet<i2.$ShoppingCartsTable>('shopping_carts'),
               getReferencedColumn: (t) => t.id));
-  i0.ColumnOrderings<int> get itemId => i0.$columnOrdering($table.item);
   i1.$$BuyableItemsTableOrderingComposer get item =>
       i1.$$BuyableItemsTableOrderingComposer(
           $db,

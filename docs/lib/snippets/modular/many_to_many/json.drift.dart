@@ -217,19 +217,18 @@ class $$ShoppingCartsTableFilterComposer
   $$ShoppingCartsTableFilterComposer(super.$db, super.$table,
       {super.$joinBuilder});
   i0.ColumnFilters<int> get id => $columnFilter($table.id);
-  i0.ColumnFilters<String> get entriesValue => $columnFilter($table.entries);
   i0.ColumnWithTypeConverterFilters<
       i3.ShoppingCartEntries,
       i3.ShoppingCartEntries,
-      String> get entries => i0.$columnFilterWithTypeConverter($table.entries);
+      String> get entries => $columnFilterWithTypeConverter($table.entries);
 }
 
 class $$ShoppingCartsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableOrderingComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
-  i0.ColumnOrderings<String> get entries => i0.$columnOrdering($table.entries);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
+  i0.ColumnOrderings<String> get entries => $columnOrdering($table.entries);
 }
 
 class $$ShoppingCartsTableProcessedTableManager

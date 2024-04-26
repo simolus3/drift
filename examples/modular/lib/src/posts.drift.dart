@@ -219,46 +219,34 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
 
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<int> get authorId => i0.ColumnFilters($table.author);
-  i0.ComposableFilter author(
-      i0.ComposableFilter Function(i3.$UsersFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
-        getCurrentColumn: (f) => f.author,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i3.$UsersFilterComposer(db, table),
-        builder: f);
+  $PostsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i3.$UsersFilterComposer get author {
+    final i3.$UsersFilterComposer composer = i3.$UsersFilterComposer(
+        $db, i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.author,
+            referencedTable:
+                i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+            getReferencedColumn: (t) => t.id));
+    return composer;
   }
 
-  i0.ColumnFilters<String> get content => i0.ColumnFilters($table.content);
+  i0.ColumnFilters<String> get content => $columnFilter($table.content);
 }
 
 class $PostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<int> get authorId => i0.ColumnOrderings($table.author);
-  i0.ComposableOrdering author(
-      i0.ComposableOrdering Function(i3.$UsersOrderingComposer o) o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
-        getCurrentColumn: (f) => f.author,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i3.$UsersOrderingComposer(db, table),
-        builder: o);
-  }
-
-  i0.ColumnOrderings<String> get content => i0.ColumnOrderings($table.content);
+  $PostsOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
+  i3.$UsersOrderingComposer get author => i3.$UsersOrderingComposer(
+      $db, i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+      $joinBuilder: $buildJoinForTable(
+          getCurrentColumn: (t) => t.author,
+          referencedTable:
+              i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+          getReferencedColumn: (t) => t.id));
+  i0.ColumnOrderings<String> get content => $columnOrdering($table.content);
 }
 
 class $PostsProcessedTableManager extends i0.ProcessedTableManager<
@@ -513,70 +501,47 @@ class LikesCompanion extends i0.UpdateCompanion<i1.Like> {
 
 class $LikesFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get postId => i0.ColumnFilters($table.post);
-  i0.ComposableFilter post(
-      i0.ComposableFilter Function(i1.$PostsFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i2.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-        getCurrentColumn: (f) => f.post,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$PostsFilterComposer(db, table),
-        builder: f);
+  $LikesFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i1.$PostsFilterComposer get post {
+    final i1.$PostsFilterComposer composer = i1.$PostsFilterComposer(
+        $db, i2.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.post,
+            referencedTable:
+                i2.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
+            getReferencedColumn: (t) => t.id));
+    return composer;
   }
 
-  i0.ColumnFilters<int> get likedById => i0.ColumnFilters($table.likedBy);
-  i0.ComposableFilter likedBy(
-      i0.ComposableFilter Function(i3.$UsersFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
-        getCurrentColumn: (f) => f.likedBy,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i3.$UsersFilterComposer(db, table),
-        builder: f);
+  i3.$UsersFilterComposer get likedBy {
+    final i3.$UsersFilterComposer composer = i3.$UsersFilterComposer(
+        $db, i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.likedBy,
+            referencedTable:
+                i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+            getReferencedColumn: (t) => t.id));
+    return composer;
   }
 }
 
 class $LikesOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get postId => i0.ColumnOrderings($table.post);
-  i0.ComposableOrdering post(
-      i0.ComposableOrdering Function(i1.$PostsOrderingComposer o) o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i2.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-        getCurrentColumn: (f) => f.post,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$PostsOrderingComposer(db, table),
-        builder: o);
-  }
-
-  i0.ColumnOrderings<int> get likedById => i0.ColumnOrderings($table.likedBy);
-  i0.ComposableOrdering likedBy(
-      i0.ComposableOrdering Function(i3.$UsersOrderingComposer o) o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
-        getCurrentColumn: (f) => f.likedBy,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i3.$UsersOrderingComposer(db, table),
-        builder: o);
-  }
+  $LikesOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i1.$PostsOrderingComposer get post => i1.$PostsOrderingComposer(
+      $db, i2.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
+      $joinBuilder: $buildJoinForTable(
+          getCurrentColumn: (t) => t.post,
+          referencedTable:
+              i2.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
+          getReferencedColumn: (t) => t.id));
+  i3.$UsersOrderingComposer get likedBy => i3.$UsersOrderingComposer(
+      $db, i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+      $joinBuilder: $buildJoinForTable(
+          getCurrentColumn: (t) => t.likedBy,
+          referencedTable:
+              i2.ReadDatabaseContainer($db).resultSet<i3.Users>('users'),
+          getReferencedColumn: (t) => t.id));
 }
 
 class $LikesProcessedTableManager extends i0.ProcessedTableManager<

@@ -317,7 +317,19 @@ class ComposableFilter extends HasJoinBuilders {
 class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// Create a new filter composer with a column
-  ColumnFilters<C> $columnFilter<C extends Object>(Expression<C> column) {
+  ColumnFilters<C> $columnFilter<C extends Object>(GeneratedColumn<C> column) {
+    // Get a copy of the column with the aliased name, if it's part of a join
+    // otherwise, it's just a copy of the column
+    final aliasedColumn = _columnWithAlias(column);
+
+    // Doing a join to filter on a column that is part of the actual join
+    // is a waste of time, do the filter on the actual column
+    if ($joinBuilder != null &&
+        $joinBuilder!.referencedColumn == aliasedColumn) {
+      return ColumnFilters(
+          $joinBuilder!.currentColumn as GeneratedColumn<C>, false, null);
+    }
+
     return ColumnFilters(column, false, $joinBuilder);
   }
 
@@ -326,7 +338,12 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
       $columnFilterWithTypeConverter<CustomType, CustomTypeNonNullable,
               C extends Object>(
           GeneratedColumnWithTypeConverter<CustomType, C> column) {
-    return ColumnWithTypeConverterFilters(column, false, $joinBuilder);
+    // Get a copy of the column with the aliased name, if it's part of a join
+    // otherwise, it's just a copy of the column
+    GeneratedColumnWithTypeConverter<CustomType, C> aliasedColumn =
+        _columnWithAlias(column);
+
+    return ColumnWithTypeConverterFilters(aliasedColumn, false, $joinBuilder);
   }
 
   /// Create a filter composer with an empty state

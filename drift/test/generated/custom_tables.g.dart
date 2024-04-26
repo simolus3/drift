@@ -2139,11 +2139,8 @@ class $ConfigTableFilterComposer
   $ConfigTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
   ColumnFilters<String> get configKey => $columnFilter($table.configKey);
   ColumnFilters<DriftAny> get configValue => $columnFilter($table.configValue);
-  ColumnFilters<int> get syncStateValue => $columnFilter($table.syncState);
   ColumnWithTypeConverterFilters<SyncType?, SyncType, int> get syncState =>
       $columnFilterWithTypeConverter($table.syncState);
-  ColumnFilters<int> get syncStateImplicitValue =>
-      $columnFilter($table.syncStateImplicit);
   ColumnWithTypeConverterFilters<SyncType?, SyncType, int>
       get syncStateImplicit =>
           $columnFilterWithTypeConverter($table.syncStateImplicit);

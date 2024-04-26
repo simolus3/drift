@@ -797,7 +797,6 @@ class $$TodoItemsTableFilterComposer
   ColumnFilters<int> get id => $columnFilter($table.id);
   ColumnFilters<String> get title => $columnFilter($table.title);
   ColumnFilters<String> get content => $columnFilter($table.content);
-  ColumnFilters<int> get categoryIdId => $columnFilter($table.categoryId);
   $$TodoCategoriesTableFilterComposer get categoryId {
     final $$TodoCategoriesTableFilterComposer composer =
         $$TodoCategoriesTableFilterComposer($db, $db.todoCategories,
@@ -819,7 +818,6 @@ class $$TodoItemsTableOrderingComposer
   ColumnOrderings<int> get id => $columnOrdering($table.id);
   ColumnOrderings<String> get title => $columnOrdering($table.title);
   ColumnOrderings<String> get content => $columnOrdering($table.content);
-  ColumnOrderings<int> get categoryIdId => $columnOrdering($table.categoryId);
   $$TodoCategoriesTableOrderingComposer get categoryId =>
       $$TodoCategoriesTableOrderingComposer($db, $db.todoCategories,
           $joinBuilder: $buildJoinForTable(

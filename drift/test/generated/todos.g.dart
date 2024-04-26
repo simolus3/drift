@@ -2502,11 +2502,9 @@ class $$CategoriesTableFilterComposer
     extends FilterComposer<_$TodoDb, $CategoriesTable> {
   $$CategoriesTableFilterComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       $columnFilterWithTypeConverter($table.id);
   ColumnFilters<String> get description => $columnFilter($table.description);
-  ColumnFilters<int> get priorityValue => $columnFilter($table.priority);
   ColumnWithTypeConverterFilters<CategoryPriority, CategoryPriority, int>
       get priority => $columnFilterWithTypeConverter($table.priority);
   ColumnFilters<String> get descriptionInUpperCase =>
@@ -2601,13 +2599,11 @@ class $$TodosTableTableFilterComposer
     extends FilterComposer<_$TodoDb, $TodosTableTable> {
   $$TodosTableTableFilterComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       $columnFilterWithTypeConverter($table.id);
   ColumnFilters<String> get title => $columnFilter($table.title);
   ColumnFilters<String> get content => $columnFilter($table.content);
   ColumnFilters<DateTime> get targetDate => $columnFilter($table.targetDate);
-  ColumnFilters<int> get categoryId => $columnFilter($table.category);
   $$CategoriesTableFilterComposer get category {
     final $$CategoriesTableFilterComposer composer =
         $$CategoriesTableFilterComposer($db, $db.categories,
@@ -2618,7 +2614,6 @@ class $$TodosTableTableFilterComposer
     return composer;
   }
 
-  ColumnFilters<String> get statusValue => $columnFilter($table.status);
   ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, String> get status =>
       $columnFilterWithTypeConverter($table.status);
 }
@@ -2632,7 +2627,6 @@ class $$TodosTableTableOrderingComposer
   ColumnOrderings<String> get content => $columnOrdering($table.content);
   ColumnOrderings<DateTime> get targetDate =>
       $columnOrdering($table.targetDate);
-  ColumnOrderings<int> get categoryId => $columnOrdering($table.category);
   $$CategoriesTableOrderingComposer get category =>
       $$CategoriesTableOrderingComposer($db, $db.categories,
           $joinBuilder: $buildJoinForTable(
@@ -2724,7 +2718,6 @@ class $$TodosTableTableTableManager extends RootTableManager<
 
 class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
   $$UsersTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
-  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       $columnFilterWithTypeConverter($table.id);
   ColumnFilters<String> get name => $columnFilter($table.name);
@@ -2905,7 +2898,6 @@ class $$PureDefaultsTableFilterComposer
     extends FilterComposer<_$TodoDb, $PureDefaultsTable> {
   $$PureDefaultsTableFilterComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  ColumnFilters<String> get txtValue => $columnFilter($table.txt);
   ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
       get txt => $columnFilterWithTypeConverter($table.txt);
 }
@@ -3051,7 +3043,6 @@ class $$TableWithEveryColumnTypeTableFilterComposer
     extends FilterComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
   $$TableWithEveryColumnTypeTableFilterComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  ColumnFilters<int> get idValue => $columnFilter($table.id);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       $columnFilterWithTypeConverter($table.id);
   ColumnFilters<bool> get aBool => $columnFilter($table.aBool);
@@ -3061,11 +3052,8 @@ class $$TableWithEveryColumnTypeTableFilterComposer
   ColumnFilters<BigInt> get anInt64 => $columnFilter($table.anInt64);
   ColumnFilters<double> get aReal => $columnFilter($table.aReal);
   ColumnFilters<Uint8List> get aBlob => $columnFilter($table.aBlob);
-  ColumnFilters<int> get anIntEnumValue => $columnFilter($table.anIntEnum);
   ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, int> get anIntEnum =>
       $columnFilterWithTypeConverter($table.anIntEnum);
-  ColumnFilters<String> get aTextWithConverterValue =>
-      $columnFilter($table.aTextWithConverter);
   ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
       get aTextWithConverter =>
           $columnFilterWithTypeConverter($table.aTextWithConverter);

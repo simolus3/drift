@@ -197,8 +197,8 @@ class $$WordsTableFilterComposer
 class $$WordsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
   $$WordsTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
-  i0.ColumnOrderings<String> get word => i0.$columnOrdering($table.word);
-  i0.ColumnOrderings<int> get usages => i0.$columnOrdering($table.usages);
+  i0.ColumnOrderings<String> get word => $columnOrdering($table.word);
+  i0.ColumnOrderings<int> get usages => $columnOrdering($table.usages);
 }
 
 class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -535,10 +535,10 @@ class $$MatchResultsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
   $$MatchResultsTableOrderingComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
-  i0.ColumnOrderings<String> get teamA => i0.$columnOrdering($table.teamA);
-  i0.ColumnOrderings<String> get teamB => i0.$columnOrdering($table.teamB);
-  i0.ColumnOrderings<bool> get teamAWon => i0.$columnOrdering($table.teamAWon);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
+  i0.ColumnOrderings<String> get teamA => $columnOrdering($table.teamA);
+  i0.ColumnOrderings<String> get teamB => $columnOrdering($table.teamB);
+  i0.ColumnOrderings<bool> get teamAWon => $columnOrdering($table.teamAWon);
 }
 
 class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<

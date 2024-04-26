@@ -206,16 +206,16 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
 
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsFilterComposer(super.db, super.table);
-  i0.ColumnFilters<String> get author => i0.ColumnFilters($table.author);
-  i0.ColumnFilters<String> get content => i0.ColumnFilters($table.content);
+  $SearchInPostsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<String> get author => $columnFilter($table.author);
+  i0.ColumnFilters<String> get content => $columnFilter($table.content);
 }
 
 class $SearchInPostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<String> get author => i0.ColumnOrderings($table.author);
-  i0.ColumnOrderings<String> get content => i0.ColumnOrderings($table.content);
+  $SearchInPostsOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnOrderings<String> get author => $columnOrdering($table.author);
+  i0.ColumnOrderings<String> get content => $columnOrdering($table.content);
 }
 
 class $SearchInPostsProcessedTableManager extends i0.ProcessedTableManager<

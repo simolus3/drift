@@ -1,6 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:shared/src/posts.drift.dart' as i1;
+import 'package:drift/internal/modular.dart' as i2;
+import 'package:shared/src/users.drift.dart' as i3;
 
 class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
   @override
@@ -194,4 +196,96 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
           ..write(')'))
         .toString();
   }
+}
+
+class $PostsFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
+  $PostsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i3.$$UsersTableFilterComposer get author {
+    final i3.$$UsersTableFilterComposer composer =
+        i3.$$UsersTableFilterComposer($db,
+            i2.ReadDatabaseContainer($db).resultSet<i3.$UsersTable>('users'),
+            $joinBuilder: $buildJoinForTable(
+                getCurrentColumn: (t) => t.author,
+                referencedTable: i2.ReadDatabaseContainer($db)
+                    .resultSet<i3.$UsersTable>('users'),
+                getReferencedColumn: (t) => t.id));
+    return composer;
+  }
+
+  i0.ColumnFilters<String> get content => $columnFilter($table.content);
+}
+
+class $PostsOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
+  $PostsOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i3.$$UsersTableOrderingComposer get author => i3.$$UsersTableOrderingComposer(
+      $db, i2.ReadDatabaseContainer($db).resultSet<i3.$UsersTable>('users'),
+      $joinBuilder: $buildJoinForTable(
+          getCurrentColumn: (t) => t.author,
+          referencedTable:
+              i2.ReadDatabaseContainer($db).resultSet<i3.$UsersTable>('users'),
+          getReferencedColumn: (t) => t.id));
+  i0.ColumnOrderings<String> get content => $columnOrdering($table.content);
+}
+
+class $PostsProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Posts,
+    i1.Post,
+    $PostsFilterComposer,
+    $PostsOrderingComposer,
+    $PostsProcessedTableManager,
+    $PostsInsertCompanionBuilder,
+    $PostsUpdateCompanionBuilder> {
+  const $PostsProcessedTableManager(super.$state);
+}
+
+typedef $PostsInsertCompanionBuilder = i1.PostsCompanion Function({
+  required int author,
+  i0.Value<String?> content,
+  i0.Value<int> rowid,
+});
+typedef $PostsUpdateCompanionBuilder = i1.PostsCompanion Function({
+  i0.Value<int> author,
+  i0.Value<String?> content,
+  i0.Value<int> rowid,
+});
+
+class $PostsTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.Posts,
+    i1.Post,
+    $PostsFilterComposer,
+    $PostsOrderingComposer,
+    $PostsProcessedTableManager,
+    $PostsInsertCompanionBuilder,
+    $PostsUpdateCompanionBuilder> {
+  $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $PostsFilterComposer(db, table),
+            orderingComposer: $PostsOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) => $PostsProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> author = const i0.Value.absent(),
+              i0.Value<String?> content = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i1.PostsCompanion(
+                  author: author,
+                  content: content,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required int author,
+              i0.Value<String?> content = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i1.PostsCompanion.insert(
+                  author: author,
+                  content: content,
+                  rowid: rowid,
+                )));
 }

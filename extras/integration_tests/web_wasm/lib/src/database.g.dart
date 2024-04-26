@@ -178,10 +178,89 @@ class TestTableCompanion extends UpdateCompanion<TestTableData> {
 
 abstract class _$TestDatabase extends GeneratedDatabase {
   _$TestDatabase(QueryExecutor e) : super(e);
+  _$TestDatabaseManager get managers => _$TestDatabaseManager(this);
   late final $TestTableTable testTable = $TestTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [testTable];
+}
+
+class $$TestTableTableFilterComposer
+    extends FilterComposer<_$TestDatabase, $TestTableTable> {
+  $$TestTableTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get id => $columnFilter($table.id);
+  ColumnFilters<String> get content => $columnFilter($table.content);
+}
+
+class $$TestTableTableOrderingComposer
+    extends OrderingComposer<_$TestDatabase, $TestTableTable> {
+  $$TestTableTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get content => $columnOrdering($table.content);
+}
+
+class $$TestTableTableProcessedTableManager extends ProcessedTableManager<
+    _$TestDatabase,
+    $TestTableTable,
+    TestTableData,
+    $$TestTableTableFilterComposer,
+    $$TestTableTableOrderingComposer,
+    $$TestTableTableProcessedTableManager,
+    $$TestTableTableInsertCompanionBuilder,
+    $$TestTableTableUpdateCompanionBuilder> {
+  const $$TestTableTableProcessedTableManager(super.$state);
+}
+
+typedef $$TestTableTableInsertCompanionBuilder = TestTableCompanion Function({
+  Value<int> id,
+  required String content,
+});
+typedef $$TestTableTableUpdateCompanionBuilder = TestTableCompanion Function({
+  Value<int> id,
+  Value<String> content,
+});
+
+class $$TestTableTableTableManager extends RootTableManager<
+    _$TestDatabase,
+    $TestTableTable,
+    TestTableData,
+    $$TestTableTableFilterComposer,
+    $$TestTableTableOrderingComposer,
+    $$TestTableTableProcessedTableManager,
+    $$TestTableTableInsertCompanionBuilder,
+    $$TestTableTableUpdateCompanionBuilder> {
+  $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$TestTableTableFilterComposer(db, table),
+            orderingComposer: $$TestTableTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$TestTableTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String> content = const Value.absent(),
+            }) =>
+                TestTableCompanion(
+                  id: id,
+                  content: content,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              required String content,
+            }) =>
+                TestTableCompanion.insert(
+                  id: id,
+                  content: content,
+                )));
+}
+
+class _$TestDatabaseManager {
+  final _$TestDatabase _db;
+  _$TestDatabaseManager(this._db);
+  $$TestTableTableTableManager get testTable =>
+      $$TestTableTableTableManager(_db, _db.testTable);
 }

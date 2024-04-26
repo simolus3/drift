@@ -265,23 +265,25 @@ class $TodosFilterComposer
   i0.ColumnFilters<int> get id => $columnFilter($table.id);
   i0.ColumnFilters<String> get title => $columnFilter($table.title);
   i0.ColumnFilters<String> get content => $columnFilter($table.content);
-  i0.ColumnFilters<int> get categoryId => $columnFilter($table.category);
-  i1.$CategoriesFilterComposer get category => i1.$CategoriesFilterComposer(
-      $db, i2.ReadDatabaseContainer($db).resultSet<i1.Categories>('categories'),
-      $joinBuilder: $buildJoinForTable(
-          getCurrentColumn: (t) => t.category,
-          referencedTable: i2.ReadDatabaseContainer($db)
-              .resultSet<i1.Categories>('categories'),
-          getReferencedColumn: (t) => t.id));
+  i1.$CategoriesFilterComposer get category {
+    final i1.$CategoriesFilterComposer composer = i1.$CategoriesFilterComposer(
+        $db,
+        i2.ReadDatabaseContainer($db).resultSet<i1.Categories>('categories'),
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.category,
+            referencedTable: i2.ReadDatabaseContainer($db)
+                .resultSet<i1.Categories>('categories'),
+            getReferencedColumn: (t) => t.id));
+    return composer;
+  }
 }
 
 class $TodosOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Todos> {
   $TodosOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
-  i0.ColumnOrderings<String> get title => i0.$columnOrdering($table.title);
-  i0.ColumnOrderings<String> get content => i0.$columnOrdering($table.content);
-  i0.ColumnOrderings<int> get categoryId => i0.$columnOrdering($table.category);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
+  i0.ColumnOrderings<String> get title => $columnOrdering($table.title);
+  i0.ColumnOrderings<String> get content => $columnOrdering($table.content);
   i1.$CategoriesOrderingComposer get category => i1.$CategoriesOrderingComposer(
       $db, i2.ReadDatabaseContainer($db).resultSet<i1.Categories>('categories'),
       $joinBuilder: $buildJoinForTable(
@@ -545,9 +547,9 @@ class $CategoriesFilterComposer
 class $CategoriesOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Categories> {
   $CategoriesOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
   i0.ColumnOrderings<String> get description =>
-      i0.$columnOrdering($table.description);
+      $columnOrdering($table.description);
 }
 
 class $CategoriesProcessedTableManager extends i0.ProcessedTableManager<

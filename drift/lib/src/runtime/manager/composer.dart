@@ -28,17 +28,37 @@ sealed class Composer<DB extends GeneratedDatabase, CT extends Table> {
 
   Composer(this.$db, this.$table, {this.$joinBuilder});
 
+  /// Create a [JoinBuilder] to connect this table to another table
   JoinBuilder $buildJoinForTable<C extends GeneratedColumn, RT extends Table,
           RC extends GeneratedColumn>(
       {required C Function(CT) getCurrentColumn,
       required RT referencedTable,
       required RC Function(RT) getReferencedColumn}) {
-    return JoinBuilder.withAlias(
-      db: $db,
+    final currentColumn = getCurrentColumn($table);
+    final referencedColumn = getReferencedColumn(referencedTable);
+    final aliasName =
+        '${currentColumn.tableName}__${currentColumn.name}__${referencedColumn.tableName}__${referencedColumn.name}';
+    final aliasedReferencedTable =
+        $db.alias(referencedTable as TableInfo, aliasName);
+    final aliasedReferencedColumn =
+        getReferencedColumn(aliasedReferencedTable as RT);
+
+    return JoinBuilder(
       currentTable: $table,
-      getCurrentColumn: getCurrentColumn,
-      referencedTable: referencedTable,
-      getReferencedColumn: getReferencedColumn,
+      currentColumn: currentColumn,
+      referencedTable: aliasedReferencedTable,
+      referencedColumn: aliasedReferencedColumn,
     );
+  }
+
+  /// This helper method will get the table that filters/orderings should be applied to
+  /// If this composer has a join builder, this method will return the column from the aliased table
+  /// Otherwise, it will return the column from the original table
+  AC _columnWithAlias<AC extends GeneratedColumn>(AC column) {
+    if ($joinBuilder != null) {
+      return ($joinBuilder!.referencedTable as TableInfo)
+          .columnsByName[column.$name] as AC;
+    }
+    return column;
   }
 }

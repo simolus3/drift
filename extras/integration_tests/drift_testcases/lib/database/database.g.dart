@@ -555,6 +555,7 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
+  _$DatabaseManager get managers => _$DatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
   late final $FriendshipsTable friendships = $FriendshipsTable(this);
   Selectable<User> mostPopularUsers(int amount) {
@@ -691,6 +692,203 @@ abstract class _$Database extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, friendships];
+}
+
+class $$UsersTableFilterComposer
+    extends FilterComposer<_$Database, $UsersTable> {
+  $$UsersTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnFilters<int> get id => $columnFilter($table.id);
+  ColumnFilters<String> get name => $columnFilter($table.name);
+  ColumnFilters<DateTime> get birthDate => $columnFilter($table.birthDate);
+  ColumnFilters<Uint8List> get profilePicture =>
+      $columnFilter($table.profilePicture);
+  ColumnWithTypeConverterFilters<Preferences?, Preferences, String>
+      get preferences => $columnFilterWithTypeConverter($table.preferences);
+}
+
+class $$UsersTableOrderingComposer
+    extends OrderingComposer<_$Database, $UsersTable> {
+  $$UsersTableOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  ColumnOrderings<int> get id => $columnOrdering($table.id);
+  ColumnOrderings<String> get name => $columnOrdering($table.name);
+  ColumnOrderings<DateTime> get birthDate => $columnOrdering($table.birthDate);
+  ColumnOrderings<Uint8List> get profilePicture =>
+      $columnOrdering($table.profilePicture);
+  ColumnOrderings<String> get preferences =>
+      $columnOrdering($table.preferences);
+}
+
+class $$UsersTableProcessedTableManager extends ProcessedTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  const $$UsersTableProcessedTableManager(super.$state);
+}
+
+typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
+  Value<int> id,
+  required String name,
+  required DateTime birthDate,
+  Value<Uint8List?> profilePicture,
+  Value<Preferences?> preferences,
+});
+typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<DateTime> birthDate,
+  Value<Uint8List?> profilePicture,
+  Value<Preferences?> preferences,
+});
+
+class $$UsersTableTableManager extends RootTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  $$UsersTableTableManager(_$Database db, $UsersTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$UsersTableFilterComposer(db, table),
+            orderingComposer: $$UsersTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$UsersTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              Value<String> name = const Value.absent(),
+              Value<DateTime> birthDate = const Value.absent(),
+              Value<Uint8List?> profilePicture = const Value.absent(),
+              Value<Preferences?> preferences = const Value.absent(),
+            }) =>
+                UsersCompanion(
+                  id: id,
+                  name: name,
+                  birthDate: birthDate,
+                  profilePicture: profilePicture,
+                  preferences: preferences,
+                ),
+            getInsertCompanionBuilder: ({
+              Value<int> id = const Value.absent(),
+              required String name,
+              required DateTime birthDate,
+              Value<Uint8List?> profilePicture = const Value.absent(),
+              Value<Preferences?> preferences = const Value.absent(),
+            }) =>
+                UsersCompanion.insert(
+                  id: id,
+                  name: name,
+                  birthDate: birthDate,
+                  profilePicture: profilePicture,
+                  preferences: preferences,
+                )));
+}
+
+class $$FriendshipsTableFilterComposer
+    extends FilterComposer<_$Database, $FriendshipsTable> {
+  $$FriendshipsTableFilterComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnFilters<int> get firstUser => $columnFilter($table.firstUser);
+  ColumnFilters<int> get secondUser => $columnFilter($table.secondUser);
+  ColumnFilters<bool> get reallyGoodFriends =>
+      $columnFilter($table.reallyGoodFriends);
+}
+
+class $$FriendshipsTableOrderingComposer
+    extends OrderingComposer<_$Database, $FriendshipsTable> {
+  $$FriendshipsTableOrderingComposer(super.$db, super.$table,
+      {super.$joinBuilder});
+  ColumnOrderings<int> get firstUser => $columnOrdering($table.firstUser);
+  ColumnOrderings<int> get secondUser => $columnOrdering($table.secondUser);
+  ColumnOrderings<bool> get reallyGoodFriends =>
+      $columnOrdering($table.reallyGoodFriends);
+}
+
+class $$FriendshipsTableProcessedTableManager extends ProcessedTableManager<
+    _$Database,
+    $FriendshipsTable,
+    Friendship,
+    $$FriendshipsTableFilterComposer,
+    $$FriendshipsTableOrderingComposer,
+    $$FriendshipsTableProcessedTableManager,
+    $$FriendshipsTableInsertCompanionBuilder,
+    $$FriendshipsTableUpdateCompanionBuilder> {
+  const $$FriendshipsTableProcessedTableManager(super.$state);
+}
+
+typedef $$FriendshipsTableInsertCompanionBuilder = FriendshipsCompanion
+    Function({
+  required int firstUser,
+  required int secondUser,
+  Value<bool> reallyGoodFriends,
+  Value<int> rowid,
+});
+typedef $$FriendshipsTableUpdateCompanionBuilder = FriendshipsCompanion
+    Function({
+  Value<int> firstUser,
+  Value<int> secondUser,
+  Value<bool> reallyGoodFriends,
+  Value<int> rowid,
+});
+
+class $$FriendshipsTableTableManager extends RootTableManager<
+    _$Database,
+    $FriendshipsTable,
+    Friendship,
+    $$FriendshipsTableFilterComposer,
+    $$FriendshipsTableOrderingComposer,
+    $$FriendshipsTableProcessedTableManager,
+    $$FriendshipsTableInsertCompanionBuilder,
+    $$FriendshipsTableUpdateCompanionBuilder> {
+  $$FriendshipsTableTableManager(_$Database db, $FriendshipsTable table)
+      : super(TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$FriendshipsTableFilterComposer(db, table),
+            orderingComposer: $$FriendshipsTableOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) =>
+                $$FriendshipsTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              Value<int> firstUser = const Value.absent(),
+              Value<int> secondUser = const Value.absent(),
+              Value<bool> reallyGoodFriends = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                FriendshipsCompanion(
+                  firstUser: firstUser,
+                  secondUser: secondUser,
+                  reallyGoodFriends: reallyGoodFriends,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required int firstUser,
+              required int secondUser,
+              Value<bool> reallyGoodFriends = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                FriendshipsCompanion.insert(
+                  firstUser: firstUser,
+                  secondUser: secondUser,
+                  reallyGoodFriends: reallyGoodFriends,
+                  rowid: rowid,
+                )));
+}
+
+class _$DatabaseManager {
+  final _$Database _db;
+  _$DatabaseManager(this._db);
+  $$UsersTableTableManager get users =>
+      $$UsersTableTableManager(_db, _db.users);
+  $$FriendshipsTableTableManager get friendships =>
+      $$FriendshipsTableTableManager(_db, _db.friendships);
 }
 
 class FriendshipsOfResult {

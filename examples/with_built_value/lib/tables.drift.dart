@@ -173,3 +173,72 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
         .toString();
   }
 }
+
+class $UsersFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
+  $UsersFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get name => $columnFilter($table.name);
+}
+
+class $UsersOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Users> {
+  $UsersOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
+  i0.ColumnOrderings<String> get name => $columnOrdering($table.name);
+}
+
+class $UsersProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Users,
+    i1.User,
+    $UsersFilterComposer,
+    $UsersOrderingComposer,
+    $UsersProcessedTableManager,
+    $UsersInsertCompanionBuilder,
+    $UsersUpdateCompanionBuilder> {
+  const $UsersProcessedTableManager(super.$state);
+}
+
+typedef $UsersInsertCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<int> id,
+  required String name,
+});
+typedef $UsersUpdateCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<int> id,
+  i0.Value<String> name,
+});
+
+class $UsersTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.Users,
+    i1.User,
+    $UsersFilterComposer,
+    $UsersOrderingComposer,
+    $UsersProcessedTableManager,
+    $UsersInsertCompanionBuilder,
+    $UsersUpdateCompanionBuilder> {
+  $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $UsersFilterComposer(db, table),
+            orderingComposer: $UsersOrderingComposer(db, table),
+            getChildManagerBuilder: (p0) => $UsersProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              i0.Value<String> name = const i0.Value.absent(),
+            }) =>
+                i1.UsersCompanion(
+                  id: id,
+                  name: name,
+                ),
+            getInsertCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              required String name,
+            }) =>
+                i1.UsersCompanion.insert(
+                  id: id,
+                  name: name,
+                )));
+}

@@ -313,15 +313,11 @@ class FriendsCompanion extends i0.UpdateCompanion<i2.Friend> {
 class $FriendsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.Friends> {
   $FriendsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
-  i0.ColumnFilters<int> get userAId => $columnFilter($table.userA);
-  i0.ColumnFilters<int> get userBId => $columnFilter($table.userB);
 }
 
 class $FriendsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.Friends> {
   $FriendsOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
-  i0.ColumnOrderings<int> get userAId => i0.$columnOrdering($table.userA);
-  i0.ColumnOrderings<int> get userBId => i0.$columnOrdering($table.userB);
 }
 
 class $FriendsProcessedTableManager extends i0.ProcessedTableManager<

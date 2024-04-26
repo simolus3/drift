@@ -93,7 +93,20 @@ class ComposableOrdering extends HasJoinBuilders {
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// Create a new [ColumnOrderings] for a column
-  ColumnOrderings<C> $columnOrdering<C extends Object>(Expression<C> column) {
+  ColumnOrderings<C> $columnOrdering<C extends Object>(
+      GeneratedColumn<C> column) {
+    // Get a copy of the column with the aliased name, if it's part of a join
+    // otherwise, it's just a copy of the column
+    final aliasedColumn = _columnWithAlias(column);
+
+    // Doing a join to ordering on a column that is part of the actual join
+    // is a waste of time, do the ordering on the actual column
+    if ($joinBuilder != null &&
+        $joinBuilder!.referencedColumn == aliasedColumn) {
+      return ColumnOrderings(
+          $joinBuilder!.currentColumn as GeneratedColumn<C>, null);
+    }
+
     return ColumnOrderings(column, $joinBuilder);
   }
 

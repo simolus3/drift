@@ -316,29 +316,26 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
 
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get name => i0.ColumnFilters($table.name);
-  i0.ColumnFilters<String> get biography => i0.ColumnFilters($table.biography);
-  i0.ColumnFilters<String> get preferencesValue =>
-      i0.ColumnFilters($table.preferences);
+  $UsersFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnFilters<int> get id => $columnFilter($table.id);
+  i0.ColumnFilters<String> get name => $columnFilter($table.name);
+  i0.ColumnFilters<String> get biography => $columnFilter($table.biography);
   i0.ColumnWithTypeConverterFilters<i2.Preferences?, i2.Preferences, String>
-      get preferences => i0.ColumnWithTypeConverterFilters($table.preferences);
+      get preferences => $columnFilterWithTypeConverter($table.preferences);
   i0.ColumnFilters<i3.Uint8List> get profilePicture =>
-      i0.ColumnFilters($table.profilePicture);
+      $columnFilter($table.profilePicture);
 }
 
 class $UsersOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get name => i0.ColumnOrderings($table.name);
-  i0.ColumnOrderings<String> get biography =>
-      i0.ColumnOrderings($table.biography);
+  $UsersOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
+  i0.ColumnOrderings<String> get name => $columnOrdering($table.name);
+  i0.ColumnOrderings<String> get biography => $columnOrdering($table.biography);
   i0.ColumnOrderings<String> get preferences =>
-      i0.ColumnOrderings($table.preferences);
+      $columnOrdering($table.preferences);
   i0.ColumnOrderings<i3.Uint8List> get profilePicture =>
-      i0.ColumnOrderings($table.profilePicture);
+      $columnOrdering($table.profilePicture);
 }
 
 class $UsersProcessedTableManager extends i0.ProcessedTableManager<
@@ -613,70 +610,47 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
 
 class $FollowsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Follows> {
-  $FollowsFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get followedId => i0.ColumnFilters($table.followed);
-  i0.ComposableFilter followed(
-      i0.ComposableFilter Function(i1.$UsersFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getCurrentColumn: (f) => f.followed,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$UsersFilterComposer(db, table),
-        builder: f);
+  $FollowsFilterComposer(super.$db, super.$table, {super.$joinBuilder});
+  i1.$UsersFilterComposer get followed {
+    final i1.$UsersFilterComposer composer = i1.$UsersFilterComposer(
+        $db, i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.followed,
+            referencedTable:
+                i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+            getReferencedColumn: (t) => t.id));
+    return composer;
   }
 
-  i0.ColumnFilters<int> get followerId => i0.ColumnFilters($table.follower);
-  i0.ComposableFilter follower(
-      i0.ComposableFilter Function(i1.$UsersFilterComposer f) f) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getCurrentColumn: (f) => f.follower,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$UsersFilterComposer(db, table),
-        builder: f);
+  i1.$UsersFilterComposer get follower {
+    final i1.$UsersFilterComposer composer = i1.$UsersFilterComposer(
+        $db, i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+        $joinBuilder: $buildJoinForTable(
+            getCurrentColumn: (t) => t.follower,
+            referencedTable:
+                i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+            getReferencedColumn: (t) => t.id));
+    return composer;
   }
 }
 
 class $FollowsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Follows> {
-  $FollowsOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get followedId => i0.ColumnOrderings($table.followed);
-  i0.ComposableOrdering followed(
-      i0.ComposableOrdering Function(i1.$UsersOrderingComposer o) o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getCurrentColumn: (f) => f.followed,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$UsersOrderingComposer(db, table),
-        builder: o);
-  }
-
-  i0.ColumnOrderings<int> get followerId => i0.ColumnOrderings($table.follower);
-  i0.ComposableOrdering follower(
-      i0.ComposableOrdering Function(i1.$UsersOrderingComposer o) o) {
-    return $composeWithJoins(
-        $db: $db,
-        $table: $table,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getCurrentColumn: (f) => f.follower,
-        getReferencedColumn: (f) => f.id,
-        getReferencedComposer: (db, table) =>
-            i1.$UsersOrderingComposer(db, table),
-        builder: o);
-  }
+  $FollowsOrderingComposer(super.$db, super.$table, {super.$joinBuilder});
+  i1.$UsersOrderingComposer get followed => i1.$UsersOrderingComposer(
+      $db, i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+      $joinBuilder: $buildJoinForTable(
+          getCurrentColumn: (t) => t.followed,
+          referencedTable:
+              i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+          getReferencedColumn: (t) => t.id));
+  i1.$UsersOrderingComposer get follower => i1.$UsersOrderingComposer(
+      $db, i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+      $joinBuilder: $buildJoinForTable(
+          getCurrentColumn: (t) => t.follower,
+          referencedTable:
+              i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
+          getReferencedColumn: (t) => t.id));
 }
 
 class $FollowsProcessedTableManager extends i0.ProcessedTableManager<

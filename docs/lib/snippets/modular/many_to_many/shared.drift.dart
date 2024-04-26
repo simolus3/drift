@@ -232,10 +232,10 @@ class $$BuyableItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableOrderingComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
   i0.ColumnOrderings<String> get description =>
-      i0.$columnOrdering($table.description);
-  i0.ColumnOrderings<int> get price => i0.$columnOrdering($table.price);
+      $columnOrdering($table.description);
+  i0.ColumnOrderings<int> get price => $columnOrdering($table.price);
 }
 
 class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<

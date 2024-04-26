@@ -236,11 +236,10 @@ class $PeriodicRemindersOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
   $PeriodicRemindersOrderingComposer(super.$db, super.$table,
       {super.$joinBuilder});
-  i0.ColumnOrderings<int> get id => i0.$columnOrdering($table.id);
+  i0.ColumnOrderings<int> get id => $columnOrdering($table.id);
   i0.ColumnOrderings<Duration> get frequency =>
-      i0.$columnOrdering($table.frequency);
-  i0.ColumnOrderings<String> get reminder =>
-      i0.$columnOrdering($table.reminder);
+      $columnOrdering($table.frequency);
+  i0.ColumnOrderings<String> get reminder => $columnOrdering($table.reminder);
 }
 
 class $PeriodicRemindersProcessedTableManager extends i0.ProcessedTableManager<
