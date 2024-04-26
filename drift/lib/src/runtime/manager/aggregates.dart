@@ -3,6 +3,7 @@
 part of 'manager.dart';
 
 /// A wrapper around reverse filters for different kinds of aggregates.
+@internal
 class ColumnAggregate {
   final ComposableFilter _filter;
 

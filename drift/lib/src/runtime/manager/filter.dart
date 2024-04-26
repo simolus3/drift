@@ -287,6 +287,7 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
 /// It contains the expression, along with any joins that are required
 /// to execute the expression. See [HasJoinBuilders] for more information
 /// on how joins are stored
+@visibleForTesting
 class ComposableFilter extends HasJoinBuilders {
   @override
   final Set<JoinBuilder> joinBuilders;

@@ -36,6 +36,7 @@ class ColumnOrderings<T extends Object> {
 }
 
 /// Defines a class which will hold the information needed to create an ordering
+@internal
 class OrderingBuilder {
   /// The mode of the ordering
   final OrderingMode mode;
@@ -68,6 +69,7 @@ class OrderingBuilder {
 /// The orderings will be executed from left to right.
 /// See [HasJoinBuilders] for more information
 /// on how joins are stored
+@internal
 class ComposableOrdering extends HasJoinBuilders {
   /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
