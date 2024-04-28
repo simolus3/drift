@@ -681,16 +681,16 @@ void main() {
     ]);
     a.groupBy([db.categories.rowId], having: countAll().equals(3));
 
-    print(a.constructQuery().sql);
-    print(await a.get().then((value) => value.map((e) {
-          print(e.readTable(db.categories));
-        })));
-    print(await db.managers.categories.filter((f) {
-      return f.todos
-          .count(
-            (f) => f.status(TodoStatus.open),
-          )
-          .equals(3);
-    }).get());
+    // print(a.constructQuery().sql);
+    // print(await a.get().then((value) => value.map((e) {
+    //       print(e.readTable(db.categories));
+    //     })));
+    // print(await db.managers.categories.filter((f) {
+    //   return f.todos
+    //       .count(
+    //         (f) => f.status(TodoStatus.open),
+    //       )
+    //       .equals(3);
+    // }).get());
   });
 }

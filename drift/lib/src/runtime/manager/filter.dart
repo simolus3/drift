@@ -56,14 +56,12 @@ abstract class _BaseColumnFilters<T extends Object> {
 
       // Return a new ComposableFilter with the having clause set
       return ComposableFilter._(null, joinBuilders, [
-        ...groupByBuilders.sublist(0, groupByBuilders.length - 1)
-            as List<GroupByBuilder>,
+        ...groupByBuilders.whereType<GroupByBuilder>(),
         groupByBuilderWithHaving
       ]);
     }
-
     return ComposableFilter._(inverted ? expression?.not() : expression,
-        joinBuilders, groupByBuilders as List<GroupByBuilder>);
+        joinBuilders, groupByBuilders.whereType<GroupByBuilder>().toList());
   }
 
   /// Create a filter that checks if the column is null.

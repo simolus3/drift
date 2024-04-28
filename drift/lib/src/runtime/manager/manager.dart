@@ -208,7 +208,6 @@ class TableManagerState<
       if (limit != null) {
         joinedStatement.limit(limit!, offset: offset);
       }
-      print(joinedStatement.constructQuery().sql);
 
       return _JoinedResult(joinedStatement);
     }
