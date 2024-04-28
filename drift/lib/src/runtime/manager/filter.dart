@@ -36,30 +36,34 @@ abstract class _BaseColumnFilters<T extends Object> {
   /// aggregate functions. This list will hold the group by builders that
   /// are used to filter on the aggregates.
   ///
-  /// TODO: Add Docs
+  /// When this column filter is used to filter on an aggregate function, the
+  /// last group by builder will be a [TempGroupByBuilder].
   ///
-  final List<GroupByBuilder> groupByBuilders;
+  final List<BaseGroupByBuilder> groupByBuilders;
 
   /// This helper method is used internally to create a new [ComposableFilter]s
   /// that respects the inverted state of the current filter
   ComposableFilter $composableFilter(Expression<bool>? expression) {
-    // If there are groupByBuilders and the last ones having clause is null,
-    // then this filter is not a filter on a table column, but a filter on an aggregate
-    // function.
-    List<GroupByBuilder> groupByBuilders = this.groupByBuilders;
-    if (groupByBuilders.isNotEmpty && groupByBuilders.last.having == null) {
+    // If there are groupByBuilders and the last one is a TempGroupByBuilder
+    // then this filter is being used to filter on an aggregate function
+    List<BaseGroupByBuilder> groupByBuilders = this.groupByBuilders;
+
+    if (groupByBuilders.isNotEmpty &&
+        groupByBuilders.last is TempGroupByBuilder) {
       // Set the having clause on the last group by builder
       final groupByBuilderWithHaving =
-          groupByBuilders.last.copyWith(having: expression);
+          (groupByBuilders.last as TempGroupByBuilder).withHaving(expression);
 
+      // Return a new ComposableFilter with the having clause set
       return ComposableFilter._(null, joinBuilders, [
-        ...groupByBuilders.sublist(0, groupByBuilders.length - 1),
+        ...groupByBuilders.sublist(0, groupByBuilders.length - 1)
+            as List<GroupByBuilder>,
         groupByBuilderWithHaving
       ]);
     }
 
     return ComposableFilter._(inverted ? expression?.not() : expression,
-        joinBuilders, groupByBuilders);
+        joinBuilders, groupByBuilders as List<GroupByBuilder>);
   }
 
   /// Create a filter that checks if the column is null.
@@ -383,7 +387,6 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
       return ColumnFilters($joinBuilder!.currentColumn as GeneratedColumn<C>);
     }
 
-    /// TODO: Add group bys
     return ColumnFilters(aliasedColumn,
         joinBuilders: $joinBuilder != null ? {$joinBuilder!} : {});
   }
@@ -405,8 +408,6 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
   }
 
   /// A filter that includes all rows
-  ///
-  /// TODO: Add group bys
   ComposableFilter all() =>
       ComposableFilter._(null, $joinBuilder != null ? {$joinBuilder!} : {}, []);
 

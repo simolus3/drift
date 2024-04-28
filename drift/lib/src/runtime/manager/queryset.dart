@@ -50,12 +50,30 @@ class JoinBuilder {
   }
 }
 
-/// A class that contains the information needed to create a group by
+/// Base class for group by builders
 @internal
-class GroupByBuilder {
+sealed class BaseGroupByBuilder {
   final Iterable<Expression> expressions;
+  BaseGroupByBuilder(this.expressions);
+}
+
+/// A class for holding the temporary group by expressions
+/// builder. The having clause will be added later
+@internal
+class TempGroupByBuilder extends BaseGroupByBuilder {
+  TempGroupByBuilder(super.expressions);
+  GroupByBuilder withHaving(Expression<bool>? having) {
+    return GroupByBuilder(expressions, having: having);
+  }
+}
+
+/// A class for holding the group by expressions
+/// builder. This will be used to create the group by clause
+/// in the query
+@internal
+class GroupByBuilder extends BaseGroupByBuilder {
   final Expression<bool>? having;
-  GroupByBuilder(this.expressions, {this.having});
+  GroupByBuilder(super.expressions, {this.having});
   GroupByBuilder copyWith({required Expression<bool>? having}) {
     return GroupByBuilder(expressions, having: having);
   }

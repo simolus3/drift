@@ -66,7 +66,7 @@ class ReferenceColumnFilters<FC extends FilterComposer> {
     // nested inside it, so we need to add it to the group by builders
     final groupByBuilders = [
       ...havingFilter.groupByBuilders,
-      GroupByBuilder([expressionForGrouping], having: null)
+      TempGroupByBuilder([expressionForGrouping])
     ];
 
     // Create the join builders for the count filter
