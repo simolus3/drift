@@ -3,6 +3,7 @@
 part of 'manager.dart';
 
 /// A class for creating filters based on references to other tables.
+@internal
 class ReferenceColumnFilters<FC extends FilterComposer> {
   final FC _composer;
 

@@ -2,7 +2,7 @@
 
 part of 'main.dart';
 
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 class $TodoCategoriesTable extends TodoCategories
     with TableInfo<$TodoCategoriesTable, TodoCategory> {
   @override

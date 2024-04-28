@@ -2,7 +2,7 @@
 
 part of 'database.dart';
 
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 class Entries extends Table with TableInfo<Entries, Entry> {
   @override
   final GeneratedDatabase attachedDatabase;

@@ -1,6 +1,7 @@
 part of 'manager.dart';
 
 /// Defines a class which is used to wrap a column to only expose ordering functions
+@internal
 class ColumnOrderings<T extends Object> {
   /// This class is a wrapper on top of the generated column class
   /// It's used to expose ordering functions for a column
@@ -93,6 +94,7 @@ class ComposableOrdering extends Queryset {
 }
 
 /// The class that orchestrates the composition of orderings
+@internal
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// Create a new [ColumnOrderings] for a column

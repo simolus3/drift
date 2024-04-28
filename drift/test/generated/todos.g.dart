@@ -2,7 +2,7 @@
 
 part of 'todos.dart';
 
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 class $CategoriesTable extends Categories
     with TableInfo<$CategoriesTable, Category> {
   @override

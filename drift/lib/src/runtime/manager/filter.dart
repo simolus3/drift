@@ -83,6 +83,7 @@ abstract class _BaseColumnFilters<T extends Object> {
 }
 
 /// Built in filters for all columns
+@internal
 class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
   /// This class is a wrapper on top of the generated column class
   ///
@@ -115,6 +116,7 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
 }
 
 /// Built in filters for columns that have a type converter
+@internal
 class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
     T extends Object> extends _BaseColumnFilters<T> {
   /// This class is a wrapper on top of the generated column class
@@ -325,6 +327,7 @@ enum _ExpressionOpperator { and, or }
 /// be used to create a where expression for the [TableManagerState]
 ///
 /// See [Queryset] for more information on how joins/group bys are stored
+@internal
 class ComposableFilter extends Queryset {
   @override
   final Set<JoinBuilder> joinBuilders;
@@ -367,6 +370,7 @@ class ComposableFilter extends Queryset {
 }
 
 /// The class that orchestrates the composition of filtering
+@internal
 class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// The internal function used to create column filters

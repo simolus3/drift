@@ -36,6 +36,7 @@ class _JoinedResult<T extends Table, DT extends DataClass>
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
 ///
 /// The [C] generic refers to the type of the child manager that will be created when a filter/ordering is applied
+@internal
 class TableManagerState<
     DB extends GeneratedDatabase,
     T extends Table,
@@ -467,6 +468,7 @@ abstract class BaseTableManager<
 
 /// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
 //  As of now this is identical to [BaseTableManager] but it's kept seperate for future extensibility
+@internal
 class ProcessedTableManager<
         DB extends GeneratedDatabase,
         T extends Table,

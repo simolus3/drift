@@ -2,7 +2,7 @@
 
 part of 'saves_after_migration_regression_test.dart';
 
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   @override
   final GeneratedDatabase attachedDatabase;

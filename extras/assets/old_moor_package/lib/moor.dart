@@ -16,9 +16,20 @@ export 'package:drift/drift.dart'
         JoinBuilder,
         Queryset,
         ComposableOrdering,
+        ComposableFilter,
+        OrderingComposer,
+        ReferenceColumnFilters,
+        ProcessedTableManager,
+        FilterComposer,
         OrderingBuilder,
         Composer,
-        BaseTableManager;
+        BaseTableManager,
+        ColumnOrderings,
+        BaseGroupByBuilder,
+        ColumnFilters,
+        ColumnWithTypeConverterFilters,
+        TempGroupByBuilder,
+        TableManagerState;
 
 /// Use this class as an annotation to inform moor_generator that a database
 /// class should be generated using the specified [DriftDatabase.tables].

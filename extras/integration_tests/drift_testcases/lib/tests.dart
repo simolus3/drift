@@ -8,9 +8,20 @@ export 'package:drift/drift.dart'
         Queryset,
         ComposableOrdering,
         GroupByBuilder,
+        ComposableFilter,
+        OrderingComposer,
+        ReferenceColumnFilters,
+        ProcessedTableManager,
+        FilterComposer,
         OrderingBuilder,
         Composer,
-        BaseTableManager;
+        BaseTableManager,
+        ColumnOrderings,
+        BaseGroupByBuilder,
+        ColumnFilters,
+        ColumnWithTypeConverterFilters,
+        TempGroupByBuilder,
+        TableManagerState;
 
 export 'data/sample_data.dart';
 export 'database/database.dart';
