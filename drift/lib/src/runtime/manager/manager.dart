@@ -1,13 +1,14 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
 part 'composer.dart';
 part 'filter.dart';
-part 'join.dart';
+part 'queryset.dart';
 part 'ordering.dart';
-part 'aggregates.dart';
+part 'reference_filters.dart';
 
 sealed class _StatementType<T extends Table, DT extends DataClass> {
   const _StatementType();
@@ -61,6 +62,10 @@ class TableManagerState<
   /// that will be applied to the build statement
   final Set<JoinBuilder> joinBuilders;
 
+  /// A list of [GroupByBuilder] which will be used to create [GroupBy]s
+  /// that will be applied to the build statement
+  final List<GroupByBuilder> groupByBuilders;
+
   /// Whether the query should return distinct results
   final bool? distinct;
 
@@ -110,6 +115,7 @@ class TableManagerState<
     this.offset,
     this.orderingBuilders = const {},
     this.joinBuilders = const {},
+    this.groupByBuilders = const [],
   })  : _getChildManagerBuilder = getChildManagerBuilder,
         _getInsertCompanionBuilder = getInsertCompanionBuilder,
         _getUpdateCompanionBuilder = getUpdateCompanionBuilder;
@@ -122,6 +128,7 @@ class TableManagerState<
     Expression<bool>? filter,
     Set<OrderingBuilder>? orderingBuilders,
     Set<JoinBuilder>? joinBuilders,
+    List<GroupByBuilder>? groupByBuilders,
   }) {
     return TableManagerState(
       db: db,
@@ -133,6 +140,7 @@ class TableManagerState<
       getUpdateCompanionBuilder: _getUpdateCompanionBuilder,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
+      groupByBuilders: groupByBuilders ?? this.groupByBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
       distinct: distinct ?? this.distinct,
       limit: limit ?? this.limit,
@@ -186,13 +194,20 @@ class TableManagerState<
       if (filter != null) {
         joinedStatement.where(filter!);
       }
-      // Apply orderings and limits
 
+      // Apply GroupBys
+      for (var groupByBuilder in groupByBuilders) {
+        joinedStatement.groupBy(groupByBuilder.expressions,
+            having: groupByBuilder.having);
+      }
+
+      // Apply orderings and limits
       joinedStatement
           .orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
       if (limit != null) {
         joinedStatement.limit(limit!, offset: offset);
       }
+      print(joinedStatement.constructQuery().sql);
 
       return _JoinedResult(joinedStatement);
     }
@@ -330,7 +345,11 @@ abstract class BaseTableManager<
 
     return $state._getChildManagerBuilder($state.copyWith(
         filter: combinedFilter,
-        joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
+        joinBuilders: $state.joinBuilders.union(filter.joinBuilders),
+        groupByBuilders: [
+          ...$state.groupByBuilders,
+          ...filter.groupByBuilders
+        ]));
   }
 
   /// Writes all non-null fields from the entity into the columns of all rows

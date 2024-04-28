@@ -1,19 +1,13 @@
+// ignore_for_file: unnecessary_this
+
 part of 'manager.dart';
 
-/// Defines a class which is used to wrap a column to only expose filter functions
-class ColumnFilters<T extends Object> {
-  /// This class is a wrapper on top of the generated column class
-  ///
-  /// It's used to expose filter functions for a column type
-  ///
-  /// Use an extention to add more filters to any column type
-  ///
-  /// ```dart
-  /// extension on ColumnFilters<DateTime>{
-  ///  ComposableFilter after2000() => isAfter(DateTime(2000));
-  ///}
-  /// ```
-  const ColumnFilters(this.column, {this.inverted = false, this.joinBuilders});
+/// Base class for all column filters
+abstract class _BaseColumnFilters<T extends Object> {
+  const _BaseColumnFilters(this.column,
+      {this.inverted = false,
+      this.joinBuilders = const {},
+      this.groupByBuilders = const []});
 
   /// Column that this [ColumnFilters] wraps
   final Expression<T> column;
@@ -22,7 +16,54 @@ class ColumnFilters<T extends Object> {
   final bool inverted;
 
   /// If this column is part of a join, this will hold the join builder
-  final Set<JoinBuilder>? joinBuilders;
+  /// that is used to create the join
+  ///
+  /// ```dart
+  /// todos.filter((f) => f.category.name.equals('important'))
+  /// ```
+  /// In the above example, the [FilterComposer]  returned from `f.category`
+  /// will have a join builder on it that is used to create the join between
+  /// the `categories` and `todos` table. This join builder is passed to the
+  /// `f.category.name` filter to ensure that the filter is applied to the correct
+  /// table.
+  ///
+  /// There are instances where the join builder is eventually discarded, such as when
+  /// the filter is applied to the foreign key column itself (e.g  a filter on `f.category.id` will
+  /// not use the join, it will apply the filter to `f.categoryId` instead).
+  final Set<JoinBuilder> joinBuilders;
+
+  /// When filtering on reverse relations, we will find ourselves using
+  /// aggregate functions. This list will hold the group by builders that
+  /// are used to filter on the aggregates.
+  ///
+  /// TODO: Add Docs
+  ///
+  final List<GroupByBuilder> groupByBuilders;
+
+  /// This helper method is used internally to create a new [ComposableFilter]s
+  /// that respects the inverted state of the current filter
+  ComposableFilter $composableFilter(Expression<bool>? expression) {
+    // If there are groupByBuilders and the last ones having clause is null,
+    // then this filter is not a filter on a table column, but a filter on an aggregate
+    // function.
+    List<GroupByBuilder> groupByBuilders = this.groupByBuilders;
+    if (groupByBuilders.isNotEmpty && groupByBuilders.last.having == null) {
+      // Set the having clause on the last group by builder
+      final groupByBuilderWithHaving =
+          groupByBuilders.last.copyWith(having: expression);
+
+      return ComposableFilter._(null, joinBuilders, [
+        ...groupByBuilders.sublist(0, groupByBuilders.length - 1),
+        groupByBuilderWithHaving
+      ]);
+    }
+
+    return ComposableFilter._(inverted ? expression?.not() : expression,
+        joinBuilders, groupByBuilders);
+  }
+
+  /// Create a filter that checks if the column is null.
+  ComposableFilter isNull() => $composableFilter(column.isNull());
 
   /// Returns a copy of these column filters where all the filters are inverted
   /// ```dart
@@ -34,28 +75,86 @@ class ColumnFilters<T extends Object> {
   /// ```dart
   /// myColumn.not.equals(5) | myColumn.isNull(); // All columns that are null OR have a value that is not equal to 5 will be returned
   /// ```
-  ColumnFilters<T> get not =>
-      ColumnFilters(column, inverted: !inverted, joinBuilders: joinBuilders);
+  _BaseColumnFilters get not;
+}
 
-  /// Create a composable filter from an expression, this is used to create
-  /// lower level filters that can be composed together.
-  ComposableFilter $composableFilter(Expression<bool>? expression) {
-    return ComposableFilter._(
-        inverted ? expression?.not() : expression, joinBuilders ?? {});
-  }
+/// Built in filters for all columns
+class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
+  /// This class is a wrapper on top of the generated column class
+  ///
+  /// It's used to expose filter functions for a column type
+  ///
+  /// ```dart
+  /// todos.filter((f) => f.name('important'))
+  /// ```
+  /// In the above example, f.name returns a [ColumnFilters] object, which
+  /// contains methods for creating filters on the `name` column.
+  /// ```
+  ColumnFilters(super.column,
+      {super.inverted = false, super.joinBuilders, super.groupByBuilders});
+
+  @override
+  ColumnFilters<T> get not => ColumnFilters(column,
+      inverted: !inverted,
+      joinBuilders: joinBuilders,
+      groupByBuilders: groupByBuilders);
 
   /// Create a filter that checks if the column equals a value.
   ComposableFilter equals(T value) => $composableFilter(column.equals(value));
 
-  /// Create a filter that checks if the column is null.
-  ComposableFilter isNull() => $composableFilter(column.isNull());
+  /// Shortcut for [equals]
+  ComposableFilter call(T value) => equals(value);
 
   /// Create a filter that checks if the column is in a list of values.
   ComposableFilter isIn(Iterable<T> values) =>
       $composableFilter(column.isIn(values));
+}
+
+/// Built in filters for columns that have a type converter
+class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
+    T extends Object> extends _BaseColumnFilters<T> {
+  /// This class is a wrapper on top of the generated column class
+  /// for columns that have a type converter
+  ///
+  /// See [ColumnFilters] for more information on how to use this class
+  ColumnWithTypeConverterFilters(super.column,
+      {super.inverted = false, super.joinBuilders, super.groupByBuilders});
+
+  @override
+  ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable, T>
+      get not => ColumnWithTypeConverterFilters(column,
+          inverted: !inverted,
+          joinBuilders: joinBuilders,
+          groupByBuilders: groupByBuilders);
+
+  GeneratedColumnWithTypeConverter<CustomType, T> get _typedColumn =>
+      column as GeneratedColumnWithTypeConverter<CustomType, T>;
+
+  /// Get the actual value from the custom type
+  T _customTypeToSql(CustomTypeNonNullable value) {
+    assert(value != null,
+        'The filter value cannot be null. This is likely a bug in the generated code. Please report this issue.');
+    final mappedValue = _typedColumn.converter.toSql(value as CustomType);
+
+    if (mappedValue == null) {
+      throw ArgumentError(
+          'The TypeConverter for this column returned null when converting the type to sql.'
+          'Ensure that your TypeConverter never returns null when provided a non-null value.');
+    }
+    return mappedValue;
+  }
+
+  /// Create a filter that checks if the column equals a value.
+  ComposableFilter equals(CustomTypeNonNullable value) {
+    return $composableFilter(column.equals(_customTypeToSql(value)));
+  }
 
   /// Shortcut for [equals]
-  ComposableFilter call(T value) => equals(value);
+  ComposableFilter call(CustomTypeNonNullable value) => equals(value);
+
+  /// Create a filter that checks if the column is in a list of values.
+  ComposableFilter isIn(Iterable<CustomTypeNonNullable> values) =>
+      $composableFilter(column.isIn(values.map(_customTypeToSql).toList()));
 }
 
 enum _StringFilterTypes { contains, startsWith, endsWith }
@@ -214,117 +313,51 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
-/// Defines a class which is used to wrap a column with a type converter to only expose filter functions
-// [CustomType] is the type that the user has defined in their type converter
-// [CustomTypeNonNullable] is the type that the user has defined in their type converter, but is non-nullable
-class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
-    T extends Object> {
-  /// Similar to [ColumnFilters] but for columns with type converters\
-  const ColumnWithTypeConverterFilters(this.column,
-      [this.inverted = false, this._joinBuilder]);
+enum _ExpressionOpperator { and, or }
 
-  /// If true, all filters will be inverted
-  final bool inverted;
-
-  /// Column that this [ColumnWithTypeConverterFilters] wraps
-  final GeneratedColumnWithTypeConverter<CustomType, T> column;
-
-  /// If this column is part of a join, this will hold the join builder
-  final JoinBuilder? _joinBuilder;
-
-  /// Returns a copy of these column filters where all the filters are inverted
-  /// ```dart
-  /// myColumn.not.equals(5); // All columns that aren't null and have a value that is not equal to 5
-  /// ```
-  /// Keep in mind that while using inverted filters, null is never returned.
-  ///
-  /// If you would like to include them, use the [isNull] filter as well
-  /// ```dart
-  /// myColumn.not.equals(5) | myColumn.isNull(); // All columns that are null OR have a value that is not equal to 5
-  /// ```
-  ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable, T>
-      get not =>
-          ColumnWithTypeConverterFilters(column, !inverted, _joinBuilder);
-
-  /// Create a composable filter from an expression, this is used to create
-  /// lower level filters that can be composed together.
-  ComposableFilter $composableFilter(Expression<bool>? expression) {
-    return ComposableFilter._(inverted ? expression?.not() : expression,
-        _joinBuilder != null ? {_joinBuilder} : {});
-  }
-
-  /// Create a filter that checks if the column is null.
-  ComposableFilter isNull() => $composableFilter(column.isNull());
-
-  /// Get the actual value from the custom type
-  T _customTypeToSql(CustomTypeNonNullable value) {
-    assert(value != null,
-        'The filter value cannot be null. This is likely a bug in the generated code. Please report this issue.');
-    final mappedValue = column.converter.toSql(value as CustomType);
-
-    if (mappedValue == null) {
-      throw ArgumentError(
-          'The TypeConverter for this column returned null when converting the type to sql.'
-          'Ensure that your TypeConverter never returns null when provided a non-null value.');
-    }
-    return mappedValue;
-  }
-
-  /// Create a filter that checks if the column equals a value.
-  ComposableFilter equals(CustomTypeNonNullable value) {
-    return $composableFilter(column.equals(_customTypeToSql(value)));
-  }
-
-  /// Shortcut for [equals]
-  ComposableFilter call(CustomTypeNonNullable value) => equals(value);
-
-  /// Create a filter that checks if the column is in a list of values.
-  ComposableFilter isIn(Iterable<CustomTypeNonNullable> values) =>
-      $composableFilter(column.isIn(values.map(_customTypeToSql).toList()));
-}
-
-/// This class is wrapper on the expression class
+/// This class is used to compose filters together
 ///
-/// It contains the expression, along with any joins that are required
-/// to execute the expression. See [HasJoinBuilders] for more information
-/// on how joins are stored
-@visibleForTesting
-class ComposableFilter extends HasJoinBuilders {
+/// This class contains all the information that will
+/// be used to create a where expression for the [TableManagerState]
+///
+/// See [Queryset] for more information on how joins/group bys are stored
+class ComposableFilter extends Queryset {
   @override
   final Set<JoinBuilder> joinBuilders;
+
+  @override
+  final List<GroupByBuilder> groupByBuilders;
 
   /// The expression that will be applied to the query
   Expression<bool>? expression;
 
   /// Create a new [ComposableFilter] for a column with joins
-  ComposableFilter._(this.expression, this.joinBuilders);
+  ComposableFilter._(this.expression, this.joinBuilders, this.groupByBuilders);
 
   /// Combine two filters with an AND
-  ComposableFilter operator &(ComposableFilter other) {
-    final combinedExpression = switch ((expression, other.expression)) {
-      (null, null) => null,
-      (null, var expression) => expression,
-      (var expression, null) => expression,
-      (_, _) => expression! & other.expression!,
-    };
-
-    return ComposableFilter._(
-      combinedExpression,
-      joinBuilders.union(other.joinBuilders),
-    );
-  }
+  ComposableFilter operator &(ComposableFilter other) =>
+      _combineFilter(_ExpressionOpperator.and, other);
 
   /// Combine two filters with an OR
-  ComposableFilter operator |(ComposableFilter other) {
-    final combinedExpression = switch ((expression, other.expression)) {
+  ComposableFilter operator |(ComposableFilter other) =>
+      _combineFilter(_ExpressionOpperator.or, other);
+
+  /// A helper function to combine two filters
+  ComposableFilter _combineFilter(
+      _ExpressionOpperator opperator, ComposableFilter otherFilter) {
+    final combinedExpression = switch ((expression, otherFilter.expression)) {
       (null, null) => null,
       (null, var expression) => expression,
       (var expression, null) => expression,
-      (_, _) => expression! | other.expression!,
+      (_, _) => switch (opperator) {
+          _ExpressionOpperator.and => expression! & otherFilter.expression!,
+          _ExpressionOpperator.or => expression! | otherFilter.expression!,
+        },
     };
     return ComposableFilter._(
       combinedExpression,
-      joinBuilders.union(other.joinBuilders),
+      joinBuilders.union(otherFilter.joinBuilders),
+      [...groupByBuilders, ...otherFilter.groupByBuilders],
     );
   }
 }
@@ -332,7 +365,12 @@ class ComposableFilter extends HasJoinBuilders {
 /// The class that orchestrates the composition of filtering
 class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
-  /// Create a new filter composer with a column
+  /// The internal function used to create column filters
+  /// that respect the current join builder.
+  ///
+  /// Joins that are unnecessary are not created, and the filter is applied to the correct column
+  /// E.G `todos.filter((f) => f.category.id.equals(5))` will apply the filter `category` field in the `todos` table
+  /// instead of creating a join to the `categories` table.
   ColumnFilters<C> $columnFilter<C extends Object>(GeneratedColumn<C> column) {
     // Get a copy of the column with the aliased name, if it's part of a join
     // otherwise, it's just a copy of the column
@@ -345,11 +383,15 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
       return ColumnFilters($joinBuilder!.currentColumn as GeneratedColumn<C>);
     }
 
+    /// TODO: Add group bys
     return ColumnFilters(aliasedColumn,
-        joinBuilders: $joinBuilder != null ? {$joinBuilder!} : null);
+        joinBuilders: $joinBuilder != null ? {$joinBuilder!} : {});
   }
 
-  /// Create a new filter composer with a column
+  /// The internal function used to create column filters
+  /// that respect the current join builder for columns with type converters.
+  ///
+  /// See [$columnFilter] for more information on how to use this function
   ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable, C>
       $columnFilterWithTypeConverter<CustomType, CustomTypeNonNullable,
               C extends Object>(
@@ -358,13 +400,21 @@ class FilterComposer<DB extends GeneratedDatabase, T extends Table>
     // otherwise, it's just a copy of the column
     GeneratedColumnWithTypeConverter<CustomType, C> aliasedColumn =
         _columnWithAlias(column);
-    return ColumnWithTypeConverterFilters(aliasedColumn, false, $joinBuilder);
+    return ColumnWithTypeConverterFilters(aliasedColumn,
+        joinBuilders: $joinBuilder != null ? {$joinBuilder!} : {});
   }
 
   /// A filter that includes all rows
+  ///
+  /// TODO: Add group bys
   ComposableFilter all() =>
-      ComposableFilter._(null, $joinBuilder != null ? {$joinBuilder!} : {});
+      ComposableFilter._(null, $joinBuilder != null ? {$joinBuilder!} : {}, []);
 
-  /// Create a filter composer with an empty state
+  /// A filter composer will be generated for each table.
+  /// Each field on the table will return a [ColumnFilters] object
+  /// ```dart
+  /// todos.filter((f) => f.name.equals('Bob'));
+  /// ```
+  /// In the above example, `f` is a [FilterComposer] object, and `f.name` returns a [ColumnFilters] object.
   FilterComposer(super.$db, super.$table, {super.$joinBuilder});
 }

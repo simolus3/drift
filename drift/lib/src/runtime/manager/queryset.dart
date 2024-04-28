@@ -50,29 +50,43 @@ class JoinBuilder {
   }
 }
 
-/// An interface for classes that hold join builders
-/// Typically used by classes whose composition requires joins
-/// to be created
+/// A class that contains the information needed to create a group by
+@internal
+class GroupByBuilder {
+  final Iterable<Expression> expressions;
+  final Expression<bool>? having;
+  GroupByBuilder(this.expressions, {this.having});
+  GroupByBuilder copyWith({required Expression<bool>? having}) {
+    return GroupByBuilder(expressions, having: having);
+  }
+}
+
+/// An interface for classes which need to hold the information needed to create
+/// orderings or where expressions.
 ///
 /// Example:
 /// ```dart
-/// categories.filter((f) => f.todos((f) => f.dueDate.isBefore(DateTime.now())))
+/// todos.filter((f) => f.category )
 /// ```
 ///
-/// In the above example, f.todos() returns a [ComposableFilter] object, which
-/// is a subclass of [HasJoinBuilders].
+/// In the above example, f.category returns a [ComposableFilter] object, which
+/// is a subclass of [Queryset].
 /// This resulting where expression will require a join to be created
 /// between the `categories` and `todos` table.
 ///
 /// This interface is used to ensure that the [ComposableFilter] object will have
-/// the information needed to create the join.
+/// the information needed to create the join/group by expressions.
 @internal
-abstract interface class HasJoinBuilders {
+abstract interface class Queryset {
   /// The join builders that are associated with this class
+  /// They are ordered by the order in which they were added
+  /// These will be used by the [TableManagerState] to create the joins
+  /// that are needed to create the where expression
   Set<JoinBuilder> get joinBuilders;
 
-  /// Add a join builder to this class
-  void addJoinBuilders(Set<JoinBuilder> builders) {
-    joinBuilders.addAll(builders);
-  }
+  /// The group by builders that are associated with this class
+  /// They are ordered by the order in which they were added
+  /// These will be used by the [TableManagerState] to create the group by's
+  /// which  will be used to filter the results
+  List<GroupByBuilder> get groupByBuilders;
 }

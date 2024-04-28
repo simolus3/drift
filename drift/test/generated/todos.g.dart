@@ -3174,15 +3174,14 @@ class $$CategoriesTableFilterComposer
       get priority => $columnFilterWithTypeConverter($table.priority);
   ColumnFilters<String> get descriptionInUpperCase =>
       $columnFilter($table.descriptionInUpperCase);
-  ColumnAggregate todos(
-      ComposableFilter Function($$TodosTableTableFilterComposer f) f) {
+  ReferenceColumnFilters<$$TodosTableTableFilterComposer> get todos {
     final $$TodosTableTableFilterComposer composer =
         $$TodosTableTableFilterComposer($db, $db.todosTable,
             $joinBuilder: $buildJoinForTable(
                 getCurrentColumn: (t) => t.id,
                 referencedTable: $db.todosTable,
                 getReferencedColumn: (t) => t.category));
-    return ColumnAggregate(f(composer));
+    return ReferenceColumnFilters(composer);
   }
 }
 
@@ -3856,15 +3855,14 @@ class $$BookClubTableFilterComposer
   $$BookClubTableFilterComposer(super.$db, super.$table, {super.$joinBuilder});
   ColumnFilters<int> get id => $columnFilter($table.id);
   ColumnFilters<String> get name => $columnFilter($table.name);
-  ColumnAggregate personRefs(
-      ComposableFilter Function($$PersonTableFilterComposer f) f) {
+  ReferenceColumnFilters<$$PersonTableFilterComposer> get personRefs {
     final $$PersonTableFilterComposer composer = $$PersonTableFilterComposer(
         $db, $db.person,
         $joinBuilder: $buildJoinForTable(
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.person,
             getReferencedColumn: (t) => t.club));
-    return ColumnAggregate(f(composer));
+    return ReferenceColumnFilters(composer);
   }
 }
 
@@ -3947,26 +3945,24 @@ class $$PersonTableFilterComposer
     return composer;
   }
 
-  ColumnAggregate writtenBooks(
-      ComposableFilter Function($$BookTableFilterComposer f) f) {
+  ReferenceColumnFilters<$$BookTableFilterComposer> get writtenBooks {
     final $$BookTableFilterComposer composer = $$BookTableFilterComposer(
         $db, $db.book,
         $joinBuilder: $buildJoinForTable(
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.book,
             getReferencedColumn: (t) => t.author));
-    return ColumnAggregate(f(composer));
+    return ReferenceColumnFilters(composer);
   }
 
-  ColumnAggregate publishedBooks(
-      ComposableFilter Function($$BookTableFilterComposer f) f) {
+  ReferenceColumnFilters<$$BookTableFilterComposer> get publishedBooks {
     final $$BookTableFilterComposer composer = $$BookTableFilterComposer(
         $db, $db.book,
         $joinBuilder: $buildJoinForTable(
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.book,
             getReferencedColumn: (t) => t.publisher));
-    return ColumnAggregate(f(composer));
+    return ReferenceColumnFilters(composer);
   }
 }
 

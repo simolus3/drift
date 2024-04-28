@@ -7,13 +7,14 @@ import 'src/deprecated.dart';
 
 export 'package:drift/drift.dart'
     hide
+        GroupByBuilder,
         DriftRuntimeOptions,
         driftRuntimeOptions,
         DriftDatabase,
         DriftAccessor,
         DriftWrappedException,
         JoinBuilder,
-        HasJoinBuilders,
+        Queryset,
         ComposableOrdering,
         OrderingBuilder,
         Composer,

@@ -462,7 +462,7 @@ void main() {
         db.managers.person
             .filter((f) =>
                 f.club.name("Book Club A") |
-                f.publishedBooks((f) => f.id(book2)).any())
+                f.publishedBooks.exist((f) => f.id(book2)))
             .count(),
         completion(3));
 
@@ -476,7 +476,7 @@ void main() {
     // Use backreference
     expect(
         db.managers.person
-            .filter((f) => f.publishedBooks((f) => f.id(book2)).any())
+            .filter((f) => f.publishedBooks.exist((f) => f.id(book2)))
             .count(),
         completion(1));
 
@@ -494,10 +494,8 @@ void main() {
     // Nested backreference
     expect(
         db.managers.bookClub
-            .filter((f) => f
-                .personRefs((f) =>
-                    f.club.personRefs((f) => f.name.equals("John Doe")).any())
-                .any())
+            .filter((f) => f.personRefs.exist((f) =>
+                f.club.personRefs.exist((f) => f.name.equals("John Doe"))))
             .count(),
         completion(1));
   });
@@ -620,7 +618,7 @@ void main() {
     expect(
         db.managers.categories
             .filter(
-                (f) => f.todos((f) => f.title.equals("Math Homework")).any())
+                (f) => f.todos.exist((f) => f.title.equals("Math Homework")))
             .getSingle()
             .then((value) => value.description),
         completion("School"));
@@ -628,13 +626,71 @@ void main() {
     // Nested backreference
     expect(
         db.managers.categories
-            .filter((f) => f
-                .todos((f) => f.category
-                    .todos((f) => f.title.equals("Math Homework"))
-                    .any())
-                .any())
+            .filter((f) => f.todos.exist((f) =>
+                f.category.todos.exist((f) => f.title.equals("Math Homework"))))
             .getSingle()
             .then((value) => value.description),
         completion("School"));
+  });
+
+  test('fress', () async {
+    final schoolCategoryId = await db.managers.categories.create((o) =>
+        o(priority: Value(CategoryPriority.high), description: "School"));
+    final workCategoryId = await db.managers.categories.create(
+        (o) => o(priority: Value(CategoryPriority.low), description: "Work"));
+
+    // School
+    await db.managers.todosTable.create((o) => o(
+        content: "Get that math homework done",
+        title: Value("Math Homework"),
+        category: Value(schoolCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Finish that report",
+        title: Value("Report"),
+        category: Value(schoolCategoryId),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))));
+
+    // Work
+    await db.managers.todosTable.create((o) => o(
+        content: "File those reports",
+        title: Value("File Reports"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Clean the office",
+        title: Value("Clean Office"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))));
+    await db.managers.todosTable.create((o) => o(
+        content: "Nail that presentation",
+        title: Value("Presentation"),
+        category: Value(workCategoryId),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))));
+
+    final count = db.todosTable.rowId.count();
+    final a = db.select(db.categories).join([
+      leftOuterJoin(
+          db.todosTable, db.categories.id.equalsExp(db.todosTable.category),
+          useColumns: false)
+    ]);
+    a.groupBy([db.categories.rowId], having: countAll().equals(3));
+
+    print(a.constructQuery().sql);
+    print(await a.get().then((value) => value.map((e) {
+          print(e.readTable(db.categories));
+        })));
+    print(await db.managers.categories.filter((f) {
+      return f.todos
+          .count(
+            (f) => f.status(TodoStatus.open),
+          )
+          .equals(3);
+    }).get());
   });
 }

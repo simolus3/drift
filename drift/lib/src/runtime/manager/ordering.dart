@@ -3,7 +3,6 @@ part of 'manager.dart';
 /// Defines a class which is used to wrap a column to only expose ordering functions
 class ColumnOrderings<T extends Object> {
   /// This class is a wrapper on top of the generated column class
-  ///
   /// It's used to expose ordering functions for a column
 
   ColumnOrderings(this.column, {this.joinBuilders});
@@ -18,7 +17,7 @@ class ColumnOrderings<T extends Object> {
   /// This is used to create lower level orderings
   /// that can be composed together
   ComposableOrdering $composableOrdering(Set<OrderingBuilder> orderings) {
-    return ComposableOrdering._(orderings, joinBuilders ?? {});
+    return ComposableOrdering._(orderings, joinBuilders ?? {}, []);
   }
 
   /// Sort this column in ascending order
@@ -66,22 +65,25 @@ class OrderingBuilder {
 ///
 /// Multiple orderings can be composed together using the `&` operator.
 /// The orderings will be executed from left to right.
-/// See [HasJoinBuilders] for more information
+/// See [Queryset] for more information
 /// on how joins are stored
 @internal
-class ComposableOrdering extends HasJoinBuilders {
+class ComposableOrdering extends Queryset {
   /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
   @override
   final Set<JoinBuilder> joinBuilders;
+  @override
+  final List<GroupByBuilder> groupByBuilders;
 
   /// Create a new [ComposableOrdering] for a column with joins
-  ComposableOrdering._(this.orderingBuilders, this.joinBuilders);
+  ComposableOrdering._(
+      this.orderingBuilders, this.joinBuilders, this.groupByBuilders);
 
   /// Combine two orderings with THEN
   ComposableOrdering operator &(ComposableOrdering other) {
     return ComposableOrdering._(orderingBuilders.union(other.orderingBuilders),
-        joinBuilders.union(other.joinBuilders));
+        joinBuilders.union(other.joinBuilders), []);
   }
 
   /// Build a drift [OrderingTerm] from this ordering

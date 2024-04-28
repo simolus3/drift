@@ -918,26 +918,24 @@ class $$UsersTableFilterComposer
     return composer;
   }
 
-  ColumnAggregate usersRefs(
-      ComposableFilter Function($$UsersTableFilterComposer f) f) {
+  ReferenceColumnFilters<$$UsersTableFilterComposer> get usersRefs {
     final $$UsersTableFilterComposer composer = $$UsersTableFilterComposer(
         $db, $db.users,
         $joinBuilder: $buildJoinForTable(
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.users,
             getReferencedColumn: (t) => t.nextUser));
-    return ColumnAggregate(f(composer));
+    return ReferenceColumnFilters(composer);
   }
 
-  ColumnAggregate groupsRefs(
-      ComposableFilter Function($GroupsFilterComposer f) f) {
+  ReferenceColumnFilters<$GroupsFilterComposer> get groupsRefs {
     final $GroupsFilterComposer composer = $GroupsFilterComposer(
         $db, $db.groups,
         $joinBuilder: $buildJoinForTable(
             getCurrentColumn: (t) => t.id,
             referencedTable: $db.groups,
             getReferencedColumn: (t) => t.owner));
-    return ColumnAggregate(f(composer));
+    return ReferenceColumnFilters(composer);
   }
 }
 

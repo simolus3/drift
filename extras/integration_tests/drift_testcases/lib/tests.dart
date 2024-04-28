@@ -5,8 +5,9 @@ export 'package:drift/drift.dart'
         isNull,
         isNotNull,
         JoinBuilder,
-        HasJoinBuilders,
+        Queryset,
         ComposableOrdering,
+        GroupByBuilder,
         OrderingBuilder,
         Composer,
         BaseTableManager;
