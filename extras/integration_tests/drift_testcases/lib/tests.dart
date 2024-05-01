@@ -4,6 +4,7 @@ export 'package:drift/drift.dart'
     hide
         isNull,
         isNotNull,
+        ComposerState,
         JoinBuilder,
         Composable,
         ComposableOrdering,

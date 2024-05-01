@@ -13,6 +13,7 @@ export 'package:drift/drift.dart'
         DriftAccessor,
         DriftWrappedException,
         JoinBuilder,
+        ComposerState,
         Composable,
         ComposableOrdering,
         ComposableFilter,
