@@ -63,7 +63,7 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
   /// In the above example, f.name returns a [ColumnFilters] object, which
   /// contains methods for creating filters on the `name` column.
   /// ```
-  @internal
+  /// {@macro manager_internal_use_only}
   ColumnFilters(super.column, {super.inverted = false, super.joinBuilders});
 
   @override
@@ -88,7 +88,8 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
   /// for columns that have a type converter
   ///
   /// See [ColumnFilters] for more information on how to use this class
-  @internal
+  ///
+  /// {@macro manager_internal_use_only}
   ColumnWithTypeConverterFilters(super.column,
       {super.inverted = false, super.joinBuilders});
 

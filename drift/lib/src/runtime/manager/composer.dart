@@ -26,7 +26,8 @@ class ComposerState<Database extends GeneratedDatabase,
   /// A class which holds the state of the composer.
   ///
   /// This class primary focus is creating joins between tables, and passing them down to the composable classes.
-  @internal
+  ///
+  /// {@macro manager_internal_use_only}
   ComposerState(this.db, this.table,
       [this.joinBuilder, this.parentComposers = const []]);
 

@@ -1,12 +1,12 @@
 part of 'manager.dart';
 
 /// Defines a class which is used to wrap a column to only expose ordering functions
-
 class ColumnOrderings<T extends Object> {
   /// This class is a wrapper on top of the generated column class
   ///
   /// It's used to expose ordering functions for a column
-  @internal
+  ///
+  /// {@macro manager_internal_use_only}
   ColumnOrderings(this.column, {this.joinBuilders});
 
   /// Column that this [ColumnOrderings] wraps

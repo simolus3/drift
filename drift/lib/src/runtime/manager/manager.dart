@@ -489,6 +489,11 @@ abstract class RootTableManager<
         CU extends Function>
     extends _BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
   /// Create a new [RootTableManager] instance
+  ///
+  /// {@template manager_internal_use_only}
+  /// This class is implemented by the code generator and should
+  /// not be instantiated or extended manually.
+  /// {@endtemplate}
   const RootTableManager(super.$state);
 
   /// Creates a new row in the table using the given function
