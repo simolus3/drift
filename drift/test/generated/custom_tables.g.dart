@@ -2,7 +2,7 @@
 
 part of 'custom_tables.dart';
 
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1973,16 +1973,28 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
 class $WithDefaultsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsFilterComposer(super.db, super.table);
-  ColumnFilters<String> get a => ColumnFilters($table.a);
-  ColumnFilters<int> get b => ColumnFilters($table.b);
+  $WithDefaultsFilterComposer(super.$state);
+  ColumnFilters<String> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<int> get b => $state.composableBuilder(
+      column: $state.table.b,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $WithDefaultsOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get a => ColumnOrderings($table.a);
-  ColumnOrderings<int> get b => ColumnOrderings($table.b);
+  $WithDefaultsOrderingComposer(super.$state);
+  ColumnOrderings<String> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<int> get b => $state.composableBuilder(
+      column: $state.table.b,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $WithDefaultsProcessedTableManager extends ProcessedTableManager<
@@ -2021,8 +2033,10 @@ class $WithDefaultsTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $WithDefaultsFilterComposer(db, table),
-            orderingComposer: $WithDefaultsOrderingComposer(db, table),
+            filteringComposer:
+                $WithDefaultsFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $WithDefaultsOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $WithDefaultsProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
@@ -2049,18 +2063,36 @@ class $WithDefaultsTableManager extends RootTableManager<
 
 class $WithConstraintsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsFilterComposer(super.db, super.table);
-  ColumnFilters<String> get a => ColumnFilters($table.a);
-  ColumnFilters<int> get b => ColumnFilters($table.b);
-  ColumnFilters<double> get c => ColumnFilters($table.c);
+  $WithConstraintsFilterComposer(super.$state);
+  ColumnFilters<String> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<int> get b => $state.composableBuilder(
+      column: $state.table.b,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<double> get c => $state.composableBuilder(
+      column: $state.table.c,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $WithConstraintsOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get a => ColumnOrderings($table.a);
-  ColumnOrderings<int> get b => ColumnOrderings($table.b);
-  ColumnOrderings<double> get c => ColumnOrderings($table.c);
+  $WithConstraintsOrderingComposer(super.$state);
+  ColumnOrderings<String> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<int> get b => $state.composableBuilder(
+      column: $state.table.b,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<double> get c => $state.composableBuilder(
+      column: $state.table.c,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $WithConstraintsProcessedTableManager extends ProcessedTableManager<
@@ -2103,8 +2135,10 @@ class $WithConstraintsTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $WithConstraintsFilterComposer(db, table),
-            orderingComposer: $WithConstraintsOrderingComposer(db, table),
+            filteringComposer:
+                $WithConstraintsFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $WithConstraintsOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $WithConstraintsProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
@@ -2135,28 +2169,48 @@ class $WithConstraintsTableManager extends RootTableManager<
 
 class $ConfigTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableFilterComposer(super.db, super.table);
-  ColumnFilters<String> get configKey => ColumnFilters($table.configKey);
-  ColumnFilters<DriftAny> get configValue => ColumnFilters($table.configValue);
-  ColumnFilters<int> get syncStateValue => ColumnFilters($table.syncState);
+  $ConfigTableFilterComposer(super.$state);
+  ColumnFilters<String> get configKey => $state.composableBuilder(
+      column: $state.table.configKey,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<DriftAny> get configValue => $state.composableBuilder(
+      column: $state.table.configValue,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
   ColumnWithTypeConverterFilters<SyncType?, SyncType, int> get syncState =>
-      ColumnWithTypeConverterFilters($table.syncState);
-  ColumnFilters<int> get syncStateImplicitValue =>
-      ColumnFilters($table.syncStateImplicit);
+      $state.composableBuilder(
+          column: $state.table.syncState,
+          builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
+              column,
+              joinBuilders: joinBuilders));
   ColumnWithTypeConverterFilters<SyncType?, SyncType, int>
-      get syncStateImplicit =>
-          ColumnWithTypeConverterFilters($table.syncStateImplicit);
+      get syncStateImplicit => $state.composableBuilder(
+          column: $state.table.syncStateImplicit,
+          builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
+              column,
+              joinBuilders: joinBuilders));
 }
 
 class $ConfigTableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get configKey => ColumnOrderings($table.configKey);
-  ColumnOrderings<DriftAny> get configValue =>
-      ColumnOrderings($table.configValue);
-  ColumnOrderings<int> get syncState => ColumnOrderings($table.syncState);
-  ColumnOrderings<int> get syncStateImplicit =>
-      ColumnOrderings($table.syncStateImplicit);
+  $ConfigTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get configKey => $state.composableBuilder(
+      column: $state.table.configKey,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<DriftAny> get configValue => $state.composableBuilder(
+      column: $state.table.configValue,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<int> get syncState => $state.composableBuilder(
+      column: $state.table.syncState,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<int> get syncStateImplicit => $state.composableBuilder(
+      column: $state.table.syncStateImplicit,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $ConfigTableProcessedTableManager extends ProcessedTableManager<
@@ -2199,8 +2253,10 @@ class $ConfigTableTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $ConfigTableFilterComposer(db, table),
-            orderingComposer: $ConfigTableOrderingComposer(db, table),
+            filteringComposer:
+                $ConfigTableFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $ConfigTableOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $ConfigTableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
@@ -2234,20 +2290,44 @@ class $ConfigTableTableManager extends RootTableManager<
 }
 
 class $MytableFilterComposer extends FilterComposer<_$CustomTablesDb, Mytable> {
-  $MytableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get someid => ColumnFilters($table.someid);
-  ColumnFilters<String> get sometext => ColumnFilters($table.sometext);
-  ColumnFilters<bool> get isInserting => ColumnFilters($table.isInserting);
-  ColumnFilters<DateTime> get somedate => ColumnFilters($table.somedate);
+  $MytableFilterComposer(super.$state);
+  ColumnFilters<int> get someid => $state.composableBuilder(
+      column: $state.table.someid,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get sometext => $state.composableBuilder(
+      column: $state.table.sometext,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<bool> get isInserting => $state.composableBuilder(
+      column: $state.table.isInserting,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<DateTime> get somedate => $state.composableBuilder(
+      column: $state.table.somedate,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $MytableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, Mytable> {
-  $MytableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get someid => ColumnOrderings($table.someid);
-  ColumnOrderings<String> get sometext => ColumnOrderings($table.sometext);
-  ColumnOrderings<bool> get isInserting => ColumnOrderings($table.isInserting);
-  ColumnOrderings<DateTime> get somedate => ColumnOrderings($table.somedate);
+  $MytableOrderingComposer(super.$state);
+  ColumnOrderings<int> get someid => $state.composableBuilder(
+      column: $state.table.someid,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get sometext => $state.composableBuilder(
+      column: $state.table.sometext,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<bool> get isInserting => $state.composableBuilder(
+      column: $state.table.isInserting,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<DateTime> get somedate => $state.composableBuilder(
+      column: $state.table.somedate,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $MytableProcessedTableManager extends ProcessedTableManager<
@@ -2288,8 +2368,9 @@ class $MytableTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $MytableFilterComposer(db, table),
-            orderingComposer: $MytableOrderingComposer(db, table),
+            filteringComposer: $MytableFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $MytableOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) => $MytableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
               Value<int> someid = const Value.absent(),
@@ -2318,17 +2399,35 @@ class $MytableTableManager extends RootTableManager<
 }
 
 class $EmailFilterComposer extends FilterComposer<_$CustomTablesDb, Email> {
-  $EmailFilterComposer(super.db, super.table);
-  ColumnFilters<String> get sender => ColumnFilters($table.sender);
-  ColumnFilters<String> get title => ColumnFilters($table.title);
-  ColumnFilters<String> get body => ColumnFilters($table.body);
+  $EmailFilterComposer(super.$state);
+  ColumnFilters<String> get sender => $state.composableBuilder(
+      column: $state.table.sender,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get body => $state.composableBuilder(
+      column: $state.table.body,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
-  $EmailOrderingComposer(super.db, super.table);
-  ColumnOrderings<String> get sender => ColumnOrderings($table.sender);
-  ColumnOrderings<String> get title => ColumnOrderings($table.title);
-  ColumnOrderings<String> get body => ColumnOrderings($table.body);
+  $EmailOrderingComposer(super.$state);
+  ColumnOrderings<String> get sender => $state.composableBuilder(
+      column: $state.table.sender,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get body => $state.composableBuilder(
+      column: $state.table.body,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $EmailProcessedTableManager extends ProcessedTableManager<
@@ -2369,8 +2468,8 @@ class $EmailTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $EmailFilterComposer(db, table),
-            orderingComposer: $EmailOrderingComposer(db, table),
+            filteringComposer: $EmailFilterComposer(ComposerState(db, table)),
+            orderingComposer: $EmailOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) => $EmailProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
               Value<String> sender = const Value.absent(),
@@ -2400,16 +2499,28 @@ class $EmailTableManager extends RootTableManager<
 
 class $WeirdTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get sqlClass => ColumnFilters($table.sqlClass);
-  ColumnFilters<String> get textColumn => ColumnFilters($table.textColumn);
+  $WeirdTableFilterComposer(super.$state);
+  ColumnFilters<int> get sqlClass => $state.composableBuilder(
+      column: $state.table.sqlClass,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get textColumn => $state.composableBuilder(
+      column: $state.table.textColumn,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $WeirdTableOrderingComposer
     extends OrderingComposer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get sqlClass => ColumnOrderings($table.sqlClass);
-  ColumnOrderings<String> get textColumn => ColumnOrderings($table.textColumn);
+  $WeirdTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get sqlClass => $state.composableBuilder(
+      column: $state.table.sqlClass,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get textColumn => $state.composableBuilder(
+      column: $state.table.textColumn,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $WeirdTableProcessedTableManager extends ProcessedTableManager<
@@ -2448,8 +2559,10 @@ class $WeirdTableTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $WeirdTableFilterComposer(db, table),
-            orderingComposer: $WeirdTableOrderingComposer(db, table),
+            filteringComposer:
+                $WeirdTableFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $WeirdTableOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $WeirdTableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({

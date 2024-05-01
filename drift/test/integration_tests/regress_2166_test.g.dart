@@ -2,7 +2,7 @@
 
 part of 'regress_2166_test.dart';
 
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 class $_SomeTableTable extends _SomeTable
     with TableInfo<$_SomeTableTable, _SomeTableData> {
   @override
@@ -195,16 +195,28 @@ abstract class _$_SomeDb extends GeneratedDatabase {
 
 class $$_SomeTableTableFilterComposer
     extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableFilterComposer(super.db, super.table);
-  ColumnFilters<int> get id => ColumnFilters($table.id);
-  ColumnFilters<String> get name => ColumnFilters($table.name);
+  $$_SomeTableTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$_SomeTableTableOrderingComposer
     extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableOrderingComposer(super.db, super.table);
-  ColumnOrderings<int> get id => ColumnOrderings($table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($table.name);
+  $$_SomeTableTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<
@@ -241,8 +253,10 @@ class $$_SomeTableTableTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $$_SomeTableTableFilterComposer(db, table),
-            orderingComposer: $$_SomeTableTableOrderingComposer(db, table),
+            filteringComposer:
+                $$_SomeTableTableFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $$_SomeTableTableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({

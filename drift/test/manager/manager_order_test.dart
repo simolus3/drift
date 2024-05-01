@@ -83,7 +83,7 @@ void main() {
     // Order by related
     expect(
         db.managers.todosTable
-            .orderBy((o) => o.category((o) => o.id.asc()))
+            .orderBy((o) => o.category.id.asc())
             .get()
             .then((value) => value.map((e) => e.id).toList()),
         completion([3, 4, 1, 2]));
