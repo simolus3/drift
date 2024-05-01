@@ -2,7 +2,7 @@
 
 part of 'database.dart';
 
-// ignore_for_file: type=lint, invalid_use_of_internal_member
+// ignore_for_file: type=lint
 class $TestTableTable extends TestTable
     with TableInfo<$TestTableTable, TestTableData> {
   @override

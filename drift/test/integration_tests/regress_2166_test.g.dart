@@ -2,7 +2,7 @@
 
 part of 'regress_2166_test.dart';
 
-// ignore_for_file: type=lint, invalid_use_of_internal_member
+// ignore_for_file: type=lint
 class $_SomeTableTable extends _SomeTable
     with TableInfo<$_SomeTableTable, _SomeTableData> {
   @override

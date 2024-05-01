@@ -1,12 +1,12 @@
 part of 'manager.dart';
 
 /// Defines a class which is used to wrap a column to only expose ordering functions
-@internal
+
 class ColumnOrderings<T extends Object> {
   /// This class is a wrapper on top of the generated column class
   ///
   /// It's used to expose ordering functions for a column
-
+  @internal
   ColumnOrderings(this.column, {this.joinBuilders});
 
   /// Column that this [ColumnOrderings] wraps
@@ -36,7 +36,6 @@ class ColumnOrderings<T extends Object> {
 }
 
 /// Defines a class which will hold the information needed to create an ordering
-@internal
 class OrderingBuilder {
   /// The mode of the ordering
   final OrderingMode mode;
@@ -45,6 +44,7 @@ class OrderingBuilder {
   final Expression<Object> column;
 
   /// Create a new ordering builder, will be used by the [TableManagerState] to create [OrderingTerm]s
+  @internal
   OrderingBuilder(this.mode, this.column);
 
   @override
@@ -67,10 +67,9 @@ class OrderingBuilder {
 ///
 /// Multiple orderings can be composed together using the `&` operator.
 /// The orderings will be executed from left to right.
-/// See [Composable] for more information
+/// See [_Composable] for more information
 /// on how joins are stored
-@internal
-class ComposableOrdering extends Composable {
+class ComposableOrdering extends _Composable {
   /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
   @override
@@ -92,7 +91,6 @@ class ComposableOrdering extends Composable {
 }
 
 /// The class that orchestrates the composition of orderings
-@internal
 class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   /// A ordering composer will be generated for each table.
@@ -101,5 +99,6 @@ class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
   /// todos.orderBy((f) => f.name.asc());
   /// ```
   /// In the above example, `f` is a [OrderingComposer] object, and `f.name` returns a [ColumnOrderings] object.
+  @internal
   OrderingComposer(super.$state);
 }

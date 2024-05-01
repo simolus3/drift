@@ -2,7 +2,7 @@
 
 part of 'geopoly_integration_test.dart';
 
-// ignore_for_file: type=lint, invalid_use_of_internal_member
+// ignore_for_file: type=lint
 class GeopolyTest extends Table
     with
         TableInfo<GeopolyTest, GeopolyTestData>,

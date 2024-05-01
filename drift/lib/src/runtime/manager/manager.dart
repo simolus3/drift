@@ -26,7 +26,7 @@ class _JoinedResult<T extends Table, DT extends DataClass>
   const _JoinedResult(this.statement);
 }
 
-/// Defines a class that holds the state for a [BaseTableManager]
+/// Defines a class that holds the state for a [_BaseTableManager]
 ///
 /// It holds the state for manager of [T] table in [DB] database, used to return [DT] data classes/rows.
 /// It holds the [FS] Filters and [OS] Orderings for the manager.
@@ -35,7 +35,7 @@ class _JoinedResult<T extends Table, DT extends DataClass>
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
 ///
 /// The [C] generic refers to the type of the child manager that will be created when a filter/ordering is applied
-@internal
+
 class TableManagerState<
     DB extends GeneratedDatabase,
     T extends Table,
@@ -95,7 +95,9 @@ class TableManagerState<
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
-  /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
+  /// This is held in a seperate class than the [_BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
+  ///
+  /// This class is used internally by the [_BaseTableManager] and should not be used directly
   const TableManagerState(
       {required this.db,
       required this.table,
@@ -292,8 +294,7 @@ class TableManagerState<
 /// Base class for all table managers
 /// Most of this classes functionality is kept in a seperate [TableManagerState] class
 /// This is so that the state can be passed down to lower level managers
-@internal
-abstract class BaseTableManager<
+abstract class _BaseTableManager<
         DB extends GeneratedDatabase,
         T extends Table,
         DT extends DataClass,
@@ -309,8 +310,8 @@ abstract class BaseTableManager<
   /// The state for this manager
   final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> $state;
 
-  /// Create a new [BaseTableManager] instance
-  const BaseTableManager(this.$state);
+  /// Create a new [_BaseTableManager] instance
+  const _BaseTableManager(this.$state);
 
   /// Add a limit to the statement
   C limit(int limit, {int? offset}) {
@@ -457,7 +458,6 @@ abstract class BaseTableManager<
 
 /// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
 //  As of now this is identical to [BaseTableManager] but it's kept seperate for future extensibility
-@internal
 class ProcessedTableManager<
         DB extends GeneratedDatabase,
         T extends Table,
@@ -467,26 +467,27 @@ class ProcessedTableManager<
         C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
         CI extends Function,
         CU extends Function>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU>
+    extends _BaseTableManager<DB, T, D, FS, OS, C, CI, CU>
     implements
         MultiSelectable<D>,
         SingleSelectable<D>,
         SingleOrNullSelectable<D> {
   /// Create a new [ProcessedTableManager] instance
+  @internal
   const ProcessedTableManager(super.$state);
 }
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
-@internal
 abstract class RootTableManager<
-    DB extends GeneratedDatabase,
-    T extends Table,
-    D extends DataClass,
-    FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
-    CI extends Function,
-    CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
+        DB extends GeneratedDatabase,
+        T extends Table,
+        D extends DataClass,
+        FS extends FilterComposer<DB, T>,
+        OS extends OrderingComposer<DB, T>,
+        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
+        CI extends Function,
+        CU extends Function>
+    extends _BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
   /// Create a new [RootTableManager] instance
   const RootTableManager(super.$state);
 

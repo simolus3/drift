@@ -1,7 +1,6 @@
 part of 'manager.dart';
 
 /// A class that contains the information needed to create a join
-@internal
 class JoinBuilder {
   /// The table that the join is being applied to
   final Table currentTable;
@@ -18,6 +17,7 @@ class JoinBuilder {
   /// Class that describes how a ordering that is being
   /// applied to a referenced table
   /// should be joined to the current table
+  @internal
   JoinBuilder(
       {required this.currentTable,
       required this.referencedTable,
@@ -30,16 +30,19 @@ class JoinBuilder {
   }
 
   @override
-  bool operator ==(covariant JoinBuilder other) {
+  bool operator ==(other) {
     if (identical(this, other)) return true;
-
-    return other.currentColumn == currentColumn &&
-        other.referencedColumn == referencedColumn;
+    if (other is JoinBuilder) {
+      return other.currentColumn == currentColumn &&
+          other.referencedColumn == referencedColumn;
+    } else {
+      return false;
+    }
   }
 
   @override
   int get hashCode {
-    return currentColumn.hashCode ^ referencedColumn.hashCode;
+    return Object.hash(currentColumn, referencedColumn);
   }
 
   @override
@@ -60,18 +63,17 @@ class JoinBuilder {
 ///
 /// Example:
 /// ```dart
-/// todos.filter((f) => f.category )
+/// todos.filter((f) => f.category.id(3))
 /// ```
 ///
 /// In the above example, f.category returns a [ComposableFilter] object, which
-/// is a subclass of [Composable].
+/// is a subclass of [_Composable].
 /// This resulting where expression will require a join to be created
 /// between the `categories` and `todos` table.
 ///
 /// This interface is used to ensure that the [ComposableFilter] object will have
 /// the information needed to create the join by expressions.
-@internal
-abstract interface class Composable {
+abstract interface class _Composable {
   /// The join builders that are associated with this class
   /// They are ordered by the order in which they were added
   /// These will be used by the [TableManagerState] to create the joins

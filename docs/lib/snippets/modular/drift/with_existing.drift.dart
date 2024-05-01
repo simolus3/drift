@@ -1,4 +1,4 @@
-// ignore_for_file: type=lint, invalid_use_of_internal_member
+// ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:drift_docs/snippets/modular/drift/row_class.dart' as i1;
 import 'package:drift_docs/snippets/modular/drift/with_existing.drift.dart'

@@ -52,7 +52,6 @@ abstract class _BaseColumnFilters<T extends Object> {
 }
 
 /// Built in filters for all columns
-@internal
 class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
   /// This class is a wrapper on top of the generated column class
   ///
@@ -64,6 +63,7 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
   /// In the above example, f.name returns a [ColumnFilters] object, which
   /// contains methods for creating filters on the `name` column.
   /// ```
+  @internal
   ColumnFilters(super.column, {super.inverted = false, super.joinBuilders});
 
   @override
@@ -82,13 +82,13 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
 }
 
 /// Built in filters for columns that have a type converter
-@internal
 class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
     T extends Object> extends _BaseColumnFilters<T> {
   /// This class is a wrapper on top of the generated column class
   /// for columns that have a type converter
   ///
   /// See [ColumnFilters] for more information on how to use this class
+  @internal
   ColumnWithTypeConverterFilters(super.column,
       {super.inverted = false, super.joinBuilders});
 
@@ -283,16 +283,15 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
-enum _Opperator { and, or }
+enum _BooleanOperator { and, or }
 
 /// This class is used to compose filters together
 ///
 /// This class contains all the information that will
 /// be used to create a where expression for the [TableManagerState]
 ///
-/// See [Composable] for more information on how joins are stored
-@internal
-class ComposableFilter extends Composable {
+/// See [_Composable] for more information on how joins are stored
+class ComposableFilter extends _Composable {
   @override
   final Set<JoinBuilder> joinBuilders;
 
@@ -304,22 +303,22 @@ class ComposableFilter extends Composable {
 
   /// Combine two filters with an AND
   ComposableFilter operator &(ComposableFilter other) =>
-      _combineFilter(_Opperator.and, other);
+      _combineFilter(_BooleanOperator.and, other);
 
   /// Combine two filters with an OR
   ComposableFilter operator |(ComposableFilter other) =>
-      _combineFilter(_Opperator.or, other);
+      _combineFilter(_BooleanOperator.or, other);
 
   /// A helper function to combine two filters
   ComposableFilter _combineFilter(
-      _Opperator opperator, ComposableFilter otherFilter) {
+      _BooleanOperator opperator, ComposableFilter otherFilter) {
     final combinedExpression = switch ((expression, otherFilter.expression)) {
       (null, null) => null,
       (null, var expression) => expression,
       (var expression, null) => expression,
       (_, _) => switch (opperator) {
-          _Opperator.and => expression! & otherFilter.expression!,
-          _Opperator.or => expression! | otherFilter.expression!,
+          _BooleanOperator.and => expression! & otherFilter.expression!,
+          _BooleanOperator.or => expression! | otherFilter.expression!,
         },
     };
     return ComposableFilter._(
@@ -330,7 +329,6 @@ class ComposableFilter extends Composable {
 }
 
 /// The class that orchestrates the composition of filtering
-@internal
 class FilterComposer<Database extends GeneratedDatabase,
     CurrentTable extends Table> extends Composer<Database, CurrentTable> {
   /// A filter composer will be generated for each table.
@@ -339,5 +337,6 @@ class FilterComposer<Database extends GeneratedDatabase,
   /// todos.filter((f) => f.name.equals('Bob'));
   /// ```
   /// In the above example, `f` is a [FilterComposer] object, and `f.name` returns a [ColumnFilters] object.
+  @internal
   FilterComposer(super.$state);
 }

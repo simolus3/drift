@@ -94,9 +94,20 @@ class _ReferencedFilterWriter extends _FilterWriter {
   /// E.G `CategoryFilterComposer`
   final String referencedFilterComposer;
 
-  /// Whether this is a reverse reference
-  /// This is used to determine of the filter should
-  /// use a callback or return the related filterset directly
+  /// Whether this is a reverse reference or not.
+  /// On a simple reference (Foreign Key) we are filtering on a single object,
+  /// in which case the Filter API uses the following design:
+  ///
+  /// ```dart
+  /// todos.filter((f) => f.category.name.equals("School")); // Todos in School category
+  /// ```
+  ///
+  /// However, when filtering on the reverse reference, we are filtering on a list of objects,
+  /// in which case the Filter API uses a callback which filters on that list:
+  ///
+  /// ```dart
+  /// categories.filter((f) => f.todos((f) => f.name.equals("Supper"))); // Categories with a todo named Supper
+  /// ```
   final bool isReverseReference;
 
   /// A class used for building filters for referenced tables

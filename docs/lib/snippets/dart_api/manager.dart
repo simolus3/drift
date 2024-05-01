@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_internal_member
+
 import 'package:drift/drift.dart';
 
 part 'manager.g.dart';
@@ -209,62 +211,61 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_filter_custom_back_references
 }
 
-// This documentation should added once the internal manager APIs are more stable
-// // #docregion manager_filter_extensions
-// // Extend drifts built-in filters by combining the existing filters to create a new one
-// // or by creating a new filter from scratch
-// extension After2000Filter on ColumnFilters<DateTime> {
-//   // Create a new filter by combining existing filters
-//   ComposableFilter after2000orBefore1900() =>
-//       isAfter(DateTime(2000)) | isBefore(DateTime(1900));
+// #docregion manager_filter_extensions
+// Extend drifts built-in filters by combining the existing filters to create a new one
+// or by creating a new filter from scratch
+extension After2000Filter on ColumnFilters<DateTime> {
+  // Create a new filter by combining existing filters
+  ComposableFilter after2000orBefore1900() =>
+      isAfter(DateTime(2000)) | isBefore(DateTime(1900));
 
-//   // Create a new filter from scratch using the `column` property
-//   ComposableFilter filterOnUnixEpoch(int value) =>
-//       $composableFilter(column.unixepoch.equals(value));
-// }
+  // Create a new filter from scratch using the `column` property
+  ComposableFilter filterOnUnixEpoch(int value) =>
+      $composableFilter(column.unixepoch.equals(value));
+}
 
-// Future filterWithExtension(AppDatabase db) async {
-//   // Use the custom filters on any column that is of type DateTime
-//   db.managers.todoItems.filter((f) => f.createdAt.after2000orBefore1900());
+Future filterWithExtension(AppDatabase db) async {
+  // Use the custom filters on any column that is of type DateTime
+  db.managers.todoItems.filter((f) => f.createdAt.after2000orBefore1900());
 
-//   // Use the custom filter on the `unixepoch` column
-//   db.managers.todoItems.filter((f) => f.createdAt.filterOnUnixEpoch(0));
-// }
-// // #enddocregion manager_filter_extensions
+  // Use the custom filter on the `unixepoch` column
+  db.managers.todoItems.filter((f) => f.createdAt.filterOnUnixEpoch(0));
+}
+// #enddocregion manager_filter_extensions
 
-// // #docregion manager_ordering_extensions
-// // Extend drifts built-in orderings by create a new ordering from scratch
-// extension After2000Ordering on ColumnOrderings<DateTime> {
-//   ComposableOrdering byUnixEpoch() => ColumnOrderings(column.unixepoch).asc();
-// }
+// #docregion manager_ordering_extensions
+// Extend drifts built-in orderings by create a new ordering from scratch
+extension After2000Ordering on ColumnOrderings<DateTime> {
+  ComposableOrdering byUnixEpoch() => ColumnOrderings(column.unixepoch).asc();
+}
 
-// Future orderingWithExtension(AppDatabase db) async {
-//   // Use the custom orderings on any column that is of type DateTime
-//   db.managers.todoItems.orderBy((f) => f.createdAt.byUnixEpoch());
-// }
-// // #enddocregion manager_ordering_extensions
+Future orderingWithExtension(AppDatabase db) async {
+  // Use the custom orderings on any column that is of type DateTime
+  db.managers.todoItems.orderBy((f) => f.createdAt.byUnixEpoch());
+}
+// #enddocregion manager_ordering_extensions
 
-// // #docregion manager_custom_filter
-// // Extend the generated table filter composer to add a custom filter
-// extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
-//   ComposableFilter noContentOrBefore2000() =>
-//       (content.isNull() | createdAt.isBefore(DateTime(2000)));
-// }
+// #docregion manager_custom_filter
+// Extend the generated table filter composer to add a custom filter
+extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
+  ComposableFilter noContentOrBefore2000() =>
+      (content.isNull() | createdAt.isBefore(DateTime(2000)));
+}
 
-// Future customFilter(AppDatabase db) async {
-//   // Use the custom filter on the `TodoItems` table
-//   db.managers.todoItems.filter((f) => f.noContentOrBefore2000());
-// }
-// // #enddocregion manager_custom_filter
+Future customFilter(AppDatabase db) async {
+  // Use the custom filter on the `TodoItems` table
+  db.managers.todoItems.filter((f) => f.noContentOrBefore2000());
+}
+// #enddocregion manager_custom_filter
 
-// // #docregion manager_custom_ordering
-// // Extend the generated table filter composer to add a custom filter
-// extension ContentThenCreationDataX on $$TodoItemsTableOrderingComposer {
-//   ComposableOrdering contentThenCreatedAt() => content.asc() & createdAt.asc();
-// }
+// #docregion manager_custom_ordering
+// Extend the generated table filter composer to add a custom filter
+extension ContentThenCreationDataX on $$TodoItemsTableOrderingComposer {
+  ComposableOrdering contentThenCreatedAt() => content.asc() & createdAt.asc();
+}
 
-// Future customOrdering(AppDatabase db) async {
-//   // Use the custom ordering on the `TodoItems` table
-//   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
-// }
-// // #enddocregion manager_custom_ordering
+Future customOrdering(AppDatabase db) async {
+  // Use the custom ordering on the `TodoItems` table
+  db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
+}
+// #enddocregion manager_custom_ordering

@@ -1,4 +1,4 @@
-// ignore_for_file: type=lint, invalid_use_of_internal_member
+// ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:drift_docs/snippets/_shared/todo_tables.drift.dart' as i1;
 

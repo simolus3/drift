@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'manager.dart';
 
-@internal
 class ComposerState<Database extends GeneratedDatabase,
     CurrentTable extends Table> {
   /// The database instance used by the composer.
@@ -27,6 +26,7 @@ class ComposerState<Database extends GeneratedDatabase,
   /// A class which holds the state of the composer.
   ///
   /// This class primary focus is creating joins between tables, and passing them down to the composable classes.
+  @internal
   ComposerState(this.db, this.table,
       [this.joinBuilder, this.parentComposers = const []]);
 
@@ -106,7 +106,6 @@ class ComposerState<Database extends GeneratedDatabase,
   }
 }
 
-@internal
 sealed class Composer<Database extends GeneratedDatabase,
     CurrentTable extends Table> {
   /// The class which holds the state of the composer.

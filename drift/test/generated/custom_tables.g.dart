@@ -2,7 +2,7 @@
 
 part of 'custom_tables.dart';
 
-// ignore_for_file: type=lint, invalid_use_of_internal_member
+// ignore_for_file: type=lint
 class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   @override
   final GeneratedDatabase attachedDatabase;

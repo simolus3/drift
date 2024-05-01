@@ -440,8 +440,7 @@ class _DriftBuildRun {
       }
     }
 
-    output.writeln(
-        '// ignore_for_file: type=lint, invalid_use_of_internal_member');
+    output.writeln('// ignore_for_file: type=lint');
 
     if (mode == DriftGenerationMode.monolithicPart) {
       final originalFile = buildStep.inputId.pathSegments.last;
