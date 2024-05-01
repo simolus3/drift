@@ -1,4 +1,4 @@
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 import 'package:drift/drift.dart' as i0;
 import 'package:drift_docs/snippets/modular/drift/row_class.dart' as i1;
 import 'package:drift_docs/snippets/modular/drift/with_existing.drift.dart'
@@ -312,16 +312,12 @@ class FriendsCompanion extends i0.UpdateCompanion<i2.Friend> {
 
 class $FriendsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.Friends> {
-  $FriendsFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get userAId => i0.ColumnFilters($table.userA);
-  i0.ColumnFilters<int> get userBId => i0.ColumnFilters($table.userB);
+  $FriendsFilterComposer(super.$state);
 }
 
 class $FriendsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.Friends> {
-  $FriendsOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get userAId => i0.ColumnOrderings($table.userA);
-  i0.ColumnOrderings<int> get userBId => i0.ColumnOrderings($table.userB);
+  $FriendsOrderingComposer(super.$state);
 }
 
 class $FriendsProcessedTableManager extends i0.ProcessedTableManager<
@@ -360,8 +356,10 @@ class $FriendsTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $FriendsFilterComposer(db, table),
-            orderingComposer: $FriendsOrderingComposer(db, table),
+            filteringComposer:
+                $FriendsFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer:
+                $FriendsOrderingComposer(i0.ComposerState(db, table)),
             getChildManagerBuilder: (p0) => $FriendsProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
               i0.Value<int> userA = const i0.Value.absent(),

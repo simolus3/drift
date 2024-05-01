@@ -167,5 +167,5 @@ class GenerateUtilsCommand extends Command {
 
   static final _dartfmt = DartFormatter();
   static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
-      '// ignore_for_file: type=lint';
+      '// ignore_for_file: type=lint, invalid_use_of_internal_member';
 }

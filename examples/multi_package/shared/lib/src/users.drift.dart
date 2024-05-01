@@ -1,4 +1,4 @@
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 import 'package:drift/drift.dart' as i0;
 import 'package:shared/src/users.drift.dart' as i1;
 import 'package:shared/src/users.dart' as i2;
@@ -171,4 +171,88 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
           ..write(')'))
         .toString();
   }
+}
+
+class $$UsersTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
+  $$UsersTableFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$UsersTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$UsersTable> {
+  $$UsersTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$UsersTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$UsersTable,
+    i1.User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  const $$UsersTableProcessedTableManager(super.$state);
+}
+
+typedef $$UsersTableInsertCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<int> id,
+  required String name,
+});
+typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<int> id,
+  i0.Value<String> name,
+});
+
+class $$UsersTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$UsersTable,
+    i1.User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  $$UsersTableTableManager(i0.GeneratedDatabase db, i1.$UsersTable table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer:
+                $$UsersTableFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer:
+                $$UsersTableOrderingComposer(i0.ComposerState(db, table)),
+            getChildManagerBuilder: (p0) =>
+                $$UsersTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              i0.Value<String> name = const i0.Value.absent(),
+            }) =>
+                i1.UsersCompanion(
+                  id: id,
+                  name: name,
+                ),
+            getInsertCompanionBuilder: ({
+              i0.Value<int> id = const i0.Value.absent(),
+              required String name,
+            }) =>
+                i1.UsersCompanion.insert(
+                  id: id,
+                  name: name,
+                )));
 }

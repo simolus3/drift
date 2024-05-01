@@ -1,4 +1,4 @@
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, invalid_use_of_internal_member
 import 'package:drift/drift.dart' as i0;
 import 'package:drift_docs/snippets/modular/many_to_many/shared.drift.dart'
     as i1;
@@ -214,20 +214,31 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
 
 class $$ShoppingCartsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get entriesValue => i0.ColumnFilters($table.entries);
-  i0.ColumnWithTypeConverterFilters<
-      i3.ShoppingCartEntries,
-      i3.ShoppingCartEntries,
-      String> get entries => i0.ColumnWithTypeConverterFilters($table.entries);
+  $$ShoppingCartsTableFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnWithTypeConverterFilters<i3.ShoppingCartEntries,
+          i3.ShoppingCartEntries, String>
+      get entries => $state.composableBuilder(
+          column: $state.table.entries,
+          builder: (column, joinBuilders) => i0.ColumnWithTypeConverterFilters(
+              column,
+              joinBuilders: joinBuilders));
 }
 
 class $$ShoppingCartsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get entries => i0.ColumnOrderings($table.entries);
+  $$ShoppingCartsTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get entries => $state.composableBuilder(
+      column: $state.table.entries,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $$ShoppingCartsTableProcessedTableManager
@@ -268,8 +279,10 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $$ShoppingCartsTableFilterComposer(db, table),
-            orderingComposer: $$ShoppingCartsTableOrderingComposer(db, table),
+            filteringComposer:
+                $$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer: $$ShoppingCartsTableOrderingComposer(
+                i0.ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $$ShoppingCartsTableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
