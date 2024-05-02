@@ -168,7 +168,7 @@ class _BoundArguments {
         final value = args[i];
         return switch (value) {
           TypedValue() => value,
-          null => TypedValue(Type.text, null),
+          null => TypedValue(Type.unspecified, null),
           int() || BigInt() => TypedValue(Type.bigInteger, value),
           String() => TypedValue(Type.text, value),
           bool() => TypedValue(Type.boolean, value),
