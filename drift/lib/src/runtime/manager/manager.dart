@@ -8,6 +8,7 @@ part 'composer.dart';
 part 'filter.dart';
 part 'composable.dart';
 part 'ordering.dart';
+part 'reference_reader.dart';
 
 sealed class _StatementType<T extends Table, DT extends DataClass> {
   const _StatementType();
@@ -405,11 +406,13 @@ abstract class BaseTableManager<
   Stream<DT> watchSingle() =>
       $state.copyWith(distinct: true).buildSelectStatement().watchSingle();
 
+  /// {@template manager_get}
   /// Executes the statement and returns the first all rows as a list.
   ///
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
+  /// {@endtemplate}
   @override
   Future<List<DT>> get({bool distinct = false, int? limit, int? offset}) =>
       $state
@@ -417,12 +420,14 @@ abstract class BaseTableManager<
           .buildSelectStatement()
           .get();
 
+  /// {@template manager_watch}
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
   ///
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
+  /// {@endtemplate}
   @override
   Stream<List<DT>> watch({bool distinct = false, int? limit, int? offset}) =>
       $state

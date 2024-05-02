@@ -725,6 +725,9 @@ class $FollowsProcessedTableManager extends i0.ProcessedTableManager<
     $FollowsInsertCompanionBuilder,
     $FollowsUpdateCompanionBuilder> {
   const $FollowsProcessedTableManager(super.$state);
+  $FollowsReferenceReader withReferences() {
+    return $FollowsReferenceReader(this);
+  }
 }
 
 typedef $FollowsInsertCompanionBuilder = i1.FollowsCompanion Function({
@@ -776,6 +779,41 @@ class $FollowsTableManager extends i0.RootTableManager<
                   follower: follower,
                   rowid: rowid,
                 )));
+  $FollowsReferenceReader withReferences() {
+    return $FollowsReferenceReader(this);
+  }
+}
+
+class $FollowsReferenceReader<T0, T1> extends i0.ReferenceReader<i1.Follow,
+    ({i1.Follow follow, T0? followed, T1? follower})> {
+  $FollowsReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i1.Follow follow, T0? followed, T1? follower})> $withReferences(
+      i1.Follow value) async {
+    return (
+      follow: value,
+      followed: await _getFollowed(value),
+      follower: await _getFollower(value)
+    );
+  }
+
+  Future<T0?> _getFollowed(i1.Follow value) async {
+    return $getSingleReferenced<i1.User>(value.followed, _db.users.id) as T0?;
+  }
+
+  $FollowsReferenceReader<i1.User, T1> withFollowed() {
+    return $FollowsReferenceReader(this.$manager);
+  }
+
+  Future<T1?> _getFollower(i1.Follow value) async {
+    return $getSingleReferenced<i1.User>(value.follower, _db.users.id) as T1?;
+  }
+
+  $FollowsReferenceReader<T0, i1.User> withFollower() {
+    return $FollowsReferenceReader(this.$manager);
+  }
 }
 
 class PopularUser extends i0.DataClass {

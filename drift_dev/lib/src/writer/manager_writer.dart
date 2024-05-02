@@ -1,8 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/modules.dart';
 import 'package:drift_dev/src/writer/tables/update_companion_writer.dart';
 import 'package:drift_dev/src/writer/writer.dart';
+import 'package:recase/recase.dart';
 
 abstract class _FilterWriter {
   /// The getter for the column on this table
@@ -244,6 +246,42 @@ class _ReferencedOrderingWriter extends _OrderingWriter {
   }
 }
 
+class _ColumnReferenceReader {
+  /// The generic that the column reader will use, e.g. T1, T2, etc
+  final String generic;
+
+  /// The getter for the column on the referencing table
+  final String referenceColumnGetter;
+
+  /// The name of the field that the record should use for the actual rows data
+  final String fieldName;
+
+  /// The name of function that will be added to the tables reference reader
+  /// for actually getting the referenced object. E.g `_getCategory`
+  String get getterMethodName => "_get${fieldName.pascalCase}";
+
+  /// The method call that will be added to the tables reference reader
+  /// for the user to add which references they want returned. E.g `withCategory()`
+  String get withMethodName => "with${fieldName.pascalCase}";
+
+  /// Whether this is a reverse reference or not
+  final bool isReverseReference;
+
+  /// Names of the referenced table
+  final _TableManagerWriter referencedTableNames;
+
+  /// The name of the column on the referenced table
+  final String referencedColumnGetter;
+
+  _ColumnReferenceReader(
+      {required this.generic,
+      required this.referenceColumnGetter,
+      required this.referencedTableNames,
+      required this.referencedColumnGetter,
+      required this.fieldName,
+      required this.isReverseReference});
+}
+
 class _ColumnManagerWriter {
   /// The getter for the field
   ///
@@ -290,6 +328,11 @@ class _TableManagerWriter {
   String get processedTableManager =>
       '\$${table.entityInfoName}ProcessedTableManager';
 
+  /// The name of the reference reader class
+  ///
+  /// E.G `UserReferenceReader`
+  String get referenceReaderName => '\$${table.entityInfoName}ReferenceReader';
+
   /// The name of the root table manager class
   ///
   /// E.G `UserTableManager`
@@ -332,10 +375,77 @@ class _TableManagerWriter {
   /// Filters for back references
   final List<_ReferencedFilterWriter> backRefFilters;
 
+  /// A list a classes that contain all the data needed to create a reference reader for this table
+  final List<_ColumnReferenceReader> columnReferenceReaders;
+
   _TableManagerWriter(
       this.table, this.scope, this.dbScope, this.databaseGenericName)
       : backRefFilters = [],
-        columns = [];
+        columns = [],
+        columnReferenceReaders = [];
+
+  void _writeReferenceReader(TextEmitter leaf) {
+    if (columnReferenceReaders.isEmpty) {
+      return;
+    }
+    // The name of the field that the record should use for the actual rows data
+    final tableDataClassFieldName = rowClassName.split('.').last.camelCase;
+
+    // The record type for the reference reader. e.g ({User user, T1? category})
+    final dataClassWithRecordType =
+        '({$rowClassName $tableDataClassFieldName,${columnReferenceReaders.map((e) => '${e.generic}? ${e.fieldName}').join(',')}})';
+
+    // The generic for the reference reader. e.g <T1, T2>
+    final referenceReaderGenerics = dataClassWithRecordType.isEmpty
+        ? null
+        : '<${columnReferenceReaders.map((e) => e.generic).join(',')}>';
+
+    leaf
+      ..write(
+          'class $referenceReaderName${referenceReaderGenerics ?? ""} extends ')
+      ..writeDriftRef('ReferenceReader')
+      ..writeln('<$rowClassName,$dataClassWithRecordType> {')
+      ..writeln('$referenceReaderName(this.\$manager);')
+      ..writeln(
+          '$databaseGenericName get _db => \$manager.\$state.db as $databaseGenericName;')
+      ..write('final ')
+      ..writeDriftRef('BaseTableManager')
+      ..writeln(' \$manager;')
+      ..writeln("@override")
+      ..write(
+          'Future<$dataClassWithRecordType> \$withReferences($rowClassName value) async {')
+      ..writeln(
+          'return ($tableDataClassFieldName:value, ${columnReferenceReaders.map((e) => '${e.fieldName}: await ${e.getterMethodName}(value)').join(',')});')
+      ..writeln('}');
+
+    for (var reader in columnReferenceReaders) {
+      if (reader.isReverseReference) {
+        leaf.writeln(
+            "Future<${reader.generic}?> ${reader.getterMethodName}($rowClassName value) async {");
+        leaf.writeln(
+            "final result = await \$getReverseReferenced<${reader.generic},${reader.referencedTableNames.rowClassName}>(value.${reader.referenceColumnGetter}, _db.${reader.referencedTableNames.table.dbGetterName}.${reader.referencedColumnGetter});");
+        leaf.writeln("return result as ${reader.generic}?;");
+        leaf.writeln("}");
+      } else {
+        leaf.writeln(
+            "Future<${reader.generic}?> ${reader.getterMethodName}($rowClassName value) async {");
+        leaf.writeln(
+            "return \$getSingleReferenced<${reader.referencedTableNames.rowClassName}>(value.${reader.referenceColumnGetter}, _db.${reader.referencedTableNames.table.dbGetterName}.${reader.referencedColumnGetter})  as ${reader.generic}?;");
+        leaf.writeln("}");
+      }
+
+      final actualType = reader.isReverseReference
+          ? 'List<${reader.referencedTableNames.rowClassName}>'
+          : reader.referencedTableNames.rowClassName;
+
+      leaf.writeln(
+          "$referenceReaderName${referenceReaderGenerics!.replaceFirst(reader.generic, actualType)} ${reader.withMethodName}() {");
+      leaf.writeln("return $referenceReaderName(this.\$manager);");
+      leaf.writeln("}");
+    }
+
+    leaf.writeln('}');
+  }
 
   void _writeFilterComposer(TextEmitter leaf) {
     leaf
@@ -375,8 +485,14 @@ class _TableManagerWriter {
       ..writeDriftRef('ProcessedTableManager')
       ..writeln(
           '<$databaseGenericName,$tableClassName,$rowClassName,$filterComposer,$orderingComposer,$processedTableManager,$insertCompanionBuilderTypeDefName,$updateCompanionBuilderTypeDefName> {')
-      ..writeln('const $processedTableManager(super.\$state);')
-      ..writeln('}');
+      ..writeln('const $processedTableManager(super.\$state);');
+    if (columnReferenceReaders.isNotEmpty) {
+      leaf.writeln('$referenceReaderName withReferences(){');
+      leaf.writeln('return $referenceReaderName(this);');
+      leaf.writeln('}');
+    }
+
+    leaf.writeln('}');
   }
 
   /// Build the builder for a companion class
@@ -457,8 +573,13 @@ class _TableManagerWriter {
       ..writeDriftRef("ComposerState")
       ..write(
           """(db, table)),getChildManagerBuilder :(p0) => $processedTableManager(p0),getUpdateCompanionBuilder: $updateCompanionBuilder,
-            getInsertCompanionBuilder:$insertCompanionBuilder));""")
-      ..writeln('}');
+            getInsertCompanionBuilder:$insertCompanionBuilder));""");
+    if (columnReferenceReaders.isNotEmpty) {
+      leaf.writeln('$referenceReaderName withReferences(){');
+      leaf.writeln('return $referenceReaderName(this);');
+      leaf.writeln('}');
+    }
+    leaf.writeln('}');
   }
 
   /// Write the manager for this table, with all the filters and orderings
@@ -467,6 +588,7 @@ class _TableManagerWriter {
     _writeOrderingComposer(leaf);
     _writeProcessedTableManager(leaf);
     _writeRootTable(leaf);
+    _writeReferenceReader(leaf);
   }
 
   String _referenceTable(DriftTable table) {
@@ -481,7 +603,7 @@ class _TableManagerWriter {
   }
 
   /// Add filters and orderings for the columns of this table
-  void addFiltersAndOrderings(List<DriftTable> tables) {
+  void addFiltersAndOrderingsAndReaders(List<DriftTable> tables) {
     // Utility function to get the referenced table and column
     (DriftTable, DriftColumn)? getReferencedTableAndColumn(
         DriftColumn column, List<DriftTable> tables) {
@@ -564,6 +686,13 @@ class _TableManagerWriter {
             referencedOrderingComposer:
                 scope.dartCode(referencedTableNames.orderingComposer),
             referencedTableField: referencedTableField));
+        columnReferenceReaders.add(_ColumnReferenceReader(
+            generic: "T${columnReferenceReaders.length}",
+            isReverseReference: false,
+            referencedTableNames: referencedTableNames,
+            referencedColumnGetter: referencedColumnNames.fieldGetter,
+            fieldName: c.fieldGetter,
+            referenceColumnGetter: c.fieldGetter));
       }
       columns.add(c);
     }
@@ -590,6 +719,14 @@ class _TableManagerWriter {
                   scope.dartCode(referencedTableNames.filterComposer),
               referencedTableField: referencedTableField,
               isReverseReference: true));
+
+          columnReferenceReaders.add(_ColumnReferenceReader(
+              generic: "T${columnReferenceReaders.length}",
+              isReverseReference: true,
+              referencedTableNames: referencedTableNames,
+              referencedColumnGetter: referencedColumnNames.fieldGetter,
+              fieldName: filterName,
+              referenceColumnGetter: reference.$2.nameInDart));
         }
       }
     }
@@ -604,8 +741,11 @@ class _TableManagerWriter {
         .map((e) => e.orderings.map((e) => e.orderingName))
         .expand((e) => e)
         .toList());
+    final duplicateReferenceReaderNames = duplicates(
+        columnReferenceReaders.map((e) => e.referenceColumnGetter).toList());
     if (duplicatedFilterNames.isNotEmpty ||
-        duplicatedOrderingNames.isNotEmpty) {
+        duplicatedOrderingNames.isNotEmpty ||
+        duplicateReferenceReaderNames.isNotEmpty) {
       print(
           "The code generator encountered an issue while attempting to create filters/orderings for $tableClassName manager. The following filters/orderings were not created ${(duplicatedFilterNames + duplicatedOrderingNames).toSet()}. Use the @ReferenceName() annotation to resolve this issue.");
       // Remove the duplicates
@@ -617,6 +757,8 @@ class _TableManagerWriter {
       }
       backRefFilters
           .removeWhere((e) => duplicatedFilterNames.contains(e.filterName));
+      columnReferenceReaders.removeWhere((e) =>
+          duplicateReferenceReaderNames.contains(e.referenceColumnGetter));
     }
   }
 }
@@ -672,7 +814,7 @@ class ManagerWriter {
     for (var table in _addedTables) {
       tableWriters.add(
           _TableManagerWriter(table, _scope, _dbScope, databaseGenericName)
-            ..addFiltersAndOrderings(_addedTables));
+            ..addFiltersAndOrderingsAndReaders(_addedTables));
     }
 
     // Remove ones that have custom row classes

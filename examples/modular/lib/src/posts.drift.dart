@@ -287,6 +287,9 @@ class $PostsProcessedTableManager extends i0.ProcessedTableManager<
     $PostsInsertCompanionBuilder,
     $PostsUpdateCompanionBuilder> {
   const $PostsProcessedTableManager(super.$state);
+  $PostsReferenceReader withReferences() {
+    return $PostsReferenceReader(this);
+  }
 }
 
 typedef $PostsInsertCompanionBuilder = i1.PostsCompanion Function({
@@ -338,6 +341,28 @@ class $PostsTableManager extends i0.RootTableManager<
                   author: author,
                   content: content,
                 )));
+  $PostsReferenceReader withReferences() {
+    return $PostsReferenceReader(this);
+  }
+}
+
+class $PostsReferenceReader<T0>
+    extends i0.ReferenceReader<i1.Post, ({i1.Post post, T0? author})> {
+  $PostsReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i1.Post post, T0? author})> $withReferences(i1.Post value) async {
+    return (post: value, author: await _getAuthor(value));
+  }
+
+  Future<T0?> _getAuthor(i1.Post value) async {
+    return $getSingleReferenced<i3.User>(value.author, _db.users.id) as T0?;
+  }
+
+  $PostsReferenceReader<i3.User> withAuthor() {
+    return $PostsReferenceReader(this.$manager);
+  }
 }
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
@@ -615,6 +640,9 @@ class $LikesProcessedTableManager extends i0.ProcessedTableManager<
     $LikesInsertCompanionBuilder,
     $LikesUpdateCompanionBuilder> {
   const $LikesProcessedTableManager(super.$state);
+  $LikesReferenceReader withReferences() {
+    return $LikesReferenceReader(this);
+  }
 }
 
 typedef $LikesInsertCompanionBuilder = i1.LikesCompanion Function({
@@ -666,4 +694,39 @@ class $LikesTableManager extends i0.RootTableManager<
                   likedBy: likedBy,
                   rowid: rowid,
                 )));
+  $LikesReferenceReader withReferences() {
+    return $LikesReferenceReader(this);
+  }
+}
+
+class $LikesReferenceReader<T0, T1> extends i0
+    .ReferenceReader<i1.Like, ({i1.Like like, T0? post, T1? likedBy})> {
+  $LikesReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i1.Like like, T0? post, T1? likedBy})> $withReferences(
+      i1.Like value) async {
+    return (
+      like: value,
+      post: await _getPost(value),
+      likedBy: await _getLikedBy(value)
+    );
+  }
+
+  Future<T0?> _getPost(i1.Like value) async {
+    return $getSingleReferenced<i1.Post>(value.post, _db.posts.id) as T0?;
+  }
+
+  $LikesReferenceReader<i1.Post, T1> withPost() {
+    return $LikesReferenceReader(this.$manager);
+  }
+
+  Future<T1?> _getLikedBy(i1.Like value) async {
+    return $getSingleReferenced<i3.User>(value.likedBy, _db.users.id) as T1?;
+  }
+
+  $LikesReferenceReader<T0, i3.User> withLikedBy() {
+    return $LikesReferenceReader(this.$manager);
+  }
 }

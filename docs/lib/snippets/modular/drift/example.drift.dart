@@ -335,6 +335,9 @@ class $TodosProcessedTableManager extends i0.ProcessedTableManager<
     $TodosInsertCompanionBuilder,
     $TodosUpdateCompanionBuilder> {
   const $TodosProcessedTableManager(super.$state);
+  $TodosReferenceReader withReferences() {
+    return $TodosReferenceReader(this);
+  }
 }
 
 typedef $TodosInsertCompanionBuilder = i1.TodosCompanion Function({
@@ -392,6 +395,29 @@ class $TodosTableManager extends i0.RootTableManager<
                   content: content,
                   category: category,
                 )));
+  $TodosReferenceReader withReferences() {
+    return $TodosReferenceReader(this);
+  }
+}
+
+class $TodosReferenceReader<T0>
+    extends i0.ReferenceReader<i1.Todo, ({i1.Todo todo, T0? category})> {
+  $TodosReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i1.Todo todo, T0? category})> $withReferences(i1.Todo value) async {
+    return (todo: value, category: await _getCategory(value));
+  }
+
+  Future<T0?> _getCategory(i1.Todo value) async {
+    return $getSingleReferenced<i1.Category>(value.category, _db.categories.id)
+        as T0?;
+  }
+
+  $TodosReferenceReader<i1.Category> withCategory() {
+    return $TodosReferenceReader(this.$manager);
+  }
 }
 
 class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {

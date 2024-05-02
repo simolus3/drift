@@ -755,6 +755,9 @@ class $$TodoCategoriesTableProcessedTableManager extends ProcessedTableManager<
     $$TodoCategoriesTableInsertCompanionBuilder,
     $$TodoCategoriesTableUpdateCompanionBuilder> {
   const $$TodoCategoriesTableProcessedTableManager(super.$state);
+  $$TodoCategoriesTableReferenceReader withReferences() {
+    return $$TodoCategoriesTableReferenceReader(this);
+  }
 }
 
 typedef $$TodoCategoriesTableInsertCompanionBuilder = TodoCategoriesCompanion
@@ -803,6 +806,31 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
                   id: id,
                   name: name,
                 )));
+  $$TodoCategoriesTableReferenceReader withReferences() {
+    return $$TodoCategoriesTableReferenceReader(this);
+  }
+}
+
+class $$TodoCategoriesTableReferenceReader<T0> extends ReferenceReader<
+    TodoCategory, ({TodoCategory todoCategory, T0? todoItemsRefs})> {
+  $$TodoCategoriesTableReferenceReader(this.$manager);
+  _$Database get _db => $manager.$state.db as _$Database;
+  final BaseTableManager $manager;
+  @override
+  Future<({TodoCategory todoCategory, T0? todoItemsRefs})> $withReferences(
+      TodoCategory value) async {
+    return (todoCategory: value, todoItemsRefs: await _getTodoItemsRefs(value));
+  }
+
+  Future<T0?> _getTodoItemsRefs(TodoCategory value) async {
+    final result = await $getReverseReferenced<T0, TodoItem>(
+        value.id, _db.todoItems.categoryId);
+    return result as T0?;
+  }
+
+  $$TodoCategoriesTableReferenceReader<List<TodoItem>> withTodoItemsRefs() {
+    return $$TodoCategoriesTableReferenceReader(this.$manager);
+  }
 }
 
 class $$TodoItemsTableFilterComposer
@@ -882,6 +910,9 @@ class $$TodoItemsTableProcessedTableManager extends ProcessedTableManager<
     $$TodoItemsTableInsertCompanionBuilder,
     $$TodoItemsTableUpdateCompanionBuilder> {
   const $$TodoItemsTableProcessedTableManager(super.$state);
+  $$TodoItemsTableReferenceReader withReferences() {
+    return $$TodoItemsTableReferenceReader(this);
+  }
 }
 
 typedef $$TodoItemsTableInsertCompanionBuilder = TodoItemsCompanion Function({
@@ -940,6 +971,30 @@ class $$TodoItemsTableTableManager extends RootTableManager<
                   content: content,
                   categoryId: categoryId,
                 )));
+  $$TodoItemsTableReferenceReader withReferences() {
+    return $$TodoItemsTableReferenceReader(this);
+  }
+}
+
+class $$TodoItemsTableReferenceReader<T0>
+    extends ReferenceReader<TodoItem, ({TodoItem todoItem, T0? categoryId})> {
+  $$TodoItemsTableReferenceReader(this.$manager);
+  _$Database get _db => $manager.$state.db as _$Database;
+  final BaseTableManager $manager;
+  @override
+  Future<({TodoItem todoItem, T0? categoryId})> $withReferences(
+      TodoItem value) async {
+    return (todoItem: value, categoryId: await _getCategoryId(value));
+  }
+
+  Future<T0?> _getCategoryId(TodoItem value) async {
+    return $getSingleReferenced<TodoCategory>(
+        value.categoryId, _db.todoCategories.id) as T0?;
+  }
+
+  $$TodoItemsTableReferenceReader<TodoCategory> withCategoryId() {
+    return $$TodoItemsTableReferenceReader(this.$manager);
+  }
 }
 
 class _$DatabaseManager {

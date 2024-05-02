@@ -994,6 +994,9 @@ class $$UsersTableProcessedTableManager extends ProcessedTableManager<
     $$UsersTableInsertCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder> {
   const $$UsersTableProcessedTableManager(super.$state);
+  $$UsersTableReferenceReader withReferences() {
+    return $$UsersTableReferenceReader(this);
+  }
 }
 
 typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
@@ -1052,6 +1055,28 @@ class $$UsersTableTableManager extends RootTableManager<
                   birthday: birthday,
                   nextUser: nextUser,
                 )));
+  $$UsersTableReferenceReader withReferences() {
+    return $$UsersTableReferenceReader(this);
+  }
+}
+
+class $$UsersTableReferenceReader<T0>
+    extends ReferenceReader<User, ({User user, T0? nextUser})> {
+  $$UsersTableReferenceReader(this.$manager);
+  _$Database get _db => $manager.$state.db as _$Database;
+  final BaseTableManager $manager;
+  @override
+  Future<({User user, T0? nextUser})> $withReferences(User value) async {
+    return (user: value, nextUser: await _getNextUser(value));
+  }
+
+  Future<T0?> _getNextUser(User value) async {
+    return $getSingleReferenced<User>(value.nextUser, _db.users.id) as T0?;
+  }
+
+  $$UsersTableReferenceReader<User> withNextUser() {
+    return $$UsersTableReferenceReader(this.$manager);
+  }
 }
 
 class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
@@ -1118,6 +1143,9 @@ class $GroupsProcessedTableManager extends ProcessedTableManager<
     $GroupsInsertCompanionBuilder,
     $GroupsUpdateCompanionBuilder> {
   const $GroupsProcessedTableManager(super.$state);
+  $GroupsReferenceReader withReferences() {
+    return $GroupsReferenceReader(this);
+  }
 }
 
 typedef $GroupsInsertCompanionBuilder = GroupsCompanion Function({
@@ -1173,6 +1201,28 @@ class $GroupsTableManager extends RootTableManager<
                   deleted: deleted,
                   owner: owner,
                 )));
+  $GroupsReferenceReader withReferences() {
+    return $GroupsReferenceReader(this);
+  }
+}
+
+class $GroupsReferenceReader<T0>
+    extends ReferenceReader<Group, ({Group group, T0? owner})> {
+  $GroupsReferenceReader(this.$manager);
+  _$Database get _db => $manager.$state.db as _$Database;
+  final BaseTableManager $manager;
+  @override
+  Future<({Group group, T0? owner})> $withReferences(Group value) async {
+    return (group: value, owner: await _getOwner(value));
+  }
+
+  Future<T0?> _getOwner(Group value) async {
+    return $getSingleReferenced<User>(value.owner, _db.users.id) as T0?;
+  }
+
+  $GroupsReferenceReader<User> withOwner() {
+    return $GroupsReferenceReader(this.$manager);
+  }
 }
 
 class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {

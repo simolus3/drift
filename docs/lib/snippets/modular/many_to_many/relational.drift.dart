@@ -542,6 +542,9 @@ class $$ShoppingCartEntriesTableProcessedTableManager
         $$ShoppingCartEntriesTableInsertCompanionBuilder,
         $$ShoppingCartEntriesTableUpdateCompanionBuilder> {
   const $$ShoppingCartEntriesTableProcessedTableManager(super.$state);
+  $$ShoppingCartEntriesTableReferenceReader withReferences() {
+    return $$ShoppingCartEntriesTableReferenceReader(this);
+  }
 }
 
 typedef $$ShoppingCartEntriesTableInsertCompanionBuilder
@@ -597,4 +600,48 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
                   item: item,
                   rowid: rowid,
                 )));
+  $$ShoppingCartEntriesTableReferenceReader withReferences() {
+    return $$ShoppingCartEntriesTableReferenceReader(this);
+  }
+}
+
+class $$ShoppingCartEntriesTableReferenceReader<T0, T1>
+    extends i0.ReferenceReader<
+        i2.ShoppingCartEntry,
+        ({
+          i2.ShoppingCartEntry shoppingCartEntry,
+          T0? shoppingCart,
+          T1? item
+        })> {
+  $$ShoppingCartEntriesTableReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i2.ShoppingCartEntry shoppingCartEntry, T0? shoppingCart, T1? item})>
+      $withReferences(i2.ShoppingCartEntry value) async {
+    return (
+      shoppingCartEntry: value,
+      shoppingCart: await _getShoppingCart(value),
+      item: await _getItem(value)
+    );
+  }
+
+  Future<T0?> _getShoppingCart(i2.ShoppingCartEntry value) async {
+    return $getSingleReferenced<i2.ShoppingCart>(
+        value.shoppingCart, _db.shoppingCarts.id) as T0?;
+  }
+
+  $$ShoppingCartEntriesTableReferenceReader<i2.ShoppingCart, T1>
+      withShoppingCart() {
+    return $$ShoppingCartEntriesTableReferenceReader(this.$manager);
+  }
+
+  Future<T1?> _getItem(i2.ShoppingCartEntry value) async {
+    return $getSingleReferenced<i1.BuyableItem>(value.item, _db.buyableItems.id)
+        as T1?;
+  }
+
+  $$ShoppingCartEntriesTableReferenceReader<T0, i1.BuyableItem> withItem() {
+    return $$ShoppingCartEntriesTableReferenceReader(this.$manager);
+  }
 }

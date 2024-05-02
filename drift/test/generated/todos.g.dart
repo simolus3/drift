@@ -3407,6 +3407,9 @@ class $$CategoriesTableProcessedTableManager extends ProcessedTableManager<
     $$CategoriesTableInsertCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder> {
   const $$CategoriesTableProcessedTableManager(super.$state);
+  $$CategoriesTableReferenceReader withReferences() {
+    return $$CategoriesTableReferenceReader(this);
+  }
 }
 
 typedef $$CategoriesTableInsertCompanionBuilder = CategoriesCompanion Function({
@@ -3459,6 +3462,31 @@ class $$CategoriesTableTableManager extends RootTableManager<
                   description: description,
                   priority: priority,
                 )));
+  $$CategoriesTableReferenceReader withReferences() {
+    return $$CategoriesTableReferenceReader(this);
+  }
+}
+
+class $$CategoriesTableReferenceReader<T0>
+    extends ReferenceReader<Category, ({Category category, T0? todos})> {
+  $$CategoriesTableReferenceReader(this.$manager);
+  _$TodoDb get _db => $manager.$state.db as _$TodoDb;
+  final BaseTableManager $manager;
+  @override
+  Future<({Category category, T0? todos})> $withReferences(
+      Category value) async {
+    return (category: value, todos: await _getTodos(value));
+  }
+
+  Future<T0?> _getTodos(Category value) async {
+    final result = await $getReverseReferenced<T0, TodoEntry>(
+        value.id, _db.todosTable.category);
+    return result as T0?;
+  }
+
+  $$CategoriesTableReferenceReader<List<TodoEntry>> withTodos() {
+    return $$CategoriesTableReferenceReader(this.$manager);
+  }
 }
 
 class $$TodosTableTableFilterComposer
@@ -3549,6 +3577,9 @@ class $$TodosTableTableProcessedTableManager extends ProcessedTableManager<
     $$TodosTableTableInsertCompanionBuilder,
     $$TodosTableTableUpdateCompanionBuilder> {
   const $$TodosTableTableProcessedTableManager(super.$state);
+  $$TodosTableTableReferenceReader withReferences() {
+    return $$TodosTableTableReferenceReader(this);
+  }
 }
 
 typedef $$TodosTableTableInsertCompanionBuilder = TodosTableCompanion Function({
@@ -3619,6 +3650,30 @@ class $$TodosTableTableTableManager extends RootTableManager<
                   category: category,
                   status: status,
                 )));
+  $$TodosTableTableReferenceReader withReferences() {
+    return $$TodosTableTableReferenceReader(this);
+  }
+}
+
+class $$TodosTableTableReferenceReader<T0>
+    extends ReferenceReader<TodoEntry, ({TodoEntry todoEntry, T0? category})> {
+  $$TodosTableTableReferenceReader(this.$manager);
+  _$TodoDb get _db => $manager.$state.db as _$TodoDb;
+  final BaseTableManager $manager;
+  @override
+  Future<({TodoEntry todoEntry, T0? category})> $withReferences(
+      TodoEntry value) async {
+    return (todoEntry: value, category: await _getCategory(value));
+  }
+
+  Future<T0?> _getCategory(TodoEntry value) async {
+    return $getSingleReferenced<Category>(value.category, _db.categories.id)
+        as T0?;
+  }
+
+  $$TodosTableTableReferenceReader<Category> withCategory() {
+    return $$TodosTableTableReferenceReader(this.$manager);
+  }
 }
 
 class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
@@ -4252,6 +4307,9 @@ class $$DepartmentTableProcessedTableManager extends ProcessedTableManager<
     $$DepartmentTableInsertCompanionBuilder,
     $$DepartmentTableUpdateCompanionBuilder> {
   const $$DepartmentTableProcessedTableManager(super.$state);
+  $$DepartmentTableReferenceReader withReferences() {
+    return $$DepartmentTableReferenceReader(this);
+  }
 }
 
 typedef $$DepartmentTableInsertCompanionBuilder = DepartmentCompanion Function({
@@ -4298,6 +4356,31 @@ class $$DepartmentTableTableManager extends RootTableManager<
                   id: id,
                   name: name,
                 )));
+  $$DepartmentTableReferenceReader withReferences() {
+    return $$DepartmentTableReferenceReader(this);
+  }
+}
+
+class $$DepartmentTableReferenceReader<T0> extends ReferenceReader<
+    DepartmentData, ({DepartmentData departmentData, T0? productRefs})> {
+  $$DepartmentTableReferenceReader(this.$manager);
+  _$TodoDb get _db => $manager.$state.db as _$TodoDb;
+  final BaseTableManager $manager;
+  @override
+  Future<({DepartmentData departmentData, T0? productRefs})> $withReferences(
+      DepartmentData value) async {
+    return (departmentData: value, productRefs: await _getProductRefs(value));
+  }
+
+  Future<T0?> _getProductRefs(DepartmentData value) async {
+    final result = await $getReverseReferenced<T0, ProductData>(
+        value.id, _db.product.department);
+    return result as T0?;
+  }
+
+  $$DepartmentTableReferenceReader<List<ProductData>> withProductRefs() {
+    return $$DepartmentTableReferenceReader(this.$manager);
+  }
 }
 
 class $$ProductTableFilterComposer
@@ -4371,6 +4454,9 @@ class $$ProductTableProcessedTableManager extends ProcessedTableManager<
     $$ProductTableInsertCompanionBuilder,
     $$ProductTableUpdateCompanionBuilder> {
   const $$ProductTableProcessedTableManager(super.$state);
+  $$ProductTableReferenceReader withReferences() {
+    return $$ProductTableReferenceReader(this);
+  }
 }
 
 typedef $$ProductTableInsertCompanionBuilder = ProductCompanion Function({
@@ -4423,6 +4509,44 @@ class $$ProductTableTableManager extends RootTableManager<
                   name: name,
                   department: department,
                 )));
+  $$ProductTableReferenceReader withReferences() {
+    return $$ProductTableReferenceReader(this);
+  }
+}
+
+class $$ProductTableReferenceReader<T0, T1> extends ReferenceReader<ProductData,
+    ({ProductData productData, T0? department, T1? listings})> {
+  $$ProductTableReferenceReader(this.$manager);
+  _$TodoDb get _db => $manager.$state.db as _$TodoDb;
+  final BaseTableManager $manager;
+  @override
+  Future<({ProductData productData, T0? department, T1? listings})>
+      $withReferences(ProductData value) async {
+    return (
+      productData: value,
+      department: await _getDepartment(value),
+      listings: await _getListings(value)
+    );
+  }
+
+  Future<T0?> _getDepartment(ProductData value) async {
+    return $getSingleReferenced<DepartmentData>(
+        value.department, _db.department.id) as T0?;
+  }
+
+  $$ProductTableReferenceReader<DepartmentData, T1> withDepartment() {
+    return $$ProductTableReferenceReader(this.$manager);
+  }
+
+  Future<T1?> _getListings(ProductData value) async {
+    final result = await $getReverseReferenced<T1, ListingData>(
+        value.id, _db.listing.product);
+    return result as T1?;
+  }
+
+  $$ProductTableReferenceReader<T0, List<ListingData>> withListings() {
+    return $$ProductTableReferenceReader(this.$manager);
+  }
 }
 
 class $$StoreTableFilterComposer extends FilterComposer<_$TodoDb, $StoreTable> {
@@ -4472,6 +4596,9 @@ class $$StoreTableProcessedTableManager extends ProcessedTableManager<
     $$StoreTableInsertCompanionBuilder,
     $$StoreTableUpdateCompanionBuilder> {
   const $$StoreTableProcessedTableManager(super.$state);
+  $$StoreTableReferenceReader withReferences() {
+    return $$StoreTableReferenceReader(this);
+  }
 }
 
 typedef $$StoreTableInsertCompanionBuilder = StoreCompanion Function({
@@ -4518,6 +4645,31 @@ class $$StoreTableTableManager extends RootTableManager<
                   id: id,
                   name: name,
                 )));
+  $$StoreTableReferenceReader withReferences() {
+    return $$StoreTableReferenceReader(this);
+  }
+}
+
+class $$StoreTableReferenceReader<T0>
+    extends ReferenceReader<StoreData, ({StoreData storeData, T0? listings})> {
+  $$StoreTableReferenceReader(this.$manager);
+  _$TodoDb get _db => $manager.$state.db as _$TodoDb;
+  final BaseTableManager $manager;
+  @override
+  Future<({StoreData storeData, T0? listings})> $withReferences(
+      StoreData value) async {
+    return (storeData: value, listings: await _getListings(value));
+  }
+
+  Future<T0?> _getListings(StoreData value) async {
+    final result = await $getReverseReferenced<T0, ListingData>(
+        value.id, _db.listing.store);
+    return result as T0?;
+  }
+
+  $$StoreTableReferenceReader<List<ListingData>> withListings() {
+    return $$StoreTableReferenceReader(this.$manager);
+  }
 }
 
 class $$ListingTableFilterComposer
@@ -4604,6 +4756,9 @@ class $$ListingTableProcessedTableManager extends ProcessedTableManager<
     $$ListingTableInsertCompanionBuilder,
     $$ListingTableUpdateCompanionBuilder> {
   const $$ListingTableProcessedTableManager(super.$state);
+  $$ListingTableReferenceReader withReferences() {
+    return $$ListingTableReferenceReader(this);
+  }
 }
 
 typedef $$ListingTableInsertCompanionBuilder = ListingCompanion Function({
@@ -4662,6 +4817,42 @@ class $$ListingTableTableManager extends RootTableManager<
                   store: store,
                   price: price,
                 )));
+  $$ListingTableReferenceReader withReferences() {
+    return $$ListingTableReferenceReader(this);
+  }
+}
+
+class $$ListingTableReferenceReader<T0, T1> extends ReferenceReader<ListingData,
+    ({ListingData listingData, T0? product, T1? store})> {
+  $$ListingTableReferenceReader(this.$manager);
+  _$TodoDb get _db => $manager.$state.db as _$TodoDb;
+  final BaseTableManager $manager;
+  @override
+  Future<({ListingData listingData, T0? product, T1? store})> $withReferences(
+      ListingData value) async {
+    return (
+      listingData: value,
+      product: await _getProduct(value),
+      store: await _getStore(value)
+    );
+  }
+
+  Future<T0?> _getProduct(ListingData value) async {
+    return $getSingleReferenced<ProductData>(value.product, _db.product.id)
+        as T0?;
+  }
+
+  $$ListingTableReferenceReader<ProductData, T1> withProduct() {
+    return $$ListingTableReferenceReader(this.$manager);
+  }
+
+  Future<T1?> _getStore(ListingData value) async {
+    return $getSingleReferenced<StoreData>(value.store, _db.store.id) as T1?;
+  }
+
+  $$ListingTableReferenceReader<T0, StoreData> withStore() {
+    return $$ListingTableReferenceReader(this.$manager);
+  }
 }
 
 class _$TodoDbManager {

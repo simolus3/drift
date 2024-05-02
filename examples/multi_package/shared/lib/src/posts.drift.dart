@@ -260,6 +260,9 @@ class $PostsProcessedTableManager extends i0.ProcessedTableManager<
     $PostsInsertCompanionBuilder,
     $PostsUpdateCompanionBuilder> {
   const $PostsProcessedTableManager(super.$state);
+  $PostsReferenceReader withReferences() {
+    return $PostsReferenceReader(this);
+  }
 }
 
 typedef $PostsInsertCompanionBuilder = i1.PostsCompanion Function({
@@ -311,4 +314,26 @@ class $PostsTableManager extends i0.RootTableManager<
                   content: content,
                   rowid: rowid,
                 )));
+  $PostsReferenceReader withReferences() {
+    return $PostsReferenceReader(this);
+  }
+}
+
+class $PostsReferenceReader<T0>
+    extends i0.ReferenceReader<i1.Post, ({i1.Post post, T0? author})> {
+  $PostsReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i1.Post post, T0? author})> $withReferences(i1.Post value) async {
+    return (post: value, author: await _getAuthor(value));
+  }
+
+  Future<T0?> _getAuthor(i1.Post value) async {
+    return $getSingleReferenced<i3.User>(value.author, _db.users.id) as T0?;
+  }
+
+  $PostsReferenceReader<i3.User> withAuthor() {
+    return $PostsReferenceReader(this.$manager);
+  }
 }

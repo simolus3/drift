@@ -295,6 +295,9 @@ class $$ActiveSessionsTableProcessedTableManager
         $$ActiveSessionsTableInsertCompanionBuilder,
         $$ActiveSessionsTableUpdateCompanionBuilder> {
   const $$ActiveSessionsTableProcessedTableManager(super.$state);
+  $$ActiveSessionsTableReferenceReader withReferences() {
+    return $$ActiveSessionsTableReferenceReader(this);
+  }
 }
 
 typedef $$ActiveSessionsTableInsertCompanionBuilder = i3.ActiveSessionsCompanion
@@ -350,4 +353,27 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
                   bearerToken: bearerToken,
                   rowid: rowid,
                 )));
+  $$ActiveSessionsTableReferenceReader withReferences() {
+    return $$ActiveSessionsTableReferenceReader(this);
+  }
+}
+
+class $$ActiveSessionsTableReferenceReader<T0> extends i0.ReferenceReader<
+    i3.ActiveSession, ({i3.ActiveSession activeSession, T0? user})> {
+  $$ActiveSessionsTableReferenceReader(this.$manager);
+  i0.GeneratedDatabase get _db => $manager.$state.db as i0.GeneratedDatabase;
+  final i0.BaseTableManager $manager;
+  @override
+  Future<({i3.ActiveSession activeSession, T0? user})> $withReferences(
+      i3.ActiveSession value) async {
+    return (activeSession: value, user: await _getUser(value));
+  }
+
+  Future<T0?> _getUser(i3.ActiveSession value) async {
+    return $getSingleReferenced<i1.User>(value.user, _db.users.id) as T0?;
+  }
+
+  $$ActiveSessionsTableReferenceReader<i1.User> withUser() {
+    return $$ActiveSessionsTableReferenceReader(this.$manager);
+  }
 }
