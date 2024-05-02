@@ -9,6 +9,7 @@ import 'package:server/database.dart' as i6;
 
 abstract class $ServerDatabase extends i0.GeneratedDatabase {
   $ServerDatabase(i0.QueryExecutor e) : super(e);
+  $ServerDatabaseManager get managers => $ServerDatabaseManager(this);
   late final i1.$UsersTable users = i1.$UsersTable(this);
   late final i2.Posts posts = i2.Posts(this);
   late final i3.$ActiveSessionsTable activeSessions =
@@ -24,6 +25,16 @@ abstract class $ServerDatabase extends i0.GeneratedDatabase {
   @override
   i0.DriftDatabaseOptions get options =>
       const i0.DriftDatabaseOptions(storeDateTimeAsText: true);
+}
+
+class $ServerDatabaseManager {
+  final $ServerDatabase _db;
+  $ServerDatabaseManager(this._db);
+  i1.$$UsersTableTableManager get users =>
+      i1.$$UsersTableTableManager(_db, _db.users);
+  i2.$PostsTableManager get posts => i2.$PostsTableManager(_db, _db.posts);
+  i3.$$ActiveSessionsTableTableManager get activeSessions =>
+      i3.$$ActiveSessionsTableTableManager(_db, _db.activeSessions);
 }
 
 class $ActiveSessionsTable extends i6.ActiveSessions
@@ -219,4 +230,124 @@ class ActiveSessionsCompanion extends i0.UpdateCompanion<i3.ActiveSession> {
           ..write(')'))
         .toString();
   }
+}
+
+class $$ActiveSessionsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
+  $$ActiveSessionsTableFilterComposer(super.$state);
+  i1.$$UsersTableFilterComposer get user {
+    final i1.$$UsersTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.user,
+        referencedTable: i5.ReadDatabaseContainer($state.db)
+            .resultSet<i1.$UsersTable>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            i1.$$UsersTableFilterComposer(i0.ComposerState(
+                $state.db,
+                i5.ReadDatabaseContainer($state.db)
+                    .resultSet<i1.$UsersTable>('users'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
+
+  i0.ColumnFilters<String> get bearerToken => $state.composableBuilder(
+      column: $state.table.bearerToken,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$ActiveSessionsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
+  $$ActiveSessionsTableOrderingComposer(super.$state);
+  i1.$$UsersTableOrderingComposer get user {
+    final i1.$$UsersTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.user,
+        referencedTable: i5.ReadDatabaseContainer($state.db)
+            .resultSet<i1.$UsersTable>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            i1.$$UsersTableOrderingComposer(i0.ComposerState(
+                $state.db,
+                i5.ReadDatabaseContainer($state.db)
+                    .resultSet<i1.$UsersTable>('users'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
+
+  i0.ColumnOrderings<String> get bearerToken => $state.composableBuilder(
+      column: $state.table.bearerToken,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$ActiveSessionsTableProcessedTableManager
+    extends i0.ProcessedTableManager<
+        i0.GeneratedDatabase,
+        i3.$ActiveSessionsTable,
+        i3.ActiveSession,
+        $$ActiveSessionsTableFilterComposer,
+        $$ActiveSessionsTableOrderingComposer,
+        $$ActiveSessionsTableProcessedTableManager,
+        $$ActiveSessionsTableInsertCompanionBuilder,
+        $$ActiveSessionsTableUpdateCompanionBuilder> {
+  const $$ActiveSessionsTableProcessedTableManager(super.$state);
+}
+
+typedef $$ActiveSessionsTableInsertCompanionBuilder = i3.ActiveSessionsCompanion
+    Function({
+  required int user,
+  required String bearerToken,
+  i0.Value<int> rowid,
+});
+typedef $$ActiveSessionsTableUpdateCompanionBuilder = i3.ActiveSessionsCompanion
+    Function({
+  i0.Value<int> user,
+  i0.Value<String> bearerToken,
+  i0.Value<int> rowid,
+});
+
+class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i3.$ActiveSessionsTable,
+    i3.ActiveSession,
+    $$ActiveSessionsTableFilterComposer,
+    $$ActiveSessionsTableOrderingComposer,
+    $$ActiveSessionsTableProcessedTableManager,
+    $$ActiveSessionsTableInsertCompanionBuilder,
+    $$ActiveSessionsTableUpdateCompanionBuilder> {
+  $$ActiveSessionsTableTableManager(
+      i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
+      : super(i0.TableManagerState(
+            db: db,
+            table: table,
+            filteringComposer: $$ActiveSessionsTableFilterComposer(
+                i0.ComposerState(db, table)),
+            orderingComposer: $$ActiveSessionsTableOrderingComposer(
+                i0.ComposerState(db, table)),
+            getChildManagerBuilder: (p0) =>
+                $$ActiveSessionsTableProcessedTableManager(p0),
+            getUpdateCompanionBuilder: ({
+              i0.Value<int> user = const i0.Value.absent(),
+              i0.Value<String> bearerToken = const i0.Value.absent(),
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i3.ActiveSessionsCompanion(
+                  user: user,
+                  bearerToken: bearerToken,
+                  rowid: rowid,
+                ),
+            getInsertCompanionBuilder: ({
+              required int user,
+              required String bearerToken,
+              i0.Value<int> rowid = const i0.Value.absent(),
+            }) =>
+                i3.ActiveSessionsCompanion.insert(
+                  user: user,
+                  bearerToken: bearerToken,
+                  rowid: rowid,
+                )));
 }

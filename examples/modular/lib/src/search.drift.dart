@@ -206,16 +206,28 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
 
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsFilterComposer(super.db, super.table);
-  i0.ColumnFilters<String> get author => i0.ColumnFilters($table.author);
-  i0.ColumnFilters<String> get content => i0.ColumnFilters($table.content);
+  $SearchInPostsFilterComposer(super.$state);
+  i0.ColumnFilters<String> get author => $state.composableBuilder(
+      column: $state.table.author,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $SearchInPostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<String> get author => i0.ColumnOrderings($table.author);
-  i0.ColumnOrderings<String> get content => i0.ColumnOrderings($table.content);
+  $SearchInPostsOrderingComposer(super.$state);
+  i0.ColumnOrderings<String> get author => $state.composableBuilder(
+      column: $state.table.author,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $SearchInPostsProcessedTableManager extends i0.ProcessedTableManager<
@@ -256,8 +268,10 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $SearchInPostsFilterComposer(db, table),
-            orderingComposer: $SearchInPostsOrderingComposer(db, table),
+            filteringComposer:
+                $SearchInPostsFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer:
+                $SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $SearchInPostsProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({

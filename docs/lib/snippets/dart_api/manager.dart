@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_internal_member
+
 import 'package:drift/drift.dart';
 
 part 'manager.g.dart';
@@ -171,14 +173,13 @@ extension ManagerExamples on AppDatabase {
 // #docregion manager_filter_forward_references
   Future relationalFilter() async {
     // Get all items with a category description of "School"
-    managers.todoItems
-        .filter((f) => f.category((f) => f.description("School")));
+    managers.todoItems.filter((f) => f.category.description("School"));
 
     // These can be combined with other filters
     // For example, get all items with a title of "Title" or a category description of "School"
     await managers.todoItems
         .filter(
-          (f) => f.title("Title") | f.category((f) => f.description("School")),
+          (f) => f.title("Title") | f.category.description("School"),
         )
         .exists();
   }
@@ -220,7 +221,7 @@ extension After2000Filter on ColumnFilters<DateTime> {
 
   // Create a new filter from scratch using the `column` property
   ComposableFilter filterOnUnixEpoch(int value) =>
-      ComposableFilter(column.unixepoch.equals(value), inverted: inverted);
+      $composableFilter(column.unixepoch.equals(value));
 }
 
 Future filterWithExtension(AppDatabase db) async {

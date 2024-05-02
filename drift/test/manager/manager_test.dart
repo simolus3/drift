@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -145,7 +147,6 @@ void main() {
     // Create a row
     final obj1 = await db.managers.categories.createReturning(
         (o) => o(priority: Value(CategoryPriority.low), description: "Low"));
-    // ignore: unused_local_variable
     final obj2 = await db.managers.categories.createReturning((o) =>
         o(priority: Value(CategoryPriority.low), description: "Other Low"));
 

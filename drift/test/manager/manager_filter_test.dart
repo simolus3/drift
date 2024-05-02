@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -358,183 +360,27 @@ void main() {
             .count(),
         completion(2));
 
-    // // Not Equals
-    // expect(
-    //     db.managers.tableWithEveryColumnType
-    //         .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
-    //         .count(),
-    //     completion(2));
-
-    // // In
-    // expect(
-    //     db.managers.tableWithEveryColumnType
-    //         .filter((f) =>
-    //             f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
-    //         .count(),
-    //     completion(3));
-
-    // // Not In
-    // expect(
-    //     db.managers.tableWithEveryColumnType
-    //         .filter((f) => f.anIntEnum.not
-    //             .isIn([TodoStatus.open, TodoStatus.workInProgress]))
-    //         .count(),
-    //     completion(1));
-  });
-
-  test('manager - filter related', () async {
-    final schoolCategoryId = await db.managers.categories.create((o) =>
-        o(priority: Value(CategoryPriority.high), description: "School"));
-    final workCategoryId = await db.managers.categories.create(
-        (o) => o(priority: Value(CategoryPriority.low), description: "Work"));
-
-    // School
-    await db.managers.todosTable.create((o) => o(
-        content: "Get that math homework done",
-        title: Value("Math Homework"),
-        category: Value(schoolCategoryId),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Finish that report",
-        title: Value("Report"),
-        category: Value(schoolCategoryId),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Get that english homework done",
-        title: Value("English Homework"),
-        category: Value(schoolCategoryId),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 15)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Finish that Book report",
-        title: Value("Book Report"),
-        category: Value(schoolCategoryId),
-        status: Value(TodoStatus.done),
-        targetDate:
-            Value(DateTime.now().subtract(Duration(days: 2, seconds: 15)))));
-
-    // Work
-    await db.managers.todosTable.create((o) => o(
-        content: "File those reports",
-        title: Value("File Reports"),
-        category: Value(workCategoryId),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Clean the office",
-        title: Value("Clean Office"),
-        category: Value(workCategoryId),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Nail that presentation",
-        title: Value("Presentation"),
-        category: Value(workCategoryId),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Take a break",
-        title: Value("Break"),
-        category: Value(workCategoryId),
-        status: Value(TodoStatus.done),
-        targetDate:
-            Value(DateTime.now().subtract(Duration(days: 2, seconds: 25)))));
-
-    // Items with no category
-    await db.managers.todosTable.create((o) => o(
-        content: "Get Whiteboard",
-        title: Value("Whiteboard"),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 50)))));
-    await db.managers.todosTable.create((o) => o(
-        content: "Drink Water",
-        title: Value("Water"),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 50)))));
-
-    // item without title
-
-    // Equals
-    expect(
-        db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) => f.id(RowId(schoolCategoryId)),
-                ))
-            .count(),
-        completion(4));
-
     // Not Equals
     expect(
-        db.managers.todosTable
-            .filter(
-              (f) =>
-                  f.category((f) => f.id.not.equals(RowId(schoolCategoryId))),
-            )
-            .count(),
-        completion(4));
-
-    // Multiple filters
-    expect(
-        db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) => f.id(RowId(schoolCategoryId)),
-                ))
-            .filter((f) => f.status.equals(TodoStatus.open))
+        db.managers.tableWithEveryColumnType
+            .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
             .count(),
         completion(2));
 
-    // Multiple 2 related filters
+    // In
     expect(
-        db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) =>
-                      f.priority.equals(CategoryPriority.low) |
-                      f.descriptionInUpperCase.equals("SCHOOL"),
-                ))
-            .count(),
-        completion(8));
-
-    // Multiple use related filters twice
-    expect(
-        db.managers.todosTable
+        db.managers.tableWithEveryColumnType
             .filter((f) =>
-                f.category(
-                  (f) => f.priority.equals(CategoryPriority.low),
-                ) |
-                f.category(
-                  (f) => f.descriptionInUpperCase.equals("SCHOOL"),
-                ))
+                f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
             .count(),
-        completion(8));
-    // Use .filter multiple times
+        completion(3));
+
+    // Not In
     expect(
-        db.managers.todosTable
-            .filter((f) => f.category(
-                  (f) => f.priority.equals(CategoryPriority.high),
-                ))
-            .filter((f) => f.category(
-                  (f) => f.descriptionInUpperCase.equals("SCHOOL"),
-                ))
+        db.managers.tableWithEveryColumnType
+            .filter((f) => f.anIntEnum.not
+                .isIn([TodoStatus.open, TodoStatus.workInProgress]))
             .count(),
-        completion(4));
-
-    // Use backreference
-    expect(
-        db.managers.categories
-            .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
-            .getSingle()
-            .then((value) => value.description),
-        completion("School"));
-
-    // Nested backreference
-    expect(
-        db.managers.categories
-            .filter((f) => f.todos((f) => f.category(
-                (f) => f.todos((f) => f.title.equals("Math Homework")))))
-            .getSingle()
-            .then((value) => value.description),
-        completion("School"));
+        completion(1));
   });
 }

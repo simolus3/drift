@@ -99,6 +99,9 @@ Any rows that meet the specified condition will be deleted.
 
 {% include "blocks/snippet" snippets = snippets name = 'manager_delete' %}
 
+<!-- 
+This documentation should added once the internal manager APIs are more stable
+
 ## Extensions
 The manager provides a set of filters and orderings out of the box for common types, however you can
 extend them to add new filters and orderings.
@@ -122,4 +125,4 @@ Use the `ComposableOrdering` class to create complex orderings.
 #### Custom Table Filters
 You can also create custom filters that operate on multiple columns by extending generated filtersets.
 
-{% include "blocks/snippet" snippets = snippets name = 'manager_custom_filter' %}
+{% include "blocks/snippet" snippets = snippets name = 'manager_custom_filter' %} -->

@@ -229,16 +229,28 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
 
 class $GeopolyTestFilterComposer
     extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestFilterComposer(super.db, super.table);
-  ColumnFilters<GeopolyPolygon> get shape => ColumnFilters($table.shape);
-  ColumnFilters<DriftAny> get a => ColumnFilters($table.a);
+  $GeopolyTestFilterComposer(super.$state);
+  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $GeopolyTestOrderingComposer
     extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestOrderingComposer(super.db, super.table);
-  ColumnOrderings<GeopolyPolygon> get shape => ColumnOrderings($table.shape);
-  ColumnOrderings<DriftAny> get a => ColumnOrderings($table.a);
+  $GeopolyTestOrderingComposer(super.$state);
+  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $GeopolyTestProcessedTableManager extends ProcessedTableManager<
@@ -277,8 +289,10 @@ class $GeopolyTestTableManager extends RootTableManager<
       : super(TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $GeopolyTestFilterComposer(db, table),
-            orderingComposer: $GeopolyTestOrderingComposer(db, table),
+            filteringComposer:
+                $GeopolyTestFilterComposer(ComposerState(db, table)),
+            orderingComposer:
+                $GeopolyTestOrderingComposer(ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $GeopolyTestProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({

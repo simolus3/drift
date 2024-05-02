@@ -225,21 +225,36 @@ class PeriodicRemindersCompanion
 
 class $PeriodicRemindersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
-  $PeriodicRemindersFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<Duration> get frequency =>
-      i0.ColumnFilters($table.frequency);
-  i0.ColumnFilters<String> get reminder => i0.ColumnFilters($table.reminder);
+  $PeriodicRemindersFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<Duration> get frequency => $state.composableBuilder(
+      column: $state.table.frequency,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get reminder => $state.composableBuilder(
+      column: $state.table.reminder,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $PeriodicRemindersOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
-  $PeriodicRemindersOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<Duration> get frequency =>
-      i0.ColumnOrderings($table.frequency);
-  i0.ColumnOrderings<String> get reminder =>
-      i0.ColumnOrderings($table.reminder);
+  $PeriodicRemindersOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<Duration> get frequency => $state.composableBuilder(
+      column: $state.table.frequency,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get reminder => $state.composableBuilder(
+      column: $state.table.reminder,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $PeriodicRemindersProcessedTableManager extends i0.ProcessedTableManager<
@@ -281,8 +296,10 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $PeriodicRemindersFilterComposer(db, table),
-            orderingComposer: $PeriodicRemindersOrderingComposer(db, table),
+            filteringComposer:
+                $PeriodicRemindersFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer:
+                $PeriodicRemindersOrderingComposer(i0.ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $PeriodicRemindersProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({

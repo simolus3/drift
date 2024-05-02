@@ -189,16 +189,28 @@ class WordsCompanion extends i0.UpdateCompanion<i1.Word> {
 
 class $$WordsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<String> get word => i0.ColumnFilters($table.word);
-  i0.ColumnFilters<int> get usages => i0.ColumnFilters($table.usages);
+  $$WordsTableFilterComposer(super.$state);
+  i0.ColumnFilters<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<int> get usages => $state.composableBuilder(
+      column: $state.table.usages,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$WordsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<String> get word => i0.ColumnOrderings($table.word);
-  i0.ColumnOrderings<int> get usages => i0.ColumnOrderings($table.usages);
+  $$WordsTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<int> get usages => $state.composableBuilder(
+      column: $state.table.usages,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -237,8 +249,10 @@ class $$WordsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $$WordsTableFilterComposer(db, table),
-            orderingComposer: $$WordsTableOrderingComposer(db, table),
+            filteringComposer:
+                $$WordsTableFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer:
+                $$WordsTableOrderingComposer(i0.ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $$WordsTableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({
@@ -523,20 +537,44 @@ class MatchResultsCompanion extends i0.UpdateCompanion<i1.MatchResult> {
 
 class $$MatchResultsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableFilterComposer(super.db, super.table);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($table.id);
-  i0.ColumnFilters<String> get teamA => i0.ColumnFilters($table.teamA);
-  i0.ColumnFilters<String> get teamB => i0.ColumnFilters($table.teamB);
-  i0.ColumnFilters<bool> get teamAWon => i0.ColumnFilters($table.teamAWon);
+  $$MatchResultsTableFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get teamA => $state.composableBuilder(
+      column: $state.table.teamA,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get teamB => $state.composableBuilder(
+      column: $state.table.teamB,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<bool> get teamAWon => $state.composableBuilder(
+      column: $state.table.teamAWon,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$MatchResultsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableOrderingComposer(super.db, super.table);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($table.id);
-  i0.ColumnOrderings<String> get teamA => i0.ColumnOrderings($table.teamA);
-  i0.ColumnOrderings<String> get teamB => i0.ColumnOrderings($table.teamB);
-  i0.ColumnOrderings<bool> get teamAWon => i0.ColumnOrderings($table.teamAWon);
+  $$MatchResultsTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get teamA => $state.composableBuilder(
+      column: $state.table.teamA,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get teamB => $state.composableBuilder(
+      column: $state.table.teamB,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<bool> get teamAWon => $state.composableBuilder(
+      column: $state.table.teamAWon,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<
@@ -580,8 +618,10 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
             db: db,
             table: table,
-            filteringComposer: $$MatchResultsTableFilterComposer(db, table),
-            orderingComposer: $$MatchResultsTableOrderingComposer(db, table),
+            filteringComposer:
+                $$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
+            orderingComposer: $$MatchResultsTableOrderingComposer(
+                i0.ComposerState(db, table)),
             getChildManagerBuilder: (p0) =>
                 $$MatchResultsTableProcessedTableManager(p0),
             getUpdateCompanionBuilder: ({

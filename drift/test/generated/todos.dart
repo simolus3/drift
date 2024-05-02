@@ -103,6 +103,32 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
       .nullable()();
 }
 
+class Department extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
+}
+
+class Product extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
+  IntColumn get department =>
+      integer().references(Department, #id).nullable()();
+}
+
+class Listing extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  @ReferenceName('listings')
+  IntColumn get product => integer().references(Product, #id).nullable()();
+  @ReferenceName('listings')
+  IntColumn get store => integer().references(Store, #id).nullable()();
+  RealColumn get price => real().nullable()();
+}
+
+class Store extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
+}
+
 class CustomRowClass {
   final int notReallyAnId;
   final double anotherName;
@@ -264,7 +290,11 @@ const uuidType = DialectAwareSqlType<UuidValue>.via(
     TableWithoutPK,
     PureDefaults,
     WithCustomType,
-    TableWithEveryColumnType
+    TableWithEveryColumnType,
+    Department,
+    Product,
+    Listing,
+    Store,
   ],
   views: [
     CategoryTodoCountView,

@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
 part 'composer.dart';
 part 'filter.dart';
-part 'join.dart';
+part 'composable.dart';
 part 'ordering.dart';
 
 sealed class _StatementType<T extends Table, DT extends DataClass> {
@@ -34,6 +35,7 @@ class _JoinedResult<T extends Table, DT extends DataClass>
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
 ///
 /// The [C] generic refers to the type of the child manager that will be created when a filter/ordering is applied
+
 class TableManagerState<
     DB extends GeneratedDatabase,
     T extends Table,
@@ -94,22 +96,24 @@ class TableManagerState<
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
   /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
-  const TableManagerState({
-    required this.db,
-    required this.table,
-    required this.filteringComposer,
-    required this.orderingComposer,
-    required C Function(TableManagerState<DB, T, DT, FS, OS, C, CI, CU>)
-        getChildManagerBuilder,
-    required CI getInsertCompanionBuilder,
-    required CU getUpdateCompanionBuilder,
-    this.filter,
-    this.distinct,
-    this.limit,
-    this.offset,
-    this.orderingBuilders = const {},
-    this.joinBuilders = const {},
-  })  : _getChildManagerBuilder = getChildManagerBuilder,
+  ///
+  /// This class is used internally by the [BaseTableManager] and should not be used directly
+  const TableManagerState(
+      {required this.db,
+      required this.table,
+      required this.filteringComposer,
+      required this.orderingComposer,
+      required C Function(TableManagerState<DB, T, DT, FS, OS, C, CI, CU>)
+          getChildManagerBuilder,
+      required CI getInsertCompanionBuilder,
+      required CU getUpdateCompanionBuilder,
+      this.filter,
+      this.distinct,
+      this.limit,
+      this.offset,
+      this.orderingBuilders = const {},
+      this.joinBuilders = const {}})
+      : _getChildManagerBuilder = getChildManagerBuilder,
         _getInsertCompanionBuilder = getInsertCompanionBuilder,
         _getUpdateCompanionBuilder = getUpdateCompanionBuilder;
 
@@ -185,8 +189,8 @@ class TableManagerState<
       if (filter != null) {
         joinedStatement.where(filter!);
       }
-      // Apply orderings and limits
 
+      // Apply orderings and limits
       joinedStatement
           .orderBy(orderingBuilders.map((e) => e.buildTerm()).toList());
       if (limit != null) {
@@ -200,11 +204,12 @@ class TableManagerState<
   /// Build a select statement based on the manager state
   Selectable<DT> buildSelectStatement() {
     final result = _buildSelectStatement();
-    return switch (result) {
-      _SimpleResult() => result.statement,
-      _JoinedResult() =>
-        result.statement.map((p0) => p0.readTable(_tableAsTableInfo))
-    };
+    switch (result) {
+      case _SimpleResult():
+        return result.statement;
+      case _JoinedResult():
+        return result.statement.map((p0) => p0.readTable(_tableAsTableInfo));
+    }
   }
 
   /// Build an update statement based on the manager state
@@ -227,12 +232,20 @@ class TableManagerState<
   }
 
   /// Count the number of rows that would be returned by the built statement
-  Future<int> count() {
-    final count = countAll();
-    final result =
-        _buildSelectStatement(targetColumns: [count]) as _JoinedResult;
-    return result.statement
-        .map((row) => row.read(count)!)
+  Future<int> count() async {
+    final countExpression = countAll();
+    final JoinedSelectStatement statement;
+    if (joinBuilders.isEmpty) {
+      statement = ((_buildSelectStatement(targetColumns: [countExpression])
+              as _JoinedResult)
+          .statement);
+    } else {
+      final subquery = Subquery(
+          ((_buildSelectStatement() as _JoinedResult).statement), 'subquery');
+      statement = db.selectOnly(subquery)..addColumns([countExpression]);
+    }
+    return await statement
+        .map((row) => row.read(countExpression)!)
         .get()
         .then((value) => value.firstOrNull ?? 0);
   }
@@ -281,7 +294,6 @@ class TableManagerState<
 /// Base class for all table managers
 /// Most of this classes functionality is kept in a seperate [TableManagerState] class
 /// This is so that the state can be passed down to lower level managers
-@internal
 abstract class BaseTableManager<
         DB extends GeneratedDatabase,
         T extends Table,
@@ -299,6 +311,8 @@ abstract class BaseTableManager<
   final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> $state;
 
   /// Create a new [BaseTableManager] instance
+  ///
+  /// {@macro manager_internal_use_only}
   const BaseTableManager(this.$state);
 
   /// Add a limit to the statement
@@ -319,10 +333,15 @@ abstract class BaseTableManager<
   /// Add a filter to the statement
   C filter(ComposableFilter Function(FS f) f) {
     final filter = f($state.filteringComposer);
+    final combinedFilter = switch (($state.filter, filter.expression)) {
+      (null, null) => null,
+      (null, var filter) => filter,
+      (var filter, null) => filter,
+      (var filter1, var filter2) => (filter1!) & (filter2!)
+    };
+
     return $state._getChildManagerBuilder($state.copyWith(
-        filter: $state.filter == null
-            ? filter.expression
-            : filter.expression & $state.filter!,
+        filter: combinedFilter,
         joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
   }
 
@@ -343,8 +362,8 @@ abstract class BaseTableManager<
 
   /// Return the count of rows matched by the built statement
   /// When counting rows, the query will only count distinct rows by default
-  Future<int> count([bool distinct = true]) {
-    return $state.copyWith(distinct: true).count();
+  Future<int> count({bool distinct = true}) {
+    return $state.copyWith(distinct: distinct).count();
   }
 
   /// Checks whether any rows exist
@@ -456,6 +475,7 @@ class ProcessedTableManager<
         SingleSelectable<D>,
         SingleOrNullSelectable<D> {
   /// Create a new [ProcessedTableManager] instance
+  @internal
   const ProcessedTableManager(super.$state);
 }
 
@@ -470,6 +490,11 @@ abstract class RootTableManager<
     CI extends Function,
     CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
   /// Create a new [RootTableManager] instance
+  ///
+  /// {@template manager_internal_use_only}
+  /// This class is implemented by the code generator and should
+  /// not be instantiated or extended manually.
+  /// {@endtemplate}
   const RootTableManager(super.$state);
 
   /// Creates a new row in the table using the given function
