@@ -61,7 +61,11 @@ void main() {
       await testBindingError(
         columnType: 'INT8',
         input: BigInt.parse('9223372036854775808'),
-        matcher: isA<Exception>(),
+        matcher: isA<Exception>().having(
+          (e) => e.toString(),
+          'message',
+          'Exception: BigInt value exceeds the range of 64 bits',
+        ),
       );
     });
 
