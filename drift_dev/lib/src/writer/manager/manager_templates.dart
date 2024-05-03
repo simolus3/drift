@@ -33,21 +33,6 @@ class _ManagerCodeTemplates {
     };
   }
 
-  /// The code for the database manager getter which will be added to the main database class
-  ///
-  /// E.g. `AppDatabase get managers => AppDatabaseManager(this);`
-  String databaseManagerGetter(String dbClassName) {
-    return '${databaseManagerName(dbClassName)} get managers => ${databaseManagerName(dbClassName)}(this);';
-  }
-
-  /// The code for a root table manager getter which will be added to the database manager class
-  ///
-  /// E.g. `UserTableManager get todos => UserTableManager(_db,_db.todos);`
-  String rootTableManagerGetter(
-      DriftTable table, String rootTableManagerClass) {
-    return '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass(_db, _db.${table.dbGetterName});';
-  }
-
   /// Returns the name of the root manager class for a table
   ///
   /// One of these classes is generated for each table in the database
@@ -203,7 +188,6 @@ class _ManagerCodeTemplates {
     ${filterComposerNameWithPrefix(table, leaf)},
     ${orderingComposerNameWithPrefix(table, leaf)},
     ${processedTableManagerName(table)},
-
     ${insertCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)}>""";
   }

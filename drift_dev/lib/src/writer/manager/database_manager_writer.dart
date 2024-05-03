@@ -46,8 +46,11 @@ class DatabaseManagerWriter {
     }
   }
 
+  /// The code for the database manager getter which will be added to the main database class
+  ///
+  /// E.g. `AppDatabase get managers => AppDatabaseManager(this);`
   String get databaseManagerGetter =>
-      _templates.databaseManagerGetter(_dbClassName);
+      '${_templates.databaseManagerName(_dbClassName)} get managers => ${_templates.databaseManagerName(_dbClassName)}(this);';
 
   /// Write the database manager class
   void writeDatabaseManager() {
@@ -66,7 +69,7 @@ class DatabaseManagerWriter {
 
       /// Write the getter for the table manager
       leaf.writeln(
-          _templates.rootTableManagerGetter(table, rootTableManagerClass));
+          '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass(_db, _db.${table.dbGetterName});');
     }
     leaf.writeln('}');
   }
