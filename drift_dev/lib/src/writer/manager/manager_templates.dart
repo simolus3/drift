@@ -4,12 +4,12 @@ part of "database_manager_writer.dart";
 ///
 /// This is used by the [DatabaseManagerWriter] to generate code for the manager classes
 class _ManagerCodeTemplates {
-  _ManagerCodeTemplates(this.__scope);
+  _ManagerCodeTemplates(this._scope);
 
   /// A Scope class which contains the current scope of the generation
   ///
   /// Used to generating names which require import prefixes
-  final Scope __scope;
+  final Scope _scope;
 
   /// Returns the name of the manager class for a table
   ///
@@ -27,7 +27,7 @@ class _ManagerCodeTemplates {
   ///
   /// E.g. `i0.GeneratedDatabase` or `AppDatabase`
   String databaseType(TextEmitter leaf, String dbClassName) {
-    return switch (__scope.generationOptions.isModular) {
+    return switch (_scope.generationOptions.isModular) {
       true => leaf.drift("GeneratedDatabase"),
       false => dbClassName,
     };
@@ -156,7 +156,7 @@ class _ManagerCodeTemplates {
     } else {
       companionBuilderBody = StringBuffer('=> $companionClassName.insert(');
     }
-    for (final column in UpdateCompanionWriter(table, __scope).columns) {
+    for (final column in UpdateCompanionWriter(table, _scope).columns) {
       final value = leaf.drift('Value');
       final param = column.nameInDart;
       final typeName = leaf.dartCode(leaf.dartType(column));
@@ -211,7 +211,7 @@ class _ManagerCodeTemplates {
   /// Code for getting a table from inside a composer
   /// handles modular generation correctly
   String _referenceTableFromComposer(DriftTable table, TextEmitter leaf) {
-    if (__scope.generationOptions.isModular) {
+    if (_scope.generationOptions.isModular) {
       final extension = leaf.refUri(
           ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer');
       final type = leaf.dartCode(leaf.entityInfoType(table));
