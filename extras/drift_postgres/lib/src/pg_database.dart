@@ -168,11 +168,13 @@ class _BoundArguments {
         final value = args[i];
         return switch (value) {
           TypedValue() => value,
-          null => TypedValue(Type.unspecified, null),
-          int() || BigInt() => TypedValue(Type.bigInteger, value),
-          String() => TypedValue(Type.text, value),
-          bool() => TypedValue(Type.boolean, value),
-          double() => TypedValue(Type.double, value),
+          null ||
+          int() ||
+          String() ||
+          bool() ||
+          double() =>
+            TypedValue(Type.unspecified, value),
+          BigInt() => TypedValue(Type.bigInteger, value.toInt()),
           List<int>() => TypedValue(Type.byteArray, value),
           _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
         };

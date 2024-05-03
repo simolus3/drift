@@ -40,23 +40,80 @@ void main() {
   runAllTests(PgExecutor());
 
   // Regression for https://github.com/simolus3/drift/issues/2981
-  test('bind null to nullable column', () async {
-    final executor = PgExecutor();
-    final db = Database(executor.createConnection());
+  group('binding', () {
+    test('null', () async {
+      await testParamBinding(
+        columnType: 'INTEGER',
+        input: null,
+        output: null,
+      );
+    });
 
-    await db.customStatement('''
+    test('BigInt()', () async {
+      await testParamBinding(
+        columnType: 'INT8',
+        input: BigInt.from(123),
+        output: 123,
+      );
+    });
+
+    test('bytea', () async {
+      await testParamBinding(
+        columnType: 'BYTEA',
+        input: Uint8List.fromList([1, 2, 3]),
+        output: Uint8List.fromList([1, 2, 3]),
+      );
+    });
+
+    group('implicit casts', () {
+      test('text to int', () async {
+        await testParamBinding(
+          columnType: 'INTEGER',
+          input: '123',
+          output: 123,
+        );
+      });
+
+      test('int to double', () async {
+        await testParamBinding(
+          columnType: 'FLOAT8',
+          input: 123,
+          output: 123.0,
+        );
+      });
+
+      test('text to double', () async {
+        await testParamBinding(
+          columnType: 'FLOAT8',
+          input: '1.56',
+          output: 1.56,
+        );
+      });
+    });
+  });
+}
+
+Future<void> testParamBinding({
+  required String columnType,
+  required Object? input,
+  required Object? output,
+}) async {
+  final executor = PgExecutor();
+  final db = Database(executor.createConnection());
+  addTearDown(() => executor.clearDatabaseAndClose(db));
+
+  await db.customStatement('''
 CREATE TABLE mytable (
   id INTEGER PRIMARY KEY NOT NULL,
-  value INTEGER
+  value $columnType
 );
 ''');
 
-    // Provide null to a nullable column
-    await db.customInsert(
-      r'INSERT INTO mytable (id, value) VALUES (1, $1);',
-      variables: [Variable(null)],
-    );
+  await db.customInsert(
+    r'INSERT INTO mytable (id, value) VALUES (1, $1);',
+    variables: [Variable(input)],
+  );
 
-    await executor.clearDatabaseAndClose(db);
-  });
+  final result = await db.customSelect('SELECT * FROM mytable;').getSingle();
+  expect(result.data['value'], output);
 }
