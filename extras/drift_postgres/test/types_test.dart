@@ -84,4 +84,14 @@ void main() {
             .isBiggerOrEqualValue(moonLanding)),
         isTrue);
   });
+
+  test('bigint', () async {
+    expect(await eval(Variable<BigInt>(BigInt.two)), BigInt.two);
+
+    await expectLater(
+      eval(Variable<BigInt>(BigInt.parse('9223372036854775808'))),
+      throwsArgumentError,
+      reason: 'Out of range',
+    );
+  });
 }

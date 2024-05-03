@@ -1,3 +1,11 @@
+## 1.2.3
+
+- Fix binding `BigInt` variables.
+
+## 1.2.2
+
+- Fix parameter binding when NULL is provided.
+
 ## 1.2.1
 
 - Fix `isOpen` so that it properly returns false after the underlying postgres

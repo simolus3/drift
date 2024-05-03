@@ -1,20 +1,9 @@
-import 'dart:ffi';
-
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
-import 'package:sqlite3/open.dart';
-import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 
 import 'database.dart';
 
 void main() {
-  open
-    ..overrideFor(OperatingSystem.android, openCipherOnAndroid)
-    ..overrideFor(
-        OperatingSystem.linux, () => DynamicLibrary.open('libsqlcipher.so'))
-    ..overrideFor(
-        OperatingSystem.windows, () => DynamicLibrary.open('sqlcipher.dll'));
-
   runApp(const MyApp());
 }
 
