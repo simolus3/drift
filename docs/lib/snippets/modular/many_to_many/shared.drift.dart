@@ -219,52 +219,6 @@ class BuyableItemsCompanion extends i0.UpdateCompanion<i1.BuyableItem> {
   }
 }
 
-class $$BuyableItemsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<int> get price => $state.composableBuilder(
-      column: $state.table.price,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$BuyableItemsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<int> get price => $state.composableBuilder(
-      column: $state.table.price,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$BuyableItemsTable,
-    i1.BuyableItem,
-    $$BuyableItemsTableFilterComposer,
-    $$BuyableItemsTableOrderingComposer,
-    $$BuyableItemsTableProcessedTableManager,
-    $$BuyableItemsTableInsertCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder> {
-  const $$BuyableItemsTableProcessedTableManager(super.$state);
-}
-
 typedef $$BuyableItemsTableInsertCompanionBuilder = i1.BuyableItemsCompanion
     Function({
   i0.Value<int> id,
@@ -282,40 +236,91 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.$BuyableItemsTable,
     i1.BuyableItem,
-    $$BuyableItemsTableFilterComposer,
-    $$BuyableItemsTableOrderingComposer,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
     $$BuyableItemsTableProcessedTableManager,
     $$BuyableItemsTableInsertCompanionBuilder,
     $$BuyableItemsTableUpdateCompanionBuilder> {
   $$BuyableItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
       : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer: $$BuyableItemsTableOrderingComposer(
-                i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$BuyableItemsTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              i0.Value<String> description = const i0.Value.absent(),
-              i0.Value<int> price = const i0.Value.absent(),
-            }) =>
-                i1.BuyableItemsCompanion(
-                  id: id,
-                  description: description,
-                  price: price,
-                ),
-            getInsertCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              required String description,
-              required int price,
-            }) =>
-                i1.BuyableItemsCompanion.insert(
-                  id: id,
-                  description: description,
-                  price: price,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer: i1
+              .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$BuyableItemsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> description = const i0.Value.absent(),
+            i0.Value<int> price = const i0.Value.absent(),
+          }) =>
+              i1.BuyableItemsCompanion(
+            id: id,
+            description: description,
+            price: price,
+          ),
+          getInsertCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String description,
+            required int price,
+          }) =>
+              i1.BuyableItemsCompanion.insert(
+            id: id,
+            description: description,
+            price: price,
+          ),
+        ));
+}
+
+class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
+    $$BuyableItemsTableProcessedTableManager,
+    $$BuyableItemsTableInsertCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder> {
+  $$BuyableItemsTableProcessedTableManager(super.$state);
+}
+
+class $$BuyableItemsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<int> get price => $state.composableBuilder(
+      column: $state.table.price,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$BuyableItemsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<int> get price => $state.composableBuilder(
+      column: $state.table.price,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }

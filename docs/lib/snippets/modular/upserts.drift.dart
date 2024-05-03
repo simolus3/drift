@@ -187,44 +187,6 @@ class WordsCompanion extends i0.UpdateCompanion<i1.Word> {
   }
 }
 
-class $$WordsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableFilterComposer(super.$state);
-  i0.ColumnFilters<String> get word => $state.composableBuilder(
-      column: $state.table.word,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<int> get usages => $state.composableBuilder(
-      column: $state.table.usages,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$WordsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get word => $state.composableBuilder(
-      column: $state.table.word,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<int> get usages => $state.composableBuilder(
-      column: $state.table.usages,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$WordsTable,
-    i1.Word,
-    $$WordsTableFilterComposer,
-    $$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
-    $$WordsTableInsertCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder> {
-  const $$WordsTableProcessedTableManager(super.$state);
-}
-
 typedef $$WordsTableInsertCompanionBuilder = i1.WordsCompanion Function({
   required String word,
   i0.Value<int> usages,
@@ -240,41 +202,81 @@ class $$WordsTableTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.$WordsTable,
     i1.Word,
-    $$WordsTableFilterComposer,
-    $$WordsTableOrderingComposer,
+    i1.$$WordsTableFilterComposer,
+    i1.$$WordsTableOrderingComposer,
     $$WordsTableProcessedTableManager,
     $$WordsTableInsertCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder> {
   $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
       : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $$WordsTableFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer:
-                $$WordsTableOrderingComposer(i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$WordsTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<String> word = const i0.Value.absent(),
-              i0.Value<int> usages = const i0.Value.absent(),
-              i0.Value<int> rowid = const i0.Value.absent(),
-            }) =>
-                i1.WordsCompanion(
-                  word: word,
-                  usages: usages,
-                  rowid: rowid,
-                ),
-            getInsertCompanionBuilder: ({
-              required String word,
-              i0.Value<int> usages = const i0.Value.absent(),
-              i0.Value<int> rowid = const i0.Value.absent(),
-            }) =>
-                i1.WordsCompanion.insert(
-                  word: word,
-                  usages: usages,
-                  rowid: rowid,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$$WordsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $$WordsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<String> word = const i0.Value.absent(),
+            i0.Value<int> usages = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.WordsCompanion(
+            word: word,
+            usages: usages,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            required String word,
+            i0.Value<int> usages = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.WordsCompanion.insert(
+            word: word,
+            usages: usages,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$WordsTable,
+    i1.Word,
+    i1.$$WordsTableFilterComposer,
+    i1.$$WordsTableOrderingComposer,
+    $$WordsTableProcessedTableManager,
+    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableUpdateCompanionBuilder> {
+  $$WordsTableProcessedTableManager(super.$state);
+}
+
+class $$WordsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
+  $$WordsTableFilterComposer(super.$state);
+  i0.ColumnFilters<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<int> get usages => $state.composableBuilder(
+      column: $state.table.usages,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$WordsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
+  $$WordsTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<int> get usages => $state.composableBuilder(
+      column: $state.table.usages,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $MatchResultsTable extends i2.MatchResults
@@ -535,60 +537,6 @@ class MatchResultsCompanion extends i0.UpdateCompanion<i1.MatchResult> {
   }
 }
 
-class $$MatchResultsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<String> get teamA => $state.composableBuilder(
-      column: $state.table.teamA,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<String> get teamB => $state.composableBuilder(
-      column: $state.table.teamB,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<bool> get teamAWon => $state.composableBuilder(
-      column: $state.table.teamAWon,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$MatchResultsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<String> get teamA => $state.composableBuilder(
-      column: $state.table.teamA,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<String> get teamB => $state.composableBuilder(
-      column: $state.table.teamB,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<bool> get teamAWon => $state.composableBuilder(
-      column: $state.table.teamAWon,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$MatchResultsTable,
-    i1.MatchResult,
-    $$MatchResultsTableFilterComposer,
-    $$MatchResultsTableOrderingComposer,
-    $$MatchResultsTableProcessedTableManager,
-    $$MatchResultsTableInsertCompanionBuilder,
-    $$MatchResultsTableUpdateCompanionBuilder> {
-  const $$MatchResultsTableProcessedTableManager(super.$state);
-}
-
 typedef $$MatchResultsTableInsertCompanionBuilder = i1.MatchResultsCompanion
     Function({
   i0.Value<int> id,
@@ -608,44 +556,105 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.$MatchResultsTable,
     i1.MatchResult,
-    $$MatchResultsTableFilterComposer,
-    $$MatchResultsTableOrderingComposer,
+    i1.$$MatchResultsTableFilterComposer,
+    i1.$$MatchResultsTableOrderingComposer,
     $$MatchResultsTableProcessedTableManager,
     $$MatchResultsTableInsertCompanionBuilder,
     $$MatchResultsTableUpdateCompanionBuilder> {
   $$MatchResultsTableTableManager(
       i0.GeneratedDatabase db, i1.$MatchResultsTable table)
       : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer: $$MatchResultsTableOrderingComposer(
-                i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$MatchResultsTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              i0.Value<String> teamA = const i0.Value.absent(),
-              i0.Value<String> teamB = const i0.Value.absent(),
-              i0.Value<bool> teamAWon = const i0.Value.absent(),
-            }) =>
-                i1.MatchResultsCompanion(
-                  id: id,
-                  teamA: teamA,
-                  teamB: teamB,
-                  teamAWon: teamAWon,
-                ),
-            getInsertCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              required String teamA,
-              required String teamB,
-              required bool teamAWon,
-            }) =>
-                i1.MatchResultsCompanion.insert(
-                  id: id,
-                  teamA: teamA,
-                  teamB: teamB,
-                  teamAWon: teamAWon,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer: i1
+              .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$MatchResultsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> teamA = const i0.Value.absent(),
+            i0.Value<String> teamB = const i0.Value.absent(),
+            i0.Value<bool> teamAWon = const i0.Value.absent(),
+          }) =>
+              i1.MatchResultsCompanion(
+            id: id,
+            teamA: teamA,
+            teamB: teamB,
+            teamAWon: teamAWon,
+          ),
+          getInsertCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String teamA,
+            required String teamB,
+            required bool teamAWon,
+          }) =>
+              i1.MatchResultsCompanion.insert(
+            id: id,
+            teamA: teamA,
+            teamB: teamB,
+            teamAWon: teamAWon,
+          ),
+        ));
+}
+
+class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$MatchResultsTable,
+    i1.MatchResult,
+    i1.$$MatchResultsTableFilterComposer,
+    i1.$$MatchResultsTableOrderingComposer,
+    $$MatchResultsTableProcessedTableManager,
+    $$MatchResultsTableInsertCompanionBuilder,
+    $$MatchResultsTableUpdateCompanionBuilder> {
+  $$MatchResultsTableProcessedTableManager(super.$state);
+}
+
+class $$MatchResultsTableFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
+  $$MatchResultsTableFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get teamA => $state.composableBuilder(
+      column: $state.table.teamA,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get teamB => $state.composableBuilder(
+      column: $state.table.teamB,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<bool> get teamAWon => $state.composableBuilder(
+      column: $state.table.teamAWon,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$MatchResultsTableOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
+  $$MatchResultsTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get teamA => $state.composableBuilder(
+      column: $state.table.teamA,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get teamB => $state.composableBuilder(
+      column: $state.table.teamB,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<bool> get teamAWon => $state.composableBuilder(
+      column: $state.table.teamAWon,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }

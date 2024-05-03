@@ -227,44 +227,6 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [geopolyTest];
 }
 
-class $GeopolyTestFilterComposer
-    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestFilterComposer(super.$state);
-  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $GeopolyTestOrderingComposer
-    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestOrderingComposer(super.$state);
-  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $GeopolyTestProcessedTableManager extends ProcessedTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestProcessedTableManager,
-    $GeopolyTestInsertCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder> {
-  const $GeopolyTestProcessedTableManager(super.$state);
-}
-
 typedef $GeopolyTestInsertCompanionBuilder = GeopolyTestCompanion Function({
   Value<GeopolyPolygon?> shape,
   Value<DriftAny?> a,
@@ -287,34 +249,74 @@ class $GeopolyTestTableManager extends RootTableManager<
     $GeopolyTestUpdateCompanionBuilder> {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
       : super(TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $GeopolyTestFilterComposer(ComposerState(db, table)),
-            orderingComposer:
-                $GeopolyTestOrderingComposer(ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $GeopolyTestProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              Value<GeopolyPolygon?> shape = const Value.absent(),
-              Value<DriftAny?> a = const Value.absent(),
-              Value<int> rowid = const Value.absent(),
-            }) =>
-                GeopolyTestCompanion(
-                  shape: shape,
-                  a: a,
-                  rowid: rowid,
-                ),
-            getInsertCompanionBuilder: ({
-              Value<GeopolyPolygon?> shape = const Value.absent(),
-              Value<DriftAny?> a = const Value.absent(),
-              Value<int> rowid = const Value.absent(),
-            }) =>
-                GeopolyTestCompanion.insert(
-                  shape: shape,
-                  a: a,
-                  rowid: rowid,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              $GeopolyTestFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $GeopolyTestOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $GeopolyTestProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<GeopolyPolygon?> shape = const Value.absent(),
+            Value<DriftAny?> a = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              GeopolyTestCompanion(
+            shape: shape,
+            a: a,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<GeopolyPolygon?> shape = const Value.absent(),
+            Value<DriftAny?> a = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              GeopolyTestCompanion.insert(
+            shape: shape,
+            a: a,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $GeopolyTestProcessedTableManager extends ProcessedTableManager<
+    _$_GeopolyTestDatabase,
+    GeopolyTest,
+    GeopolyTestData,
+    $GeopolyTestFilterComposer,
+    $GeopolyTestOrderingComposer,
+    $GeopolyTestProcessedTableManager,
+    $GeopolyTestInsertCompanionBuilder,
+    $GeopolyTestUpdateCompanionBuilder> {
+  $GeopolyTestProcessedTableManager(super.$state);
+}
+
+class $GeopolyTestFilterComposer
+    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestFilterComposer(super.$state);
+  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $GeopolyTestOrderingComposer
+    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestOrderingComposer(super.$state);
+  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class _$_GeopolyTestDatabaseManager {

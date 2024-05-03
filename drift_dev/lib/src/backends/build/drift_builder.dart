@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:drift_dev/src/writer/manager/database_manager_writer.dart';
 import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -13,7 +14,6 @@ import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
 import '../../writer/function_stubs_writer.dart';
 import '../../writer/import_manager.dart';
-import '../../writer/manager_writer.dart';
 import '../../writer/modules.dart';
 import '../../writer/tables/table_writer.dart';
 import '../../writer/tables/view_writer.dart';
@@ -297,7 +297,7 @@ class _DriftBuildRun {
         TableWriter(result, writer.child()).writeInto();
 
         final scope = writer.child();
-        final manager = ManagerWriter(scope, scope, '')..addTable(result);
+        final manager = DatabaseManagerWriter(scope, '')..addTable(result);
         manager.writeTableManagers();
       } else if (result is DriftView) {
         ViewWriter(result, writer.child(), null).write();

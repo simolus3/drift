@@ -174,44 +174,6 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   }
 }
 
-class $UsersFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i0.ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $UsersOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i0.ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $UsersProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    $UsersFilterComposer,
-    $UsersOrderingComposer,
-    $UsersProcessedTableManager,
-    $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
-  const $UsersProcessedTableManager(super.$state);
-}
-
 typedef $UsersInsertCompanionBuilder = i1.UsersCompanion Function({
   i0.Value<int> id,
   required String name,
@@ -225,34 +187,75 @@ class $UsersTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.Users,
     i1.User,
-    $UsersFilterComposer,
-    $UsersOrderingComposer,
+    i1.$UsersFilterComposer,
+    i1.$UsersOrderingComposer,
     $UsersProcessedTableManager,
     $UsersInsertCompanionBuilder,
     $UsersUpdateCompanionBuilder> {
   $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
       : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $UsersFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer:
-                $UsersOrderingComposer(i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) => $UsersProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              i0.Value<String> name = const i0.Value.absent(),
-            }) =>
-                i1.UsersCompanion(
-                  id: id,
-                  name: name,
-                ),
-            getInsertCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              required String name,
-            }) =>
-                i1.UsersCompanion.insert(
-                  id: id,
-                  name: name,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$UsersFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $UsersProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> name = const i0.Value.absent(),
+          }) =>
+              i1.UsersCompanion(
+            id: id,
+            name: name,
+          ),
+          getInsertCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String name,
+          }) =>
+              i1.UsersCompanion.insert(
+            id: id,
+            name: name,
+          ),
+        ));
+}
+
+class $UsersProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Users,
+    i1.User,
+    i1.$UsersFilterComposer,
+    i1.$UsersOrderingComposer,
+    $UsersProcessedTableManager,
+    $UsersInsertCompanionBuilder,
+    $UsersUpdateCompanionBuilder> {
+  $UsersProcessedTableManager(super.$state);
+}
+
+class $UsersFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
+  $UsersFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $UsersOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Users> {
+  $UsersOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }

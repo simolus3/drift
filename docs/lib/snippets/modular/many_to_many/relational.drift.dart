@@ -176,6 +176,63 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
   }
 }
 
+typedef $$ShoppingCartsTableInsertCompanionBuilder = i2.ShoppingCartsCompanion
+    Function({
+  i0.Value<int> id,
+});
+typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
+    Function({
+  i0.Value<int> id,
+});
+
+class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartsTable,
+    i2.ShoppingCart,
+    i2.$$ShoppingCartsTableFilterComposer,
+    i2.$$ShoppingCartsTableOrderingComposer,
+    $$ShoppingCartsTableProcessedTableManager,
+    $$ShoppingCartsTableInsertCompanionBuilder,
+    $$ShoppingCartsTableUpdateCompanionBuilder> {
+  $$ShoppingCartsTableTableManager(
+      i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: i2
+              .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
+              i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$ShoppingCartsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+          }) =>
+              i2.ShoppingCartsCompanion(
+            id: id,
+          ),
+          getInsertCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+          }) =>
+              i2.ShoppingCartsCompanion.insert(
+            id: id,
+          ),
+        ));
+}
+
+class $$ShoppingCartsTableProcessedTableManager
+    extends i0.ProcessedTableManager<
+        i0.GeneratedDatabase,
+        i2.$ShoppingCartsTable,
+        i2.ShoppingCart,
+        i2.$$ShoppingCartsTableFilterComposer,
+        i2.$$ShoppingCartsTableOrderingComposer,
+        $$ShoppingCartsTableProcessedTableManager,
+        $$ShoppingCartsTableInsertCompanionBuilder,
+        $$ShoppingCartsTableUpdateCompanionBuilder> {
+  $$ShoppingCartsTableProcessedTableManager(super.$state);
+}
+
 class $$ShoppingCartsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableFilterComposer(super.$state);
@@ -192,62 +249,6 @@ class $$ShoppingCartsTableOrderingComposer
       column: $state.table.id,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$ShoppingCartsTableProcessedTableManager
-    extends i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i2.$ShoppingCartsTable,
-        i2.ShoppingCart,
-        $$ShoppingCartsTableFilterComposer,
-        $$ShoppingCartsTableOrderingComposer,
-        $$ShoppingCartsTableProcessedTableManager,
-        $$ShoppingCartsTableInsertCompanionBuilder,
-        $$ShoppingCartsTableUpdateCompanionBuilder> {
-  const $$ShoppingCartsTableProcessedTableManager(super.$state);
-}
-
-typedef $$ShoppingCartsTableInsertCompanionBuilder = i2.ShoppingCartsCompanion
-    Function({
-  i0.Value<int> id,
-});
-typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
-    Function({
-  i0.Value<int> id,
-});
-
-class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i2.$ShoppingCartsTable,
-    i2.ShoppingCart,
-    $$ShoppingCartsTableFilterComposer,
-    $$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableProcessedTableManager,
-    $$ShoppingCartsTableInsertCompanionBuilder,
-    $$ShoppingCartsTableUpdateCompanionBuilder> {
-  $$ShoppingCartsTableTableManager(
-      i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
-      : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer: $$ShoppingCartsTableOrderingComposer(
-                i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$ShoppingCartsTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-            }) =>
-                i2.ShoppingCartsCompanion(
-                  id: id,
-                ),
-            getInsertCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-            }) =>
-                i2.ShoppingCartsCompanion.insert(
-                  id: id,
-                )));
 }
 
 class $ShoppingCartEntriesTable extends i3.ShoppingCartEntries
@@ -449,6 +450,75 @@ class ShoppingCartEntriesCompanion
   }
 }
 
+typedef $$ShoppingCartEntriesTableInsertCompanionBuilder
+    = i2.ShoppingCartEntriesCompanion Function({
+  required int shoppingCart,
+  required int item,
+  i0.Value<int> rowid,
+});
+typedef $$ShoppingCartEntriesTableUpdateCompanionBuilder
+    = i2.ShoppingCartEntriesCompanion Function({
+  i0.Value<int> shoppingCart,
+  i0.Value<int> item,
+  i0.Value<int> rowid,
+});
+
+class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartEntriesTable,
+    i2.ShoppingCartEntry,
+    i2.$$ShoppingCartEntriesTableFilterComposer,
+    i2.$$ShoppingCartEntriesTableOrderingComposer,
+    $$ShoppingCartEntriesTableProcessedTableManager,
+    $$ShoppingCartEntriesTableInsertCompanionBuilder,
+    $$ShoppingCartEntriesTableUpdateCompanionBuilder> {
+  $$ShoppingCartEntriesTableTableManager(
+      i0.GeneratedDatabase db, i2.$ShoppingCartEntriesTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: i2.$$ShoppingCartEntriesTableFilterComposer(
+              i0.ComposerState(db, table)),
+          orderingComposer: i2.$$ShoppingCartEntriesTableOrderingComposer(
+              i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$ShoppingCartEntriesTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> shoppingCart = const i0.Value.absent(),
+            i0.Value<int> item = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i2.ShoppingCartEntriesCompanion(
+            shoppingCart: shoppingCart,
+            item: item,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            required int shoppingCart,
+            required int item,
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i2.ShoppingCartEntriesCompanion.insert(
+            shoppingCart: shoppingCart,
+            item: item,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $$ShoppingCartEntriesTableProcessedTableManager
+    extends i0.ProcessedTableManager<
+        i0.GeneratedDatabase,
+        i2.$ShoppingCartEntriesTable,
+        i2.ShoppingCartEntry,
+        i2.$$ShoppingCartEntriesTableFilterComposer,
+        i2.$$ShoppingCartEntriesTableOrderingComposer,
+        $$ShoppingCartEntriesTableProcessedTableManager,
+        $$ShoppingCartEntriesTableInsertCompanionBuilder,
+        $$ShoppingCartEntriesTableUpdateCompanionBuilder> {
+  $$ShoppingCartEntriesTableProcessedTableManager(super.$state);
+}
+
 class $$ShoppingCartEntriesTableFilterComposer extends i0
     .FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable> {
   $$ShoppingCartEntriesTableFilterComposer(super.$state);
@@ -529,72 +599,4 @@ class $$ShoppingCartEntriesTableOrderingComposer extends i0
                     parentComposers)));
     return composer;
   }
-}
-
-class $$ShoppingCartEntriesTableProcessedTableManager
-    extends i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i2.$ShoppingCartEntriesTable,
-        i2.ShoppingCartEntry,
-        $$ShoppingCartEntriesTableFilterComposer,
-        $$ShoppingCartEntriesTableOrderingComposer,
-        $$ShoppingCartEntriesTableProcessedTableManager,
-        $$ShoppingCartEntriesTableInsertCompanionBuilder,
-        $$ShoppingCartEntriesTableUpdateCompanionBuilder> {
-  const $$ShoppingCartEntriesTableProcessedTableManager(super.$state);
-}
-
-typedef $$ShoppingCartEntriesTableInsertCompanionBuilder
-    = i2.ShoppingCartEntriesCompanion Function({
-  required int shoppingCart,
-  required int item,
-  i0.Value<int> rowid,
-});
-typedef $$ShoppingCartEntriesTableUpdateCompanionBuilder
-    = i2.ShoppingCartEntriesCompanion Function({
-  i0.Value<int> shoppingCart,
-  i0.Value<int> item,
-  i0.Value<int> rowid,
-});
-
-class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i2.$ShoppingCartEntriesTable,
-    i2.ShoppingCartEntry,
-    $$ShoppingCartEntriesTableFilterComposer,
-    $$ShoppingCartEntriesTableOrderingComposer,
-    $$ShoppingCartEntriesTableProcessedTableManager,
-    $$ShoppingCartEntriesTableInsertCompanionBuilder,
-    $$ShoppingCartEntriesTableUpdateCompanionBuilder> {
-  $$ShoppingCartEntriesTableTableManager(
-      i0.GeneratedDatabase db, i2.$ShoppingCartEntriesTable table)
-      : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer: $$ShoppingCartEntriesTableFilterComposer(
-                i0.ComposerState(db, table)),
-            orderingComposer: $$ShoppingCartEntriesTableOrderingComposer(
-                i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$ShoppingCartEntriesTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> shoppingCart = const i0.Value.absent(),
-              i0.Value<int> item = const i0.Value.absent(),
-              i0.Value<int> rowid = const i0.Value.absent(),
-            }) =>
-                i2.ShoppingCartEntriesCompanion(
-                  shoppingCart: shoppingCart,
-                  item: item,
-                  rowid: rowid,
-                ),
-            getInsertCompanionBuilder: ({
-              required int shoppingCart,
-              required int item,
-              i0.Value<int> rowid = const i0.Value.absent(),
-            }) =>
-                i2.ShoppingCartEntriesCompanion.insert(
-                  shoppingCart: shoppingCart,
-                  item: item,
-                  rowid: rowid,
-                )));
 }
