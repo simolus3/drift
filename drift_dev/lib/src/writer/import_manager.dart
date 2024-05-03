@@ -40,10 +40,24 @@ class ImportManagerForPartFiles extends ImportManager {
     return null;
   }
 
+  /// Heuristic to determine whether a source uri [wanted] likely exports the
+  /// [target] element.
+  ///
+  /// We can't compare the [target] definition with the [wanted] url directly,
+  /// as many parts use URLs relying on re-exports. For instance, this should
+  /// return true for a wanted URI of `package:drift/drift.dart` when the
+  /// element is actually defined in `package:drift/src/runtime/table.dart`.
   static bool _matchingUrl(Uri wanted, Element target) {
     final targetUri = target.librarySource?.uri;
     if (targetUri == null || targetUri.scheme != wanted.scheme) {
       return false;
+    }
+
+    if (targetUri.scheme == 'package') {
+      // Match if the two elements are coming from the same package
+      final targetPackage = targetUri.pathSegments.first;
+      final wantedPackage = wanted.pathSegments.first;
+      return targetPackage == wantedPackage;
     }
 
     return true;

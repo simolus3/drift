@@ -1,6 +1,7 @@
 ## 2.18.0-dev
 
 - Add support for the `geopoly` extension in drift files.
+- Improve finding the correct import alias in generated code for part files.
 
 ## 2.17.0
 
