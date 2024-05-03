@@ -123,7 +123,7 @@ class _TableManagerWriter {
 
     for (var relation in relations) {
       columnFilters
-          .add(_templates.relatedFitler(leaf: leaf, relation: relation));
+          .add(_templates.relatedFilter(leaf: leaf, relation: relation));
       // Don't generate reverse ordering, only regular ones
       if (!relation.isReverse) {
         columnOrderings

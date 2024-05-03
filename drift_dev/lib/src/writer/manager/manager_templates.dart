@@ -303,7 +303,7 @@ class _ManagerCodeTemplates {
   }
 
   /// Code for a filter which works over a reference
-  String relatedFitler(
+  String relatedFilter(
       {required _Relation relation, required TextEmitter leaf}) {
     if (relation.isReverse) {
       return """
