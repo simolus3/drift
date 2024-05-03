@@ -169,11 +169,14 @@ class _BoundArguments {
         return switch (value) {
           TypedValue() => value,
           null => TypedValue(Type.unspecified, null),
-          int() || BigInt() => TypedValue(Type.bigInteger, value),
+          int() => TypedValue(Type.bigInteger, value),
           String() => TypedValue(Type.text, value),
           bool() => TypedValue(Type.boolean, value),
           double() => TypedValue(Type.double, value),
           List<int>() => TypedValue(Type.byteArray, value),
+          // Drift's BigInts are also just 64bit, we just support them to
+          // represent large numbers on the web.
+          BigInt() => TypedValue(Type.bigInteger, value.rangeCheckedToInt()),
           _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
         };
       },
@@ -213,5 +216,22 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
         TypedValue(Type.integer, version),
       ],
     );
+  }
+}
+
+extension on BigInt {
+  static final _bigIntMinValue64 = BigInt.from(-9223372036854775808);
+  static final _bigIntMaxValue64 = BigInt.from(9223372036854775807);
+
+  int rangeCheckedToInt() {
+    if (this < _bigIntMinValue64 || this > _bigIntMaxValue64) {
+      throw ArgumentError.value(
+        this,
+        'this',
+        'Should be in signed 64bit range ($_bigIntMinValue64..=$_bigIntMaxValue64)',
+      );
+    }
+
+    return toInt();
   }
 }
