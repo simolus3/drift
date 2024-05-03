@@ -57,6 +57,14 @@ void main() {
       );
     });
 
+    test('BigInt() exceeds range', () async {
+      await testBindingError(
+        columnType: 'INT8',
+        input: BigInt.parse('9223372036854775808'),
+        matcher: isA<Exception>(),
+      );
+    });
+
     test('bytea', () async {
       await testParamBinding(
         columnType: 'BYTEA',
@@ -116,4 +124,29 @@ CREATE TABLE mytable (
 
   final result = await db.customSelect('SELECT * FROM mytable;').getSingle();
   expect(result.data['value'], output);
+}
+
+Future<void> testBindingError({
+  required String columnType,
+  required Object? input,
+  required Matcher matcher,
+}) async {
+  final executor = PgExecutor();
+  final db = Database(executor.createConnection());
+  addTearDown(() => executor.clearDatabaseAndClose(db));
+
+  await db.customStatement('''
+CREATE TABLE mytable (
+  id INTEGER PRIMARY KEY NOT NULL,
+  value $columnType
+);
+''');
+
+  await expectLater(
+    () => db.customInsert(
+      r'INSERT INTO mytable (id, value) VALUES (1, $1);',
+      variables: [Variable(input)],
+    ),
+    throwsA(matcher),
+  );
 }

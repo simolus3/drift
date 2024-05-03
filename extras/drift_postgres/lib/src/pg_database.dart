@@ -174,7 +174,7 @@ class _BoundArguments {
           bool() ||
           double() =>
             TypedValue(Type.unspecified, value),
-          BigInt() => TypedValue(Type.bigInteger, value.toInt()),
+          BigInt() => TypedValue(Type.bigInteger, value.checkRange.toInt()),
           List<int>() => TypedValue(Type.byteArray, value),
           _ => throw ArgumentError.value(value, 'value', 'Unsupported type'),
         };
@@ -215,5 +215,17 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
         TypedValue(Type.integer, version),
       ],
     );
+  }
+}
+
+extension _BigIntRangeCheck on BigInt {
+  static final _bigIntMinValue64 = BigInt.parse('-9223372036854775808');
+  static final _bigIntMaxValue64 = BigInt.parse('9223372036854775807');
+
+  BigInt get checkRange {
+    if (this < _bigIntMinValue64 || this > _bigIntMaxValue64) {
+      throw Exception('BigInt value exceeds the range of 64 bits');
+    }
+    return this;
   }
 }
