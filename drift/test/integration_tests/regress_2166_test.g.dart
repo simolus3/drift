@@ -193,44 +193,6 @@ abstract class _$_SomeDb extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [someTable];
 }
 
-class $$_SomeTableTableFilterComposer
-    extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$_SomeTableTableOrderingComposer
-    extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableProcessedTableManager,
-    $$_SomeTableTableInsertCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder> {
-  const $$_SomeTableTableProcessedTableManager(super.$state);
-}
-
 typedef $$_SomeTableTableInsertCompanionBuilder = _SomeTableCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -251,30 +213,71 @@ class $$_SomeTableTableTableManager extends RootTableManager<
     $$_SomeTableTableUpdateCompanionBuilder> {
   $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
       : super(TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $$_SomeTableTableFilterComposer(ComposerState(db, table)),
-            orderingComposer:
-                $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$_SomeTableTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              Value<int> id = const Value.absent(),
-              Value<String?> name = const Value.absent(),
-            }) =>
-                _SomeTableCompanion(
-                  id: id,
-                  name: name,
-                ),
-            getInsertCompanionBuilder: ({
-              Value<int> id = const Value.absent(),
-              Value<String?> name = const Value.absent(),
-            }) =>
-                _SomeTableCompanion.insert(
-                  id: id,
-                  name: name,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              $$_SomeTableTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$_SomeTableTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              _SomeTableCompanion(
+            id: id,
+            name: name,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              _SomeTableCompanion.insert(
+            id: id,
+            name: name,
+          ),
+        ));
+}
+
+class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<
+    _$_SomeDb,
+    $_SomeTableTable,
+    _SomeTableData,
+    $$_SomeTableTableFilterComposer,
+    $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableProcessedTableManager,
+    $$_SomeTableTableInsertCompanionBuilder,
+    $$_SomeTableTableUpdateCompanionBuilder> {
+  $$_SomeTableTableProcessedTableManager(super.$state);
+}
+
+class $$_SomeTableTableFilterComposer
+    extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$_SomeTableTableOrderingComposer
+    extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class _$_SomeDbManager {

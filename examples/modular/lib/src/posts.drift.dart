@@ -1,8 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/posts.drift.dart' as i1;
-import 'package:drift/internal/modular.dart' as i2;
-import 'package:modular/src/users.drift.dart' as i3;
+import 'package:modular/src/users.drift.dart' as i2;
+import 'package:drift/internal/modular.dart' as i3;
 
 class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
   @override
@@ -217,78 +217,6 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
   }
 }
 
-class $PostsFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-  i3.$UsersFilterComposer get author {
-    final i3.$UsersFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.author,
-        referencedTable:
-            i2.ReadDatabaseContainer($state.db).resultSet<i3.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i3.$UsersFilterComposer(
-            i0.ComposerState(
-                $state.db,
-                i2.ReadDatabaseContainer($state.db)
-                    .resultSet<i3.Users>('users'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-
-  i0.ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $PostsOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-  i3.$UsersOrderingComposer get author {
-    final i3.$UsersOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.author,
-        referencedTable:
-            i2.ReadDatabaseContainer($state.db).resultSet<i3.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i3.$UsersOrderingComposer(
-            i0.ComposerState(
-                $state.db,
-                i2.ReadDatabaseContainer($state.db)
-                    .resultSet<i3.Users>('users'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-
-  i0.ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $PostsProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Posts,
-    i1.Post,
-    $PostsFilterComposer,
-    $PostsOrderingComposer,
-    $PostsProcessedTableManager,
-    $PostsInsertCompanionBuilder,
-    $PostsUpdateCompanionBuilder> {
-  const $PostsProcessedTableManager(super.$state);
-}
-
 typedef $PostsInsertCompanionBuilder = i1.PostsCompanion Function({
   i0.Value<int> id,
   required int author,
@@ -304,40 +232,115 @@ class $PostsTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.Posts,
     i1.Post,
-    $PostsFilterComposer,
-    $PostsOrderingComposer,
+    i1.$PostsFilterComposer,
+    i1.$PostsOrderingComposer,
     $PostsProcessedTableManager,
     $PostsInsertCompanionBuilder,
     $PostsUpdateCompanionBuilder> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $PostsFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer:
-                $PostsOrderingComposer(i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) => $PostsProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              i0.Value<int> author = const i0.Value.absent(),
-              i0.Value<String?> content = const i0.Value.absent(),
-            }) =>
-                i1.PostsCompanion(
-                  id: id,
-                  author: author,
-                  content: content,
-                ),
-            getInsertCompanionBuilder: ({
-              i0.Value<int> id = const i0.Value.absent(),
-              required int author,
-              i0.Value<String?> content = const i0.Value.absent(),
-            }) =>
-                i1.PostsCompanion.insert(
-                  id: id,
-                  author: author,
-                  content: content,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$PostsFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $PostsProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<int> author = const i0.Value.absent(),
+            i0.Value<String?> content = const i0.Value.absent(),
+          }) =>
+              i1.PostsCompanion(
+            id: id,
+            author: author,
+            content: content,
+          ),
+          getInsertCompanionBuilder: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required int author,
+            i0.Value<String?> content = const i0.Value.absent(),
+          }) =>
+              i1.PostsCompanion.insert(
+            id: id,
+            author: author,
+            content: content,
+          ),
+        ));
+}
+
+class $PostsProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Posts,
+    i1.Post,
+    i1.$PostsFilterComposer,
+    i1.$PostsOrderingComposer,
+    $PostsProcessedTableManager,
+    $PostsInsertCompanionBuilder,
+    $PostsUpdateCompanionBuilder> {
+  $PostsProcessedTableManager(super.$state);
+}
+
+class $PostsFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
+  $PostsFilterComposer(super.$state);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i2.$UsersFilterComposer get author {
+    final i2.$UsersFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.author,
+        referencedTable:
+            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => i2.$UsersFilterComposer(
+            i0.ComposerState(
+                $state.db,
+                i3.ReadDatabaseContainer($state.db)
+                    .resultSet<i2.Users>('users'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
+}
+
+class $PostsOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
+  $PostsOrderingComposer(super.$state);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i2.$UsersOrderingComposer get author {
+    final i2.$UsersOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.author,
+        referencedTable:
+            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => i2.$UsersOrderingComposer(
+            i0.ComposerState(
+                $state.db,
+                i3.ReadDatabaseContainer($state.db)
+                    .resultSet<i2.Users>('users'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
 }
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
@@ -529,94 +532,6 @@ class LikesCompanion extends i0.UpdateCompanion<i1.Like> {
   }
 }
 
-class $LikesFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesFilterComposer(super.$state);
-  i1.$PostsFilterComposer get post {
-    final i1.$PostsFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.post,
-        referencedTable:
-            i2.ReadDatabaseContainer($state.db).resultSet<i1.Posts>('posts'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i1.$PostsFilterComposer(
-            i0.ComposerState(
-                $state.db,
-                i2.ReadDatabaseContainer($state.db)
-                    .resultSet<i1.Posts>('posts'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-
-  i3.$UsersFilterComposer get likedBy {
-    final i3.$UsersFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.likedBy,
-        referencedTable:
-            i2.ReadDatabaseContainer($state.db).resultSet<i3.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i3.$UsersFilterComposer(
-            i0.ComposerState(
-                $state.db,
-                i2.ReadDatabaseContainer($state.db)
-                    .resultSet<i3.Users>('users'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-}
-
-class $LikesOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesOrderingComposer(super.$state);
-  i1.$PostsOrderingComposer get post {
-    final i1.$PostsOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.post,
-        referencedTable:
-            i2.ReadDatabaseContainer($state.db).resultSet<i1.Posts>('posts'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i1.$PostsOrderingComposer(
-            i0.ComposerState(
-                $state.db,
-                i2.ReadDatabaseContainer($state.db)
-                    .resultSet<i1.Posts>('posts'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-
-  i3.$UsersOrderingComposer get likedBy {
-    final i3.$UsersOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.likedBy,
-        referencedTable:
-            i2.ReadDatabaseContainer($state.db).resultSet<i3.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i3.$UsersOrderingComposer(
-            i0.ComposerState(
-                $state.db,
-                i2.ReadDatabaseContainer($state.db)
-                    .resultSet<i3.Users>('users'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-}
-
-class $LikesProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Likes,
-    i1.Like,
-    $LikesFilterComposer,
-    $LikesOrderingComposer,
-    $LikesProcessedTableManager,
-    $LikesInsertCompanionBuilder,
-    $LikesUpdateCompanionBuilder> {
-  const $LikesProcessedTableManager(super.$state);
-}
-
 typedef $LikesInsertCompanionBuilder = i1.LikesCompanion Function({
   required int post,
   required int likedBy,
@@ -632,38 +547,127 @@ class $LikesTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.Likes,
     i1.Like,
-    $LikesFilterComposer,
-    $LikesOrderingComposer,
+    i1.$LikesFilterComposer,
+    i1.$LikesOrderingComposer,
     $LikesProcessedTableManager,
     $LikesInsertCompanionBuilder,
     $LikesUpdateCompanionBuilder> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
       : super(i0.TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $LikesFilterComposer(i0.ComposerState(db, table)),
-            orderingComposer:
-                $LikesOrderingComposer(i0.ComposerState(db, table)),
-            getChildManagerBuilder: (p0) => $LikesProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              i0.Value<int> post = const i0.Value.absent(),
-              i0.Value<int> likedBy = const i0.Value.absent(),
-              i0.Value<int> rowid = const i0.Value.absent(),
-            }) =>
-                i1.LikesCompanion(
-                  post: post,
-                  likedBy: likedBy,
-                  rowid: rowid,
-                ),
-            getInsertCompanionBuilder: ({
-              required int post,
-              required int likedBy,
-              i0.Value<int> rowid = const i0.Value.absent(),
-            }) =>
-                i1.LikesCompanion.insert(
-                  post: post,
-                  likedBy: likedBy,
-                  rowid: rowid,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$LikesFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$LikesOrderingComposer(i0.ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $LikesProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            i0.Value<int> post = const i0.Value.absent(),
+            i0.Value<int> likedBy = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.LikesCompanion(
+            post: post,
+            likedBy: likedBy,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            required int post,
+            required int likedBy,
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.LikesCompanion.insert(
+            post: post,
+            likedBy: likedBy,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $LikesProcessedTableManager extends i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Likes,
+    i1.Like,
+    i1.$LikesFilterComposer,
+    i1.$LikesOrderingComposer,
+    $LikesProcessedTableManager,
+    $LikesInsertCompanionBuilder,
+    $LikesUpdateCompanionBuilder> {
+  $LikesProcessedTableManager(super.$state);
+}
+
+class $LikesFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Likes> {
+  $LikesFilterComposer(super.$state);
+  i1.$PostsFilterComposer get post {
+    final i1.$PostsFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.post,
+        referencedTable:
+            i3.ReadDatabaseContainer($state.db).resultSet<i1.Posts>('posts'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => i1.$PostsFilterComposer(
+            i0.ComposerState(
+                $state.db,
+                i3.ReadDatabaseContainer($state.db)
+                    .resultSet<i1.Posts>('posts'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
+
+  i2.$UsersFilterComposer get likedBy {
+    final i2.$UsersFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.likedBy,
+        referencedTable:
+            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => i2.$UsersFilterComposer(
+            i0.ComposerState(
+                $state.db,
+                i3.ReadDatabaseContainer($state.db)
+                    .resultSet<i2.Users>('users'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
+}
+
+class $LikesOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Likes> {
+  $LikesOrderingComposer(super.$state);
+  i1.$PostsOrderingComposer get post {
+    final i1.$PostsOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.post,
+        referencedTable:
+            i3.ReadDatabaseContainer($state.db).resultSet<i1.Posts>('posts'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => i1.$PostsOrderingComposer(
+            i0.ComposerState(
+                $state.db,
+                i3.ReadDatabaseContainer($state.db)
+                    .resultSet<i1.Posts>('posts'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
+
+  i2.$UsersOrderingComposer get likedBy {
+    final i2.$UsersOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.likedBy,
+        referencedTable:
+            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => i2.$UsersOrderingComposer(
+            i0.ComposerState(
+                $state.db,
+                i3.ReadDatabaseContainer($state.db)
+                    .resultSet<i2.Users>('users'),
+                joinBuilder,
+                parentComposers)));
+    return composer;
+  }
 }

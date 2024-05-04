@@ -902,100 +902,6 @@ abstract class _$Database extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-class $$UsersTableFilterComposer
-    extends FilterComposer<_$Database, $UsersTable> {
-  $$UsersTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<DateTime> get birthday => $state.composableBuilder(
-      column: $state.table.birthday,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-  $$UsersTableFilterComposer get nextUser {
-    final $$UsersTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.nextUser,
-        referencedTable: $state.db.users,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => $$UsersTableFilterComposer(
-            ComposerState(
-                $state.db, $state.db.users, joinBuilder, parentComposers)));
-    return composer;
-  }
-
-  ComposableFilter usersRefs(
-      ComposableFilter Function($$UsersTableFilterComposer f) f) {
-    final $$UsersTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.users,
-        getReferencedColumn: (t) => t.nextUser,
-        builder: (joinBuilder, parentComposers) => $$UsersTableFilterComposer(
-            ComposerState(
-                $state.db, $state.db.users, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-
-  ComposableFilter groupsRefs(
-      ComposableFilter Function($GroupsFilterComposer f) f) {
-    final $GroupsFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.groups,
-        getReferencedColumn: (t) => t.owner,
-        builder: (joinBuilder, parentComposers) => $GroupsFilterComposer(
-            ComposerState(
-                $state.db, $state.db.groups, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-}
-
-class $$UsersTableOrderingComposer
-    extends OrderingComposer<_$Database, $UsersTable> {
-  $$UsersTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<DateTime> get birthday => $state.composableBuilder(
-      column: $state.table.birthday,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-  $$UsersTableOrderingComposer get nextUser {
-    final $$UsersTableOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.nextUser,
-        referencedTable: $state.db.users,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => $$UsersTableOrderingComposer(
-            ComposerState(
-                $state.db, $state.db.users, joinBuilder, parentComposers)));
-    return composer;
-  }
-}
-
-class $$UsersTableProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
-    $$UsersTableInsertCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
-  const $$UsersTableProcessedTableManager(super.$state);
-}
-
 typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
   Value<int> id,
   Value<String> name,
@@ -1020,58 +926,74 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableUpdateCompanionBuilder> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer:
-                $$UsersTableFilterComposer(ComposerState(db, table)),
-            orderingComposer:
-                $$UsersTableOrderingComposer(ComposerState(db, table)),
-            getChildManagerBuilder: (p0) =>
-                $$UsersTableProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              Value<int> id = const Value.absent(),
-              Value<String> name = const Value.absent(),
-              Value<DateTime?> birthday = const Value.absent(),
-              Value<int?> nextUser = const Value.absent(),
-            }) =>
-                UsersCompanion(
-                  id: id,
-                  name: name,
-                  birthday: birthday,
-                  nextUser: nextUser,
-                ),
-            getInsertCompanionBuilder: ({
-              Value<int> id = const Value.absent(),
-              Value<String> name = const Value.absent(),
-              Value<DateTime?> birthday = const Value.absent(),
-              Value<int?> nextUser = const Value.absent(),
-            }) =>
-                UsersCompanion.insert(
-                  id: id,
-                  name: name,
-                  birthday: birthday,
-                  nextUser: nextUser,
-                )));
+          db: db,
+          table: table,
+          filteringComposer:
+              $$UsersTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$UsersTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $$UsersTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<DateTime?> birthday = const Value.absent(),
+            Value<int?> nextUser = const Value.absent(),
+          }) =>
+              UsersCompanion(
+            id: id,
+            name: name,
+            birthday: birthday,
+            nextUser: nextUser,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<DateTime?> birthday = const Value.absent(),
+            Value<int?> nextUser = const Value.absent(),
+          }) =>
+              UsersCompanion.insert(
+            id: id,
+            name: name,
+            birthday: birthday,
+            nextUser: nextUser,
+          ),
+        ));
 }
 
-class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
-  $GroupsFilterComposer(super.$state);
+class $$UsersTableProcessedTableManager extends ProcessedTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableProcessedTableManager,
+    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder> {
+  $$UsersTableProcessedTableManager(super.$state);
+}
+
+class $$UsersTableFilterComposer
+    extends FilterComposer<_$Database, $UsersTable> {
+  $$UsersTableFilterComposer(super.$state);
   ColumnFilters<int> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<String> get title => $state.composableBuilder(
-      column: $state.table.title,
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<bool> get deleted => $state.composableBuilder(
-      column: $state.table.deleted,
+
+  ColumnFilters<DateTime> get birthday => $state.composableBuilder(
+      column: $state.table.birthday,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
-  $$UsersTableFilterComposer get owner {
+
+  $$UsersTableFilterComposer get nextUser {
     final $$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
-        getCurrentColumn: (t) => t.owner,
+        getCurrentColumn: (t) => t.nextUser,
         referencedTable: $state.db.users,
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder, parentComposers) => $$UsersTableFilterComposer(
@@ -1079,26 +1001,43 @@ class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
                 $state.db, $state.db.users, joinBuilder, parentComposers)));
     return composer;
   }
+
+  ComposableFilter groupsRefs(
+      ComposableFilter Function($GroupsFilterComposer f) f) {
+    final $GroupsFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.groups,
+        getReferencedColumn: (t) => t.owner,
+        builder: (joinBuilder, parentComposers) => $GroupsFilterComposer(
+            ComposerState(
+                $state.db, $state.db.groups, joinBuilder, parentComposers)));
+    return f(composer);
+  }
 }
 
-class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
-  $GroupsOrderingComposer(super.$state);
+class $$UsersTableOrderingComposer
+    extends OrderingComposer<_$Database, $UsersTable> {
+  $$UsersTableOrderingComposer(super.$state);
   ColumnOrderings<int> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<String> get title => $state.composableBuilder(
-      column: $state.table.title,
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<bool> get deleted => $state.composableBuilder(
-      column: $state.table.deleted,
+
+  ColumnOrderings<DateTime> get birthday => $state.composableBuilder(
+      column: $state.table.birthday,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
-  $$UsersTableOrderingComposer get owner {
+
+  $$UsersTableOrderingComposer get nextUser {
     final $$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
-        getCurrentColumn: (t) => t.owner,
+        getCurrentColumn: (t) => t.nextUser,
         referencedTable: $state.db.users,
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder, parentComposers) => $$UsersTableOrderingComposer(
@@ -1106,18 +1045,6 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
                 $state.db, $state.db.users, joinBuilder, parentComposers)));
     return composer;
   }
-}
-
-class $GroupsProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    Groups,
-    Group,
-    $GroupsFilterComposer,
-    $GroupsOrderingComposer,
-    $GroupsProcessedTableManager,
-    $GroupsInsertCompanionBuilder,
-    $GroupsUpdateCompanionBuilder> {
-  const $GroupsProcessedTableManager(super.$state);
 }
 
 typedef $GroupsInsertCompanionBuilder = GroupsCompanion Function({
@@ -1144,79 +1071,108 @@ class $GroupsTableManager extends RootTableManager<
     $GroupsUpdateCompanionBuilder> {
   $GroupsTableManager(_$Database db, Groups table)
       : super(TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
-            orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
-            getChildManagerBuilder: (p0) => $GroupsProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              Value<int> id = const Value.absent(),
-              Value<String> title = const Value.absent(),
-              Value<bool?> deleted = const Value.absent(),
-              Value<int> owner = const Value.absent(),
-            }) =>
-                GroupsCompanion(
-                  id: id,
-                  title: title,
-                  deleted: deleted,
-                  owner: owner,
-                ),
-            getInsertCompanionBuilder: ({
-              Value<int> id = const Value.absent(),
-              required String title,
-              Value<bool?> deleted = const Value.absent(),
-              required int owner,
-            }) =>
-                GroupsCompanion.insert(
-                  id: id,
-                  title: title,
-                  deleted: deleted,
-                  owner: owner,
-                )));
+          db: db,
+          table: table,
+          filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
+          orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $GroupsProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<bool?> deleted = const Value.absent(),
+            Value<int> owner = const Value.absent(),
+          }) =>
+              GroupsCompanion(
+            id: id,
+            title: title,
+            deleted: deleted,
+            owner: owner,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            required String title,
+            Value<bool?> deleted = const Value.absent(),
+            required int owner,
+          }) =>
+              GroupsCompanion.insert(
+            id: id,
+            title: title,
+            deleted: deleted,
+            owner: owner,
+          ),
+        ));
 }
 
-class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {
-  $NotesFilterComposer(super.$state);
+class $GroupsProcessedTableManager extends ProcessedTableManager<
+    _$Database,
+    Groups,
+    Group,
+    $GroupsFilterComposer,
+    $GroupsOrderingComposer,
+    $GroupsProcessedTableManager,
+    $GroupsInsertCompanionBuilder,
+    $GroupsUpdateCompanionBuilder> {
+  $GroupsProcessedTableManager(super.$state);
+}
+
+class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
+  $GroupsFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get title => $state.composableBuilder(
       column: $state.table.title,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
+
+  ColumnFilters<bool> get deleted => $state.composableBuilder(
+      column: $state.table.deleted,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
-  ColumnFilters<String> get searchTerms => $state.composableBuilder(
-      column: $state.table.searchTerms,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$UsersTableFilterComposer get owner {
+    final $$UsersTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.owner,
+        referencedTable: $state.db.users,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$UsersTableFilterComposer(
+            ComposerState(
+                $state.db, $state.db.users, joinBuilder, parentComposers)));
+    return composer;
+  }
 }
 
-class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
-  $NotesOrderingComposer(super.$state);
+class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
+  $GroupsOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get title => $state.composableBuilder(
       column: $state.table.title,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-  ColumnOrderings<String> get searchTerms => $state.composableBuilder(
-      column: $state.table.searchTerms,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
 
-class $NotesProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    Notes,
-    Note,
-    $NotesFilterComposer,
-    $NotesOrderingComposer,
-    $NotesProcessedTableManager,
-    $NotesInsertCompanionBuilder,
-    $NotesUpdateCompanionBuilder> {
-  const $NotesProcessedTableManager(super.$state);
+  ColumnOrderings<bool> get deleted => $state.composableBuilder(
+      column: $state.table.deleted,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$UsersTableOrderingComposer get owner {
+    final $$UsersTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.owner,
+        referencedTable: $state.db.users,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) => $$UsersTableOrderingComposer(
+            ComposerState(
+                $state.db, $state.db.users, joinBuilder, parentComposers)));
+    return composer;
+  }
 }
 
 typedef $NotesInsertCompanionBuilder = NotesCompanion Function({
@@ -1243,35 +1199,84 @@ class $NotesTableManager extends RootTableManager<
     $NotesUpdateCompanionBuilder> {
   $NotesTableManager(_$Database db, Notes table)
       : super(TableManagerState(
-            db: db,
-            table: table,
-            filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
-            orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
-            getChildManagerBuilder: (p0) => $NotesProcessedTableManager(p0),
-            getUpdateCompanionBuilder: ({
-              Value<String> title = const Value.absent(),
-              Value<String> content = const Value.absent(),
-              Value<String> searchTerms = const Value.absent(),
-              Value<int> rowid = const Value.absent(),
-            }) =>
-                NotesCompanion(
-                  title: title,
-                  content: content,
-                  searchTerms: searchTerms,
-                  rowid: rowid,
-                ),
-            getInsertCompanionBuilder: ({
-              required String title,
-              required String content,
-              required String searchTerms,
-              Value<int> rowid = const Value.absent(),
-            }) =>
-                NotesCompanion.insert(
-                  title: title,
-                  content: content,
-                  searchTerms: searchTerms,
-                  rowid: rowid,
-                )));
+          db: db,
+          table: table,
+          filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
+          orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $NotesProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<String> title = const Value.absent(),
+            Value<String> content = const Value.absent(),
+            Value<String> searchTerms = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NotesCompanion(
+            title: title,
+            content: content,
+            searchTerms: searchTerms,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            required String title,
+            required String content,
+            required String searchTerms,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NotesCompanion.insert(
+            title: title,
+            content: content,
+            searchTerms: searchTerms,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $NotesProcessedTableManager extends ProcessedTableManager<
+    _$Database,
+    Notes,
+    Note,
+    $NotesFilterComposer,
+    $NotesOrderingComposer,
+    $NotesProcessedTableManager,
+    $NotesInsertCompanionBuilder,
+    $NotesUpdateCompanionBuilder> {
+  $NotesProcessedTableManager(super.$state);
+}
+
+class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {
+  $NotesFilterComposer(super.$state);
+  ColumnFilters<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get searchTerms => $state.composableBuilder(
+      column: $state.table.searchTerms,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
+  $NotesOrderingComposer(super.$state);
+  ColumnOrderings<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get searchTerms => $state.composableBuilder(
+      column: $state.table.searchTerms,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class _$DatabaseManager {
