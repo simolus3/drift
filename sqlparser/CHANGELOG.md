@@ -1,4 +1,4 @@
-## 0.36.0-dev
+## 0.36.0
 
 - Add support for the geopoly module.
 

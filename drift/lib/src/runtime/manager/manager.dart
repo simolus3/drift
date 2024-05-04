@@ -405,7 +405,7 @@ abstract class BaseTableManager<
   Stream<DT> watchSingle() =>
       $state.copyWith(distinct: true).buildSelectStatement().watchSingle();
 
-  /// Executes the statement and returns the first all rows as a list.
+  /// Executes the statement and returns all rows as a list.
   ///
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set

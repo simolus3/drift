@@ -5,7 +5,7 @@ data:
   weight: 1
 
 template: layouts/docs/single
-path: /docs/getting-started/manager/
+path: /docs/manager/
 ---
 
 {% assign snippets = 'package:drift_docs/snippets/dart_api/manager.dart.excerpt.json' | readString | json_decode %}

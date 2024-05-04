@@ -1,8 +1,10 @@
-## 2.18.0-dev
+## 2.18.0
 
 - Adds a new interface for writing most simple statements without manually creating
   select statements and expressions.
-  For a detailed description, see the [documentation website](https://drift.simonbinder.eu/docs/getting-started/manager/).
+  For a detailed description, see the [documentation website](https://drift.simonbinder.eu/docs/manager/).
+  This feature requires additional code to be generated - if you prefer using the existing APIs
+  exclusively, you can use the [`generate_manager: false` builder option](https://drift.simonbinder.eu/docs/advanced-features/builder_options/)
 - Add `AggregateFunctionExpression` to write custom [aggregate function](https://www.sqlite.org/lang_aggfunc.html)
   invocations in the Dart query builder.
 - The `json_group_array` and `jsonb_group_array` functions now contain an `orderBy`

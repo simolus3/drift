@@ -120,6 +120,9 @@ started with drift:
 
 - [Dart tables]({{ 'Dart API/tables.md' | pageUrl }}): This page describes how to write your own
   Dart tables and which classes drift generates for them.
+- For new drift users or users not familiar with SQL, the [manager]({{ 'Dart API/manager.md' | pageUrl }}) APIs
+  for tables allows writing most queries with a syntax you're likely familiar with from ORMs or other
+  packages.
 - Writing queries: Drift-generated classes support writing the most common SQL statements, like
   [selects]({{ 'Dart API/select.md' | pageUrl }}) or [inserts, updates and deletes]({{ 'Dart API/writes.md' | pageUrl }}).
 - Something to keep in mind for later: When changing the database, for instance by adding new columns
