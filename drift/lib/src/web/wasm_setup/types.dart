@@ -180,11 +180,14 @@ abstract interface class WasmProbeResult {
   ///
   /// When this database doesn't exist, [initializeDatabase] is invoked to
   /// optionally return the initial bytes of the database.
+  /// When [enableMigrations] is set to `false`, drift will not check the
+  /// `user_version` pragma when opening the database or run migrations.
   Future<DatabaseConnection> open(
     WasmStorageImplementation implementation,
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
+    bool enableMigrations = true,
   });
 
   /// Deletes an [ExistingDatabase] from storage.

@@ -49,10 +49,18 @@ class WasmDatabase extends DelegatedDatabase {
     WasmDatabaseSetup? setup,
     IndexedDbFileSystem? fileSystem,
     bool logStatements = false,
+    bool enableMigrations = true,
     bool cachePreparedStatements = true,
   }) {
     return WasmDatabase._(
-      _WasmDelegate(sqlite3, path, setup, fileSystem, cachePreparedStatements),
+      _WasmDelegate(
+        sqlite3,
+        path,
+        setup,
+        fileSystem,
+        cachePreparedStatements: cachePreparedStatements,
+        enableMigrations: enableMigrations,
+      ),
       logStatements,
     );
   }
@@ -78,7 +86,8 @@ class WasmDatabase extends DelegatedDatabase {
     bool cachePreparedStatements = true,
   }) {
     return WasmDatabase._(
-      _WasmDelegate(sqlite3, null, setup, null, cachePreparedStatements),
+      _WasmDelegate(sqlite3, null, setup, null,
+          cachePreparedStatements: cachePreparedStatements),
       logStatements,
     );
   }
@@ -101,6 +110,9 @@ class WasmDatabase extends DelegatedDatabase {
   /// called in that case. Instead, you'd have to compile a custom drift worker
   /// with a setup function - see [workerMainForOpen] for additional information.
   ///
+  /// When [enableMigrations] is set to `false`, drift will not check the
+  /// `user_version` pragma when opening the database or run migrations.
+  ///
   /// For more detailed information, see https://drift.simonbinder.eu/web.
   static Future<WasmDatabaseResult> open({
     required String databaseName,
@@ -108,6 +120,7 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
+    bool enableMigrations = true,
   }) async {
     final probed = await probe(
       sqlite3Uri: sqlite3Uri,
@@ -151,8 +164,13 @@ class WasmDatabase extends DelegatedDatabase {
 
     final bestImplementation = availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
-    final connection = await probed.open(bestImplementation, databaseName,
-        localSetup: localSetup, initializeDatabase: initializeDatabase);
+    final connection = await probed.open(
+      bestImplementation,
+      databaseName,
+      localSetup: localSetup,
+      initializeDatabase: initializeDatabase,
+      enableMigrations: enableMigrations,
+    );
 
     return WasmDatabaseResult(
         connection, bestImplementation, probed.missingFeatures);
@@ -228,13 +246,11 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   _WasmDelegate(
     this._sqlite3,
     this._path,
-    WasmDatabaseSetup? setup,
-    this._fileSystem,
-    bool cachePreparedStatements,
-  ) : super(
-          setup,
-          cachePreparedStatements: cachePreparedStatements,
-        );
+    super.setup,
+    this._fileSystem, {
+    super.enableMigrations = true,
+    required super.cachePreparedStatements,
+  });
 
   @override
   CommonDatabase openDatabase() {

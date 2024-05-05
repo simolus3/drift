@@ -28,6 +28,7 @@ void main() {
   });
   _addCallbackForWebDriver('insert', _insert);
   _addCallbackForWebDriver('get_rows', _getRows);
+  _addCallbackForWebDriver('has_table', _hasTables);
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
   _addCallbackForWebDriver('enable_initialization', (arg) async {
     initializationMode = InitializationMode.values.byName(arg!);
@@ -110,6 +111,7 @@ Future<Uint8List?> _initializeDatabase() async {
 
       return blob;
     case InitializationMode.none:
+    case InitializationMode.noneAndDisableMigrations:
       return null;
   }
 }
@@ -149,6 +151,8 @@ Future<void> _open(String? implementationName) async {
       sqlite3Uri: sqlite3WasmUri,
       driftWorkerUri: driftWorkerUri,
       initializeDatabase: _initializeDatabase,
+      enableMigrations:
+          initializationMode != InitializationMode.noneAndDisableMigrations,
       localSetup: (db) {
         // The worker has a similar setup call that will make database_host
         // return `worker` instead.
@@ -169,8 +173,11 @@ Future<void> _open(String? implementationName) async {
   // Make sure it works!
   await db.customSelect('SELECT database_host()').get();
 
-  tableUpdates = StreamQueue(db.testTable.all().watch());
-  await tableUpdates!.next;
+  if (initializationMode != InitializationMode.noneAndDisableMigrations) {
+    // Can't listen without migrations, the table doesn't exist.
+    tableUpdates = StreamQueue(db.testTable.all().watch());
+    await tableUpdates!.next;
+  }
 }
 
 Future<void> _waitForUpdate(String? _) async {
@@ -190,4 +197,10 @@ Future<int> _getRows(String? _) async {
 
   final query = db.selectOnly(db.testTable)..addColumns([count]);
   return await query.map((row) => row.read(count)!).getSingle();
+}
+
+Future<bool> _hasTables(String? _) async {
+  final db = openedDatabase!;
+  final rows = await db.customSelect('SELECT * FROM sqlite_schema').get();
+  return rows.isNotEmpty;
 }

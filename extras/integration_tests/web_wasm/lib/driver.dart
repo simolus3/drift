@@ -147,6 +147,10 @@ class DriftWebDriver {
     return await driver.executeAsync('get_rows("", arguments[0])', []);
   }
 
+  Future<bool> get hasTable async {
+    return await driver.executeAsync('has_table("", arguments[0])', []);
+  }
+
   Future<void> waitForTableUpdate() async {
     await driver.executeAsync('wait_for_update("", arguments[0])', []);
   }

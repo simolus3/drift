@@ -105,6 +105,14 @@ void main() {
         expect(await driver.amountOfRows, 1);
       });
 
+      test('disable migrations', () async {
+        await driver
+            .enableInitialization(InitializationMode.noneAndDisableMigrations);
+        await driver.openDatabase();
+
+        expect(await driver.hasTable, isFalse);
+      });
+
       for (final entry in browser.availableImplementations) {
         group(entry.name, () {
           test('basic', () async {
@@ -173,6 +181,13 @@ void main() {
               await driver.openDatabase(entry);
               // The migration adds a row
               expect(await driver.amountOfRows, 2);
+            });
+
+            test('disabling migrations', () async {
+              await driver.enableInitialization(
+                  InitializationMode.noneAndDisableMigrations);
+              await driver.openDatabase();
+              expect(await driver.hasTable, isFalse);
             });
           }
 

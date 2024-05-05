@@ -8,15 +8,27 @@ import 'package:sqlite3/wasm.dart';
 
 import 'types.dart';
 
-/// Due to in-browser caching or users not updating their `drift_worker.dart`
-/// file after updating drift, the main web app and the workers may be compiled
-/// with different versions of drift. To avoid inconsistencies in the
-/// communication channel between them, they compare their versions in a
-/// handshake and only use features supported by both.
-class ProtocolVersion {
+enum ProtocolVersion {
+  /// The protocol version used for drift versions up to 2.14 - these don't have
+  /// a version marker anywhere.
+  legacy(0),
+
+  /// This version makes workers report their supported protocol version.
+  ///
+  /// When both the client and the involved worker support this version, an
+  /// explicit close notification is sent from clients to workers when closing
+  /// databases. This allows workers to release resources more efficiently.
+  v1(1),
+
+  /// This version adds the `enableMigrations` field to [ServeDriftDatabase],
+  /// controlling whether the worker server should implement migrations.
+  v2(2);
+
   final int versionCode;
 
-  const ProtocolVersion._(this.versionCode);
+  const ProtocolVersion(this.versionCode);
+
+  static const current = v2;
 
   void writeToJs(JSObject object) {
     object['v'] = versionCode.toJS;
@@ -31,7 +43,8 @@ class ProtocolVersion {
       null => legacy,
       <= 0 => legacy,
       1 => v1,
-      > 1 => current,
+      2 => v2,
+      > 2 => current,
       _ => throw AssertionError(),
     };
   }
@@ -43,19 +56,6 @@ class ProtocolVersion {
       return legacy;
     }
   }
-
-  /// The protocol version used for drift versions up to 2.14 - these don't have
-  /// a version marker anywhere.
-  static const legacy = ProtocolVersion._(0);
-
-  /// This version makes workers report their supported protocol version.
-  ///
-  /// When both the client and the involved worker support this version, an
-  /// explicit close notification is sent from clients to workers when closing
-  /// databases. This allows workers to release resources more effieciently.
-  static const v1 = ProtocolVersion._(1);
-
-  static const current = v1;
 }
 
 typedef PostMessage = void Function(JSObject? msg, List<JSObject>? transfer);
@@ -247,6 +247,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final String databaseName;
   final MessagePort? initializationPort;
   final ProtocolVersion protocolVersion;
+  final bool enableMigrations;
 
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
@@ -255,9 +256,12 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     required this.databaseName,
     required this.initializationPort,
     required this.protocolVersion,
+    required this.enableMigrations,
   });
 
   factory ServeDriftDatabase.fromJsPayload(JSObject payload) {
+    final version = ProtocolVersion.fromJsObject(payload);
+
     return ServeDriftDatabase(
       sqlite3WasmUri: Uri.parse((payload['sqlite'] as JSString).toDart),
       port: payload['port'] as MessagePort,
@@ -265,7 +269,10 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
           .byName((payload['storage'] as JSString).toDart),
       databaseName: (payload['database'] as JSString).toDart,
       initializationPort: payload['initPort'] as MessagePort?,
-      protocolVersion: ProtocolVersion.fromJsObject(payload),
+      enableMigrations: version >= ProtocolVersion.v2
+          ? (payload['migrations'] as JSBoolean).toDart
+          : true,
+      protocolVersion: version,
     );
   }
 
@@ -276,7 +283,8 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       ..['port'] = port
       ..['storage'] = storage.name.toJS
       ..['database'] = databaseName.toJS
-      ..['initPort'] = initializationPort;
+      ..['initPort'] = initializationPort
+      ..['migrations'] = enableMigrations.toJS;
 
     protocolVersion.writeToJs(object);
 

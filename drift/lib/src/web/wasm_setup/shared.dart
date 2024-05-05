@@ -204,6 +204,7 @@ class DriftServerController {
             databaseName: message.databaseName,
             storage: message.storage,
             initializer: initializer,
+            enableMigrations: message.enableMigrations,
           )));
 
       final wasmServer = RunningWasmServer(message.storage, server);
@@ -225,6 +226,7 @@ class DriftServerController {
     required String databaseName,
     required WasmStorageImplementation storage,
     required FutureOr<Uint8List?> Function()? initializer,
+    required bool enableMigrations,
   }) async {
     final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
 
@@ -259,7 +261,12 @@ class DriftServerController {
     }
 
     sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
-    var db = WasmDatabase(sqlite3: sqlite3, path: '/database', setup: _setup);
+    var db = WasmDatabase(
+      sqlite3: sqlite3,
+      path: '/database',
+      setup: _setup,
+      enableMigrations: enableMigrations,
+    );
 
     if (close != null) {
       return db.interceptWith(_CloseVfsOnClose(close));

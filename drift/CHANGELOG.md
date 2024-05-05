@@ -1,3 +1,8 @@
+## 2.19.0-dev
+
+- Add the `enableMigrations` parameter to `WasmDatabase` to control whether drift
+  migrations are enabled on that database.
+
 ## 2.18.0
 
 - Adds a new interface for writing most simple statements without manually creating

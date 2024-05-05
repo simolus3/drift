@@ -223,6 +223,7 @@ final class _ProbeResult implements WasmProbeResult {
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
+    bool enableMigrations = true,
   }) async {
     final channel = web.MessageChannel();
     final initializer = initializeDatabase;
@@ -242,6 +243,7 @@ final class _ProbeResult implements WasmProbeResult {
           storage: implementation,
           databaseName: name,
           initializationPort: initChannel?.port2,
+          enableMigrations: enableMigrations,
           protocolVersion: sharedWorker!.version,
         );
 
@@ -255,6 +257,7 @@ final class _ProbeResult implements WasmProbeResult {
             storage: implementation,
             databaseName: name,
             initializationPort: initChannel?.port2,
+            enableMigrations: enableMigrations,
             protocolVersion: dedicatedWorker.version,
           );
 
@@ -266,13 +269,14 @@ final class _ProbeResult implements WasmProbeResult {
               implementation,
               await IndexedDbFileSystem.open(dbName: name),
               initializeDatabase,
-              localSetup);
+              localSetup,
+              enableMigrations);
         }
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
         return _hostDatabaseLocally(implementation, InMemoryFileSystem(),
-            initializeDatabase, localSetup);
+            initializeDatabase, localSetup, enableMigrations);
     }
 
     if (initChannel != null) {
@@ -324,12 +328,14 @@ final class _ProbeResult implements WasmProbeResult {
     VirtualFileSystem vfs,
     FutureOr<Uint8List?> Function()? initializer,
     WasmDatabaseSetup? setup,
+    bool enableMigrations,
   ) async {
     final database = await DriftServerController(setup).openConnection(
       sqlite3WasmUri: opener.sqlite3WasmUri,
       databaseName: 'database',
       storage: storage,
       initializer: initializer,
+      enableMigrations: enableMigrations,
     );
 
     return DatabaseConnection(database);
