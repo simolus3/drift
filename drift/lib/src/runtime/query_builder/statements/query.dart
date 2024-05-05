@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of '../query_builder.dart';
 
 /// Statement that operates with data that already exists (select, delete,
@@ -270,6 +271,11 @@ abstract mixin class Selectable<T>
   Selectable<N> asyncMap<N>(FutureOr<N> Function(T) mapper) {
     return _AsyncMappedSelectable<T, N>(this, mapper);
   }
+
+  /// Modify the entire [Selectable] asynchonously.
+  Selectable<N> then<N>(Future<List<N>> Function(List<T> results) mapper) {
+    return _AsyncThenSelectable<T, N>(this, mapper);
+  }
 }
 
 class _MappedSelectable<S, T> extends Selectable<T> {
@@ -310,6 +316,24 @@ class _AsyncMappedSelectable<S, T> extends Selectable<T> {
 
   Future<List<T>> _mapResults(List<S> results) async {
     return [for (final result in results) await _mapper(result)];
+  }
+}
+
+class _AsyncThenSelectable<S, T> extends Selectable<T> {
+  final Selectable<S> _source;
+  final Future<List<T>> Function(List<S>) _mapper;
+
+  _AsyncThenSelectable(this._source, this._mapper);
+
+  @override
+  Future<List<T>> get() {
+    return _source.get().then(_mapper);
+  }
+
+  @override
+  Stream<List<T>> watch() {
+    return AsyncMapPerSubscription(_source.watch())
+        .asyncMapPerSubscription(_mapper);
   }
 }
 
