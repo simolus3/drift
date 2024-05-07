@@ -73,6 +73,26 @@ final class PgTypes {
 
   /// The `point` type in Postgres.
   static const CustomSqlType<pg.Point> point = PointType();
+
+  /// A postgres array of [bool] values.
+  static const CustomSqlType<List<bool>> booleanArray =
+      ArrayType(type: pg.Type.booleanArray, name: 'boolean[]');
+
+  /// A postgres array of [int] values, with each element being a 64bit integer.
+  static const CustomSqlType<List<int>> bigIntArray =
+      ArrayType(type: pg.Type.bigIntegerArray, name: 'int8[]');
+
+  /// A postgres array of [String] values.
+  static const CustomSqlType<List<String>> textArray =
+      ArrayType(type: pg.Type.textArray, name: 'text[]');
+
+  /// A postgres array of [double] values.
+  static const CustomSqlType<List<double>> doubleArray =
+      ArrayType(type: pg.Type.doubleArray, name: 'float8[]');
+
+  /// A postgres array of JSON values, encoded as binary values.
+  static const CustomSqlType<List<Object?>> jsonbArray =
+      ArrayType(type: pg.Type.jsonbArray, name: 'jsonb[]');
 }
 
 /// A wrapper for values with the Postgres `timestamp without timezone` and

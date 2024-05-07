@@ -58,9 +58,40 @@ void main() {
       () => testWith(PgTypes.timestampNoTimezone,
           PgDateTime(DateTime.utc(1996, 7, 8, 10, 0, 0))),
     );
-  });
 
-  group('bytea', () => testWith(null, Uint8List.fromList([1, 2, 3, 4, 5])));
+    group('bytea', () => testWith(null, Uint8List.fromList([1, 2, 3, 4, 5])));
+
+    group('arrays', () {
+      group(
+        'boolean',
+        () => testWith(PgTypes.booleanArray, [true, false, true]),
+      );
+
+      group(
+        'bigint',
+        () => testWith(PgTypes.bigIntArray, [1, 2, 3]),
+      );
+
+      group(
+        'text',
+        () => testWith(PgTypes.textArray, ['hello', 'world']),
+      );
+
+      group(
+        'double',
+        () => testWith(PgTypes.doubleArray, [0.0, 1.0, 0.5]),
+      );
+
+      group(
+        'jsonb',
+        () => testWith(PgTypes.jsonbArray, [
+          true,
+          {'hello': 'world'},
+          3
+        ]),
+      );
+    });
+  });
 
   test('compare datetimes', () async {
     final time = DateTime.now();

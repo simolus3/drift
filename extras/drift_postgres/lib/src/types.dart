@@ -94,3 +94,21 @@ class DateType<T extends PgTimeValue> extends PostgresType<T> {
     return _fromDateTime(fromSql as DateTime);
   }
 }
+
+final class ArrayType<T> extends PostgresType<List<T>> {
+  const ArrayType({
+    required super.type,
+    required super.name,
+  });
+
+  @override
+  String mapToSqlLiteral(List<T> dartValue) {
+    // This gives us the `{array, initializer}` syntax, but without the
+    // surrounding quotes.
+    final encoded = PostgresType._encoder.convert(dartValue);
+    final asStringLiteral =
+        PostgresType._encoder.convert(encoded, escapeStrings: true);
+
+    return '$asStringLiteral::$name';
+  }
+}

@@ -1,3 +1,8 @@
+## 1.3.0-dev
+
+- Add support for array types supported by the `postgres` package: booleans,
+  integers, strings, floats and jsonb values.
+
 ## 1.2.3
 
 - Fix binding `BigInt` variables.
