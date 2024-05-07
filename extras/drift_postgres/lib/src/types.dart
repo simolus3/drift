@@ -96,9 +96,12 @@ class DateType<T extends PgTimeValue> extends PostgresType<T> {
 }
 
 final class ArrayType<T> extends PostgresType<List<T>> {
+  final CustomSqlType? innerType;
+
   const ArrayType({
     required super.type,
     required super.name,
+    this.innerType,
   });
 
   @override

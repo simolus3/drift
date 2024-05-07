@@ -8,6 +8,7 @@ import 'package:drift/drift.dart';
 import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
 
+import 'src/array_access_expression.dart';
 import 'src/types.dart';
 
 export 'src/pg_database.dart';
@@ -92,7 +93,7 @@ final class PgTypes {
 
   /// A postgres array of JSON values, encoded as binary values.
   static const CustomSqlType<List<Object?>> jsonbArray =
-      ArrayType(type: pg.Type.jsonbArray, name: 'jsonb[]');
+      ArrayType(type: pg.Type.jsonbArray, name: 'jsonb[]', innerType: jsonb);
 }
 
 /// A wrapper for values with the Postgres `timestamp without timezone` and
@@ -169,4 +170,35 @@ final class PgDate implements PgTimeValue, Comparable<PgDate> {
 /// Calls the `gen_random_uuid` function in postgres.
 Expression<UuidValue> genRandomUuid() {
   return FunctionCallExpression('gen_random_uuid', []);
+}
+
+/// Exposes expression builders for array types in postgres.
+extension ArrayExpressions<T extends Object> on Expression<List<T?>> {
+  /// Returns an expression accessing the element at the given [index] from this
+  /// array.
+  ///
+  /// To pass a Dart integer for [index], wrap it in a [Variable.withInt].
+  /// Note that, by default, __Postgres uses a one-based starting index!__.
+  ///
+  /// See also: https://www.postgresql.org/docs/current/arrays.html#ARRAYS-ACCESSING
+  Expression<T> operator [](Expression<int> index) {
+    final inner = (driftSqlType as ArrayType<T?>).innerType;
+
+    return ArrayAccessExpression(
+      array: this,
+      index: index,
+      customResultType: inner as CustomSqlType<T>?,
+    );
+  }
+
+  /// Returns an expression evaluating to the length of this array.
+  Expression<int> get length {
+    return FunctionCallExpression('array_length', [this, const Constant(1)]);
+  }
+
+  /// Concatenates `this` and the [other] array into a single array.
+  Expression<List<T>> operator +(Expression<List<T>> other) {
+    return (dartCast<String>() + other.dartCast())
+        .dartCast(customType: driftSqlType as CustomSqlType<List<T>>);
+  }
 }
