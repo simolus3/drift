@@ -10,6 +10,8 @@ path: /docs/manager/
 
 {% assign snippets = 'package:drift_docs/snippets/dart_api/manager.dart.excerpt.json' | readString | json_decode %}
 
+Minimum Drift version: 2.18.0
+
 With generated code, drift allows writing SQL queries in type-safe Dart.
 While this is provides lots of flexibility, it requires familiarity with SQL.
 As a simpler alternative, drift 2.17 introduced a new set of APIs designed to
