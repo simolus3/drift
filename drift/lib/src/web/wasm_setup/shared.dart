@@ -8,19 +8,40 @@ import 'package:drift/wasm.dart';
 import 'package:web/web.dart'
     show
         Worker,
+        Navigator,
+        StorageManager,
         IDBFactory,
         IDBRequest,
         IDBDatabase,
         IDBVersionChangeEvent,
         EventStreamProviders,
-        MessageEvent;
+        MessageEvent,
+        FileSystemDirectoryHandle,
+        FileSystemFileHandle,
+        FileSystemHandle,
+        FileSystemSyncAccessHandle,
+        FileSystemGetFileOptions,
+        FileSystemRemoveOptions;
 // ignore: implementation_imports
-import 'package:sqlite3/src/wasm/js_interop/file_system_access.dart';
+import 'package:sqlite3/src/wasm/js_interop/core.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../new_channel.dart';
 import 'protocol.dart';
+
+@JS('navigator')
+external Navigator get _navigator;
+
+StorageManager? get _storageManager {
+  final navigator = _navigator;
+
+  if (navigator.has('storage')) {
+    return navigator.storage;
+  }
+
+  return null;
+}
 
 /// Checks whether the OPFS API is likely to be correctly implemented in the
 /// current browser.
@@ -28,7 +49,7 @@ import 'protocol.dart';
 /// Since OPFS uses the synchronous file system access API, this method can only
 /// return true when called in a dedicated worker.
 Future<bool> checkOpfsSupport() async {
-  final storage = storageManager;
+  final storage = _storageManager;
   if (storage == null) return false;
 
   const testFileName = '_drift_feature_detection';
@@ -38,10 +59,12 @@ Future<bool> checkOpfsSupport() async {
   FileSystemSyncAccessHandle? openedFile;
 
   try {
-    opfsRoot = await storage.directory;
+    opfsRoot = await storage.getDirectory().toDart;
 
-    fileHandle = await opfsRoot.openFile(testFileName, create: true);
-    openedFile = await fileHandle.createSyncAccessHandle();
+    fileHandle = await opfsRoot
+        .getFileHandle(testFileName, FileSystemGetFileOptions(create: true))
+        .toDart;
+    openedFile = await fileHandle.createSyncAccessHandle().toDart;
 
     // In earlier versions of the OPFS standard, some methods like `getSize()`
     // on a sync file handle have actually been asynchronous. We don't support
@@ -62,7 +85,7 @@ Future<bool> checkOpfsSupport() async {
     }
 
     if (opfsRoot != null && fileHandle != null) {
-      await opfsRoot.removeEntry(testFileName);
+      await opfsRoot.removeEntry(testFileName).toDart;
     }
   }
 }
@@ -131,33 +154,38 @@ String pathForOpfs(String databaseName) {
 
 /// Collects all drift OPFS databases.
 Future<List<String>> opfsDatabases() async {
-  final storage = storageManager;
+  final storage = _storageManager;
   if (storage == null) return const [];
 
-  var directory = await storage.directory;
+  var directory = await storage.getDirectory().toDart;
   try {
-    directory = await directory.getDirectory('drift_db');
+    directory = await directory.getDirectoryHandle('drift_db').toDart;
   } on Object {
     // The drift_db folder doesn't exist, so there aren't any databases.
     return const [];
   }
 
+  final entries = AsyncJavaScriptIteratable<JSArray>(directory)
+      .map((data) => data.toDart[1] as FileSystemHandle);
+
   return [
-    await for (final entry in directory.list())
-      if (entry.isDirectory) entry.name,
+    await for (final entry in entries)
+      if (entry.kind == 'directory') entry.name,
   ];
 }
 
 /// Deletes the OPFS folder storing a database with the given [databaseName] if
 /// such folder exists.
 Future<void> deleteDatabaseInOpfs(String databaseName) async {
-  final storage = storageManager;
+  final storage = _storageManager;
   if (storage == null) return;
 
-  var directory = await storage.directory;
+  var directory = await storage.getDirectory().toDart;
   try {
-    directory = await directory.getDirectory('drift_db');
-    await directory.removeEntry(databaseName, recursive: true);
+    directory = await directory.getDirectoryHandle('drift_db').toDart;
+    await directory
+        .removeEntry(databaseName, FileSystemRemoveOptions(recursive: true))
+        .toDart;
   } on Object {
     // fine, an error probably means that the database didn't exist in the first
     // place.
