@@ -161,4 +161,20 @@ void main() {
     expect(delete2, completion(1));
     expect(db.managers.categories.count(), completion(0));
   });
+
+  test('can use custom row classes', () async {
+    final entry = await db.managers.tableWithoutPK
+        .createReturning((o) => o(notReallyAnId: 3, someFloat: 5));
+    expect(entry.notReallyAnId, 3);
+    expect(entry.someFloat, 5);
+
+    await db.managers.tableWithoutPK
+        .filter((f) => f.someFloat.isBiggerThan(3))
+        .update((o) => o(webSafeInt: Value(BigInt.from(10))));
+
+    final row = await db.managers.tableWithoutPK.getSingle();
+    expect(row.webSafeInt, BigInt.from(10));
+
+    await db.managers.tableWithoutPK.delete();
+  });
 }

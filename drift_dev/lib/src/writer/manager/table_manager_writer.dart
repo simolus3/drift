@@ -199,13 +199,7 @@ _Relation? _getRelationForColumn(DriftColumn column) {
   if (referencedCol != null && referencedCol.owner is DriftTable) {
     final relation =
         _Relation(currentColumn: column, referencedColumn: referencedCol);
-    // If either table has a custom row class, we will ignore this reference and retunn null
-    if (relation.currentTable.hasExistingRowClass ||
-        relation.referencedTable.hasExistingRowClass) {
-      return null;
-    } else {
-      return relation;
-    }
+    return relation;
   } else {
     return null;
   }

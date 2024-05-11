@@ -3868,6 +3868,135 @@ class $$SharedTodosTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+typedef $$TableWithoutPKTableInsertCompanionBuilder = TableWithoutPKCompanion
+    Function({
+  required int notReallyAnId,
+  required double someFloat,
+  Value<BigInt?> webSafeInt,
+  Value<MyCustomObject> custom,
+  Value<int> rowid,
+});
+typedef $$TableWithoutPKTableUpdateCompanionBuilder = TableWithoutPKCompanion
+    Function({
+  Value<int> notReallyAnId,
+  Value<double> someFloat,
+  Value<BigInt?> webSafeInt,
+  Value<MyCustomObject> custom,
+  Value<int> rowid,
+});
+
+class $$TableWithoutPKTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TableWithoutPKTable,
+    CustomRowClass,
+    $$TableWithoutPKTableFilterComposer,
+    $$TableWithoutPKTableOrderingComposer,
+    $$TableWithoutPKTableProcessedTableManager,
+    $$TableWithoutPKTableInsertCompanionBuilder,
+    $$TableWithoutPKTableUpdateCompanionBuilder> {
+  $$TableWithoutPKTableTableManager(_$TodoDb db, $TableWithoutPKTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TableWithoutPKTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TableWithoutPKTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$TableWithoutPKTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> notReallyAnId = const Value.absent(),
+            Value<double> someFloat = const Value.absent(),
+            Value<BigInt?> webSafeInt = const Value.absent(),
+            Value<MyCustomObject> custom = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TableWithoutPKCompanion(
+            notReallyAnId: notReallyAnId,
+            someFloat: someFloat,
+            webSafeInt: webSafeInt,
+            custom: custom,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            required int notReallyAnId,
+            required double someFloat,
+            Value<BigInt?> webSafeInt = const Value.absent(),
+            Value<MyCustomObject> custom = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TableWithoutPKCompanion.insert(
+            notReallyAnId: notReallyAnId,
+            someFloat: someFloat,
+            webSafeInt: webSafeInt,
+            custom: custom,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $$TableWithoutPKTableProcessedTableManager extends ProcessedTableManager<
+    _$TodoDb,
+    $TableWithoutPKTable,
+    CustomRowClass,
+    $$TableWithoutPKTableFilterComposer,
+    $$TableWithoutPKTableOrderingComposer,
+    $$TableWithoutPKTableProcessedTableManager,
+    $$TableWithoutPKTableInsertCompanionBuilder,
+    $$TableWithoutPKTableUpdateCompanionBuilder> {
+  $$TableWithoutPKTableProcessedTableManager(super.$state);
+}
+
+class $$TableWithoutPKTableFilterComposer
+    extends FilterComposer<_$TodoDb, $TableWithoutPKTable> {
+  $$TableWithoutPKTableFilterComposer(super.$state);
+  ColumnFilters<int> get notReallyAnId => $state.composableBuilder(
+      column: $state.table.notReallyAnId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<double> get someFloat => $state.composableBuilder(
+      column: $state.table.someFloat,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<BigInt> get webSafeInt => $state.composableBuilder(
+      column: $state.table.webSafeInt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnWithTypeConverterFilters<MyCustomObject, MyCustomObject, String>
+      get custom => $state.composableBuilder(
+          column: $state.table.custom,
+          builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
+              column,
+              joinBuilders: joinBuilders));
+}
+
+class $$TableWithoutPKTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $TableWithoutPKTable> {
+  $$TableWithoutPKTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get notReallyAnId => $state.composableBuilder(
+      column: $state.table.notReallyAnId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<double> get someFloat => $state.composableBuilder(
+      column: $state.table.someFloat,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<BigInt> get webSafeInt => $state.composableBuilder(
+      column: $state.table.webSafeInt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get custom => $state.composableBuilder(
+      column: $state.table.custom,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 typedef $$PureDefaultsTableInsertCompanionBuilder = PureDefaultsCompanion
     Function({
   Value<MyCustomObject?> txt,
@@ -4737,6 +4866,8 @@ class _$TodoDbManager {
       $$UsersTableTableManager(_db, _db.users);
   $$SharedTodosTableTableManager get sharedTodos =>
       $$SharedTodosTableTableManager(_db, _db.sharedTodos);
+  $$TableWithoutPKTableTableManager get tableWithoutPK =>
+      $$TableWithoutPKTableTableManager(_db, _db.tableWithoutPK);
   $$PureDefaultsTableTableManager get pureDefaults =>
       $$PureDefaultsTableTableManager(_db, _db.pureDefaults);
   $$WithCustomTypeTableTableManager get withCustomType =>
