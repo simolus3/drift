@@ -21,9 +21,7 @@ class _TableManagerWriter {
       {required this.table,
       required this.scope,
       required this.dbClassName,
-      required this.otherTables})
-      : assert(table.existingRowClass == null,
-            "Manager Writer should ignore tables with custom row classes");
+      required this.otherTables});
 
   _ManagerCodeTemplates get _templates => _ManagerCodeTemplates(scope);
 
