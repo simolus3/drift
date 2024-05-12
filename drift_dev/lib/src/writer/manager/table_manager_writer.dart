@@ -21,9 +21,7 @@ class _TableManagerWriter {
       {required this.table,
       required this.scope,
       required this.dbClassName,
-      required this.otherTables})
-      : assert(table.existingRowClass == null,
-            "Manager Writer should ignore tables with custom row classes");
+      required this.otherTables});
 
   _ManagerCodeTemplates get _templates => _ManagerCodeTemplates(scope);
 
@@ -199,13 +197,7 @@ _Relation? _getRelationForColumn(DriftColumn column) {
   if (referencedCol != null && referencedCol.owner is DriftTable) {
     final relation =
         _Relation(currentColumn: column, referencedColumn: referencedCol);
-    // If either table has a custom row class, we will ignore this reference and retunn null
-    if (relation.currentTable.hasExistingRowClass ||
-        relation.referencedTable.hasExistingRowClass) {
-      return null;
-    } else {
-      return relation;
-    }
+    return relation;
   } else {
     return null;
   }

@@ -1971,6 +1971,72 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
+typedef $NoIdsInsertCompanionBuilder = NoIdsCompanion Function({
+  required Uint8List payload,
+});
+typedef $NoIdsUpdateCompanionBuilder = NoIdsCompanion Function({
+  Value<Uint8List> payload,
+});
+
+class $NoIdsTableManager extends RootTableManager<
+    _$CustomTablesDb,
+    NoIds,
+    NoIdRow,
+    $NoIdsFilterComposer,
+    $NoIdsOrderingComposer,
+    $NoIdsProcessedTableManager,
+    $NoIdsInsertCompanionBuilder,
+    $NoIdsUpdateCompanionBuilder> {
+  $NoIdsTableManager(_$CustomTablesDb db, NoIds table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $NoIdsFilterComposer(ComposerState(db, table)),
+          orderingComposer: $NoIdsOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $NoIdsProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<Uint8List> payload = const Value.absent(),
+          }) =>
+              NoIdsCompanion(
+            payload: payload,
+          ),
+          getInsertCompanionBuilder: ({
+            required Uint8List payload,
+          }) =>
+              NoIdsCompanion.insert(
+            payload: payload,
+          ),
+        ));
+}
+
+class $NoIdsProcessedTableManager extends ProcessedTableManager<
+    _$CustomTablesDb,
+    NoIds,
+    NoIdRow,
+    $NoIdsFilterComposer,
+    $NoIdsOrderingComposer,
+    $NoIdsProcessedTableManager,
+    $NoIdsInsertCompanionBuilder,
+    $NoIdsUpdateCompanionBuilder> {
+  $NoIdsProcessedTableManager(super.$state);
+}
+
+class $NoIdsFilterComposer extends FilterComposer<_$CustomTablesDb, NoIds> {
+  $NoIdsFilterComposer(super.$state);
+  ColumnFilters<Uint8List> get payload => $state.composableBuilder(
+      column: $state.table.payload,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $NoIdsOrderingComposer extends OrderingComposer<_$CustomTablesDb, NoIds> {
+  $NoIdsOrderingComposer(super.$state);
+  ColumnOrderings<Uint8List> get payload => $state.composableBuilder(
+      column: $state.table.payload,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 typedef $WithDefaultsInsertCompanionBuilder = WithDefaultsCompanion Function({
   Value<String?> a,
   Value<int?> b,
@@ -2616,6 +2682,7 @@ class $WeirdTableOrderingComposer
 class _$CustomTablesDbManager {
   final _$CustomTablesDb _db;
   _$CustomTablesDbManager(this._db);
+  $NoIdsTableManager get noIds => $NoIdsTableManager(_db, _db.noIds);
   $WithDefaultsTableManager get withDefaults =>
       $WithDefaultsTableManager(_db, _db.withDefaults);
   $WithConstraintsTableManager get withConstraints =>

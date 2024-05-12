@@ -9,18 +9,16 @@ part 'filter.dart';
 part 'composable.dart';
 part 'ordering.dart';
 
-sealed class _StatementType<T extends Table, DT extends DataClass> {
+sealed class _StatementType<T extends Table, DT> {
   const _StatementType();
 }
 
-class _SimpleResult<T extends Table, DT extends DataClass>
-    extends _StatementType<T, DT> {
+class _SimpleResult<T extends Table, DT> extends _StatementType<T, DT> {
   final SimpleSelectStatement<T, DT> statement;
   const _SimpleResult(this.statement);
 }
 
-class _JoinedResult<T extends Table, DT extends DataClass>
-    extends _StatementType<T, DT> {
+class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
   final JoinedSelectStatement<T, DT> statement;
 
   const _JoinedResult(this.statement);
@@ -39,16 +37,16 @@ class _JoinedResult<T extends Table, DT extends DataClass>
 class TableManagerState<
     DB extends GeneratedDatabase,
     T extends Table,
-    DT extends DataClass,
+    DT,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
     C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
     CI extends Function,
     CU extends Function> {
-  /// The database that the query will be exeCCted on
+  /// The database used to run the query.
   final DB db;
 
-  /// The table that the query will be exeCCted on
+  /// The table primary table from which to select from.
   final T table;
 
   /// The expression that will be applied to the query
@@ -297,7 +295,7 @@ class TableManagerState<
 abstract class BaseTableManager<
         DB extends GeneratedDatabase,
         T extends Table,
-        DT extends DataClass,
+        DT,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
         C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
@@ -463,7 +461,7 @@ abstract class BaseTableManager<
 class ProcessedTableManager<
         DB extends GeneratedDatabase,
         T extends Table,
-        D extends DataClass,
+        D,
         FS extends FilterComposer<DB, T>,
         OS extends OrderingComposer<DB, T>,
         C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
@@ -483,7 +481,7 @@ class ProcessedTableManager<
 abstract class RootTableManager<
     DB extends GeneratedDatabase,
     T extends Table,
-    D extends DataClass,
+    D,
     FS extends FilterComposer<DB, T>,
     OS extends OrderingComposer<DB, T>,
     C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,

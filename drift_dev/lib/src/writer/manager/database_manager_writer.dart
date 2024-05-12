@@ -21,11 +21,7 @@ class DatabaseManagerWriter {
   ///
   /// Ignores tables that have custom row classes
   void addTable(DriftTable table) {
-    if (table.hasExistingRowClass) {
-      return;
-    } else {
-      _addedTables.add(table);
-    }
+    _addedTables.add(table);
   }
 
   /// Write a table manager for each table.
