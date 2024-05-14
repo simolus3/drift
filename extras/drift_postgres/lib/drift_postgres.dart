@@ -172,6 +172,11 @@ Expression<UuidValue> genRandomUuid() {
   return FunctionCallExpression('gen_random_uuid', []);
 }
 
+/// Calls the `NOW()` function in postgres.
+Expression<PgDateTime> now() {
+  return FunctionCallExpression('NOW', []);
+}
+
 /// Exposes expression builders for array types in postgres.
 extension ArrayExpressions<T extends Object> on Expression<List<T?>> {
   /// Returns an expression accessing the element at the given [index] from this
