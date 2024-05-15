@@ -60,6 +60,7 @@ class VerifierImplementation implements SchemaVerifier {
 
   Database _setupDatabase(String uri) {
     final database = sqlite3.open(uri, uri: true);
+    database.config.doubleQuotedStringLiterals = false;
     setup?.call(database);
     return database;
   }

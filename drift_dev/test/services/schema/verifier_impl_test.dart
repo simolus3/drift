@@ -25,6 +25,13 @@ void main() {
       await db.ensureOpen(_DelegatedUser(17, (_, details) async {}));
       await db.runSelect('select test_function()', []);
     });
+
+    test('disables double-quoted string literals', () async {
+      final db = (await verifier.startAt(17)).executor;
+      await db.ensureOpen(_DelegatedUser(17, (_, details) async {}));
+      await expectLater(db.runSelect('select "why_would_this_be_a_string"', []),
+          throwsA(isA<SqliteException>()));
+    });
   });
 
   group('migrateAndValidate', () {
