@@ -2,7 +2,7 @@ import 'package:devtools_app_shared/ui.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Split;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';

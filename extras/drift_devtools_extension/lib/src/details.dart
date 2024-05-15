@@ -55,7 +55,7 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
           return Theme(
             data: theme.copyWith(
               scrollbarTheme: const ScrollbarThemeData(
-                thumbVisibility: MaterialStatePropertyAll(true),
+                thumbVisibility: WidgetStatePropertyAll(true),
               ),
             ),
             child: Column(

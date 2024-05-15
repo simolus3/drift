@@ -144,8 +144,8 @@ ExistingRowClass? validateExistingClass(
     final missingGetters = <String>[];
 
     for (final column in columns) {
-      final matchingField = dartClass.classElement
-          .lookUpGetter(column.nameInDart, dartClass.classElement.library);
+      final matchingField = dartClass.classElement.augmented.lookUpGetter(
+          name: column.nameInDart, library: dartClass.classElement.library);
 
       if (matchingField == null) {
         missingGetters.add(column.nameInDart);
@@ -414,10 +414,7 @@ void _checkParameterType(
 
   final nullableDartType = column.nullableInDart;
 
-  if (library.isNonNullableByDefault &&
-      nullableDartType &&
-      !typesystem.isNullable(type) &&
-      element.isRequired) {
+  if (nullableDartType && !typesystem.isNullable(type) && element.isRequired) {
     error('Expected this parameter to be nullable');
     return;
   }
@@ -457,7 +454,7 @@ bool checkType(
 
   if (!typeSystem.isAssignableTo(expectedDartType, typeToCheck)) {
     error('Parameter must accept '
-        '${expectedDartType.getDisplayString(withNullability: true)}');
+        '${expectedDartType.getDisplayString()}');
     return false;
   }
 

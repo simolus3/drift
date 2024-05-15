@@ -314,7 +314,8 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   Future<String> _sqlNameOfTable(ClassElement table) async {
     final defaultName = _defaultNameForTableOrView(table);
 
-    final tableNameGetter = table.lookUpGetter('tableName', _library);
+    final tableNameGetter =
+        table.augmented.lookUpGetter(name: 'tableName', library: _library);
     if (tableNameGetter == null ||
         tableNameGetter.isFromDefaultTable ||
         tableNameGetter.isAbstract) {

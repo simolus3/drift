@@ -171,8 +171,7 @@ class SchemaWriter {
       if (column.typeConverter != null)
         'type_converter': {
           'dart_expr': column.typeConverter!.expression.toString(),
-          'dart_type_name': column.typeConverter!.dartType
-              .getDisplayString(withNullability: false),
+          'dart_type_name': column.typeConverter!.dartType.getDisplayString(),
         }
     };
   }

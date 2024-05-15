@@ -50,7 +50,7 @@ class DartAccessorResolver
           DriftAnalysisError.forDartElement(
             element,
             'Could not read table from '
-            '`${dartType?.getDisplayString(withNullability: true)}`, it needs '
+            '`${dartType?.getDisplayString()}`, it needs '
             'to reference a table class.',
           ),
         );
@@ -73,7 +73,7 @@ class DartAccessorResolver
           DriftAnalysisError.forDartElement(
             element,
             'Could not read view from '
-            '`${dartType?.getDisplayString(withNullability: true)}`, it needs '
+            '`${dartType?.getDisplayString()}`, it needs '
             'to reference a view class.',
           ),
         );
@@ -131,7 +131,7 @@ class DartAccessorResolver
             DriftAnalysisError.forDartElement(
               element,
               'Could not read referenced DAO from '
-              '`$type?.getDisplayString(withNullability: true)}`, it needs '
+              '`${type.getDisplayString()}`, it needs '
               'to reference an accessor class.',
             ),
           );
@@ -185,7 +185,7 @@ class DartAccessorResolver
 
   Future<int?> _readSchemaVersion() async {
     final element =
-        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable;
+        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable2;
     if (element == null) return null;
 
     try {

@@ -121,8 +121,7 @@ CREATE TABLE b (
             'expression',
             contains('EnumIndexConverter<Fruits>'),
           )
-          .having((e) => e.dartType.getDisplayString(withNullability: true),
-              'dartType', 'Fruits'),
+          .having((e) => e.dartType.getDisplayString(), 'dartType', 'Fruits'),
     );
 
     final withGenericIndexColumn = table.columns
@@ -152,8 +151,7 @@ CREATE TABLE b (
             'expression',
             contains('EnumNameConverter<Fruits>'),
           )
-          .having((e) => e.dartType.getDisplayString(withNullability: true),
-              'dartType', 'Fruits'),
+          .having((e) => e.dartType.getDisplayString(), 'dartType', 'Fruits'),
     );
 
     expect(

@@ -191,16 +191,16 @@ extension TypeUtils on DartType {
     return $this is InterfaceType ? $this.element.name : null;
   }
 
-  String get userVisibleName => getDisplayString(withNullability: true);
+  String get userVisibleName => getDisplayString();
 
   /// How this type should look like in generated code.
   String codeString() {
     if (nullabilitySuffix == NullabilitySuffix.star) {
       // We can't actually use the legacy star in code, so don't show it.
-      return getDisplayString(withNullability: false);
+      return getDisplayString();
     }
 
-    return getDisplayString(withNullability: true);
+    return getDisplayString();
   }
 }
 
