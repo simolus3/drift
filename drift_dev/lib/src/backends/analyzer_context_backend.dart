@@ -62,7 +62,7 @@ class AnalysisContextBackend extends DriftBackend {
     final context = contextCollection.contextFor(projectDirectory);
 
     final backend = AnalysisContextBackend(context, provider);
-    final driver = await DriftAnalysisDriver.init(backend, options);
+    final driver = DriftAnalysisDriver(backend, options);
     return PhysicalDriftDriver(driver, backend);
   }
 

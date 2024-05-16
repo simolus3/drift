@@ -17,7 +17,7 @@ class DriftTriggerResolver
   Future<DriftTrigger> resolve() async {
     final stmt = discovered.sqlNode;
     final references = await resolveTableReferences(stmt);
-    final engine = newEngineWithTables(references);
+    final engine = await newEngineWithTables(references);
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
     final context = engine.analyzeNode(stmt, source);

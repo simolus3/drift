@@ -1,3 +1,4 @@
+import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -14,9 +15,10 @@ import '../utils/string_escaper.dart';
 /// package.
 class FunctionStubsWriter {
   final DriftAnalysisDriver _driver;
+  final TypeMapping _typeMapping;
   final TextEmitter _emitter;
 
-  FunctionStubsWriter(this._driver, this._emitter);
+  FunctionStubsWriter(this._driver, this._typeMapping, this._emitter);
 
   void write() {
     final functions = _driver.options.sqliteOptions?.knownFunctions ?? const {};
@@ -59,7 +61,7 @@ class FunctionStubsWriter {
   String _nameFor(String sqlName) => ReCase(sqlName).camelCase;
 
   void _writeTypeFor(ResolvedType type) {
-    final driftType = _driver.typeMapping.sqlTypeToDrift(type).builtin;
+    final driftType = _typeMapping.sqlTypeToDrift(type).builtin;
 
     _emitter.writeDart(AnnotatedDartCode([dartTypeNames[driftType]!]));
     if (type.nullable == true) {

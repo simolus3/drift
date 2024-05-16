@@ -147,7 +147,7 @@ class _DriftBuildRun {
       options,
       mode,
       buildStep,
-      await DriftAnalysisDriver.init(DriftBuildBackend(buildStep), options)
+      DriftAnalysisDriver(DriftBuildBackend(buildStep), options)
         ..cacheReader = BuildCacheReader(
           buildStep,
           // The discovery and analyzer builders will have emitted IR for
@@ -322,7 +322,8 @@ class _DriftBuildRun {
 
         // Also write stubs for known custom functions so that the user can
         // easily register them on the database.
-        FunctionStubsWriter(driver, writer.leaf()).write();
+        FunctionStubsWriter(driver, await driver.typeMapping, writer.leaf())
+            .write();
       } else if (result is DatabaseAccessor) {
         final resolved =
             entrypointState.fileAnalysis!.resolvedDatabases[result.id]!;

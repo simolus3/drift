@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -100,6 +101,15 @@ class KnownDriftTypes {
     final converter = helperLibrary.exportNamespace.get('JsonTypeConverter2')
         as InterfaceElement;
     return type?.asInstanceOf(converter);
+  }
+
+  bool get isStillConsistent {
+    try {
+      helperLibrary.session.getParsedLibraryByElement(helperLibrary);
+      return true;
+    } on InconsistentAnalysisException {
+      return false;
+    }
   }
 
   static Future<KnownDriftTypes?> resolve(DriftBackend backend) async {
@@ -264,7 +274,7 @@ class DataClassInformation {
           useRowClass.getField('constructor')!.toStringValue()!;
       final generateInsertable =
           useRowClass.getField('generateInsertable')!.toBoolValue()!;
-      final helper = resolver.resolver.driver.knownTypes;
+      final helper = await resolver.resolver.driver.knownTypes;
 
       if (type is InterfaceType) {
         final found = FoundDartClass(type.element, type.typeArguments);

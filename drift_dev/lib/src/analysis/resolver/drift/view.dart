@@ -20,14 +20,15 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
     final stmt = discovered.sqlNode;
     final allReferences = await resolveSqlReferences(stmt);
     final references = allReferences.referencedElements;
-    final engine = newEngineWithTables(references);
+    final typeMapping = await resolver.driver.typeMapping;
+    final engine = typeMapping.newEngineWithTables(references);
 
     final source = (file.discovery as DiscoveredDriftFile).originalSource;
     final resolveTypes = allReferences.dartTypes.isEmpty
         ? null
         : await createTypeResolver(
             allReferences,
-            resolver.driver.knownTypes,
+            await resolver.driver.knownTypes,
           );
 
     final context = engine.analyzeNode(
@@ -44,7 +45,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
 
     for (final column in parserView.resolvedColumns) {
       final type = column.type;
-      final driftType = resolver.driver.typeMapping.sqlTypeToDrift(type);
+      final driftType = typeMapping.sqlTypeToDrift(type);
       final nullable = type?.nullable ?? true;
 
       AppliedTypeConverter? converter;

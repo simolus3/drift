@@ -37,7 +37,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     }
 
-    final knownTypes = resolver.driver.knownTypes;
+    final knownTypes = await resolver.driver.knownTypes;
     return readCustomType(
       knownTypes.helperLibrary,
       expression,
@@ -64,7 +64,8 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     }
 
-    final knownTypes = resolver.driver.knownTypes;
+    final knownTypes = await resolver.driver.knownTypes;
+
     return readTypeConverter(
       knownTypes.helperLibrary,
       expression,
@@ -136,6 +137,8 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
     final dataClassName = source.overriddenDataClassName;
     final element = await _findInDart(dataClassName);
+    final knownTypes = await resolver.driver.knownTypes;
+
     FoundDartClass? foundDartClass;
 
     if (element is InterfaceElement) {
@@ -153,7 +156,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
           innerType,
           false,
           this,
-          resolver.driver.knownTypes,
+          knownTypes,
         );
       }
     }
@@ -166,14 +169,15 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       ));
       return null;
     } else {
-      final knownTypes = resolver.driver.knownTypes;
       return validateExistingClass(columns, foundDartClass,
           source.constructorName ?? '', false, this, knownTypes);
     }
   }
 
-  SqlEngine newEngineWithTables(Iterable<DriftElement> references) {
-    return resolver.driver.typeMapping.newEngineWithTables(references);
+  Future<SqlEngine> newEngineWithTables(
+      Iterable<DriftElement> references) async {
+    final mapping = await resolver.driver.typeMapping;
+    return mapping.newEngineWithTables(references);
   }
 
   DriftElement? findInResolved(List<DriftElement> references, String name) {

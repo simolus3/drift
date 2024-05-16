@@ -51,6 +51,7 @@ class QueryAnalyzer {
   final FileState fromFile;
   final DriftAnalysisDriver driver;
   final KnownDriftTypes knownTypes;
+  final TypeMapping typeMapping;
   final RequiredVariables requiredVariables;
   final Map<String, DriftElement> referencesByName;
 
@@ -73,6 +74,7 @@ class QueryAnalyzer {
     this.fromFile,
     this.driver, {
     required this.knownTypes,
+    required this.typeMapping,
     required List<DriftElement> references,
     this.requiredVariables = RequiredVariables.empty,
   }) : referencesByName = {
@@ -288,7 +290,7 @@ class QueryAnalyzer {
     void handleScalarColumn(Column column,
         [sql.ExpressionResultColumn? source]) {
       final type = context.typeOf(column).type;
-      final driftType = driver.typeMapping.sqlTypeToDrift(type);
+      final driftType = typeMapping.sqlTypeToDrift(type);
       final mappedBy = source?.mappedBy;
       AppliedTypeConverter? converter;
 
@@ -636,7 +638,7 @@ class QueryAnalyzer {
           internalType = ctx.typeOf(used);
         }
 
-        final type = driver.typeMapping.sqlTypeToDrift(internalType.type);
+        final type = typeMapping.sqlTypeToDrift(internalType.type);
 
         if (forCapture != null) {
           addNewElement(FoundVariable.nestedQuery(
@@ -716,7 +718,7 @@ class QueryAnalyzer {
         final foundType = context.typeOf(e);
         ColumnType? columnType;
         if (foundType.type != null) {
-          columnType = driver.typeMapping.sqlTypeToDrift(foundType.type);
+          columnType = typeMapping.sqlTypeToDrift(foundType.type);
         }
 
         final defaultValue =

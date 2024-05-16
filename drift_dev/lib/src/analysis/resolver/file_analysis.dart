@@ -19,7 +19,8 @@ class FileAnalyzer {
 
   Future<FileAnalysisResult> runAnalysisOn(FileState state) async {
     final result = FileAnalysisResult();
-    final knownTypes = driver.knownTypes;
+    final knownTypes = await driver.knownTypes;
+    final typeMapping = await driver.typeMapping;
 
     if (state.extension == '.dart') {
       for (final elementAnalysis in state.analysis.values) {
@@ -99,12 +100,13 @@ class FileAnalyzer {
           }
 
           for (final query in element.declaredQueries) {
-            final engine =
-                driver.typeMapping.newEngineWithTables(availableElements);
+            final engine = typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
 
             final analyzer = QueryAnalyzer(context, state, driver,
-                knownTypes: knownTypes, references: availableElements);
+                knownTypes: knownTypes,
+                typeMapping: typeMapping,
+                references: availableElements);
             queries[query.name] = await analyzer.analyze(query);
 
             for (final error in analyzer.lints) {
@@ -129,8 +131,7 @@ class FileAnalyzer {
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;
         if (element is DefinedSqlQuery) {
-          final engine =
-              driver.typeMapping.newEngineWithTables(element.references);
+          final engine = typeMapping.newEngineWithTables(element.references);
           final stmt = parsedFile.statements
               .whereType<DeclaredStatement>()
               .firstWhere(
@@ -149,6 +150,7 @@ class FileAnalyzer {
           final analyzer = QueryAnalyzer(analysisResult, state, driver,
               knownTypes: knownTypes,
               references: element.references,
+              typeMapping: typeMapping,
               requiredVariables: options.variables);
 
           result.resolvedQueries[element.id] =

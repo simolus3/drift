@@ -31,7 +31,7 @@ class DriftDiscover extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     final backend = DriftBuildBackend(buildStep);
-    final driver = await DriftAnalysisDriver.init(backend, options);
+    final driver = DriftAnalysisDriver(backend, options);
 
     final prepared = await driver.findLocalElements(buildStep.inputId.uri);
     final discovery = prepared.discovery;
@@ -84,7 +84,7 @@ class DriftAnalyzer extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     final backend = DriftBuildBackend(buildStep);
-    final driver = await DriftAnalysisDriver.init(backend, options)
+    final driver = DriftAnalysisDriver(backend, options)
       ..cacheReader =
           BuildCacheReader(buildStep, findsLocalElementsReliably: true);
 

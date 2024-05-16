@@ -57,8 +57,7 @@ class TestBackend extends DriftBackend {
       analyzerExperiments: analyzerExperiments,
     );
 
-    backend.driver =
-        await DriftAnalysisDriver.init(backend, options, isTesting: true);
+    backend.driver = DriftAnalysisDriver(backend, options, isTesting: true);
 
     return backend;
   }
@@ -117,7 +116,12 @@ class TestBackend extends DriftBackend {
         PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
     final testConfig = PackageConfig([
       ...hostConfig.packages,
-      Package('a', Uri.directory('/a/'), packageUriRoot: Uri.parse('lib/')),
+      Package(
+        'a',
+        Uri.directory('/a/'),
+        packageUriRoot: Uri.parse('lib/'),
+        languageVersion: LanguageVersion(3, 3),
+      ),
     ]);
 
     // Write package config used to analyze dummy sources
@@ -177,9 +181,9 @@ class TestBackend extends DriftBackend {
       fileContents.writeln("import '$import';");
     }
     fileContents.writeln('var field = $dartExpression;');
-    final path = '${_pathFor(context)}.exp.dart';
+    final path = '${_pathFor(context)}.exp${dartExpression.hashCode}.dart';
 
-    await _setupDartAnalyzer();
+    await ensureHasDartAnalyzer();
     final resourceProvider = _resourceProvider!;
     final analysisContext = _dartContext!;
 
@@ -214,7 +218,7 @@ class TestBackend extends DriftBackend {
 
     final path = '${_pathFor(context)}.imports.dart';
 
-    await _setupDartAnalyzer();
+    await ensureHasDartAnalyzer();
 
     final resourceProvider = _resourceProvider!;
     final analysisContext = _dartContext!;

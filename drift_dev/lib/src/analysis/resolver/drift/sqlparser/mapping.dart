@@ -12,17 +12,18 @@ import '../element_resolver.dart';
 /// the one used by the `sqlparser` package.
 class TypeMapping {
   final DriftAnalysisDriver driver;
+  final KnownDriftTypes? knownTypes;
 
-  TypeMapping(this.driver);
+  TypeMapping(this.driver, this.knownTypes);
 
   SqlEngine newEngineWithTables(Iterable<DriftElement> references) {
     final engine = driver.newSqlEngine();
 
     for (final reference in references) {
       if (reference is DriftTable) {
-        engine.registerTable(driver.typeMapping.asSqlParserTable(reference));
+        engine.registerTable(asSqlParserTable(reference));
       } else if (reference is DriftView) {
-        engine.registerView(driver.typeMapping.asSqlParserView(reference));
+        engine.registerView(asSqlParserView(reference));
       }
     }
 
@@ -150,15 +151,13 @@ class TypeMapping {
     }
 
     if (type.hint<IsGeopolyPolygon>() != null) {
-      final knownTypes = driver.knownTypes;
-
       return ColumnType.custom(
         CustomColumnType(
           AnnotatedDartCode.importedSymbol(
             Uri.parse('package:drift/extensions/geopoly.dart'),
             'const GeopolyPolygonType()',
           ),
-          knownTypes.geopolyPolygon,
+          knownTypes!.geopolyPolygon,
         ),
       );
     }

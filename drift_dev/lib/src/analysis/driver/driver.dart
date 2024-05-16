@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../backend.dart';
@@ -59,36 +58,15 @@ class DriftAnalysisDriver {
   final DriftOptions options;
   final bool _isTesting;
 
-  late final TypeMapping typeMapping = TypeMapping(this);
+  Future<KnownDriftTypes?>? _loadingTypes;
 
   AnalysisResultCacheReader? cacheReader;
 
-  final KnownDriftTypes? _knownTypes;
-
-  KnownDriftTypes get knownTypes => _knownTypes!;
-
-  @visibleForTesting
   DriftAnalysisDriver(
     this.backend,
-    this.options,
-    this._knownTypes, {
+    this.options, {
     bool isTesting = false,
   }) : _isTesting = isTesting;
-
-  static Future<DriftAnalysisDriver> init(
-    DriftBackend backend,
-    DriftOptions options, {
-    bool isTesting = false,
-  }) async {
-    final driver = DriftAnalysisDriver(
-      backend,
-      options,
-      await KnownDriftTypes.resolve(backend),
-      isTesting: isTesting,
-    );
-
-    return driver;
-  }
 
   SqlEngine newSqlEngine() {
     return SqlEngine(
@@ -111,6 +89,31 @@ class DriftAnalysisDriver {
         version: options.sqliteVersion,
       ),
     );
+  }
+
+  Future<TypeMapping> get typeMapping async {
+    return TypeMapping(this, await knownTypesIfSupportedByBackend);
+  }
+
+  /// Returns [KnownDriftTypes] only if the current backend supports analyzing
+  /// Dart code.
+  Future<KnownDriftTypes?> get knownTypesIfSupportedByBackend {
+    return switch (_loadingTypes) {
+      null => _loadingTypes = KnownDriftTypes.resolve(backend),
+      var loading => loading.then((resolved) {
+          if (resolved == null) {
+            return null;
+          } else if (resolved.isStillConsistent) {
+            return resolved;
+          } else {
+            return _loadingTypes = KnownDriftTypes.resolve(backend);
+          }
+        }),
+    };
+  }
+
+  Future<KnownDriftTypes> get knownTypes async {
+    return (await knownTypesIfSupportedByBackend)!;
   }
 
   /// For a given file under [uri], attempts to restore serialized analysis

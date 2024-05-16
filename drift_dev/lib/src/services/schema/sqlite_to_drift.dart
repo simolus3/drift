@@ -21,15 +21,15 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   final logger = Logger('extractDriftElementsFromDatabase');
   final uri = Uri.parse('db.drift');
   final backend = _SingleFileNoAnalyzerBackend(logger, uri);
-  final driver = await DriftAnalysisDriver.init(
-    backend,
-    DriftOptions.defaults(
-      sqliteAnalysisOptions: SqliteAnalysisOptions(
-        modules: SqlModule.values,
-        version: SqliteVersion.current,
+  final driver = DriftAnalysisDriver(
+      backend,
+      DriftOptions.defaults(
+        sqliteAnalysisOptions: SqliteAnalysisOptions(
+          modules: SqlModule.values,
+          version: SqliteVersion.current,
+        ),
       ),
-    ),
-  );
+      isTesting: true);
 
   final engineForParsing = driver.newSqlEngine();
   final entities = <String, String>{};
