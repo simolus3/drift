@@ -11,6 +11,7 @@ packages:
  - examples/multi_package/*
  - extras/benchmarks
  - extras/drift_devtools_extension
+ - extras/drift_macros
  - extras/drift_mariadb
  - extras/drift_postgres
  - extras/encryption
