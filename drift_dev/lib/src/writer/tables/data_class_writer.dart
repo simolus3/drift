@@ -53,7 +53,7 @@ class DataClassWriter {
 
     if (isInsertable) {
       if (scope.options.writeToColumnsMixins) {
-        _buffer.writeln('with ${table.entityInfoName}ToColumns {');
+        _buffer.writeln('with ${table.toColumnsMixin} {');
       } else {
         // The data class is only an insertable if we can actually insert rows
         // into the target entity.

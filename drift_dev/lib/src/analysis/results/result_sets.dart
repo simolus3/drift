@@ -43,6 +43,10 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
   /// The name for the companion class associated with this table or view.
   String? get nameOfCompanionClass;
 
+  /// The name of the mixin generated when `write_to_columns_mixins` is `true` in `build.yaml`.<br/>
+  /// See documentation for [Generation options](https://drift.simonbinder.eu/docs/advanced-features/builder_options/).
+  String get toColumnsMixin => '${entityInfoName}ToColumns';
+
   /// All [columns] of this table, indexed by their name in SQL.
   late final Map<String, DriftColumn> columnBySqlName = CaseInsensitiveMap.of({
     for (final column in columns) column.nameInSql: column,
