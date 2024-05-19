@@ -434,7 +434,7 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void writeToColumnsMixin() {
-    buffer.write('mixin ${table.baseDartName}ToColumns ');
+    buffer.write('mixin ${table.toColumnsMixin} ');
 
     final type = emitter.dartCode(emitter.writer.rowType(table));
     buffer.writeln('implements ${emitter.drift('Insertable')}<$type> {');
