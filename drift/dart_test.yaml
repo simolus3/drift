@@ -18,6 +18,7 @@ presets:
       - firefox
   build_community_tests:
     include_tags: for_build_community_test
+    concurrency: 1
     tags:
       skip_during_development:
         skip: false
