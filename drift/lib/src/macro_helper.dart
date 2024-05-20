@@ -8,3 +8,6 @@ typedef GeneratedDatabase = drift.GeneratedDatabase;
 typedef GeneratedColumn<T extends Object> = drift.GeneratedColumn<T>;
 typedef DriftAny = drift.DriftAny;
 typedef DriftSqlType = drift.DriftSqlType;
+typedef Value<T> = drift.Value<T>;
+typedef Expression<T extends Object> = drift.Expression<T>;
+typedef UpdateCompanion<D> = drift.UpdateCompanion<D>;

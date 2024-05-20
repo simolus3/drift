@@ -70,6 +70,11 @@ final class CodeBuilder {
     _parts.add(await _drift.fromDrift(name));
   }
 
+  Future<void> dartType(ColumnType type) async {
+    // We don't support type converters yet, so...
+    await dartSqlType(type);
+  }
+
   Future<void> dartSqlType(ColumnType type) async {
     switch (type) {
       case ColumnDriftType(builtin: DriftSqlType.int):

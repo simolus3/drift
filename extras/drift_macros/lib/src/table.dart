@@ -22,25 +22,26 @@ macro class DriftTable implements ClassTypesMacro, ClassDeclarationsMacro {
   Future<void> buildTypesForClass(
       ClassDeclaration clazz, ClassTypeBuilder builder) async {
     final driftImports = DriftImports(builder);
+    final sqlName = _sqlTableName(clazz.identifier);
+    final macroUri = Uri.parse('package:drift_macros/src/table.dart');
+
+    Future<void> associatedTableConstructor(CodeBuilder b, String name) async {
+      b
+        // ignore: deprecated_member_use
+        ..part(await builder.resolveIdentifier(macroUri, name))
+        ..part(
+            '(sqlName: ${asDartLiteral(sqlName)}, withoutRowId: $withoutRowId, strict: $strict,')
+        ..line(
+            'rowClassUri: ${asDartLiteral(clazz.library.uri.toString())}, rowClassName: ${asDartLiteral(clazz.identifier.name)})');
+    }
 
     final tableName = TableAnalyzer.tableClassForRow(clazz.identifier);
+
     builder.declareType(
       tableName,
       await driftImports.buildCode(DeclarationCode.fromParts, (b) async {
-        final macroUri = Uri.parse('package:drift_macros/src/table.dart');
-        final sqlName = _sqlTableName(clazz.identifier);
-
-        b
-          ..part('@')
-          // ignore: deprecated_member_use
-          ..part(await builder.resolveIdentifier(
-            macroUri,
-            'GenerateTableClass',
-          ))
-          ..part(
-              '(sqlName: ${asDartLiteral(sqlName)}, withoutRowId: $withoutRowId, strict: $strict,')
-          ..line(
-              'rowClassUri: ${asDartLiteral(clazz.library.uri.toString())}, rowClassName: ${asDartLiteral(clazz.identifier.name)})');
+        b.part('@');
+        await associatedTableConstructor(b, 'GenerateTableClass');
         b.part('final class $tableName extends ');
         await b.driftImport('Table');
         b.part(' with ');
@@ -109,6 +110,17 @@ macro class DriftTable implements ClassTypesMacro, ClassDeclarationsMacro {
         b.part('}');
       }),
     );
+
+    final companionName = '${clazz.identifier.name}Companion';
+    builder.declareType(
+      companionName,
+      await driftImports.buildCode(DeclarationCode.fromParts, (b) async {
+        b.part('@');
+        await associatedTableConstructor(b, 'GenerateCompanion');
+        b.line('final class $companionName {');
+        b.part('}');
+      }),
+    );
   }
 
   @override
@@ -131,8 +143,7 @@ macro class DriftTable implements ClassTypesMacro, ClassDeclarationsMacro {
   }
 }
 
-macro class GenerateTableClass
-    implements ClassDeclarationsMacro, ClassDefinitionMacro {
+class _AssociatedTableClass {
   final String sqlName;
   final bool withoutRowId;
   final bool strict;
@@ -142,7 +153,7 @@ macro class GenerateTableClass
   final String rowClassUri;
   final String rowClassName;
 
-  const GenerateTableClass({
+  const _AssociatedTableClass({
     required this.sqlName,
     required this.withoutRowId,
     required this.strict,
@@ -150,23 +161,40 @@ macro class GenerateTableClass
     required this.rowClassName,
   });
 
-  @override
-  Future<void> buildDeclarationsForClass(
-      ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
+  Future<ResolvedTable> resolveTable(
+      DeclarationPhaseIntrospector introspector) async {
     final rowClassIdentifier =
         // ignore: deprecated_member_use
-        await builder.resolveIdentifier(Uri.parse(rowClassUri), rowClassName);
+        await introspector.resolveIdentifier(
+            Uri.parse(rowClassUri), rowClassName);
     final analyzer = TableAnalyzer(
       macro: DriftTable(
         sqlName: sqlName,
         withoutRowId: withoutRowId,
         strict: strict,
       ),
-      rowClass: await builder.typeDeclarationOf(rowClassIdentifier)
+      rowClass: await introspector.typeDeclarationOf(rowClassIdentifier)
           as ClassDeclaration,
-      introspector: builder,
+      introspector: introspector,
     );
-    final resolvedTable = await analyzer.resolve();
+    return await analyzer.resolve();
+  }
+}
+
+macro class GenerateTableClass extends _AssociatedTableClass
+    implements ClassDeclarationsMacro, ClassDefinitionMacro {
+  const GenerateTableClass({
+    required super.sqlName,
+    required super.withoutRowId,
+    required super.strict,
+    required super.rowClassUri,
+    required super.rowClassName,
+  });
+
+  @override
+  Future<void> buildDeclarationsForClass(
+      ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
+    final resolvedTable = await resolveTable(builder);
     final driftImports = DriftImports(builder);
 
     for (final column in resolvedTable.columns) {
@@ -198,20 +226,7 @@ macro class GenerateTableClass
     // supports it, we should instead add an annotation serializing the table
     // structure from the declaration phase and then look everything up from
     // there.
-    final rowClassIdentifier =
-        // ignore: deprecated_member_use
-        await builder.resolveIdentifier(Uri.parse(rowClassUri), rowClassName);
-    final analyzer = TableAnalyzer(
-      macro: DriftTable(
-        sqlName: sqlName,
-        withoutRowId: withoutRowId,
-        strict: strict,
-      ),
-      rowClass: await builder.typeDeclarationOf(rowClassIdentifier)
-          as ClassDeclaration,
-      introspector: builder,
-    );
-    final resolvedTable = await analyzer.resolve();
+    final resolvedTable = await resolveTable(builder);
 
     final methods = await builder.methodsOf(clazz);
     await _createColumnsList(
@@ -232,5 +247,82 @@ macro class GenerateTableClass
       for (final column in table.columns) ...[column.nameInDart, ','],
       '];',
     ]));
+  }
+}
+
+macro class GenerateCompanion extends _AssociatedTableClass
+    implements ClassDeclarationsMacro {
+  const GenerateCompanion({
+    required super.sqlName,
+    required super.withoutRowId,
+    required super.strict,
+    required super.rowClassUri,
+    required super.rowClassName,
+  });
+
+  @override
+  Future<void> buildDeclarationsForClass(
+      ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
+    final table = await resolveTable(builder);
+    final imports = DriftImports(builder);
+
+    for (final column in table.columns) {
+      // Declare Value<> field for each column.
+      builder.declareInType(
+          await imports.buildCode(DeclarationCode.fromParts, (b) async {
+        b.part('final ');
+        await b.driftImport('Value');
+        b.part('<');
+        await b.dartType(column.sqlType);
+        b.line('> ${column.nameInDart};');
+      }));
+    }
+
+    // Add default constructor
+    builder.declareInType(
+        await imports.buildCode(DeclarationCode.fromParts, (b) async {
+      b.part('const ${clazz.identifier.name}({');
+      for (final column in table.columns) {
+        b.part('this.${column.nameInDart} = const ');
+        await b.driftImport('Value');
+        b.line('.absent(),');
+      }
+      b.line('});');
+    }));
+
+    // Add .insert constructor for which only fields required for inserts are
+    // required in Dart.
+    builder.declareInType(
+        await imports.buildCode(DeclarationCode.fromParts, (b) async {
+      final requiredFields = <String>[];
+
+      b.part('${clazz.identifier.name}.insert({');
+      for (final column in table.columns) {
+        if (table.isColumnRequiredForInsert(column)) {
+          b.part('required ');
+          await b.dartType(column.sqlType);
+          b.line(' ${column.nameInDart},');
+          requiredFields.add(column.nameInDart);
+        } else {
+          b.part('this.${column.nameInDart} = const ');
+          await b.driftImport('Value');
+          b.line('.absent(),');
+        }
+      }
+      b.line('})');
+
+      if (requiredFields.isNotEmpty) {
+        b.part(': ');
+        for (final (index, field) in requiredFields.indexed) {
+          if (index != 0) b.part(', ');
+
+          b.part('$field = ');
+          await b.driftImport('Value');
+          b.line('($field)');
+        }
+      }
+
+      b.line(';');
+    }));
   }
 }
