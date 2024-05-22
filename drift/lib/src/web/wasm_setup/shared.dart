@@ -120,6 +120,19 @@ Future<bool> checkIndexedDbExists(String databaseName) async {
   try {
     final idb = globalContext['indexedDB'] as IDBFactory;
 
+    // Instead of the open+abort hack below, see if we can use a newer web API
+    // listing databases instead.
+    if (idb.has('databases')) {
+      final databases = await idb.databases().toDart;
+      for (final entry in databases.toDart) {
+        if (entry.name == databaseName) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     final openRequest = idb.open(databaseName, 1);
     openRequest.onupgradeneeded = (IDBVersionChangeEvent event) {
       // If there's an upgrade, we're going from 0 to 1 - the database doesn't
@@ -131,6 +144,13 @@ Future<bool> checkIndexedDbExists(String databaseName) async {
 
     indexedDbExists ??= true;
     database.close();
+
+    if (indexedDbExists == false) {
+      // We've just created the database in onUpgradeNeeded. We tried to abort
+      // that, but it looks like Safari does the worst possible thing then and
+      // keeps an empty database with an initialized version around.
+      await idb.deleteDatabase(databaseName).complete();
+    }
   } catch (_) {
     // May throw due to us aborting in the upgrade callback.
   }
