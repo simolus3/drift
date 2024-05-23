@@ -119,11 +119,15 @@ void main() {
 
     test('hexadecimal', () {
       checkLiteral('0x123', NumericToken(defaultSpan, hexDigits: '123'), 0x123);
+      checkLiteral(
+          '0x12_34', NumericToken(defaultSpan, hexDigits: '1234'), 0x1234);
     });
 
     test('integer without exponent', () {
       checkLiteral(
           '42', NumericToken(defaultSpan, digitsBeforeDecimal: '42'), 42);
+      checkLiteral(
+          '4_2', NumericToken(defaultSpan, digitsBeforeDecimal: '42'), 42);
     });
 
     test('integer, positive exponent', () {
@@ -138,6 +142,10 @@ void main() {
           '42E-1',
           NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -1),
           4.2);
+      checkLiteral(
+          '42E-1_0',
+          NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -10),
+          4.2e-9);
     });
 
     test('decimal', () {
@@ -150,6 +158,17 @@ void main() {
           hasDecimalPoint: true,
         ),
         4.2,
+      );
+
+      checkLiteral(
+        '4_3.2_1',
+        NumericToken(
+          defaultSpan,
+          digitsBeforeDecimal: '43',
+          digitsAfterDecimal: '21',
+          hasDecimalPoint: true,
+        ),
+        43.21,
       );
     });
 

@@ -27,6 +27,7 @@ class _Json1Functions implements FunctionHandler {
     'json_set',
     'json_object',
     'json_patch',
+    'json_pretty',
     'json_remove',
     'json_quote',
     'json_group_array',
@@ -91,7 +92,16 @@ class _Json1Functions implements FunctionHandler {
   }
 
   @override
-  void reportErrors(SqlInvocation call, AnalysisContext context) {}
+  void reportErrors(SqlInvocation call, AnalysisContext context) {
+    if (context.engineOptions.version < SqliteVersion.v3_46 &&
+        call.name.toLowerCase() == 'json_pretty') {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
+        message: 'json_pretty requires sqlite 3.46.0 or later.',
+        relevantNode: call.nameToken ?? call,
+      ));
+    }
+  }
 }
 
 final _jsonFunctionResultSet = CustomResultSet([

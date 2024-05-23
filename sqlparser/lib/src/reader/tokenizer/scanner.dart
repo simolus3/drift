@@ -298,6 +298,27 @@ class Scanner {
   void _numeric(int firstChar) {
     // https://www.sqlite.org/syntax/numeric-literal.html
 
+    /// Recognizes either a digit or a underscore followed by a digit.
+    int? digitCode(bool Function(int) isDigit) {
+      if (_isAtEnd) {
+        return null;
+      }
+
+      if (isDigit(_peek())) {
+        // Digit without an underscore separator
+        return _nextChar();
+      }
+
+      if (_peek() == $underscore &&
+          _currentOffset < _charCodes.length - 1 &&
+          isDigit(_charCodes[_currentOffset + 1])) {
+        _nextChar(); // the underscore
+        return _nextChar(); // the digit
+      }
+
+      return null;
+    }
+
     // We basically have three cases: hexadecimal numbers (starting with 0x),
     // numbers starting with a decimal dot and numbers starting with a digit.
     if (firstChar == $0) {
@@ -305,9 +326,12 @@ class Scanner {
         _nextChar(); // consume the x
         final hexDigitsBuffer = StringBuffer();
         // advance hexadecimal digits
-        while (!_isAtEnd && isHexDigit(_peek())) {
-          hexDigitsBuffer.writeCharCode(_nextChar());
+        int? digit = digitCode(isHexDigit);
+        while (digit != null) {
+          hexDigitsBuffer.writeCharCode(digit);
+          digit = digitCode(isHexDigit);
         }
+
         tokens.add(
             NumericToken(_currentSpan, hexDigits: hexDigitsBuffer.toString()));
         return;
@@ -316,8 +340,10 @@ class Scanner {
 
     String consumeDigits() {
       final buffer = StringBuffer();
-      while (!_isAtEnd && isDigit(_peek())) {
-        buffer.writeCharCode(_nextChar());
+      int? digit = digitCode(isDigit);
+      while (digit != null) {
+        buffer.writeCharCode(digit);
+        digit = digitCode(isDigit);
       }
 
       return buffer.toString();

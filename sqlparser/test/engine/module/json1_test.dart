@@ -40,6 +40,7 @@ void main() {
       expect(findResult("json_quote('foo')"), resolvedString);
       expect(findResult('json_group_array()'), resolvedString);
       expect(findResult('json_group_object()'), resolvedString);
+      expect(findResult('json_pretty(?)'), resolvedString);
     });
 
     test('create binary json', () {
@@ -96,6 +97,17 @@ SELECT DISTINCT user.name
       analysisErrorWith(
         lexeme: 'jsonb',
         type: AnalysisErrorType.unknownFunction,
+      )
+    ]);
+  });
+
+  test('does not allow json_pretty before 3.46', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_45));
+    final result = engine.analyze('SELECT json_pretty(?);');
+    expect(result.errors, [
+      analysisErrorWith(
+        lexeme: 'json_pretty',
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
       )
     ]);
   });

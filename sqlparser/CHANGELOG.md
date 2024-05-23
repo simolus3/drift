@@ -1,3 +1,7 @@
+## 0.36.1
+
+- Add support for sqlite 3.46.0.
+
 ## 0.36.0
 
 - Add support for the geopoly module.

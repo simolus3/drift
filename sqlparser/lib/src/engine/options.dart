@@ -93,7 +93,11 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// can't provide analysis warnings when using recent sqlite3 features.
   static const SqliteVersion minimum = SqliteVersion.v3(34);
 
-  /// Version `3.55.0` has added support for a binary JSON format and introduces
+  /// Version `3.46.0` added `json_pretty` and allows underscore characters
+  /// between digits in numeric literals.
+  static const SqliteVersion v3_46 = SqliteVersion.v3(46);
+
+  /// Version `3.45.0` has added support for a binary JSON format and introduces
   /// `jsonb` variants of JSON functions.
   static const SqliteVersion v3_45 = SqliteVersion.v3(45);
 
@@ -126,7 +130,7 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = v3_45;
+  static const SqliteVersion current = v3_46;
 
   /// The major version of sqlite.
   ///
