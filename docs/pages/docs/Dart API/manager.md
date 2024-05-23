@@ -60,6 +60,12 @@ We can now use them in a query like this:
 In this example, had we not specified a custom name for the reference, the code generator would have named both filtersets `userRefs` for both references to the `User` table. This would have caused a conflict. By specifying a custom name, we can avoid this issue.
 
 
+### Name Clashes
+Drift auto-generates filters and orderings based on the names of your tables and fields. However, many times, there will be duplicates.  
+When this happens, you will see a warning message from the generator.  
+To fix this issue, use the `@ReferenceName()` annotation to specify what we should name the filter/orderings.
+
+
 ### Ordering
 
 You can also order the results of a query using the `orderBy` method. The syntax is similar to the `filter` method.
