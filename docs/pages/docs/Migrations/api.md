@@ -138,3 +138,21 @@ await m.alterTable(
   )
 )
 ```
+
+### Combining columns
+
+To add a column that should have a default value computed from multiple existing columns, you can also
+express that with the `TableMigration` API:
+
+```dart
+await m.alterTable(
+  TableMigration(
+    yourTable,
+    columnTransformer: {
+      yourTable.newColumn: Variable.withString('from previous row: ') +
+          yourTable.oldColumn1 +
+          yourTable.oldColumn2.upper()
+    },
+  )
+)
+```
