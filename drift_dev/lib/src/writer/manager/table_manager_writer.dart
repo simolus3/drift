@@ -88,9 +88,10 @@ class _TableManagerWriter {
           .length;
       if (fieldNameCount != 1) {
         print(
-            "The code generator encountered an issue while attempting to create filters/orderings for ${table.entityInfoName} table."
-            " The following filters/orderings were not created: ${relation.fieldName}."
-            " Use the @ReferenceName() annotation to resolve this issue.");
+            "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
+            " Filter and orderings for this field wont be generated."
+            " Use the @ReferenceName() annotation to resolve this issue."
+            " See https://drift.simonbinder.eu/docs/manager/#name-clashes for more information");
         return false;
       }
       return true;
