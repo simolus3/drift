@@ -88,13 +88,15 @@ jobs:
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart test --preset ci_unit_tests #-x background_isolate --coverage=coverage
-  #      - uses: actions/upload-artifact@v2
-  #        with:
-  #          name: moor-coverage-data
-  #          path: |
-  #            moor/coverage/
-  #            moor/.dart_tool/package_config.json
-  #          retention-days: 1
+        env:
+          DID_RUN_BUILD_RUNNER: "1"
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: moor-coverage-data
+#          path: |
+#            moor/coverage/
+#            moor/.dart_tool/package_config.json
+#          retention-days: 1
 
   drift_dev:
     runs-on: ubuntu-latest
@@ -236,6 +238,10 @@ jobs:
       - name: Test
         working-directory: examples/migrations_example
         run: dart test
+      - name: Test with older sqlite3
+        working-directory: examples/migrations_example
+        run: |
+          LD_LIBRARY_PATH=$(realpath drift/.dart_tool/sqlite3/minimum) dart test
       - name: Check that extracting schema still works
         working-directory: examples/migrations_example
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/

@@ -66,6 +66,12 @@ On Windows, you can [download 'Precompiled Binaries for Windows'](https://www.sq
 and extract `sqlite3.dll` into a folder that's in your `PATH`
 environment variable. Then restart your device to ensure that
 all apps will run with this `PATH` change.
+
+As `sqlite3_flutter_libs` bundles the latest sqlite3 version with your app,
+using a recent sqlite3 version is recommended to avoid differences in how tests
+behave from your app.
+The minimum sqlite version tested with drift is 3.29.0, but many drift features
+like `returning` or generated columns will require more recent versions.
 {% endblock %}
 
 ## Writing tests
