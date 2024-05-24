@@ -182,13 +182,6 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
     );
   }
 
-  WithDefault copyWithCompanion(WithDefaultsCompanion data) {
-    return WithDefault(
-      a: data.a.present ? data.a.value : this.a,
-      b: data.b.present ? data.b.value : this.b,
-    );
-  }
-
   factory WithDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -218,6 +211,13 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
         a: a.present ? a.value : this.a,
         b: b.present ? b.value : this.b,
       );
+  WithDefault copyWithCompanion(WithDefaultsCompanion data) {
+    return WithDefault(
+      a: data.a.present ? data.a.value : this.a,
+      b: data.b.present ? data.b.value : this.b,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('WithDefault(')
@@ -399,14 +399,6 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     );
   }
 
-  WithConstraint copyWithCompanion(WithConstraintsCompanion data) {
-    return WithConstraint(
-      a: data.a.present ? data.a.value : this.a,
-      b: data.b.present ? data.b.value : this.b,
-      c: data.c.present ? data.c.value : this.c,
-    );
-  }
-
   factory WithConstraint.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -440,6 +432,14 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
         b: b ?? this.b,
         c: c.present ? c.value : this.c,
       );
+  WithConstraint copyWithCompanion(WithConstraintsCompanion data) {
+    return WithConstraint(
+      a: data.a.present ? data.a.value : this.a,
+      b: data.b.present ? data.b.value : this.b,
+      c: data.c.present ? data.c.value : this.c,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('WithConstraint(')
@@ -685,18 +685,6 @@ class Config extends DataClass implements Insertable<Config> {
     );
   }
 
-  Config copyWithCompanion(ConfigCompanion data) {
-    return Config(
-      configKey: data.configKey.present ? data.configKey.value : this.configKey,
-      configValue:
-          data.configValue.present ? data.configValue.value : this.configValue,
-      syncState: data.syncState.present ? data.syncState.value : this.syncState,
-      syncStateImplicit: data.syncStateImplicit.present
-          ? data.syncStateImplicit.value
-          : this.syncStateImplicit,
-    );
-  }
-
   factory Config.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -737,6 +725,18 @@ class Config extends DataClass implements Insertable<Config> {
             ? syncStateImplicit.value
             : this.syncStateImplicit,
       );
+  Config copyWithCompanion(ConfigCompanion data) {
+    return Config(
+      configKey: data.configKey.present ? data.configKey.value : this.configKey,
+      configValue:
+          data.configValue.present ? data.configValue.value : this.configValue,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      syncStateImplicit: data.syncStateImplicit.present
+          ? data.syncStateImplicit.value
+          : this.syncStateImplicit,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Config(')
@@ -987,16 +987,6 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     );
   }
 
-  MytableData copyWithCompanion(MytableCompanion data) {
-    return MytableData(
-      someid: data.someid.present ? data.someid.value : this.someid,
-      sometext: data.sometext.present ? data.sometext.value : this.sometext,
-      isInserting:
-          data.isInserting.present ? data.isInserting.value : this.isInserting,
-      somedate: data.somedate.present ? data.somedate.value : this.somedate,
-    );
-  }
-
   factory MytableData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1034,6 +1024,16 @@ class MytableData extends DataClass implements Insertable<MytableData> {
         isInserting: isInserting.present ? isInserting.value : this.isInserting,
         somedate: somedate.present ? somedate.value : this.somedate,
       );
+  MytableData copyWithCompanion(MytableCompanion data) {
+    return MytableData(
+      someid: data.someid.present ? data.someid.value : this.someid,
+      sometext: data.sometext.present ? data.sometext.value : this.sometext,
+      isInserting:
+          data.isInserting.present ? data.isInserting.value : this.isInserting,
+      somedate: data.somedate.present ? data.somedate.value : this.somedate,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('MytableData(')
@@ -1236,14 +1236,6 @@ class EMail extends DataClass implements Insertable<EMail> {
     );
   }
 
-  EMail copyWithCompanion(EmailCompanion data) {
-    return EMail(
-      sender: data.sender.present ? data.sender.value : this.sender,
-      title: data.title.present ? data.title.value : this.title,
-      body: data.body.present ? data.body.value : this.body,
-    );
-  }
-
   factory EMail.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1272,6 +1264,14 @@ class EMail extends DataClass implements Insertable<EMail> {
         title: title ?? this.title,
         body: body ?? this.body,
       );
+  EMail copyWithCompanion(EmailCompanion data) {
+    return EMail(
+      sender: data.sender.present ? data.sender.value : this.sender,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('EMail(')
@@ -1456,14 +1456,6 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
     );
   }
 
-  WeirdData copyWithCompanion(WeirdTableCompanion data) {
-    return WeirdData(
-      sqlClass: data.sqlClass.present ? data.sqlClass.value : this.sqlClass,
-      textColumn:
-          data.textColumn.present ? data.textColumn.value : this.textColumn,
-    );
-  }
-
   factory WeirdData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1490,6 +1482,14 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
         sqlClass: sqlClass ?? this.sqlClass,
         textColumn: textColumn ?? this.textColumn,
       );
+  WeirdData copyWithCompanion(WeirdTableCompanion data) {
+    return WeirdData(
+      sqlClass: data.sqlClass.present ? data.sqlClass.value : this.sqlClass,
+      textColumn:
+          data.textColumn.present ? data.textColumn.value : this.textColumn,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('WeirdData(')

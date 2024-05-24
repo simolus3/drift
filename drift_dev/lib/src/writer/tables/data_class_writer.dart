@@ -107,7 +107,6 @@ class DataClassWriter {
       if (scope.options.dataClassToCompanions &&
           scope.generationOptions.writeCompanions) {
         _writeToCompanion();
-        _writeCopyWithCompanion();
       }
     }
 
@@ -115,8 +114,14 @@ class DataClassWriter {
     _writeFromJson();
     _writeToJson();
 
-    // And a convenience method to copy data from this class.
+    // And convenience methods to copy data from this class.
     _writeCopyWith();
+    if (isInsertable &&
+        scope.options.dataClassToCompanions &&
+        scope.generationOptions.writeCompanions &&
+        !columns.any((column) => column.isGenerated)) {
+      _writeCopyWithCompanion();
+    }
 
     _writeToString();
     _writeHashCode();
@@ -268,8 +273,8 @@ class DataClassWriter {
       ..writeln('return ${table.nameOfRowClass}(');
 
     for (final column in columns) {
-      // Generated columns are not fields of companions.
-      if (column.isGenerated) continue;
+      // Generated columns do not appear in companions.
+      assert(!column.isGenerated);
       final name = column.nameInDart;
       _buffer
           .write('$name: data.$name.present ? data.$name.value : this.$name,');

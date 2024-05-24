@@ -136,15 +136,6 @@ class Category extends DataClass implements Insertable<Category> {
     );
   }
 
-  Category copyWithCompanion(CategoriesCompanion data) {
-    return Category(
-      id: data.id.present ? data.id.value : this.id,
-      description:
-          data.description.present ? data.description.value : this.description,
-      priority: data.priority.present ? data.priority.value : this.priority,
-    );
-  }
-
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -461,18 +452,6 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     );
   }
 
-  TodoEntry copyWithCompanion(TodosTableCompanion data) {
-    return TodoEntry(
-      id: data.id.present ? data.id.value : this.id,
-      title: data.title.present ? data.title.value : this.title,
-      content: data.content.present ? data.content.value : this.content,
-      targetDate:
-          data.targetDate.present ? data.targetDate.value : this.targetDate,
-      category: data.category.present ? data.category.value : this.category,
-      status: data.status.present ? data.status.value : this.status,
-    );
-  }
-
   factory TodoEntry.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -521,6 +500,18 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
         category: category.present ? category.value : this.category,
         status: status.present ? status.value : this.status,
       );
+  TodoEntry copyWithCompanion(TodosTableCompanion data) {
+    return TodoEntry(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      targetDate:
+          data.targetDate.present ? data.targetDate.value : this.targetDate,
+      category: data.category.present ? data.category.value : this.category,
+      status: data.status.present ? data.status.value : this.status,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TodoEntry(')
@@ -799,20 +790,6 @@ class User extends DataClass implements Insertable<User> {
     );
   }
 
-  User copyWithCompanion(UsersCompanion data) {
-    return User(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      isAwesome: data.isAwesome.present ? data.isAwesome.value : this.isAwesome,
-      profilePicture: data.profilePicture.present
-          ? data.profilePicture.value
-          : this.profilePicture,
-      creationTime: data.creationTime.present
-          ? data.creationTime.value
-          : this.creationTime,
-    );
-  }
-
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -854,6 +831,20 @@ class User extends DataClass implements Insertable<User> {
         profilePicture: profilePicture ?? this.profilePicture,
         creationTime: creationTime ?? this.creationTime,
       );
+  User copyWithCompanion(UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      isAwesome: data.isAwesome.present ? data.isAwesome.value : this.isAwesome,
+      profilePicture: data.profilePicture.present
+          ? data.profilePicture.value
+          : this.profilePicture,
+      creationTime: data.creationTime.present
+          ? data.creationTime.value
+          : this.creationTime,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')
@@ -1048,13 +1039,6 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
     );
   }
 
-  SharedTodo copyWithCompanion(SharedTodosCompanion data) {
-    return SharedTodo(
-      todo: data.todo.present ? data.todo.value : this.todo,
-      user: data.user.present ? data.user.value : this.user,
-    );
-  }
-
   factory SharedTodo.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1081,6 +1065,13 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
         todo: todo ?? this.todo,
         user: user ?? this.user,
       );
+  SharedTodo copyWithCompanion(SharedTodosCompanion data) {
+    return SharedTodo(
+      todo: data.todo.present ? data.todo.value : this.todo,
+      user: data.user.present ? data.user.value : this.user,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('SharedTodo(')
@@ -1435,12 +1426,6 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     );
   }
 
-  PureDefault copyWithCompanion(PureDefaultsCompanion data) {
-    return PureDefault(
-      txt: data.txt.present ? data.txt.value : this.txt,
-    );
-  }
-
   factory PureDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1467,6 +1452,12 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       PureDefault(
         txt: txt.present ? txt.value : this.txt,
       );
+  PureDefault copyWithCompanion(PureDefaultsCompanion data) {
+    return PureDefault(
+      txt: data.txt.present ? data.txt.value : this.txt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('PureDefault(')
@@ -1599,12 +1590,6 @@ class WithCustomTypeData extends DataClass
     );
   }
 
-  WithCustomTypeData copyWithCompanion(WithCustomTypeCompanion data) {
-    return WithCustomTypeData(
-      id: data.id.present ? data.id.value : this.id,
-    );
-  }
-
   factory WithCustomTypeData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1628,6 +1613,12 @@ class WithCustomTypeData extends DataClass
   WithCustomTypeData copyWith({UuidValue? id}) => WithCustomTypeData(
         id: id ?? this.id,
       );
+  WithCustomTypeData copyWithCompanion(WithCustomTypeCompanion data) {
+    return WithCustomTypeData(
+      id: data.id.present ? data.id.value : this.id,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('WithCustomTypeData(')
@@ -1971,24 +1962,6 @@ class TableWithEveryColumnTypeData extends DataClass
     );
   }
 
-  TableWithEveryColumnTypeData copyWithCompanion(
-      TableWithEveryColumnTypeCompanion data) {
-    return TableWithEveryColumnTypeData(
-      id: data.id.present ? data.id.value : this.id,
-      aBool: data.aBool.present ? data.aBool.value : this.aBool,
-      aDateTime: data.aDateTime.present ? data.aDateTime.value : this.aDateTime,
-      aText: data.aText.present ? data.aText.value : this.aText,
-      anInt: data.anInt.present ? data.anInt.value : this.anInt,
-      anInt64: data.anInt64.present ? data.anInt64.value : this.anInt64,
-      aReal: data.aReal.present ? data.aReal.value : this.aReal,
-      aBlob: data.aBlob.present ? data.aBlob.value : this.aBlob,
-      anIntEnum: data.anIntEnum.present ? data.anIntEnum.value : this.anIntEnum,
-      aTextWithConverter: data.aTextWithConverter.present
-          ? data.aTextWithConverter.value
-          : this.aTextWithConverter,
-    );
-  }
-
   factory TableWithEveryColumnTypeData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2062,6 +2035,24 @@ class TableWithEveryColumnTypeData extends DataClass
             ? aTextWithConverter.value
             : this.aTextWithConverter,
       );
+  TableWithEveryColumnTypeData copyWithCompanion(
+      TableWithEveryColumnTypeCompanion data) {
+    return TableWithEveryColumnTypeData(
+      id: data.id.present ? data.id.value : this.id,
+      aBool: data.aBool.present ? data.aBool.value : this.aBool,
+      aDateTime: data.aDateTime.present ? data.aDateTime.value : this.aDateTime,
+      aText: data.aText.present ? data.aText.value : this.aText,
+      anInt: data.anInt.present ? data.anInt.value : this.anInt,
+      anInt64: data.anInt64.present ? data.anInt64.value : this.anInt64,
+      aReal: data.aReal.present ? data.aReal.value : this.aReal,
+      aBlob: data.aBlob.present ? data.aBlob.value : this.aBlob,
+      anIntEnum: data.anIntEnum.present ? data.anIntEnum.value : this.anIntEnum,
+      aTextWithConverter: data.aTextWithConverter.present
+          ? data.aTextWithConverter.value
+          : this.aTextWithConverter,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TableWithEveryColumnTypeData(')
@@ -2326,13 +2317,6 @@ class DepartmentData extends DataClass implements Insertable<DepartmentData> {
     );
   }
 
-  DepartmentData copyWithCompanion(DepartmentCompanion data) {
-    return DepartmentData(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
   factory DepartmentData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2361,6 +2345,13 @@ class DepartmentData extends DataClass implements Insertable<DepartmentData> {
         id: id ?? this.id,
         name: name.present ? name.value : this.name,
       );
+  DepartmentData copyWithCompanion(DepartmentCompanion data) {
+    return DepartmentData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('DepartmentData(')
@@ -2535,15 +2526,6 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     );
   }
 
-  ProductData copyWithCompanion(ProductCompanion data) {
-    return ProductData(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      department:
-          data.department.present ? data.department.value : this.department,
-    );
-  }
-
   factory ProductData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2577,6 +2559,15 @@ class ProductData extends DataClass implements Insertable<ProductData> {
         name: name.present ? name.value : this.name,
         department: department.present ? department.value : this.department,
       );
+  ProductData copyWithCompanion(ProductCompanion data) {
+    return ProductData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      department:
+          data.department.present ? data.department.value : this.department,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ProductData(')
@@ -2740,13 +2731,6 @@ class StoreData extends DataClass implements Insertable<StoreData> {
     );
   }
 
-  StoreData copyWithCompanion(StoreCompanion data) {
-    return StoreData(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
   factory StoreData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2774,6 +2758,13 @@ class StoreData extends DataClass implements Insertable<StoreData> {
         id: id ?? this.id,
         name: name.present ? name.value : this.name,
       );
+  StoreData copyWithCompanion(StoreCompanion data) {
+    return StoreData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('StoreData(')
@@ -2965,15 +2956,6 @@ class ListingData extends DataClass implements Insertable<ListingData> {
     );
   }
 
-  ListingData copyWithCompanion(ListingCompanion data) {
-    return ListingData(
-      id: data.id.present ? data.id.value : this.id,
-      product: data.product.present ? data.product.value : this.product,
-      store: data.store.present ? data.store.value : this.store,
-      price: data.price.present ? data.price.value : this.price,
-    );
-  }
-
   factory ListingData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -3011,6 +2993,15 @@ class ListingData extends DataClass implements Insertable<ListingData> {
         store: store.present ? store.value : this.store,
         price: price.present ? price.value : this.price,
       );
+  ListingData copyWithCompanion(ListingCompanion data) {
+    return ListingData(
+      id: data.id.present ? data.id.value : this.id,
+      product: data.product.present ? data.product.value : this.product,
+      store: data.store.present ? data.store.value : this.store,
+      price: data.price.present ? data.price.value : this.price,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ListingData(')

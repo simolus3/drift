@@ -85,13 +85,6 @@ class TodoCategory extends DataClass implements Insertable<TodoCategory> {
     );
   }
 
-  TodoCategory copyWithCompanion(TodoCategoriesCompanion data) {
-    return TodoCategory(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-    );
-  }
-
   factory TodoCategory.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -118,6 +111,13 @@ class TodoCategory extends DataClass implements Insertable<TodoCategory> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  TodoCategory copyWithCompanion(TodoCategoriesCompanion data) {
+    return TodoCategory(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TodoCategory(')
@@ -329,16 +329,6 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           ? const Value.absent()
           : Value(content),
       categoryId: Value(categoryId),
-    );
-  }
-
-  TodoItem copyWithCompanion(TodoItemsCompanion data) {
-    return TodoItem(
-      id: data.id.present ? data.id.value : this.id,
-      title: data.title.present ? data.title.value : this.title,
-      content: data.content.present ? data.content.value : this.content,
-      categoryId:
-          data.categoryId.present ? data.categoryId.value : this.categoryId,
     );
   }
 
