@@ -117,7 +117,6 @@ class DataClassWriter {
     // And convenience methods to copy data from this class.
     _writeCopyWith();
     if (isInsertable &&
-        scope.options.dataClassToCompanions &&
         scope.generationOptions.writeCompanions &&
         !columns.any((column) => column.isGenerated)) {
       _writeCopyWithCompanion();
