@@ -47,6 +47,11 @@ Future<void> _downloadAndCompile(String name, SqliteVersion version,
   }
 
   print('Downloading and compiling sqlite3 $name (${version.version})');
+  final targetDirectory = Directory(target);
+
+  if (!targetDirectory.existsSync()) {
+    targetDirectory.createSync(recursive: true);
+  }
 
   final temporaryDir =
       await Directory.systemTemp.createTemp('drift-compile-sqlite3');
@@ -91,13 +96,6 @@ Future<void> _downloadAndCompile(String name, SqliteVersion version,
       p.join(temporaryDirPath, 'sqlite-autoconf-${version.version}');
   await _run('./configure', workingDirectory: sqlitePath);
   await _run('make -j', workingDirectory: sqlitePath);
-
-  final targetDirectory = Directory(target);
-
-  if (!targetDirectory.existsSync()) {
-    // Not using recursive since .dart_tool should really exist already.
-    targetDirectory.createSync();
-  }
 
   await File(p.join(sqlitePath, 'sqlite3')).copy(p.join(target, 'sqlite3'));
 
