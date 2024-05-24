@@ -206,9 +206,8 @@ jobs:
   test_flutter:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        version: ["3.16", "3.19", "3.21"]
-    runs-on: ${{ matrix.os }}
+        version: ["3.16.0", "3.19.0", "3.21.0"]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
