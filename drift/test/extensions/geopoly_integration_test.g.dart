@@ -123,6 +123,13 @@ class GeopolyTestData extends DataClass implements Insertable<GeopolyTestData> {
         shape: shape.present ? shape.value : this.shape,
         a: a.present ? a.value : this.a,
       );
+  GeopolyTestData copyWithCompanion(GeopolyTestCompanion data) {
+    return GeopolyTestData(
+      shape: data.shape.present ? data.shape.value : this.shape,
+      a: data.a.present ? data.a.value : this.a,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('GeopolyTestData(')

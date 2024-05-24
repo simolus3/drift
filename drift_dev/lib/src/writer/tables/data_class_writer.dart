@@ -114,8 +114,13 @@ class DataClassWriter {
     _writeFromJson();
     _writeToJson();
 
-    // And a convenience method to copy data from this class.
+    // And convenience methods to copy data from this class.
     _writeCopyWith();
+    if (isInsertable &&
+        scope.generationOptions.writeCompanions &&
+        !columns.any((column) => column.isGenerated)) {
+      _writeCopyWithCompanion();
+    }
 
     _writeToString();
     _writeHashCode();
@@ -254,6 +259,29 @@ class DataClassWriter {
     }
 
     _buffer.write(');');
+  }
+
+  void _writeCopyWithCompanion() {
+    final asTable = table as DriftTable;
+    final companionType = _emitter.writer.companionType(asTable);
+
+    _emitter
+      ..write('${table.nameOfRowClass} copyWithCompanion(')
+      ..writeDart(companionType)
+      ..writeln(' data) {')
+      ..writeln('return ${table.nameOfRowClass}(');
+
+    for (final column in columns) {
+      // Generated columns do not appear in companions.
+      assert(!column.isGenerated);
+      final name = column.nameInDart;
+      _buffer
+          .write('$name: data.$name.present ? data.$name.value : this.$name,');
+    }
+
+    _buffer
+      ..writeln(');')
+      ..writeln('}');
   }
 
   void _writeToCompanion() {

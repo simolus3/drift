@@ -175,6 +175,28 @@ mixin PostsToColumns implements i1.Insertable<i2.Post> {
     }, writer.dartOutputs, writer.writer);
   });
 
+  test('generates copyWithCompanion', () async {
+    final result = await emulateDriftBuild(modularBuild: true, inputs: {
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Items extends Table {
+  TextColumn get name => text()();
+}
+''',
+    });
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+  Item copyWithCompanion(i1.ItemsCompanion data) {
+    return Item(
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+''')),
+    }, result.dartOutputs, result.writer);
+  });
+
   test('generates correct fromJson for nullable converters', () async {
     // Regression test for https://github.com/simolus3/drift/issues/2281
     final result = await emulateDriftBuild(

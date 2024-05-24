@@ -113,6 +113,13 @@ class _SomeTableData extends DataClass implements Insertable<_SomeTableData> {
         id: id ?? this.id,
         name: name.present ? name.value : this.name,
       );
+  _SomeTableData copyWithCompanion(_SomeTableCompanion data) {
+    return _SomeTableData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('_SomeTableData(')
