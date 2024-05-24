@@ -89,6 +89,8 @@ jobs:
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart test --preset ci_unit_tests #-x background_isolate --coverage=coverage
+        env:
+          DID_RUN_BUILD_RUNNER: "1"
 #      - uses: actions/upload-artifact@v2
 #        with:
 #          name: moor-coverage-data
