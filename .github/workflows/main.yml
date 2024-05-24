@@ -90,13 +90,13 @@ jobs:
       - run: dart test --preset ci_unit_tests #-x background_isolate --coverage=coverage
         env:
           DID_RUN_BUILD_RUNNER: "1"
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: moor-coverage-data
-#          path: |
-#            moor/coverage/
-#            moor/.dart_tool/package_config.json
-#          retention-days: 1
+  #      - uses: actions/upload-artifact@v2
+  #        with:
+  #          name: moor-coverage-data
+  #          path: |
+  #            moor/coverage/
+  #            moor/.dart_tool/package_config.json
+  #          retention-days: 1
 
   drift_dev:
     runs-on: ubuntu-latest
@@ -213,6 +213,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:"
+          pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
       - name: Install dependencies in drift/example/app
         run: |
           cd examples/app
