@@ -4,31 +4,54 @@ import 'package:archive/archive_io.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart' as p;
 
-const _version = '3450000';
-const _year = '2024';
-const _url = 'https://www.sqlite.org/$_year/sqlite-autoconf-$_version.tar.gz';
+typedef SqliteVersion = ({String version, String year});
+
+const SqliteVersion latest = (version: '3460000', year: '2024');
+const SqliteVersion minimum = (version: '3290000', year: '2019');
 
 Future<void> main(List<String> args) async {
   if (args.contains('version')) {
-    print(_version);
+    print(latest.version);
     exit(0);
   }
 
+  await _downloadAndCompile('latest', latest, force: args.contains('--force'));
+  await _downloadAndCompile('minimum', minimum,
+      force: args.contains('--force'));
+}
+
+extension on SqliteVersion {
+  String get autoconfUrl =>
+      'https://www.sqlite.org/$year/sqlite-autoconf-$version.tar.gz';
+
+  String get windowsUrl =>
+      'https://www.sqlite.org/$year/sqlite-dll-win-x64-$version.zip';
+}
+
+Future<void> _downloadAndCompile(String name, SqliteVersion version,
+    {bool force = false}) async {
   final driftDirectory = p.dirname(p.dirname(Platform.script.toFilePath()));
-  final target = p.join(driftDirectory, '.dart_tool', 'sqlite3');
+  final target = p.join(driftDirectory, '.dart_tool', 'sqlite3', name);
   final versionFile = File(p.join(target, 'version'));
 
-  final needsDownload = args.contains('--force') ||
+  final needsDownload = force ||
       !versionFile.existsSync() ||
-      versionFile.readAsStringSync() != _version;
+      versionFile.readAsStringSync() != version.version;
 
   if (!needsDownload) {
-    print('Not doing anything as sqlite3 has already been downloaded. Use '
-        '--force to re-compile it.');
+    print(
+      'Not downloading sqlite3 $name as it has already been downloaded. Use '
+      '--force to re-compile it.',
+    );
     exit(0);
   }
 
-  print('Downloading and compiling sqlite3 for drift test');
+  print('Downloading and compiling sqlite3 $name (${version.version})');
+  final targetDirectory = Directory(target);
+
+  if (!targetDirectory.existsSync()) {
+    targetDirectory.createSync(recursive: true);
+  }
 
   final temporaryDir =
       await Directory.systemTemp.createTemp('drift-compile-sqlite3');
@@ -38,8 +61,7 @@ Future<void> main(List<String> args) async {
   // installed and all those tools activated in the current shell.
   // Much easier to just download precompiled builds.
   if (Platform.isWindows) {
-    const windowsUri =
-        'https://www.sqlite.org/$_year/sqlite-dll-win-x64-$_version.zip';
+    final windowsUri = version.windowsUrl;
     final sqlite3Zip = p.join(temporaryDirPath, 'sqlite3.zip');
     final client = Client();
     final response = await client.send(Request('GET', Uri.parse(windowsUri)));
@@ -62,24 +84,18 @@ Future<void> main(List<String> args) async {
       }
     }
 
-    await File(p.join(target, 'version')).writeAsString(_version);
+    await File(p.join(target, 'version')).writeAsString(version.version);
     exit(0);
   }
 
-  await _run('curl $_url --output sqlite.tar.gz',
+  await _run('curl ${version.autoconfUrl} --output sqlite.tar.gz',
       workingDirectory: temporaryDirPath);
   await _run('tar zxvf sqlite.tar.gz', workingDirectory: temporaryDirPath);
 
-  final sqlitePath = p.join(temporaryDirPath, 'sqlite-autoconf-$_version');
+  final sqlitePath =
+      p.join(temporaryDirPath, 'sqlite-autoconf-${version.version}');
   await _run('./configure', workingDirectory: sqlitePath);
   await _run('make -j', workingDirectory: sqlitePath);
-
-  final targetDirectory = Directory(target);
-
-  if (!targetDirectory.existsSync()) {
-    // Not using recursive since .dart_tool should really exist already.
-    targetDirectory.createSync();
-  }
 
   await File(p.join(sqlitePath, 'sqlite3')).copy(p.join(target, 'sqlite3'));
 
@@ -91,7 +107,7 @@ Future<void> main(List<String> args) async {
         .copy(p.join(target, 'libsqlite3.dylib'));
   }
 
-  await File(p.join(target, 'version')).writeAsString(_version);
+  await File(p.join(target, 'version')).writeAsString(version.version);
 }
 
 Future<void> _run(String command, {String? workingDirectory}) async {
