@@ -210,6 +210,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Test connection
+        run: curl "https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json"
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:

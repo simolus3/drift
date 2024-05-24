@@ -21,3 +21,6 @@ docs/**/*.g.dart
 drift/extension/devtools/build
 **/pubspec_overrides.yaml
 **.history/
+
+# FVM Version Cache
+.fvm/
