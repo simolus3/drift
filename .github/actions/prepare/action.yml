@@ -16,13 +16,13 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: sqlite3
-        path: /tmp/sqlite/out/
+        path: drift/.dart_tool/sqlite3/
     - name: Use downloaded sqlite3
       shell: bash
       run: |
-        chmod a+x /tmp/sqlite/out/sqlite3
-        echo "/tmp/sqlite/out" >> $GITHUB_PATH
-        echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+        chmod a+x drift/.dart_tool/sqlite3/latest/sqlite3
+        echo $(realpath drift/.dart_tool/sqlite3/latest) >> $GITHUB_PATH
+        echo "LD_LIBRARY_PATH=$(realpath drift/.dart_tool/sqlite3/latest)" >> $GITHUB_ENV
     - name: Check sqlite3 version
       run: sqlite3 --version
       shell: bash
