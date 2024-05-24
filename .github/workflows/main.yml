@@ -204,19 +204,12 @@ jobs:
           dart pub upgrade
           dart test
   test_flutter:
-    strategy:
-      matrix:
-        version:
-          - 3.19.0
-          - 3.22.0
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ matrix.version }}
-          channel: stable
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:"
       - name: Install dependencies in drift/example/app
