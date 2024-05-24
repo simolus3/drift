@@ -105,6 +105,24 @@ void main() {
     expect(entry.toCompanion(true), const PureDefaultsCompanion());
   });
 
+  test('data classes can be copied with changes given by companion', () {
+    const nameless = DepartmentData(id: 1);
+    expect(nameless.copyWithCompanion(DepartmentCompanion()),
+        const DepartmentData(id: 1));
+    expect(nameless.copyWithCompanion(DepartmentCompanion(id: Value(2))),
+        const DepartmentData(id: 2));
+    expect(nameless.copyWithCompanion(DepartmentCompanion(name: Value("a"))),
+        const DepartmentData(id: 1, name: "a"));
+
+    const named = DepartmentData(id: 2, name: "b");
+    expect(named.copyWithCompanion(DepartmentCompanion()),
+        const DepartmentData(id: 2, name: "b"));
+    expect(named.copyWithCompanion(DepartmentCompanion(name: Value("c"))),
+        const DepartmentData(id: 2, name: "c"));
+    expect(named.copyWithCompanion(DepartmentCompanion(name: Value(null))),
+        const DepartmentData(id: 2));
+  });
+
   test('utilities to wrap nullable values', () {
     expect(
         // ignore: prefer_const_constructors, deprecated_member_use_from_same_package
