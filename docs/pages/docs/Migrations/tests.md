@@ -21,6 +21,9 @@ Drift's migration tooling consists of the following steps:
 
 This page describes steps 2 and 3. It assumes that you're already following step 1 by
 [exporting your schema]({{ 'exports.md' | pageUrl }}) when it changes.
+Also consider the [general page]({{ '../testing.md' | pageUrl }}) on writing unit tests with drift.
+In particular, you may have to manually install `sqlite3` on your system as `sqlite3_flutter_libs` does
+not apply to unit tests.
 
 ## Writing tests
 
