@@ -182,6 +182,13 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
     );
   }
 
+  WithDefault copyWithCompanion(WithDefaultsCompanion data) {
+    return WithDefault(
+      a: data.a.present ? data.a.value : this.a,
+      b: data.b.present ? data.b.value : this.b,
+    );
+  }
+
   factory WithDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -389,6 +396,14 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       a: a == null && nullToAbsent ? const Value.absent() : Value(a),
       b: Value(b),
       c: c == null && nullToAbsent ? const Value.absent() : Value(c),
+    );
+  }
+
+  WithConstraint copyWithCompanion(WithConstraintsCompanion data) {
+    return WithConstraint(
+      a: data.a.present ? data.a.value : this.a,
+      b: data.b.present ? data.b.value : this.b,
+      c: data.c.present ? data.c.value : this.c,
     );
   }
 
@@ -667,6 +682,18 @@ class Config extends DataClass implements Insertable<Config> {
       syncStateImplicit: syncStateImplicit == null && nullToAbsent
           ? const Value.absent()
           : Value(syncStateImplicit),
+    );
+  }
+
+  Config copyWithCompanion(ConfigCompanion data) {
+    return Config(
+      configKey: data.configKey.present ? data.configKey.value : this.configKey,
+      configValue:
+          data.configValue.present ? data.configValue.value : this.configValue,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      syncStateImplicit: data.syncStateImplicit.present
+          ? data.syncStateImplicit.value
+          : this.syncStateImplicit,
     );
   }
 
@@ -960,6 +987,16 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     );
   }
 
+  MytableData copyWithCompanion(MytableCompanion data) {
+    return MytableData(
+      someid: data.someid.present ? data.someid.value : this.someid,
+      sometext: data.sometext.present ? data.sometext.value : this.sometext,
+      isInserting:
+          data.isInserting.present ? data.isInserting.value : this.isInserting,
+      somedate: data.somedate.present ? data.somedate.value : this.somedate,
+    );
+  }
+
   factory MytableData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1199,6 +1236,14 @@ class EMail extends DataClass implements Insertable<EMail> {
     );
   }
 
+  EMail copyWithCompanion(EmailCompanion data) {
+    return EMail(
+      sender: data.sender.present ? data.sender.value : this.sender,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
+    );
+  }
+
   factory EMail.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1408,6 +1453,14 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
     return WeirdTableCompanion(
       sqlClass: Value(sqlClass),
       textColumn: Value(textColumn),
+    );
+  }
+
+  WeirdData copyWithCompanion(WeirdTableCompanion data) {
+    return WeirdData(
+      sqlClass: data.sqlClass.present ? data.sqlClass.value : this.sqlClass,
+      textColumn:
+          data.textColumn.present ? data.textColumn.value : this.textColumn,
     );
   }
 

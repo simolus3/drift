@@ -136,6 +136,15 @@ class Category extends DataClass implements Insertable<Category> {
     );
   }
 
+  Category copyWithCompanion(CategoriesCompanion data) {
+    return Category(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+      priority: data.priority.present ? data.priority.value : this.priority,
+    );
+  }
+
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -449,6 +458,18 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           : Value(category),
       status:
           status == null && nullToAbsent ? const Value.absent() : Value(status),
+    );
+  }
+
+  TodoEntry copyWithCompanion(TodosTableCompanion data) {
+    return TodoEntry(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      targetDate:
+          data.targetDate.present ? data.targetDate.value : this.targetDate,
+      category: data.category.present ? data.category.value : this.category,
+      status: data.status.present ? data.status.value : this.status,
     );
   }
 
@@ -778,6 +799,20 @@ class User extends DataClass implements Insertable<User> {
     );
   }
 
+  User copyWithCompanion(UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      isAwesome: data.isAwesome.present ? data.isAwesome.value : this.isAwesome,
+      profilePicture: data.profilePicture.present
+          ? data.profilePicture.value
+          : this.profilePicture,
+      creationTime: data.creationTime.present
+          ? data.creationTime.value
+          : this.creationTime,
+    );
+  }
+
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1010,6 +1045,13 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
     return SharedTodosCompanion(
       todo: Value(todo),
       user: Value(user),
+    );
+  }
+
+  SharedTodo copyWithCompanion(SharedTodosCompanion data) {
+    return SharedTodo(
+      todo: data.todo.present ? data.todo.value : this.todo,
+      user: data.user.present ? data.user.value : this.user,
     );
   }
 
@@ -1393,6 +1435,12 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     );
   }
 
+  PureDefault copyWithCompanion(PureDefaultsCompanion data) {
+    return PureDefault(
+      txt: data.txt.present ? data.txt.value : this.txt,
+    );
+  }
+
   factory PureDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1548,6 +1596,12 @@ class WithCustomTypeData extends DataClass
   WithCustomTypeCompanion toCompanion(bool nullToAbsent) {
     return WithCustomTypeCompanion(
       id: Value(id),
+    );
+  }
+
+  WithCustomTypeData copyWithCompanion(WithCustomTypeCompanion data) {
+    return WithCustomTypeData(
+      id: data.id.present ? data.id.value : this.id,
     );
   }
 
@@ -1917,6 +1971,24 @@ class TableWithEveryColumnTypeData extends DataClass
     );
   }
 
+  TableWithEveryColumnTypeData copyWithCompanion(
+      TableWithEveryColumnTypeCompanion data) {
+    return TableWithEveryColumnTypeData(
+      id: data.id.present ? data.id.value : this.id,
+      aBool: data.aBool.present ? data.aBool.value : this.aBool,
+      aDateTime: data.aDateTime.present ? data.aDateTime.value : this.aDateTime,
+      aText: data.aText.present ? data.aText.value : this.aText,
+      anInt: data.anInt.present ? data.anInt.value : this.anInt,
+      anInt64: data.anInt64.present ? data.anInt64.value : this.anInt64,
+      aReal: data.aReal.present ? data.aReal.value : this.aReal,
+      aBlob: data.aBlob.present ? data.aBlob.value : this.aBlob,
+      anIntEnum: data.anIntEnum.present ? data.anIntEnum.value : this.anIntEnum,
+      aTextWithConverter: data.aTextWithConverter.present
+          ? data.aTextWithConverter.value
+          : this.aTextWithConverter,
+    );
+  }
+
   factory TableWithEveryColumnTypeData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2254,6 +2326,13 @@ class DepartmentData extends DataClass implements Insertable<DepartmentData> {
     );
   }
 
+  DepartmentData copyWithCompanion(DepartmentCompanion data) {
+    return DepartmentData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   factory DepartmentData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2456,6 +2535,15 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     );
   }
 
+  ProductData copyWithCompanion(ProductCompanion data) {
+    return ProductData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      department:
+          data.department.present ? data.department.value : this.department,
+    );
+  }
+
   factory ProductData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -2649,6 +2737,13 @@ class StoreData extends DataClass implements Insertable<StoreData> {
     return StoreCompanion(
       id: Value(id),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+    );
+  }
+
+  StoreData copyWithCompanion(StoreCompanion data) {
+    return StoreData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
     );
   }
 
@@ -2867,6 +2962,15 @@ class ListingData extends DataClass implements Insertable<ListingData> {
           store == null && nullToAbsent ? const Value.absent() : Value(store),
       price:
           price == null && nullToAbsent ? const Value.absent() : Value(price),
+    );
+  }
+
+  ListingData copyWithCompanion(ListingCompanion data) {
+    return ListingData(
+      id: data.id.present ? data.id.value : this.id,
+      product: data.product.present ? data.product.value : this.product,
+      store: data.store.present ? data.store.value : this.store,
+      price: data.price.present ? data.price.value : this.price,
     );
   }
 

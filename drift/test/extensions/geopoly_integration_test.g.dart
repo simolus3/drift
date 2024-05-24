@@ -94,6 +94,13 @@ class GeopolyTestData extends DataClass implements Insertable<GeopolyTestData> {
     );
   }
 
+  GeopolyTestData copyWithCompanion(GeopolyTestCompanion data) {
+    return GeopolyTestData(
+      shape: data.shape.present ? data.shape.value : this.shape,
+      a: data.a.present ? data.a.value : this.a,
+    );
+  }
+
   factory GeopolyTestData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
