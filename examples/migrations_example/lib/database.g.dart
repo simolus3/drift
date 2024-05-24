@@ -884,7 +884,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
-  _$DatabaseManager get managers => _$DatabaseManager(this);
+  $DatabaseManager get managers => $DatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
   late final Groups groups = Groups(this);
   late final Notes notes = Notes(this);
@@ -1279,9 +1279,9 @@ class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$DatabaseManager {
+class $DatabaseManager {
   final _$Database _db;
-  _$DatabaseManager(this._db);
+  $DatabaseManager(this._db);
   $$UsersTableTableManager get users =>
       $$UsersTableTableManager(_db, _db.users);
   $GroupsTableManager get groups => $GroupsTableManager(_db, _db.groups);

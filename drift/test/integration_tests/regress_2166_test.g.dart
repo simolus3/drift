@@ -184,7 +184,7 @@ class _SomeTableCompanion extends UpdateCompanion<_SomeTableData> {
 
 abstract class _$_SomeDb extends GeneratedDatabase {
   _$_SomeDb(QueryExecutor e) : super(e);
-  _$_SomeDbManager get managers => _$_SomeDbManager(this);
+  $_SomeDbManager get managers => $_SomeDbManager(this);
   late final $_SomeTableTable someTable = $_SomeTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -280,9 +280,9 @@ class $$_SomeTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$_SomeDbManager {
+class $_SomeDbManager {
   final _$_SomeDb _db;
-  _$_SomeDbManager(this._db);
+  $_SomeDbManager(this._db);
   $$_SomeTableTableTableManager get someTable =>
       $$_SomeTableTableTableManager(_db, _db.someTable);
 }
