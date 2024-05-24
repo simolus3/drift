@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - '**' # we just don't want this to run redundantly on tags
+      - "**" # we just don't want this to run redundantly on tags
   pull_request:
 
 env:
@@ -38,7 +38,6 @@ jobs:
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
       - run: dart test
-
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v2
@@ -89,13 +88,13 @@ jobs:
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart test --preset ci_unit_tests #-x background_isolate --coverage=coverage
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: moor-coverage-data
-#          path: |
-#            moor/coverage/
-#            moor/.dart_tool/package_config.json
-#          retention-days: 1
+  #      - uses: actions/upload-artifact@v2
+  #        with:
+  #          name: moor-coverage-data
+  #          path: |
+  #            moor/coverage/
+  #            moor/.dart_tool/package_config.json
+  #          retention-days: 1
 
   drift_dev:
     runs-on: ubuntu-latest
@@ -105,19 +104,19 @@ jobs:
       run:
         working-directory: drift_dev
     steps:
-    # setup
-    - uses: actions/checkout@v4
-    - uses: ./.github/actions/prepare
-      with:
+      # setup
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
-    - run: melos bootstrap --scope drift_dev
-      working-directory: .
-    # analysis
-    - run: dart format -o none --set-exit-if-changed .
-      name: dartfmt
-    - run: dart analyze --fatal-infos --fatal-warnings
-    - run: dart test
-      name: test
+      - run: melos bootstrap --scope drift_dev
+        working-directory: .
+      # analysis
+      - run: dart format -o none --set-exit-if-changed .
+        name: dartfmt
+      - run: dart analyze --fatal-infos --fatal-warnings
+      - run: dart test
+        name: test
 
   sqlparser:
     runs-on: ubuntu-latest
@@ -138,13 +137,13 @@ jobs:
       - run: dart analyze --fatal-infos --fatal-warnings
       # tests and coverage
       - run: dart test #--coverage=coverage
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: sqlparser-coverage-data
-#          path: |
-#            sqlparser/coverage/
-#            sqlparser/.dart_tool/package_config.json
-#          retention-days: 1
+  #      - uses: actions/upload-artifact@v2
+  #        with:
+  #          name: sqlparser-coverage-data
+  #          path: |
+  #            sqlparser/coverage/
+  #            sqlparser/.dart_tool/package_config.json
+  #          retention-days: 1
 
   misc_integration_tests:
     name: "Integration tests"
@@ -204,7 +203,26 @@ jobs:
         run: |
           dart pub upgrade
           dart test
-
+  test_flutter:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        version: ["3.16", "3.19", "3.21"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.version }}
+          channel: stable
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:"
+      - name: Install dependencies in drift/example/app
+        run: |
+          cd examples/app
+          flutter pub get
+          flutter test
   migration_integration_tests:
     name: "Integration tests for migration tooling"
     needs: [setup]
@@ -228,7 +246,6 @@ jobs:
       - name: Check that extracting schema still works
         working-directory: examples/migrations_example
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/
-
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
 #    needs: [moor, sqlparser]
