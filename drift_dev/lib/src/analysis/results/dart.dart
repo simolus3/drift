@@ -285,7 +285,8 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
   void visitDartType(DartType type) {
     _builder
       ..addText('dynamic')
-      ..addText('/* unhandled ${type.getDisplayString()} */');
+      ..addText(
+          '/* unhandled ${type.getDisplayString(withNullability: true)} */'); // ignore: deprecated_member_use
   }
 
   @override
