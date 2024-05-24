@@ -1,6 +1,11 @@
 import 'package:drift/drift.dart';
-// ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/annotations.dart';
 import 'package:uuid/uuid.dart';
+
+// Generate mocks for drift
+@GenerateNiceMocks([MockSpec<TodoDb>()])
+// ignore: unused_import
+import 'todos.mocks.dart';
 
 part 'todos.g.dart';
 
