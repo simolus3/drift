@@ -213,8 +213,8 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
 
 abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
   _$_GeopolyTestDatabase(QueryExecutor e) : super(e);
-  _$_GeopolyTestDatabaseManager get managers =>
-      _$_GeopolyTestDatabaseManager(this);
+  $_GeopolyTestDatabaseManager get managers =>
+      $_GeopolyTestDatabaseManager(this);
   late final GeopolyTest geopolyTest = GeopolyTest(this);
   Selectable<double?> area(int var1) {
     return customSelect(
@@ -326,9 +326,9 @@ class $GeopolyTestOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$_GeopolyTestDatabaseManager {
+class $_GeopolyTestDatabaseManager {
   final _$_GeopolyTestDatabase _db;
-  _$_GeopolyTestDatabaseManager(this._db);
+  $_GeopolyTestDatabaseManager(this._db);
   $GeopolyTestTableManager get geopolyTest =>
       $GeopolyTestTableManager(_db, _db.geopolyTest);
 }

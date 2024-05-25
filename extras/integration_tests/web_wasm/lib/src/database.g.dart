@@ -178,7 +178,7 @@ class TestTableCompanion extends UpdateCompanion<TestTableData> {
 
 abstract class _$TestDatabase extends GeneratedDatabase {
   _$TestDatabase(QueryExecutor e) : super(e);
-  _$TestDatabaseManager get managers => _$TestDatabaseManager(this);
+  $TestDatabaseManager get managers => $TestDatabaseManager(this);
   late final $TestTableTable testTable = $TestTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -274,9 +274,9 @@ class $$TestTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$TestDatabaseManager {
+class $TestDatabaseManager {
   final _$TestDatabase _db;
-  _$TestDatabaseManager(this._db);
+  $TestDatabaseManager(this._db);
   $$TestTableTableTableManager get testTable =>
       $$TestTableTableTableManager(_db, _db.testTable);
 }

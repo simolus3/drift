@@ -692,7 +692,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
-  _$DatabaseManager get managers => _$DatabaseManager(this);
+  $DatabaseManager get managers => $DatabaseManager(this);
   late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable(this);
   late final $TodoItemsTable todoItems = $TodoItemsTable(this);
   late final $TodoCategoryItemCountView todoCategoryItemCount =
@@ -960,9 +960,9 @@ class $$TodoItemsTableOrderingComposer
   }
 }
 
-class _$DatabaseManager {
+class $DatabaseManager {
   final _$Database _db;
-  _$DatabaseManager(this._db);
+  $DatabaseManager(this._db);
   $$TodoCategoriesTableTableManager get todoCategories =>
       $$TodoCategoriesTableTableManager(_db, _db.todoCategories);
   $$TodoItemsTableTableManager get todoItems =>

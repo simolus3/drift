@@ -1710,7 +1710,7 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(e);
-  _$CustomTablesDbManager get managers => _$CustomTablesDbManager(this);
+  $CustomTablesDbManager get managers => $CustomTablesDbManager(this);
   late final NoIds noIds = NoIds(this);
   late final WithDefaults withDefaults = WithDefaults(this);
   late final WithConstraints withConstraints = WithConstraints(this);
@@ -2732,9 +2732,9 @@ class $WeirdTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$CustomTablesDbManager {
+class $CustomTablesDbManager {
   final _$CustomTablesDb _db;
-  _$CustomTablesDbManager(this._db);
+  $CustomTablesDbManager(this._db);
   $NoIdsTableManager get noIds => $NoIdsTableManager(_db, _db.noIds);
   $WithDefaultsTableManager get withDefaults =>
       $WithDefaultsTableManager(_db, _db.withDefaults);

@@ -144,8 +144,9 @@ ExistingRowClass? validateExistingClass(
     final missingGetters = <String>[];
 
     for (final column in columns) {
-      final matchingField = dartClass.classElement.augmented.lookUpGetter(
-          name: column.nameInDart, library: dartClass.classElement.library);
+      final matchingField = dartClass.classElement
+          // ignore: deprecated_member_use
+          .lookUpGetter(column.nameInDart, dartClass.classElement.library);
 
       if (matchingField == null) {
         missingGetters.add(column.nameInDart);
@@ -454,7 +455,8 @@ bool checkType(
 
   if (!typeSystem.isAssignableTo(expectedDartType, typeToCheck)) {
     error('Parameter must accept '
-        '${expectedDartType.getDisplayString()}');
+        // ignore: deprecated_member_use
+        '${expectedDartType.getDisplayString(withNullability: true)}');
     return false;
   }
 

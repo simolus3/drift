@@ -17,7 +17,8 @@ class _ManagerCodeTemplates {
   ///
   /// E.g. `AppDatabaseManager`
   String databaseManagerName(String dbClassName) {
-    return '${dbClassName}Manager';
+    // This class must be public, remove all _ prefixes
+    return '${dbClassName}Manager'.replaceAll(RegExp(r'^_+'), "");
   }
 
   /// How the database will represented in the generated code

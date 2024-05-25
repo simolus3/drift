@@ -3323,7 +3323,7 @@ class $TodoWithCategoryViewView
 
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(e);
-  _$TodoDbManager get managers => _$TodoDbManager(this);
+  $TodoDbManager get managers => $TodoDbManager(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $TodosTableTable todosTable = $TodosTableTable(this);
   late final $UsersTable users = $UsersTable(this);
@@ -4950,9 +4950,9 @@ class $$ListingTableOrderingComposer
   }
 }
 
-class _$TodoDbManager {
+class $TodoDbManager {
   final _$TodoDb _db;
-  _$TodoDbManager(this._db);
+  $TodoDbManager(this._db);
   $$CategoriesTableTableManager get categories =>
       $$CategoriesTableTableManager(_db, _db.categories);
   $$TodosTableTableTableManager get todosTable =>
