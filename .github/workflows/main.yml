@@ -216,10 +216,10 @@ jobs:
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
       - name: Install dependencies in drift/example/app
-        run: |
-          cd examples/app
-          flutter pub get
-          flutter test
+        working-directory: examples/app
+        run: flutter pub get
+      - run: flutter test
+        working-directory: examples/app
   migration_integration_tests:
     name: "Integration tests for migration tooling"
     needs: [setup]
