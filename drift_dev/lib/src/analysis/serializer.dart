@@ -248,6 +248,7 @@ class ElementSerializer {
         'column': _serializeColumnReference(constraint.otherColumn),
         'onUpdate': _serializeReferenceAction(constraint.onUpdate),
         'onDelete': _serializeReferenceAction(constraint.onDelete),
+        'initiallyDeferred': constraint.initiallyDeferred,
       };
     } else if (constraint is ColumnGeneratedAs) {
       return {'type': 'generated_as', ...constraint.toJson()};
@@ -287,6 +288,7 @@ class ElementSerializer {
         ],
         'onUpdate': _serializeReferenceAction(constraint.onUpdate),
         'onDelete': _serializeReferenceAction(constraint.onDelete),
+        'initiallyDeferred': constraint.initiallyDeferred,
       };
     } else {
       throw UnimplementedError('Unsupported table constraint: $constraint');
@@ -560,6 +562,7 @@ class ElementDeserializer {
                     (e) => e.nameInSql == constraint.referencedColumn),
                 constraint.onUpdate,
                 constraint.onDelete,
+                constraint.initiallyDeferred,
               );
             }
           }
@@ -853,12 +856,14 @@ class ElementDeserializer {
             json['column']['name'] as String,
             _readAction(json['onUpdate'] as String?),
             _readAction(json['onDelete'] as String?),
+            json['initiallyDeferred'] as bool,
           );
         } else {
           return ForeignKeyReference(
             await _readDriftColumnReference(json['column'] as Map),
             _readAction(json['onUpdate'] as String?),
             _readAction(json['onDelete'] as String?),
+            json['initiallyDeferred'] as bool,
           );
         }
       case 'generated_as':
@@ -898,6 +903,7 @@ class ElementDeserializer {
           ],
           onUpdate: _readAction(json['onUpdate'] as String?),
           onDelete: _readAction(json['onDelete'] as String?),
+          initiallyDeferred: json['initiallyDeferred'] as bool,
         );
       default:
         throw UnimplementedError('Unsupported constraint: $type');
@@ -921,7 +927,12 @@ class CouldNotDeserializeException implements Exception {
 class _PendingReferenceToOwnTable extends DriftColumnConstraint {
   final String referencedColumn;
   final ReferenceAction? onUpdate, onDelete;
+  final bool initiallyDeferred;
 
   _PendingReferenceToOwnTable(
-      this.referencedColumn, this.onUpdate, this.onDelete);
+    this.referencedColumn,
+    this.onUpdate,
+    this.onDelete,
+    this.initiallyDeferred,
+  );
 }

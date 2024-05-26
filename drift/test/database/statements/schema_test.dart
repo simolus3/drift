@@ -24,7 +24,8 @@ void main() {
           'CREATE TABLE IF NOT EXISTS "todos" '
           '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, '
           '"content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, '
-          '"category" INTEGER NULL REFERENCES categories (id), "status" TEXT NULL, '
+          '"category" INTEGER NULL REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED, '
+          '"status" TEXT NULL, '
           'UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
           []));
 

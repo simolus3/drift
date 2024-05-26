@@ -1,4 +1,4 @@
-## 0.36.1
+## 0.37.0-dev
 
 - Add support for sqlite 3.46.0.
 

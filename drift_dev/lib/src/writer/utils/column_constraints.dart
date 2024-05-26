@@ -63,6 +63,10 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
         constraint = '$constraint ON DELETE ${onDelete.description}';
       }
 
+      if (feature.initiallyDeferred) {
+        constraint = '$constraint DEFERRABLE INITIALLY DEFERRED';
+      }
+
       defaultConstraints.add(constraint);
     } else if (feature is DefaultConstraintsFromSchemaFile) {
       // TODO: Dialect-specific constraints in schema file

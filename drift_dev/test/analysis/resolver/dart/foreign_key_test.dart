@@ -141,4 +141,81 @@ class Foo extends Table {
         contains(isA<ForeignKeyReference>()
             .having((e) => e.otherColumn, 'otherColumn', id)));
   });
+
+  test('parses initially deferred mode', () async {
+    final state = await TestBackend.inTest(
+      {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Foo extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get parentId => integer().nullable().references(Foo, #id, initiallyDeferred: true)();
+  TextColumn get otherTest => text().references(Others, #test, initiallyDeferred: true)();
+}
+
+class Others extends Table {
+  TextColumn get test => text()();
+}
+
+@DriftDatabase(tables: [Foo])
+class Database {}
+'''
+      },
+    );
+
+    final file = await state.analyze('package:a/main.dart');
+    expect(file.allErrors, isEmpty);
+
+    final foo = file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
+        as DriftTable;
+
+    final column = foo.columns[1];
+    final constraint =
+        column.constraints.whereType<ForeignKeyReference>().first;
+
+    expect(constraint.otherColumn.nameInSql, 'id');
+    expect(constraint.initiallyDeferred, isTrue);
+
+    final otherColumn = foo.columns[2];
+    final otherConstraint =
+        otherColumn.constraints.whereType<ForeignKeyReference>().first;
+
+    expect(otherConstraint.otherColumn.nameInSql, 'test');
+    expect(otherConstraint.initiallyDeferred, isTrue);
+  });
+
+  test('parses reference from SQL', () async {
+    final state = await TestBackend.inTest(
+      {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Foo extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get otherTest => text().customConstraint('NOT NULL REFERENCES "others" (test) DEFERRABLE INITIALLY DEFERRED')();
+}
+
+class Others extends Table {
+  TextColumn get test => text()();
+}
+
+@DriftDatabase(tables: [Foo])
+class Database {}
+'''
+      },
+    );
+
+    final file = await state.analyze('package:a/main.dart');
+    expect(file.allErrors, isEmpty);
+
+    final foo = file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
+        as DriftTable;
+
+    final column = foo.columns[1];
+    final constraint =
+        column.constraints.whereType<ForeignKeyReference>().first;
+    expect(constraint.otherColumn.nameInSql, 'test');
+    expect(constraint.initiallyDeferred, isTrue);
+  });
 }

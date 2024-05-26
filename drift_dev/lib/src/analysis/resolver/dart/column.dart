@@ -3,7 +3,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
-import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
+import 'package:sqlparser/sqlparser.dart'
+    show InitialDeferrableMode, ReferenceAction;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../driver/error.dart';
@@ -176,6 +177,7 @@ class ColumnParser {
               columnNameNode.components.map((token) => token.lexeme).join('.');
 
           ReferenceAction? onUpdate, onDelete;
+          bool initiallyDeferred = false;
 
           ReferenceAction? parseAction(Expression expr) {
             if (expr is! PrefixedIdentifier) {
@@ -209,6 +211,16 @@ class ColumnParser {
               onUpdate = parseAction(value);
             } else if (name == 'onDelete') {
               onDelete = parseAction(value);
+            } else if (name == 'initiallyDeferred') {
+              if (value case BooleanLiteral(:final value)) {
+                initiallyDeferred = value;
+              } else {
+                _resolver.reportError(DriftAnalysisError.inDartAst(
+                  element,
+                  expr,
+                  'Must either be `true` or `false` literal.',
+                ));
+              }
             }
           }
 
@@ -217,8 +229,8 @@ class ColumnParser {
 
           if (referencedTable is ReferencesItself) {
             // "Foreign" key to a column in the same table.
-            foundConstraints
-                .add(ForeignKeyReference.unresolved(onUpdate, onDelete));
+            foundConstraints.add(ForeignKeyReference.unresolved(
+                onUpdate, onDelete, initiallyDeferred));
             referencesColumnInSameTable = columnName;
           } else if (referencedTable is ResolvedReferenceFound) {
             final driftElement = referencedTable.element;
@@ -235,8 +247,8 @@ class ColumnParser {
                   'column named `$columnName` in Dart.',
                 ));
               } else {
-                foundConstraints
-                    .add(ForeignKeyReference(column, onUpdate, onDelete));
+                foundConstraints.add(ForeignKeyReference(
+                    column, onUpdate, onDelete, initiallyDeferred));
               }
             } else {
               _resolver.reportError(
@@ -591,6 +603,8 @@ class ColumnParser {
               column,
               constraint.clause.onUpdate,
               constraint.clause.onDelete,
+              constraint.clause.effectiveDeferrableMode ==
+                  InitialDeferrableMode.deferred,
             ));
           }
         }

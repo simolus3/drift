@@ -312,8 +312,8 @@ class $TodosTableTable extends TodosTable
       'category', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED'));
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumnWithTypeConverter<TodoStatus?, String> status =

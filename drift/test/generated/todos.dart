@@ -29,7 +29,9 @@ class TodosTable extends Table with AutoIncrement {
   @JsonKey('target_date')
   DateTimeColumn get targetDate => dateTime().nullable().unique()();
   @ReferenceName("todos")
-  IntColumn get category => integer().references(Categories, #id).nullable()();
+  IntColumn get category => integer()
+      .references(Categories, #id, initiallyDeferred: true)
+      .nullable()();
 
   TextColumn get status => textEnum<TodoStatus>().nullable()();
 

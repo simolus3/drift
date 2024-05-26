@@ -2,6 +2,8 @@
 
 - Add the `enableMigrations` parameter to `WasmDatabase` to control whether drift
   migrations are enabled on that database.
+- Add `initiallyDeferred` option to `references()` column builder for foreign
+  key constraints.
 
 ## 2.18.0
 

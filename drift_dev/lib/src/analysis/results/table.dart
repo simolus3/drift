@@ -210,12 +210,15 @@ final class ForeignKeyTable extends DriftTableConstraint {
   final sql.ReferenceAction? onUpdate;
   final sql.ReferenceAction? onDelete;
 
+  final bool initiallyDeferred;
+
   ForeignKeyTable({
     required this.localColumns,
     required this.otherTable,
     required this.otherColumns,
     this.onUpdate,
     this.onDelete,
+    this.initiallyDeferred = false,
   });
 }
 

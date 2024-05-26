@@ -139,6 +139,8 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
                   targetColumn,
                   constraint.clause.onUpdate,
                   constraint.clause.onDelete,
+                  constraint.clause.effectiveDeferrableMode ==
+                      InitialDeferrableMode.deferred,
                 ));
               }
             }
@@ -219,6 +221,8 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
               otherColumns: foreignColumns,
               onUpdate: constraint.clause.onUpdate,
               onDelete: constraint.clause.onDelete,
+              initiallyDeferred: constraint.clause.effectiveDeferrableMode ==
+                  InitialDeferrableMode.deferred,
             ));
           }
         } else if (constraint is KeyClause) {

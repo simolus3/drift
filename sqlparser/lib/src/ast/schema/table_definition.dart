@@ -35,6 +35,10 @@ class ForeignKeyClause extends AstNode {
         ...columnNames,
         if (deferrable != null) deferrable!,
       ];
+
+  InitialDeferrableMode get effectiveDeferrableMode {
+    return deferrable?.effectiveInitialMode ?? InitialDeferrableMode.immediate;
+  }
 }
 
 enum InitialDeferrableMode {

@@ -240,14 +240,20 @@ class ForeignKeyReference extends DriftColumnConstraint {
   final ReferenceAction? onUpdate;
   final ReferenceAction? onDelete;
 
-  ForeignKeyReference(this.otherColumn, this.onUpdate, this.onDelete);
+  /// Whether this foreign key reference was marked as deferrable and initially
+  /// deferred, meaning that it is only checked at the end of transactions.
+  final bool initiallyDeferred;
 
-  ForeignKeyReference.unresolved(this.onUpdate, this.onDelete);
+  ForeignKeyReference(
+      this.otherColumn, this.onUpdate, this.onDelete, this.initiallyDeferred);
+
+  ForeignKeyReference.unresolved(
+      this.onUpdate, this.onDelete, this.initiallyDeferred);
 
   @override
   String toString() {
     return 'ForeignKeyReference(to $otherColumn, onUpdate = $onUpdate, '
-        'onDelete = $onDelete)';
+        'onDelete = $onDelete, initially deferred = $initiallyDeferred)';
   }
 }
 
