@@ -106,6 +106,13 @@ class Entry extends DataClass implements Insertable<Entry> {
         id: id ?? this.id,
         value: value ?? this.value,
       );
+  Entry copyWithCompanion(EntriesCompanion data) {
+    return Entry(
+      id: data.id.present ? data.id.value : this.id,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Entry(')

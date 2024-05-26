@@ -2,7 +2,7 @@ name: flutter_web_worker_example
 description: An absolute bare-bones flutter web app.
 
 environment:
-  sdk: ">=2.14.3"
+  sdk: "^3.3.0"
   flutter: ">=2.5.2"
 
 dependencies:

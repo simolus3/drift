@@ -106,6 +106,13 @@ class Note extends DataClass implements Insertable<Note> {
         id: id ?? this.id,
         content: content ?? this.content,
       );
+  Note copyWithCompanion(NotesCompanion data) {
+    return Note(
+      id: data.id.present ? data.id.value : this.id,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Note(')
