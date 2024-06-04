@@ -220,8 +220,10 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
 }
 
 extension on BigInt {
-  static final _bigIntMinValue64 = BigInt.from(-9223372036854775808);
-  static final _bigIntMaxValue64 = BigInt.from(9223372036854775807);
+  static const _isJs = identical(1.0, 1);
+  static const _allowedBitLength = _isJs ? 53 : 63;
+  static final _bigIntMinValue64 = BigInt.from(1 << _allowedBitLength);
+  static final _bigIntMaxValue64 = BigInt.from((1 << _allowedBitLength) - 1);
 
   int rangeCheckedToInt() {
     if (this < _bigIntMinValue64 || this > _bigIntMaxValue64) {
