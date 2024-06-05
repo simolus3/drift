@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:drift_testcases/tests.dart';
 import 'package:postgres/postgres.dart' as pg;

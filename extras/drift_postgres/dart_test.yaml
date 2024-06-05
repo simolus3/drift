@@ -1,0 +1,6 @@
+# Tests are sharing a database instance, so we can't run them concurrently
+concurrency: 1
+
+platforms:
+  - vm
+  - node

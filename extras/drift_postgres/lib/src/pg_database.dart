@@ -220,10 +220,14 @@ class _PgVersionDelegate extends DynamicVersionDelegate {
 }
 
 extension on BigInt {
-  static final _bigIntMinValue64 = BigInt.from(-9223372036854775808);
-  static final _bigIntMaxValue64 = BigInt.from(9223372036854775807);
+  static final _bigIntMinValue64 = BigInt.parse('-9223372036854775808');
+  static final _bigIntMaxValue64 = BigInt.parse('9223372036854775807');
 
   int rangeCheckedToInt() {
+    // We're using postgres which requires dart:io not available on the web, but
+    // still we can be explicit about requiring a 64bit int type here.
+    assert(!identical(0, 0.0));
+
     if (this < _bigIntMinValue64 || this > _bigIntMaxValue64) {
       throw ArgumentError.value(
         this,
