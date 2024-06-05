@@ -169,7 +169,14 @@ final class PgDate implements PgTimeValue, Comparable<PgDate> {
 
 /// Calls the `gen_random_uuid` function in postgres.
 Expression<UuidValue> genRandomUuid() {
-  return FunctionCallExpression('gen_random_uuid', []);
+  return FunctionCallExpression('gen_random_uuid', [])
+      .dartCast(customType: PgTypes.uuid);
+}
+
+/// Calls the `NOW()` function in postgres.
+Expression<PgDateTime> now() {
+  return FunctionCallExpression('NOW', [])
+      .dartCast(customType: PgTypes.timestampWithTimezone);
 }
 
 /// Exposes expression builders for array types in postgres.

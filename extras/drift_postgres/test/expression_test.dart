@@ -53,4 +53,20 @@ void main() {
           await eval(firstArray + secondArray), ['a', 'b', 'c', 'd', 'e', 'f']);
     });
   });
+
+  test('now', () async {
+    final dartNow = DateTime.now();
+    final postgresNow = await eval(now());
+
+    expect(
+      postgresNow.dateTime.millisecondsSinceEpoch,
+      closeTo(dartNow.millisecondsSinceEpoch, 2000),
+    );
+  });
+
+  test('random uuid', () async {
+    final uuid = await eval(genRandomUuid());
+
+    expect(uuid.version, 4);
+  });
 }
