@@ -429,6 +429,20 @@ class Migrator {
 
   /// Adds the given column to the specified table.
   Future<void> addColumn(TableInfo table, GeneratedColumn column) async {
+    final List<QueryRow> queryRows = await database.customSelect(
+      'SELECT name FROM pragma_table_info(?);',
+      variables: <Variable<Object>>[Variable<String>(table.actualTableName)],
+    ).get();
+
+    final List<String> columnNameList = queryRows
+        .map((QueryRow e) => e.readNullable<String>('name'))
+        .whereType<String>()
+        .toList();
+
+    if (columnNameList.contains(column.name)) {
+      return;
+    }
+
     final context = _createContext();
 
     context.buffer.write(
