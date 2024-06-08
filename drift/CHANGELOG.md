@@ -4,6 +4,7 @@
   migrations are enabled on that database.
 - Add `initiallyDeferred` option to `references()` column builder for foreign
   key constraints.
+- Add `dropColumn` method to `Migrator`.
 
 ## 2.18.0
 

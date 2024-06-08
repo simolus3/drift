@@ -439,6 +439,27 @@ class Migrator {
     return _issueCustomQuery(context.sql);
   }
 
+  /// Attempts to alter [table] to drop the [column].
+  ///
+  /// Please see the [sqlite3 documentation](https://sqlite.org/lang_altertable.html#altertabdropcol)
+  /// on this functionality for possible caveats. In particular, be aware that
+  /// indexed columns (also if they're part of a primary or unique key) or
+  /// columns that are otherwise referenced in another table, trigger or view
+  /// cannot be dropped.
+  /// For columns only referenced in the [table] itself, calling [alterTable]
+  /// with an empty [TableMigration] re-creates the table and thus drops the
+  /// column while also re-creating relevant keys. If the column is referenced
+  /// by another table, view, index or trigger, that entity needs to be updated
+  /// first.
+  ///
+  /// Note that this method requires sqlite 3.35.0 or later.
+  Future<void> dropColumn(TableInfo table, String column) async {
+    final context = _createContext();
+    context.buffer.write(
+        'ALTER TABLE ${context.identifier(table.aliasedName)} DROP COLUMN ${context.identifier(column)}');
+    await _issueCustomQuery(context.sql);
+  }
+
   /// Changes the name of a column in a [table].
   ///
   /// After renaming a column in a Dart table or a drift file and re-running the
