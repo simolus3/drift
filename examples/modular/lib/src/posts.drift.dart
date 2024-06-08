@@ -135,6 +135,14 @@ class Post extends i0.DataClass implements i0.Insertable<i1.Post> {
         author: author ?? this.author,
         content: content.present ? content.value : this.content,
       );
+  Post copyWithCompanion(i1.PostsCompanion data) {
+    return Post(
+      id: data.id.present ? data.id.value : this.id,
+      author: data.author.present ? data.author.value : this.author,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Post(')
@@ -451,6 +459,13 @@ class Like extends i0.DataClass implements i0.Insertable<i1.Like> {
         post: post ?? this.post,
         likedBy: likedBy ?? this.likedBy,
       );
+  Like copyWithCompanion(i1.LikesCompanion data) {
+    return Like(
+      post: data.post.present ? data.post.value : this.post,
+      likedBy: data.likedBy.present ? data.likedBy.value : this.likedBy,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Like(')

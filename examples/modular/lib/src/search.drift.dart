@@ -121,6 +121,13 @@ class SearchInPost extends i0.DataClass
         author: author ?? this.author,
         content: content ?? this.content,
       );
+  SearchInPost copyWithCompanion(i1.SearchInPostsCompanion data) {
+    return SearchInPost(
+      author: data.author.present ? data.author.value : this.author,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('SearchInPost(')

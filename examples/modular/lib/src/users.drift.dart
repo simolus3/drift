@@ -201,6 +201,19 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
         profilePicture:
             profilePicture.present ? profilePicture.value : this.profilePicture,
       );
+  User copyWithCompanion(i1.UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      biography: data.biography.present ? data.biography.value : this.biography,
+      preferences:
+          data.preferences.present ? data.preferences.value : this.preferences,
+      profilePicture: data.profilePicture.present
+          ? data.profilePicture.value
+          : this.profilePicture,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')
@@ -565,6 +578,13 @@ class Follow extends i0.DataClass implements i0.Insertable<i1.Follow> {
         followed: followed ?? this.followed,
         follower: follower ?? this.follower,
       );
+  Follow copyWithCompanion(i1.FollowsCompanion data) {
+    return Follow(
+      followed: data.followed.present ? data.followed.value : this.followed,
+      follower: data.follower.present ? data.follower.value : this.follower,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Follow(')
