@@ -1,3 +1,8 @@
+## 2.18.1-dev
+
+- Fix generated `CREATE VIEW` statements containing existing row class syntax
+  only supposed to be used during static analysis.
+
 ## 2.18.0
 
 - Add support for the `geopoly` extension in drift files.

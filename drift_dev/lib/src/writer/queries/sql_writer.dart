@@ -234,6 +234,10 @@ class SqlWriter extends NodeSqlBuilder {
         'replaced in the NestedQueryTransformer with there required input '
         'variables (or just removed if no variables are required)',
       );
+    }
+    if (e is DriftTableName) {
+      // Table name annotations are only used for static analysis purposes and
+      // should not appear in generated code.
     } else {
       return super.visitDriftSpecificNode(e, arg);
     }

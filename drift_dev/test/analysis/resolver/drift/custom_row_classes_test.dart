@@ -58,6 +58,14 @@ class ExistingForView {
             .having((e) => e.constructor, 'constructor', 'named'));
     expect(existingView.existingRowClass!.targetClass.toString(),
         'ExistingForView');
+    expect(
+      existingView.source,
+      isA<SqlViewSource>().having(
+        (e) => e.sqlCreateViewStmt,
+        'sqlCreateViewStmt',
+        'CREATE VIEW existing_view (foo,bar) AS SELECT 1, 2;',
+      ),
+    );
   });
 
   test('can use generic row classes', () async {
