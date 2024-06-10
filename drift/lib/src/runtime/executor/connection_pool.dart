@@ -112,6 +112,15 @@ class _MultiExecutorImpl extends MultiExecutor {
   }
 
   @override
+  QueryExecutor beginExclusive() {
+    // This is technically not correct - readers can still read while the
+    // exclusive write is active, but the same thing is true for transactions
+    // and since we're using separate connections for reads and writes this
+    // should be fine.
+    return _write.beginExclusive();
+  }
+
+  @override
   TransactionExecutor beginTransaction() => _write.beginTransaction();
 
   @override

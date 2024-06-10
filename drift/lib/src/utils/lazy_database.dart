@@ -54,6 +54,9 @@ class LazyDatabase extends QueryExecutor {
   }
 
   @override
+  QueryExecutor beginExclusive() => _delegate.beginExclusive();
+
+  @override
   TransactionExecutor beginTransaction() => _delegate.beginTransaction();
 
   @override

@@ -75,6 +75,9 @@ class DatabaseConnection implements QueryExecutor {
   }
 
   @override
+  QueryExecutor beginExclusive() => executor.beginExclusive();
+
+  @override
   TransactionExecutor beginTransaction() => executor.beginTransaction();
 
   @override

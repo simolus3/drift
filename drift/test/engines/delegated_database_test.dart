@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
@@ -18,6 +20,8 @@ void main() {
   late MockDatabaseDelegate delegate;
   setUp(() {
     delegate = MockDatabaseDelegate();
+    provideDummy<TransactionDelegate>(const NoTransactionDelegate());
+    provideDummy<DbVersionDelegate>(const NoVersionDelegate());
 
     when(delegate.isOpen).thenAnswer((_) => Future.value(true));
     when(delegate.runSelect(any, any))
@@ -247,6 +251,52 @@ void main() {
       await expectLater(transaction.send(), throwsA(exception));
 
       verify(transactionDelegate.startTransaction(any));
+    });
+  });
+
+  group('beginExclusive', () {
+    late DelegatedDatabase db;
+
+    setUp(() {
+      db = DelegatedDatabase(delegate, isSequential: true);
+    });
+
+    test('locks the database when opened', () async {
+      await db.ensureOpen(_FakeExecutorUser());
+
+      final exclusiveA = db.beginExclusive();
+      final exclusiveB = db.beginExclusive();
+
+      await exclusiveA.ensureOpen(_FakeExecutorUser());
+      final second = Completer<bool>.sync();
+      exclusiveB.ensureOpen(_FakeExecutorUser()).then(second.complete);
+
+      await pumpEventQueue();
+      expect(second.isCompleted, isFalse);
+
+      await exclusiveA.close();
+      await second.future;
+      await exclusiveB.close();
+    });
+
+    test('supports transactions', () async {
+      await db.ensureOpen(_FakeExecutorUser());
+
+      final exclusive = db.beginExclusive();
+      await exclusive.ensureOpen(_FakeExecutorUser());
+
+      final transaction = exclusive.beginTransaction();
+      await transaction.ensureOpen(_FakeExecutorUser());
+
+      final outerDone = Completer<void>.sync();
+      exclusive.runCustom('').then(outerDone.complete);
+
+      await pumpEventQueue();
+      expect(outerDone.isCompleted, isFalse);
+
+      await transaction.send();
+      await outerDone.future;
+      await exclusive.close();
     });
   });
 
