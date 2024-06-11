@@ -121,7 +121,7 @@ class ServerImplementation implements DriftServer {
     } else if (payload is NotifyTablesUpdated) {
       _tableUpdateNotifications.add(payload);
       dispatchTableUpdateNotification(payload, comms);
-    } else if (payload is RunTransactionAction) {
+    } else if (payload is RunNestedExecutorControl) {
       return _transactionControl(comms, payload.control, payload.executorId);
     } else if (payload is RequestCancellation) {
       _cancellableOperations[payload.originalRequestId]?.cancel();
@@ -179,6 +179,13 @@ class ServerImplementation implements DriftServer {
     return id;
   }
 
+  Future<int> _spawnExclusive(DriftCommunication comm, int? executor) async {
+    final exclusive = (await _loadExecutor(executor)).beginExclusive();
+    final id = _putExecutor(exclusive, beforeCurrent: true);
+    await exclusive.ensureOpen(_ServerDbUser(this, comm, _knownSchemaVersion));
+    return id;
+  }
+
   int _putExecutor(QueryExecutor executor, {bool beforeCurrent = false}) {
     final id = _currentExecutorId++;
     _managedExecutors[id] = executor;
@@ -193,12 +200,20 @@ class ServerImplementation implements DriftServer {
   }
 
   Future<dynamic> _transactionControl(DriftCommunication comm,
-      TransactionControl action, int? executorId) async {
-    if (action == TransactionControl.begin) {
+      NestedExecutorControl action, int? executorId) async {
+    if (action == NestedExecutorControl.beginTransaction) {
       return await _spawnTransaction(comm, executorId);
+    } else if (action == NestedExecutorControl.startExclusive) {
+      return await _spawnExclusive(comm, executorId);
     }
 
-    final executor = _managedExecutors[executorId];
+    final executor = await _loadExecutor(executorId);
+    if (action == NestedExecutorControl.endExclusive) {
+      await executor.close();
+      _releaseExecutor(executorId!);
+      return;
+    }
+
     if (executor is! TransactionExecutor) {
       throw ArgumentError.value(
         executorId,
@@ -210,12 +225,12 @@ class ServerImplementation implements DriftServer {
     }
 
     switch (action) {
-      case TransactionControl.commit:
+      case NestedExecutorControl.commit:
         await executor.send();
         // The transaction should only be released if the commit doesn't throw.
         _releaseExecutor(executorId!);
         break;
-      case TransactionControl.rollback:
+      case NestedExecutorControl.rollback:
         // Rollbacks shouldn't fail. Other parts of drift assume the transaction
         // to be over after a rollback either way, so we always release the
         // executor in this case.

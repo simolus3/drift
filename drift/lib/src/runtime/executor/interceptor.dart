@@ -44,6 +44,9 @@ abstract class QueryInterceptor {
   TransactionExecutor beginTransaction(QueryExecutor parent) =>
       parent.beginTransaction();
 
+  /// Intercept [QueryExecutor.beginExclusive] calls.
+  QueryExecutor beginExclusive(QueryExecutor parent) => parent.beginExclusive();
+
   /// Intercept [TransactionExecutor.supportsNestedTransactions] calls.
   bool transactionCanBeNested(TransactionExecutor inner) {
     return inner.supportsNestedTransactions;
@@ -112,6 +115,12 @@ class _InterceptedExecutor extends QueryExecutor {
   @override
   TransactionExecutor beginTransaction() => _InterceptedTransactionExecutor(
       _interceptor.beginTransaction(_inner), _interceptor);
+
+  @override
+  QueryExecutor beginExclusive() {
+    return _InterceptedExecutor(
+        _interceptor.beginExclusive(_inner), _interceptor);
+  }
 
   @override
   SqlDialect get dialect => _interceptor.dialect(_inner);

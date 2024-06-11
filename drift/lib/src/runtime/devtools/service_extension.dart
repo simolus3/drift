@@ -113,6 +113,11 @@ class _CollectCreateStatements extends QueryExecutor {
   final List<String> statements = [];
 
   @override
+  QueryExecutor beginExclusive() {
+    return this;
+  }
+
+  @override
   TransactionExecutor beginTransaction() {
     throw UnimplementedError();
   }

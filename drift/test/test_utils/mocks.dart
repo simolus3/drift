@@ -3,50 +3,51 @@ import 'package:mockito/mockito.dart';
 
 class MockExecutor extends Mock implements QueryExecutor {
   late final MockTransactionExecutor transactions = MockTransactionExecutor();
+  late final MockExecutor exclusive = this;
   final OpeningDetails? openingDetails;
-  bool _opened = false;
+  bool opened = false;
 
   MockExecutor([this.openingDetails]) {
     when(dialect).thenReturn(SqlDialect.sqlite);
     when(runSelect(any, any)).thenAnswer((_) {
-      assert(_opened);
+      assert(opened);
       return Future.value([]);
     });
     when(runUpdate(any, any)).thenAnswer((_) {
-      assert(_opened);
+      assert(opened);
       return Future.value(0);
     });
     when(runDelete(any, any)).thenAnswer((_) {
-      assert(_opened);
+      assert(opened);
       return Future.value(0);
     });
     when(runInsert(any, any)).thenAnswer((_) {
-      assert(_opened);
+      assert(opened);
       return Future.value(0);
     });
     when(runCustom(any, any)).thenAnswer((_) {
-      assert(_opened);
+      assert(opened);
       return Future.value();
     });
     when(runBatched(any)).thenAnswer((_) {
-      assert(_opened);
+      assert(opened);
       return Future.value();
     });
 
     when(ensureOpen(any)).thenAnswer((i) async {
-      if (!_opened && openingDetails != null) {
-        _opened = true;
+      if (!opened && openingDetails != null) {
+        opened = true;
         await (i.positionalArguments.single as QueryExecutorUser)
             .beforeOpen(this, openingDetails!);
       }
 
-      _opened = true;
+      opened = true;
 
       return true;
     });
 
     when(close()).thenAnswer((_) async {
-      _opened = false;
+      opened = false;
     });
   }
 
@@ -88,6 +89,10 @@ class MockExecutor extends Mock implements QueryExecutor {
   TransactionExecutor beginTransaction() =>
       _nsm(Invocation.method(#beginTransaction, []), transactions) ??
       transactions;
+
+  @override
+  QueryExecutor beginExclusive() =>
+      _nsm(Invocation.method(#beginExclusive, []), exclusive) ?? exclusive;
 
   @override
   Future<void> close() =>

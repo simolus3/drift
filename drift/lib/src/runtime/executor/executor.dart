@@ -51,6 +51,16 @@ abstract class QueryExecutor {
   /// Starts a [TransactionExecutor].
   TransactionExecutor beginTransaction();
 
+  /// Returns a new [QueryExecutor] that, when first opened, takes an exclusive
+  /// lock over `this` executor and prevents queries from running until it is
+  /// closed.
+  ///
+  /// The difference between this and [beginTransaction] is that this does not
+  /// start a database transaction. The [QueryExecutor] returned by
+  /// [beginExclusive] can be used to start a transaction with
+  /// [beginTransaction].
+  QueryExecutor beginExclusive();
+
   /// Closes this database connection and releases all resources associated with
   /// it. Implementations should also handle [close] calls in a state where the
   /// database isn't open.

@@ -132,6 +132,16 @@ abstract class _BaseExecutor extends QueryExecutor {
 
     return result.rows;
   }
+
+  @override
+  QueryExecutor beginExclusive() {
+    return _RemoteExclusiveExecutor(client, _executorId);
+  }
+
+  @override
+  TransactionExecutor beginTransaction() {
+    return _RemoteTransactionExecutor(client, _executorId);
+  }
 }
 
 class _RemoteQueryExecutor extends _BaseExecutor {
@@ -139,11 +149,6 @@ class _RemoteQueryExecutor extends _BaseExecutor {
 
   Completer<void>? _setSchemaVersion;
   Future<bool>? _serverIsOpen;
-
-  @override
-  TransactionExecutor beginTransaction() {
-    return _RemoteTransactionExecutor(client, _executorId);
-  }
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) async {
@@ -209,13 +214,14 @@ class _RemoteTransactionExecutor extends _BaseExecutor
   }
 
   Future<bool> _openAtServer() async {
-    _executorId = await client._channel.request<int>(
-        RunTransactionAction(TransactionControl.begin, _outerExecutorId));
+    _executorId = await client._channel.request<int>(RunNestedExecutorControl(
+        NestedExecutorControl.beginTransaction, _outerExecutorId));
     return true;
   }
 
-  Future<void> _sendAction(TransactionControl action) {
-    return client._channel.request(RunTransactionAction(action, _executorId));
+  Future<void> _sendAction(NestedExecutorControl action) {
+    return client._channel
+        .request(RunNestedExecutorControl(action, _executorId));
   }
 
   @override
@@ -223,7 +229,7 @@ class _RemoteTransactionExecutor extends _BaseExecutor
     // don't do anything if the transaction isn't open yet
     if (_pendingOpen == null) return;
 
-    await _sendAction(TransactionControl.rollback);
+    await _sendAction(NestedExecutorControl.rollback);
     _done = true;
   }
 
@@ -232,8 +238,37 @@ class _RemoteTransactionExecutor extends _BaseExecutor
     // don't do anything if the transaction isn't open yet
     if (_pendingOpen == null) return;
 
-    await _sendAction(TransactionControl.commit);
+    await _sendAction(NestedExecutorControl.commit);
     _done = true;
+  }
+}
+
+final class _RemoteExclusiveExecutor extends _BaseExecutor {
+  final int? parentExecutorId;
+  Completer<bool>? _pendingOpen;
+
+  _RemoteExclusiveExecutor(super.client, this.parentExecutorId);
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) {
+    final completer = _pendingOpen ??= Completer()..complete(_openAtServer());
+    return completer.future;
+  }
+
+  Future<bool> _openAtServer() async {
+    _executorId = await client._channel.request<int>(RunNestedExecutorControl(
+        NestedExecutorControl.startExclusive, parentExecutorId));
+    return true;
+  }
+
+  @override
+  Future<void> close() async {
+    // don't do anything if the transaction isn't open yet
+    if (_pendingOpen == null) return;
+
+    await _pendingOpen!.future;
+    await client._channel.request<void>(RunNestedExecutorControl(
+        NestedExecutorControl.endExclusive, _executorId));
   }
 }
 

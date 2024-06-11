@@ -1391,6 +1391,49 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as _i5.Future<T>);
 
   @override
+  _i5.Future<T> exclusively<T>(_i5.Future<T> Function()? action) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #exclusively,
+          [action],
+        ),
+        returnValue: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #exclusively,
+                  [action],
+                ),
+              ),
+              (T v) => _i5.Future<T>.value(v),
+            ) ??
+            _FakeFuture_26<T>(
+              this,
+              Invocation.method(
+                #exclusively,
+                [action],
+              ),
+            ),
+        returnValueForMissingStub: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #exclusively,
+                  [action],
+                ),
+              ),
+              (T v) => _i5.Future<T>.value(v),
+            ) ??
+            _FakeFuture_26<T>(
+              this,
+              Invocation.method(
+                #exclusively,
+                [action],
+              ),
+            ),
+      ) as _i5.Future<T>);
+
+  @override
   _i5.Future<void> batch(_i5.FutureOr<void> Function(_i2.Batch)? runInBatch) =>
       (super.noSuchMethod(
         Invocation.method(

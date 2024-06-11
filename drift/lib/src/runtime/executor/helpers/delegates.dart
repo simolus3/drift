@@ -116,9 +116,7 @@ abstract class QueryDelegate {
 }
 
 /// An interface to start and manage transactions.
-///
-/// Clients may not extend, implement or mix-in this class directly.
-abstract class TransactionDelegate {
+sealed class TransactionDelegate {
   /// Const constructor on superclass
   const TransactionDelegate();
 }
@@ -127,7 +125,7 @@ abstract class TransactionDelegate {
 /// creating transactions. Drift will send a `BEGIN TRANSACTION` statement at
 /// the beginning, then block the database, and finally send a `COMMIT`
 /// statement at the end.
-class NoTransactionDelegate extends TransactionDelegate {
+final class NoTransactionDelegate extends TransactionDelegate {
   /// The statement that starts a transaction on this database engine.
   final String start;
 
@@ -212,22 +210,20 @@ abstract class WrappedTransactionDelegate extends SupportedTransactionDelegate {
 }
 
 /// An interface that supports setting the database version.
-///
-/// Clients may not extend, implement or mix-in this class directly.
-abstract class DbVersionDelegate {
+sealed class DbVersionDelegate {
   /// Constant constructor on superclass
   const DbVersionDelegate();
 }
 
 /// A database that doesn't support setting schema versions.
-class NoVersionDelegate extends DbVersionDelegate {
+final class NoVersionDelegate extends DbVersionDelegate {
   /// Delegate indicating that the underlying database does not support schema
   /// versions.
   const NoVersionDelegate();
 }
 
 /// A database that only support setting the schema version while being opened.
-class OnOpenVersionDelegate extends DbVersionDelegate {
+final class OnOpenVersionDelegate extends DbVersionDelegate {
   /// Function that returns with the current schema version.
   final Future<int> Function() loadSchemaVersion;
 

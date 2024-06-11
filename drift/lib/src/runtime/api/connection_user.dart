@@ -486,6 +486,58 @@ abstract class DatabaseConnectionUser {
     });
   }
 
+  /// Obtains an exclusive lock on the current database context, runs [action]
+  /// in it and then releases the lock.
+  ///
+  /// This obtains a local lock on the underlying [executor] without starting a
+  /// transaction or coordinating with other processes on the same database.
+  /// It is possible to start a [transaction] within an [exclusively] block.
+  /// When [exclusively] is called on a database connected to a remote isolate
+  /// or a shared web worker, other isolates and tabs will be blocked on the
+  /// database until the returned future completes.
+  ///
+  /// With sqlite3, [exclusively] is useful to set certain pragmas like
+  /// `foreign_keys` which can't be done in a transaction for a limited scope.
+  /// For instance, some migrations may look like this:
+  ///
+  /// ```dart
+  /// await exclusively(() async {
+  ///   await customStatement('pragma foreign_keys = OFF;');
+  ///   await transaction(() async {
+  ///     // complex updates or migrations temporarily breaking foreign
+  ///     // references...
+  ///   });
+  ///   await customStatement('pragma foreign_keys = OFF;');
+  /// });
+  /// ```
+  ///
+  /// If the [exclusively] block had been omitted from the previous snippet,
+  /// it would have been possible for other concurrent database calls to occur
+  /// between the transaction and the `pragma` statements.
+  ///
+  /// Outside of blocks requiring exclusive access to set pragmas not supported
+  /// in transactions, consider using [transaction] instead of [exclusively].
+  /// Transactions also take exclusive control over the database, but they also
+  /// are atomic (either all statements in a transaction complete or none at
+  /// all), whereas an error in an [exclusively] block does not roll back
+  /// earlier statements.
+  Future<T> exclusively<T>(Future<T> Function() action) async {
+    return await resolvedEngine.doWhenOpened((executor) {
+      final exclusive = executor.beginExclusive();
+
+      return _runConnectionZoned(
+        _ExclusiveExecutor(this, executor: exclusive),
+        () async {
+          try {
+            return await action();
+          } finally {
+            exclusive.close();
+          }
+        },
+      );
+    });
+  }
+
   /// Runs statements inside a batch.
   ///
   /// A batch can only run a subset of statements, and those statements must be
@@ -620,4 +672,13 @@ extension RunWithEngine on DatabaseConnectionUser {
     final engine = resolvedEngine;
     return engine.doWhenOpened(run);
   }
+}
+
+class _ExclusiveExecutor extends DatabaseConnectionUser {
+  @override
+  final GeneratedDatabase attachedDatabase;
+
+  _ExclusiveExecutor(super.other, {super.executor})
+      : attachedDatabase = other.attachedDatabase,
+        super.delegate();
 }

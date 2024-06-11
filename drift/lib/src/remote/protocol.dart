@@ -100,7 +100,7 @@ class DriftProtocol {
           ],
         payload.executorId,
       ];
-    } else if (payload is RunTransactionAction) {
+    } else if (payload is RunNestedExecutorControl) {
       return [
         _tag_RunTransactionAction,
         payload.control.index,
@@ -197,8 +197,8 @@ class DriftProtocol {
         return ExecuteBatchedStatement(
             BatchedStatements(sql, args), executorId);
       case _tag_RunTransactionAction:
-        final control = TransactionControl.values[readInt(1)];
-        return RunTransactionAction(control, readNullableInt(2));
+        final control = NestedExecutorControl.values[readInt(1)];
+        return RunNestedExecutorControl(control, readNullableInt(2));
       case _tag_EnsureOpen:
         return EnsureOpen(readInt(1), readNullableInt(2));
       case _tag_ServerInfo:
@@ -386,21 +386,32 @@ class ExecuteBatchedStatement {
   ExecuteBatchedStatement(this.stmts, [this.executorId]);
 }
 
-enum TransactionControl {
-  /// When using [begin], the [RunTransactionAction.executorId] refers to the
-  /// executor starting the transaction. The server must reply with an int
-  /// representing the created transaction executor.
-  begin,
+enum NestedExecutorControl {
+  /// When using [beginTransaction], the [RunNestedExecutorControl.executorId]
+  /// refers to the executor starting the transaction. The server must reply
+  /// with an int representing the created transaction executor.
+  beginTransaction,
   commit,
   rollback,
+
+  /// This does not start a transaction, but requests a [QueryExecutor] which
+  /// has exclusive control over the parent executor (meaning that no queries
+  /// go through on the parent executor until the returned child executor is
+  /// closed with [endExclusive]).
+  ///
+  /// See also: [QueryExecutor.beginExclusive], which the server calls to
+  /// implement this.
+  startExclusive,
+  endExclusive,
 }
 
-/// Sent from the client to commit or rollback a transaction
-class RunTransactionAction {
-  final TransactionControl control;
+/// Sent from the client to commit or rollback a transaction as well as managing
+/// an exclusive sub-executor.
+class RunNestedExecutorControl {
+  final NestedExecutorControl control;
   final int? executorId;
 
-  RunTransactionAction(this.control, this.executorId);
+  RunNestedExecutorControl(this.control, this.executorId);
 
   @override
   String toString() {

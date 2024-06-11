@@ -5,6 +5,7 @@ import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/src/remote/protocol.dart';
+import 'package:drift/src/utils/synchronized.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
@@ -233,6 +234,88 @@ void main() {
     verify(outerTransaction.send());
   });
 
+  test('handles exclusive executors', () async {
+    final controller = StreamChannelController<Object?>();
+    final executor = MockExecutor();
+    final multi = MultiChannel<Object?>(controller.local);
+
+    final testEvents = StreamController<String>();
+    final testEventQueue = StreamQueue(testEvents.stream);
+    final lock = Lock();
+
+    final server = DriftServer(DatabaseConnection(executor));
+    controller.foreign.serveMulti(server);
+    addTearDown(server.shutdown);
+
+    final a = TodoDb(await multi.newRemoteConnection());
+    final b = TodoDb(await multi.newRemoteConnection());
+
+    final exclusiveA = MockExecutor();
+    final exclusiveB = MockExecutor();
+
+    var exclusiveCount = 0;
+    when(executor.beginExclusive()).thenAnswer(expectAsync1((_) {
+      if (exclusiveCount == 0) {
+        exclusiveCount++;
+        testEvents.add('try-a');
+        return exclusiveA;
+      } else {
+        testEvents.add('try-b');
+        return exclusiveB;
+      }
+    }, count: 2, id: 'beginExclusive'));
+
+    for (final (name, executor) in [('a', exclusiveA), ('b', exclusiveB)]) {
+      final closeCompleter = Completer<void>();
+
+      when(executor.ensureOpen(any)).thenAnswer((i) {
+        if (!executor.opened) {
+          return expectAsync0(() async {
+            await Future<void>.delayed(Duration.zero);
+
+            final ready = Completer<bool>();
+            lock.synchronized(() {
+              testEvents.add('grant-$name');
+              ready.complete(true);
+              executor.opened = true;
+              return closeCompleter.future;
+            });
+
+            return ready.future;
+          }, id: 'ensureOpen-$name')();
+        } else {
+          return Future.value(true);
+        }
+      });
+
+      when(executor.close()).thenAnswer(expectAsync1((_) async {
+        testEvents.add('close-$name');
+        closeCompleter.complete();
+      }, id: 'close-$name'));
+    }
+
+    final wait = Completer<void>();
+    a.exclusively(() async {
+      await a.customSelect('SELECT 1').get();
+      await wait.future;
+    });
+
+    b.exclusively(() async {
+      await b.customSelect('SELECT 1').get();
+    });
+
+    await expectLater(
+      testEventQueue,
+      emitsInOrder(['try-a', 'grant-a']),
+    );
+
+    wait.complete();
+    await expectLater(
+      testEventQueue,
+      emitsInOrder(['close-a', 'try-b', 'grant-b', 'close-b']),
+    );
+  });
+
   test('reports correct dialect of remote', () async {
     final executor = MockExecutor();
     when(executor.dialect).thenReturn(SqlDialect.postgres);
@@ -276,5 +359,21 @@ extension<T> on StreamChannel<T> {
     return transformStream(StreamTransformer.fromHandlers(
       handleDone: expectAsync1((out) => out.close()),
     ));
+  }
+
+  void serveMulti(DriftServer server) {
+    final multi = MultiChannel<T>(this);
+    multi.stream.listen((message) {
+      server.serve(multi.virtualChannel(message as int));
+    });
+  }
+}
+
+extension on MultiChannel<Object?> {
+  Future<DatabaseConnection> newRemoteConnection() async {
+    final channel = virtualChannel();
+    sink.add(channel.id);
+
+    return await connectToRemoteAndInitialize(channel);
   }
 }

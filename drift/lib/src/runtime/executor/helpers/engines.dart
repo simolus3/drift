@@ -13,7 +13,7 @@ abstract class _BaseExecutor extends QueryExecutor {
   /// based transactions (`BEGIN` and `COMMIT`), statements _not_ targetting the
   /// transaction need to wait for the transaction to be completed before being
   /// sent. This is also true for databases which otherwise aren't sequential.
-  int _waitingTransactions = 0;
+  int _waitingChildExecutors = 0;
 
   QueryDelegate get impl;
 
@@ -51,7 +51,7 @@ without awaiting every statement in it.''');
   }
 
   Future<T> _synchronized<T>(Future<T> Function() action) {
-    if (isSequential || _waitingTransactions > 0) {
+    if (isSequential || _waitingChildExecutors > 0) {
       return _lock.synchronized(() {
         checkIfCancelled();
         return action();
@@ -127,6 +127,18 @@ without awaiting every statement in it.''');
       return impl.runBatched(statements);
     });
   }
+
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context);
+
+  @override
+  QueryExecutor beginExclusive() {
+    return _ExclusiveExecutor(this);
+  }
+
+  @override
+  TransactionExecutor beginTransaction() {
+    return beginTransactionInContext(this);
+  }
 }
 
 abstract class _TransactionExecutor extends _BaseExecutor
@@ -146,7 +158,7 @@ abstract class _TransactionExecutor extends _BaseExecutor
   }
 
   @override
-  TransactionExecutor beginTransaction() {
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
     throw UnsupportedError("Nested transactions aren't supported.");
   }
 
@@ -171,26 +183,31 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   Completer<bool>? _opened;
   final Completer<void> _done = Completer();
 
-  final _StatementBasedTransactionExecutor? _parent;
+  final _BaseExecutor _parent;
+
+  /// This value is greater than zero for nested transactions.
+  ///
+  /// Nested transactions are implemented with savepoints created when the
+  /// nested transaction is opened, allowing it to be rolled back with `ROLLBACK
+  /// TO savepoint` without impacting the outer transaction.
+  final int depth;
 
   final String _startCommand;
   final String _commitCommand;
   final String _rollbackCommand;
 
   // ignore: no_leading_underscores_for_local_identifiers
-  _StatementBasedTransactionExecutor(super._db, this._delegate)
+  _StatementBasedTransactionExecutor(super._db, this._parent, this._delegate)
       : _startCommand = _delegate.start,
         _commitCommand = _delegate.commit,
         _rollbackCommand = _delegate.rollback,
-        _parent = null;
+        depth = 0;
 
   _StatementBasedTransactionExecutor.nested(
-      _StatementBasedTransactionExecutor this._parent, int depth)
-      : _delegate = _parent._delegate,
-        _startCommand = _parent._delegate.savepoint(depth),
-        _commitCommand = _parent._delegate.release(depth),
-        _rollbackCommand = _parent._delegate.rollbackToSavepoint(depth),
-        super(_parent._db);
+      super._db, this._parent, this._delegate, this.depth)
+      : _startCommand = _delegate.savepoint(depth),
+        _commitCommand = _delegate.release(depth),
+        _rollbackCommand = _delegate.rollbackToSavepoint(depth);
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
@@ -201,8 +218,8 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
       opened = _opened = Completer();
       // Block the main database or the parent transaction while this
       // transaction is active.
-      final parent = _parent ?? _db;
-      parent._waitingTransactions++;
+      final parent = _parent;
+      parent._waitingChildExecutors++;
 
       unawaited(parent._synchronized(() async {
         try {
@@ -215,7 +232,7 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
 
         // release the database lock after the transaction completes
         await _done.future;
-      }).whenComplete(() => parent._waitingTransactions--));
+      }).whenComplete(() => parent._waitingChildExecutors--));
     }
 
     return opened.future;
@@ -228,15 +245,9 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   bool get supportsNestedTransactions => true;
 
   @override
-  TransactionExecutor beginTransaction() {
-    var ownDepth = 0;
-    var ancestor = _parent;
-    while (ancestor != null) {
-      ownDepth++;
-      ancestor = ancestor._parent;
-    }
-
-    return _StatementBasedTransactionExecutor.nested(this, ownDepth);
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
+    return _StatementBasedTransactionExecutor.nested(
+        _db, context, _delegate, depth + 1);
   }
 
   @override
@@ -266,7 +277,7 @@ class _StatementBasedTransactionExecutor extends _TransactionExecutor {
   }
 
   void _afterCommitOrRollback() {
-    if (_parent == null) {
+    if (depth == 0) {
       _db.delegate.isInTransaction = false;
     }
 
@@ -480,15 +491,18 @@ class DelegatedDatabase extends _BaseExecutor {
   }
 
   @override
-  TransactionExecutor beginTransaction() {
+  // ignore: library_private_types_in_public_api
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
     final transactionDelegate = delegate.transactionDelegate;
 
-    if (transactionDelegate is NoTransactionDelegate) {
-      return _StatementBasedTransactionExecutor(this, transactionDelegate);
-    } else if (transactionDelegate is SupportedTransactionDelegate) {
-      return _WrappingTransactionExecutor(this, transactionDelegate);
-    } else {
-      throw StateError('Unknown transaction delegate: $transactionDelegate');
+    switch (delegate.transactionDelegate) {
+      case NoTransactionDelegate noTransactionDelegate:
+        return _StatementBasedTransactionExecutor(
+            this, context, noTransactionDelegate);
+      case SupportedTransactionDelegate supported:
+        return _WrappingTransactionExecutor(this, supported);
+      default:
+        throw StateError('Unknown transaction delegate: $transactionDelegate');
     }
   }
 
@@ -521,7 +535,9 @@ class _BeforeOpeningExecutor extends _BaseExecutor {
   _BeforeOpeningExecutor(this._base);
 
   @override
-  TransactionExecutor beginTransaction() => _base.beginTransaction();
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
+    return _base.beginTransactionInContext(context);
+  }
 
   @override
   Future<bool> ensureOpen(_) {
@@ -537,4 +553,49 @@ class _BeforeOpeningExecutor extends _BaseExecutor {
 
   @override
   SqlDialect get dialect => _base.dialect;
+}
+
+final class _ExclusiveExecutor extends _BaseExecutor {
+  final _BaseExecutor _outer;
+  Completer<bool>? _opened;
+  final Completer<void> _completer = Completer();
+
+  _ExclusiveExecutor(this._outer);
+
+  @override
+  SqlDialect get dialect => _outer.dialect;
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) {
+    if (_opened case var opened?) {
+      return opened.future;
+    } else {
+      _ensureOpenCalled = true;
+      final opened = _opened = Completer<bool>();
+      _outer._waitingChildExecutors++;
+      _outer._synchronized(() async {
+        opened.complete(true);
+
+        // Keep the outer database locked until this statement completes.
+        await _completer.future;
+        _outer._waitingChildExecutors--;
+      });
+
+      return opened.future;
+    }
+  }
+
+  @override
+  QueryDelegate get impl => _outer.impl;
+
+  @override
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
+    return _outer.beginTransactionInContext(context);
+  }
+
+  @override
+  Future<void> close() {
+    _completer.complete();
+    return Future.value();
+  }
 }
