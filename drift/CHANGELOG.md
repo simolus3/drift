@@ -1,5 +1,8 @@
 ## 2.19.0-dev
 
+- Add `exclusively` method to database classes, allowing a block to temporarily
+  take exclusive control over a database connection without starting a
+  transaction.
 - Add the `enableMigrations` parameter to `WasmDatabase` to control whether drift
   migrations are enabled on that database.
 - Add `initiallyDeferred` option to `references()` column builder for foreign

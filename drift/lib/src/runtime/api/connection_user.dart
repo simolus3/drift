@@ -514,6 +514,13 @@ abstract class DatabaseConnectionUser {
   /// If the [exclusively] block had been omitted from the previous snippet,
   /// it would have been possible for other concurrent database calls to occur
   /// between the transaction and the `pragma` statements.
+  ///
+  /// Outside of blocks requiring exclusive access to set pragmas not supported
+  /// in transactions, consider using [transaction] instead of [exclusively].
+  /// Transactions also take exclusive control over the database, but they also
+  /// are atomic (either all statements in a transaction complete or none at
+  /// all), whereas an error in an [exclusively] block does not roll back
+  /// earlier statements.
   Future<T> exclusively<T>(Future<T> Function() action) async {
     return await resolvedEngine.doWhenOpened((executor) {
       final exclusive = executor.beginExclusive();
