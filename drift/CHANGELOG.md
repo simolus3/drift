@@ -8,6 +8,8 @@
 - Add `initiallyDeferred` option to `references()` column builder for foreign
   key constraints.
 - Add `dropColumn` method to `Migrator`.
+- Fix encoding `BigInt` arguments in batched statements sent to web workers.
+  Note that the fix also requires the latest `drift_worker.js` to be effective.
 
 ## 2.18.0
 

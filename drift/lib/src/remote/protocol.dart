@@ -189,8 +189,12 @@ class DriftProtocol {
 
         for (var i = 2; i < fullMessage.length - 1; i++) {
           final list = fullMessage[i] as List;
-          args.add(ArgumentsForBatchedStatement(
-              list[0] as int, list.skip(1).toList()));
+          args.add(
+            ArgumentsForBatchedStatement(
+              list[0] as int,
+              [for (final encoded in list.skip(1)) _decodeDbValue(encoded)],
+            ),
+          );
         }
 
         final executorId = fullMessage.last as int?;

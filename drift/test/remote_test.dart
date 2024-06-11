@@ -131,6 +131,40 @@ void main() {
             ),
           ),
     );
+
+    final batchRequest = _checkSimpleRoundtrip(
+      protocol,
+      Request(
+        1,
+        ExecuteBatchedStatement(BatchedStatements(
+          ['SELECT ?'],
+          [
+            ArgumentsForBatchedStatement(0, [BigInt.zero]),
+            ArgumentsForBatchedStatement(0, [BigInt.one]),
+            ArgumentsForBatchedStatement(0, [BigInt.two]),
+          ],
+        )),
+      ),
+    );
+    expect(
+      batchRequest,
+      isA<Request>().having((e) => e.id, 'id', 1).having(
+            (e) => e.payload,
+            'payload',
+            isA<ExecuteBatchedStatement>().having(
+              (e) => e.stmts,
+              'stmts',
+              BatchedStatements(
+                ['SELECT ?'],
+                [
+                  ArgumentsForBatchedStatement(0, [BigInt.zero]),
+                  ArgumentsForBatchedStatement(0, [BigInt.one]),
+                  ArgumentsForBatchedStatement(0, [BigInt.two]),
+                ],
+              ),
+            ),
+          ),
+    );
   });
 
   test('can run protocol without using complex types', () async {
