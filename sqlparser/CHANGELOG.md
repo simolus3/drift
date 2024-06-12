@@ -1,6 +1,7 @@
 ## 0.37.0-dev
 
 - Add support for sqlite 3.46.0.
+- Make columns coming from subquery expressions nullable.
 
 ## 0.36.0
 

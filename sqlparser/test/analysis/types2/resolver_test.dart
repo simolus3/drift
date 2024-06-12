@@ -249,7 +249,7 @@ void main() {
 
   test('resolves subqueries', () {
     final type = resolveResultColumn('SELECT (SELECT COUNT(*) FROM demo);');
-    expect(type, const ResolvedType(type: BasicType.int));
+    expect(type, const ResolvedType(type: BasicType.int, nullable: true));
   });
 
   test('infers types for dart placeholders', () {

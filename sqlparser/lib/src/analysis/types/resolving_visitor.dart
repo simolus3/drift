@@ -74,7 +74,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     // The query should return one column only, but this is not the right place
     // to lint that. Just pick any column and resolve to that.
     final columnForExpr = columnsOfQuery.first;
-    session._addRelation(CopyTypeFrom(e, columnForExpr));
+    session._addRelation(CopyTypeFrom(e, columnForExpr, makeNullable: true));
     visitChildren(e, arg);
   }
 
