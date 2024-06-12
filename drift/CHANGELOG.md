@@ -10,6 +10,8 @@
 - Add `dropColumn` method to `Migrator`.
 - Fix encoding `BigInt` arguments in batched statements sent to web workers.
   Note that the fix also requires the latest `drift_worker.js` to be effective.
+- Both `transaction` and `exclusively` will wait for the transaction or the
+  exclusive lock to be set up before invoking their callback now.
 
 ## 2.18.0
 

@@ -279,6 +279,24 @@ void main() {
       await exclusiveB.close();
     });
 
+    test('prevents concurrent transactions', () async {
+      await db.ensureOpen(_FakeExecutorUser());
+
+      final exclusive = db.beginExclusive();
+      final transaction = db.beginTransaction();
+
+      await exclusive.ensureOpen(_FakeExecutorUser());
+      final second = Completer<bool>.sync();
+      transaction.ensureOpen(_FakeExecutorUser()).then(second.complete);
+
+      await pumpEventQueue();
+      expect(second.isCompleted, isFalse);
+
+      await exclusive.close();
+      await second.future;
+      await transaction.close();
+    });
+
     test('supports transactions', () async {
       await db.ensureOpen(_FakeExecutorUser());
 

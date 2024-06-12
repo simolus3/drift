@@ -462,6 +462,8 @@ abstract class DatabaseConnectionUser {
       return _runConnectionZoned(transaction, () async {
         var success = false;
         try {
+          await transactionExecutor.ensureOpen(attachedDatabase);
+
           final result = await action();
           success = true;
           return result;
@@ -528,6 +530,8 @@ abstract class DatabaseConnectionUser {
       return _runConnectionZoned(
         _ExclusiveExecutor(this, executor: exclusive),
         () async {
+          await exclusive.ensureOpen(attachedDatabase);
+
           try {
             return await action();
           } finally {
