@@ -73,8 +73,29 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     // The query should return one column only, but this is not the right place
     // to lint that. Just pick any column and resolve to that.
+    // The returned column is nullable (since it could be that the subquery does
+    // not resolve to any row) if the expression is not an aggregate function.
     final columnForExpr = columnsOfQuery.first;
-    session._addRelation(CopyTypeFrom(e, columnForExpr, makeNullable: true));
+    final isAggregate = switch (columnForExpr.source) {
+      ExpressionColumn(expression: SqlInvocation(:final name)) => const {
+          'avg',
+          'count',
+          'group_concat',
+          'string_agg',
+          'max',
+          'min',
+          'sum',
+          'total',
+          'json_group_array',
+          'jsonb_group_array',
+          'json_group_object',
+          'jsonb_group_object',
+        }.contains(name.toLowerCase()),
+      _ => false,
+    };
+
+    session._addRelation(
+        CopyTypeFrom(e, columnForExpr, makeNullable: !isAggregate));
     visitChildren(e, arg);
   }
 
