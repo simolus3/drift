@@ -50,15 +50,13 @@ class _TableManagerWriter {
         table: table, dbClassName: dbClassName, leaf: leaf));
 
     // Gather the relationships to and from this table
-    List<_Relation> relations = table.columns
-        .map((e) => _getRelationForColumn(e))
-        .whereNotNull()
-        .toList();
+    List<_Relation> relations =
+        table.columns.map((e) => _getRelationForColumn(e)).nonNulls.toList();
 
     for (var otherTable in otherTables) {
       final otherTableRelations = otherTable.columns
           .map((e) => _getRelationForColumn(e))
-          .whereNotNull()
+          .nonNulls
           .toList();
       // Filter out the ones that don't point to the current table,
       // and then swap so that `currentTable` is the same as this classes table

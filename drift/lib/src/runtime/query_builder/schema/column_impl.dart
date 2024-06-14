@@ -369,7 +369,7 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
   /// column is nullable, [isInValues] evaluates to `true`.
   Expression<bool> isInValues(Iterable<D> values) {
     final mappedValues = values.map(_mapDartValue);
-    final result = isIn(mappedValues.whereNotNull());
+    final result = isIn(mappedValues.nonNulls);
 
     final hasNulls = mappedValues.any((e) => e == null);
     if (hasNulls) {
@@ -385,7 +385,7 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
   /// The values will be mapped using the [converter] applied to this column.
   Expression<bool> isNotInValues(Iterable<D> values) {
     final mappedValues = values.map(_mapDartValue);
-    final result = isNotIn(mappedValues.whereNotNull());
+    final result = isNotIn(mappedValues.nonNulls);
 
     final hasNulls = mappedValues.any((e) => e == null);
     if (hasNulls) {

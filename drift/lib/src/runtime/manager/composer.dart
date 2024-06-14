@@ -38,7 +38,7 @@ class ComposerState<Database extends GeneratedDatabase,
           .map((e) => e.$state.allJoinBuilders())
           .expand((element) => element),
       joinBuilder,
-    ].whereNotNull().toSet();
+    ].nonNulls.toSet();
   }
 
   /// A helper method for creating objects that need that require
