@@ -323,3 +323,17 @@ for each stored phone number.
 Luckily, the `json_each` function in sqlite3 can do exactly that, and drift exposes it:
 
 {% include "blocks/snippet" snippets = json_snippet name = 'calls-with-contacts' %}
+
+## Selects without tables
+
+Some queries don't need a `FROM` clause at all and instead just select some expressions directly.
+An example for this may be a select that just uses subquery expressions, like here to query whether
+any rows exist in a table:
+
+{% include "blocks/snippet" snippets = json_snippet name = 'hasTodoItem' %}
+
+The `selectExpressions` API is similar to `selectOnly`, except that it doesn't require any table
+at all.
+Instead, the expressions in the list passed to `selectExpressions` are evaluated in a standalone
+select statement and can be parsed from the `TypedResult` class returned when evaluating the
+query.

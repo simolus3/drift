@@ -203,4 +203,12 @@ extension SelectExamples on CanUseCommonTables {
     }).get();
   }
   // #enddocregion custom-columns
+
+  // #docregion hasTodoItem
+  Future<bool> hasTodoItem() async {
+    final todoItemExists = existsQuery(select(todoItems));
+    final row = await selectExpressions([todoItemExists]).getSingle();
+    return row.read(todoItemExists)!;
+  }
+  // #enddocregion hasTodoItem
 }

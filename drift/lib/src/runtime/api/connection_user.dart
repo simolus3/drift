@@ -241,6 +241,27 @@ abstract class DatabaseConnectionUser {
     return JoinedSelectStatement<T, R>(this, table, [], distinct, false, false);
   }
 
+  /// Creates a select statement without a `FROM` clause selecting [columns].
+  ///
+  /// In SQL, select statements without a table will return a single row where
+  /// all the [columns] are evaluated. Of course, columns cannot refer to
+  /// columns from a table as these are unavailable without a `FROM` clause.
+  ///
+  /// To run or watch the select statement, call [Selectable.get] or
+  /// [Selectable.watch]. Each returns a list of [TypedResult] rows, for which
+  /// a column can be read with [TypedResult.read].
+  ///
+  /// This example uses [selectExpressions] to query the current time set on the
+  /// database server:
+  ///
+  /// ```dart
+  /// final row = await selectExpressions([currentDateAndTime]).getSingle();
+  /// final databaseTime = row.read(currentDateAndTime)!;
+  /// ```
+  Selectable<TypedResult> selectExpressions(Iterable<Expression> columns) {
+    return SelectWithoutTables(this, columns);
+  }
+
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   ///
   /// See the [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)

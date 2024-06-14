@@ -17,7 +17,10 @@ export 'src/runtime/executor/connection_pool.dart';
 export 'src/runtime/executor/executor.dart';
 export 'src/runtime/executor/interceptor.dart';
 export 'src/runtime/query_builder/query_builder.dart'
-    hide CaseWhenExpressionWithBase, BaseCaseWhenExpression;
+    hide
+        CaseWhenExpressionWithBase,
+        BaseCaseWhenExpression,
+        SelectWithoutTables;
 export 'src/runtime/types/converters.dart';
 export 'src/runtime/types/mapping.dart' hide BaseSqlType, UserDefinedSqlType;
 export 'src/runtime/manager/manager.dart';

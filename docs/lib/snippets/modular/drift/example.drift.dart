@@ -161,6 +161,15 @@ class Todo extends i0.DataClass implements i0.Insertable<i1.Todo> {
         content: content ?? this.content,
         category: category.present ? category.value : this.category,
       );
+  Todo copyWithCompanion(i1.TodosCompanion data) {
+    return Todo(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      category: data.category.present ? data.category.value : this.category,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Todo(')
@@ -508,6 +517,14 @@ class Category extends i0.DataClass implements i0.Insertable<i1.Category> {
         id: id ?? this.id,
         description: description ?? this.description,
       );
+  Category copyWithCompanion(i1.CategoriesCompanion data) {
+    return Category(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Category(')

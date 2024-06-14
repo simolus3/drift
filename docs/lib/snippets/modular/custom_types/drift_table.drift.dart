@@ -136,6 +136,14 @@ class PeriodicReminder extends i0.DataClass
         frequency: frequency ?? this.frequency,
         reminder: reminder ?? this.reminder,
       );
+  PeriodicReminder copyWithCompanion(i1.PeriodicRemindersCompanion data) {
+    return PeriodicReminder(
+      id: data.id.present ? data.id.value : this.id,
+      frequency: data.frequency.present ? data.frequency.value : this.frequency,
+      reminder: data.reminder.present ? data.reminder.value : this.reminder,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('PeriodicReminder(')

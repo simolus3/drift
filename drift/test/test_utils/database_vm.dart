@@ -51,5 +51,7 @@ Version get sqlite3Version {
 
 DatabaseConnection testInMemoryDatabase() {
   preferLocalSqlite3();
-  return DatabaseConnection(NativeDatabase.memory());
+  return DatabaseConnection(NativeDatabase.memory(setup: (rawDb) {
+    rawDb.config.doubleQuotedStringLiterals = false;
+  }));
 }

@@ -7,6 +7,7 @@ import 'package:drift/src/runtime/executor/transactions.dart';
 import 'package:meta/meta.dart';
 
 import '../devtools/devtools.dart' as devtools;
+import '../query_builder/query_builder.dart';
 
 part 'batch.dart';
 part 'connection.dart';

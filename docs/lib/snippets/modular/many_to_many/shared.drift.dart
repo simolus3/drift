@@ -134,6 +134,15 @@ class BuyableItem extends i0.DataClass
         description: description ?? this.description,
         price: price ?? this.price,
       );
+  BuyableItem copyWithCompanion(i1.BuyableItemsCompanion data) {
+    return BuyableItem(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+      price: data.price.present ? data.price.value : this.price,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('BuyableItem(')

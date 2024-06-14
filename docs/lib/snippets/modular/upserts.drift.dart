@@ -107,6 +107,13 @@ class Word extends i0.DataClass implements i0.Insertable<i1.Word> {
         word: word ?? this.word,
         usages: usages ?? this.usages,
       );
+  Word copyWithCompanion(i1.WordsCompanion data) {
+    return Word(
+      word: data.word.present ? data.word.value : this.word,
+      usages: data.usages.present ? data.usages.value : this.usages,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Word(')
@@ -438,6 +445,15 @@ class MatchResult extends i0.DataClass
         teamB: teamB ?? this.teamB,
         teamAWon: teamAWon ?? this.teamAWon,
       );
+  MatchResult copyWithCompanion(i1.MatchResultsCompanion data) {
+    return MatchResult(
+      id: data.id.present ? data.id.value : this.id,
+      teamA: data.teamA.present ? data.teamA.value : this.teamA,
+      teamB: data.teamB.present ? data.teamB.value : this.teamB,
+      teamAWon: data.teamAWon.present ? data.teamAWon.value : this.teamAWon,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('MatchResult(')

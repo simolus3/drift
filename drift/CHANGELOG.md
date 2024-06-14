@@ -8,6 +8,8 @@
 - Add `initiallyDeferred` option to `references()` column builder for foreign
   key constraints.
 - Add `dropColumn` method to `Migrator`.
+- Add `selectExpressions` method to build select statements without a `FROM`
+  clause.
 - Fix encoding `BigInt` arguments in batched statements sent to web workers.
   Note that the fix also requires the latest `drift_worker.js` to be effective.
 - Both `transaction` and `exclusively` will wait for the transaction or the

@@ -141,6 +141,13 @@ class ShoppingCart extends i0.DataClass
         id: id ?? this.id,
         entries: entries ?? this.entries,
       );
+  ShoppingCart copyWithCompanion(i2.ShoppingCartsCompanion data) {
+    return ShoppingCart(
+      id: data.id.present ? data.id.value : this.id,
+      entries: data.entries.present ? data.entries.value : this.entries,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ShoppingCart(')

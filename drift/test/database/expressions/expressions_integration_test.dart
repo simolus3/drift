@@ -23,8 +23,8 @@ void main() {
     setUp(() async {
       db = TodoDb(testInMemoryDatabase());
 
-      // we selectOnly from users for the lack of a better option. Insert one
-      // row so that getSingle works
+      // some tests rely on a single row existing in the users table so that
+      // they can select from it.
       await db.into(db.users).insert(UsersCompanion.insert(
           name: 'User name', profilePicture: Uint8List(0)));
     });
@@ -32,12 +32,19 @@ void main() {
 
     Future<T?> eval<T extends Object>(Expression<T> expr,
         {TableInfo? onTable}) {
-      final query = db.selectOnly(onTable ?? db.users)..addColumns([expr]);
-      return query.getSingle().then((row) => row.read(expr));
+      if (onTable == null) {
+        return db
+            .selectExpressions([expr])
+            .getSingle()
+            .then((row) => row.read(expr));
+      } else {
+        final query = db.selectOnly(onTable)..addColumns([expr]);
+        return query.getSingle().then((row) => row.read(expr));
+      }
     }
 
     test('rowid', () {
-      expect(eval(db.users.rowId), completion(1));
+      expect(eval(db.users.rowId, onTable: db.users), completion(1));
     });
 
     group('aggregate', () {
@@ -52,11 +59,13 @@ void main() {
         });
 
         test('simple', () {
-          expect(eval(db.users.id.groupConcat()), completion('2,3,4,5,6'));
+          expect(eval(db.users.id.groupConcat(), onTable: db.users),
+              completion('2,3,4,5,6'));
         });
 
         test('custom separator', () {
-          expect(eval(db.users.id.groupConcat(separator: '-')),
+          expect(
+              eval(db.users.id.groupConcat(separator: '-'), onTable: db.users),
               completion('2-3-4-5-6'));
         });
 
@@ -78,9 +87,12 @@ void main() {
 
         test('filter', () {
           expect(
-              eval(db.users.id
-                  .groupConcat(filter: db.users.id.isBiggerThanValue(3))),
-              completion('4,5,6'));
+            eval(
+                db.users.id
+                    .groupConcat(filter: db.users.id.isBiggerThanValue(3)),
+                onTable: db.users),
+            completion('4,5,6'),
+          );
         });
       });
 

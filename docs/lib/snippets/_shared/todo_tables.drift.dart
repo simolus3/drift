@@ -190,6 +190,16 @@ class TodoItem extends i0.DataClass implements i0.Insertable<i1.TodoItem> {
         category: category.present ? category.value : this.category,
         dueDate: dueDate.present ? dueDate.value : this.dueDate,
       );
+  TodoItem copyWithCompanion(i1.TodoItemsCompanion data) {
+    return TodoItem(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      category: data.category.present ? data.category.value : this.category,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TodoItem(')
@@ -568,6 +578,13 @@ class Category extends i0.DataClass implements i0.Insertable<i1.Category> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  Category copyWithCompanion(i1.CategoriesCompanion data) {
+    return Category(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Category(')
@@ -828,6 +845,13 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
         id: id ?? this.id,
         birthDate: birthDate ?? this.birthDate,
       );
+  User copyWithCompanion(i1.UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')

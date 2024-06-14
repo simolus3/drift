@@ -315,6 +315,13 @@ class Friend extends i0.DataClass implements i0.Insertable<i2.Friend> {
         userA: userA ?? this.userA,
         userB: userB ?? this.userB,
       );
+  Friend copyWithCompanion(i2.FriendsCompanion data) {
+    return Friend(
+      userA: data.userA.present ? data.userA.value : this.userA,
+      userB: data.userB.present ? data.userB.value : this.userB,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Friend(')

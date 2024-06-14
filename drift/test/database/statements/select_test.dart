@@ -285,4 +285,17 @@ void main() {
           [12]));
     });
   });
+
+  test('select expressions', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) async => [
+          {'c0': true}
+        ]);
+
+    final exists = existsQuery(db.select(db.todosTable));
+    final result = await db.selectExpressions([exists]).getSingle();
+
+    verify(
+        executor.runSelect('SELECT EXISTS (SELECT * FROM "todos") "c0";', []));
+    expect(result.read(exists), isTrue);
+  });
 }
