@@ -1159,6 +1159,30 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as _i2.JoinedSelectStatement<T, R>);
 
   @override
+  _i2.Selectable<_i2.TypedResult> selectExpressions(
+          Iterable<_i2.Expression<Object>>? columns) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #selectExpressions,
+          [columns],
+        ),
+        returnValue: _FakeSelectable_24<_i2.TypedResult>(
+          this,
+          Invocation.method(
+            #selectExpressions,
+            [columns],
+          ),
+        ),
+        returnValueForMissingStub: _FakeSelectable_24<_i2.TypedResult>(
+          this,
+          Invocation.method(
+            #selectExpressions,
+            [columns],
+          ),
+        ),
+      ) as _i2.Selectable<_i2.TypedResult>);
+
+  @override
   _i2.DeleteStatement<T, D> delete<T extends _i2.Table, D>(
           _i2.TableInfo<T, D>? table) =>
       (super.noSuchMethod(

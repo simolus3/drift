@@ -7,7 +7,7 @@ import 'package:drift/drift.dart';
 class DriftDatabaseOptions {
   /// Configuration for [SqlTypes] describing how to map Dart values from and to
   /// SQL values.
-  @Deprecated('UsecreateTypeMapping instead')
+  @Deprecated('Use createTypeMapping instead')
   final SqlTypes types;
 
   final bool _storeDateTimeAsText;
