@@ -665,8 +665,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return const ResolvedType(type: BasicType.blob);
       case 'unhex':
         return const ResolvedType(type: BasicType.blob, nullable: true);
-      case 'total':
       case 'avg':
+        return _realType.withNullable(true);
+      case 'total':
       case 'percent_rank':
       case 'cume_dist':
         return _realType;
