@@ -1,0 +1,12 @@
+-- #docregion test
+CREATE TABLE Test (
+  id INTEGER PRIMARY KEY,
+  name TEXT,
+  value INTEGER,
+  num REAL
+);
+-- #enddocregion test
+
+-- #docregion query
+findWithValue: SELECT * FROM Test WHERE value > ?;
+-- #enddocregion query
