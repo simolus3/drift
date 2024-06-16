@@ -31,6 +31,8 @@ class SqlEngine {
     registerTable(sqliteSchema);
 
     registerTable(sqliteSequence);
+
+    registerTable(dbstat);
   }
 
   /// Obtain a [SchemaFromCreateTable] instance compatible with the
