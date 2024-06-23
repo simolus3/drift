@@ -448,7 +448,7 @@ void main() {
       await db.managers.todosTable.create((o) => o(
           content: i.content,
           title: i.title,
-          category: i.category,
+          category: Value(RowId(i.category.value)),
           status: i.status,
           targetDate: i.targetDate));
     }

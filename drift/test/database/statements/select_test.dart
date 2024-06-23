@@ -19,7 +19,7 @@ const _todoEntry = TodoEntry(
   id: RowId(10),
   title: 'A todo title',
   content: 'Content',
-  category: 3,
+  category: RowId(3),
 );
 
 void main() {

@@ -30,6 +30,7 @@ class TodosTable extends Table with AutoIncrement {
   DateTimeColumn get targetDate => dateTime().nullable().unique()();
   @ReferenceName("todos")
   IntColumn get category => integer()
+      .map(TypeConverter.extensionType<RowId, int>())
       .references(Categories, #id, initiallyDeferred: true)
       .nullable()();
 

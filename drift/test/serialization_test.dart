@@ -10,7 +10,7 @@ final TodoEntry _someTodoEntry = TodoEntry(
   title: null,
   content: 'content',
   targetDate: _someDate,
-  category: 3,
+  category: RowId(3),
   status: TodoStatus.open,
 );
 

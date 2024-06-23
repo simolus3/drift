@@ -35,7 +35,7 @@ void main() {
     await db.todosTable.insertOne(TodosTableCompanion.insert(
         content: 'some content',
         title: const Value('title'),
-        category: Value(category.id.id)));
+        category: Value(RowId(category.id.id))));
 
     final result = await db.todoWithCategoryView.select().getSingle();
     expect(
@@ -61,9 +61,11 @@ void main() {
       batch.insertAll(
         db.todosTable,
         [
-          TodosTableCompanion.insert(content: 'aaaaa', category: Value(1)),
-          TodosTableCompanion.insert(content: 'aa', category: Value(1)),
-          TodosTableCompanion.insert(content: 'bbbbbb', category: Value(2)),
+          TodosTableCompanion.insert(
+              content: 'aaaaa', category: Value(RowId(1))),
+          TodosTableCompanion.insert(content: 'aa', category: Value(RowId(1))),
+          TodosTableCompanion.insert(
+              content: 'bbbbbb', category: Value(RowId(2))),
         ],
       );
     });

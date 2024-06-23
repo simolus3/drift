@@ -308,12 +308,13 @@ class $TodosTableTable extends TodosTable
   static const VerificationMeta _categoryMeta =
       const VerificationMeta('category');
   @override
-  late final GeneratedColumn<int> category = GeneratedColumn<int>(
-      'category', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED'));
+  late final GeneratedColumnWithTypeConverter<RowId?, int> category =
+      GeneratedColumn<int>('category', aliasedName, true,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultConstraints: GeneratedColumn.constraintIsAlways(
+                  'REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED'))
+          .withConverter<RowId?>($TodosTableTable.$convertercategoryn);
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumnWithTypeConverter<TodoStatus?, String> status =
@@ -350,10 +351,7 @@ class $TodosTableTable extends TodosTable
           targetDate.isAcceptableOrUnknown(
               data['target_date']!, _targetDateMeta));
     }
-    if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
-    }
+    context.handle(_categoryMeta, const VerificationResult.success());
     context.handle(_statusMeta, const VerificationResult.success());
     return context;
   }
@@ -377,8 +375,9 @@ class $TodosTableTable extends TodosTable
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
       targetDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      category: $TodosTableTable.$convertercategoryn.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category'])),
       status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])),
@@ -392,6 +391,10 @@ class $TodosTableTable extends TodosTable
 
   static JsonTypeConverter2<RowId, int, int> $converterid =
       TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<RowId, int, int> $convertercategory =
+      TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<RowId?, int?, int?> $convertercategoryn =
+      JsonTypeConverter2.asNullable($convertercategory);
   static JsonTypeConverter2<TodoStatus, String, String> $converterstatus =
       const EnumNameConverter<TodoStatus>(TodoStatus.values);
   static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
@@ -403,7 +406,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String? title;
   final String content;
   final DateTime? targetDate;
-  final int? category;
+  final RowId? category;
   final TodoStatus? status;
   const TodoEntry(
       {required this.id,
@@ -426,7 +429,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       map['target_date'] = Variable<DateTime>(targetDate);
     }
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int>(category);
+      map['category'] =
+          Variable<int>($TodosTableTable.$convertercategoryn.toSql(category));
     }
     if (!nullToAbsent || status != null) {
       map['status'] =
@@ -461,7 +465,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       title: serializer.fromJson<String?>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
-      category: serializer.fromJson<int?>(json['category']),
+      category: $TodosTableTable.$convertercategoryn
+          .fromJson(serializer.fromJson<int?>(json['category'])),
       status: $TodosTableTable.$converterstatusn
           .fromJson(serializer.fromJson<String?>(json['status'])),
     );
@@ -479,7 +484,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'title': serializer.toJson<String?>(title),
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
-      'category': serializer.toJson<int?>(category),
+      'category': serializer
+          .toJson<int?>($TodosTableTable.$convertercategoryn.toJson(category)),
       'status': serializer
           .toJson<String?>($TodosTableTable.$converterstatusn.toJson(status)),
     };
@@ -490,7 +496,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           Value<String?> title = const Value.absent(),
           String? content,
           Value<DateTime?> targetDate = const Value.absent(),
-          Value<int?> category = const Value.absent(),
+          Value<RowId?> category = const Value.absent(),
           Value<TodoStatus?> status = const Value.absent()}) =>
       TodoEntry(
         id: id ?? this.id,
@@ -545,7 +551,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   final Value<String?> title;
   final Value<String> content;
   final Value<DateTime?> targetDate;
-  final Value<int?> category;
+  final Value<RowId?> category;
   final Value<TodoStatus?> status;
   const TodosTableCompanion({
     this.id = const Value.absent(),
@@ -586,7 +592,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       Value<String?>? title,
       Value<String>? content,
       Value<DateTime?>? targetDate,
-      Value<int?>? category,
+      Value<RowId?>? category,
       Value<TodoStatus?>? status}) {
     return TodosTableCompanion(
       id: id ?? this.id,
@@ -614,7 +620,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       map['target_date'] = Variable<DateTime>(targetDate.value);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value);
+      map['category'] = Variable<int>(
+          $TodosTableTable.$convertercategoryn.toSql(category.value));
     }
     if (status.present) {
       map['status'] = Variable<String>(
@@ -3355,7 +3362,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
           title: row.readNullable<String>('title'),
           content: row.read<String>('content'),
           targetDate: row.readNullable<DateTime>('target_date'),
-          category: row.readNullable<int>('category'),
+          category: NullAwareTypeConverter.wrapFromSql(
+              $TodosTableTable.$convertercategory,
+              row.readNullable<int>('category')),
           status: NullAwareTypeConverter.wrapFromSql(
               $TodosTableTable.$converterstatus,
               row.readNullable<String>('status')),
@@ -3524,6 +3533,19 @@ class $$CategoriesTableFilterComposer
       column: $state.table.descriptionInUpperCase,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ComposableFilter todos(
+      ComposableFilter Function($$TodosTableTableFilterComposer f) f) {
+    final $$TodosTableTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.todosTable,
+        getReferencedColumn: (t) => t.category,
+        builder: (joinBuilder, parentComposers) =>
+            $$TodosTableTableFilterComposer(ComposerState($state.db,
+                $state.db.todosTable, joinBuilder, parentComposers)));
+    return f(composer);
+  }
 }
 
 class $$CategoriesTableOrderingComposer
@@ -3556,6 +3578,11 @@ class $$CategoriesTableWithReferences {
   final _$TodoDb _db;
   final Category categories;
   $$CategoriesTableWithReferences(this._db, this.categories);
+
+  $$TodosTableTableProcessedTableManager get todos {
+    return $$TodosTableTableTableManager(_db, _db.todosTable)
+        .filter((f) => f.category.id(categories.id));
+  }
 }
 
 typedef $$TodosTableTableInsertCompanionBuilder = TodosTableCompanion Function({
@@ -3563,7 +3590,7 @@ typedef $$TodosTableTableInsertCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   required String content,
   Value<DateTime?> targetDate,
-  Value<int?> category,
+  Value<RowId?> category,
   Value<TodoStatus?> status,
 });
 typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
@@ -3571,7 +3598,7 @@ typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   Value<String> content,
   Value<DateTime?> targetDate,
-  Value<int?> category,
+  Value<RowId?> category,
   Value<TodoStatus?> status,
 });
 
@@ -3598,7 +3625,7 @@ class $$TodosTableTableTableManager extends RootTableManager<
             Value<String?> title = const Value.absent(),
             Value<String> content = const Value.absent(),
             Value<DateTime?> targetDate = const Value.absent(),
-            Value<int?> category = const Value.absent(),
+            Value<RowId?> category = const Value.absent(),
             Value<TodoStatus?> status = const Value.absent(),
           }) =>
               TodosTableCompanion(
@@ -3616,7 +3643,7 @@ class $$TodosTableTableTableManager extends RootTableManager<
             Value<String?> title = const Value.absent(),
             required String content,
             Value<DateTime?> targetDate = const Value.absent(),
-            Value<int?> category = const Value.absent(),
+            Value<RowId?> category = const Value.absent(),
             Value<TodoStatus?> status = const Value.absent(),
           }) =>
               TodosTableCompanion.insert(
@@ -3672,6 +3699,18 @@ class $$TodosTableTableFilterComposer
           builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
               column,
               joinBuilders: joinBuilders));
+
+  $$CategoriesTableFilterComposer get category {
+    final $$CategoriesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: $state.db.categories,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$CategoriesTableFilterComposer(ComposerState($state.db,
+                $state.db.categories, joinBuilder, parentComposers)));
+    return composer;
+  }
 }
 
 class $$TodosTableTableOrderingComposer
@@ -3701,6 +3740,18 @@ class $$TodosTableTableOrderingComposer
       column: $state.table.status,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$CategoriesTableOrderingComposer get category {
+    final $$CategoriesTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: $state.db.categories,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$CategoriesTableOrderingComposer(ComposerState($state.db,
+                $state.db.categories, joinBuilder, parentComposers)));
+    return composer;
+  }
 }
 
 class $$TodosTableTableWithReferences {
@@ -3708,6 +3759,12 @@ class $$TodosTableTableWithReferences {
   final _$TodoDb _db;
   final TodoEntry todosTable;
   $$TodosTableTableWithReferences(this._db, this.todosTable);
+
+  $$CategoriesTableProcessedTableManager? get category {
+    if (todosTable.category == null) return null;
+    return $$CategoriesTableTableManager(_db, _db.categories)
+        .filter((f) => f.id(todosTable.category!));
+  }
 }
 
 typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
@@ -5073,7 +5130,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   final String? title;
   final String content;
   final DateTime? targetDate;
-  final int? category;
+  final RowId? category;
   final TodoStatus? status;
   final RowId catId;
   final String catDesc;
