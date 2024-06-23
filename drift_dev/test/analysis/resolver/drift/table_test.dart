@@ -123,8 +123,11 @@ CREATE TABLE b (
             'expression',
             contains('EnumIndexConverter<Fruits>'),
           )
-          .having((e) => e.dartType.getDisplayString(withNullability: false),
-              'dartType', 'Fruits'), // ignore: deprecated_member_use
+          .having(
+              (e) => e.dartType.getDisplayString(
+                  withNullability: false), // ignore: deprecated_member_use
+              'dartType',
+              'Fruits'),
     );
 
     final withGenericIndexColumn = table.columns
@@ -154,8 +157,11 @@ CREATE TABLE b (
             'expression',
             contains('EnumNameConverter<Fruits>'),
           )
-          .having((e) => e.dartType.getDisplayString(withNullability: false),
-              'dartType', 'Fruits'), // ignore: deprecated_member_use
+          .having(
+              (e) => e.dartType.getDisplayString(
+                  withNullability: false), // ignore: deprecated_member_use
+              'dartType',
+              'Fruits'),
     );
 
     expect(
