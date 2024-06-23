@@ -9,45 +9,27 @@ part 'filter.dart';
 part 'composable.dart';
 part 'ordering.dart';
 
-sealed class _StatementType<T extends Table, DT> {
-  const _StatementType();
-}
-
-class _SimpleResult<T extends Table, DT> extends _StatementType<T, DT> {
-  final SimpleSelectStatement<T, DT> statement;
-  const _SimpleResult(this.statement);
-}
-
-class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
-  final JoinedSelectStatement<T, DT> statement;
-
-  const _JoinedResult(this.statement);
-}
-
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
-/// It holds the state for manager of [T] table in [DB] database, used to return [DT] data classes/rows.
-/// It holds the [FS] Filters and [OS] Orderings for the manager.
+/// It holds the state for manager of [$Table] table in [$Database] database.
+/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings for the manager.
+/// [$Dataclass] is the dataclass that is used to interact with the table
 ///
-/// It also holds the [CI] and [CU] functions that are used to create companion builders for inserting and updating data.
-/// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
-///
-/// The [C] generic refers to the type of the child manager that will be created when a filter/ordering is applied
-
+/// It also holds the [$CreateCompanionCallback] and [$UpdateCompanionCallback] functions that are used to create companion builders for inserting and updating data.
+@immutable
 class TableManagerState<
-    DB extends GeneratedDatabase,
-    T extends Table,
-    DT,
-    FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
-    CI extends Function,
-    CU extends Function> {
+    $Database extends GeneratedDatabase,
+    $Table extends Table,
+    $Dataclass,
+    $FilterComposer extends FilterComposer<$Database, $Table>,
+    $OrderingComposer extends OrderingComposer<$Database, $Table>,
+    $CreateCompanionCallback extends Function,
+    $UpdateCompanionCallback extends Function> {
   /// The database used to run the query.
-  final DB db;
+  final $Database db;
 
-  /// The table primary table from which to select from.
-  final T table;
+  /// The table that the manager is for
+  final $Table table;
 
   /// The expression that will be applied to the query
   final Expression<bool>? filter;
@@ -72,24 +54,20 @@ class TableManagerState<
   /// The [FilterComposer] for this [TableManagerState]
   /// This class will be used to create filtering [Expression]s
   /// which will be applied to the statement when its eventually created
-  final FS filteringComposer;
+  final $FilterComposer filteringComposer;
 
   /// The [OrderingComposer] for this [TableManagerState]
   /// This class will be used to create [OrderingTerm]s
   /// which will be applied to the statement when its eventually created
-  final OS orderingComposer;
-
-  /// This function is used internaly to return a new instance of the child manager
-  final C Function(TableManagerState<DB, T, DT, FS, OS, C, CI, CU>)
-      _getChildManagerBuilder;
+  final $OrderingComposer orderingComposer;
 
   /// This function is passed to the user to create a companion
   /// for inserting data into the table
-  final CI _getInsertCompanionBuilder;
+  final $CreateCompanionCallback _createInsertCompanionCallback;
 
   /// This function is passed to the user to create a companion
   /// for updating data in the table
-  final CU _getUpdateCompanionBuilder;
+  final $UpdateCompanionCallback _createUpdateCompanionCallback;
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
@@ -101,22 +79,26 @@ class TableManagerState<
       required this.table,
       required this.filteringComposer,
       required this.orderingComposer,
-      required C Function(TableManagerState<DB, T, DT, FS, OS, C, CI, CU>)
-          getChildManagerBuilder,
-      required CI getInsertCompanionBuilder,
-      required CU getUpdateCompanionBuilder,
+      required $CreateCompanionCallback createInsertCompanionCallback,
+      required $UpdateCompanionCallback createUpdateCompanionCallback,
       this.filter,
       this.distinct,
       this.limit,
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : _getChildManagerBuilder = getChildManagerBuilder,
-        _getInsertCompanionBuilder = getInsertCompanionBuilder,
-        _getUpdateCompanionBuilder = getUpdateCompanionBuilder;
+      : _createInsertCompanionCallback = createInsertCompanionCallback,
+        _createUpdateCompanionCallback = createUpdateCompanionCallback;
 
   /// Copy this state with the given values
-  TableManagerState<DB, T, DT, FS, OS, C, CI, CU> copyWith({
+  TableManagerState<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback> copyWith({
     bool? distinct,
     int? limit,
     int? offset,
@@ -129,9 +111,8 @@ class TableManagerState<
       table: table,
       filteringComposer: filteringComposer,
       orderingComposer: orderingComposer,
-      getChildManagerBuilder: _getChildManagerBuilder,
-      getInsertCompanionBuilder: _getInsertCompanionBuilder,
-      getUpdateCompanionBuilder: _getUpdateCompanionBuilder,
+      createInsertCompanionCallback: _createInsertCompanionCallback,
+      createUpdateCompanionCallback: _createUpdateCompanionCallback,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
@@ -143,10 +124,11 @@ class TableManagerState<
 
   /// Helper for getting the table that's casted as a TableInfo
   /// This is needed due to dart's limitations with generics
-  TableInfo<T, DT> get _tableAsTableInfo => table as TableInfo<T, DT>;
+  TableInfo<$Table, $Dataclass> get _tableAsTableInfo =>
+      table as TableInfo<$Table, $Dataclass>;
 
   /// Builds a select statement with the given target columns, or all columns if none are provided
-  _StatementType<T, DT> _buildSelectStatement(
+  _StatementType<$Table, $Dataclass> _buildSelectStatement(
       {Iterable<Expression>? targetColumns}) {
     final joins = joinBuilders.map((e) => e.buildJoin()).toList();
 
@@ -169,19 +151,19 @@ class TableManagerState<
 
       return _SimpleResult(simpleStatement);
     } else {
-      JoinedSelectStatement<T, DT> joinedStatement;
+      JoinedSelectStatement<$Table, $Dataclass> joinedStatement;
       // If we are only selecting specific columns, we can use a selectOnly statement
       if (targetColumns != null) {
         joinedStatement =
             (db.selectOnly(_tableAsTableInfo, distinct: distinct ?? false)
               ..addColumns(targetColumns));
         // Add the joins to the statement
-        joinedStatement =
-            joinedStatement.join(joins) as JoinedSelectStatement<T, DT>;
+        joinedStatement = joinedStatement.join(joins)
+            as JoinedSelectStatement<$Table, $Dataclass>;
       } else {
         joinedStatement = db
             .select(_tableAsTableInfo, distinct: distinct ?? false)
-            .join(joins) as JoinedSelectStatement<T, DT>;
+            .join(joins) as JoinedSelectStatement<$Table, $Dataclass>;
       }
       // Apply the expression to the statement
       if (filter != null) {
@@ -200,7 +182,7 @@ class TableManagerState<
   }
 
   /// Build a select statement based on the manager state
-  Selectable<DT> buildSelectStatement() {
+  Selectable<$Dataclass> buildSelectStatement() {
     final result = _buildSelectStatement();
     switch (result) {
       case _SimpleResult():
@@ -211,8 +193,8 @@ class TableManagerState<
   }
 
   /// Build an update statement based on the manager state
-  UpdateStatement<T, DT> buildUpdateStatement() {
-    final UpdateStatement<T, DT> updateStatement;
+  UpdateStatement<$Table, $Dataclass> buildUpdateStatement() {
+    final UpdateStatement<$Table, $Dataclass> updateStatement;
     if (joinBuilders.isEmpty) {
       updateStatement = db.update(_tableAsTableInfo);
       if (filter != null) {
@@ -221,8 +203,8 @@ class TableManagerState<
     } else {
       updateStatement = db.update(_tableAsTableInfo);
       for (var col in _tableAsTableInfo.primaryKey) {
-        final subquery =
-            _buildSelectStatement(targetColumns: [col]) as _JoinedResult<T, DT>;
+        final subquery = _buildSelectStatement(targetColumns: [col])
+            as _JoinedResult<$Table, $Dataclass>;
         updateStatement.where((tbl) => col.isInQuery(subquery.statement));
       }
     }
@@ -280,8 +262,8 @@ class TableManagerState<
     } else {
       deleteStatement = db.delete(_tableAsTableInfo);
       for (var col in _tableAsTableInfo.primaryKey) {
-        final subquery =
-            _buildSelectStatement(targetColumns: [col]) as _JoinedResult<T, DT>;
+        final subquery = _buildSelectStatement(targetColumns: [col])
+            as _JoinedResult<$Table, $Dataclass>;
         deleteStatement.where((tbl) => col.isInQuery(subquery.statement));
       }
     }
@@ -292,44 +274,73 @@ class TableManagerState<
 /// Base class for all table managers
 /// Most of this classes functionality is kept in a seperate [TableManagerState] class
 /// This is so that the state can be passed down to lower level managers
+@immutable
 abstract class BaseTableManager<
-        DB extends GeneratedDatabase,
-        T extends Table,
-        DT,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, DT, FS, OS, C, CI, CU>,
-        CI extends Function,
-        CU extends Function>
-    implements
-        MultiSelectable<DT>,
-        SingleSelectable<DT>,
-        SingleOrNullSelectable<DT> {
+    $Database extends GeneratedDatabase,
+    $Table extends Table,
+    $Dataclass,
+    $FilterComposer extends FilterComposer<$Database, $Table>,
+    $OrderingComposer extends OrderingComposer<$Database, $Table>,
+    $CreateCompanionCallback extends Function,
+    $UpdateCompanionCallback extends Function> extends Selectable<$Dataclass> {
   /// The state for this manager
-  final TableManagerState<DB, T, DT, FS, OS, C, CI, CU> $state;
+  final TableManagerState<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback> $state;
 
   /// Create a new [BaseTableManager] instance
   ///
   /// {@macro manager_internal_use_only}
-  const BaseTableManager(this.$state);
+  BaseTableManager(this.$state);
+
+  /// Create a new [BaseTableManager] instance with the given state
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+      _buildChildManager(
+          TableManagerState<
+                  $Database,
+                  $Table,
+                  $Dataclass,
+                  $FilterComposer,
+                  $OrderingComposer,
+                  $CreateCompanionCallback,
+                  $UpdateCompanionCallback>
+              $state) {
+    return ProcessedTableManager($state);
+  }
 
   /// Add a limit to the statement
-  C limit(int limit, {int? offset}) {
-    return $state
-        ._getChildManagerBuilder($state.copyWith(limit: limit, offset: offset));
+  ProcessedTableManager<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback> limit(int limit, {int? offset}) {
+    return _buildChildManager($state.copyWith(limit: limit, offset: offset));
   }
 
   /// Add ordering to the statement
-  C orderBy(ComposableOrdering Function(OS o) o) {
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+      orderBy(ComposableOrdering Function($OrderingComposer o) o) {
     final orderings = o($state.orderingComposer);
-    return $state._getChildManagerBuilder($state.copyWith(
+    return _buildChildManager($state.copyWith(
         orderingBuilders:
             $state.orderingBuilders.union(orderings.orderingBuilders),
         joinBuilders: $state.joinBuilders.union(orderings.joinBuilders)));
   }
 
   /// Add a filter to the statement
-  C filter(ComposableFilter Function(FS f) f) {
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+      filter(ComposableFilter Function($FilterComposer f) f) {
     final filter = f($state.filteringComposer);
     final combinedFilter = switch (($state.filter, filter.expression)) {
       (null, null) => null,
@@ -338,7 +349,7 @@ abstract class BaseTableManager<
       (var filter1, var filter2) => (filter1!) & (filter2!)
     };
 
-    return $state._getChildManagerBuilder($state.copyWith(
+    return _buildChildManager($state.copyWith(
         filter: combinedFilter,
         joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
   }
@@ -355,8 +366,11 @@ abstract class BaseTableManager<
   ///
   /// See also: [RootTableManager.replace], which does not require [filter] statements and
   /// supports setting fields back to null.
-  Future<int> update(Insertable<DT> Function(CU o) f) =>
-      $state.buildUpdateStatement().write(f($state._getUpdateCompanionBuilder));
+  Future<int> update(
+          Insertable<$Dataclass> Function($UpdateCompanionCallback o) f) =>
+      $state
+          .buildUpdateStatement()
+          .write(f($state._createUpdateCompanionCallback));
 
   /// Return the count of rows matched by the built statement
   /// When counting rows, the query will only count distinct rows by default
@@ -387,10 +401,10 @@ abstract class BaseTableManager<
   /// See also: [getSingleOrNull], which returns `null` instead of
   /// throwing if the query completes with no rows.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// Uses the distinct flag by default to ensure that only distinct rows are returned
   @override
-  Future<DT> getSingle() =>
-      $state.copyWith(distinct: true).buildSelectStatement().getSingle();
+  Future<$Dataclass> getSingle({bool distinct = true}) =>
+      $state.copyWith(distinct: distinct).buildSelectStatement().getSingle();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only emit
@@ -398,10 +412,10 @@ abstract class BaseTableManager<
   /// `Stream<D>`. If, at any point, the query emits no or more than one rows,
   /// an error will be added to the stream instead.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// Uses the distinct flag by default to ensure that only distinct rows are returned
   @override
-  Stream<DT> watchSingle() =>
-      $state.copyWith(distinct: true).buildSelectStatement().watchSingle();
+  Stream<$Dataclass> watchSingle({bool distinct = true}) =>
+      $state.copyWith(distinct: distinct).buildSelectStatement().watchSingle();
 
   /// Executes the statement and returns all rows as a list.
   ///
@@ -409,7 +423,8 @@ abstract class BaseTableManager<
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
   @override
-  Future<List<DT>> get({bool distinct = false, int? limit, int? offset}) =>
+  Future<List<$Dataclass>> get(
+          {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
           .buildSelectStatement()
@@ -422,7 +437,8 @@ abstract class BaseTableManager<
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
   @override
-  Stream<List<DT>> watch({bool distinct = false, int? limit, int? offset}) =>
+  Stream<List<$Dataclass>> watch(
+          {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
           .buildSelectStatement()
@@ -435,10 +451,13 @@ abstract class BaseTableManager<
   /// See also: [getSingle], which can be used if the query will
   /// always evaluate to exactly one row.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// Uses the distinct flag by default to ensure that only distinct rows are returned
+
   @override
-  Future<DT?> getSingleOrNull() =>
-      $state.copyWith(distinct: true).buildSelectStatement().getSingleOrNull();
+  Future<$Dataclass?> getSingleOrNull({bool distinct = false}) => $state
+      .copyWith(distinct: distinct)
+      .buildSelectStatement()
+      .getSingleOrNull();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only
@@ -448,52 +467,51 @@ abstract class BaseTableManager<
   /// If the query emits zero rows at some point, `null` will be added
   /// to the stream instead.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// Uses the distinct flag by default to ensure that only distinct rows are returned
   @override
-  Stream<DT?> watchSingleOrNull() => $state
-      .copyWith(distinct: true)
+  Stream<$Dataclass?> watchSingleOrNull({bool distinct = false}) => $state
+      .copyWith(distinct: distinct)
       .buildSelectStatement()
       .watchSingleOrNull();
 }
 
 /// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
 //  As of now this is identical to [BaseTableManager] but it's kept seperate for future extensibility
+@immutable
 class ProcessedTableManager<
-        DB extends GeneratedDatabase,
-        T extends Table,
-        D,
-        FS extends FilterComposer<DB, T>,
-        OS extends OrderingComposer<DB, T>,
-        C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
+        $Database extends GeneratedDatabase,
+        $Table extends Table,
+        $Dataclass,
+        $FilterComposer extends FilterComposer<$Database, $Table>,
+        OS extends OrderingComposer<$Database, $Table>,
         CI extends Function,
         CU extends Function>
-    extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU>
-    implements
-        MultiSelectable<D>,
-        SingleSelectable<D>,
-        SingleOrNullSelectable<D> {
+    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer, OS,
+        CI, CU> {
   /// Create a new [ProcessedTableManager] instance
   @internal
-  const ProcessedTableManager(super.$state);
+  ProcessedTableManager(super.$state);
 }
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
-abstract class RootTableManager<
-    DB extends GeneratedDatabase,
-    T extends Table,
-    D,
-    FS extends FilterComposer<DB, T>,
-    OS extends OrderingComposer<DB, T>,
-    C extends ProcessedTableManager<DB, T, D, FS, OS, C, CI, CU>,
-    CI extends Function,
-    CU extends Function> extends BaseTableManager<DB, T, D, FS, OS, C, CI, CU> {
+@immutable
+class RootTableManager<
+        $Database extends GeneratedDatabase,
+        $Table extends Table,
+        $Dataclass,
+        $FilterComposer extends FilterComposer<$Database, $Table>,
+        $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $CreateCompanionCallback extends Function,
+        $UpdateCompanionCallback extends Function>
+    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback> {
   /// Create a new [RootTableManager] instance
   ///
   /// {@template manager_internal_use_only}
   /// This class is implemented by the code generator and should
   /// not be instantiated or extended manually.
   /// {@endtemplate}
-  const RootTableManager(super.$state);
+  RootTableManager(super.$state);
 
   /// Creates a new row in the table using the given function
   ///
@@ -516,10 +534,12 @@ abstract class RootTableManager<
   ///
   /// If the table doesn't have a `rowid`, you can't rely on the return value.
   /// Still, the future will always complete with an error if the insert fails.
-  Future<int> create(Insertable<D> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+  Future<int> create(
+      Insertable<$Dataclass> Function($CreateCompanionCallback o) f,
+      {InsertMode? mode,
+      UpsertClause<$Table, $Dataclass>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insert(
-        f($state._getInsertCompanionBuilder),
+        f($state._createInsertCompanionCallback),
         mode: mode,
         onConflict: onConflict);
   }
@@ -532,10 +552,12 @@ abstract class RootTableManager<
   /// exception in that case. Use [createReturningOrNull] when performing an
   /// insert with an insert mode like [InsertMode.insertOrIgnore] or when using
   /// a [DoUpdate] with a `where` clause clause.
-  Future<D> createReturning(Insertable<D> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+  Future<$Dataclass> createReturning(
+      Insertable<$Dataclass> Function($CreateCompanionCallback o) f,
+      {InsertMode? mode,
+      UpsertClause<$Table, $Dataclass>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insertReturning(
-        f($state._getInsertCompanionBuilder),
+        f($state._createInsertCompanionCallback),
         mode: mode,
         onConflict: onConflict);
   }
@@ -545,10 +567,12 @@ abstract class RootTableManager<
   /// When no row was inserted and no exception was thrown, for instance because
   /// [InsertMode.insertOrIgnore] was used or because the upsert clause had a
   /// `where` clause that didn't match, `null` is returned instead.
-  Future<D?> createReturningOrNull(Insertable<D> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+  Future<$Dataclass?> createReturningOrNull(
+      Insertable<$Dataclass> Function($CreateCompanionCallback o) f,
+      {InsertMode? mode,
+      UpsertClause<$Table, $Dataclass>? onConflict}) {
     return $state.db.into($state._tableAsTableInfo).insertReturningOrNull(
-        f($state._getInsertCompanionBuilder),
+        f($state._createInsertCompanionCallback),
         mode: mode,
         onConflict: onConflict);
   }
@@ -565,10 +589,12 @@ abstract class RootTableManager<
   /// checks.
   /// [onConflict] can be used to create an upsert clause for engines that
   /// support it. For details and examples, see [InsertStatement.insert].
-  Future<void> bulkCreate(Iterable<Insertable<D>> Function(CI o) f,
-      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
+  Future<void> bulkCreate(
+      Iterable<Insertable<$Dataclass>> Function($CreateCompanionCallback o) f,
+      {InsertMode? mode,
+      UpsertClause<$Table, $Dataclass>? onConflict}) {
     return $state.db.batch((b) => b.insertAll(
-        $state._tableAsTableInfo, f($state._getInsertCompanionBuilder),
+        $state._tableAsTableInfo, f($state._createInsertCompanionCallback),
         mode: mode, onConflict: onConflict));
   }
 
@@ -584,7 +610,7 @@ abstract class RootTableManager<
   /// ignores such fields without changing them in the database.
   ///
   /// Returns true if a row was affected by this operation.
-  Future<bool> replace(Insertable<D> entity) {
+  Future<bool> replace(Insertable<$Dataclass> entity) {
     return $state.db.update($state._tableAsTableInfo).replace(entity);
   }
 
@@ -595,8 +621,24 @@ abstract class RootTableManager<
   /// the field exists, that default value will be used. Otherwise, the field
   /// will be reset to null. This behavior is different to [update], which simply
   /// ignores such fields without changing them in the database.
-  Future<void> bulkReplace(Iterable<Insertable<D>> entities) {
+  Future<void> bulkReplace(Iterable<Insertable<$Dataclass>> entities) {
     return $state.db
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
   }
+}
+
+/// This sealed class is used to hold a query which may or may not be a joined query
+sealed class _StatementType<T extends Table, DT> {
+  const _StatementType();
+}
+
+class _SimpleResult<T extends Table, DT> extends _StatementType<T, DT> {
+  final SimpleSelectStatement<T, DT> statement;
+  const _SimpleResult(this.statement);
+}
+
+class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
+  final JoinedSelectStatement<T, DT> statement;
+
+  const _JoinedResult(this.statement);
 }
