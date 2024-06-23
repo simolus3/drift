@@ -60,7 +60,7 @@ class _ManagerCodeTemplates {
   /// as the table manager and is not used outside of the file
   ///
   /// E.g. `$UserTableProcessedTableManager`
-  String processedTableManagerName(DriftTable table) {
+  String processedTableManagerTypeDefName(DriftTable table) {
     return '\$${table.entityInfoName}ProcessedTableManager';
   }
 
@@ -112,6 +112,13 @@ class _ManagerCodeTemplates {
   /// This is the name of the typedef of a function that updates rows in the table
   String updateCompanionBuilderTypeDefName(DriftTable table) {
     return '\$${table.entityInfoName}UpdateCompanionBuilder';
+  }
+
+  /// Name of the typedef for the update companion builder for a table
+  ///
+  /// This is the name of the typedef of a function that updates rows in the table
+  String rowClassWithReferencesName(DriftTable table) {
+    return '\$${table.entityInfoName}WithReferences';
   }
 
   /// Build the builder for a companion class
@@ -188,9 +195,10 @@ class _ManagerCodeTemplates {
     ${rowClassWithPrefix(table, leaf)},
     ${filterComposerNameWithPrefix(table, leaf)},
     ${orderingComposerNameWithPrefix(table, leaf)},
-    ${processedTableManagerName(table)},
     ${insertCompanionBuilderTypeDef(table)},
-    ${updateCompanionBuilderTypeDefName(table)}>""";
+    ${updateCompanionBuilderTypeDefName(table)},
+    ${rowClassWithReferencesName(table)},
+    ${rowClassWithPrefix(table, leaf)}>""";
   }
 
   /// Code for getting a table from inside a composer
@@ -221,23 +229,20 @@ class _ManagerCodeTemplates {
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        getChildManagerBuilder: (p) => ${processedTableManagerName(table)}(p),
-        getUpdateCompanionBuilder: $updateCompanionBuilder,
-        getInsertCompanionBuilder:$insertCompanionBuilder,));
+        createUpdateCompanionCallback: $updateCompanionBuilder,
+        dataclassMapper: (p0)  async => p0.map((e) => ${rowClassWithReferencesName(table)}(db,e)).toList() ,
+        createInsertCompanionCallback:$insertCompanionBuilder,));
         }
     """;
   }
 
   /// Returns code for the processed table manager class
-  String processedTableManager({
+  String processedTableManagerTypeDef({
     required DriftTable table,
     required String dbClassName,
     required TextEmitter leaf,
   }) {
-    return """class ${processedTableManagerName(table)} extends ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)} {
-    ${processedTableManagerName(table)}(super.\$state);
-      }
-    """;
+    return """typedef ${processedTableManagerTypeDefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)};""";
   }
 
   /// Returns the code for a tables filter composer
@@ -368,5 +373,44 @@ class _ManagerCodeTemplates {
           \$state.db, ${_referenceTableFromComposer(relation.referencedTable, leaf)}, joinBuilder, parentComposers
         ))
               );""";
+  }
+
+  /// Code for a row class which contains references to other tables
+  String? rowClassWithReferences(
+      {required DriftTable currentTable,
+      required List<_Relation> relations,
+      required TextEmitter leaf,
+      required String dbClassName}) {
+    return """
+
+        class ${rowClassWithReferencesName(currentTable)} {
+        // ignore: unused_field
+        final ${databaseType(leaf, dbClassName)} _db;
+        final ${rowClassWithPrefix(currentTable, leaf)} ${currentTable.dbGetterName};
+        ${rowClassWithReferencesName(currentTable)}(this._db, this.${currentTable.dbGetterName});
+
+        ${relations.map((relation) {
+      if (_scope.generationOptions.isModular) {
+        /// There is no support for references in modular generation
+        /// so we just return an empty getter
+        return "";
+      }
+      if (relation.isReverse) {
+        // For a reverse relation, we return a filtered table manager
+        return """
+        ${processedTableManagerTypeDefName(relation.referencedTable)} get ${relation.fieldName} {
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db,_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(${currentTable.dbGetterName}.${relation.currentColumn.nameInDart}));
+        }
+        """;
+      } else {
+        return """
+        ${processedTableManagerTypeDefName(relation.referencedTable)}? get ${relation.fieldName} {
+          if (${currentTable.dbGetterName}.${relation.currentColumn.nameInDart} == null) return null;
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db, _db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}(${currentTable.dbGetterName}.${relation.currentColumn.nameInDart}!));
+        }
+        """;
+      }
+    }).join('\n')}
+        }""";
   }
 }
