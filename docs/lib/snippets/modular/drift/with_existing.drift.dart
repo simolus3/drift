@@ -134,9 +134,10 @@ class $UsersTableManager extends i0.RootTableManager<
     i1.User,
     i2.$UsersFilterComposer,
     i2.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
     $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
+    $UsersUpdateCompanionBuilder,
+    $UsersWithReferences,
+    i1.User> {
   $UsersTableManager(i0.GeneratedDatabase db, i2.Users table)
       : super(i0.TableManagerState(
           db: db,
@@ -145,8 +146,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i2.$UsersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i2.$UsersOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $UsersProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
           }) =>
@@ -154,7 +154,9 @@ class $UsersTableManager extends i0.RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $UsersWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String name,
           }) =>
@@ -165,17 +167,16 @@ class $UsersTableManager extends i0.RootTableManager<
         ));
 }
 
-class $UsersProcessedTableManager extends i0.ProcessedTableManager<
+typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i2.Users,
     i1.User,
     i2.$UsersFilterComposer,
     i2.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
     $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
-  $UsersProcessedTableManager(super.$state);
-}
+    $UsersUpdateCompanionBuilder,
+    $UsersWithReferences,
+    i1.User>;
 
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.Users> {
@@ -203,6 +204,13 @@ class $UsersOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $UsersWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.User users;
+  $UsersWithReferences(this._db, this.users);
 }
 
 class Friends extends i0.Table with i0.TableInfo<Friends, i2.Friend> {
@@ -420,9 +428,10 @@ class $FriendsTableManager extends i0.RootTableManager<
     i2.Friend,
     i2.$FriendsFilterComposer,
     i2.$FriendsOrderingComposer,
-    $FriendsProcessedTableManager,
     $FriendsInsertCompanionBuilder,
-    $FriendsUpdateCompanionBuilder> {
+    $FriendsUpdateCompanionBuilder,
+    $FriendsWithReferences,
+    i2.Friend> {
   $FriendsTableManager(i0.GeneratedDatabase db, i2.Friends table)
       : super(i0.TableManagerState(
           db: db,
@@ -431,8 +440,7 @@ class $FriendsTableManager extends i0.RootTableManager<
               i2.$FriendsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i2.$FriendsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $FriendsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> userA = const i0.Value.absent(),
             i0.Value<int> userB = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -442,7 +450,9 @@ class $FriendsTableManager extends i0.RootTableManager<
             userB: userB,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $FriendsWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             required int userA,
             required int userB,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -455,17 +465,16 @@ class $FriendsTableManager extends i0.RootTableManager<
         ));
 }
 
-class $FriendsProcessedTableManager extends i0.ProcessedTableManager<
+typedef $FriendsProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i2.Friends,
     i2.Friend,
     i2.$FriendsFilterComposer,
     i2.$FriendsOrderingComposer,
-    $FriendsProcessedTableManager,
     $FriendsInsertCompanionBuilder,
-    $FriendsUpdateCompanionBuilder> {
-  $FriendsProcessedTableManager(super.$state);
-}
+    $FriendsUpdateCompanionBuilder,
+    $FriendsWithReferences,
+    i2.Friend>;
 
 class $FriendsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.Friends> {
@@ -541,6 +550,13 @@ class $FriendsOrderingComposer
                 parentComposers)));
     return composer;
   }
+}
+
+class $FriendsWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i2.Friend friends;
+  $FriendsWithReferences(this._db, this.friends);
 }
 
 class WithExistingDrift extends i3.ModularAccessor {

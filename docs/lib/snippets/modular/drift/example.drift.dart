@@ -287,9 +287,10 @@ class $TodosTableManager extends i0.RootTableManager<
     i1.Todo,
     i1.$TodosFilterComposer,
     i1.$TodosOrderingComposer,
-    $TodosProcessedTableManager,
     $TodosInsertCompanionBuilder,
-    $TodosUpdateCompanionBuilder> {
+    $TodosUpdateCompanionBuilder,
+    $TodosWithReferences,
+    i1.Todo> {
   $TodosTableManager(i0.GeneratedDatabase db, i1.Todos table)
       : super(i0.TableManagerState(
           db: db,
@@ -298,8 +299,7 @@ class $TodosTableManager extends i0.RootTableManager<
               i1.$TodosFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$TodosOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $TodosProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
@@ -311,7 +311,9 @@ class $TodosTableManager extends i0.RootTableManager<
             content: content,
             category: category,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $TodosWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String title,
             required String content,
@@ -326,17 +328,16 @@ class $TodosTableManager extends i0.RootTableManager<
         ));
 }
 
-class $TodosProcessedTableManager extends i0.ProcessedTableManager<
+typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.Todos,
     i1.Todo,
     i1.$TodosFilterComposer,
     i1.$TodosOrderingComposer,
-    $TodosProcessedTableManager,
     $TodosInsertCompanionBuilder,
-    $TodosUpdateCompanionBuilder> {
-  $TodosProcessedTableManager(super.$state);
-}
+    $TodosUpdateCompanionBuilder,
+    $TodosWithReferences,
+    i1.Todo>;
 
 class $TodosFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Todos> {
@@ -408,6 +409,13 @@ class $TodosOrderingComposer
                 parentComposers)));
     return composer;
   }
+}
+
+class $TodosWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Todo todos;
+  $TodosWithReferences(this._db, this.todos);
 }
 
 class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {
@@ -610,9 +618,10 @@ class $CategoriesTableManager extends i0.RootTableManager<
     i1.Category,
     i1.$CategoriesFilterComposer,
     i1.$CategoriesOrderingComposer,
-    $CategoriesProcessedTableManager,
     $CategoriesInsertCompanionBuilder,
-    $CategoriesUpdateCompanionBuilder> {
+    $CategoriesUpdateCompanionBuilder,
+    $CategoriesWithReferences,
+    i1.Category> {
   $CategoriesTableManager(i0.GeneratedDatabase db, i1.Categories table)
       : super(i0.TableManagerState(
           db: db,
@@ -621,8 +630,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
               i1.$CategoriesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$CategoriesOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $CategoriesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
           }) =>
@@ -630,7 +638,9 @@ class $CategoriesTableManager extends i0.RootTableManager<
             id: id,
             description: description,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $CategoriesWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String description,
           }) =>
@@ -641,17 +651,16 @@ class $CategoriesTableManager extends i0.RootTableManager<
         ));
 }
 
-class $CategoriesProcessedTableManager extends i0.ProcessedTableManager<
+typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.Categories,
     i1.Category,
     i1.$CategoriesFilterComposer,
     i1.$CategoriesOrderingComposer,
-    $CategoriesProcessedTableManager,
     $CategoriesInsertCompanionBuilder,
-    $CategoriesUpdateCompanionBuilder> {
-  $CategoriesProcessedTableManager(super.$state);
-}
+    $CategoriesUpdateCompanionBuilder,
+    $CategoriesWithReferences,
+    i1.Category>;
 
 class $CategoriesFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Categories> {
@@ -679,6 +688,13 @@ class $CategoriesOrderingComposer
       column: $state.table.description,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $CategoriesWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Category categories;
+  $CategoriesWithReferences(this._db, this.categories);
 }
 
 class ExampleDrift extends i2.ModularAccessor {

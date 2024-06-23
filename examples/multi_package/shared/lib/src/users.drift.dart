@@ -106,6 +106,13 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  User copyWithCompanion(i1.UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')
@@ -188,9 +195,10 @@ class $$UsersTableTableManager extends i0.RootTableManager<
     i1.User,
     i1.$$UsersTableFilterComposer,
     i1.$$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
     $$UsersTableInsertCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    i1.User> {
   $$UsersTableTableManager(i0.GeneratedDatabase db, i1.$UsersTable table)
       : super(i0.TableManagerState(
           db: db,
@@ -199,8 +207,7 @@ class $$UsersTableTableManager extends i0.RootTableManager<
               i1.$$UsersTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$UsersTableOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$UsersTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
           }) =>
@@ -208,7 +215,9 @@ class $$UsersTableTableManager extends i0.RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String name,
           }) =>
@@ -219,17 +228,16 @@ class $$UsersTableTableManager extends i0.RootTableManager<
         ));
 }
 
-class $$UsersTableProcessedTableManager extends i0.ProcessedTableManager<
+typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.$UsersTable,
     i1.User,
     i1.$$UsersTableFilterComposer,
     i1.$$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
     $$UsersTableInsertCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
-  $$UsersTableProcessedTableManager(super.$state);
-}
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    i1.User>;
 
 class $$UsersTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
@@ -257,4 +265,11 @@ class $$UsersTableOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$UsersTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.User users;
+  $$UsersTableWithReferences(this._db, this.users);
 }

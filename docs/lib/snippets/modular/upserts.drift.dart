@@ -211,9 +211,10 @@ class $$WordsTableTableManager extends i0.RootTableManager<
     i1.Word,
     i1.$$WordsTableFilterComposer,
     i1.$$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
     $$WordsTableInsertCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder> {
+    $$WordsTableUpdateCompanionBuilder,
+    $$WordsTableWithReferences,
+    i1.Word> {
   $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
       : super(i0.TableManagerState(
           db: db,
@@ -222,8 +223,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$WordsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -233,7 +233,9 @@ class $$WordsTableTableManager extends i0.RootTableManager<
             usages: usages,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$WordsTableWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             required String word,
             i0.Value<int> usages = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -246,17 +248,16 @@ class $$WordsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
+typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.$WordsTable,
     i1.Word,
     i1.$$WordsTableFilterComposer,
     i1.$$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
     $$WordsTableInsertCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder> {
-  $$WordsTableProcessedTableManager(super.$state);
-}
+    $$WordsTableUpdateCompanionBuilder,
+    $$WordsTableWithReferences,
+    i1.Word>;
 
 class $$WordsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
@@ -284,6 +285,13 @@ class $$WordsTableOrderingComposer
       column: $state.table.usages,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$WordsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Word words;
+  $$WordsTableWithReferences(this._db, this.words);
 }
 
 class $MatchResultsTable extends i2.MatchResults
@@ -574,9 +582,10 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
     i1.MatchResult,
     i1.$$MatchResultsTableFilterComposer,
     i1.$$MatchResultsTableOrderingComposer,
-    $$MatchResultsTableProcessedTableManager,
     $$MatchResultsTableInsertCompanionBuilder,
-    $$MatchResultsTableUpdateCompanionBuilder> {
+    $$MatchResultsTableUpdateCompanionBuilder,
+    $$MatchResultsTableWithReferences,
+    i1.MatchResult> {
   $$MatchResultsTableTableManager(
       i0.GeneratedDatabase db, i1.$MatchResultsTable table)
       : super(i0.TableManagerState(
@@ -586,9 +595,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$MatchResultsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
             i0.Value<String> teamB = const i0.Value.absent(),
@@ -600,7 +607,9 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
             teamB: teamB,
             teamAWon: teamAWon,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$MatchResultsTableWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String teamA,
             required String teamB,
@@ -615,17 +624,16 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<
+typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.$MatchResultsTable,
     i1.MatchResult,
     i1.$$MatchResultsTableFilterComposer,
     i1.$$MatchResultsTableOrderingComposer,
-    $$MatchResultsTableProcessedTableManager,
     $$MatchResultsTableInsertCompanionBuilder,
-    $$MatchResultsTableUpdateCompanionBuilder> {
-  $$MatchResultsTableProcessedTableManager(super.$state);
-}
+    $$MatchResultsTableUpdateCompanionBuilder,
+    $$MatchResultsTableWithReferences,
+    i1.MatchResult>;
 
 class $$MatchResultsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
@@ -673,4 +681,11 @@ class $$MatchResultsTableOrderingComposer
       column: $state.table.teamAWon,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$MatchResultsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.MatchResult matchResults;
+  $$MatchResultsTableWithReferences(this._db, this.matchResults);
 }

@@ -242,9 +242,10 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
-    $PostsProcessedTableManager,
     $PostsInsertCompanionBuilder,
-    $PostsUpdateCompanionBuilder> {
+    $PostsUpdateCompanionBuilder,
+    $PostsWithReferences,
+    i1.Post> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
           db: db,
@@ -253,8 +254,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $PostsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),
@@ -264,7 +264,9 @@ class $PostsTableManager extends i0.RootTableManager<
             author: author,
             content: content,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $PostsWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required int author,
             i0.Value<String?> content = const i0.Value.absent(),
@@ -277,17 +279,16 @@ class $PostsTableManager extends i0.RootTableManager<
         ));
 }
 
-class $PostsProcessedTableManager extends i0.ProcessedTableManager<
+typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.Posts,
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
-    $PostsProcessedTableManager,
     $PostsInsertCompanionBuilder,
-    $PostsUpdateCompanionBuilder> {
-  $PostsProcessedTableManager(super.$state);
-}
+    $PostsUpdateCompanionBuilder,
+    $PostsWithReferences,
+    i1.Post>;
 
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
@@ -349,6 +350,13 @@ class $PostsOrderingComposer
                 parentComposers)));
     return composer;
   }
+}
+
+class $PostsWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Post posts;
+  $PostsWithReferences(this._db, this.posts);
 }
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
@@ -564,9 +572,10 @@ class $LikesTableManager extends i0.RootTableManager<
     i1.Like,
     i1.$LikesFilterComposer,
     i1.$LikesOrderingComposer,
-    $LikesProcessedTableManager,
     $LikesInsertCompanionBuilder,
-    $LikesUpdateCompanionBuilder> {
+    $LikesUpdateCompanionBuilder,
+    $LikesWithReferences,
+    i1.Like> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
       : super(i0.TableManagerState(
           db: db,
@@ -575,8 +584,7 @@ class $LikesTableManager extends i0.RootTableManager<
               i1.$LikesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$LikesOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $LikesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> post = const i0.Value.absent(),
             i0.Value<int> likedBy = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -586,7 +594,9 @@ class $LikesTableManager extends i0.RootTableManager<
             likedBy: likedBy,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $LikesWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             required int post,
             required int likedBy,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -599,17 +609,16 @@ class $LikesTableManager extends i0.RootTableManager<
         ));
 }
 
-class $LikesProcessedTableManager extends i0.ProcessedTableManager<
+typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.Likes,
     i1.Like,
     i1.$LikesFilterComposer,
     i1.$LikesOrderingComposer,
-    $LikesProcessedTableManager,
     $LikesInsertCompanionBuilder,
-    $LikesUpdateCompanionBuilder> {
-  $LikesProcessedTableManager(super.$state);
-}
+    $LikesUpdateCompanionBuilder,
+    $LikesWithReferences,
+    i1.Like>;
 
 class $LikesFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Likes> {
@@ -685,4 +694,11 @@ class $LikesOrderingComposer
                 parentComposers)));
     return composer;
   }
+}
+
+class $LikesWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Like likes;
+  $LikesWithReferences(this._db, this.likes);
 }

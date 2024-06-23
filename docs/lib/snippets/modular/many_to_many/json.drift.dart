@@ -236,9 +236,10 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
     i2.ShoppingCart,
     i2.$$ShoppingCartsTableFilterComposer,
     i2.$$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableProcessedTableManager,
     $$ShoppingCartsTableInsertCompanionBuilder,
-    $$ShoppingCartsTableUpdateCompanionBuilder> {
+    $$ShoppingCartsTableUpdateCompanionBuilder,
+    $$ShoppingCartsTableWithReferences,
+    i2.ShoppingCart> {
   $$ShoppingCartsTableTableManager(
       i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
       : super(i0.TableManagerState(
@@ -248,9 +249,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ShoppingCartsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
           }) =>
@@ -258,7 +257,9 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
             id: id,
             entries: entries,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$ShoppingCartsTableWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required i3.ShoppingCartEntries entries,
           }) =>
@@ -269,18 +270,16 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-class $$ShoppingCartsTableProcessedTableManager
-    extends i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i2.$ShoppingCartsTable,
-        i2.ShoppingCart,
-        i2.$$ShoppingCartsTableFilterComposer,
-        i2.$$ShoppingCartsTableOrderingComposer,
-        $$ShoppingCartsTableProcessedTableManager,
-        $$ShoppingCartsTableInsertCompanionBuilder,
-        $$ShoppingCartsTableUpdateCompanionBuilder> {
-  $$ShoppingCartsTableProcessedTableManager(super.$state);
-}
+typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartsTable,
+    i2.ShoppingCart,
+    i2.$$ShoppingCartsTableFilterComposer,
+    i2.$$ShoppingCartsTableOrderingComposer,
+    $$ShoppingCartsTableInsertCompanionBuilder,
+    $$ShoppingCartsTableUpdateCompanionBuilder,
+    $$ShoppingCartsTableWithReferences,
+    i2.ShoppingCart>;
 
 class $$ShoppingCartsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
@@ -311,4 +310,11 @@ class $$ShoppingCartsTableOrderingComposer
       column: $state.table.entries,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$ShoppingCartsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i2.ShoppingCart shoppingCarts;
+  $$ShoppingCartsTableWithReferences(this._db, this.shoppingCarts);
 }

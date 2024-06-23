@@ -107,6 +107,13 @@ class TestTableData extends DataClass implements Insertable<TestTableData> {
         id: id ?? this.id,
         content: content ?? this.content,
       );
+  TestTableData copyWithCompanion(TestTableCompanion data) {
+    return TestTableData(
+      id: data.id.present ? data.id.value : this.id,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TestTableData(')
@@ -202,9 +209,10 @@ class $$TestTableTableTableManager extends RootTableManager<
     TestTableData,
     $$TestTableTableFilterComposer,
     $$TestTableTableOrderingComposer,
-    $$TestTableTableProcessedTableManager,
     $$TestTableTableInsertCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder> {
+    $$TestTableTableUpdateCompanionBuilder,
+    $$TestTableTableWithReferences,
+    TestTableData> {
   $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
       : super(TableManagerState(
           db: db,
@@ -213,9 +221,7 @@ class $$TestTableTableTableManager extends RootTableManager<
               $$TestTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TestTableTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TestTableTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
           }) =>
@@ -223,7 +229,9 @@ class $$TestTableTableTableManager extends RootTableManager<
             id: id,
             content: content,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$TestTableTableWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String content,
           }) =>
@@ -234,17 +242,16 @@ class $$TestTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$TestTableTableProcessedTableManager extends ProcessedTableManager<
+typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
     _$TestDatabase,
     $TestTableTable,
     TestTableData,
     $$TestTableTableFilterComposer,
     $$TestTableTableOrderingComposer,
-    $$TestTableTableProcessedTableManager,
     $$TestTableTableInsertCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder> {
-  $$TestTableTableProcessedTableManager(super.$state);
-}
+    $$TestTableTableUpdateCompanionBuilder,
+    $$TestTableTableWithReferences,
+    TestTableData>;
 
 class $$TestTableTableFilterComposer
     extends FilterComposer<_$TestDatabase, $TestTableTable> {
@@ -272,6 +279,13 @@ class $$TestTableTableOrderingComposer
       column: $state.table.content,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$TestTableTableWithReferences {
+  // ignore: unused_field
+  final _$TestDatabase _db;
+  final TestTableData testTable;
+  $$TestTableTableWithReferences(this._db, this.testTable);
 }
 
 class $TestDatabaseManager {

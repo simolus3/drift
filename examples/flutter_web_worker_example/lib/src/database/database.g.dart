@@ -229,17 +229,17 @@ class $EntriesTableManager extends RootTableManager<
     Entry,
     $EntriesFilterComposer,
     $EntriesOrderingComposer,
-    $EntriesProcessedTableManager,
     $EntriesInsertCompanionBuilder,
-    $EntriesUpdateCompanionBuilder> {
+    $EntriesUpdateCompanionBuilder,
+    $EntriesWithReferences,
+    Entry> {
   $EntriesTableManager(_$MyDatabase db, Entries table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
           orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $EntriesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
           }) =>
@@ -247,7 +247,9 @@ class $EntriesTableManager extends RootTableManager<
             id: id,
             value: value,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $EntriesWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String value,
           }) =>
@@ -258,17 +260,16 @@ class $EntriesTableManager extends RootTableManager<
         ));
 }
 
-class $EntriesProcessedTableManager extends ProcessedTableManager<
+typedef $EntriesProcessedTableManager = ProcessedTableManager<
     _$MyDatabase,
     Entries,
     Entry,
     $EntriesFilterComposer,
     $EntriesOrderingComposer,
-    $EntriesProcessedTableManager,
     $EntriesInsertCompanionBuilder,
-    $EntriesUpdateCompanionBuilder> {
-  $EntriesProcessedTableManager(super.$state);
-}
+    $EntriesUpdateCompanionBuilder,
+    $EntriesWithReferences,
+    Entry>;
 
 class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
   $EntriesFilterComposer(super.$state);
@@ -294,6 +295,13 @@ class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
       column: $state.table.value,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $EntriesWithReferences {
+  // ignore: unused_field
+  final _$MyDatabase _db;
+  final Entry entries;
+  $EntriesWithReferences(this._db, this.entries);
 }
 
 class $MyDatabaseManager {

@@ -107,6 +107,13 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  User copyWithCompanion(i1.UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')
@@ -189,9 +196,10 @@ class $UsersTableManager extends i0.RootTableManager<
     i1.User,
     i1.$UsersFilterComposer,
     i1.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
     $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
+    $UsersUpdateCompanionBuilder,
+    $UsersWithReferences,
+    i1.User> {
   $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
       : super(i0.TableManagerState(
           db: db,
@@ -200,8 +208,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i1.$UsersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $UsersProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createUpdateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
           }) =>
@@ -209,7 +216,9 @@ class $UsersTableManager extends i0.RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $UsersWithReferences(db, e)).toList(),
+          createInsertCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String name,
           }) =>
@@ -220,17 +229,16 @@ class $UsersTableManager extends i0.RootTableManager<
         ));
 }
 
-class $UsersProcessedTableManager extends i0.ProcessedTableManager<
+typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.Users,
     i1.User,
     i1.$UsersFilterComposer,
     i1.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
     $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
-  $UsersProcessedTableManager(super.$state);
-}
+    $UsersUpdateCompanionBuilder,
+    $UsersWithReferences,
+    i1.User>;
 
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
@@ -258,4 +266,11 @@ class $UsersOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $UsersWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.User users;
+  $UsersWithReferences(this._db, this.users);
 }
