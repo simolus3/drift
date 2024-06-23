@@ -171,7 +171,8 @@ class SchemaWriter {
       if (column.typeConverter != null)
         'type_converter': {
           'dart_expr': column.typeConverter!.expression.toString(),
-          'dart_type_name': column.typeConverter!.dartType.getDisplayString(),
+          'dart_type_name': column.typeConverter!.dartType.getDisplayString(
+              withNullability: false), // ignore: deprecated_member_use
         }
     };
   }
