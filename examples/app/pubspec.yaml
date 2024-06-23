@@ -1,6 +1,6 @@
 name: app
 description: A cross-platform todo tracker built with drift.
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -38,3 +38,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+dependency_overrides:
+  drift:
+    path: ../../drift
+  drift_dev:
+    path: ../../drift_dev
+  sqlparser:
+    path: ../../sqlparser
