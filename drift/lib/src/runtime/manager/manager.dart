@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
 part 'composer.dart';
@@ -13,7 +14,11 @@ part 'ordering.dart';
 ///
 /// It holds the state for manager of [$Table] table in [$Database] database.
 /// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings for the manager.
-/// [$Dataclass] is the dataclass that is used to interact with the table
+///
+/// There are 3 Dataclass generics:
+///   - [$Dataclass] is the dataclass that is used to interact with the table
+///   - [$MappedDataclass] is the dataclass that is used to interact with the table when references are applied
+///   - [$ActiveDataclass] is the dataclass that is returned when the manager is used, this is either [$Dataclass] or [$MappedDataclass]
 ///
 /// It also holds the [$CreateCompanionCallback] and [$UpdateCompanionCallback] functions that are used to create companion builders for inserting and updating data.
 @immutable
@@ -24,7 +29,9 @@ class TableManagerState<
     $FilterComposer extends FilterComposer<$Database, $Table>,
     $OrderingComposer extends OrderingComposer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
-    $UpdateCompanionCallback extends Function> {
+    $UpdateCompanionCallback extends Function,
+    $MappedDataclass,
+    $ActiveDataclass> {
   /// The database used to run the query.
   final $Database db;
 
@@ -69,6 +76,25 @@ class TableManagerState<
   /// for updating data in the table
   final $UpdateCompanionCallback _createUpdateCompanionCallback;
 
+  /// This function is used to append references to the data class
+  /// This will only be applied if the mapped class has been changed
+  /// This should not be accessed directly by managers, instead use [applyDataclassMapper]
+  final DataclassMapper<$Dataclass, $MappedDataclass> _dataclassMapper;
+
+  /// This function will decide whether to use the dataclass mapper or not
+  /// Generated managers will define a [__dataclassMapper], but that wont be applied if the mapped dataclass is the same as the dataclass
+  Future<List<$ActiveDataclass>> applyDataclassMapper(
+      List<$Dataclass> items) async {
+    if (_shouldApplyMapper) {
+      return await _dataclassMapper(items) as List<$ActiveDataclass>;
+    } else {
+      return items as List<$ActiveDataclass>;
+    }
+  }
+
+  /// Returns whether the dataclass mapper should be applied
+  bool get _shouldApplyMapper => $MappedDataclass == $ActiveDataclass;
+
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
   /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
@@ -81,13 +107,15 @@ class TableManagerState<
       required this.orderingComposer,
       required $CreateCompanionCallback createInsertCompanionCallback,
       required $UpdateCompanionCallback createUpdateCompanionCallback,
+      required DataclassMapper<$Dataclass, $MappedDataclass> dataclassMapper,
       this.filter,
       this.distinct,
       this.limit,
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : _createInsertCompanionCallback = createInsertCompanionCallback,
+      : _dataclassMapper = dataclassMapper,
+        _createInsertCompanionCallback = createInsertCompanionCallback,
         _createUpdateCompanionCallback = createUpdateCompanionCallback;
 
   /// Copy this state with the given values
@@ -98,7 +126,9 @@ class TableManagerState<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback> copyWith({
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $ActiveDataclass> copyWith({
     bool? distinct,
     int? limit,
     int? offset,
@@ -113,12 +143,42 @@ class TableManagerState<
       orderingComposer: orderingComposer,
       createInsertCompanionCallback: _createInsertCompanionCallback,
       createUpdateCompanionCallback: _createUpdateCompanionCallback,
+      dataclassMapper: _dataclassMapper,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
       distinct: distinct ?? this.distinct,
       limit: limit ?? this.limit,
       offset: offset ?? this.offset,
+    );
+  }
+
+  /// Create a copy of this state with a new active dataclass
+  /// This is used internally to mark a manager for having the mapper applied
+  TableManagerState<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $NewActiveDataclass> copyWithNewActiveDataclass<$NewActiveDataclass>() {
+    return TableManagerState(
+      db: db,
+      table: table,
+      filteringComposer: filteringComposer,
+      orderingComposer: orderingComposer,
+      createInsertCompanionCallback: _createInsertCompanionCallback,
+      createUpdateCompanionCallback: _createUpdateCompanionCallback,
+      dataclassMapper: _dataclassMapper,
+      filter: filter,
+      joinBuilders: joinBuilders,
+      orderingBuilders: orderingBuilders,
+      distinct: distinct,
+      limit: limit,
+      offset: offset,
     );
   }
 
@@ -282,7 +342,9 @@ abstract class BaseTableManager<
     $FilterComposer extends FilterComposer<$Database, $Table>,
     $OrderingComposer extends OrderingComposer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
-    $UpdateCompanionCallback extends Function> extends Selectable<$Dataclass> {
+    $UpdateCompanionCallback extends Function,
+    $MappedDataclass,
+    $ActiveDataclass> extends Selectable<$ActiveDataclass> {
   /// The state for this manager
   final TableManagerState<
       $Database,
@@ -291,7 +353,9 @@ abstract class BaseTableManager<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback> $state;
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $ActiveDataclass> $state;
 
   /// Create a new [BaseTableManager] instance
   ///
@@ -299,8 +363,16 @@ abstract class BaseTableManager<
   BaseTableManager(this.$state);
 
   /// Create a new [BaseTableManager] instance with the given state
-  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
-          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+  ProcessedTableManager<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $MappedDataclass,
+          $ActiveDataclass>
       _buildChildManager(
           TableManagerState<
                   $Database,
@@ -309,9 +381,38 @@ abstract class BaseTableManager<
                   $FilterComposer,
                   $OrderingComposer,
                   $CreateCompanionCallback,
-                  $UpdateCompanionCallback>
+                  $UpdateCompanionCallback,
+                  $MappedDataclass,
+                  $ActiveDataclass>
               $state) {
     return ProcessedTableManager($state);
+  }
+
+  /// Return a new manager whose methods will return the row, along with getters for all of its references.
+  ProcessedTableManager<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $MappedDataclass> withReferences() {
+    if ($state._shouldApplyMapper) {
+      return ProcessedTableManager($state as TableManagerState<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $MappedDataclass,
+          $MappedDataclass>);
+    }
+    return ProcessedTableManager(
+        $state.copyWithNewActiveDataclass<$MappedDataclass>());
   }
 
   /// Add a limit to the statement
@@ -322,13 +423,23 @@ abstract class BaseTableManager<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback> limit(int limit, {int? offset}) {
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $ActiveDataclass> limit(int limit, {int? offset}) {
     return _buildChildManager($state.copyWith(limit: limit, offset: offset));
   }
 
   /// Add ordering to the statement
-  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
-          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+  ProcessedTableManager<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $MappedDataclass,
+          $ActiveDataclass>
       orderBy(ComposableOrdering Function($OrderingComposer o) o) {
     final orderings = o($state.orderingComposer);
     return _buildChildManager($state.copyWith(
@@ -338,9 +449,16 @@ abstract class BaseTableManager<
   }
 
   /// Add a filter to the statement
-  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
-          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
-      filter(ComposableFilter Function($FilterComposer f) f) {
+  ProcessedTableManager<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $ActiveDataclass> filter(ComposableFilter Function($FilterComposer f) f) {
     final filter = f($state.filteringComposer);
     final combinedFilter = switch (($state.filter, filter.expression)) {
       (null, null) => null,
@@ -403,8 +521,8 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
   @override
-  Future<$Dataclass> getSingle({bool distinct = true}) =>
-      $state.copyWith(distinct: distinct).buildSelectStatement().getSingle();
+  Future<$ActiveDataclass> getSingle({bool distinct = true}) async =>
+      (await get(distinct: distinct)).single;
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only emit
@@ -414,8 +532,8 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
   @override
-  Stream<$Dataclass> watchSingle({bool distinct = true}) =>
-      $state.copyWith(distinct: distinct).buildSelectStatement().watchSingle();
+  Stream<$ActiveDataclass> watchSingle({bool distinct = true}) =>
+      watch(distinct: distinct).transform(singleElements());
 
   /// Executes the statement and returns all rows as a list.
   ///
@@ -423,12 +541,13 @@ abstract class BaseTableManager<
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
   @override
-  Future<List<$Dataclass>> get(
+  Future<List<$ActiveDataclass>> get(
           {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
           .buildSelectStatement()
-          .get();
+          .get()
+          .then($state.applyDataclassMapper);
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
@@ -437,12 +556,13 @@ abstract class BaseTableManager<
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
   @override
-  Stream<List<$Dataclass>> watch(
+  Stream<List<$ActiveDataclass>> watch(
           {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
           .buildSelectStatement()
-          .watch();
+          .watch()
+          .asyncMap($state.applyDataclassMapper);
 
   /// Executes this statement, like [get], but only returns one
   /// value. If the result too many values, this method will throw. If no
@@ -452,12 +572,20 @@ abstract class BaseTableManager<
   /// always evaluate to exactly one row.
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
-
   @override
-  Future<$Dataclass?> getSingleOrNull({bool distinct = false}) => $state
-      .copyWith(distinct: distinct)
-      .buildSelectStatement()
-      .getSingleOrNull();
+  Future<$ActiveDataclass?> getSingleOrNull({bool distinct = true}) async {
+    final list = await get(distinct: distinct);
+    final iterator = list.iterator;
+
+    if (!iterator.moveNext()) {
+      return null;
+    }
+    final element = iterator.current;
+    if (iterator.moveNext()) {
+      throw StateError('Expected exactly one result, but found more than one!');
+    }
+    return element;
+  }
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only
@@ -469,10 +597,8 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
   @override
-  Stream<$Dataclass?> watchSingleOrNull({bool distinct = false}) => $state
-      .copyWith(distinct: distinct)
-      .buildSelectStatement()
-      .watchSingleOrNull();
+  Stream<$ActiveDataclass?> watchSingleOrNull({bool distinct = true}) =>
+      watch(distinct: distinct).transform(singleElementsOrNull());
 }
 
 /// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
@@ -483,11 +609,21 @@ class ProcessedTableManager<
         $Table extends Table,
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
-        OS extends OrderingComposer<$Database, $Table>,
-        CI extends Function,
-        CU extends Function>
-    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer, OS,
-        CI, CU> {
+        $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $CreateCompanionCallback extends Function,
+        $UpdateCompanionCallback extends Function,
+        $MappedDataclass,
+        $ActiveDataclass>
+    extends BaseTableManager<
+        $Database,
+        $Table,
+        $Dataclass,
+        $FilterComposer,
+        $OrderingComposer,
+        $CreateCompanionCallback,
+        $UpdateCompanionCallback,
+        $MappedDataclass,
+        $ActiveDataclass> {
   /// Create a new [ProcessedTableManager] instance
   @internal
   ProcessedTableManager(super.$state);
@@ -502,9 +638,19 @@ class RootTableManager<
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
-        $UpdateCompanionCallback extends Function>
-    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
-        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback> {
+        $UpdateCompanionCallback extends Function,
+        $MappedDataclass,
+        $ActiveDataclass>
+    extends BaseTableManager<
+        $Database,
+        $Table,
+        $Dataclass,
+        $FilterComposer,
+        $OrderingComposer,
+        $CreateCompanionCallback,
+        $UpdateCompanionCallback,
+        $MappedDataclass,
+        $ActiveDataclass> {
   /// Create a new [RootTableManager] instance
   ///
   /// {@template manager_internal_use_only}
@@ -642,3 +788,7 @@ class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
 
   const _JoinedResult(this.statement);
 }
+
+/// A function for asynchronously wrapping a [$Dataclass] (Dataclass) with references.
+typedef DataclassMapper<$Dataclass, $MappedDataclass>
+    = Future<List<$MappedDataclass>> Function(List<$Dataclass>);
