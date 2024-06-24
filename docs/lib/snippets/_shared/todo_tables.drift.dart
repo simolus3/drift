@@ -477,8 +477,8 @@ class $$TodoItemsTableOrderingComposer
 class $$TodoItemsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.TodoItem todoItems;
-  $$TodoItemsTableWithReferences(this._db, this.todoItems);
+  final i1.TodoItem i1TodoItem;
+  $$TodoItemsTableWithReferences(this._db, this.i1TodoItem);
 }
 
 class $CategoriesTable extends i2.Categories
@@ -752,8 +752,8 @@ class $$CategoriesTableOrderingComposer
 class $$CategoriesTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Category categories;
-  $$CategoriesTableWithReferences(this._db, this.categories);
+  final i1.Category i1Category;
+  $$CategoriesTableWithReferences(this._db, this.i1Category);
 }
 
 class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
@@ -1026,6 +1026,6 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.User users;
-  $$UsersTableWithReferences(this._db, this.users);
+  final i1.User i1User;
+  $$UsersTableWithReferences(this._db, this.i1User);
 }

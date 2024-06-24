@@ -325,6 +325,6 @@ class $PostsOrderingComposer
 class $PostsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Post posts;
-  $PostsWithReferences(this._db, this.posts);
+  final i1.Post i1Post;
+  $PostsWithReferences(this._db, this.i1Post);
 }

@@ -3,6 +3,7 @@ import 'package:test/test.dart';
 
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
+import '../utils/future_or_extension.dart';
 
 void main() {
   late TodoDb db;
@@ -34,6 +35,7 @@ void main() {
     expect(
         db.managers.tableWithEveryColumnType
             .get()
+            .toFuture()
             .then((value) => value.length),
         completion(3));
     // Test getSingle with limit
@@ -41,6 +43,7 @@ void main() {
         db.managers.tableWithEveryColumnType
             .limit(1, offset: 1)
             .getSingle()
+            .toFuture()
             .then((value) => value.id),
         completion(2));
     // Test filtered delete
@@ -60,6 +63,7 @@ void main() {
         db.managers.tableWithEveryColumnType
             .filter((f) => f.id(RowId(1)))
             .getSingle()
+            .toFuture()
             .then((value) => value.aReal),
         completion(10.0));
     // Test filtered exists

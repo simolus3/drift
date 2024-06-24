@@ -315,6 +315,6 @@ class $$ShoppingCartsTableOrderingComposer
 class $$ShoppingCartsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i2.ShoppingCart shoppingCarts;
-  $$ShoppingCartsTableWithReferences(this._db, this.shoppingCarts);
+  final i2.ShoppingCart i2ShoppingCart;
+  $$ShoppingCartsTableWithReferences(this._db, this.i2ShoppingCart);
 }

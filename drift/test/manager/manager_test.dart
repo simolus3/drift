@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
+import '../utils/future_or_extension.dart';
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -104,6 +105,7 @@ void main() {
         db.managers.categories
             .filter(((f) => f.id(obj1.id)))
             .getSingle()
+            .toFuture()
             .then((value) => value.description),
         completion("Hello"));
 
@@ -116,12 +118,14 @@ void main() {
         db.managers.categories
             .filter(((f) => f.id(obj1.id)))
             .getSingle()
+            .toFuture()
             .then((value) => value.description),
         completion("Hello"));
     expect(
         db.managers.categories
             .filter(((f) => f.id(obj2.id)))
             .getSingle()
+            .toFuture()
             .then((value) => value.description),
         completion("World"));
 
@@ -139,6 +143,7 @@ void main() {
         db.managers.categories
             .filter(((f) => f.id(obj2.id)))
             .getSingle()
+            .toFuture()
             .then((value) => value.description),
         completion("World"));
   });

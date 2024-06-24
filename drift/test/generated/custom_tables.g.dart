@@ -2094,8 +2094,8 @@ class $NoIdsOrderingComposer extends OrderingComposer<_$CustomTablesDb, NoIds> {
 class $NoIdsWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
-  final NoIdRow noIds;
-  $NoIdsWithReferences(this._db, this.noIds);
+  final NoIdRow noIdRow;
+  $NoIdsWithReferences(this._db, this.noIdRow);
 }
 
 typedef $WithDefaultsInsertCompanionBuilder = WithDefaultsCompanion Function({
@@ -2194,8 +2194,8 @@ class $WithDefaultsOrderingComposer
 class $WithDefaultsWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
-  final WithDefault withDefaults;
-  $WithDefaultsWithReferences(this._db, this.withDefaults);
+  final WithDefault withDefault;
+  $WithDefaultsWithReferences(this._db, this.withDefault);
 }
 
 typedef $WithConstraintsInsertCompanionBuilder = WithConstraintsCompanion
@@ -2312,8 +2312,8 @@ class $WithConstraintsOrderingComposer
 class $WithConstraintsWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
-  final WithConstraint withConstraints;
-  $WithConstraintsWithReferences(this._db, this.withConstraints);
+  final WithConstraint withConstraint;
+  $WithConstraintsWithReferences(this._db, this.withConstraint);
 }
 
 typedef $ConfigTableInsertCompanionBuilder = ConfigCompanion Function({
@@ -2571,8 +2571,8 @@ class $MytableOrderingComposer
 class $MytableWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
-  final MytableData mytable;
-  $MytableWithReferences(this._db, this.mytable);
+  final MytableData mytableData;
+  $MytableWithReferences(this._db, this.mytableData);
 }
 
 typedef $EmailInsertCompanionBuilder = EmailCompanion Function({
@@ -2683,8 +2683,8 @@ class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
 class $EmailWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
-  final EMail email;
-  $EmailWithReferences(this._db, this.email);
+  final EMail eMail;
+  $EmailWithReferences(this._db, this.eMail);
 }
 
 typedef $WeirdTableInsertCompanionBuilder = WeirdTableCompanion Function({
@@ -2783,8 +2783,8 @@ class $WeirdTableOrderingComposer
 class $WeirdTableWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
-  final WeirdData weirdTable;
-  $WeirdTableWithReferences(this._db, this.weirdTable);
+  final WeirdData weirdData;
+  $WeirdTableWithReferences(this._db, this.weirdData);
 }
 
 class $CustomTablesDbManager {

@@ -1,10 +1,13 @@
 // ignore_for_file: unused_local_variable
 
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
+import '../utils/future_or_extension.dart';
 
 void main() {
   late TodoDb db;
@@ -482,6 +485,7 @@ void main() {
         db.managers.categories
             .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
             .getSingle()
+            .toFuture()
             .then((value) => value.description),
         completion("School"));
 
@@ -494,6 +498,7 @@ void main() {
                   return q;
                 }))
             .getSingle()
+            .toFuture()
             .then((value) => value.description),
         completion("School"));
   });
@@ -509,6 +514,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(3));
     expect(filter?.joinBuilders.length, 0);
@@ -522,6 +528,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(3));
     expect(filter?.joinBuilders.length, 1);
@@ -537,6 +544,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(5));
     expect(filter?.joinBuilders.length, 1);
@@ -548,7 +556,8 @@ void main() {
             .orderBy((f) => f.name.asc())
             .withReferences()
             .get()
-            .then((value) => value.map((e) => e.product).toList()),
+            .toFuture()
+            .then((value) => value.map((e) => e.productData).toList()),
         completion([
           products[1],
           products[2],
@@ -562,7 +571,8 @@ void main() {
             .orderBy((f) => f.department.name.asc() & f.name.desc())
             .withReferences()
             .get()
-            .then((value) => value.map((e) => e.product).toList()),
+            .toFuture()
+            .then((value) => value.map((e) => e.productData).toList()),
         completion([
           products[8],
           products[2],
@@ -578,6 +588,7 @@ void main() {
             .filter((f) => f.listings((f) => f.price.isBiggerThan(10.0)))
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(7));
 
@@ -590,7 +601,8 @@ void main() {
             .orderBy((f) => f.name.asc())
             .withReferences()
             .get(distinct: true)
-            .then((value) => value.map((e) => e.product).toList()),
+            .toFuture()
+            .then((value) => value.map((e) => e.productData).toList()),
         completion([
           products[1],
           products[3],
@@ -610,6 +622,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(6));
     expect(filter?.joinBuilders.length, 2);
@@ -621,6 +634,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(7));
     expect(filter?.joinBuilders.length, 2);
@@ -635,6 +649,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(8));
     expect(
@@ -647,6 +662,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(9));
 
@@ -661,6 +677,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(2));
     expect(
@@ -673,6 +690,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(3));
 
@@ -686,6 +704,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(2));
 
@@ -699,6 +718,7 @@ void main() {
             })
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(9));
   });
@@ -712,6 +732,7 @@ void main() {
             .filter((f) => f.category.id(RowId(schoolCategoryId)))
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(4));
 
@@ -721,6 +742,7 @@ void main() {
             .filter((f) => f.category.id.not(RowId(schoolCategoryId)))
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(4));
 
@@ -733,6 +755,7 @@ void main() {
             .filter((f) => f.status.equals(TodoStatus.open))
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(2));
 
@@ -744,6 +767,7 @@ void main() {
                 f.category.descriptionInUpperCase("SCHOOL"))
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(8));
 
@@ -754,6 +778,7 @@ void main() {
             .filter((f) => f.category.descriptionInUpperCase("SCHOOL"))
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.length),
         completion(4));
 
@@ -763,7 +788,8 @@ void main() {
             .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
             .withReferences()
             .getSingle()
-            .then((value) => value.categories.description),
+            .toFuture()
+            .then((value) => value.category.description),
         completion("School"));
 
     // Nested backreference
@@ -776,7 +802,8 @@ void main() {
                 }))
             .withReferences()
             .getSingle()
-            .then((value) => value.categories.description),
+            .toFuture()
+            .then((value) => value.category.description),
         completion("School"));
   });
 
@@ -786,6 +813,7 @@ void main() {
         db.managers.product
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) =>
                 value.first.department?.getSingle() ?? Future.value(null))
             .then(
@@ -798,6 +826,7 @@ void main() {
         db.managers.department
             .withReferences()
             .get(distinct: true)
+            .toFuture()
             .then((value) => value.first.productRefs.count()),
         completion(3));
 
@@ -808,9 +837,9 @@ void main() {
       final product = await i.product?.getSingle();
       if (product != null) {
         if (!listingsWithProducts.containsKey(product)) {
-          listingsWithProducts[product] = [i.listing];
+          listingsWithProducts[product] = [i.listingData];
         } else {
-          listingsWithProducts[product]!.add(i.listing);
+          listingsWithProducts[product]!.add(i.listingData);
         }
       }
     }
@@ -828,6 +857,7 @@ void main() {
             .filter((f) => f.id.equals(2))
             .withReferences()
             .getSingle()
+            .toFuture()
             .then((value) => value.productRefs.count()),
         completion(2));
   });

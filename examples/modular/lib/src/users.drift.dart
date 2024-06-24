@@ -468,8 +468,8 @@ class $UsersOrderingComposer
 class $UsersWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.User users;
-  $UsersWithReferences(this._db, this.users);
+  final i1.User i1User;
+  $UsersWithReferences(this._db, this.i1User);
 }
 
 i0.Index get usersName =>
@@ -820,8 +820,8 @@ class $FollowsOrderingComposer
 class $FollowsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Follow follows;
-  $FollowsWithReferences(this._db, this.follows);
+  final i1.Follow i1Follow;
+  $FollowsWithReferences(this._db, this.i1Follow);
 }
 
 class PopularUser extends i0.DataClass {

@@ -296,8 +296,8 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$DriftPostgresDatabase _db;
-  final User users;
-  $$UsersTableWithReferences(this._db, this.users);
+  final User user;
+  $$UsersTableWithReferences(this._db, this.user);
 }
 
 class $DriftPostgresDatabaseManager {

@@ -344,7 +344,7 @@ abstract class BaseTableManager<
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function,
     $MappedDataclass,
-    $ActiveDataclass> extends Selectable<$ActiveDataclass> {
+    $ActiveDataclass> {
   /// The state for this manager
   final TableManagerState<
       $Database,
@@ -520,8 +520,7 @@ abstract class BaseTableManager<
   /// throwing if the query completes with no rows.
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
-  @override
-  Future<$ActiveDataclass> getSingle({bool distinct = true}) async =>
+  FutureOr<$ActiveDataclass> getSingle({bool distinct = true}) async =>
       (await get(distinct: distinct)).single;
 
   /// Creates an auto-updating stream of this statement, similar to
@@ -531,7 +530,6 @@ abstract class BaseTableManager<
   /// an error will be added to the stream instead.
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
-  @override
   Stream<$ActiveDataclass> watchSingle({bool distinct = true}) =>
       watch(distinct: distinct).transform(singleElements());
 
@@ -540,8 +538,7 @@ abstract class BaseTableManager<
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
-  @override
-  Future<List<$ActiveDataclass>> get(
+  FutureOr<List<$ActiveDataclass>> get(
           {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
@@ -555,7 +552,6 @@ abstract class BaseTableManager<
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set
   /// Set [distinct] to true to ensure that only distinct rows are returned
-  @override
   Stream<List<$ActiveDataclass>> watch(
           {bool distinct = false, int? limit, int? offset}) =>
       $state
@@ -572,8 +568,7 @@ abstract class BaseTableManager<
   /// always evaluate to exactly one row.
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
-  @override
-  Future<$ActiveDataclass?> getSingleOrNull({bool distinct = true}) async {
+  FutureOr<$ActiveDataclass?> getSingleOrNull({bool distinct = true}) async {
     final list = await get(distinct: distinct);
     final iterator = list.iterator;
 
@@ -596,7 +591,6 @@ abstract class BaseTableManager<
   /// to the stream instead.
   ///
   /// Uses the distinct flag by default to ensure that only distinct rows are returned
-  @override
   Stream<$ActiveDataclass?> watchSingleOrNull({bool distinct = true}) =>
       watch(distinct: distinct).transform(singleElementsOrNull());
 }

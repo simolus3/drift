@@ -858,8 +858,8 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final User users;
-  $$UsersTableWithReferences(this._db, this.users);
+  final User user;
+  $$UsersTableWithReferences(this._db, this.user);
 }
 
 typedef $$FriendshipsTableInsertCompanionBuilder = FriendshipsCompanion
@@ -976,8 +976,8 @@ class $$FriendshipsTableOrderingComposer
 class $$FriendshipsTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final Friendship friendships;
-  $$FriendshipsTableWithReferences(this._db, this.friendships);
+  final Friendship friendship;
+  $$FriendshipsTableWithReferences(this._db, this.friendship);
 }
 
 class $DatabaseManager {

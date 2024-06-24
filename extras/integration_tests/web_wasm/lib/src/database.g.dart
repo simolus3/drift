@@ -284,8 +284,8 @@ class $$TestTableTableOrderingComposer
 class $$TestTableTableWithReferences {
   // ignore: unused_field
   final _$TestDatabase _db;
-  final TestTableData testTable;
-  $$TestTableTableWithReferences(this._db, this.testTable);
+  final TestTableData testTableData;
+  $$TestTableTableWithReferences(this._db, this.testTableData);
 }
 
 class $TestDatabaseManager {

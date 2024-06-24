@@ -820,12 +820,12 @@ class $$TodoCategoriesTableOrderingComposer
 class $$TodoCategoriesTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final TodoCategory todoCategories;
-  $$TodoCategoriesTableWithReferences(this._db, this.todoCategories);
+  final TodoCategory todoCategory;
+  $$TodoCategoriesTableWithReferences(this._db, this.todoCategory);
 
   $$TodoItemsTableProcessedTableManager get todoItemsRefs {
     return $$TodoItemsTableTableManager(_db, _db.todoItems)
-        .filter((f) => f.categoryId.id(todoCategories.id));
+        .filter((f) => f.categoryId.id(todoCategory.id));
   }
 }
 
@@ -976,13 +976,13 @@ class $$TodoItemsTableOrderingComposer
 class $$TodoItemsTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final TodoItem todoItems;
-  $$TodoItemsTableWithReferences(this._db, this.todoItems);
+  final TodoItem todoItem;
+  $$TodoItemsTableWithReferences(this._db, this.todoItem);
 
   $$TodoCategoriesTableProcessedTableManager? get categoryId {
-    if (todoItems.categoryId == null) return null;
+    if (todoItem.categoryId == null) return null;
     return $$TodoCategoriesTableTableManager(_db, _db.todoCategories)
-        .filter((f) => f.id(todoItems.categoryId!));
+        .filter((f) => f.id(todoItem.categoryId!));
   }
 }
 

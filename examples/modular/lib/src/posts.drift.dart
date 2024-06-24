@@ -355,8 +355,8 @@ class $PostsOrderingComposer
 class $PostsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Post posts;
-  $PostsWithReferences(this._db, this.posts);
+  final i1.Post i1Post;
+  $PostsWithReferences(this._db, this.i1Post);
 }
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
@@ -699,6 +699,6 @@ class $LikesOrderingComposer
 class $LikesWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Like likes;
-  $LikesWithReferences(this._db, this.likes);
+  final i1.Like i1Like;
+  $LikesWithReferences(this._db, this.i1Like);
 }

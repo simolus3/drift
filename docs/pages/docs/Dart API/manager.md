@@ -38,6 +38,26 @@ Type specific filters for `int`, `double`, `Int64`, `DateTime` and `String` are 
 
 {% include "blocks/snippet" snippets = snippets name = 'manager_type_specific_filter' %}
 
+### Reading references
+It's quite common that when looking up a single row, you also want to read related rows from other tables.  
+
+The `withReferences` method can be used to read references from multiple tables.
+It return the row along with prepared managers which have the correct filters applied.
+
+Foe example, if you wanted to read a `TodoItem`, and automatically read the `Category` that it belongs to, you could do the following:
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_with_refs' %}
+
+
+{% block "blocks/alert" title="N+1 Performance" color="warning" %}
+Beware of creating too many queries when using `withReferences`.
+If you were to query all `TodoItems` and then read the `Category` for each item, you could potentially create a large number of queries.  
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_with_refs_n_plus_1' %}
+
+If there were 1000 `TodoItems`, you would create 1001 queries, which would grind your application to a halt. Future versions of drift will include a way to mitigate this issue.
+{% endblock %}
+
 
 ### Filtering across tables
 You can filter across references to other tables by using the generated reference filters. You can nest these as deep as you'd like and the manager will take care of adding the aliased joins behind the scenes.

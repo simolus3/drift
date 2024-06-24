@@ -209,8 +209,8 @@ class $UsersOrderingComposer
 class $UsersWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.User users;
-  $UsersWithReferences(this._db, this.users);
+  final i1.User i1User;
+  $UsersWithReferences(this._db, this.i1User);
 }
 
 class Friends extends i0.Table with i0.TableInfo<Friends, i2.Friend> {
@@ -555,8 +555,8 @@ class $FriendsOrderingComposer
 class $FriendsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i2.Friend friends;
-  $FriendsWithReferences(this._db, this.friends);
+  final i2.Friend i2Friend;
+  $FriendsWithReferences(this._db, this.i2Friend);
 }
 
 class WithExistingDrift extends i3.ModularAccessor {

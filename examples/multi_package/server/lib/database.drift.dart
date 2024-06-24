@@ -364,6 +364,6 @@ class $$ActiveSessionsTableOrderingComposer
 class $$ActiveSessionsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i3.ActiveSession activeSessions;
-  $$ActiveSessionsTableWithReferences(this._db, this.activeSessions);
+  final i3.ActiveSession i3ActiveSession;
+  $$ActiveSessionsTableWithReferences(this._db, this.i3ActiveSession);
 }

@@ -865,12 +865,12 @@ class $$CategoriesTableOrderingComposer
 class $$CategoriesTableWithReferences {
   // ignore: unused_field
   final _$AppDatabase _db;
-  final Category categories;
-  $$CategoriesTableWithReferences(this._db, this.categories);
+  final Category category;
+  $$CategoriesTableWithReferences(this._db, this.category);
 
   $$TodoEntriesTableProcessedTableManager get todoEntriesRefs {
     return $$TodoEntriesTableTableManager(_db, _db.todoEntries)
-        .filter((f) => f.category.id(categories.id));
+        .filter((f) => f.category.id(category.id));
   }
 }
 
@@ -1012,13 +1012,13 @@ class $$TodoEntriesTableOrderingComposer
 class $$TodoEntriesTableWithReferences {
   // ignore: unused_field
   final _$AppDatabase _db;
-  final TodoEntry todoEntries;
-  $$TodoEntriesTableWithReferences(this._db, this.todoEntries);
+  final TodoEntry todoEntry;
+  $$TodoEntriesTableWithReferences(this._db, this.todoEntry);
 
   $$CategoriesTableProcessedTableManager? get category {
-    if (todoEntries.category == null) return null;
+    if (todoEntry.category == null) return null;
     return $$CategoriesTableTableManager(_db, _db.categories)
-        .filter((f) => f.id(todoEntries.category!));
+        .filter((f) => f.id(todoEntry.category!));
   }
 }
 
@@ -1102,8 +1102,8 @@ class $TextEntriesOrderingComposer
 class $TextEntriesWithReferences {
   // ignore: unused_field
   final _$AppDatabase _db;
-  final TextEntry textEntries;
-  $TextEntriesWithReferences(this._db, this.textEntries);
+  final TextEntry textEntry;
+  $TextEntriesWithReferences(this._db, this.textEntry);
 }
 
 class $AppDatabaseManager {

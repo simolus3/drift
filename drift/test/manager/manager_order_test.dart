@@ -3,6 +3,7 @@ import 'package:test/test.dart';
 
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
+import '../utils/future_or_extension.dart';
 
 void main() {
   late TodoDb db;
@@ -35,12 +36,14 @@ void main() {
         db.managers.tableWithEveryColumnType
             .orderBy((o) => o.aDateTime.desc())
             .get()
+            .toFuture()
             .then((value) => value[0].id),
         completion(3));
     expect(
         db.managers.tableWithEveryColumnType
             .orderBy((o) => o.aDateTime.asc())
             .get()
+            .toFuture()
             .then((value) => value[0].id),
         completion(1));
   });
@@ -85,6 +88,7 @@ void main() {
         db.managers.todosTable
             .orderBy((o) => o.category.id.asc())
             .get()
+            .toFuture()
             .then((value) => value.map((e) => e.id).toList()),
         completion([3, 4, 1, 2]));
   });

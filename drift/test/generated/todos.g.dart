@@ -3576,12 +3576,12 @@ class $$CategoriesTableOrderingComposer
 class $$CategoriesTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final Category categories;
-  $$CategoriesTableWithReferences(this._db, this.categories);
+  final Category category;
+  $$CategoriesTableWithReferences(this._db, this.category);
 
   $$TodosTableTableProcessedTableManager get todos {
     return $$TodosTableTableTableManager(_db, _db.todosTable)
-        .filter((f) => f.category.id(categories.id));
+        .filter((f) => f.category.id(category.id));
   }
 }
 
@@ -3757,13 +3757,13 @@ class $$TodosTableTableOrderingComposer
 class $$TodosTableTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final TodoEntry todosTable;
-  $$TodosTableTableWithReferences(this._db, this.todosTable);
+  final TodoEntry todoEntry;
+  $$TodosTableTableWithReferences(this._db, this.todoEntry);
 
   $$CategoriesTableProcessedTableManager? get category {
-    if (todosTable.category == null) return null;
+    if (todoEntry.category == null) return null;
     return $$CategoriesTableTableManager(_db, _db.categories)
-        .filter((f) => f.id(todosTable.category!));
+        .filter((f) => f.id(todoEntry.category!));
   }
 }
 
@@ -3906,8 +3906,8 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final User users;
-  $$UsersTableWithReferences(this._db, this.users);
+  final User user;
+  $$UsersTableWithReferences(this._db, this.user);
 }
 
 typedef $$SharedTodosTableInsertCompanionBuilder = SharedTodosCompanion
@@ -4008,8 +4008,8 @@ class $$SharedTodosTableOrderingComposer
 class $$SharedTodosTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final SharedTodo sharedTodos;
-  $$SharedTodosTableWithReferences(this._db, this.sharedTodos);
+  final SharedTodo sharedTodo;
+  $$SharedTodosTableWithReferences(this._db, this.sharedTodo);
 }
 
 typedef $$TableWithoutPKTableInsertCompanionBuilder = TableWithoutPKCompanion
@@ -4145,8 +4145,8 @@ class $$TableWithoutPKTableOrderingComposer
 class $$TableWithoutPKTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final CustomRowClass tableWithoutPK;
-  $$TableWithoutPKTableWithReferences(this._db, this.tableWithoutPK);
+  final CustomRowClass customRowClass;
+  $$TableWithoutPKTableWithReferences(this._db, this.customRowClass);
 }
 
 typedef $$PureDefaultsTableInsertCompanionBuilder = PureDefaultsCompanion
@@ -4233,8 +4233,8 @@ class $$PureDefaultsTableOrderingComposer
 class $$PureDefaultsTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final PureDefault pureDefaults;
-  $$PureDefaultsTableWithReferences(this._db, this.pureDefaults);
+  final PureDefault pureDefault;
+  $$PureDefaultsTableWithReferences(this._db, this.pureDefault);
 }
 
 typedef $$WithCustomTypeTableInsertCompanionBuilder = WithCustomTypeCompanion
@@ -4320,8 +4320,8 @@ class $$WithCustomTypeTableOrderingComposer
 class $$WithCustomTypeTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final WithCustomTypeData withCustomType;
-  $$WithCustomTypeTableWithReferences(this._db, this.withCustomType);
+  final WithCustomTypeData withCustomTypeData;
+  $$WithCustomTypeTableWithReferences(this._db, this.withCustomTypeData);
 }
 
 typedef $$TableWithEveryColumnTypeTableInsertCompanionBuilder
@@ -4553,9 +4553,9 @@ class $$TableWithEveryColumnTypeTableOrderingComposer
 class $$TableWithEveryColumnTypeTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final TableWithEveryColumnTypeData tableWithEveryColumnType;
+  final TableWithEveryColumnTypeData tableWithEveryColumnTypeData;
   $$TableWithEveryColumnTypeTableWithReferences(
-      this._db, this.tableWithEveryColumnType);
+      this._db, this.tableWithEveryColumnTypeData);
 }
 
 typedef $$DepartmentTableInsertCompanionBuilder = DepartmentCompanion Function({
@@ -4661,12 +4661,12 @@ class $$DepartmentTableOrderingComposer
 class $$DepartmentTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final DepartmentData department;
-  $$DepartmentTableWithReferences(this._db, this.department);
+  final DepartmentData departmentData;
+  $$DepartmentTableWithReferences(this._db, this.departmentData);
 
   $$ProductTableProcessedTableManager get productRefs {
     return $$ProductTableTableManager(_db, _db.product)
-        .filter((f) => f.department.id(department.id));
+        .filter((f) => f.department.id(departmentData.id));
   }
 }
 
@@ -4803,18 +4803,18 @@ class $$ProductTableOrderingComposer
 class $$ProductTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final ProductData product;
-  $$ProductTableWithReferences(this._db, this.product);
+  final ProductData productData;
+  $$ProductTableWithReferences(this._db, this.productData);
 
   $$DepartmentTableProcessedTableManager? get department {
-    if (product.department == null) return null;
+    if (productData.department == null) return null;
     return $$DepartmentTableTableManager(_db, _db.department)
-        .filter((f) => f.id(product.department!));
+        .filter((f) => f.id(productData.department!));
   }
 
   $$ListingTableProcessedTableManager get listings {
     return $$ListingTableTableManager(_db, _db.listing)
-        .filter((f) => f.product.id(product.id));
+        .filter((f) => f.product.id(productData.id));
   }
 }
 
@@ -4920,12 +4920,12 @@ class $$StoreTableOrderingComposer
 class $$StoreTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final StoreData store;
-  $$StoreTableWithReferences(this._db, this.store);
+  final StoreData storeData;
+  $$StoreTableWithReferences(this._db, this.storeData);
 
   $$ListingTableProcessedTableManager get listings {
     return $$ListingTableTableManager(_db, _db.listing)
-        .filter((f) => f.store.id(store.id));
+        .filter((f) => f.store.id(storeData.id));
   }
 }
 
@@ -5079,19 +5079,19 @@ class $$ListingTableOrderingComposer
 class $$ListingTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final ListingData listing;
-  $$ListingTableWithReferences(this._db, this.listing);
+  final ListingData listingData;
+  $$ListingTableWithReferences(this._db, this.listingData);
 
   $$ProductTableProcessedTableManager? get product {
-    if (listing.product == null) return null;
+    if (listingData.product == null) return null;
     return $$ProductTableTableManager(_db, _db.product)
-        .filter((f) => f.id(listing.product!));
+        .filter((f) => f.id(listingData.product!));
   }
 
   $$StoreTableProcessedTableManager? get store {
-    if (listing.store == null) return null;
+    if (listingData.store == null) return null;
     return $$StoreTableTableManager(_db, _db.store)
-        .filter((f) => f.id(listing.store!));
+        .filter((f) => f.id(listingData.store!));
   }
 }
 

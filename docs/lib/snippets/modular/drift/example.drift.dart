@@ -414,8 +414,8 @@ class $TodosOrderingComposer
 class $TodosWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Todo todos;
-  $TodosWithReferences(this._db, this.todos);
+  final i1.Todo i1Todo;
+  $TodosWithReferences(this._db, this.i1Todo);
 }
 
 class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {
@@ -693,8 +693,8 @@ class $CategoriesOrderingComposer
 class $CategoriesWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Category categories;
-  $CategoriesWithReferences(this._db, this.categories);
+  final i1.Category i1Category;
+  $CategoriesWithReferences(this._db, this.i1Category);
 }
 
 class ExampleDrift extends i2.ModularAccessor {

@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
+import '../utils/future_or_extension.dart';
 
 /// All managers `Managers` are Selectable classes that
 /// are used by the Manager API to return results.
@@ -196,11 +197,14 @@ void main() {
         BaseTableManager<dynamic, dynamic, T, dynamic, dynamic, dynamic,
                 dynamic, M, T>
             selectable) {
-      expect(selectable.get().then((v) => v.length), completion(3));
-      expect(selectable.get(limit: 1).then((v) => v.length), completion(1));
-      expect(selectable.get(offset: 1, limit: 2).then((v) => v.length),
+      expect(selectable.get().toFuture().then((v) => v.length), completion(3));
+      expect(selectable.get(limit: 1).toFuture().then((v) => v.length),
+          completion(1));
+      expect(
+          selectable.get(offset: 1, limit: 2).toFuture().then((v) => v.length),
           completion(2));
-      expect(selectable.get(offset: 1, limit: 2).then((v) => v.length),
+      expect(
+          selectable.get(offset: 1, limit: 2).toFuture().then((v) => v.length),
           completion(2));
     }
 

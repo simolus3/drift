@@ -290,8 +290,8 @@ class $$_SomeTableTableOrderingComposer
 class $$_SomeTableTableWithReferences {
   // ignore: unused_field
   final _$_SomeDb _db;
-  final _SomeTableData someTable;
-  $$_SomeTableTableWithReferences(this._db, this.someTable);
+  final _SomeTableData someTableData;
+  $$_SomeTableTableWithReferences(this._db, this.someTableData);
 }
 
 class $_SomeDbManager {

@@ -1078,18 +1078,18 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final User users;
-  $$UsersTableWithReferences(this._db, this.users);
+  final User user;
+  $$UsersTableWithReferences(this._db, this.user);
 
   $$UsersTableProcessedTableManager? get nextUser {
-    if (users.nextUser == null) return null;
+    if (user.nextUser == null) return null;
     return $$UsersTableTableManager(_db, _db.users)
-        .filter((f) => f.id(users.nextUser!));
+        .filter((f) => f.id(user.nextUser!));
   }
 
   $GroupsProcessedTableManager get groupsRefs {
     return $GroupsTableManager(_db, _db.groups)
-        .filter((f) => f.owner.id(users.id));
+        .filter((f) => f.owner.id(user.id));
   }
 }
 
@@ -1225,13 +1225,13 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
 class $GroupsWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final Group groups;
-  $GroupsWithReferences(this._db, this.groups);
+  final Group group;
+  $GroupsWithReferences(this._db, this.group);
 
   $$UsersTableProcessedTableManager? get owner {
-    if (groups.owner == null) return null;
+    if (group.owner == null) return null;
     return $$UsersTableTableManager(_db, _db.users)
-        .filter((f) => f.id(groups.owner!));
+        .filter((f) => f.id(group.owner!));
   }
 }
 
@@ -1343,8 +1343,8 @@ class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
 class $NotesWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final Note notes;
-  $NotesWithReferences(this._db, this.notes);
+  final Note note;
+  $NotesWithReferences(this._db, this.note);
 }
 
 class $DatabaseManager {

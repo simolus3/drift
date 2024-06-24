@@ -309,8 +309,8 @@ class $SearchInPostsOrderingComposer
 class $SearchInPostsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.SearchInPost searchInPosts;
-  $SearchInPostsWithReferences(this._db, this.searchInPosts);
+  final i1.SearchInPost i1SearchInPost;
+  $SearchInPostsWithReferences(this._db, this.i1SearchInPost);
 }
 
 i0.Trigger get postsInsert => i0.Trigger(
