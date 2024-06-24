@@ -187,23 +187,29 @@ void main() {
     final getAllStoresWithFilterAndOrdering = db.managers.store
         .filter((f) => f.id.not(10))
         .orderBy((f) => f.id.asc());
+    final getAllStoresWithFilterAndOrderingWithReferences = db.managers.store
+        .filter((f) => f.id.not(10))
+        .orderBy((f) => f.id.asc())
+        .withReferences();
 
     void testManager<T, M>(
-      BaseTableManager<dynamic, dynamic, T, dynamic, dynamic, dynamic, dynamic,
-              M, T>
-          selectable,
-    ) {
+        BaseTableManager<dynamic, dynamic, T, dynamic, dynamic, dynamic,
+                dynamic, M, T>
+            selectable) {
       expect(selectable.get().then((v) => v.length), completion(3));
       expect(selectable.get(limit: 1).then((v) => v.length), completion(1));
       expect(selectable.get(offset: 1, limit: 2).then((v) => v.length),
           completion(2));
+      expect(selectable.get(offset: 1, limit: 2).then((v) => v.length),
+          completion(2));
     }
 
-    for (final selectable in [
+    for (final selectable in <BaseTableManager>[
       getAllStores,
       getAllStoresWithFilter,
       getAllStoresWithOrdering,
       getAllStoresWithFilterAndOrdering,
+      getAllStoresWithFilterAndOrderingWithReferences,
     ]) {
       testManager(selectable);
     }

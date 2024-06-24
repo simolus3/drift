@@ -8,21 +8,33 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
+  late List<StoreData> stores;
+  late List<DepartmentData> departments;
+  late List<ProductData> products;
+  late List<int> listings;
+  final categoryData = [
+    (description: "School", priority: Value(CategoryPriority.high)),
+    (description: "Work", priority: Value(CategoryPriority.low)),
+  ];
+  late int schoolCategoryId;
+  late int workCategoryId;
+  late List<
+      ({
+        Value<RowId> category,
+        String content,
+        Value<TodoStatus> status,
+        Value<DateTime> targetDate,
+        Value<String> title
+      })> todoData;
 
-  setUp(() {
+  setUp(() async {
     db = TodoDb(testInMemoryDatabase());
-  });
-
-  tearDown(() => db.close());
-
-  test('manager - filter related with regualar id', () async {
-    final stores = [
+    stores = [
       await db.managers.store.createReturning((o) => o(name: Value("Walmart"))),
       await db.managers.store.createReturning((o) => o(name: Value("Target"))),
       await db.managers.store.createReturning((o) => o(name: Value("Costco")))
     ];
-
-    final departments = [
+    departments = [
       await db.managers.department
           .createReturning((o) => o(name: Value("Electronics"))),
       await db.managers.department
@@ -30,8 +42,7 @@ void main() {
       await db.managers.department
           .createReturning((o) => o(name: Value("Clothing")))
     ];
-
-    final products = [
+    products = [
       // Electronics
       await db.managers.product.createReturning(
           (o) => o(name: Value("TV"), department: Value(departments[0].id))),
@@ -54,8 +65,7 @@ void main() {
       await db.managers.product.createReturning(
           (o) => o(name: Value("Cap"), department: Value(departments[2].id)))
     ];
-
-    final listings = [
+    listings = [
       // Walmart - Electronics
       await db.managers.listing.create((o) => o(
           product: Value(products[0].id),
@@ -173,28 +183,104 @@ void main() {
           product: Value(products[4].id),
           store: Value(stores[2].id),
           price: Value(900.0))),
-
-      // Costco - Clothing
-
-      // Does not have any clothing
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[5].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(20.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[6].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(30.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[7].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(5.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[8].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(10.0))),
     ];
+    schoolCategoryId = await db.managers.categories.create((o) => o(
+        priority: categoryData[0].priority,
+        description: categoryData[0].description));
+    workCategoryId = await db.managers.categories.create((o) => o(
+        priority: categoryData[1].priority,
+        description: categoryData[1].description));
 
+    todoData = [
+      // School
+      (
+        content: "Get that math homework done",
+        title: Value("Math Homework"),
+        category: Value(RowId(schoolCategoryId)),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))
+      ),
+      (
+        content: "Finish that report",
+        title: Value("Report"),
+        category: Value(RowId(schoolCategoryId)),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))
+      ),
+      (
+        content: "Get that english homework done",
+        title: Value("English Homework"),
+        category: Value(RowId(schoolCategoryId)),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 15)))
+      ),
+      (
+        content: "Finish that Book report",
+        title: Value("Book Report"),
+        category: Value(RowId(schoolCategoryId)),
+        status: Value(TodoStatus.done),
+        targetDate:
+            Value(DateTime.now().subtract(Duration(days: 2, seconds: 15)))
+      ),
+      // Work
+      (
+        content: "File those reports",
+        title: Value("File Reports"),
+        category: Value(RowId(workCategoryId)),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))
+      ),
+      (
+        content: "Clean the office",
+        title: Value("Clean Office"),
+        category: Value(RowId(workCategoryId)),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))
+      ),
+      (
+        content: "Nail that presentation",
+        title: Value("Presentation"),
+        category: Value(RowId(workCategoryId)),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))
+      ),
+      (
+        content: "Take a break",
+        title: Value("Break"),
+        category: Value(RowId(workCategoryId)),
+        status: Value(TodoStatus.done),
+        targetDate:
+            Value(DateTime.now().subtract(Duration(days: 2, seconds: 25)))
+      ),
+      // Items with no category
+      (
+        content: "Get Whiteboard",
+        title: Value("Whiteboard"),
+        status: Value(TodoStatus.open),
+        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 50))),
+        category: Value.absent(),
+      ),
+      (
+        category: Value.absent(),
+        content: "Drink Water",
+        title: Value("Water"),
+        status: Value(TodoStatus.workInProgress),
+        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 50)))
+      ),
+    ];
+    for (var i in todoData) {
+      await db.managers.todosTable.create((o) => o(
+          content: i.content,
+          title: i.title,
+          category: i.category,
+          status: i.status,
+          targetDate: i.targetDate));
+    }
+  });
+
+  tearDown(() => db.close());
+
+  test('manager - filter related with regualar id', () async {
     // Filter on related table's reference id - Does not require a join
     ComposableFilter? filter;
     expect(
@@ -348,111 +434,6 @@ void main() {
   });
 
   test('manager - filter related with custom type for primary key', () async {
-    final categoryData = [
-      (description: "School", priority: Value(CategoryPriority.high)),
-      (description: "Work", priority: Value(CategoryPriority.low)),
-    ];
-
-    final schoolCategoryId = await db.managers.categories.create((o) => o(
-        priority: categoryData[0].priority,
-        description: categoryData[0].description));
-    final workCategoryId = await db.managers.categories.create((o) => o(
-        priority: categoryData[1].priority,
-        description: categoryData[1].description));
-
-    final todoData = <({
-      int? category,
-      String content,
-      Value<TodoStatus> status,
-      Value<DateTime> targetDate,
-      Value<String> title
-    })>[
-      // School
-      (
-        content: "Get that math homework done",
-        title: Value("Math Homework"),
-        category: schoolCategoryId,
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))
-      ),
-      (
-        content: "Finish that report",
-        title: Value("Report"),
-        category: schoolCategoryId,
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))
-      ),
-      (
-        content: "Get that english homework done",
-        title: Value("English Homework"),
-        category: schoolCategoryId,
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 15)))
-      ),
-      (
-        content: "Finish that Book report",
-        title: Value("Book Report"),
-        category: schoolCategoryId,
-        status: Value(TodoStatus.done),
-        targetDate:
-            Value(DateTime.now().subtract(Duration(days: 2, seconds: 15)))
-      ),
-      // Work
-      (
-        content: "File those reports",
-        title: Value("File Reports"),
-        category: workCategoryId,
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))
-      ),
-      (
-        content: "Clean the office",
-        title: Value("Clean Office"),
-        category: workCategoryId,
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))
-      ),
-      (
-        content: "Nail that presentation",
-        title: Value("Presentation"),
-        category: workCategoryId,
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))
-      ),
-      (
-        content: "Take a break",
-        title: Value("Break"),
-        category: workCategoryId,
-        status: Value(TodoStatus.done),
-        targetDate:
-            Value(DateTime.now().subtract(Duration(days: 2, seconds: 25)))
-      ),
-      // Items with no category
-      (
-        content: "Get Whiteboard",
-        title: Value("Whiteboard"),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 50))),
-        category: null,
-      ),
-      (
-        category: null,
-        content: "Drink Water",
-        title: Value("Water"),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 50)))
-      ),
-    ];
-
-    for (var i in todoData) {
-      await db.managers.todosTable.create((o) => o(
-          content: i.content,
-          title: i.title,
-          category: Value(i.category == null ? null : RowId(i.category!)),
-          status: i.status,
-          targetDate: i.targetDate));
-    }
-
     // item without title
 
     // Equals
@@ -518,185 +499,6 @@ void main() {
   });
 
   test('manager - filter related with regualar id with references', () async {
-    final stores = [
-      await db.managers.store.createReturning((o) => o(name: Value("Walmart"))),
-      await db.managers.store.createReturning((o) => o(name: Value("Target"))),
-      await db.managers.store.createReturning((o) => o(name: Value("Costco")))
-    ];
-
-    final departments = [
-      await db.managers.department
-          .createReturning((o) => o(name: Value("Electronics"))),
-      await db.managers.department
-          .createReturning((o) => o(name: Value("Grocery"))),
-      await db.managers.department
-          .createReturning((o) => o(name: Value("Clothing")))
-    ];
-
-    final products = [
-      // Electronics
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("TV"), department: Value(departments[0].id))),
-      await db.managers.product.createReturning((o) =>
-          o(name: Value("Cell Phone"), department: Value(departments[0].id))),
-      await db.managers.product.createReturning((o) =>
-          o(name: Value("Charger"), department: Value(departments[0].id))),
-      // Grocery
-      await db.managers.product.createReturning((o) =>
-          o(name: Value("Cereal"), department: Value(departments[1].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Meat"), department: Value(departments[1].id))),
-      // Clothing
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Shirt"), department: Value(departments[2].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Pants"), department: Value(departments[2].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Socks"), department: Value(departments[2].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Cap"), department: Value(departments[2].id)))
-    ];
-
-    final listings = [
-      // Walmart - Electronics
-      await db.managers.listing.create((o) => o(
-          product: Value(products[0].id),
-          store: Value(stores[0].id),
-          price: Value(100.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[1].id),
-          store: Value(stores[0].id),
-          price: Value(200.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[2].id),
-          store: Value(stores[0].id),
-          price: Value(10.0))),
-
-      // Walmart - Grocery
-      await db.managers.listing.create((o) => o(
-          product: Value(products[3].id),
-          store: Value(stores[0].id),
-          price: Value(5.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[4].id),
-          store: Value(stores[0].id),
-          price: Value(15.0))),
-
-      // Walmart - Clothing
-      await db.managers.listing.create((o) => o(
-          product: Value(products[5].id),
-          store: Value(stores[0].id),
-          price: Value(20.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[6].id),
-          store: Value(stores[0].id),
-          price: Value(30.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[7].id),
-          store: Value(stores[0].id),
-          price: Value(5.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[8].id),
-          store: Value(stores[0].id),
-          price: Value(10.0))),
-
-      // Target - Electronics
-
-      // Target does not have any TVs
-      // But is otherwise cheaper on electronics
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[0].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(100.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[1].id),
-          store: Value(stores[1].id),
-          price: Value(150.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[2].id),
-          store: Value(stores[1].id),
-          price: Value(15.0))),
-
-      // Target - Grocery
-
-      // More expensive groceries
-      await db.managers.listing.create((o) => o(
-          product: Value(products[3].id),
-          store: Value(stores[1].id),
-          price: Value(10.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[4].id),
-          store: Value(stores[1].id),
-          price: Value(20.0))),
-
-      // Target - Clothing
-
-      // Does not have any shirts or pants
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[5].id),
-      //     store: Value(stores[1].id),
-      //     price: Value(20.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[6].id),
-      //     store: Value(stores[1].id),
-      //     price: Value(30.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[7].id),
-          store: Value(stores[1].id),
-          price: Value(5.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[8].id),
-          store: Value(stores[1].id),
-          price: Value(10.0))),
-
-      // Costco - Electronics
-      // Much cheaper electronics
-      await db.managers.listing.create((o) => o(
-          product: Value(products[0].id),
-          store: Value(stores[2].id),
-          price: Value(50.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[1].id),
-          store: Value(stores[2].id),
-          price: Value(100.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[2].id),
-          store: Value(stores[2].id),
-          price: Value(2.50))),
-
-      // Costco - Grocery
-
-      // More expensive groceries
-      await db.managers.listing.create((o) => o(
-          product: Value(products[3].id),
-          store: Value(stores[2].id),
-          price: Value(20.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[4].id),
-          store: Value(stores[2].id),
-          price: Value(900.0))),
-
-      // Costco - Clothing
-
-      // Does not have any clothing
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[5].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(20.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[6].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(30.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[7].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(5.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[8].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(10.0))),
-    ];
-
     // Filter on related table's reference id - Does not require a join
     ComposableFilter? filter;
     expect(
@@ -904,113 +706,6 @@ void main() {
   test(
       'manager - filter related with custom type for primary key with references',
       () async {
-    final categoryData = [
-      (description: "School", priority: Value(CategoryPriority.high)),
-      (description: "Work", priority: Value(CategoryPriority.low)),
-    ];
-
-    final schoolCategoryId = await db.managers.categories.create((o) => o(
-        priority: categoryData[0].priority,
-        description: categoryData[0].description));
-    final workCategoryId = await db.managers.categories.create((o) => o(
-        priority: categoryData[1].priority,
-        description: categoryData[1].description));
-
-    final todoData = <({
-      Value<RowId> category,
-      String content,
-      Value<TodoStatus> status,
-      Value<DateTime> targetDate,
-      Value<String> title
-    })>[
-      // School
-      (
-        content: "Get that math homework done",
-        title: Value("Math Homework"),
-        category: Value(RowId(schoolCategoryId)),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))
-      ),
-      (
-        content: "Finish that report",
-        title: Value("Report"),
-        category: Value(RowId(schoolCategoryId)),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))
-      ),
-      (
-        content: "Get that english homework done",
-        title: Value("English Homework"),
-        category: Value(RowId(schoolCategoryId)),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 15)))
-      ),
-      (
-        content: "Finish that Book report",
-        title: Value("Book Report"),
-        category: Value(RowId(schoolCategoryId)),
-        status: Value(TodoStatus.done),
-        targetDate:
-            Value(DateTime.now().subtract(Duration(days: 2, seconds: 15)))
-      ),
-      // Work
-      (
-        content: "File those reports",
-        title: Value("File Reports"),
-        category: Value(RowId(workCategoryId)),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 20)))
-      ),
-      (
-        content: "Clean the office",
-        title: Value("Clean Office"),
-        category: Value(RowId(workCategoryId)),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 20)))
-      ),
-      (
-        content: "Nail that presentation",
-        title: Value("Presentation"),
-        category: Value(RowId(workCategoryId)),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 25)))
-      ),
-      (
-        content: "Take a break",
-        title: Value("Break"),
-        category: Value(RowId(workCategoryId)),
-        status: Value(TodoStatus.done),
-        targetDate:
-            Value(DateTime.now().subtract(Duration(days: 2, seconds: 25)))
-      ),
-      // Items with no category
-      (
-        content: "Get Whiteboard",
-        title: Value("Whiteboard"),
-        status: Value(TodoStatus.open),
-        targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 50))),
-        category: Value.absent(),
-      ),
-      (
-        category: Value.absent(),
-        content: "Drink Water",
-        title: Value("Water"),
-        status: Value(TodoStatus.workInProgress),
-        targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 50)))
-      ),
-    ];
-
-    for (var i in todoData) {
-      await db.managers.todosTable.create((o) => o(
-          content: i.content,
-          title: i.title,
-          category: i.category,
-          status: i.status,
-          targetDate: i.targetDate));
-    }
-
-    // item without title
-
     // Equals
     expect(
         db.managers.todosTable
@@ -1083,5 +778,57 @@ void main() {
             .getSingle()
             .then((value) => value.categories.description),
         completion("School"));
+  });
+
+  test('manager - with references tests', () async {
+    // Get department for the 1st product
+    expect(
+        db.managers.product
+            .withReferences()
+            .get(distinct: true)
+            .then((value) =>
+                value.first.department?.getSingle() ?? Future.value(null))
+            .then(
+              (value) => value?.id,
+            ),
+        completion(departments[0].id));
+
+    // Get the amount of products in the 1st department
+    expect(
+        db.managers.department
+            .withReferences()
+            .get(distinct: true)
+            .then((value) => value.first.productRefs.count()),
+        completion(3));
+
+    // Get all the products with all their listings
+    final listingsWithProducts = <ProductData, List<ListingData>>{};
+    for (final i
+        in await db.managers.listing.withReferences().get(distinct: true)) {
+      final product = await i.product?.getSingle();
+      if (product != null) {
+        if (!listingsWithProducts.containsKey(product)) {
+          listingsWithProducts[product] = [i.listing];
+        } else {
+          listingsWithProducts[product]!.add(i.listing);
+        }
+      }
+    }
+    expect(listingsWithProducts.length, 9);
+    expect(
+        listingsWithProducts.entries.fold(
+          0,
+          (i, o) => i + o.value.length,
+        ),
+        20);
+
+    // Get the amount of products in the department id 2
+    expect(
+        db.managers.department
+            .filter((f) => f.id.equals(2))
+            .withReferences()
+            .getSingle()
+            .then((value) => value.productRefs.count()),
+        completion(2));
   });
 }
