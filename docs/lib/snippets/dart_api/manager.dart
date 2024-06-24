@@ -23,8 +23,6 @@ class TodoCategory extends Table {
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  @ReferenceName("users")
-  IntColumn get group => integer().references(Groups, #id)();
 }
 
 class Groups extends Table {
