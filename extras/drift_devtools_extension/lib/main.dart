@@ -38,8 +38,8 @@ class DriftDevtoolsBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(selectedDatabase);
 
-    return Split(
-      axis: Split.axisFor(context, 0.85),
+    return SplitPane(
+      axis: SplitPane.axisFor(context, 0.85),
       initialFractions: const [1 / 3, 2 / 3],
       children: [
         const RoundedOutlinedBorder(
