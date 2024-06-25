@@ -11,6 +11,13 @@ abstract class DatabaseConnectionUser {
   @protected
   final DatabaseConnection connection;
 
+  /// Whether [doWhenOpened] has been called and completed at least once.
+  ///
+  /// This can serve as an optimization setups requiring direct access to the
+  /// underlying [executor] that want to avoid the asynchronous suspension
+  /// around open checks if possible.
+  bool _isOpen = false;
+
   /// The [DriftDatabaseOptions] to use for this database instance.
   ///
   /// Mainly, these options describe how values are mapped from Dart to SQL
@@ -57,7 +64,7 @@ abstract class DatabaseConnectionUser {
   /// Creates and auto-updating stream from the given select statement. This
   /// method should not be used directly.
   Stream<List<Map<String, Object?>>> createStream(QueryStreamFetcher stmt) =>
-      resolvedEngine.streamQueries.registerStream(stmt);
+      resolvedEngine.streamQueries.registerStream(stmt, this);
 
   /// Creates a copy of the table with an alias so that it can be used in the
   /// same query more than once.
@@ -159,7 +166,10 @@ abstract class DatabaseConnectionUser {
   /// Calling this method directly might circumvent the current transaction. For
   /// that reason, it should only be called inside drift.
   Future<T> doWhenOpened<T>(FutureOr<T> Function(QueryExecutor e) fn) {
-    return executor.ensureOpen(attachedDatabase).then((_) => fn(executor));
+    return executor.ensureOpen(attachedDatabase).then((_) {
+      _isOpen = true;
+      return fn(executor);
+    });
   }
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
@@ -686,7 +696,7 @@ extension on TransactionExecutor {
 ///
 /// This is only used by the DevTools extension.
 @internal
-extension RunWithEngine on DatabaseConnectionUser {
+extension InternalConnectionUserApi on DatabaseConnectionUser {
   /// Call the private [_runConnectionZoned] method.
   Future<T> runConnectionZoned<T>(
       DatabaseConnectionUser user, Future<T> Function() calculation) {
@@ -697,6 +707,8 @@ extension RunWithEngine on DatabaseConnectionUser {
     final engine = resolvedEngine;
     return engine.doWhenOpened(run);
   }
+
+  bool get isOpen => _isOpen;
 }
 
 class _ExclusiveExecutor extends DatabaseConnectionUser {

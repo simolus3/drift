@@ -269,11 +269,16 @@ class MockSupportedTransactionDelegate extends _i1.Mock
 class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
   @override
   _i5.Stream<List<Map<String, Object?>>> registerStream(
-          _i7.QueryStreamFetcher? fetcher) =>
+    _i7.QueryStreamFetcher? fetcher,
+    _i6.DatabaseConnectionUser? database,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #registerStream,
-          [fetcher],
+          [
+            fetcher,
+            database,
+          ],
         ),
         returnValue: _i5.Stream<List<Map<String, Object?>>>.empty(),
         returnValueForMissingStub:

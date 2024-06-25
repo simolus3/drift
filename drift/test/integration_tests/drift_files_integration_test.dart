@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart' hide isNull;
 
 import 'package:test/test.dart';
@@ -90,7 +91,7 @@ void main() {
     });
 
     test('can be used in a query stream', () async {
-      final stream = db.readView().watch();
+      final stream = StreamQueue(db.readView().watch());
       const entry = Config(
         configKey: 'another_key',
         configValue: DriftAny('value'),
@@ -98,10 +99,11 @@ void main() {
         syncStateImplicit: SyncType.synchronized,
       );
 
+      await expectLater(stream, emits(isEmpty));
+
       final expectation = expectLater(
         stream,
-        emitsInOrder([
-          isEmpty,
+        emits(
           [
             MyViewData(
               configKey: entry.configKey,
@@ -110,7 +112,7 @@ void main() {
               syncStateImplicit: entry.syncStateImplicit,
             ),
           ],
-        ]),
+        ),
       );
 
       await db.into(db.config).insert(entry);

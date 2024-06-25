@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
+import '../api/runtime_api.dart';
 import '../cancellation_zone.dart';
 
 const _listEquality = ListEquality<Object?>();
@@ -82,7 +83,7 @@ class StreamQueryStore {
 
   /// Creates a new stream from the select statement.
   Stream<List<Map<String, Object?>>> registerStream(
-      QueryStreamFetcher fetcher) {
+      QueryStreamFetcher fetcher, DatabaseConnectionUser database) {
     final key = fetcher.key;
 
     if (key != null) {
@@ -94,7 +95,7 @@ class StreamQueryStore {
 
     // no cached instance found, create a new stream and register it so later
     // requests with the same key can be cached.
-    final stream = QueryStream(fetcher, this);
+    final stream = QueryStream(fetcher, this, database);
     // todo this adds the stream to a map, where it will only be removed when
     // somebody listens to it and later calls .cancel(). Failing to do so will
     // cause a memory leak. Is there any way we can work around it? Perhaps a
@@ -179,6 +180,7 @@ typedef _Row = List<Map<String, Object?>>;
 class QueryStream {
   final QueryStreamFetcher _fetcher;
   final StreamQueryStore _store;
+  final DatabaseConnectionUser _database;
 
   final List<_QueryStreamListener> _listeners = [];
   int _pausedListeners = 0;
@@ -236,7 +238,7 @@ class QueryStream {
 
   bool get hasKey => _fetcher.key != null;
 
-  QueryStream(this._fetcher, this._store);
+  QueryStream(this._fetcher, this._store, this._database);
 
   void _onListenOrResume(_QueryStreamListener newListener) {
     // First listener, start fetching data
@@ -307,10 +309,20 @@ class QueryStream {
   }
 
   Future<void> fetchAndEmitData() async {
-    final operation = runCancellable(_fetcher.fetchData);
+    final operation = CancellationToken<List<Map<String, dynamic>>>();
     _runningOperations.add(operation);
 
     try {
+      if (!_database.isOpen) {
+        // We should make sure the database has been opened before using
+        // runCancellable! The first statement on the database is responsible
+        // for opening it (which includes running migrations), a process that
+        // must not be cancelled.
+        await _database.resolvedEngine.doWhenOpened((_) {});
+      }
+
+      if (operation.isCancelled) return;
+      runCancellable(_fetcher.fetchData, token: operation);
       final data = await operation.resultOrNullIfCancelled;
       if (data == null) return;
 

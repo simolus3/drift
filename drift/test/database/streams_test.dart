@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/src/runtime/api/runtime_api.dart';
+import 'package:drift/src/runtime/cancellation_zone.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -14,9 +14,10 @@ import '../test_utils/test_utils.dart';
 void main() {
   late TodoDb db;
   late MockExecutor executor;
-  setUp(() {
+  setUp(() async {
     executor = MockExecutor();
     db = TodoDb(executor);
+    await db.doWhenOpened((_) {});
   });
 
   test('streams fetch when the first listener attaches', () async {
@@ -327,6 +328,10 @@ void main() {
   // note: There's a trigger on config inserts that updates with_defaults
   test('updates streams for updates caused by triggers', () async {
     final db = CustomTablesDb(executor);
+    // The first select only runs reliably when we don't have to wait for the
+    // stream to open the database, it may get cancelled otherwise
+    await db.doWhenOpened((_) {});
+
     db.select(db.withDefaults).watch().listen((_) {});
 
     db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.insert)});
@@ -423,5 +428,26 @@ void main() {
   test('stream queries are broadcasts', () {
     expect(db.customSelect('SELECT 1').watch().isBroadcast, isTrue);
     expect(db.customSelect('SELECT 1').watchSingle().isBroadcast, isTrue);
+  });
+
+  test("streams opening the database don't cancel migrations", () async {
+    // https://github.com/simolus3/drift/issues/3061
+    executor = MockExecutor(OpeningDetails(null, 1));
+    db = TodoDb(executor);
+    db.migration = MigrationStrategy(onCreate: expectAsync1((m) async {
+      await m.createAll();
+      // This invalidates the user stream
+      await db.into(db.users).insert(UsersCompanion.insert(
+          name: 'test user', profilePicture: Uint8List(0)));
+      await pumpEventQueue();
+
+      try {
+        checkIfCancelled();
+      } on CancellationException {
+        fail('Should not have been cancelled');
+      }
+    }));
+
+    await db.users.all().watch().first;
   });
 }

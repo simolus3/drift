@@ -14,6 +14,8 @@
   Note that the fix also requires the latest `drift_worker.js` to be effective.
 - Both `transaction` and `exclusively` will wait for the transaction or the
   exclusive lock to be set up before invoking their callback now.
+- Fix stream queries possibly cancelling a migration if they are the first method
+  on the database.
 
 ## 2.18.0
 

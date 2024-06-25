@@ -26,7 +26,7 @@ void main() {
   late TodoDb db;
   late MockExecutor executor;
 
-  setUp(() {
+  setUp(() async {
     executor = MockExecutor();
     db = TodoDb(executor);
   });

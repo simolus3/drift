@@ -9,11 +9,12 @@ const _key = #drift.runtime.cancellation;
 /// The [CancellationToken] can be used to cancel the operation and to get the
 /// eventual result.
 CancellationToken<T> runCancellable<T>(
-  Future<T> Function() operation,
-) {
-  final token = CancellationToken<T>();
+  Future<T> Function() operation, {
+  CancellationToken<T>? token,
+}) {
+  token ??= CancellationToken<T>();
   runZoned(
-    () => token._resultCompleter.complete(Future.sync(operation)),
+    () => token!._resultCompleter.complete(Future.sync(operation)),
     zoneValues: {_key: token},
   );
 
@@ -33,6 +34,8 @@ class CancellationToken<T> {
   /// When a cancellation has been requested and was honored, the future will
   /// complete with a [CancellationException].
   Future<T> get result => _resultCompleter.future;
+
+  bool get isCancelled => _cancellationRequested;
 
   /// Requests the inner asynchronous operation to be cancelled.
   void cancel() {
