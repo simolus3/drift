@@ -10,7 +10,7 @@ final _dateFormat = DateFormat.yMMMd();
 class TodoEditDialog extends ConsumerStatefulWidget {
   final TodoEntry entry;
 
-  const TodoEditDialog({Key? key, required this.entry}) : super(key: key);
+  const TodoEditDialog({super.key, required this.entry});
 
   @override
   ConsumerState<TodoEditDialog> createState() => _TodoEditDialogState();
