@@ -323,15 +323,20 @@ abstract class BaseTableManager<
   }
 
   /// Add a filter to the statement
+  ///
+  /// The [combineWith] parameter can be used to combine the new filter with any existing filters
   ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
           $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
-      filter(ComposableFilter Function($FilterComposer f) f) {
+      filter(ComposableFilter Function($FilterComposer f) f,
+          {BooleanOperator combineWith = BooleanOperator.and}) {
     final filter = f($state.filteringComposer);
     final combinedFilter = switch (($state.filter, filter.expression)) {
       (null, null) => null,
       (null, var filter) => filter,
       (var filter, null) => filter,
-      (var filter1, var filter2) => (filter1!) & (filter2!)
+      (var filter1, var filter2) => combineWith == BooleanOperator.and
+          ? (filter1!) & (filter2!)
+          : (filter1!) | (filter2!)
     };
 
     return ProcessedTableManager($state.copyWith(
