@@ -54,16 +54,6 @@ class _ManagerCodeTemplates {
         .dartCode(leaf.generatedElement(table, rootTableManagerName(table)));
   }
 
-  /// Returns the name of the processed table manager class for a table
-  ///
-  /// This does not contain any prefixes, as this will always be generated in the same file
-  /// as the table manager and is not used outside of the file
-  ///
-  /// E.g. `$UserTableProcessedTableManager`
-  String processedTableManagerTypedefName(DriftTable table) {
-    return '\$${table.entityInfoName}ProcessedTableManager';
-  }
-
   /// Class which represents a table in the database
   /// Contains the prefix if the generation is modular
   /// E.g. `i0.UserTable`
@@ -224,15 +214,6 @@ class _ManagerCodeTemplates {
         createCompanionCallback: $createCompanionBuilder,));
         }
     """;
-  }
-
-  /// Returns code for the processed table manager class
-  String processedTableManagerTypedef({
-    required DriftTable table,
-    required String dbClassName,
-    required TextEmitter leaf,
-  }) {
-    return """typedef ${processedTableManagerTypedefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)};""";
   }
 
   /// Returns the code for a tables filter composer
