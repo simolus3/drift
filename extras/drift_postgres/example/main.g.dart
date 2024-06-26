@@ -262,15 +262,29 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
 class $$UsersTableFilterComposer
     extends FilterComposer<_$DriftPostgresDatabase, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
-  ColumnFilters<UuidValue> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get name => ColumnFilters($state.table.name);
+  ColumnFilters<UuidValue> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$UsersTableOrderingComposer
     extends OrderingComposer<_$DriftPostgresDatabase, $UsersTable> {
   $$UsersTableOrderingComposer(super.$state);
-  ColumnOrderings<UuidValue> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($state.table.name);
+  ColumnOrderings<UuidValue> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $DriftPostgresDatabaseManager {

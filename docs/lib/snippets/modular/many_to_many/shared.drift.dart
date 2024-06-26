@@ -293,17 +293,37 @@ typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
 class $$BuyableItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($state.table.id);
-  i0.ColumnFilters<String> get description =>
-      i0.ColumnFilters($state.table.description);
-  i0.ColumnFilters<int> get price => i0.ColumnFilters($state.table.price);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<int> get price => $state.composableBuilder(
+      column: $state.table.price,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$BuyableItemsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($state.table.id);
-  i0.ColumnOrderings<String> get description =>
-      i0.ColumnOrderings($state.table.description);
-  i0.ColumnOrderings<int> get price => i0.ColumnOrderings($state.table.price);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<int> get price => $state.composableBuilder(
+      column: $state.table.price,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }

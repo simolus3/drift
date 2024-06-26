@@ -256,15 +256,29 @@ typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
 class $$_SomeTableTableFilterComposer
     extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
   $$_SomeTableTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get name => ColumnFilters($state.table.name);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$_SomeTableTableOrderingComposer
     extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
   $$_SomeTableTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($state.table.name);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $_SomeDbManager {

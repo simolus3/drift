@@ -267,8 +267,11 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer(super.$state);
-  i0.ColumnFilters<String> get content =>
-      i0.ColumnFilters($state.table.content);
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
   i2.$$UsersTableFilterComposer get author {
     final i2.$$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -290,8 +293,11 @@ class $PostsFilterComposer
 class $PostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get content =>
-      i0.ColumnOrderings($state.table.content);
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
   i2.$$UsersTableOrderingComposer get author {
     final i2.$$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,

@@ -772,8 +772,16 @@ typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
 class $$TodoCategoriesTableFilterComposer
     extends FilterComposer<_$Database, $TodoCategoriesTable> {
   $$TodoCategoriesTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get name => ColumnFilters($state.table.name);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ComposableFilter todoItemsRefs(
       ComposableFilter Function($$TodoItemsTableFilterComposer f) f) {
     final $$TodoItemsTableFilterComposer composer = $state.composerBuilder(
@@ -791,8 +799,15 @@ class $$TodoCategoriesTableFilterComposer
 class $$TodoCategoriesTableOrderingComposer
     extends OrderingComposer<_$Database, $TodoCategoriesTable> {
   $$TodoCategoriesTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($state.table.name);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
@@ -863,11 +878,26 @@ typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
 class $$TodoItemsTableFilterComposer
     extends FilterComposer<_$Database, $TodoItemsTable> {
   $$TodoItemsTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get title => ColumnFilters($state.table.title);
-  ColumnFilters<String> get content => ColumnFilters($state.table.content);
-  ColumnFilters<String> get generatedText =>
-      ColumnFilters($state.table.generatedText);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get generatedText => $state.composableBuilder(
+      column: $state.table.generatedText,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   $$TodoCategoriesTableFilterComposer get categoryId {
     final $$TodoCategoriesTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -884,11 +914,26 @@ class $$TodoItemsTableFilterComposer
 class $$TodoItemsTableOrderingComposer
     extends OrderingComposer<_$Database, $TodoItemsTable> {
   $$TodoItemsTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get title => ColumnOrderings($state.table.title);
-  ColumnOrderings<String> get content => ColumnOrderings($state.table.content);
-  ColumnOrderings<String> get generatedText =>
-      ColumnOrderings($state.table.generatedText);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get generatedText => $state.composableBuilder(
+      column: $state.table.generatedText,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   $$TodoCategoriesTableOrderingComposer get categoryId {
     final $$TodoCategoriesTableOrderingComposer composer =
         $state.composerBuilder(

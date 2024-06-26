@@ -336,10 +336,21 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
 class $TodosFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Todos> {
   $TodosFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($state.table.id);
-  i0.ColumnFilters<String> get title => i0.ColumnFilters($state.table.title);
-  i0.ColumnFilters<String> get content =>
-      i0.ColumnFilters($state.table.content);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
   i1.$CategoriesFilterComposer get category {
     final i1.$CategoriesFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -361,11 +372,21 @@ class $TodosFilterComposer
 class $TodosOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Todos> {
   $TodosOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($state.table.id);
-  i0.ColumnOrderings<String> get title =>
-      i0.ColumnOrderings($state.table.title);
-  i0.ColumnOrderings<String> get content =>
-      i0.ColumnOrderings($state.table.content);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
   i1.$CategoriesOrderingComposer get category {
     final i1.$CategoriesOrderingComposer composer = $state.composerBuilder(
         composer: this,
@@ -625,17 +646,29 @@ typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
 class $CategoriesFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Categories> {
   $CategoriesFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($state.table.id);
-  i0.ColumnFilters<String> get description =>
-      i0.ColumnFilters($state.table.description);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $CategoriesOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Categories> {
   $CategoriesOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($state.table.id);
-  i0.ColumnOrderings<String> get description =>
-      i0.ColumnOrderings($state.table.description);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class ExampleDrift extends i2.ModularAccessor {

@@ -267,14 +267,28 @@ typedef $EntriesProcessedTableManager = ProcessedTableManager<
 
 class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
   $EntriesFilterComposer(super.$state);
-  ColumnFilters<int> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get value => ColumnFilters($state.table.value);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
   $EntriesOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get value => ColumnOrderings($state.table.value);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $MyDatabaseManager {

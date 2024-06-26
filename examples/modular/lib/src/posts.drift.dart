@@ -287,9 +287,16 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($state.table.id);
-  i0.ColumnFilters<String> get content =>
-      i0.ColumnFilters($state.table.content);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
   i2.$UsersFilterComposer get author {
     final i2.$UsersFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -311,9 +318,16 @@ class $PostsFilterComposer
 class $PostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($state.table.id);
-  i0.ColumnOrderings<String> get content =>
-      i0.ColumnOrderings($state.table.content);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
   i2.$UsersOrderingComposer get author {
     final i2.$UsersOrderingComposer composer = $state.composerBuilder(
         composer: this,

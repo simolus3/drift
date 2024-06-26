@@ -296,19 +296,37 @@ typedef $PeriodicRemindersProcessedTableManager = i0.ProcessedTableManager<
 class $PeriodicRemindersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
   $PeriodicRemindersFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($state.table.id);
-  i0.ColumnFilters<Duration> get frequency =>
-      i0.ColumnFilters($state.table.frequency);
-  i0.ColumnFilters<String> get reminder =>
-      i0.ColumnFilters($state.table.reminder);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<Duration> get frequency => $state.composableBuilder(
+      column: $state.table.frequency,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get reminder => $state.composableBuilder(
+      column: $state.table.reminder,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $PeriodicRemindersOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
   $PeriodicRemindersOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($state.table.id);
-  i0.ColumnOrderings<Duration> get frequency =>
-      i0.ColumnOrderings($state.table.frequency);
-  i0.ColumnOrderings<String> get reminder =>
-      i0.ColumnOrderings($state.table.reminder);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<Duration> get frequency => $state.composableBuilder(
+      column: $state.table.frequency,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get reminder => $state.composableBuilder(
+      column: $state.table.reminder,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }

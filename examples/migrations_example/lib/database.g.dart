@@ -997,9 +997,21 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
 class $$UsersTableFilterComposer
     extends FilterComposer<_$Database, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get name => ColumnFilters($state.table.name);
-  ColumnFilters<DateTime> get birthday => ColumnFilters($state.table.birthday);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get birthday => $state.composableBuilder(
+      column: $state.table.birthday,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   $$UsersTableFilterComposer get nextUser {
     final $$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -1029,10 +1041,21 @@ class $$UsersTableFilterComposer
 class $$UsersTableOrderingComposer
     extends OrderingComposer<_$Database, $UsersTable> {
   $$UsersTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get name => ColumnOrderings($state.table.name);
-  ColumnOrderings<DateTime> get birthday =>
-      ColumnOrderings($state.table.birthday);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get birthday => $state.composableBuilder(
+      column: $state.table.birthday,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   $$UsersTableOrderingComposer get nextUser {
     final $$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
@@ -1111,9 +1134,21 @@ typedef $GroupsProcessedTableManager = ProcessedTableManager<
 
 class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
   $GroupsFilterComposer(super.$state);
-  ColumnFilters<int> get id => ColumnFilters($state.table.id);
-  ColumnFilters<String> get title => ColumnFilters($state.table.title);
-  ColumnFilters<bool> get deleted => ColumnFilters($state.table.deleted);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<bool> get deleted => $state.composableBuilder(
+      column: $state.table.deleted,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   $$UsersTableFilterComposer get owner {
     final $$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -1129,9 +1164,21 @@ class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
 
 class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
   $GroupsOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
-  ColumnOrderings<String> get title => ColumnOrderings($state.table.title);
-  ColumnOrderings<bool> get deleted => ColumnOrderings($state.table.deleted);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<bool> get deleted => $state.composableBuilder(
+      column: $state.table.deleted,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   $$UsersTableOrderingComposer get owner {
     final $$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
@@ -1210,18 +1257,38 @@ typedef $NotesProcessedTableManager = ProcessedTableManager<
 
 class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {
   $NotesFilterComposer(super.$state);
-  ColumnFilters<String> get title => ColumnFilters($state.table.title);
-  ColumnFilters<String> get content => ColumnFilters($state.table.content);
-  ColumnFilters<String> get searchTerms =>
-      ColumnFilters($state.table.searchTerms);
+  ColumnFilters<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get searchTerms => $state.composableBuilder(
+      column: $state.table.searchTerms,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
   $NotesOrderingComposer(super.$state);
-  ColumnOrderings<String> get title => ColumnOrderings($state.table.title);
-  ColumnOrderings<String> get content => ColumnOrderings($state.table.content);
-  ColumnOrderings<String> get searchTerms =>
-      ColumnOrderings($state.table.searchTerms);
+  ColumnOrderings<String> get title => $state.composableBuilder(
+      column: $state.table.title,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get searchTerms => $state.composableBuilder(
+      column: $state.table.searchTerms,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $DatabaseManager {

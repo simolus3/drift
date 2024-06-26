@@ -256,15 +256,29 @@ typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
 class $$WordsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
   $$WordsTableFilterComposer(super.$state);
-  i0.ColumnFilters<String> get word => i0.ColumnFilters($state.table.word);
-  i0.ColumnFilters<int> get usages => i0.ColumnFilters($state.table.usages);
+  i0.ColumnFilters<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<int> get usages => $state.composableBuilder(
+      column: $state.table.usages,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$WordsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
   $$WordsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get word => i0.ColumnOrderings($state.table.word);
-  i0.ColumnOrderings<int> get usages => i0.ColumnOrderings($state.table.usages);
+  i0.ColumnOrderings<String> get word => $state.composableBuilder(
+      column: $state.table.word,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<int> get usages => $state.composableBuilder(
+      column: $state.table.usages,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $MatchResultsTable extends i2.MatchResults
@@ -605,21 +619,47 @@ typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
 class $$MatchResultsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
   $$MatchResultsTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => i0.ColumnFilters($state.table.id);
-  i0.ColumnFilters<String> get teamA => i0.ColumnFilters($state.table.teamA);
-  i0.ColumnFilters<String> get teamB => i0.ColumnFilters($state.table.teamB);
-  i0.ColumnFilters<bool> get teamAWon =>
-      i0.ColumnFilters($state.table.teamAWon);
+  i0.ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get teamA => $state.composableBuilder(
+      column: $state.table.teamA,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get teamB => $state.composableBuilder(
+      column: $state.table.teamB,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<bool> get teamAWon => $state.composableBuilder(
+      column: $state.table.teamAWon,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$MatchResultsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
   $$MatchResultsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings($state.table.id);
-  i0.ColumnOrderings<String> get teamA =>
-      i0.ColumnOrderings($state.table.teamA);
-  i0.ColumnOrderings<String> get teamB =>
-      i0.ColumnOrderings($state.table.teamB);
-  i0.ColumnOrderings<bool> get teamAWon =>
-      i0.ColumnOrderings($state.table.teamAWon);
+  i0.ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get teamA => $state.composableBuilder(
+      column: $state.table.teamA,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get teamB => $state.composableBuilder(
+      column: $state.table.teamB,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<bool> get teamAWon => $state.composableBuilder(
+      column: $state.table.teamAWon,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }

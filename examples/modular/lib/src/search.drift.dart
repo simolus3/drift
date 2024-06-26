@@ -275,18 +275,29 @@ typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsFilterComposer(super.$state);
-  i0.ColumnFilters<String> get author => i0.ColumnFilters($state.table.author);
-  i0.ColumnFilters<String> get content =>
-      i0.ColumnFilters($state.table.content);
+  i0.ColumnFilters<String> get author => $state.composableBuilder(
+      column: $state.table.author,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $SearchInPostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get author =>
-      i0.ColumnOrderings($state.table.author);
-  i0.ColumnOrderings<String> get content =>
-      i0.ColumnOrderings($state.table.content);
+  i0.ColumnOrderings<String> get author => $state.composableBuilder(
+      column: $state.table.author,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 i0.Trigger get postsInsert => i0.Trigger(

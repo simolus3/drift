@@ -305,8 +305,11 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
 class $$ActiveSessionsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableFilterComposer(super.$state);
-  i0.ColumnFilters<String> get bearerToken =>
-      i0.ColumnFilters($state.table.bearerToken);
+  i0.ColumnFilters<String> get bearerToken => $state.composableBuilder(
+      column: $state.table.bearerToken,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
   i1.$$UsersTableFilterComposer get user {
     final i1.$$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -328,8 +331,11 @@ class $$ActiveSessionsTableFilterComposer
 class $$ActiveSessionsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get bearerToken =>
-      i0.ColumnOrderings($state.table.bearerToken);
+  i0.ColumnOrderings<String> get bearerToken => $state.composableBuilder(
+      column: $state.table.bearerToken,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
   i1.$$UsersTableOrderingComposer get user {
     final i1.$$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
