@@ -16,9 +16,6 @@ part 'ordering.dart';
 ///
 /// It also holds the [$CreateCompanionCallback] and [$UpdateCompanionCallback] functions that are used to create companion builders for inserting and updating data.
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
-///
-/// The [$ChildManager] generic refers to the type of the child manager that will be created when a filter/ordering is applied
-
 class TableManagerState<
     $Database extends GeneratedDatabase,
     $Table extends Table,
@@ -30,7 +27,7 @@ class TableManagerState<
   /// The database used to run the query.
   final $Database db;
 
-  /// The table primary table from which to select from.
+  /// The table that the manager is for
   final $Table table;
 
   /// The expression that will be applied to the query
