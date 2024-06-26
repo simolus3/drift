@@ -390,8 +390,8 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Future<$Dataclass> getSingle() =>
-      $state.copyWith(distinct: true).buildSelectStatement().getSingle();
+  Future<$Dataclass> getSingle({bool distinct = true}) =>
+      $state.copyWith(distinct: distinct).buildSelectStatement().getSingle();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only emit
@@ -401,8 +401,8 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Stream<$Dataclass> watchSingle() =>
-      $state.copyWith(distinct: true).buildSelectStatement().watchSingle();
+  Stream<$Dataclass> watchSingle({bool distinct = true}) =>
+      $state.copyWith(distinct: distinct).buildSelectStatement().watchSingle();
 
   /// Executes the statement and returns all rows as a list.
   ///
@@ -440,8 +440,10 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Future<$Dataclass?> getSingleOrNull() =>
-      $state.copyWith(distinct: true).buildSelectStatement().getSingleOrNull();
+  Future<$Dataclass?> getSingleOrNull({bool distinct = true}) => $state
+      .copyWith(distinct: distinct)
+      .buildSelectStatement()
+      .getSingleOrNull();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only
@@ -453,8 +455,8 @@ abstract class BaseTableManager<
   ///
   /// Uses the distinct flag to ensure that only distinct rows are returned
   @override
-  Stream<$Dataclass?> watchSingleOrNull() => $state
-      .copyWith(distinct: true)
+  Stream<$Dataclass?> watchSingleOrNull({bool distinct = true}) => $state
+      .copyWith(distinct: distinct)
       .buildSelectStatement()
       .watchSingleOrNull();
 }
