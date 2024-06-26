@@ -31,7 +31,7 @@ abstract class _BaseColumnFilters<T extends Object> {
   /// This helper method is used internally to create a new [ComposableFilter]s
   /// that respects the inverted state of the current filter
   ComposableFilter $composableFilter(Expression<bool>? expression) {
-    return ComposableFilter.$_(
+    return ComposableFilter._(
         inverted ? expression?.not() : expression, joinBuilders);
   }
 
@@ -307,7 +307,7 @@ class ComposableFilter extends _Composable {
   Expression<bool>? expression;
 
   /// Create a new [ComposableFilter] for a column with joins
-  ComposableFilter.$_(this.expression, this.joinBuilders);
+  ComposableFilter._(this.expression, this.joinBuilders);
 
   /// Combine two filters with an AND
   ComposableFilter operator &(ComposableFilter other) =>
@@ -329,7 +329,7 @@ class ComposableFilter extends _Composable {
           BooleanOperator.or => expression! | otherFilter.expression!,
         },
     };
-    return ComposableFilter.$_(
+    return ComposableFilter._(
       combinedExpression,
       joinBuilders.union(otherFilter.joinBuilders),
     );
