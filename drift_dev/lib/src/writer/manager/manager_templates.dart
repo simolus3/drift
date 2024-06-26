@@ -100,11 +100,11 @@ class _ManagerCodeTemplates {
     return '\$${table.entityInfoName}OrderingComposer';
   }
 
-  /// Name of the typedef for the insert companion builder for a table
+  /// Name of the typedef for the create companion builder for a table
   ///
   /// This is the name of the typedef of a function that creates new rows in the table
-  String insertCompanionBuilderTypeDef(DriftTable table) {
-    return '\$${table.entityInfoName}InsertCompanionBuilder';
+  String createCompanionBuilderTypeDef(DriftTable table) {
+    return '\$${table.entityInfoName}CreateCompanionBuilder';
   }
 
   /// Name of the typedef for the update companion builder for a table
@@ -115,16 +115,16 @@ class _ManagerCodeTemplates {
   }
 
   /// Build the builder for a companion class
-  /// This is used to build the insert and update companions
+  /// This is used to build the create and update companions
   /// Returns a tuple with the typedef and the builder
-  /// Use [isUpdate] to determine if the builder is for an update or insert companion
+  /// Use [isUpdate] to determine if the builder is for an update or create companion
   ({String typeDefinition, String companionBuilder}) companionBuilder(
       DriftTable table, TextEmitter leaf,
       {required bool isUpdate}) {
     // Get the name of the typedef
     final typedefName = isUpdate
         ? updateCompanionBuilderTypeDefName(table)
-        : insertCompanionBuilderTypeDef(table);
+        : createCompanionBuilderTypeDef(table);
 
     // Get the companion class name
     final companionClassName = leaf.dartCode(leaf.companionType(table));
@@ -156,7 +156,7 @@ class _ManagerCodeTemplates {
         companionBuilderArguments
             .write('$value<$typeName> $param = const $value.absent(),');
       } else {
-        // Otherwise, for insert companions, required fields are required
+        // Otherwise, for create companions, required fields are required
         // and optional fields are defaulted to absent
         if (!column.isImplicitRowId &&
             table.isColumnRequiredForInsert(column)) {
@@ -189,7 +189,7 @@ class _ManagerCodeTemplates {
     ${filterComposerNameWithPrefix(table, leaf)},
     ${orderingComposerNameWithPrefix(table, leaf)},
     ${processedTableManagerName(table)},
-    ${insertCompanionBuilderTypeDef(table)},
+    ${createCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)}>""";
   }
 
@@ -212,7 +212,7 @@ class _ManagerCodeTemplates {
     required String dbClassName,
     required TextEmitter leaf,
     required String updateCompanionBuilder,
-    required String insertCompanionBuilder,
+    required String createCompanionBuilder,
   }) {
     return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)} {
     ${rootTableManagerName(table)}(${databaseType(leaf, dbClassName)} db, ${tableClassWithPrefix(table, leaf)} table) : super(
@@ -222,8 +222,8 @@ class _ManagerCodeTemplates {
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         getChildManagerBuilder: (p) => ${processedTableManagerName(table)}(p),
-        getUpdateCompanionBuilder: $updateCompanionBuilder,
-        getInsertCompanionBuilder:$insertCompanionBuilder,));
+        updateCompanionCallback: $updateCompanionBuilder,
+        createCompanionCallback: $createCompanionBuilder,));
         }
     """;
   }

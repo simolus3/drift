@@ -31,7 +31,7 @@ abstract class _BaseColumnFilters<T extends Object> {
   /// This helper method is used internally to create a new [ComposableFilter]s
   /// that respects the inverted state of the current filter
   ComposableFilter $composableFilter(Expression<bool>? expression) {
-    return ComposableFilter._(
+    return ComposableFilter.$_(
         inverted ? expression?.not() : expression, joinBuilders);
   }
 
@@ -284,7 +284,14 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
-enum _BooleanOperator { and, or }
+///  Enum of the possible boolean operators
+enum BooleanOperator {
+  /// Combine the existing filters to the new filter with an AND
+  and,
+
+  /// Combine the existing filters to the new filter with an OR
+  or;
+}
 
 /// This class is used to compose filters together
 ///
@@ -300,29 +307,29 @@ class ComposableFilter extends _Composable {
   Expression<bool>? expression;
 
   /// Create a new [ComposableFilter] for a column with joins
-  ComposableFilter._(this.expression, this.joinBuilders);
+  ComposableFilter.$_(this.expression, this.joinBuilders);
 
   /// Combine two filters with an AND
   ComposableFilter operator &(ComposableFilter other) =>
-      _combineFilter(_BooleanOperator.and, other);
+      _combineFilter(BooleanOperator.and, other);
 
   /// Combine two filters with an OR
   ComposableFilter operator |(ComposableFilter other) =>
-      _combineFilter(_BooleanOperator.or, other);
+      _combineFilter(BooleanOperator.or, other);
 
   /// A helper function to combine two filters
   ComposableFilter _combineFilter(
-      _BooleanOperator opperator, ComposableFilter otherFilter) {
+      BooleanOperator opperator, ComposableFilter otherFilter) {
     final combinedExpression = switch ((expression, otherFilter.expression)) {
       (null, null) => null,
       (null, var expression) => expression,
       (var expression, null) => expression,
       (_, _) => switch (opperator) {
-          _BooleanOperator.and => expression! & otherFilter.expression!,
-          _BooleanOperator.or => expression! | otherFilter.expression!,
+          BooleanOperator.and => expression! & otherFilter.expression!,
+          BooleanOperator.or => expression! | otherFilter.expression!,
         },
     };
-    return ComposableFilter._(
+    return ComposableFilter.$_(
       combinedExpression,
       joinBuilders.union(otherFilter.joinBuilders),
     );
