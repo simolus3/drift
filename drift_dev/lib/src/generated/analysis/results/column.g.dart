@@ -38,8 +38,8 @@ Map<String, dynamic> _$DartCheckExpressionToJson(
     };
 
 LimitingTextLength _$LimitingTextLengthFromJson(Map json) => LimitingTextLength(
-      minLength: json['min_length'] as int?,
-      maxLength: json['max_length'] as int?,
+      minLength: (json['min_length'] as num?)?.toInt(),
+      maxLength: (json['max_length'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$LimitingTextLengthToJson(LimitingTextLength instance) =>

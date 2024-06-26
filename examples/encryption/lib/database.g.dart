@@ -191,7 +191,7 @@ abstract class _$MyEncryptedDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [notes];
 }
 
-typedef $$NotesTableInsertCompanionBuilder = NotesCompanion Function({
+typedef $$NotesTableCreateCompanionBuilder = NotesCompanion Function({
   Value<int> id,
   required String content,
 });
@@ -206,8 +206,7 @@ class $$NotesTableTableManager extends RootTableManager<
     Note,
     $$NotesTableFilterComposer,
     $$NotesTableOrderingComposer,
-    $$NotesTableProcessedTableManager,
-    $$NotesTableInsertCompanionBuilder,
+    $$NotesTableCreateCompanionBuilder,
     $$NotesTableUpdateCompanionBuilder> {
   $$NotesTableTableManager(_$MyEncryptedDatabase db, $NotesTable table)
       : super(TableManagerState(
@@ -217,8 +216,7 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$NotesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$NotesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
           }) =>
@@ -226,7 +224,7 @@ class $$NotesTableTableManager extends RootTableManager<
             id: id,
             content: content,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String content,
           }) =>
@@ -237,44 +235,27 @@ class $$NotesTableTableManager extends RootTableManager<
         ));
 }
 
-class $$NotesTableProcessedTableManager extends ProcessedTableManager<
+typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
     _$MyEncryptedDatabase,
     $NotesTable,
     Note,
     $$NotesTableFilterComposer,
     $$NotesTableOrderingComposer,
-    $$NotesTableProcessedTableManager,
-    $$NotesTableInsertCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder> {
-  $$NotesTableProcessedTableManager(super.$state);
-}
+    $$NotesTableCreateCompanionBuilder,
+    $$NotesTableUpdateCompanionBuilder>;
 
 class $$NotesTableFilterComposer
     extends FilterComposer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<int> get id => ColumnFilters($state.table.id);
+  ColumnFilters<String> get content => ColumnFilters($state.table.content);
 }
 
 class $$NotesTableOrderingComposer
     extends OrderingComposer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
+  ColumnOrderings<String> get content => ColumnOrderings($state.table.content);
 }
 
 class $MyEncryptedDatabaseManager {

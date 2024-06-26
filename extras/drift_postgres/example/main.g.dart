@@ -103,6 +103,13 @@ class User extends DataClass implements Insertable<User> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  User copyWithCompanion(UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')
@@ -193,7 +200,7 @@ abstract class _$DriftPostgresDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [users];
 }
 
-typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
+typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
   Value<UuidValue> id,
   required String name,
   Value<int> rowid,
@@ -210,8 +217,7 @@ class $$UsersTableTableManager extends RootTableManager<
     User,
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
-    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder> {
   $$UsersTableTableManager(_$DriftPostgresDatabase db, $UsersTable table)
       : super(TableManagerState(
@@ -221,8 +227,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$UsersTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -232,7 +237,7 @@ class $$UsersTableTableManager extends RootTableManager<
             name: name,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             required String name,
             Value<int> rowid = const Value.absent(),
@@ -245,44 +250,27 @@ class $$UsersTableTableManager extends RootTableManager<
         ));
 }
 
-class $$UsersTableProcessedTableManager extends ProcessedTableManager<
+typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     _$DriftPostgresDatabase,
     $UsersTable,
     User,
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
-    $$UsersTableInsertCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
-  $$UsersTableProcessedTableManager(super.$state);
-}
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder>;
 
 class $$UsersTableFilterComposer
     extends FilterComposer<_$DriftPostgresDatabase, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
-  ColumnFilters<UuidValue> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<UuidValue> get id => ColumnFilters($state.table.id);
+  ColumnFilters<String> get name => ColumnFilters($state.table.name);
 }
 
 class $$UsersTableOrderingComposer
     extends OrderingComposer<_$DriftPostgresDatabase, $UsersTable> {
   $$UsersTableOrderingComposer(super.$state);
-  ColumnOrderings<UuidValue> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<UuidValue> get id => ColumnOrderings($state.table.id);
+  ColumnOrderings<String> get name => ColumnOrderings($state.table.name);
 }
 
 class $DriftPostgresDatabaseManager {

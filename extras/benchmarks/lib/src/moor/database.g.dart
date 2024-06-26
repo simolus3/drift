@@ -105,6 +105,13 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
         key: key ?? this.key,
         value: value ?? this.value,
       );
+  KeyValue copyWithCompanion(KeyValuesCompanion data) {
+    return KeyValue(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('KeyValue(')

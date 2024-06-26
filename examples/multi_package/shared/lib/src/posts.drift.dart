@@ -116,6 +116,13 @@ class Post extends i0.DataClass implements i0.Insertable<i1.Post> {
         author: author ?? this.author,
         content: content.present ? content.value : this.content,
       );
+  Post copyWithCompanion(i1.PostsCompanion data) {
+    return Post(
+      author: data.author.present ? data.author.value : this.author,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Post(')
@@ -198,7 +205,7 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
   }
 }
 
-typedef $PostsInsertCompanionBuilder = i1.PostsCompanion Function({
+typedef $PostsCreateCompanionBuilder = i1.PostsCompanion Function({
   required int author,
   i0.Value<String?> content,
   i0.Value<int> rowid,
@@ -215,8 +222,7 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
-    $PostsProcessedTableManager,
-    $PostsInsertCompanionBuilder,
+    $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
@@ -226,8 +232,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $PostsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -237,7 +242,7 @@ class $PostsTableManager extends i0.RootTableManager<
             content: content,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required int author,
             i0.Value<String?> content = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -250,26 +255,20 @@ class $PostsTableManager extends i0.RootTableManager<
         ));
 }
 
-class $PostsProcessedTableManager extends i0.ProcessedTableManager<
+typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.Posts,
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
-    $PostsProcessedTableManager,
-    $PostsInsertCompanionBuilder,
-    $PostsUpdateCompanionBuilder> {
-  $PostsProcessedTableManager(super.$state);
-}
+    $PostsCreateCompanionBuilder,
+    $PostsUpdateCompanionBuilder>;
 
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer(super.$state);
-  i0.ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
+  i0.ColumnFilters<String> get content =>
+      i0.ColumnFilters($state.table.content);
   i2.$$UsersTableFilterComposer get author {
     final i2.$$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -291,11 +290,8 @@ class $PostsFilterComposer
 class $PostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
+  i0.ColumnOrderings<String> get content =>
+      i0.ColumnOrderings($state.table.content);
   i2.$$UsersTableOrderingComposer get author {
     final i2.$$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,

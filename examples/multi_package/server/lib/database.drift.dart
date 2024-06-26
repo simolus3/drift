@@ -149,6 +149,14 @@ class ActiveSession extends i0.DataClass
         user: user ?? this.user,
         bearerToken: bearerToken ?? this.bearerToken,
       );
+  ActiveSession copyWithCompanion(i3.ActiveSessionsCompanion data) {
+    return ActiveSession(
+      user: data.user.present ? data.user.value : this.user,
+      bearerToken:
+          data.bearerToken.present ? data.bearerToken.value : this.bearerToken,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ActiveSession(')
@@ -232,7 +240,7 @@ class ActiveSessionsCompanion extends i0.UpdateCompanion<i3.ActiveSession> {
   }
 }
 
-typedef $$ActiveSessionsTableInsertCompanionBuilder = i3.ActiveSessionsCompanion
+typedef $$ActiveSessionsTableCreateCompanionBuilder = i3.ActiveSessionsCompanion
     Function({
   required int user,
   required String bearerToken,
@@ -251,8 +259,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
     i3.ActiveSession,
     i3.$$ActiveSessionsTableFilterComposer,
     i3.$$ActiveSessionsTableOrderingComposer,
-    $$ActiveSessionsTableProcessedTableManager,
-    $$ActiveSessionsTableInsertCompanionBuilder,
+    $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder> {
   $$ActiveSessionsTableTableManager(
       i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
@@ -263,9 +270,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
               .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ActiveSessionsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
             i0.Value<String> bearerToken = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -275,7 +280,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
             bearerToken: bearerToken,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required int user,
             required String bearerToken,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -288,27 +293,20 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-class $$ActiveSessionsTableProcessedTableManager
-    extends i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i3.$ActiveSessionsTable,
-        i3.ActiveSession,
-        i3.$$ActiveSessionsTableFilterComposer,
-        i3.$$ActiveSessionsTableOrderingComposer,
-        $$ActiveSessionsTableProcessedTableManager,
-        $$ActiveSessionsTableInsertCompanionBuilder,
-        $$ActiveSessionsTableUpdateCompanionBuilder> {
-  $$ActiveSessionsTableProcessedTableManager(super.$state);
-}
+typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i3.$ActiveSessionsTable,
+    i3.ActiveSession,
+    i3.$$ActiveSessionsTableFilterComposer,
+    i3.$$ActiveSessionsTableOrderingComposer,
+    $$ActiveSessionsTableCreateCompanionBuilder,
+    $$ActiveSessionsTableUpdateCompanionBuilder>;
 
 class $$ActiveSessionsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableFilterComposer(super.$state);
-  i0.ColumnFilters<String> get bearerToken => $state.composableBuilder(
-      column: $state.table.bearerToken,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
+  i0.ColumnFilters<String> get bearerToken =>
+      i0.ColumnFilters($state.table.bearerToken);
   i1.$$UsersTableFilterComposer get user {
     final i1.$$UsersTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -330,11 +328,8 @@ class $$ActiveSessionsTableFilterComposer
 class $$ActiveSessionsTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get bearerToken => $state.composableBuilder(
-      column: $state.table.bearerToken,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
+  i0.ColumnOrderings<String> get bearerToken =>
+      i0.ColumnOrderings($state.table.bearerToken);
   i1.$$UsersTableOrderingComposer get user {
     final i1.$$UsersTableOrderingComposer composer = $state.composerBuilder(
         composer: this,

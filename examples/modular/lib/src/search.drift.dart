@@ -211,7 +211,7 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
   }
 }
 
-typedef $SearchInPostsInsertCompanionBuilder = i1.SearchInPostsCompanion
+typedef $SearchInPostsCreateCompanionBuilder = i1.SearchInPostsCompanion
     Function({
   required String author,
   required String content,
@@ -230,8 +230,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
     i1.SearchInPost,
     i1.$SearchInPostsFilterComposer,
     i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsProcessedTableManager,
-    $SearchInPostsInsertCompanionBuilder,
+    $SearchInPostsCreateCompanionBuilder,
     $SearchInPostsUpdateCompanionBuilder> {
   $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
       : super(i0.TableManagerState(
@@ -241,8 +240,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $SearchInPostsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -252,7 +250,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
             content: content,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String author,
             required String content,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -265,44 +263,30 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
         ));
 }
 
-class $SearchInPostsProcessedTableManager extends i0.ProcessedTableManager<
+typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
     i0.GeneratedDatabase,
     i1.SearchInPosts,
     i1.SearchInPost,
     i1.$SearchInPostsFilterComposer,
     i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsProcessedTableManager,
-    $SearchInPostsInsertCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder> {
-  $SearchInPostsProcessedTableManager(super.$state);
-}
+    $SearchInPostsCreateCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder>;
 
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsFilterComposer(super.$state);
-  i0.ColumnFilters<String> get author => $state.composableBuilder(
-      column: $state.table.author,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get author => i0.ColumnFilters($state.table.author);
+  i0.ColumnFilters<String> get content =>
+      i0.ColumnFilters($state.table.content);
 }
 
 class $SearchInPostsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get author => $state.composableBuilder(
-      column: $state.table.author,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get author =>
+      i0.ColumnOrderings($state.table.author);
+  i0.ColumnOrderings<String> get content =>
+      i0.ColumnOrderings($state.table.content);
 }
 
 i0.Trigger get postsInsert => i0.Trigger(

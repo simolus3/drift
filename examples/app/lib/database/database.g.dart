@@ -127,6 +127,14 @@ class Category extends DataClass implements Insertable<Category> {
         name: name ?? this.name,
         color: color ?? this.color,
       );
+  Category copyWithCompanion(CategoriesCompanion data) {
+    return Category(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      color: data.color.present ? data.color.value : this.color,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Category(')
@@ -373,6 +381,16 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
         category: category.present ? category.value : this.category,
         dueDate: dueDate.present ? dueDate.value : this.dueDate,
       );
+  TodoEntry copyWithCompanion(TodoEntriesCompanion data) {
+    return TodoEntry(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+      category: data.category.present ? data.category.value : this.category,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TodoEntry(')
@@ -565,6 +583,13 @@ class TextEntry extends DataClass implements Insertable<TextEntry> {
   TextEntry copyWith({String? description}) => TextEntry(
         description: description ?? this.description,
       );
+  TextEntry copyWithCompanion(TextEntriesCompanion data) {
+    return TextEntry(
+      description:
+          data.description.present ? data.description.value : this.description,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TextEntry(')
@@ -719,7 +744,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       );
 }
 
-typedef $$CategoriesTableInsertCompanionBuilder = CategoriesCompanion Function({
+typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   Value<int> id,
   required String name,
   required Color color,
@@ -736,8 +761,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
     Category,
     $$CategoriesTableFilterComposer,
     $$CategoriesTableOrderingComposer,
-    $$CategoriesTableProcessedTableManager,
-    $$CategoriesTableInsertCompanionBuilder,
+    $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder> {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
       : super(TableManagerState(
@@ -747,9 +771,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$CategoriesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$CategoriesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<Color> color = const Value.absent(),
@@ -759,7 +781,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             name: name,
             color: color,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
             required Color color,
@@ -772,38 +794,22 @@ class $$CategoriesTableTableManager extends RootTableManager<
         ));
 }
 
-class $$CategoriesTableProcessedTableManager extends ProcessedTableManager<
+typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $CategoriesTable,
     Category,
     $$CategoriesTableFilterComposer,
     $$CategoriesTableOrderingComposer,
-    $$CategoriesTableProcessedTableManager,
-    $$CategoriesTableInsertCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder> {
-  $$CategoriesTableProcessedTableManager(super.$state);
-}
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder>;
 
 class $$CategoriesTableFilterComposer
     extends FilterComposer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
+  ColumnFilters<int> get id => ColumnFilters($state.table.id);
+  ColumnFilters<String> get name => ColumnFilters($state.table.name);
   ColumnWithTypeConverterFilters<Color, Color, int> get color =>
-      $state.composableBuilder(
-          column: $state.table.color,
-          builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
-              column,
-              joinBuilders: joinBuilders));
-
+      ColumnWithTypeConverterFilters($state.table.color);
   ComposableFilter todoEntriesRefs(
       ComposableFilter Function($$TodoEntriesTableFilterComposer f) f) {
     final $$TodoEntriesTableFilterComposer composer = $state.composerBuilder(
@@ -821,23 +827,12 @@ class $$CategoriesTableFilterComposer
 class $$CategoriesTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get color => $state.composableBuilder(
-      column: $state.table.color,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
+  ColumnOrderings<String> get name => ColumnOrderings($state.table.name);
+  ColumnOrderings<int> get color => ColumnOrderings($state.table.color);
 }
 
-typedef $$TodoEntriesTableInsertCompanionBuilder = TodoEntriesCompanion
+typedef $$TodoEntriesTableCreateCompanionBuilder = TodoEntriesCompanion
     Function({
   Value<int> id,
   required String description,
@@ -858,8 +853,7 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
     TodoEntry,
     $$TodoEntriesTableFilterComposer,
     $$TodoEntriesTableOrderingComposer,
-    $$TodoEntriesTableProcessedTableManager,
-    $$TodoEntriesTableInsertCompanionBuilder,
+    $$TodoEntriesTableCreateCompanionBuilder,
     $$TodoEntriesTableUpdateCompanionBuilder> {
   $$TodoEntriesTableTableManager(_$AppDatabase db, $TodoEntriesTable table)
       : super(TableManagerState(
@@ -869,9 +863,7 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
               $$TodoEntriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoEntriesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TodoEntriesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
             Value<int?> category = const Value.absent(),
@@ -883,7 +875,7 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
             category: category,
             dueDate: dueDate,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String description,
             Value<int?> category = const Value.absent(),
@@ -898,36 +890,22 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
         ));
 }
 
-class $$TodoEntriesTableProcessedTableManager extends ProcessedTableManager<
+typedef $$TodoEntriesTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $TodoEntriesTable,
     TodoEntry,
     $$TodoEntriesTableFilterComposer,
     $$TodoEntriesTableOrderingComposer,
-    $$TodoEntriesTableProcessedTableManager,
-    $$TodoEntriesTableInsertCompanionBuilder,
-    $$TodoEntriesTableUpdateCompanionBuilder> {
-  $$TodoEntriesTableProcessedTableManager(super.$state);
-}
+    $$TodoEntriesTableCreateCompanionBuilder,
+    $$TodoEntriesTableUpdateCompanionBuilder>;
 
 class $$TodoEntriesTableFilterComposer
     extends FilterComposer<_$AppDatabase, $TodoEntriesTable> {
   $$TodoEntriesTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get dueDate => $state.composableBuilder(
-      column: $state.table.dueDate,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
+  ColumnFilters<int> get id => ColumnFilters($state.table.id);
+  ColumnFilters<String> get description =>
+      ColumnFilters($state.table.description);
+  ColumnFilters<DateTime> get dueDate => ColumnFilters($state.table.dueDate);
   $$CategoriesTableFilterComposer get category {
     final $$CategoriesTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -944,21 +922,11 @@ class $$TodoEntriesTableFilterComposer
 class $$TodoEntriesTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $TodoEntriesTable> {
   $$TodoEntriesTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get dueDate => $state.composableBuilder(
-      column: $state.table.dueDate,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
+  ColumnOrderings<int> get id => ColumnOrderings($state.table.id);
+  ColumnOrderings<String> get description =>
+      ColumnOrderings($state.table.description);
+  ColumnOrderings<DateTime> get dueDate =>
+      ColumnOrderings($state.table.dueDate);
   $$CategoriesTableOrderingComposer get category {
     final $$CategoriesTableOrderingComposer composer = $state.composerBuilder(
         composer: this,
@@ -972,7 +940,7 @@ class $$TodoEntriesTableOrderingComposer
   }
 }
 
-typedef $TextEntriesInsertCompanionBuilder = TextEntriesCompanion Function({
+typedef $TextEntriesCreateCompanionBuilder = TextEntriesCompanion Function({
   required String description,
   Value<int> rowid,
 });
@@ -987,8 +955,7 @@ class $TextEntriesTableManager extends RootTableManager<
     TextEntry,
     $TextEntriesFilterComposer,
     $TextEntriesOrderingComposer,
-    $TextEntriesProcessedTableManager,
-    $TextEntriesInsertCompanionBuilder,
+    $TextEntriesCreateCompanionBuilder,
     $TextEntriesUpdateCompanionBuilder> {
   $TextEntriesTableManager(_$AppDatabase db, TextEntries table)
       : super(TableManagerState(
@@ -998,8 +965,7 @@ class $TextEntriesTableManager extends RootTableManager<
               $TextEntriesFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $TextEntriesOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $TextEntriesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<String> description = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -1007,7 +973,7 @@ class $TextEntriesTableManager extends RootTableManager<
             description: description,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String description,
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -1018,34 +984,27 @@ class $TextEntriesTableManager extends RootTableManager<
         ));
 }
 
-class $TextEntriesProcessedTableManager extends ProcessedTableManager<
+typedef $TextEntriesProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     TextEntries,
     TextEntry,
     $TextEntriesFilterComposer,
     $TextEntriesOrderingComposer,
-    $TextEntriesProcessedTableManager,
-    $TextEntriesInsertCompanionBuilder,
-    $TextEntriesUpdateCompanionBuilder> {
-  $TextEntriesProcessedTableManager(super.$state);
-}
+    $TextEntriesCreateCompanionBuilder,
+    $TextEntriesUpdateCompanionBuilder>;
 
 class $TextEntriesFilterComposer
     extends FilterComposer<_$AppDatabase, TextEntries> {
   $TextEntriesFilterComposer(super.$state);
-  ColumnFilters<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get description =>
+      ColumnFilters($state.table.description);
 }
 
 class $TextEntriesOrderingComposer
     extends OrderingComposer<_$AppDatabase, TextEntries> {
   $TextEntriesOrderingComposer(super.$state);
-  ColumnOrderings<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get description =>
+      ColumnOrderings($state.table.description);
 }
 
 class $AppDatabaseManager {
