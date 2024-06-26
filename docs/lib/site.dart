@@ -40,4 +40,61 @@ void built_site_main() {
       }
     });
   }
+
+  installTabBars();
+  installCollapsibles();
+}
+
+void installTabBars() {
+  for (final ul in window.document.querySelectorAll('.nav-tabs')) {
+    final content = ul.nextElementSibling;
+    if (content == null || content.className != 'tab-content') {
+      continue;
+    }
+
+    final tabs = <(Element, Element)>[];
+
+    void selectBody(Element selectedBody) {
+      for (final (header, body) in tabs) {
+        if (body == selectedBody) {
+          header.classes.add('active');
+          body.classes
+            ..remove('fade')
+            ..add('active')
+            ..add('show');
+        } else {
+          header.classes.remove('active');
+          body.classes
+            ..remove('active')
+            ..remove('show')
+            ..add('fade');
+        }
+      }
+    }
+
+    for (final (i, header) in ul.children.skip(1).indexed) {
+      final body = content.children[i];
+      tabs.add((header.querySelector('button')!, body));
+
+      header.onClick.listen((_) {
+        selectBody(body);
+      });
+    }
+  }
+}
+
+void installCollapsibles() {
+  for (final collapsible in window.document.querySelectorAll('.collapsible')) {
+    var expanded = false;
+
+    collapsible.onClick.listen((_) {
+      expanded = !expanded;
+
+      if (expanded) {
+        collapsible.classes.add('active');
+      } else {
+        collapsible.classes.remove('active');
+      }
+    });
+  }
 }

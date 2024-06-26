@@ -27,18 +27,17 @@ If you want to look at an example app for inspiration, a cross-platform Flutter 
 ## The dependencies {#adding-dependencies}
 
 First, let's add drift to your project's `pubspec.yaml`.
-In addition to the core drift dependencies, we're also adding packages to find a suitable database
-location on the device and to include a recent version of `sqlite3`, the database most commonly
-used with drift.
+In addition to the core drift dependencies (`drift` and `drift_dev` to generate code), we're also
+adding a package to open database on the respective platform.
 
 {% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
 
+{% block "blocks/tabbar" title = "Framework:" entries = 'Flutter (sqlite3),Dart (sqlite3),Dart (Postgres)' | split: ',' %}
+{% block "blocks/tab" default = true %}
 ```yaml
 dependencies:
   drift: ^{{ versions.drift }}
-  sqlite3_flutter_libs: ^0.5.0
-  path_provider: ^2.0.0
-  path: ^{{ versions.path }}
+  drift_flutter: ^0.1.0
 
 dev_dependencies:
   drift_dev: ^{{ versions.drift_dev }}
@@ -48,26 +47,72 @@ dev_dependencies:
 Alternatively, you can achieve the same result using the following command:
 
 ```
-dart pub add drift sqlite3_flutter_libs path_provider path dev:drift_dev dev:build_runner
+dart pub add drift drift_flutter dev:drift_dev dev:build_runner
 ```
 
-If you're wondering why so many packages are necessary, here's a quick overview over what each package does:
+Please note that `drift_flutter` depends on `sqlite3_flutter_libs`, which includes a compiled
+copy of sqlite3 in your app. On Android, that package will include sqlite3 for the following
+architectures: `armv8`, `armv7`, `x86` and `x86_64`.
+Most Flutter apps don't run on 32-bit x86 devices without further setup, so you should
+[add a snippet](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3_flutter_libs#included-platforms)
+to your `build.gradle` if you don't need `x86` builds.
+Otherwise, the Play Store might allow users on `x86` devices to install your app even though it is not
+supported.
+In Flutter's current native build system, drift unfortunately can't do that for you.
 
-- `drift`: This is the core package defining the APIs you use to access drift databases.
-- `sqlite3_flutter_libs`: Ships the latest `sqlite3` version with your Android or iOS app. This is not required when you're _not_ using Flutter,
-  but then you need to take care of including `sqlite3` yourself.
-  For an overview on other platforms, see [platforms]({{ 'Platforms/index.md' | pageUrl }}).
-  Note that the `sqlite3_flutter_libs` package will include the native sqlite3 library for the following
-  architectures: `armv8`, `armv7`, `x86` and `x86_64`.
-  Most Flutter apps don't run on 32-bit x86 devices without further setup, so you should
-  [add a snippet](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3_flutter_libs#included-platforms)
-  to your `build.gradle` if you don't need `x86` builds.
-  Otherwise, the Play Store might allow users on `x86` devices to install your app even though it is not
-  supported.
-  In Flutter's current native build system, drift unfortunately can't do that for you.
-- `path_provider` and `path`: Used to find a suitable location to store the database. Maintained by the Flutter and Dart team.
-- `drift_dev`: This development-only dependency generates query code based on your tables. It will not be included in your final app.
-- `build_runner`: Common tool for code-generation, maintained by the Dart team.
+{% endblock %}
+{% block "blocks/tab" %}
+```yaml
+dependencies:
+  drift: ^{{ versions.drift }}
+  sqlite3: ^{{ versions.sqlite3 }}
+
+dev_dependencies:
+  drift_dev: ^{{ versions.drift_dev }}
+  build_runner: ^{{ versions.build_runner }}
+```
+
+Alternatively, you can achieve the same result using the following command:
+
+```
+dart pub add drift sqlite3 dev:drift_dev dev:build_runner
+```
+{% endblock %}
+{% block "blocks/tab" %}
+```yaml
+dependencies:
+  drift: ^{{ versions.drift }}
+  postgres: ^{{ versions.postgres }}
+  drift_postgres: ^{{ versions.drift_postgres }}
+
+dev_dependencies:
+  drift_dev: ^{{ versions.drift_dev }}
+  build_runner: ^{{ versions.build_runner }}
+```
+
+Alternatively, you can achieve the same result using the following command:
+
+```
+dart pub add drift postgres drift_postgres dev:drift_dev dev:build_runner
+```
+
+Drift only generates code for sqlite3 by default. So, also create a `build.yaml`
+to [configure]({{ 'Generation options/index.md' | pageUrl }}) `drift_dev`:
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          sql:
+            dialect:
+              - postgres
+              # Uncomment if you need to support both
+#              - sqlite
+```
+{% endblock %}
+{% endblock %}
 
 ## Database class
 
@@ -81,7 +126,8 @@ to store todo items for a todo list app.
 Everything there is to know about defining tables in Dart is described on the [Dart tables]({{'Dart API/tables.md' | pageUrl}}) page.
 If you prefer using SQL to define your tables, drift supports that too! You can read all about the [SQL API]({{ 'SQL API/index.md' | pageUrl }}) here.
 
-For now, populate the contents of `database.dart` with:
+For now, populate the contents of `database.dart` with these tables which could form the persistence
+layer of a simple todolist application:
 
 {% include "blocks/snippet" snippets = snippets name = 'before_generation' %}
 
@@ -101,12 +147,60 @@ for migrations after changing the database, we can leave it at `1` for now. Upda
 so it now looks like this:
 
 <a name="open"></a>
-{% include "blocks/snippet" snippets = snippets name = 'after_generation' %}
+
+{% block "blocks/tabbar" title = "Framework:" entries = 'Flutter (sqlite3),Dart (sqlite3),Dart (Postgres)' | split: ',' %}
+{% block "blocks/tab" default = true %}
+{% include "blocks/snippet" snippets = snippets name = 'flutter' %}
+
+If you need to customize how databases are opened, you can also set the connection
+up manually:
+{% block "blocks/collapsible" title="Manual database setup" %}
+```dart
+import 'dart:io';
+import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+
+LazyDatabase _openConnection() {
+  // the LazyDatabase util lets us find the right location for the file async.
+  return LazyDatabase(() async {
+    // put the database file, called db.sqlite here, into the documents folder
+    // for your app.
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+
+    // Also work around limitations on old Android versions
+    if (Platform.isAndroid) {
+      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+    }
+
+    // Make sqlite3 pick a more suitable location for temporary files - the
+    // one from the system may be inaccessible due to sandboxing.
+    final cachebase = (await getTemporaryDirectory()).path;
+    // We can't access /tmp on Android, which sqlite3 would try by default.
+    // Explicitly tell it about the correct temporary directory.
+    sqlite3.tempDirectory = cachebase;
+
+    return NativeDatabase.createInBackground(file);
+  });
+}
+```
 
 The Android-specific workarounds are necessary because sqlite3 attempts to use `/tmp` to store
 private data on unix-like systems, which is forbidden on Android. We also use this opportunity
 to work around a problem some older Android devices have with loading custom libraries through
 `dart:ffi`.
+{% endblock %}
+{% endblock %}
+{% block "blocks/tab" %}
+{% include "blocks/snippet" snippets = snippets name = 'sqlite3' %}
+{% endblock %}
+{% block "blocks/tab" %}
+{% include "blocks/snippet" snippets = snippets name = 'postgres' %}
+{% endblock %}
+{% endblock %}
 
 ## Next steps
 

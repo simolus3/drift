@@ -6,6 +6,7 @@ packages:
  - drift
  - drift_sqflite
  - drift_dev
+ - drift_flutter
  - sqlparser
  - examples/*
  - examples/multi_package/*

@@ -11,7 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 class BackupIcon extends StatelessWidget {
-  const BackupIcon({Key? key}) : super(key: key);
+  const BackupIcon({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class BackupIcon extends StatelessWidget {
 }
 
 class BackupDialog extends ConsumerWidget {
-  const BackupDialog({Key? key}) : super(key: key);
+  const BackupDialog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

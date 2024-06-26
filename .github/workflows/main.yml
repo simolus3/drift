@@ -215,9 +215,13 @@ jobs:
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+      - name: Setup melos
+        run: dart pub global activate melos && dart pub get
+        shell: bash
       - name: Install dependencies in drift/example/app
+        run: melos bootstrap --scope app
+      - run: flutter analyze
         working-directory: examples/app
-        run: flutter pub get
       - run: flutter test
         working-directory: examples/app
   migration_integration_tests:

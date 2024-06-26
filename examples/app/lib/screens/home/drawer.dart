@@ -7,7 +7,7 @@ import '../../database/database.dart';
 import 'state.dart';
 
 class CategoriesDrawer extends ConsumerWidget {
-  const CategoriesDrawer({Key? key}) : super(key: key);
+  const CategoriesDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,7 +49,7 @@ class CategoriesDrawer extends ConsumerWidget {
 class _CategoryDrawerEntry extends ConsumerWidget {
   final CategoryWithCount entry;
 
-  const _CategoryDrawerEntry({Key? key, required this.entry}) : super(key: key);
+  const _CategoryDrawerEntry({required this.entry});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
