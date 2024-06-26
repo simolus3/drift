@@ -60,7 +60,7 @@ class _ManagerCodeTemplates {
   /// as the table manager and is not used outside of the file
   ///
   /// E.g. `$UserTableProcessedTableManager`
-  String processedTableManagerName(DriftTable table) {
+  String processedTableManagerTypedefName(DriftTable table) {
     return '\$${table.entityInfoName}ProcessedTableManager';
   }
 
@@ -188,7 +188,6 @@ class _ManagerCodeTemplates {
     ${rowClassWithPrefix(table, leaf)},
     ${filterComposerNameWithPrefix(table, leaf)},
     ${orderingComposerNameWithPrefix(table, leaf)},
-    ${processedTableManagerName(table)},
     ${createCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)}>""";
   }
@@ -221,7 +220,6 @@ class _ManagerCodeTemplates {
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        getChildManagerBuilder: (p) => ${processedTableManagerName(table)}(p),
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,));
         }
@@ -229,15 +227,12 @@ class _ManagerCodeTemplates {
   }
 
   /// Returns code for the processed table manager class
-  String processedTableManager({
+  String processedTableManagerTypedef({
     required DriftTable table,
     required String dbClassName,
     required TextEmitter leaf,
   }) {
-    return """class ${processedTableManagerName(table)} extends ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)} {
-    ${processedTableManagerName(table)}(super.\$state);
-      }
-    """;
+    return """typedef ${processedTableManagerTypedefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)};""";
   }
 
   /// Returns the code for a tables filter composer

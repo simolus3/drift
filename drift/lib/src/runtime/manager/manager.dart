@@ -25,15 +25,6 @@ class TableManagerState<
     $Dataclass,
     $FilterComposer extends FilterComposer<$Database, $Table>,
     $OrderingComposer extends OrderingComposer<$Database, $Table>,
-    $ChildManager extends ProcessedTableManager<
-        $Database,
-        $Table,
-        $Dataclass,
-        $FilterComposer,
-        $OrderingComposer,
-        $ChildManager,
-        $CreateCompanionCallback,
-        $UpdateCompanionCallback>,
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function> {
   /// The database used to run the query.
@@ -72,18 +63,6 @@ class TableManagerState<
   /// which will be applied to the statement when its eventually created
   final $OrderingComposer orderingComposer;
 
-  /// This function is used internaly to return a new instance of the child manager
-  final $ChildManager Function(
-      TableManagerState<
-          $Database,
-          $Table,
-          $Dataclass,
-          $FilterComposer,
-          $OrderingComposer,
-          $ChildManager,
-          $CreateCompanionCallback,
-          $UpdateCompanionCallback>) _getChildManagerBuilder;
-
   /// This function is passed to the user to create a companion
   /// for inserting data into the table
   final $CreateCompanionCallback _createCompanionCallback;
@@ -102,17 +81,6 @@ class TableManagerState<
       required this.table,
       required this.filteringComposer,
       required this.orderingComposer,
-      required $ChildManager Function(
-              TableManagerState<
-                  $Database,
-                  $Table,
-                  $Dataclass,
-                  $FilterComposer,
-                  $OrderingComposer,
-                  $ChildManager,
-                  $CreateCompanionCallback,
-                  $UpdateCompanionCallback>)
-          getChildManagerBuilder,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
       this.filter,
@@ -121,8 +89,7 @@ class TableManagerState<
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : _getChildManagerBuilder = getChildManagerBuilder,
-        _createCompanionCallback = createCompanionCallback,
+      : _createCompanionCallback = createCompanionCallback,
         _updateCompanionCallback = updateCompanionCallback;
 
   /// Copy this state with the given values
@@ -132,7 +99,6 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $ChildManager,
       $CreateCompanionCallback,
       $UpdateCompanionCallback> copyWith({
     bool? distinct,
@@ -147,7 +113,6 @@ class TableManagerState<
       table: table,
       filteringComposer: filteringComposer,
       orderingComposer: orderingComposer,
-      getChildManagerBuilder: _getChildManagerBuilder,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       filter: filter ?? this.filter,
@@ -317,15 +282,6 @@ abstract class BaseTableManager<
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
-        $ChildManager extends ProcessedTableManager<
-            $Database,
-            $Table,
-            $Dataclass,
-            $FilterComposer,
-            $OrderingComposer,
-            $ChildManager,
-            $CreateCompanionCallback,
-            $UpdateCompanionCallback>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function>
     implements
@@ -339,7 +295,6 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $ChildManager,
       $CreateCompanionCallback,
       $UpdateCompanionCallback> $state;
 
@@ -349,22 +304,32 @@ abstract class BaseTableManager<
   const BaseTableManager(this.$state);
 
   /// Add a limit to the statement
-  $ChildManager limit(int limit, {int? offset}) {
-    return $state
-        ._getChildManagerBuilder($state.copyWith(limit: limit, offset: offset));
+  ProcessedTableManager<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback> limit(int limit, {int? offset}) {
+    return ProcessedTableManager($state.copyWith(limit: limit, offset: offset));
   }
 
   /// Add ordering to the statement
-  $ChildManager orderBy(ComposableOrdering Function($OrderingComposer o) o) {
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+      orderBy(ComposableOrdering Function($OrderingComposer o) o) {
     final orderings = o($state.orderingComposer);
-    return $state._getChildManagerBuilder($state.copyWith(
+    return ProcessedTableManager($state.copyWith(
         orderingBuilders:
             $state.orderingBuilders.union(orderings.orderingBuilders),
         joinBuilders: $state.joinBuilders.union(orderings.joinBuilders)));
   }
 
   /// Add a filter to the statement
-  $ChildManager filter(ComposableFilter Function($FilterComposer f) f) {
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
+      filter(ComposableFilter Function($FilterComposer f) f) {
     final filter = f($state.filteringComposer);
     final combinedFilter = switch (($state.filter, filter.expression)) {
       (null, null) => null,
@@ -373,7 +338,7 @@ abstract class BaseTableManager<
       (var filter1, var filter2) => (filter1!) & (filter2!)
     };
 
-    return $state._getChildManagerBuilder($state.copyWith(
+    return ProcessedTableManager($state.copyWith(
         filter: combinedFilter,
         joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
   }
@@ -502,26 +467,10 @@ class ProcessedTableManager<
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
-        $ChildManager extends ProcessedTableManager<
-            $Database,
-            $Table,
-            $Dataclass,
-            $FilterComposer,
-            $OrderingComposer,
-            $ChildManager,
-            $CreateCompanionCallback,
-            $UpdateCompanionCallback>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function>
-    extends BaseTableManager<
-        $Database,
-        $Table,
-        $Dataclass,
-        $FilterComposer,
-        $OrderingComposer,
-        $ChildManager,
-        $CreateCompanionCallback,
-        $UpdateCompanionCallback>
+    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
     implements
         MultiSelectable<$Dataclass>,
         SingleSelectable<$Dataclass>,
@@ -538,26 +487,10 @@ abstract class RootTableManager<
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
-        $ChildManager extends ProcessedTableManager<
-            $Database,
-            $Table,
-            $Dataclass,
-            $FilterComposer,
-            $OrderingComposer,
-            $ChildManager,
-            $CreateCompanionCallback,
-            $UpdateCompanionCallback>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function>
-    extends BaseTableManager<
-        $Database,
-        $Table,
-        $Dataclass,
-        $FilterComposer,
-        $OrderingComposer,
-        $ChildManager,
-        $CreateCompanionCallback,
-        $UpdateCompanionCallback> {
+    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback> {
   /// Create a new [RootTableManager] instance
   ///
   /// {@template manager_internal_use_only}

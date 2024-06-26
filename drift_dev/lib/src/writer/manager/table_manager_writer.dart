@@ -46,7 +46,7 @@ class _TableManagerWriter {
         leaf: leaf,
         updateCompanionBuilder: updateCompanionBuilder,
         createCompanionBuilder: insertCompanionBuilder));
-    leaf.write(_templates.processedTableManager(
+    leaf.write(_templates.processedTableManagerTypedef(
         table: table, dbClassName: dbClassName, leaf: leaf));
 
     // Gather the relationships to and from this table
