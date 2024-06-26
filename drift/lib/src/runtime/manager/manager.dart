@@ -389,7 +389,8 @@ abstract class BaseTableManager<
   /// See also: [getSingleOrNull], which returns `null` instead of
   /// throwing if the query completes with no rows.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// The [distinct] parameter (enabled by default) controls whether to generate
+  /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Future<$Dataclass> getSingle({bool distinct = true}) =>
       $state.copyWith(distinct: distinct).buildSelectStatement().getSingle();
@@ -400,7 +401,8 @@ abstract class BaseTableManager<
   /// `Stream<D>`. If, at any point, the query emits no or more than one rows,
   /// an error will be added to the stream instead.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// The [distinct] parameter (enabled by default) controls whether to generate
+  /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Stream<$Dataclass> watchSingle({bool distinct = true}) =>
       $state.copyWith(distinct: distinct).buildSelectStatement().watchSingle();
@@ -409,7 +411,9 @@ abstract class BaseTableManager<
   ///
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set
-  /// Set [distinct] to true to ensure that only distinct rows are returned
+  ///
+  /// The [distinct] parameter (disabled by default) controls whether to generate
+  /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Future<List<$Dataclass>> get(
           {bool distinct = false, int? limit, int? offset}) =>
@@ -423,7 +427,9 @@ abstract class BaseTableManager<
   ///
   /// Use [limit] and [offset] to limit the number of rows returned
   /// An offset will only be applied if a limit is also set
-  /// Set [distinct] to true to ensure that only distinct rows are returned
+  ///
+  /// The [distinct] parameter (disabled by default) controls whether to generate
+  /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Stream<List<$Dataclass>> watch(
           {bool distinct = false, int? limit, int? offset}) =>
@@ -439,7 +445,8 @@ abstract class BaseTableManager<
   /// See also: [getSingle], which can be used if the query will
   /// always evaluate to exactly one row.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// The [distinct] parameter (enabled by default) controls whether to generate
+  /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Future<$Dataclass?> getSingleOrNull({bool distinct = true}) => $state
       .copyWith(distinct: distinct)
@@ -454,7 +461,8 @@ abstract class BaseTableManager<
   /// If the query emits zero rows at some point, `null` will be added
   /// to the stream instead.
   ///
-  /// Uses the distinct flag to ensure that only distinct rows are returned
+  /// The [distinct] parameter (enabled by default) controls whether to generate
+  /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Stream<$Dataclass?> watchSingleOrNull({bool distinct = true}) => $state
       .copyWith(distinct: distinct)
