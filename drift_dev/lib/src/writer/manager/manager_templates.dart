@@ -274,7 +274,11 @@ class _ManagerCodeTemplates {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
 
-    return """${leaf.drift("ColumnFilters")}<$type> get $filterName => ${leaf.drift("ColumnFilters")}(\$state.table.$columnGetter);""";
+    return """${leaf.drift("ColumnFilters")}<$type> get $filterName => \$state.composableBuilder(
+      column: \$state.table.$columnGetter,
+      builder: (column, joinBuilders) => 
+      ${leaf.drift("ColumnFilters")}(column, joinBuilders: joinBuilders));
+      """;
   }
 
   /// Code for a filter for a column that has a type converter
@@ -287,8 +291,11 @@ class _ManagerCodeTemplates {
     final converterType = leaf.dartCode(leaf.writer.dartType(column));
     final nonNullableConverterType = converterType.replaceFirst("?", "");
     return """
-          ${leaf.drift("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => 
-          ${leaf.drift("ColumnWithTypeConverterFilters")}(\$state.table.$columnGetter);""";
+          ${leaf.drift("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => \$state.composableBuilder(
+      column: \$state.table.$columnGetter,
+      builder: (column, joinBuilders) => 
+      ${leaf.drift("ColumnWithTypeConverterFilters")}(column, joinBuilders: joinBuilders));
+      """;
   }
 
   /// Code for a filter which works over a reference
@@ -320,7 +327,11 @@ class _ManagerCodeTemplates {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
 
-    return """${leaf.drift("ColumnOrderings")}<$type> get $filterName => ${leaf.drift("ColumnOrderings")}(\$state.table.$columnGetter);""";
+    return """${leaf.drift("ColumnOrderings")}<$type> get $filterName => \$state.composableBuilder(
+      column: \$state.table.$columnGetter,
+      builder: (column, joinBuilders) => 
+      ${leaf.drift("ColumnOrderings")}(column, joinBuilders: joinBuilders));
+      """;
   }
 
   /// Code for a ordering which works over a reference
