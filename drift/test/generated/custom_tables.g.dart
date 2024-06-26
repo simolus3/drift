@@ -2060,15 +2060,6 @@ class $NoIdsTableManager extends RootTableManager<
         ));
 }
 
-typedef $NoIdsProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    NoIds,
-    NoIdRow,
-    $NoIdsFilterComposer,
-    $NoIdsOrderingComposer,
-    $NoIdsCreateCompanionBuilder,
-    $NoIdsUpdateCompanionBuilder>;
-
 class $NoIdsFilterComposer extends FilterComposer<_$CustomTablesDb, NoIds> {
   $NoIdsFilterComposer(super.$state);
   ColumnFilters<Uint8List> get payload => $state.composableBuilder(
@@ -2134,15 +2125,6 @@ class $WithDefaultsTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $WithDefaultsProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    WithDefaults,
-    WithDefault,
-    $WithDefaultsFilterComposer,
-    $WithDefaultsOrderingComposer,
-    $WithDefaultsCreateCompanionBuilder,
-    $WithDefaultsUpdateCompanionBuilder>;
 
 class $WithDefaultsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithDefaults> {
@@ -2229,15 +2211,6 @@ class $WithConstraintsTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $WithConstraintsProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    WithConstraints,
-    WithConstraint,
-    $WithConstraintsFilterComposer,
-    $WithConstraintsOrderingComposer,
-    $WithConstraintsCreateCompanionBuilder,
-    $WithConstraintsUpdateCompanionBuilder>;
 
 class $WithConstraintsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithConstraints> {
@@ -2338,15 +2311,6 @@ class $ConfigTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $ConfigTableProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    ConfigTable,
-    Config,
-    $ConfigTableFilterComposer,
-    $ConfigTableOrderingComposer,
-    $ConfigTableCreateCompanionBuilder,
-    $ConfigTableUpdateCompanionBuilder>;
 
 class $ConfigTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, ConfigTable> {
@@ -2454,15 +2418,6 @@ class $MytableTableManager extends RootTableManager<
         ));
 }
 
-typedef $MytableProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    Mytable,
-    MytableData,
-    $MytableFilterComposer,
-    $MytableOrderingComposer,
-    $MytableCreateCompanionBuilder,
-    $MytableUpdateCompanionBuilder>;
-
 class $MytableFilterComposer extends FilterComposer<_$CustomTablesDb, Mytable> {
   $MytableFilterComposer(super.$state);
   ColumnFilters<int> get someid => $state.composableBuilder(
@@ -2564,15 +2519,6 @@ class $EmailTableManager extends RootTableManager<
         ));
 }
 
-typedef $EmailProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    Email,
-    EMail,
-    $EmailFilterComposer,
-    $EmailOrderingComposer,
-    $EmailCreateCompanionBuilder,
-    $EmailUpdateCompanionBuilder>;
-
 class $EmailFilterComposer extends FilterComposer<_$CustomTablesDb, Email> {
   $EmailFilterComposer(super.$state);
   ColumnFilters<String> get sender => $state.composableBuilder(
@@ -2658,15 +2604,6 @@ class $WeirdTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $WeirdTableProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    WeirdTable,
-    WeirdData,
-    $WeirdTableFilterComposer,
-    $WeirdTableOrderingComposer,
-    $WeirdTableCreateCompanionBuilder,
-    $WeirdTableUpdateCompanionBuilder>;
 
 class $WeirdTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, WeirdTable> {

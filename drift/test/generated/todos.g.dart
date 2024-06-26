@@ -3483,15 +3483,6 @@ class $$CategoriesTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $CategoriesTable,
-    Category,
-    $$CategoriesTableFilterComposer,
-    $$CategoriesTableOrderingComposer,
-    $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder>;
-
 class $$CategoriesTableFilterComposer
     extends FilterComposer<_$TodoDb, $CategoriesTable> {
   $$CategoriesTableFilterComposer(super.$state);
@@ -3625,15 +3616,6 @@ class $$TodosTableTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$TodosTableTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $TodosTableTable,
-    TodoEntry,
-    $$TodosTableTableFilterComposer,
-    $$TodosTableTableOrderingComposer,
-    $$TodosTableTableCreateCompanionBuilder,
-    $$TodosTableTableUpdateCompanionBuilder>;
 
 class $$TodosTableTableFilterComposer
     extends FilterComposer<_$TodoDb, $TodosTableTable> {
@@ -3783,15 +3765,6 @@ class $$UsersTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder>;
-
 class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
@@ -3903,15 +3876,6 @@ class $$SharedTodosTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$SharedTodosTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $SharedTodosTable,
-    SharedTodo,
-    $$SharedTodosTableFilterComposer,
-    $$SharedTodosTableOrderingComposer,
-    $$SharedTodosTableCreateCompanionBuilder,
-    $$SharedTodosTableUpdateCompanionBuilder>;
-
 class $$SharedTodosTableFilterComposer
     extends FilterComposer<_$TodoDb, $SharedTodosTable> {
   $$SharedTodosTableFilterComposer(super.$state);
@@ -4003,15 +3967,6 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$TableWithoutPKTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $TableWithoutPKTable,
-    CustomRowClass,
-    $$TableWithoutPKTableFilterComposer,
-    $$TableWithoutPKTableOrderingComposer,
-    $$TableWithoutPKTableCreateCompanionBuilder,
-    $$TableWithoutPKTableUpdateCompanionBuilder>;
 
 class $$TableWithoutPKTableFilterComposer
     extends FilterComposer<_$TodoDb, $TableWithoutPKTable> {
@@ -4109,15 +4064,6 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$PureDefaultsTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $PureDefaultsTable,
-    PureDefault,
-    $$PureDefaultsTableFilterComposer,
-    $$PureDefaultsTableOrderingComposer,
-    $$PureDefaultsTableCreateCompanionBuilder,
-    $$PureDefaultsTableUpdateCompanionBuilder>;
-
 class $$PureDefaultsTableFilterComposer
     extends FilterComposer<_$TodoDb, $PureDefaultsTable> {
   $$PureDefaultsTableFilterComposer(super.$state);
@@ -4183,15 +4129,6 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$WithCustomTypeTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $WithCustomTypeTable,
-    WithCustomTypeData,
-    $$WithCustomTypeTableFilterComposer,
-    $$WithCustomTypeTableOrderingComposer,
-    $$WithCustomTypeTableCreateCompanionBuilder,
-    $$WithCustomTypeTableUpdateCompanionBuilder>;
 
 class $$WithCustomTypeTableFilterComposer
     extends FilterComposer<_$TodoDb, $WithCustomTypeTable> {
@@ -4305,16 +4242,6 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$TableWithEveryColumnTypeTableProcessedTableManager
-    = ProcessedTableManager<
-        _$TodoDb,
-        $TableWithEveryColumnTypeTable,
-        TableWithEveryColumnTypeData,
-        $$TableWithEveryColumnTypeTableFilterComposer,
-        $$TableWithEveryColumnTypeTableOrderingComposer,
-        $$TableWithEveryColumnTypeTableCreateCompanionBuilder,
-        $$TableWithEveryColumnTypeTableUpdateCompanionBuilder>;
 
 class $$TableWithEveryColumnTypeTableFilterComposer
     extends FilterComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
@@ -4474,15 +4401,6 @@ class $$DepartmentTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$DepartmentTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $DepartmentTable,
-    DepartmentData,
-    $$DepartmentTableFilterComposer,
-    $$DepartmentTableOrderingComposer,
-    $$DepartmentTableCreateCompanionBuilder,
-    $$DepartmentTableUpdateCompanionBuilder>;
-
 class $$DepartmentTableFilterComposer
     extends FilterComposer<_$TodoDb, $DepartmentTable> {
   $$DepartmentTableFilterComposer(super.$state);
@@ -4573,15 +4491,6 @@ class $$ProductTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$ProductTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $ProductTable,
-    ProductData,
-    $$ProductTableFilterComposer,
-    $$ProductTableOrderingComposer,
-    $$ProductTableCreateCompanionBuilder,
-    $$ProductTableUpdateCompanionBuilder>;
 
 class $$ProductTableFilterComposer
     extends FilterComposer<_$TodoDb, $ProductTable> {
@@ -4692,15 +4601,6 @@ class $$StoreTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$StoreTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $StoreTable,
-    StoreData,
-    $$StoreTableFilterComposer,
-    $$StoreTableOrderingComposer,
-    $$StoreTableCreateCompanionBuilder,
-    $$StoreTableUpdateCompanionBuilder>;
-
 class $$StoreTableFilterComposer extends FilterComposer<_$TodoDb, $StoreTable> {
   $$StoreTableFilterComposer(super.$state);
   ColumnFilters<int> get id => $state.composableBuilder(
@@ -4796,15 +4696,6 @@ class $$ListingTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$ListingTableProcessedTableManager = ProcessedTableManager<
-    _$TodoDb,
-    $ListingTable,
-    ListingData,
-    $$ListingTableFilterComposer,
-    $$ListingTableOrderingComposer,
-    $$ListingTableCreateCompanionBuilder,
-    $$ListingTableUpdateCompanionBuilder>;
 
 class $$ListingTableFilterComposer
     extends FilterComposer<_$TodoDb, $ListingTable> {

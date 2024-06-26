@@ -780,15 +780,6 @@ class $$UsersTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder>;
-
 class $$UsersTableFilterComposer
     extends FilterComposer<_$Database, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
@@ -906,15 +897,6 @@ class $$FriendshipsTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$FriendshipsTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $FriendshipsTable,
-    Friendship,
-    $$FriendshipsTableFilterComposer,
-    $$FriendshipsTableOrderingComposer,
-    $$FriendshipsTableCreateCompanionBuilder,
-    $$FriendshipsTableUpdateCompanionBuilder>;
 
 class $$FriendshipsTableFilterComposer
     extends FilterComposer<_$Database, $FriendshipsTable> {

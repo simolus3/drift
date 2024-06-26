@@ -250,15 +250,6 @@ class $$UsersTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
-    _$DriftPostgresDatabase,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder>;
-
 class $$UsersTableFilterComposer
     extends FilterComposer<_$DriftPostgresDatabase, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);

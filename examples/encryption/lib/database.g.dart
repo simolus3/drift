@@ -235,15 +235,6 @@ class $$NotesTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
-    _$MyEncryptedDatabase,
-    $NotesTable,
-    Note,
-    $$NotesTableFilterComposer,
-    $$NotesTableOrderingComposer,
-    $$NotesTableCreateCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder>;
-
 class $$NotesTableFilterComposer
     extends FilterComposer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableFilterComposer(super.$state);

@@ -284,15 +284,6 @@ class $GeopolyTestTableManager extends RootTableManager<
         ));
 }
 
-typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder>;
-
 class $GeopolyTestFilterComposer
     extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
   $GeopolyTestFilterComposer(super.$state);

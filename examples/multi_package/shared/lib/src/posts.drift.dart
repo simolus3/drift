@@ -255,15 +255,6 @@ class $PostsTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Posts,
-    i1.Post,
-    i1.$PostsFilterComposer,
-    i1.$PostsOrderingComposer,
-    $PostsCreateCompanionBuilder,
-    $PostsUpdateCompanionBuilder>;
-
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer(super.$state);

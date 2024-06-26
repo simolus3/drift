@@ -281,15 +281,6 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$BuyableItemsTable,
-    i1.BuyableItem,
-    i1.$$BuyableItemsTableFilterComposer,
-    i1.$$BuyableItemsTableOrderingComposer,
-    $$BuyableItemsTableCreateCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder>;
-
 class $$BuyableItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableFilterComposer(super.$state);

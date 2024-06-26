@@ -282,16 +282,6 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$PeriodicRemindersTableProcessedTableManager
-    = i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i1.$PeriodicRemindersTable,
-        i1.PeriodicReminder,
-        i1.$$PeriodicRemindersTableFilterComposer,
-        i1.$$PeriodicRemindersTableOrderingComposer,
-        $$PeriodicRemindersTableCreateCompanionBuilder,
-        $$PeriodicRemindersTableUpdateCompanionBuilder>;
-
 class $$PeriodicRemindersTableFilterComposer extends i0
     .FilterComposer<i0.GeneratedDatabase, i1.$PeriodicRemindersTable> {
   $$PeriodicRemindersTableFilterComposer(super.$state);

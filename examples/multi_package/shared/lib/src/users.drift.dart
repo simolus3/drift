@@ -224,15 +224,6 @@ class $$UsersTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$UsersTable,
-    i1.User,
-    i1.$$UsersTableFilterComposer,
-    i1.$$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder>;
-
 class $$UsersTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
   $$UsersTableFilterComposer(super.$state);

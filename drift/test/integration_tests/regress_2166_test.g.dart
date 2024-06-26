@@ -244,15 +244,6 @@ class $$_SomeTableTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder>;
-
 class $$_SomeTableTableFilterComposer
     extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
   $$_SomeTableTableFilterComposer(super.$state);

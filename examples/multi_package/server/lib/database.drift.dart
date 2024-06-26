@@ -293,15 +293,6 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i3.$ActiveSessionsTable,
-    i3.ActiveSession,
-    i3.$$ActiveSessionsTableFilterComposer,
-    i3.$$ActiveSessionsTableOrderingComposer,
-    $$ActiveSessionsTableCreateCompanionBuilder,
-    $$ActiveSessionsTableUpdateCompanionBuilder>;
-
 class $$ActiveSessionsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableFilterComposer(super.$state);

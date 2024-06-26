@@ -324,15 +324,6 @@ class $TodosTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Todos,
-    i1.Todo,
-    i1.$TodosFilterComposer,
-    i1.$TodosOrderingComposer,
-    $TodosCreateCompanionBuilder,
-    $TodosUpdateCompanionBuilder>;
-
 class $TodosFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Todos> {
   $TodosFilterComposer(super.$state);
@@ -633,15 +624,6 @@ class $CategoriesTableManager extends i0.RootTableManager<
           ),
         ));
 }
-
-typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Categories,
-    i1.Category,
-    i1.$CategoriesFilterComposer,
-    i1.$CategoriesOrderingComposer,
-    $CategoriesCreateCompanionBuilder,
-    $CategoriesUpdateCompanionBuilder>;
 
 class $CategoriesFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Categories> {

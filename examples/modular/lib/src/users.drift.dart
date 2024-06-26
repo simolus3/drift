@@ -389,15 +389,6 @@ class $UsersTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    i1.$UsersFilterComposer,
-    i1.$UsersOrderingComposer,
-    $UsersCreateCompanionBuilder,
-    $UsersUpdateCompanionBuilder>;
-
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
   $UsersFilterComposer(super.$state);
@@ -712,15 +703,6 @@ class $FollowsTableManager extends i0.RootTableManager<
           ),
         ));
 }
-
-typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Follows,
-    i1.Follow,
-    i1.$FollowsFilterComposer,
-    i1.$FollowsOrderingComposer,
-    $FollowsCreateCompanionBuilder,
-    $FollowsUpdateCompanionBuilder>;
 
 class $FollowsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Follows> {

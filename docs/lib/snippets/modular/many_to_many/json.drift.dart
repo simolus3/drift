@@ -266,15 +266,6 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i2.$ShoppingCartsTable,
-    i2.ShoppingCart,
-    i2.$$ShoppingCartsTableFilterComposer,
-    i2.$$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableCreateCompanionBuilder,
-    $$ShoppingCartsTableUpdateCompanionBuilder>;
-
 class $$ShoppingCartsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableFilterComposer(super.$state);

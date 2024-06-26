@@ -760,15 +760,6 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $TodoCategoriesTable,
-    TodoCategory,
-    $$TodoCategoriesTableFilterComposer,
-    $$TodoCategoriesTableOrderingComposer,
-    $$TodoCategoriesTableCreateCompanionBuilder,
-    $$TodoCategoriesTableUpdateCompanionBuilder>;
-
 class $$TodoCategoriesTableFilterComposer
     extends FilterComposer<_$Database, $TodoCategoriesTable> {
   $$TodoCategoriesTableFilterComposer(super.$state);
@@ -865,15 +856,6 @@ class $$TodoItemsTableTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $TodoItemsTable,
-    TodoItem,
-    $$TodoItemsTableFilterComposer,
-    $$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder>;
 
 class $$TodoItemsTableFilterComposer
     extends FilterComposer<_$Database, $TodoItemsTable> {

@@ -985,15 +985,6 @@ class $$UsersTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder>;
-
 class $$UsersTableFilterComposer
     extends FilterComposer<_$Database, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
@@ -1123,15 +1114,6 @@ class $GroupsTableManager extends RootTableManager<
         ));
 }
 
-typedef $GroupsProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    Groups,
-    Group,
-    $GroupsFilterComposer,
-    $GroupsOrderingComposer,
-    $GroupsCreateCompanionBuilder,
-    $GroupsUpdateCompanionBuilder>;
-
 class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
   $GroupsFilterComposer(super.$state);
   ColumnFilters<int> get id => $state.composableBuilder(
@@ -1245,15 +1227,6 @@ class $NotesTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $NotesProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    Notes,
-    Note,
-    $NotesFilterComposer,
-    $NotesOrderingComposer,
-    $NotesCreateCompanionBuilder,
-    $NotesUpdateCompanionBuilder>;
 
 class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {
   $NotesFilterComposer(super.$state);

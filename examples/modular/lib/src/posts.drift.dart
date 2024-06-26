@@ -275,15 +275,6 @@ class $PostsTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Posts,
-    i1.Post,
-    i1.$PostsFilterComposer,
-    i1.$PostsOrderingComposer,
-    $PostsCreateCompanionBuilder,
-    $PostsUpdateCompanionBuilder>;
-
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer(super.$state);
@@ -591,15 +582,6 @@ class $LikesTableManager extends i0.RootTableManager<
           ),
         ));
 }
-
-typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Likes,
-    i1.Like,
-    i1.$LikesFilterComposer,
-    i1.$LikesOrderingComposer,
-    $LikesCreateCompanionBuilder,
-    $LikesUpdateCompanionBuilder>;
 
 class $LikesFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Likes> {

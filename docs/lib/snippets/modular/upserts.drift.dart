@@ -244,15 +244,6 @@ class $$WordsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$WordsTable,
-    i1.Word,
-    i1.$$WordsTableFilterComposer,
-    i1.$$WordsTableOrderingComposer,
-    $$WordsTableCreateCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder>;
-
 class $$WordsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
   $$WordsTableFilterComposer(super.$state);
@@ -606,15 +597,6 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
-
-typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$MatchResultsTable,
-    i1.MatchResult,
-    i1.$$MatchResultsTableFilterComposer,
-    i1.$$MatchResultsTableOrderingComposer,
-    $$MatchResultsTableCreateCompanionBuilder,
-    $$MatchResultsTableUpdateCompanionBuilder>;
 
 class $$MatchResultsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {

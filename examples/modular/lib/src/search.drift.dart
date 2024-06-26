@@ -263,15 +263,6 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder>;
-
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsFilterComposer(super.$state);

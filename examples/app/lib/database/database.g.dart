@@ -794,15 +794,6 @@ class $$CategoriesTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $CategoriesTable,
-    Category,
-    $$CategoriesTableFilterComposer,
-    $$CategoriesTableOrderingComposer,
-    $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder>;
-
 class $$CategoriesTableFilterComposer
     extends FilterComposer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableFilterComposer(super.$state);
@@ -914,15 +905,6 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$TodoEntriesTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $TodoEntriesTable,
-    TodoEntry,
-    $$TodoEntriesTableFilterComposer,
-    $$TodoEntriesTableOrderingComposer,
-    $$TodoEntriesTableCreateCompanionBuilder,
-    $$TodoEntriesTableUpdateCompanionBuilder>;
-
 class $$TodoEntriesTableFilterComposer
     extends FilterComposer<_$AppDatabase, $TodoEntriesTable> {
   $$TodoEntriesTableFilterComposer(super.$state);
@@ -1028,15 +1010,6 @@ class $TextEntriesTableManager extends RootTableManager<
           ),
         ));
 }
-
-typedef $TextEntriesProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    TextEntries,
-    TextEntry,
-    $TextEntriesFilterComposer,
-    $TextEntriesOrderingComposer,
-    $TextEntriesCreateCompanionBuilder,
-    $TextEntriesUpdateCompanionBuilder>;
 
 class $TextEntriesFilterComposer
     extends FilterComposer<_$AppDatabase, TextEntries> {

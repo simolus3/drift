@@ -256,15 +256,6 @@ class $EntriesTableManager extends RootTableManager<
         ));
 }
 
-typedef $EntriesProcessedTableManager = ProcessedTableManager<
-    _$MyDatabase,
-    Entries,
-    Entry,
-    $EntriesFilterComposer,
-    $EntriesOrderingComposer,
-    $EntriesCreateCompanionBuilder,
-    $EntriesUpdateCompanionBuilder>;
-
 class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
   $EntriesFilterComposer(super.$state);
   ColumnFilters<int> get id => $state.composableBuilder(

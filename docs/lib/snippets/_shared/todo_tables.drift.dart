@@ -376,15 +376,6 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$TodoItemsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$TodoItemsTable,
-    i1.TodoItem,
-    i1.$$TodoItemsTableFilterComposer,
-    i1.$$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder>;
-
 class $$TodoItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
   $$TodoItemsTableFilterComposer(super.$state);
@@ -693,15 +684,6 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$CategoriesTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$CategoriesTable,
-    i1.Category,
-    i1.$$CategoriesTableFilterComposer,
-    i1.$$CategoriesTableOrderingComposer,
-    $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder>;
-
 class $$CategoriesTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
   $$CategoriesTableFilterComposer(super.$state);
@@ -953,15 +935,6 @@ class $$UsersTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
-
-typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$UsersTable,
-    i1.User,
-    i1.$$UsersTableFilterComposer,
-    i1.$$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder>;
 
 class $$UsersTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {

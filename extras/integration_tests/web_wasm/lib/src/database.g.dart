@@ -238,15 +238,6 @@ class $$TestTableTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableCreateCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder>;
-
 class $$TestTableTableFilterComposer
     extends FilterComposer<_$TestDatabase, $TestTableTable> {
   $$TestTableTableFilterComposer(super.$state);
