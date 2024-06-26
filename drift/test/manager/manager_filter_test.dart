@@ -407,12 +407,5 @@ void main() {
             .filter((f) => f.aReal(5.0))
             .count(),
         completion(1));
-    // Passing a `combineWith` will change that
-    expect(
-        db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText("person"))
-            .filter((f) => f.aReal(5.0), combineWith: BooleanOperator.or)
-            .count(),
-        completion(2));
   });
 }

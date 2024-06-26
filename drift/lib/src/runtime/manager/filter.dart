@@ -285,7 +285,7 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
 }
 
 ///  Enum of the possible boolean operators
-enum BooleanOperator {
+enum _BooleanOperator {
   /// Combine the existing filters to the new filter with an AND
   and,
 
@@ -311,22 +311,22 @@ class ComposableFilter extends _Composable {
 
   /// Combine two filters with an AND
   ComposableFilter operator &(ComposableFilter other) =>
-      _combineFilter(BooleanOperator.and, other);
+      _combineFilter(_BooleanOperator.and, other);
 
   /// Combine two filters with an OR
   ComposableFilter operator |(ComposableFilter other) =>
-      _combineFilter(BooleanOperator.or, other);
+      _combineFilter(_BooleanOperator.or, other);
 
   /// A helper function to combine two filters
   ComposableFilter _combineFilter(
-      BooleanOperator opperator, ComposableFilter otherFilter) {
+      _BooleanOperator opperator, ComposableFilter otherFilter) {
     final combinedExpression = switch ((expression, otherFilter.expression)) {
       (null, null) => null,
       (null, var expression) => expression,
       (var expression, null) => expression,
       (_, _) => switch (opperator) {
-          BooleanOperator.and => expression! & otherFilter.expression!,
-          BooleanOperator.or => expression! | otherFilter.expression!,
+          _BooleanOperator.and => expression! & otherFilter.expression!,
+          _BooleanOperator.or => expression! | otherFilter.expression!,
         },
     };
     return ComposableFilter._(
