@@ -61,3 +61,7 @@ dependency_overrides:
     git:
       url: https://github.com/simolus3/mime.git
       ref: woff2
+  # This override is necessary to fool melos, we need the fake
+  # package because we don't have Flutter here.
+  drift_flutter:
+    path: assets/drift_flutter
