@@ -1,0 +1,21 @@
+{% assign title = args.title -%}
+{% assign entries = args.entries -%}
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav nav-link disabled" role="tab"><strong>{{title}}</strong></button>
+    </li>
+    {%- for entry in entries limit: 1 -%}
+    <li class="nav-item" role="presentation">
+        <button class="nav nav-link active" role="tab">{{entry}}</button>
+    </li>
+    {%- endfor -%}
+    {%- for entry in entries offset: 1 -%}
+    <li class="nav-item" role="presentation">
+        <button class="nav nav-link" role="tab">{{entry}}</button>
+    </li>
+    {%- endfor -%}
+</ul>
+<div class="tab-content">
+    {{ inner | markdownify }}
+</div>

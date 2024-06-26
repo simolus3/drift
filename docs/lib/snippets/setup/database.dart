@@ -1,20 +1,22 @@
-// #docregion after_generation
-// #docregion before_generation
+// ignore_for_file: unused_element
+// #docregion flutter,sqlite3,postgres,before_generation
 import 'package:drift/drift.dart';
+// #enddocregion flutter,sqlite3,postgres,before_generation
 
-// #enddocregion before_generation
-// #enddocregion after_generation
-
-// #docregion after_generation
-// These additional imports are necessary to open the sqlite3 database
+// #docregion flutter
+import 'package:drift_flutter/drift_flutter.dart';
+// #enddocregion flutter
+// #docregion sqlite3
 import 'dart:io';
 import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+// #enddocregion sqlite3
+// #docregion postgres
+import 'package:drift_postgres/drift_postgres.dart';
+import 'package:postgres/postgres.dart' as pg;
+// #enddocregion postgres
 
-// #docregion before_generation
+// #docregion flutter,sqlite3,postgres,before_generation
+
 part 'database.g.dart';
 
 // #docregion table
@@ -33,47 +35,58 @@ class TodoCategory extends Table {
 }
 
 // #enddocregion table
-
 @DriftDatabase(tables: [TodoItems, TodoCategory])
 class AppDatabase extends _$AppDatabase {
 // #enddocregion before_generation
-// #enddocregion after_generation
   // After generating code, this class needs to define a `schemaVersion` getter
   // and a constructor telling drift where the database should be stored.
   // These are described in the getting started guide: https://drift.simonbinder.eu/getting-started/#open
-// #docregion after_generation
   AppDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => 1;
+
+  // #enddocregion flutter,sqlite3,postgres
+  static QueryExecutor _openConnection() {
+    throw 'should not show as snippet';
+  }
+
 // #docregion before_generation
 }
 // #enddocregion before_generation
 
-LazyDatabase _openConnection() {
-  // the LazyDatabase util lets us find the right location for the file async.
-  return LazyDatabase(() async {
-    // put the database file, called db.sqlite here, into the documents folder
-    // for your app.
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'db.sqlite'));
-
-    // Also work around limitations on old Android versions
-    if (Platform.isAndroid) {
-      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
-    }
-
-    // Make sqlite3 pick a more suitable location for temporary files - the
-    // one from the system may be inaccessible due to sandboxing.
-    final cachebase = (await getTemporaryDirectory()).path;
-    // We can't access /tmp on Android, which sqlite3 would try by default.
-    // Explicitly tell it about the correct temporary directory.
-    sqlite3.tempDirectory = cachebase;
-
-    return NativeDatabase.createInBackground(file);
-  });
+class OpenFlutter {
+// #docregion flutter
+  DatabaseConnection _openConnection() {
+    // `driftDatabase` from `package:drift_flutter` stores the database in
+    // `getApplicationDocumentsDirectory()`.
+    return driftDatabase(name: 'my_database');
+  }
 }
-// #enddocregion after_generation
+// #enddocregion flutter
+
+class OpenPostgres {
+// #docregion postgres
+  QueryExecutor _openConnection() {
+    return PgDatabase(
+      endpoint: pg.Endpoint(
+        host: 'localhost',
+        database: 'database',
+        username: 'dart',
+        password: 'mysecurepassword',
+      ),
+    );
+  }
+}
+// #enddocregion postgres
+
+class OpenSqlite3 {
+// #docregion sqlite3
+  QueryExecutor _openConnection() {
+    return NativeDatabase.createInBackground(File('path/to/your/database'));
+  }
+}
+// #enddocregion sqlite3
 
 class WidgetsFlutterBinding {
   static void ensureInitialized() {}

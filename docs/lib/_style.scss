@@ -21,3 +21,27 @@ $enable-rounded: true;
       width: 70px;
    }
 }
+
+.collapsible > h4 {
+   cursor: pointer;
+}
+
+.collapsible > .content {
+   display: none;
+}
+
+.collapsible > h4:after {
+   content: '\02795';
+   font-size: 13px;
+   color: white;
+   float: right;
+   margin-left: 5px;
+}
+
+.collapsible.active > h4:after {
+   content: "\2796";
+}
+
+.collapsible.active > .content {
+   display: block;
+}

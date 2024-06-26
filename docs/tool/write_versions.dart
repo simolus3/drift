@@ -18,6 +18,8 @@ class _VersionsBuilder extends Builder {
       'drift',
       'drift_dev',
       'drift_postgres',
+      'sqlite3',
+      'postgres',
     ];
 
     final versions = <String, String>{};
