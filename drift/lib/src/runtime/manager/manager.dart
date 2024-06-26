@@ -16,6 +16,7 @@ part 'ordering.dart';
 ///
 /// It also holds the [$CreateCompanionCallback] and [$UpdateCompanionCallback] functions that are used to create companion builders for inserting and updating data.
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
+@immutable
 class TableManagerState<
     $Database extends GeneratedDatabase,
     $Table extends Table,
@@ -73,7 +74,8 @@ class TableManagerState<
   /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
   ///
   /// This class is used internally by the [BaseTableManager] and should not be used directly
-  const TableManagerState(
+
+  TableManagerState(
       {required this.db,
       required this.table,
       required this.filteringComposer,
@@ -273,18 +275,15 @@ class TableManagerState<
 /// Base class for all table managers
 /// Most of this classes functionality is kept in a seperate [TableManagerState] class
 /// This is so that the state can be passed down to lower level managers
+@immutable
 abstract class BaseTableManager<
-        $Database extends GeneratedDatabase,
-        $Table extends Table,
-        $Dataclass,
-        $FilterComposer extends FilterComposer<$Database, $Table>,
-        $OrderingComposer extends OrderingComposer<$Database, $Table>,
-        $CreateCompanionCallback extends Function,
-        $UpdateCompanionCallback extends Function>
-    implements
-        MultiSelectable<$Dataclass>,
-        SingleSelectable<$Dataclass>,
-        SingleOrNullSelectable<$Dataclass> {
+    $Database extends GeneratedDatabase,
+    $Table extends Table,
+    $Dataclass,
+    $FilterComposer extends FilterComposer<$Database, $Table>,
+    $OrderingComposer extends OrderingComposer<$Database, $Table>,
+    $CreateCompanionCallback extends Function,
+    $UpdateCompanionCallback extends Function> extends Selectable<$Dataclass> {
   /// The state for this manager
   final TableManagerState<
       $Database,
@@ -298,7 +297,7 @@ abstract class BaseTableManager<
   /// Create a new [BaseTableManager] instance
   ///
   /// {@macro manager_internal_use_only}
-  const BaseTableManager(this.$state);
+  BaseTableManager(this.$state);
 
   /// Add a limit to the statement
   ProcessedTableManager<
@@ -460,6 +459,7 @@ abstract class BaseTableManager<
 
 /// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
 //  As of now this is identical to [BaseTableManager] but it's kept seperate for future extensibility
+@immutable
 class ProcessedTableManager<
         $Database extends GeneratedDatabase,
         $Table extends Table,
@@ -469,17 +469,14 @@ class ProcessedTableManager<
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function>
     extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
-        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
-    implements
-        MultiSelectable<$Dataclass>,
-        SingleSelectable<$Dataclass>,
-        SingleOrNullSelectable<$Dataclass> {
+        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback> {
   /// Create a new [ProcessedTableManager] instance
   @internal
-  const ProcessedTableManager(super.$state);
+  ProcessedTableManager(super.$state);
 }
 
 /// A table manager with top level function for creating, reading, updating, and deleting items
+@immutable
 abstract class RootTableManager<
         $Database extends GeneratedDatabase,
         $Table extends Table,
@@ -496,7 +493,7 @@ abstract class RootTableManager<
   /// This class is implemented by the code generator and should
   /// not be instantiated or extended manually.
   /// {@endtemplate}
-  const RootTableManager(super.$state);
+  RootTableManager(super.$state);
 
   /// Creates a new row in the table using the given function
   ///
