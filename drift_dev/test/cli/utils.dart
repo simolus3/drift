@@ -38,7 +38,7 @@ class TestDriftProject {
 name: app
 
 environment:
-  sdk: ^2.12.0
+  sdk: ^3.0.0
 
 dependencies:
   drift:

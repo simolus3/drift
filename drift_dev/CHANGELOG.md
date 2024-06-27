@@ -2,6 +2,10 @@
 
 - Fix generated `CREATE VIEW` statements containing existing row class syntax
   only supposed to be used during static analysis.
+- Fix Dart views referencing the same column from different table aliases using
+  columns with the same name.
+- Fix `drift_dev schema steps` generating invalid code when no migrations have
+  been defined yet.
 
 ## 2.18.0
 

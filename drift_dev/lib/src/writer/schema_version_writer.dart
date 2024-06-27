@@ -308,6 +308,12 @@ class SchemaVersionWriter {
   }
 
   void _writeCallbackArgsForStep(TextEmitter text) {
+    if (versions.withNext.isEmpty) {
+      return;
+    }
+
+    text.write('{');
+
     for (final (current, next) in versions.withNext) {
       text
         ..write('required Future<void> Function(')
@@ -315,6 +321,8 @@ class SchemaVersionWriter {
         ..write(' m, ${_nameForSchemaClass(next.version)} schema)')
         ..writeln('from${current.version}To${next.version},');
     }
+
+    text.write('}');
   }
 
   void write() {
@@ -374,10 +382,10 @@ class SchemaVersionWriter {
     // to the numbered Schema<x> class used to lookup elements.
     final steps = libraryScope.leaf()
       ..writeUriRef(_schemaLibrary, 'MigrationStepWithVersion')
-      ..write(' migrationSteps({');
+      ..write(' migrationSteps(');
     _writeCallbackArgsForStep(steps);
     steps
-      ..writeln('}) {')
+      ..writeln(') {')
       ..writeln('return (currentVersion, database) async {')
       ..writeln('switch (currentVersion) {');
 
@@ -403,10 +411,10 @@ class SchemaVersionWriter {
 
     final stepByStep = libraryScope.leaf()
       ..writeDriftRef('OnUpgrade')
-      ..write(' stepByStep({');
+      ..write(' stepByStep(');
     _writeCallbackArgsForStep(stepByStep);
     stepByStep
-      ..writeln('}) => ')
+      ..writeln(') => ')
       ..writeUriRef(_schemaLibrary, 'VersionedSchema')
       ..write('.stepByStepHelper(step: migrationSteps(');
 
