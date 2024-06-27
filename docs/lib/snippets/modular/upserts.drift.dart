@@ -194,7 +194,7 @@ class WordsCompanion extends i0.UpdateCompanion<i1.Word> {
   }
 }
 
-typedef $$WordsTableInsertCompanionBuilder = i1.WordsCompanion Function({
+typedef $$WordsTableCreateCompanionBuilder = i1.WordsCompanion Function({
   required String word,
   i0.Value<int> usages,
   i0.Value<int> rowid,
@@ -211,8 +211,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
     i1.Word,
     i1.$$WordsTableFilterComposer,
     i1.$$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
-    $$WordsTableInsertCompanionBuilder,
+    $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder> {
   $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
       : super(i0.TableManagerState(
@@ -222,8 +221,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$WordsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -233,7 +231,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
             usages: usages,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String word,
             i0.Value<int> usages = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -244,18 +242,6 @@ class $$WordsTableTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $$WordsTableProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$WordsTable,
-    i1.Word,
-    i1.$$WordsTableFilterComposer,
-    i1.$$WordsTableOrderingComposer,
-    $$WordsTableProcessedTableManager,
-    $$WordsTableInsertCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder> {
-  $$WordsTableProcessedTableManager(super.$state);
 }
 
 class $$WordsTableFilterComposer
@@ -553,7 +539,7 @@ class MatchResultsCompanion extends i0.UpdateCompanion<i1.MatchResult> {
   }
 }
 
-typedef $$MatchResultsTableInsertCompanionBuilder = i1.MatchResultsCompanion
+typedef $$MatchResultsTableCreateCompanionBuilder = i1.MatchResultsCompanion
     Function({
   i0.Value<int> id,
   required String teamA,
@@ -574,8 +560,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
     i1.MatchResult,
     i1.$$MatchResultsTableFilterComposer,
     i1.$$MatchResultsTableOrderingComposer,
-    $$MatchResultsTableProcessedTableManager,
-    $$MatchResultsTableInsertCompanionBuilder,
+    $$MatchResultsTableCreateCompanionBuilder,
     $$MatchResultsTableUpdateCompanionBuilder> {
   $$MatchResultsTableTableManager(
       i0.GeneratedDatabase db, i1.$MatchResultsTable table)
@@ -586,9 +571,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$MatchResultsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
             i0.Value<String> teamB = const i0.Value.absent(),
@@ -600,7 +583,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
             teamB: teamB,
             teamAWon: teamAWon,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String teamA,
             required String teamB,
@@ -613,18 +596,6 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
             teamAWon: teamAWon,
           ),
         ));
-}
-
-class $$MatchResultsTableProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$MatchResultsTable,
-    i1.MatchResult,
-    i1.$$MatchResultsTableFilterComposer,
-    i1.$$MatchResultsTableOrderingComposer,
-    $$MatchResultsTableProcessedTableManager,
-    $$MatchResultsTableInsertCompanionBuilder,
-    $$MatchResultsTableUpdateCompanionBuilder> {
-  $$MatchResultsTableProcessedTableManager(super.$state);
 }
 
 class $$MatchResultsTableFilterComposer

@@ -714,7 +714,7 @@ abstract class _$Database extends GeneratedDatabase {
       ];
 }
 
-typedef $$TodoCategoriesTableInsertCompanionBuilder = TodoCategoriesCompanion
+typedef $$TodoCategoriesTableCreateCompanionBuilder = TodoCategoriesCompanion
     Function({
   Value<int> id,
   required String name,
@@ -731,8 +731,7 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
     TodoCategory,
     $$TodoCategoriesTableFilterComposer,
     $$TodoCategoriesTableOrderingComposer,
-    $$TodoCategoriesTableProcessedTableManager,
-    $$TodoCategoriesTableInsertCompanionBuilder,
+    $$TodoCategoriesTableCreateCompanionBuilder,
     $$TodoCategoriesTableUpdateCompanionBuilder> {
   $$TodoCategoriesTableTableManager(_$Database db, $TodoCategoriesTable table)
       : super(TableManagerState(
@@ -742,9 +741,7 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
               $$TodoCategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoCategoriesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TodoCategoriesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
           }) =>
@@ -752,7 +749,7 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
           }) =>
@@ -761,18 +758,6 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
             name: name,
           ),
         ));
-}
-
-class $$TodoCategoriesTableProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    $TodoCategoriesTable,
-    TodoCategory,
-    $$TodoCategoriesTableFilterComposer,
-    $$TodoCategoriesTableOrderingComposer,
-    $$TodoCategoriesTableProcessedTableManager,
-    $$TodoCategoriesTableInsertCompanionBuilder,
-    $$TodoCategoriesTableUpdateCompanionBuilder> {
-  $$TodoCategoriesTableProcessedTableManager(super.$state);
 }
 
 class $$TodoCategoriesTableFilterComposer
@@ -816,7 +801,7 @@ class $$TodoCategoriesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$TodoItemsTableInsertCompanionBuilder = TodoItemsCompanion Function({
+typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> id,
   required String title,
   Value<String?> content,
@@ -835,8 +820,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
     TodoItem,
     $$TodoItemsTableFilterComposer,
     $$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableProcessedTableManager,
-    $$TodoItemsTableInsertCompanionBuilder,
+    $$TodoItemsTableCreateCompanionBuilder,
     $$TodoItemsTableUpdateCompanionBuilder> {
   $$TodoItemsTableTableManager(_$Database db, $TodoItemsTable table)
       : super(TableManagerState(
@@ -846,9 +830,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
               $$TodoItemsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoItemsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TodoItemsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<String?> content = const Value.absent(),
@@ -860,7 +842,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
             content: content,
             categoryId: categoryId,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String title,
             Value<String?> content = const Value.absent(),
@@ -873,18 +855,6 @@ class $$TodoItemsTableTableManager extends RootTableManager<
             categoryId: categoryId,
           ),
         ));
-}
-
-class $$TodoItemsTableProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    $TodoItemsTable,
-    TodoItem,
-    $$TodoItemsTableFilterComposer,
-    $$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableProcessedTableManager,
-    $$TodoItemsTableInsertCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder> {
-  $$TodoItemsTableProcessedTableManager(super.$state);
 }
 
 class $$TodoItemsTableFilterComposer

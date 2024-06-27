@@ -228,7 +228,7 @@ class BuyableItemsCompanion extends i0.UpdateCompanion<i1.BuyableItem> {
   }
 }
 
-typedef $$BuyableItemsTableInsertCompanionBuilder = i1.BuyableItemsCompanion
+typedef $$BuyableItemsTableCreateCompanionBuilder = i1.BuyableItemsCompanion
     Function({
   i0.Value<int> id,
   required String description,
@@ -247,8 +247,7 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
     i1.BuyableItem,
     i1.$$BuyableItemsTableFilterComposer,
     i1.$$BuyableItemsTableOrderingComposer,
-    $$BuyableItemsTableProcessedTableManager,
-    $$BuyableItemsTableInsertCompanionBuilder,
+    $$BuyableItemsTableCreateCompanionBuilder,
     $$BuyableItemsTableUpdateCompanionBuilder> {
   $$BuyableItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
@@ -259,9 +258,7 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
               i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$BuyableItemsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
             i0.Value<int> price = const i0.Value.absent(),
@@ -271,7 +268,7 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
             description: description,
             price: price,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String description,
             required int price,
@@ -282,18 +279,6 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
             price: price,
           ),
         ));
-}
-
-class $$BuyableItemsTableProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$BuyableItemsTable,
-    i1.BuyableItem,
-    i1.$$BuyableItemsTableFilterComposer,
-    i1.$$BuyableItemsTableOrderingComposer,
-    $$BuyableItemsTableProcessedTableManager,
-    $$BuyableItemsTableInsertCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder> {
-  $$BuyableItemsTableProcessedTableManager(super.$state);
 }
 
 class $$BuyableItemsTableFilterComposer

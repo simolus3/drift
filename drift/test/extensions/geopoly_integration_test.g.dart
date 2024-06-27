@@ -234,7 +234,7 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [geopolyTest];
 }
 
-typedef $GeopolyTestInsertCompanionBuilder = GeopolyTestCompanion Function({
+typedef $GeopolyTestCreateCompanionBuilder = GeopolyTestCompanion Function({
   Value<GeopolyPolygon?> shape,
   Value<DriftAny?> a,
   Value<int> rowid,
@@ -251,8 +251,7 @@ class $GeopolyTestTableManager extends RootTableManager<
     GeopolyTestData,
     $GeopolyTestFilterComposer,
     $GeopolyTestOrderingComposer,
-    $GeopolyTestProcessedTableManager,
-    $GeopolyTestInsertCompanionBuilder,
+    $GeopolyTestCreateCompanionBuilder,
     $GeopolyTestUpdateCompanionBuilder> {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
       : super(TableManagerState(
@@ -262,8 +261,7 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $GeopolyTestOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $GeopolyTestProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -273,7 +271,7 @@ class $GeopolyTestTableManager extends RootTableManager<
             a: a,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -284,18 +282,6 @@ class $GeopolyTestTableManager extends RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $GeopolyTestProcessedTableManager extends ProcessedTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestProcessedTableManager,
-    $GeopolyTestInsertCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder> {
-  $GeopolyTestProcessedTableManager(super.$state);
 }
 
 class $GeopolyTestFilterComposer

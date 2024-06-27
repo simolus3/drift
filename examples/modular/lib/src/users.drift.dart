@@ -327,7 +327,7 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   }
 }
 
-typedef $UsersInsertCompanionBuilder = i1.UsersCompanion Function({
+typedef $UsersCreateCompanionBuilder = i1.UsersCompanion Function({
   i0.Value<int> id,
   required String name,
   i0.Value<String?> biography,
@@ -348,8 +348,7 @@ class $UsersTableManager extends i0.RootTableManager<
     i1.User,
     i1.$UsersFilterComposer,
     i1.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
-    $UsersInsertCompanionBuilder,
+    $UsersCreateCompanionBuilder,
     $UsersUpdateCompanionBuilder> {
   $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
       : super(i0.TableManagerState(
@@ -359,8 +358,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i1.$UsersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $UsersProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<String?> biography = const i0.Value.absent(),
@@ -374,7 +372,7 @@ class $UsersTableManager extends i0.RootTableManager<
             preferences: preferences,
             profilePicture: profilePicture,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String name,
             i0.Value<String?> biography = const i0.Value.absent(),
@@ -389,18 +387,6 @@ class $UsersTableManager extends i0.RootTableManager<
             profilePicture: profilePicture,
           ),
         ));
-}
-
-class $UsersProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    i1.$UsersFilterComposer,
-    i1.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
-    $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
-  $UsersProcessedTableManager(super.$state);
 }
 
 class $UsersFilterComposer
@@ -668,7 +654,7 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
   }
 }
 
-typedef $FollowsInsertCompanionBuilder = i1.FollowsCompanion Function({
+typedef $FollowsCreateCompanionBuilder = i1.FollowsCompanion Function({
   required int followed,
   required int follower,
   i0.Value<int> rowid,
@@ -685,8 +671,7 @@ class $FollowsTableManager extends i0.RootTableManager<
     i1.Follow,
     i1.$FollowsFilterComposer,
     i1.$FollowsOrderingComposer,
-    $FollowsProcessedTableManager,
-    $FollowsInsertCompanionBuilder,
+    $FollowsCreateCompanionBuilder,
     $FollowsUpdateCompanionBuilder> {
   $FollowsTableManager(i0.GeneratedDatabase db, i1.Follows table)
       : super(i0.TableManagerState(
@@ -696,8 +681,7 @@ class $FollowsTableManager extends i0.RootTableManager<
               i1.$FollowsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$FollowsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $FollowsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> followed = const i0.Value.absent(),
             i0.Value<int> follower = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -707,7 +691,7 @@ class $FollowsTableManager extends i0.RootTableManager<
             follower: follower,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required int followed,
             required int follower,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -718,18 +702,6 @@ class $FollowsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $FollowsProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Follows,
-    i1.Follow,
-    i1.$FollowsFilterComposer,
-    i1.$FollowsOrderingComposer,
-    $FollowsProcessedTableManager,
-    $FollowsInsertCompanionBuilder,
-    $FollowsUpdateCompanionBuilder> {
-  $FollowsProcessedTableManager(super.$state);
 }
 
 class $FollowsFilterComposer

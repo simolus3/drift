@@ -162,6 +162,15 @@ class User extends DataClass implements Insertable<User> {
         birthday: birthday.present ? birthday.value : this.birthday,
         nextUser: nextUser.present ? nextUser.value : this.nextUser,
       );
+  User copyWithCompanion(UsersCompanion data) {
+    return User(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      birthday: data.birthday.present ? data.birthday.value : this.birthday,
+      nextUser: data.nextUser.present ? data.nextUser.value : this.nextUser,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('User(')
@@ -417,6 +426,15 @@ class Group extends DataClass implements Insertable<Group> {
         deleted: deleted.present ? deleted.value : this.deleted,
         owner: owner ?? this.owner,
       );
+  Group copyWithCompanion(GroupsCompanion data) {
+    return Group(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      owner: data.owner.present ? data.owner.value : this.owner,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Group(')
@@ -650,6 +668,15 @@ class Note extends DataClass implements Insertable<Note> {
         content: content ?? this.content,
         searchTerms: searchTerms ?? this.searchTerms,
       );
+  Note copyWithCompanion(NotesCompanion data) {
+    return Note(
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      searchTerms:
+          data.searchTerms.present ? data.searchTerms.value : this.searchTerms,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Note(')
@@ -902,7 +929,7 @@ abstract class _$Database extends GeneratedDatabase {
       const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
-typedef $$UsersTableInsertCompanionBuilder = UsersCompanion Function({
+typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
   Value<int> id,
   Value<String> name,
   Value<DateTime?> birthday,
@@ -921,8 +948,7 @@ class $$UsersTableTableManager extends RootTableManager<
     User,
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
-    $$UsersTableInsertCompanionBuilder,
+    $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
@@ -932,8 +958,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$UsersTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<DateTime?> birthday = const Value.absent(),
@@ -945,7 +970,7 @@ class $$UsersTableTableManager extends RootTableManager<
             birthday: birthday,
             nextUser: nextUser,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<DateTime?> birthday = const Value.absent(),
@@ -958,18 +983,6 @@ class $$UsersTableTableManager extends RootTableManager<
             nextUser: nextUser,
           ),
         ));
-}
-
-class $$UsersTableProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableProcessedTableManager,
-    $$UsersTableInsertCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
-  $$UsersTableProcessedTableManager(super.$state);
 }
 
 class $$UsersTableFilterComposer
@@ -1047,7 +1060,7 @@ class $$UsersTableOrderingComposer
   }
 }
 
-typedef $GroupsInsertCompanionBuilder = GroupsCompanion Function({
+typedef $GroupsCreateCompanionBuilder = GroupsCompanion Function({
   Value<int> id,
   required String title,
   Value<bool?> deleted,
@@ -1066,8 +1079,7 @@ class $GroupsTableManager extends RootTableManager<
     Group,
     $GroupsFilterComposer,
     $GroupsOrderingComposer,
-    $GroupsProcessedTableManager,
-    $GroupsInsertCompanionBuilder,
+    $GroupsCreateCompanionBuilder,
     $GroupsUpdateCompanionBuilder> {
   $GroupsTableManager(_$Database db, Groups table)
       : super(TableManagerState(
@@ -1075,8 +1087,7 @@ class $GroupsTableManager extends RootTableManager<
           table: table,
           filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
           orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $GroupsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<bool?> deleted = const Value.absent(),
@@ -1088,7 +1099,7 @@ class $GroupsTableManager extends RootTableManager<
             deleted: deleted,
             owner: owner,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String title,
             Value<bool?> deleted = const Value.absent(),
@@ -1101,18 +1112,6 @@ class $GroupsTableManager extends RootTableManager<
             owner: owner,
           ),
         ));
-}
-
-class $GroupsProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    Groups,
-    Group,
-    $GroupsFilterComposer,
-    $GroupsOrderingComposer,
-    $GroupsProcessedTableManager,
-    $GroupsInsertCompanionBuilder,
-    $GroupsUpdateCompanionBuilder> {
-  $GroupsProcessedTableManager(super.$state);
 }
 
 class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
@@ -1175,7 +1174,7 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
   }
 }
 
-typedef $NotesInsertCompanionBuilder = NotesCompanion Function({
+typedef $NotesCreateCompanionBuilder = NotesCompanion Function({
   required String title,
   required String content,
   required String searchTerms,
@@ -1194,8 +1193,7 @@ class $NotesTableManager extends RootTableManager<
     Note,
     $NotesFilterComposer,
     $NotesOrderingComposer,
-    $NotesProcessedTableManager,
-    $NotesInsertCompanionBuilder,
+    $NotesCreateCompanionBuilder,
     $NotesUpdateCompanionBuilder> {
   $NotesTableManager(_$Database db, Notes table)
       : super(TableManagerState(
@@ -1203,8 +1201,7 @@ class $NotesTableManager extends RootTableManager<
           table: table,
           filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
           orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $NotesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<String> title = const Value.absent(),
             Value<String> content = const Value.absent(),
             Value<String> searchTerms = const Value.absent(),
@@ -1216,7 +1213,7 @@ class $NotesTableManager extends RootTableManager<
             searchTerms: searchTerms,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String title,
             required String content,
             required String searchTerms,
@@ -1229,18 +1226,6 @@ class $NotesTableManager extends RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $NotesProcessedTableManager extends ProcessedTableManager<
-    _$Database,
-    Notes,
-    Note,
-    $NotesFilterComposer,
-    $NotesOrderingComposer,
-    $NotesProcessedTableManager,
-    $NotesInsertCompanionBuilder,
-    $NotesUpdateCompanionBuilder> {
-  $NotesProcessedTableManager(super.$state);
 }
 
 class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {

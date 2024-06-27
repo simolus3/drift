@@ -383,4 +383,29 @@ void main() {
             .count(),
         completion(1));
   });
+
+  test('manager - multiple filters', () async {
+    await db.managers.tableWithEveryColumnType.create((o) => o(
+        aText: Value("person"),
+        anIntEnum: Value(TodoStatus.open),
+        aReal: Value(5.0),
+        aDateTime: Value(DateTime.now().add(Duration(days: 1)))));
+    await db.managers.tableWithEveryColumnType.create((o) => o(
+        aText: Value("person"),
+        anIntEnum: Value(TodoStatus.open),
+        aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
+    await db.managers.tableWithEveryColumnType.create((o) => o(
+        aText: Value("drink"),
+        anIntEnum: Value(TodoStatus.open),
+        aReal: Value(3.0),
+        aDateTime: Value(DateTime.now().add(Duration(days: 3)))));
+
+    // By default, all filters are AND
+    expect(
+        db.managers.tableWithEveryColumnType
+            .filter((f) => f.aText("person"))
+            .filter((f) => f.aReal(5.0))
+            .count(),
+        completion(1));
+  });
 }

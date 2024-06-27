@@ -219,7 +219,7 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
   }
 }
 
-typedef $$ShoppingCartsTableInsertCompanionBuilder = i2.ShoppingCartsCompanion
+typedef $$ShoppingCartsTableCreateCompanionBuilder = i2.ShoppingCartsCompanion
     Function({
   i0.Value<int> id,
   required i3.ShoppingCartEntries entries,
@@ -236,8 +236,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
     i2.ShoppingCart,
     i2.$$ShoppingCartsTableFilterComposer,
     i2.$$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableProcessedTableManager,
-    $$ShoppingCartsTableInsertCompanionBuilder,
+    $$ShoppingCartsTableCreateCompanionBuilder,
     $$ShoppingCartsTableUpdateCompanionBuilder> {
   $$ShoppingCartsTableTableManager(
       i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
@@ -248,9 +247,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ShoppingCartsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
           }) =>
@@ -258,7 +255,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
             id: id,
             entries: entries,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required i3.ShoppingCartEntries entries,
           }) =>
@@ -267,19 +264,6 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
             entries: entries,
           ),
         ));
-}
-
-class $$ShoppingCartsTableProcessedTableManager
-    extends i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i2.$ShoppingCartsTable,
-        i2.ShoppingCart,
-        i2.$$ShoppingCartsTableFilterComposer,
-        i2.$$ShoppingCartsTableOrderingComposer,
-        $$ShoppingCartsTableProcessedTableManager,
-        $$ShoppingCartsTableInsertCompanionBuilder,
-        $$ShoppingCartsTableUpdateCompanionBuilder> {
-  $$ShoppingCartsTableProcessedTableManager(super.$state);
 }
 
 class $$ShoppingCartsTableFilterComposer

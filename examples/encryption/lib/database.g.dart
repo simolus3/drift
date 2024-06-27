@@ -191,7 +191,7 @@ abstract class _$MyEncryptedDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [notes];
 }
 
-typedef $$NotesTableInsertCompanionBuilder = NotesCompanion Function({
+typedef $$NotesTableCreateCompanionBuilder = NotesCompanion Function({
   Value<int> id,
   required String content,
 });
@@ -206,8 +206,7 @@ class $$NotesTableTableManager extends RootTableManager<
     Note,
     $$NotesTableFilterComposer,
     $$NotesTableOrderingComposer,
-    $$NotesTableProcessedTableManager,
-    $$NotesTableInsertCompanionBuilder,
+    $$NotesTableCreateCompanionBuilder,
     $$NotesTableUpdateCompanionBuilder> {
   $$NotesTableTableManager(_$MyEncryptedDatabase db, $NotesTable table)
       : super(TableManagerState(
@@ -217,8 +216,7 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$NotesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$NotesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
           }) =>
@@ -226,7 +224,7 @@ class $$NotesTableTableManager extends RootTableManager<
             id: id,
             content: content,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String content,
           }) =>
@@ -235,18 +233,6 @@ class $$NotesTableTableManager extends RootTableManager<
             content: content,
           ),
         ));
-}
-
-class $$NotesTableProcessedTableManager extends ProcessedTableManager<
-    _$MyEncryptedDatabase,
-    $NotesTable,
-    Note,
-    $$NotesTableFilterComposer,
-    $$NotesTableOrderingComposer,
-    $$NotesTableProcessedTableManager,
-    $$NotesTableInsertCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder> {
-  $$NotesTableProcessedTableManager(super.$state);
 }
 
 class $$NotesTableFilterComposer

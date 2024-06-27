@@ -214,7 +214,7 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [entries];
 }
 
-typedef $EntriesInsertCompanionBuilder = EntriesCompanion Function({
+typedef $EntriesCreateCompanionBuilder = EntriesCompanion Function({
   Value<int> id,
   required String value,
 });
@@ -229,8 +229,7 @@ class $EntriesTableManager extends RootTableManager<
     Entry,
     $EntriesFilterComposer,
     $EntriesOrderingComposer,
-    $EntriesProcessedTableManager,
-    $EntriesInsertCompanionBuilder,
+    $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder> {
   $EntriesTableManager(_$MyDatabase db, Entries table)
       : super(TableManagerState(
@@ -238,8 +237,7 @@ class $EntriesTableManager extends RootTableManager<
           table: table,
           filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
           orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $EntriesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
           }) =>
@@ -247,7 +245,7 @@ class $EntriesTableManager extends RootTableManager<
             id: id,
             value: value,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String value,
           }) =>
@@ -256,18 +254,6 @@ class $EntriesTableManager extends RootTableManager<
             value: value,
           ),
         ));
-}
-
-class $EntriesProcessedTableManager extends ProcessedTableManager<
-    _$MyDatabase,
-    Entries,
-    Entry,
-    $EntriesFilterComposer,
-    $EntriesOrderingComposer,
-    $EntriesProcessedTableManager,
-    $EntriesInsertCompanionBuilder,
-    $EntriesUpdateCompanionBuilder> {
-  $EntriesProcessedTableManager(super.$state);
 }
 
 class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {

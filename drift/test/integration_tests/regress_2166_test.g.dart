@@ -200,7 +200,7 @@ abstract class _$_SomeDb extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [someTable];
 }
 
-typedef $$_SomeTableTableInsertCompanionBuilder = _SomeTableCompanion Function({
+typedef $$_SomeTableTableCreateCompanionBuilder = _SomeTableCompanion Function({
   Value<int> id,
   Value<String?> name,
 });
@@ -215,8 +215,7 @@ class $$_SomeTableTableTableManager extends RootTableManager<
     _SomeTableData,
     $$_SomeTableTableFilterComposer,
     $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableProcessedTableManager,
-    $$_SomeTableTableInsertCompanionBuilder,
+    $$_SomeTableTableCreateCompanionBuilder,
     $$_SomeTableTableUpdateCompanionBuilder> {
   $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
       : super(TableManagerState(
@@ -226,9 +225,7 @@ class $$_SomeTableTableTableManager extends RootTableManager<
               $$_SomeTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$_SomeTableTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
           }) =>
@@ -236,7 +233,7 @@ class $$_SomeTableTableTableManager extends RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
           }) =>
@@ -245,18 +242,6 @@ class $$_SomeTableTableTableManager extends RootTableManager<
             name: name,
           ),
         ));
-}
-
-class $$_SomeTableTableProcessedTableManager extends ProcessedTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableProcessedTableManager,
-    $$_SomeTableTableInsertCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder> {
-  $$_SomeTableTableProcessedTableManager(super.$state);
 }
 
 class $$_SomeTableTableFilterComposer

@@ -284,7 +284,14 @@ extension DateFilters<T extends DateTime> on ColumnFilters<T> {
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
-enum _BooleanOperator { and, or }
+///  Enum of the possible boolean operators
+enum _BooleanOperator {
+  /// Combine the existing filters to the new filter with an AND
+  and,
+
+  /// Combine the existing filters to the new filter with an OR
+  or;
+}
 
 /// This class is used to compose filters together
 ///

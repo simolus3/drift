@@ -19,7 +19,7 @@ Map<String, dynamic> _$DriftElementIdToJson(DriftElementId instance) =>
 
 DriftDeclaration _$DriftDeclarationFromJson(Map json) => DriftDeclaration(
       Uri.parse(json['source_uri'] as String),
-      json['offset'] as int,
+      (json['offset'] as num).toInt(),
       json['name'] as String?,
     );
 

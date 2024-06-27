@@ -86,6 +86,12 @@ class Foo extends DataClass implements Insertable<Foo> {
   Foo copyWith({int? id}) => Foo(
         id: id ?? this.id,
       );
+  Foo copyWithCompanion(FoosCompanion data) {
+    return Foo(
+      id: data.id.present ? data.id.value : this.id,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Foo(')
@@ -224,6 +230,12 @@ class Bar extends DataClass implements Insertable<Bar> {
   Bar copyWith({int? id}) => Bar(
         id: id ?? this.id,
       );
+  Bar copyWithCompanion(BarsCompanion data) {
+    return Bar(
+      id: data.id.present ? data.id.value : this.id,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Bar(')

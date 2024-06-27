@@ -229,7 +229,7 @@ class PeriodicRemindersCompanion
   }
 }
 
-typedef $$PeriodicRemindersTableInsertCompanionBuilder
+typedef $$PeriodicRemindersTableCreateCompanionBuilder
     = i1.PeriodicRemindersCompanion Function({
   i0.Value<int> id,
   i0.Value<Duration> frequency,
@@ -248,8 +248,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
     i1.PeriodicReminder,
     i1.$$PeriodicRemindersTableFilterComposer,
     i1.$$PeriodicRemindersTableOrderingComposer,
-    $$PeriodicRemindersTableProcessedTableManager,
-    $$PeriodicRemindersTableInsertCompanionBuilder,
+    $$PeriodicRemindersTableCreateCompanionBuilder,
     $$PeriodicRemindersTableUpdateCompanionBuilder> {
   $$PeriodicRemindersTableTableManager(
       i0.GeneratedDatabase db, i1.$PeriodicRemindersTable table)
@@ -260,9 +259,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           orderingComposer: i1.$$PeriodicRemindersTableOrderingComposer(
               i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$PeriodicRemindersTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<Duration> frequency = const i0.Value.absent(),
             i0.Value<String> reminder = const i0.Value.absent(),
@@ -272,7 +269,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
             frequency: frequency,
             reminder: reminder,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<Duration> frequency = const i0.Value.absent(),
             required String reminder,
@@ -283,19 +280,6 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
             reminder: reminder,
           ),
         ));
-}
-
-class $$PeriodicRemindersTableProcessedTableManager
-    extends i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i1.$PeriodicRemindersTable,
-        i1.PeriodicReminder,
-        i1.$$PeriodicRemindersTableFilterComposer,
-        i1.$$PeriodicRemindersTableOrderingComposer,
-        $$PeriodicRemindersTableProcessedTableManager,
-        $$PeriodicRemindersTableInsertCompanionBuilder,
-        $$PeriodicRemindersTableUpdateCompanionBuilder> {
-  $$PeriodicRemindersTableProcessedTableManager(super.$state);
 }
 
 class $$PeriodicRemindersTableFilterComposer extends i0

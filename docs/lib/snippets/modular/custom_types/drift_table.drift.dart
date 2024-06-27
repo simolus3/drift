@@ -231,7 +231,7 @@ class PeriodicRemindersCompanion
   }
 }
 
-typedef $PeriodicRemindersInsertCompanionBuilder = i1.PeriodicRemindersCompanion
+typedef $PeriodicRemindersCreateCompanionBuilder = i1.PeriodicRemindersCompanion
     Function({
   i0.Value<int> id,
   required Duration frequency,
@@ -250,8 +250,7 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
     i1.PeriodicReminder,
     i1.$PeriodicRemindersFilterComposer,
     i1.$PeriodicRemindersOrderingComposer,
-    $PeriodicRemindersProcessedTableManager,
-    $PeriodicRemindersInsertCompanionBuilder,
+    $PeriodicRemindersCreateCompanionBuilder,
     $PeriodicRemindersUpdateCompanionBuilder> {
   $PeriodicRemindersTableManager(
       i0.GeneratedDatabase db, i1.PeriodicReminders table)
@@ -262,9 +261,7 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
               i1.$PeriodicRemindersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$PeriodicRemindersOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $PeriodicRemindersProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<Duration> frequency = const i0.Value.absent(),
             i0.Value<String> reminder = const i0.Value.absent(),
@@ -274,7 +271,7 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
             frequency: frequency,
             reminder: reminder,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required Duration frequency,
             required String reminder,
@@ -285,18 +282,6 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
             reminder: reminder,
           ),
         ));
-}
-
-class $PeriodicRemindersProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.PeriodicReminders,
-    i1.PeriodicReminder,
-    i1.$PeriodicRemindersFilterComposer,
-    i1.$PeriodicRemindersOrderingComposer,
-    $PeriodicRemindersProcessedTableManager,
-    $PeriodicRemindersInsertCompanionBuilder,
-    $PeriodicRemindersUpdateCompanionBuilder> {
-  $PeriodicRemindersProcessedTableManager(super.$state);
 }
 
 class $PeriodicRemindersFilterComposer

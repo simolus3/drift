@@ -268,7 +268,7 @@ class TodosCompanion extends i0.UpdateCompanion<i1.Todo> {
   }
 }
 
-typedef $TodosInsertCompanionBuilder = i1.TodosCompanion Function({
+typedef $TodosCreateCompanionBuilder = i1.TodosCompanion Function({
   i0.Value<int> id,
   required String title,
   required String content,
@@ -287,8 +287,7 @@ class $TodosTableManager extends i0.RootTableManager<
     i1.Todo,
     i1.$TodosFilterComposer,
     i1.$TodosOrderingComposer,
-    $TodosProcessedTableManager,
-    $TodosInsertCompanionBuilder,
+    $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder> {
   $TodosTableManager(i0.GeneratedDatabase db, i1.Todos table)
       : super(i0.TableManagerState(
@@ -298,8 +297,7 @@ class $TodosTableManager extends i0.RootTableManager<
               i1.$TodosFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$TodosOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $TodosProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
@@ -311,7 +309,7 @@ class $TodosTableManager extends i0.RootTableManager<
             content: content,
             category: category,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String title,
             required String content,
@@ -324,18 +322,6 @@ class $TodosTableManager extends i0.RootTableManager<
             category: category,
           ),
         ));
-}
-
-class $TodosProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Todos,
-    i1.Todo,
-    i1.$TodosFilterComposer,
-    i1.$TodosOrderingComposer,
-    $TodosProcessedTableManager,
-    $TodosInsertCompanionBuilder,
-    $TodosUpdateCompanionBuilder> {
-  $TodosProcessedTableManager(super.$state);
 }
 
 class $TodosFilterComposer
@@ -595,7 +581,7 @@ class CategoriesCompanion extends i0.UpdateCompanion<i1.Category> {
   }
 }
 
-typedef $CategoriesInsertCompanionBuilder = i1.CategoriesCompanion Function({
+typedef $CategoriesCreateCompanionBuilder = i1.CategoriesCompanion Function({
   i0.Value<int> id,
   required String description,
 });
@@ -610,8 +596,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
     i1.Category,
     i1.$CategoriesFilterComposer,
     i1.$CategoriesOrderingComposer,
-    $CategoriesProcessedTableManager,
-    $CategoriesInsertCompanionBuilder,
+    $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder> {
   $CategoriesTableManager(i0.GeneratedDatabase db, i1.Categories table)
       : super(i0.TableManagerState(
@@ -621,8 +606,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
               i1.$CategoriesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$CategoriesOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $CategoriesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
           }) =>
@@ -630,7 +614,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
             id: id,
             description: description,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String description,
           }) =>
@@ -639,18 +623,6 @@ class $CategoriesTableManager extends i0.RootTableManager<
             description: description,
           ),
         ));
-}
-
-class $CategoriesProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Categories,
-    i1.Category,
-    i1.$CategoriesFilterComposer,
-    i1.$CategoriesOrderingComposer,
-    $CategoriesProcessedTableManager,
-    $CategoriesInsertCompanionBuilder,
-    $CategoriesUpdateCompanionBuilder> {
-  $CategoriesProcessedTableManager(super.$state);
 }
 
 class $CategoriesFilterComposer

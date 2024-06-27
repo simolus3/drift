@@ -45,9 +45,7 @@ class _TableManagerWriter {
         dbClassName: dbClassName,
         leaf: leaf,
         updateCompanionBuilder: updateCompanionBuilder,
-        insertCompanionBuilder: insertCompanionBuilder));
-    leaf.write(_templates.processedTableManager(
-        table: table, dbClassName: dbClassName, leaf: leaf));
+        createCompanionBuilder: insertCompanionBuilder));
 
     // Gather the relationships to and from this table
     List<_Relation> relations =

@@ -225,7 +225,7 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
   }
 }
 
-typedef $PostsInsertCompanionBuilder = i1.PostsCompanion Function({
+typedef $PostsCreateCompanionBuilder = i1.PostsCompanion Function({
   i0.Value<int> id,
   required int author,
   i0.Value<String?> content,
@@ -242,8 +242,7 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
-    $PostsProcessedTableManager,
-    $PostsInsertCompanionBuilder,
+    $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
@@ -253,8 +252,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $PostsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),
@@ -264,7 +262,7 @@ class $PostsTableManager extends i0.RootTableManager<
             author: author,
             content: content,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required int author,
             i0.Value<String?> content = const i0.Value.absent(),
@@ -275,18 +273,6 @@ class $PostsTableManager extends i0.RootTableManager<
             content: content,
           ),
         ));
-}
-
-class $PostsProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Posts,
-    i1.Post,
-    i1.$PostsFilterComposer,
-    i1.$PostsOrderingComposer,
-    $PostsProcessedTableManager,
-    $PostsInsertCompanionBuilder,
-    $PostsUpdateCompanionBuilder> {
-  $PostsProcessedTableManager(super.$state);
 }
 
 class $PostsFilterComposer
@@ -547,7 +533,7 @@ class LikesCompanion extends i0.UpdateCompanion<i1.Like> {
   }
 }
 
-typedef $LikesInsertCompanionBuilder = i1.LikesCompanion Function({
+typedef $LikesCreateCompanionBuilder = i1.LikesCompanion Function({
   required int post,
   required int likedBy,
   i0.Value<int> rowid,
@@ -564,8 +550,7 @@ class $LikesTableManager extends i0.RootTableManager<
     i1.Like,
     i1.$LikesFilterComposer,
     i1.$LikesOrderingComposer,
-    $LikesProcessedTableManager,
-    $LikesInsertCompanionBuilder,
+    $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
       : super(i0.TableManagerState(
@@ -575,8 +560,7 @@ class $LikesTableManager extends i0.RootTableManager<
               i1.$LikesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$LikesOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $LikesProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> post = const i0.Value.absent(),
             i0.Value<int> likedBy = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -586,7 +570,7 @@ class $LikesTableManager extends i0.RootTableManager<
             likedBy: likedBy,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required int post,
             required int likedBy,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -597,18 +581,6 @@ class $LikesTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $LikesProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Likes,
-    i1.Like,
-    i1.$LikesFilterComposer,
-    i1.$LikesOrderingComposer,
-    $LikesProcessedTableManager,
-    $LikesInsertCompanionBuilder,
-    $LikesUpdateCompanionBuilder> {
-  $LikesProcessedTableManager(super.$state);
 }
 
 class $LikesFilterComposer

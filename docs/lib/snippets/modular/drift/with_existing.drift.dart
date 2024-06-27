@@ -119,7 +119,7 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   }
 }
 
-typedef $UsersInsertCompanionBuilder = i2.UsersCompanion Function({
+typedef $UsersCreateCompanionBuilder = i2.UsersCompanion Function({
   i0.Value<int> id,
   required String name,
 });
@@ -134,8 +134,7 @@ class $UsersTableManager extends i0.RootTableManager<
     i1.User,
     i2.$UsersFilterComposer,
     i2.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
-    $UsersInsertCompanionBuilder,
+    $UsersCreateCompanionBuilder,
     $UsersUpdateCompanionBuilder> {
   $UsersTableManager(i0.GeneratedDatabase db, i2.Users table)
       : super(i0.TableManagerState(
@@ -145,8 +144,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i2.$UsersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i2.$UsersOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $UsersProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
           }) =>
@@ -154,7 +152,7 @@ class $UsersTableManager extends i0.RootTableManager<
             id: id,
             name: name,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             required String name,
           }) =>
@@ -163,18 +161,6 @@ class $UsersTableManager extends i0.RootTableManager<
             name: name,
           ),
         ));
-}
-
-class $UsersProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i2.Users,
-    i1.User,
-    i2.$UsersFilterComposer,
-    i2.$UsersOrderingComposer,
-    $UsersProcessedTableManager,
-    $UsersInsertCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
-  $UsersProcessedTableManager(super.$state);
 }
 
 class $UsersFilterComposer
@@ -403,7 +389,7 @@ class FriendsCompanion extends i0.UpdateCompanion<i2.Friend> {
   }
 }
 
-typedef $FriendsInsertCompanionBuilder = i2.FriendsCompanion Function({
+typedef $FriendsCreateCompanionBuilder = i2.FriendsCompanion Function({
   required int userA,
   required int userB,
   i0.Value<int> rowid,
@@ -420,8 +406,7 @@ class $FriendsTableManager extends i0.RootTableManager<
     i2.Friend,
     i2.$FriendsFilterComposer,
     i2.$FriendsOrderingComposer,
-    $FriendsProcessedTableManager,
-    $FriendsInsertCompanionBuilder,
+    $FriendsCreateCompanionBuilder,
     $FriendsUpdateCompanionBuilder> {
   $FriendsTableManager(i0.GeneratedDatabase db, i2.Friends table)
       : super(i0.TableManagerState(
@@ -431,8 +416,7 @@ class $FriendsTableManager extends i0.RootTableManager<
               i2.$FriendsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i2.$FriendsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $FriendsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<int> userA = const i0.Value.absent(),
             i0.Value<int> userB = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -442,7 +426,7 @@ class $FriendsTableManager extends i0.RootTableManager<
             userB: userB,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required int userA,
             required int userB,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -453,18 +437,6 @@ class $FriendsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $FriendsProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i2.Friends,
-    i2.Friend,
-    i2.$FriendsFilterComposer,
-    i2.$FriendsOrderingComposer,
-    $FriendsProcessedTableManager,
-    $FriendsInsertCompanionBuilder,
-    $FriendsUpdateCompanionBuilder> {
-  $FriendsProcessedTableManager(super.$state);
 }
 
 class $FriendsFilterComposer

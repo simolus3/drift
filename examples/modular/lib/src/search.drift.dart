@@ -211,7 +211,7 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
   }
 }
 
-typedef $SearchInPostsInsertCompanionBuilder = i1.SearchInPostsCompanion
+typedef $SearchInPostsCreateCompanionBuilder = i1.SearchInPostsCompanion
     Function({
   required String author,
   required String content,
@@ -230,8 +230,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
     i1.SearchInPost,
     i1.$SearchInPostsFilterComposer,
     i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsProcessedTableManager,
-    $SearchInPostsInsertCompanionBuilder,
+    $SearchInPostsCreateCompanionBuilder,
     $SearchInPostsUpdateCompanionBuilder> {
   $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
       : super(i0.TableManagerState(
@@ -241,8 +240,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $SearchInPostsProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -252,7 +250,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
             content: content,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String author,
             required String content,
             i0.Value<int> rowid = const i0.Value.absent(),
@@ -263,18 +261,6 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
         ));
-}
-
-class $SearchInPostsProcessedTableManager extends i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsProcessedTableManager,
-    $SearchInPostsInsertCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder> {
-  $SearchInPostsProcessedTableManager(super.$state);
 }
 
 class $SearchInPostsFilterComposer

@@ -107,6 +107,13 @@ class TestTableData extends DataClass implements Insertable<TestTableData> {
         id: id ?? this.id,
         content: content ?? this.content,
       );
+  TestTableData copyWithCompanion(TestTableCompanion data) {
+    return TestTableData(
+      id: data.id.present ? data.id.value : this.id,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TestTableData(')
@@ -187,7 +194,7 @@ abstract class _$TestDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [testTable];
 }
 
-typedef $$TestTableTableInsertCompanionBuilder = TestTableCompanion Function({
+typedef $$TestTableTableCreateCompanionBuilder = TestTableCompanion Function({
   Value<int> id,
   required String content,
 });
@@ -202,8 +209,7 @@ class $$TestTableTableTableManager extends RootTableManager<
     TestTableData,
     $$TestTableTableFilterComposer,
     $$TestTableTableOrderingComposer,
-    $$TestTableTableProcessedTableManager,
-    $$TestTableTableInsertCompanionBuilder,
+    $$TestTableTableCreateCompanionBuilder,
     $$TestTableTableUpdateCompanionBuilder> {
   $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
       : super(TableManagerState(
@@ -213,9 +219,7 @@ class $$TestTableTableTableManager extends RootTableManager<
               $$TestTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TestTableTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TestTableTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
           }) =>
@@ -223,7 +227,7 @@ class $$TestTableTableTableManager extends RootTableManager<
             id: id,
             content: content,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String content,
           }) =>
@@ -232,18 +236,6 @@ class $$TestTableTableTableManager extends RootTableManager<
             content: content,
           ),
         ));
-}
-
-class $$TestTableTableProcessedTableManager extends ProcessedTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableProcessedTableManager,
-    $$TestTableTableInsertCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder> {
-  $$TestTableTableProcessedTableManager(super.$state);
 }
 
 class $$TestTableTableFilterComposer
