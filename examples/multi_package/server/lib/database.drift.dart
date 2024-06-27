@@ -260,7 +260,9 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
     i3.$$ActiveSessionsTableFilterComposer,
     i3.$$ActiveSessionsTableOrderingComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
-    $$ActiveSessionsTableUpdateCompanionBuilder> {
+    $$ActiveSessionsTableUpdateCompanionBuilder,
+    $$ActiveSessionsTableWithReferences,
+    i3.ActiveSession> {
   $$ActiveSessionsTableTableManager(
       i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
       : super(i0.TableManagerState(
@@ -270,6 +272,9 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
               .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
               i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async => p0
+              .map((e) => $$ActiveSessionsTableWithReferences(db, e))
+              .toList(),
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
             i0.Value<String> bearerToken = const i0.Value.absent(),
@@ -292,6 +297,17 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i3.$ActiveSessionsTable,
+    i3.ActiveSession,
+    i3.$$ActiveSessionsTableFilterComposer,
+    i3.$$ActiveSessionsTableOrderingComposer,
+    $$ActiveSessionsTableCreateCompanionBuilder,
+    $$ActiveSessionsTableUpdateCompanionBuilder,
+    $$ActiveSessionsTableWithReferences,
+    i3.ActiveSession>;
 
 class $$ActiveSessionsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
@@ -343,4 +359,11 @@ class $$ActiveSessionsTableOrderingComposer
                 parentComposers)));
     return composer;
   }
+}
+
+class $$ActiveSessionsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i3.ActiveSession i3ActiveSession;
+  $$ActiveSessionsTableWithReferences(this._db, this.i3ActiveSession);
 }

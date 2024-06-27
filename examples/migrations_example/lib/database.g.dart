@@ -949,7 +949,9 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    User> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
           db: db,
@@ -958,6 +960,8 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -984,6 +988,17 @@ class $$UsersTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    User>;
 
 class $$UsersTableFilterComposer
     extends FilterComposer<_$Database, $UsersTable> {
@@ -1060,6 +1075,24 @@ class $$UsersTableOrderingComposer
   }
 }
 
+class $$UsersTableWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final User user;
+  $$UsersTableWithReferences(this._db, this.user);
+
+  $$UsersTableProcessedTableManager? get nextUser {
+    if (user.nextUser == null) return null;
+    return $$UsersTableTableManager(_db, _db.users)
+        .filter((f) => f.id(user.nextUser!));
+  }
+
+  $GroupsProcessedTableManager get groupsRefs {
+    return $GroupsTableManager(_db, _db.groups)
+        .filter((f) => f.owner.id(user.id));
+  }
+}
+
 typedef $GroupsCreateCompanionBuilder = GroupsCompanion Function({
   Value<int> id,
   required String title,
@@ -1080,13 +1113,17 @@ class $GroupsTableManager extends RootTableManager<
     $GroupsFilterComposer,
     $GroupsOrderingComposer,
     $GroupsCreateCompanionBuilder,
-    $GroupsUpdateCompanionBuilder> {
+    $GroupsUpdateCompanionBuilder,
+    $GroupsWithReferences,
+    Group> {
   $GroupsTableManager(_$Database db, Groups table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
           orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $GroupsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -1113,6 +1150,17 @@ class $GroupsTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $GroupsProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    Groups,
+    Group,
+    $GroupsFilterComposer,
+    $GroupsOrderingComposer,
+    $GroupsCreateCompanionBuilder,
+    $GroupsUpdateCompanionBuilder,
+    $GroupsWithReferences,
+    Group>;
 
 class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
   $GroupsFilterComposer(super.$state);
@@ -1174,6 +1222,19 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
   }
 }
 
+class $GroupsWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final Group group;
+  $GroupsWithReferences(this._db, this.group);
+
+  $$UsersTableProcessedTableManager? get owner {
+    if (group.owner == null) return null;
+    return $$UsersTableTableManager(_db, _db.users)
+        .filter((f) => f.id(group.owner!));
+  }
+}
+
 typedef $NotesCreateCompanionBuilder = NotesCompanion Function({
   required String title,
   required String content,
@@ -1194,13 +1255,17 @@ class $NotesTableManager extends RootTableManager<
     $NotesFilterComposer,
     $NotesOrderingComposer,
     $NotesCreateCompanionBuilder,
-    $NotesUpdateCompanionBuilder> {
+    $NotesUpdateCompanionBuilder,
+    $NotesWithReferences,
+    Note> {
   $NotesTableManager(_$Database db, Notes table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
           orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $NotesWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String> title = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -1227,6 +1292,17 @@ class $NotesTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $NotesProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    Notes,
+    Note,
+    $NotesFilterComposer,
+    $NotesOrderingComposer,
+    $NotesCreateCompanionBuilder,
+    $NotesUpdateCompanionBuilder,
+    $NotesWithReferences,
+    Note>;
 
 class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {
   $NotesFilterComposer(super.$state);
@@ -1262,6 +1338,13 @@ class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
       column: $state.table.searchTerms,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $NotesWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final Note note;
+  $NotesWithReferences(this._db, this.note);
 }
 
 class $DatabaseManager {

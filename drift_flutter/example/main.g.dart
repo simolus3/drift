@@ -110,6 +110,14 @@ class ExampleTableData extends DataClass
         id: id ?? this.id,
         description: description ?? this.description,
       );
+  ExampleTableData copyWithCompanion(ExampleTableCompanion data) {
+    return ExampleTableData(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ExampleTableData(')
@@ -181,7 +189,7 @@ class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
 
 abstract class _$ExampleDatabase extends GeneratedDatabase {
   _$ExampleDatabase(QueryExecutor e) : super(e);
-  _$ExampleDatabaseManager get managers => _$ExampleDatabaseManager(this);
+  $ExampleDatabaseManager get managers => $ExampleDatabaseManager(this);
   late final $ExampleTableTable exampleTable = $ExampleTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -190,7 +198,7 @@ abstract class _$ExampleDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [exampleTable];
 }
 
-typedef $$ExampleTableTableInsertCompanionBuilder = ExampleTableCompanion
+typedef $$ExampleTableTableCreateCompanionBuilder = ExampleTableCompanion
     Function({
   Value<int> id,
   required String description,
@@ -207,9 +215,10 @@ class $$ExampleTableTableTableManager extends RootTableManager<
     ExampleTableData,
     $$ExampleTableTableFilterComposer,
     $$ExampleTableTableOrderingComposer,
-    $$ExampleTableTableProcessedTableManager,
-    $$ExampleTableTableInsertCompanionBuilder,
-    $$ExampleTableTableUpdateCompanionBuilder> {
+    $$ExampleTableTableCreateCompanionBuilder,
+    $$ExampleTableTableUpdateCompanionBuilder,
+    $$ExampleTableTableWithReferences,
+    ExampleTableData> {
   $$ExampleTableTableTableManager(
       _$ExampleDatabase db, $ExampleTableTable table)
       : super(TableManagerState(
@@ -219,9 +228,9 @@ class $$ExampleTableTableTableManager extends RootTableManager<
               $$ExampleTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ExampleTableTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ExampleTableTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$ExampleTableTableWithReferences(db, e)).toList(),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
           }) =>
@@ -229,7 +238,7 @@ class $$ExampleTableTableTableManager extends RootTableManager<
             id: id,
             description: description,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String description,
           }) =>
@@ -240,17 +249,16 @@ class $$ExampleTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$ExampleTableTableProcessedTableManager extends ProcessedTableManager<
+typedef $$ExampleTableTableProcessedTableManager = ProcessedTableManager<
     _$ExampleDatabase,
     $ExampleTableTable,
     ExampleTableData,
     $$ExampleTableTableFilterComposer,
     $$ExampleTableTableOrderingComposer,
-    $$ExampleTableTableProcessedTableManager,
-    $$ExampleTableTableInsertCompanionBuilder,
-    $$ExampleTableTableUpdateCompanionBuilder> {
-  $$ExampleTableTableProcessedTableManager(super.$state);
-}
+    $$ExampleTableTableCreateCompanionBuilder,
+    $$ExampleTableTableUpdateCompanionBuilder,
+    $$ExampleTableTableWithReferences,
+    ExampleTableData>;
 
 class $$ExampleTableTableFilterComposer
     extends FilterComposer<_$ExampleDatabase, $ExampleTableTable> {
@@ -280,9 +288,16 @@ class $$ExampleTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$ExampleDatabaseManager {
+class $$ExampleTableTableWithReferences {
+  // ignore: unused_field
   final _$ExampleDatabase _db;
-  _$ExampleDatabaseManager(this._db);
+  final ExampleTableData exampleTableData;
+  $$ExampleTableTableWithReferences(this._db, this.exampleTableData);
+}
+
+class $ExampleDatabaseManager {
+  final _$ExampleDatabase _db;
+  $ExampleDatabaseManager(this._db);
   $$ExampleTableTableTableManager get exampleTable =>
       $$ExampleTableTableTableManager(_db, _db.exampleTable);
 }

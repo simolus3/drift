@@ -249,7 +249,9 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
     i1.$$PeriodicRemindersTableFilterComposer,
     i1.$$PeriodicRemindersTableOrderingComposer,
     $$PeriodicRemindersTableCreateCompanionBuilder,
-    $$PeriodicRemindersTableUpdateCompanionBuilder> {
+    $$PeriodicRemindersTableUpdateCompanionBuilder,
+    $$PeriodicRemindersTableWithReferences,
+    i1.PeriodicReminder> {
   $$PeriodicRemindersTableTableManager(
       i0.GeneratedDatabase db, i1.$PeriodicRemindersTable table)
       : super(i0.TableManagerState(
@@ -259,6 +261,9 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           orderingComposer: i1.$$PeriodicRemindersTableOrderingComposer(
               i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async => p0
+              .map((e) => $$PeriodicRemindersTableWithReferences(db, e))
+              .toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<Duration> frequency = const i0.Value.absent(),
@@ -281,6 +286,18 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$PeriodicRemindersTableProcessedTableManager
+    = i0.ProcessedTableManager<
+        i0.GeneratedDatabase,
+        i1.$PeriodicRemindersTable,
+        i1.PeriodicReminder,
+        i1.$$PeriodicRemindersTableFilterComposer,
+        i1.$$PeriodicRemindersTableOrderingComposer,
+        $$PeriodicRemindersTableCreateCompanionBuilder,
+        $$PeriodicRemindersTableUpdateCompanionBuilder,
+        $$PeriodicRemindersTableWithReferences,
+        i1.PeriodicReminder>;
 
 class $$PeriodicRemindersTableFilterComposer extends i0
     .FilterComposer<i0.GeneratedDatabase, i1.$PeriodicRemindersTable> {
@@ -318,4 +335,11 @@ class $$PeriodicRemindersTableOrderingComposer extends i0
       column: $state.table.reminder,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$PeriodicRemindersTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.PeriodicReminder i1PeriodicReminder;
+  $$PeriodicRemindersTableWithReferences(this._db, this.i1PeriodicReminder);
 }

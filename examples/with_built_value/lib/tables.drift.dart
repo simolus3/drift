@@ -197,7 +197,9 @@ class $UsersTableManager extends i0.RootTableManager<
     i1.$UsersFilterComposer,
     i1.$UsersOrderingComposer,
     $UsersCreateCompanionBuilder,
-    $UsersUpdateCompanionBuilder> {
+    $UsersUpdateCompanionBuilder,
+    $UsersWithReferences,
+    i1.User> {
   $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
       : super(i0.TableManagerState(
           db: db,
@@ -206,6 +208,8 @@ class $UsersTableManager extends i0.RootTableManager<
               i1.$UsersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $UsersWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -224,6 +228,17 @@ class $UsersTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Users,
+    i1.User,
+    i1.$UsersFilterComposer,
+    i1.$UsersOrderingComposer,
+    $UsersCreateCompanionBuilder,
+    $UsersUpdateCompanionBuilder,
+    $UsersWithReferences,
+    i1.User>;
 
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
@@ -251,4 +266,11 @@ class $UsersOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $UsersWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.User i1User;
+  $UsersWithReferences(this._db, this.i1User);
 }

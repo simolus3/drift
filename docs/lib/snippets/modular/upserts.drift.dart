@@ -212,7 +212,9 @@ class $$WordsTableTableManager extends i0.RootTableManager<
     i1.$$WordsTableFilterComposer,
     i1.$$WordsTableOrderingComposer,
     $$WordsTableCreateCompanionBuilder,
-    $$WordsTableUpdateCompanionBuilder> {
+    $$WordsTableUpdateCompanionBuilder,
+    $$WordsTableWithReferences,
+    i1.Word> {
   $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
       : super(i0.TableManagerState(
           db: db,
@@ -221,6 +223,8 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$WordsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
@@ -243,6 +247,17 @@ class $$WordsTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$WordsTable,
+    i1.Word,
+    i1.$$WordsTableFilterComposer,
+    i1.$$WordsTableOrderingComposer,
+    $$WordsTableCreateCompanionBuilder,
+    $$WordsTableUpdateCompanionBuilder,
+    $$WordsTableWithReferences,
+    i1.Word>;
 
 class $$WordsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
@@ -270,6 +285,13 @@ class $$WordsTableOrderingComposer
       column: $state.table.usages,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$WordsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Word i1Word;
+  $$WordsTableWithReferences(this._db, this.i1Word);
 }
 
 class $MatchResultsTable extends i2.MatchResults
@@ -561,7 +583,9 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
     i1.$$MatchResultsTableFilterComposer,
     i1.$$MatchResultsTableOrderingComposer,
     $$MatchResultsTableCreateCompanionBuilder,
-    $$MatchResultsTableUpdateCompanionBuilder> {
+    $$MatchResultsTableUpdateCompanionBuilder,
+    $$MatchResultsTableWithReferences,
+    i1.MatchResult> {
   $$MatchResultsTableTableManager(
       i0.GeneratedDatabase db, i1.$MatchResultsTable table)
       : super(i0.TableManagerState(
@@ -571,6 +595,8 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$MatchResultsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
@@ -597,6 +623,17 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$MatchResultsTable,
+    i1.MatchResult,
+    i1.$$MatchResultsTableFilterComposer,
+    i1.$$MatchResultsTableOrderingComposer,
+    $$MatchResultsTableCreateCompanionBuilder,
+    $$MatchResultsTableUpdateCompanionBuilder,
+    $$MatchResultsTableWithReferences,
+    i1.MatchResult>;
 
 class $$MatchResultsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
@@ -644,4 +681,11 @@ class $$MatchResultsTableOrderingComposer
       column: $state.table.teamAWon,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$MatchResultsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.MatchResult i1MatchResult;
+  $$MatchResultsTableWithReferences(this._db, this.i1MatchResult);
 }

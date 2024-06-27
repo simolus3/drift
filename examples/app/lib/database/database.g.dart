@@ -762,7 +762,9 @@ class $$CategoriesTableTableManager extends RootTableManager<
     $$CategoriesTableFilterComposer,
     $$CategoriesTableOrderingComposer,
     $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder> {
+    $$CategoriesTableUpdateCompanionBuilder,
+    $$CategoriesTableWithReferences,
+    Category> {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
       : super(TableManagerState(
           db: db,
@@ -771,6 +773,8 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$CategoriesTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$CategoriesTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -793,6 +797,17 @@ class $$CategoriesTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CategoriesTable,
+    Category,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    $$CategoriesTableWithReferences,
+    Category>;
 
 class $$CategoriesTableFilterComposer
     extends FilterComposer<_$AppDatabase, $CategoriesTable> {
@@ -847,6 +862,18 @@ class $$CategoriesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$CategoriesTableWithReferences {
+  // ignore: unused_field
+  final _$AppDatabase _db;
+  final Category category;
+  $$CategoriesTableWithReferences(this._db, this.category);
+
+  $$TodoEntriesTableProcessedTableManager get todoEntriesRefs {
+    return $$TodoEntriesTableTableManager(_db, _db.todoEntries)
+        .filter((f) => f.category.id(category.id));
+  }
+}
+
 typedef $$TodoEntriesTableCreateCompanionBuilder = TodoEntriesCompanion
     Function({
   Value<int> id,
@@ -869,7 +896,9 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
     $$TodoEntriesTableFilterComposer,
     $$TodoEntriesTableOrderingComposer,
     $$TodoEntriesTableCreateCompanionBuilder,
-    $$TodoEntriesTableUpdateCompanionBuilder> {
+    $$TodoEntriesTableUpdateCompanionBuilder,
+    $$TodoEntriesTableWithReferences,
+    TodoEntry> {
   $$TodoEntriesTableTableManager(_$AppDatabase db, $TodoEntriesTable table)
       : super(TableManagerState(
           db: db,
@@ -878,6 +907,8 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
               $$TodoEntriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoEntriesTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$TodoEntriesTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -904,6 +935,17 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$TodoEntriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $TodoEntriesTable,
+    TodoEntry,
+    $$TodoEntriesTableFilterComposer,
+    $$TodoEntriesTableOrderingComposer,
+    $$TodoEntriesTableCreateCompanionBuilder,
+    $$TodoEntriesTableUpdateCompanionBuilder,
+    $$TodoEntriesTableWithReferences,
+    TodoEntry>;
 
 class $$TodoEntriesTableFilterComposer
     extends FilterComposer<_$AppDatabase, $TodoEntriesTable> {
@@ -967,6 +1009,19 @@ class $$TodoEntriesTableOrderingComposer
   }
 }
 
+class $$TodoEntriesTableWithReferences {
+  // ignore: unused_field
+  final _$AppDatabase _db;
+  final TodoEntry todoEntry;
+  $$TodoEntriesTableWithReferences(this._db, this.todoEntry);
+
+  $$CategoriesTableProcessedTableManager? get category {
+    if (todoEntry.category == null) return null;
+    return $$CategoriesTableTableManager(_db, _db.categories)
+        .filter((f) => f.id(todoEntry.category!));
+  }
+}
+
 typedef $TextEntriesCreateCompanionBuilder = TextEntriesCompanion Function({
   required String description,
   Value<int> rowid,
@@ -983,7 +1038,9 @@ class $TextEntriesTableManager extends RootTableManager<
     $TextEntriesFilterComposer,
     $TextEntriesOrderingComposer,
     $TextEntriesCreateCompanionBuilder,
-    $TextEntriesUpdateCompanionBuilder> {
+    $TextEntriesUpdateCompanionBuilder,
+    $TextEntriesWithReferences,
+    TextEntry> {
   $TextEntriesTableManager(_$AppDatabase db, TextEntries table)
       : super(TableManagerState(
           db: db,
@@ -992,6 +1049,8 @@ class $TextEntriesTableManager extends RootTableManager<
               $TextEntriesFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $TextEntriesOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $TextEntriesWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String> description = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -1011,6 +1070,17 @@ class $TextEntriesTableManager extends RootTableManager<
         ));
 }
 
+typedef $TextEntriesProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    TextEntries,
+    TextEntry,
+    $TextEntriesFilterComposer,
+    $TextEntriesOrderingComposer,
+    $TextEntriesCreateCompanionBuilder,
+    $TextEntriesUpdateCompanionBuilder,
+    $TextEntriesWithReferences,
+    TextEntry>;
+
 class $TextEntriesFilterComposer
     extends FilterComposer<_$AppDatabase, TextEntries> {
   $TextEntriesFilterComposer(super.$state);
@@ -1027,6 +1097,13 @@ class $TextEntriesOrderingComposer
       column: $state.table.description,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $TextEntriesWithReferences {
+  // ignore: unused_field
+  final _$AppDatabase _db;
+  final TextEntry textEntry;
+  $TextEntriesWithReferences(this._db, this.textEntry);
 }
 
 class $AppDatabaseManager {

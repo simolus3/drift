@@ -216,7 +216,9 @@ class $$_SomeTableTableTableManager extends RootTableManager<
     $$_SomeTableTableFilterComposer,
     $$_SomeTableTableOrderingComposer,
     $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder> {
+    $$_SomeTableTableUpdateCompanionBuilder,
+    $$_SomeTableTableWithReferences,
+    _SomeTableData> {
   $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
       : super(TableManagerState(
           db: db,
@@ -225,6 +227,8 @@ class $$_SomeTableTableTableManager extends RootTableManager<
               $$_SomeTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$_SomeTableTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -243,6 +247,17 @@ class $$_SomeTableTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
+    _$_SomeDb,
+    $_SomeTableTable,
+    _SomeTableData,
+    $$_SomeTableTableFilterComposer,
+    $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableCreateCompanionBuilder,
+    $$_SomeTableTableUpdateCompanionBuilder,
+    $$_SomeTableTableWithReferences,
+    _SomeTableData>;
 
 class $$_SomeTableTableFilterComposer
     extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
@@ -270,6 +285,13 @@ class $$_SomeTableTableOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$_SomeTableTableWithReferences {
+  // ignore: unused_field
+  final _$_SomeDb _db;
+  final _SomeTableData someTableData;
+  $$_SomeTableTableWithReferences(this._db, this.someTableData);
 }
 
 class $_SomeDbManager {

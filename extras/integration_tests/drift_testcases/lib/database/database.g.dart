@@ -740,7 +740,9 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    User> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
           db: db,
@@ -749,6 +751,8 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -779,6 +783,17 @@ class $$UsersTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    User>;
 
 class $$UsersTableFilterComposer
     extends FilterComposer<_$Database, $UsersTable> {
@@ -840,6 +855,13 @@ class $$UsersTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$UsersTableWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final User user;
+  $$UsersTableWithReferences(this._db, this.user);
+}
+
 typedef $$FriendshipsTableCreateCompanionBuilder = FriendshipsCompanion
     Function({
   required int firstUser,
@@ -862,7 +884,9 @@ class $$FriendshipsTableTableManager extends RootTableManager<
     $$FriendshipsTableFilterComposer,
     $$FriendshipsTableOrderingComposer,
     $$FriendshipsTableCreateCompanionBuilder,
-    $$FriendshipsTableUpdateCompanionBuilder> {
+    $$FriendshipsTableUpdateCompanionBuilder,
+    $$FriendshipsTableWithReferences,
+    Friendship> {
   $$FriendshipsTableTableManager(_$Database db, $FriendshipsTable table)
       : super(TableManagerState(
           db: db,
@@ -871,6 +895,8 @@ class $$FriendshipsTableTableManager extends RootTableManager<
               $$FriendshipsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$FriendshipsTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$FriendshipsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> firstUser = const Value.absent(),
             Value<int> secondUser = const Value.absent(),
@@ -897,6 +923,17 @@ class $$FriendshipsTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$FriendshipsTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $FriendshipsTable,
+    Friendship,
+    $$FriendshipsTableFilterComposer,
+    $$FriendshipsTableOrderingComposer,
+    $$FriendshipsTableCreateCompanionBuilder,
+    $$FriendshipsTableUpdateCompanionBuilder,
+    $$FriendshipsTableWithReferences,
+    Friendship>;
 
 class $$FriendshipsTableFilterComposer
     extends FilterComposer<_$Database, $FriendshipsTable> {
@@ -934,6 +971,13 @@ class $$FriendshipsTableOrderingComposer
       column: $state.table.reallyGoodFriends,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$FriendshipsTableWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final Friendship friendship;
+  $$FriendshipsTableWithReferences(this._db, this.friendship);
 }
 
 class $DatabaseManager {

@@ -732,7 +732,9 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
     $$TodoCategoriesTableFilterComposer,
     $$TodoCategoriesTableOrderingComposer,
     $$TodoCategoriesTableCreateCompanionBuilder,
-    $$TodoCategoriesTableUpdateCompanionBuilder> {
+    $$TodoCategoriesTableUpdateCompanionBuilder,
+    $$TodoCategoriesTableWithReferences,
+    TodoCategory> {
   $$TodoCategoriesTableTableManager(_$Database db, $TodoCategoriesTable table)
       : super(TableManagerState(
           db: db,
@@ -741,6 +743,9 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
               $$TodoCategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoCategoriesTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async => p0
+              .map((e) => $$TodoCategoriesTableWithReferences(db, e))
+              .toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -759,6 +764,17 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $TodoCategoriesTable,
+    TodoCategory,
+    $$TodoCategoriesTableFilterComposer,
+    $$TodoCategoriesTableOrderingComposer,
+    $$TodoCategoriesTableCreateCompanionBuilder,
+    $$TodoCategoriesTableUpdateCompanionBuilder,
+    $$TodoCategoriesTableWithReferences,
+    TodoCategory>;
 
 class $$TodoCategoriesTableFilterComposer
     extends FilterComposer<_$Database, $TodoCategoriesTable> {
@@ -801,6 +817,18 @@ class $$TodoCategoriesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$TodoCategoriesTableWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final TodoCategory todoCategory;
+  $$TodoCategoriesTableWithReferences(this._db, this.todoCategory);
+
+  $$TodoItemsTableProcessedTableManager get todoItemsRefs {
+    return $$TodoItemsTableTableManager(_db, _db.todoItems)
+        .filter((f) => f.categoryId.id(todoCategory.id));
+  }
+}
+
 typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> id,
   required String title,
@@ -821,7 +849,9 @@ class $$TodoItemsTableTableManager extends RootTableManager<
     $$TodoItemsTableFilterComposer,
     $$TodoItemsTableOrderingComposer,
     $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder> {
+    $$TodoItemsTableUpdateCompanionBuilder,
+    $$TodoItemsTableWithReferences,
+    TodoItem> {
   $$TodoItemsTableTableManager(_$Database db, $TodoItemsTable table)
       : super(TableManagerState(
           db: db,
@@ -830,6 +860,8 @@ class $$TodoItemsTableTableManager extends RootTableManager<
               $$TodoItemsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoItemsTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$TodoItemsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -856,6 +888,17 @@ class $$TodoItemsTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $TodoItemsTable,
+    TodoItem,
+    $$TodoItemsTableFilterComposer,
+    $$TodoItemsTableOrderingComposer,
+    $$TodoItemsTableCreateCompanionBuilder,
+    $$TodoItemsTableUpdateCompanionBuilder,
+    $$TodoItemsTableWithReferences,
+    TodoItem>;
 
 class $$TodoItemsTableFilterComposer
     extends FilterComposer<_$Database, $TodoItemsTable> {
@@ -927,6 +970,19 @@ class $$TodoItemsTableOrderingComposer
                 $$TodoCategoriesTableOrderingComposer(ComposerState($state.db,
                     $state.db.todoCategories, joinBuilder, parentComposers)));
     return composer;
+  }
+}
+
+class $$TodoItemsTableWithReferences {
+  // ignore: unused_field
+  final _$Database _db;
+  final TodoItem todoItem;
+  $$TodoItemsTableWithReferences(this._db, this.todoItem);
+
+  $$TodoCategoriesTableProcessedTableManager? get categoryId {
+    if (todoItem.categoryId == null) return null;
+    return $$TodoCategoriesTableTableManager(_db, _db.todoCategories)
+        .filter((f) => f.id(todoItem.categoryId!));
   }
 }
 

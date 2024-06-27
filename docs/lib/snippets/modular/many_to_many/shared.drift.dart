@@ -248,7 +248,9 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
     i1.$$BuyableItemsTableFilterComposer,
     i1.$$BuyableItemsTableOrderingComposer,
     $$BuyableItemsTableCreateCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder> {
+    $$BuyableItemsTableUpdateCompanionBuilder,
+    $$BuyableItemsTableWithReferences,
+    i1.BuyableItem> {
   $$BuyableItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
       : super(i0.TableManagerState(
@@ -258,6 +260,8 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
               i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$BuyableItemsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -280,6 +284,17 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
+    $$BuyableItemsTableCreateCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder,
+    $$BuyableItemsTableWithReferences,
+    i1.BuyableItem>;
 
 class $$BuyableItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
@@ -317,4 +332,11 @@ class $$BuyableItemsTableOrderingComposer
       column: $state.table.price,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$BuyableItemsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.BuyableItem i1BuyableItem;
+  $$BuyableItemsTableWithReferences(this._db, this.i1BuyableItem);
 }

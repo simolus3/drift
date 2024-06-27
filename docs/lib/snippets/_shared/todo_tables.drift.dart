@@ -335,7 +335,9 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
     i1.$$TodoItemsTableFilterComposer,
     i1.$$TodoItemsTableOrderingComposer,
     $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder> {
+    $$TodoItemsTableUpdateCompanionBuilder,
+    $$TodoItemsTableWithReferences,
+    i1.TodoItem> {
   $$TodoItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$TodoItemsTable table)
       : super(i0.TableManagerState(
@@ -345,6 +347,8 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
               i1.$$TodoItemsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$TodoItemsTableOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$TodoItemsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
@@ -375,6 +379,17 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$TodoItemsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$TodoItemsTable,
+    i1.TodoItem,
+    i1.$$TodoItemsTableFilterComposer,
+    i1.$$TodoItemsTableOrderingComposer,
+    $$TodoItemsTableCreateCompanionBuilder,
+    $$TodoItemsTableUpdateCompanionBuilder,
+    $$TodoItemsTableWithReferences,
+    i1.TodoItem>;
 
 class $$TodoItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
@@ -457,6 +472,13 @@ class $$TodoItemsTableOrderingComposer
                     parentComposers)));
     return composer;
   }
+}
+
+class $$TodoItemsTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.TodoItem i1TodoItem;
+  $$TodoItemsTableWithReferences(this._db, this.i1TodoItem);
 }
 
 class $CategoriesTable extends i2.Categories
@@ -655,7 +677,9 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
     i1.$$CategoriesTableFilterComposer,
     i1.$$CategoriesTableOrderingComposer,
     $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder> {
+    $$CategoriesTableUpdateCompanionBuilder,
+    $$CategoriesTableWithReferences,
+    i1.Category> {
   $$CategoriesTableTableManager(
       i0.GeneratedDatabase db, i1.$CategoriesTable table)
       : super(i0.TableManagerState(
@@ -665,6 +689,8 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
               i1.$$CategoriesTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$CategoriesTableOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$CategoriesTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -683,6 +709,17 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$CategoriesTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$CategoriesTable,
+    i1.Category,
+    i1.$$CategoriesTableFilterComposer,
+    i1.$$CategoriesTableOrderingComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    $$CategoriesTableWithReferences,
+    i1.Category>;
 
 class $$CategoriesTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
@@ -710,6 +747,13 @@ class $$CategoriesTableOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$CategoriesTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Category i1Category;
+  $$CategoriesTableWithReferences(this._db, this.i1Category);
 }
 
 class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
@@ -908,7 +952,9 @@ class $$UsersTableTableManager extends i0.RootTableManager<
     i1.$$UsersTableFilterComposer,
     i1.$$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    i1.User> {
   $$UsersTableTableManager(i0.GeneratedDatabase db, i1.$UsersTable table)
       : super(i0.TableManagerState(
           db: db,
@@ -917,6 +963,8 @@ class $$UsersTableTableManager extends i0.RootTableManager<
               i1.$$UsersTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$UsersTableOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<DateTime> birthDate = const i0.Value.absent(),
@@ -935,6 +983,17 @@ class $$UsersTableTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$UsersTable,
+    i1.User,
+    i1.$$UsersTableFilterComposer,
+    i1.$$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    $$UsersTableWithReferences,
+    i1.User>;
 
 class $$UsersTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
@@ -962,4 +1021,11 @@ class $$UsersTableOrderingComposer
       column: $state.table.birthDate,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$UsersTableWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.User i1User;
+  $$UsersTableWithReferences(this._db, this.i1User);
 }

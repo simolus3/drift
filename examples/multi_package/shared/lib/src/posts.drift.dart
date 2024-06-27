@@ -223,7 +223,9 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
     $PostsCreateCompanionBuilder,
-    $PostsUpdateCompanionBuilder> {
+    $PostsUpdateCompanionBuilder,
+    $PostsWithReferences,
+    i1.Post> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
           db: db,
@@ -232,6 +234,8 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $PostsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),
@@ -254,6 +258,17 @@ class $PostsTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Posts,
+    i1.Post,
+    i1.$PostsFilterComposer,
+    i1.$PostsOrderingComposer,
+    $PostsCreateCompanionBuilder,
+    $PostsUpdateCompanionBuilder,
+    $PostsWithReferences,
+    i1.Post>;
 
 class $PostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Posts> {
@@ -305,4 +320,11 @@ class $PostsOrderingComposer
                 parentComposers)));
     return composer;
   }
+}
+
+class $PostsWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.Post i1Post;
+  $PostsWithReferences(this._db, this.i1Post);
 }

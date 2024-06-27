@@ -231,7 +231,9 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
     i1.$SearchInPostsFilterComposer,
     i1.$SearchInPostsOrderingComposer,
     $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder> {
+    $SearchInPostsUpdateCompanionBuilder,
+    $SearchInPostsWithReferences,
+    i1.SearchInPost> {
   $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
       : super(i0.TableManagerState(
           db: db,
@@ -240,6 +242,8 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $SearchInPostsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
@@ -262,6 +266,17 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    i1.$SearchInPostsFilterComposer,
+    i1.$SearchInPostsOrderingComposer,
+    $SearchInPostsCreateCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder,
+    $SearchInPostsWithReferences,
+    i1.SearchInPost>;
 
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
@@ -289,6 +304,13 @@ class $SearchInPostsOrderingComposer
       column: $state.table.content,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $SearchInPostsWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.SearchInPost i1SearchInPost;
+  $SearchInPostsWithReferences(this._db, this.i1SearchInPost);
 }
 
 i0.Trigger get postsInsert => i0.Trigger(

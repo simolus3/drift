@@ -252,7 +252,9 @@ class $GeopolyTestTableManager extends RootTableManager<
     $GeopolyTestFilterComposer,
     $GeopolyTestOrderingComposer,
     $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder> {
+    $GeopolyTestUpdateCompanionBuilder,
+    $GeopolyTestWithReferences,
+    GeopolyTestData> {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
       : super(TableManagerState(
           db: db,
@@ -261,6 +263,8 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $GeopolyTestOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $GeopolyTestWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
@@ -283,6 +287,17 @@ class $GeopolyTestTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
+    _$_GeopolyTestDatabase,
+    GeopolyTest,
+    GeopolyTestData,
+    $GeopolyTestFilterComposer,
+    $GeopolyTestOrderingComposer,
+    $GeopolyTestCreateCompanionBuilder,
+    $GeopolyTestUpdateCompanionBuilder,
+    $GeopolyTestWithReferences,
+    GeopolyTestData>;
 
 class $GeopolyTestFilterComposer
     extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
@@ -310,6 +325,13 @@ class $GeopolyTestOrderingComposer
       column: $state.table.a,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $GeopolyTestWithReferences {
+  // ignore: unused_field
+  final _$_GeopolyTestDatabase _db;
+  final GeopolyTestData geopolyTestData;
+  $GeopolyTestWithReferences(this._db, this.geopolyTestData);
 }
 
 class $_GeopolyTestDatabaseManager {

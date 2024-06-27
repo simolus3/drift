@@ -251,7 +251,9 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
     i1.$PeriodicRemindersFilterComposer,
     i1.$PeriodicRemindersOrderingComposer,
     $PeriodicRemindersCreateCompanionBuilder,
-    $PeriodicRemindersUpdateCompanionBuilder> {
+    $PeriodicRemindersUpdateCompanionBuilder,
+    $PeriodicRemindersWithReferences,
+    i1.PeriodicReminder> {
   $PeriodicRemindersTableManager(
       i0.GeneratedDatabase db, i1.PeriodicReminders table)
       : super(i0.TableManagerState(
@@ -261,6 +263,8 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
               i1.$PeriodicRemindersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$PeriodicRemindersOrderingComposer(i0.ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $PeriodicRemindersWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<Duration> frequency = const i0.Value.absent(),
@@ -283,6 +287,17 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
           ),
         ));
 }
+
+typedef $PeriodicRemindersProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.PeriodicReminders,
+    i1.PeriodicReminder,
+    i1.$PeriodicRemindersFilterComposer,
+    i1.$PeriodicRemindersOrderingComposer,
+    $PeriodicRemindersCreateCompanionBuilder,
+    $PeriodicRemindersUpdateCompanionBuilder,
+    $PeriodicRemindersWithReferences,
+    i1.PeriodicReminder>;
 
 class $PeriodicRemindersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.PeriodicReminders> {
@@ -320,4 +335,11 @@ class $PeriodicRemindersOrderingComposer
       column: $state.table.reminder,
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $PeriodicRemindersWithReferences {
+  // ignore: unused_field
+  final i0.GeneratedDatabase _db;
+  final i1.PeriodicReminder i1PeriodicReminder;
+  $PeriodicRemindersWithReferences(this._db, this.i1PeriodicReminder);
 }

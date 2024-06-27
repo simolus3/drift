@@ -207,7 +207,9 @@ class $$NotesTableTableManager extends RootTableManager<
     $$NotesTableFilterComposer,
     $$NotesTableOrderingComposer,
     $$NotesTableCreateCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder> {
+    $$NotesTableUpdateCompanionBuilder,
+    $$NotesTableWithReferences,
+    Note> {
   $$NotesTableTableManager(_$MyEncryptedDatabase db, $NotesTable table)
       : super(TableManagerState(
           db: db,
@@ -216,6 +218,8 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$NotesTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $$NotesTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -234,6 +238,17 @@ class $$NotesTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
+    _$MyEncryptedDatabase,
+    $NotesTable,
+    Note,
+    $$NotesTableFilterComposer,
+    $$NotesTableOrderingComposer,
+    $$NotesTableCreateCompanionBuilder,
+    $$NotesTableUpdateCompanionBuilder,
+    $$NotesTableWithReferences,
+    Note>;
 
 class $$NotesTableFilterComposer
     extends FilterComposer<_$MyEncryptedDatabase, $NotesTable> {
@@ -261,6 +276,13 @@ class $$NotesTableOrderingComposer
       column: $state.table.content,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$NotesTableWithReferences {
+  // ignore: unused_field
+  final _$MyEncryptedDatabase _db;
+  final Note note;
+  $$NotesTableWithReferences(this._db, this.note);
 }
 
 class $MyEncryptedDatabaseManager {

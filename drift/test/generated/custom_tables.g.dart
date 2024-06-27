@@ -2038,13 +2038,17 @@ class $NoIdsTableManager extends RootTableManager<
     $NoIdsFilterComposer,
     $NoIdsOrderingComposer,
     $NoIdsCreateCompanionBuilder,
-    $NoIdsUpdateCompanionBuilder> {
+    $NoIdsUpdateCompanionBuilder,
+    $NoIdsWithReferences,
+    NoIdRow> {
   $NoIdsTableManager(_$CustomTablesDb db, NoIds table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $NoIdsFilterComposer(ComposerState(db, table)),
           orderingComposer: $NoIdsOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $NoIdsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<Uint8List> payload = const Value.absent(),
           }) =>
@@ -2060,6 +2064,17 @@ class $NoIdsTableManager extends RootTableManager<
         ));
 }
 
+typedef $NoIdsProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    NoIds,
+    NoIdRow,
+    $NoIdsFilterComposer,
+    $NoIdsOrderingComposer,
+    $NoIdsCreateCompanionBuilder,
+    $NoIdsUpdateCompanionBuilder,
+    $NoIdsWithReferences,
+    NoIdRow>;
+
 class $NoIdsFilterComposer extends FilterComposer<_$CustomTablesDb, NoIds> {
   $NoIdsFilterComposer(super.$state);
   ColumnFilters<Uint8List> get payload => $state.composableBuilder(
@@ -2074,6 +2089,13 @@ class $NoIdsOrderingComposer extends OrderingComposer<_$CustomTablesDb, NoIds> {
       column: $state.table.payload,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $NoIdsWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final NoIdRow noIdRow;
+  $NoIdsWithReferences(this._db, this.noIdRow);
 }
 
 typedef $WithDefaultsCreateCompanionBuilder = WithDefaultsCompanion Function({
@@ -2094,7 +2116,9 @@ class $WithDefaultsTableManager extends RootTableManager<
     $WithDefaultsFilterComposer,
     $WithDefaultsOrderingComposer,
     $WithDefaultsCreateCompanionBuilder,
-    $WithDefaultsUpdateCompanionBuilder> {
+    $WithDefaultsUpdateCompanionBuilder,
+    $WithDefaultsWithReferences,
+    WithDefault> {
   $WithDefaultsTableManager(_$CustomTablesDb db, WithDefaults table)
       : super(TableManagerState(
           db: db,
@@ -2103,6 +2127,8 @@ class $WithDefaultsTableManager extends RootTableManager<
               $WithDefaultsFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $WithDefaultsOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $WithDefaultsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
             Value<int?> b = const Value.absent(),
@@ -2125,6 +2151,17 @@ class $WithDefaultsTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $WithDefaultsProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    WithDefaults,
+    WithDefault,
+    $WithDefaultsFilterComposer,
+    $WithDefaultsOrderingComposer,
+    $WithDefaultsCreateCompanionBuilder,
+    $WithDefaultsUpdateCompanionBuilder,
+    $WithDefaultsWithReferences,
+    WithDefault>;
 
 class $WithDefaultsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithDefaults> {
@@ -2154,6 +2191,13 @@ class $WithDefaultsOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $WithDefaultsWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final WithDefault withDefault;
+  $WithDefaultsWithReferences(this._db, this.withDefault);
+}
+
 typedef $WithConstraintsCreateCompanionBuilder = WithConstraintsCompanion
     Function({
   Value<String?> a,
@@ -2176,7 +2220,9 @@ class $WithConstraintsTableManager extends RootTableManager<
     $WithConstraintsFilterComposer,
     $WithConstraintsOrderingComposer,
     $WithConstraintsCreateCompanionBuilder,
-    $WithConstraintsUpdateCompanionBuilder> {
+    $WithConstraintsUpdateCompanionBuilder,
+    $WithConstraintsWithReferences,
+    WithConstraint> {
   $WithConstraintsTableManager(_$CustomTablesDb db, WithConstraints table)
       : super(TableManagerState(
           db: db,
@@ -2185,6 +2231,8 @@ class $WithConstraintsTableManager extends RootTableManager<
               $WithConstraintsFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $WithConstraintsOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $WithConstraintsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
             Value<int> b = const Value.absent(),
@@ -2211,6 +2259,17 @@ class $WithConstraintsTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $WithConstraintsProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    WithConstraints,
+    WithConstraint,
+    $WithConstraintsFilterComposer,
+    $WithConstraintsOrderingComposer,
+    $WithConstraintsCreateCompanionBuilder,
+    $WithConstraintsUpdateCompanionBuilder,
+    $WithConstraintsWithReferences,
+    WithConstraint>;
 
 class $WithConstraintsFilterComposer
     extends FilterComposer<_$CustomTablesDb, WithConstraints> {
@@ -2250,6 +2309,13 @@ class $WithConstraintsOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $WithConstraintsWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final WithConstraint withConstraint;
+  $WithConstraintsWithReferences(this._db, this.withConstraint);
+}
+
 typedef $ConfigTableCreateCompanionBuilder = ConfigCompanion Function({
   required String configKey,
   Value<DriftAny?> configValue,
@@ -2272,7 +2338,9 @@ class $ConfigTableTableManager extends RootTableManager<
     $ConfigTableFilterComposer,
     $ConfigTableOrderingComposer,
     $ConfigTableCreateCompanionBuilder,
-    $ConfigTableUpdateCompanionBuilder> {
+    $ConfigTableUpdateCompanionBuilder,
+    $ConfigTableWithReferences,
+    Config> {
   $ConfigTableTableManager(_$CustomTablesDb db, ConfigTable table)
       : super(TableManagerState(
           db: db,
@@ -2281,6 +2349,8 @@ class $ConfigTableTableManager extends RootTableManager<
               $ConfigTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $ConfigTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $ConfigTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String> configKey = const Value.absent(),
             Value<DriftAny?> configValue = const Value.absent(),
@@ -2311,6 +2381,17 @@ class $ConfigTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $ConfigTableProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    ConfigTable,
+    Config,
+    $ConfigTableFilterComposer,
+    $ConfigTableOrderingComposer,
+    $ConfigTableCreateCompanionBuilder,
+    $ConfigTableUpdateCompanionBuilder,
+    $ConfigTableWithReferences,
+    Config>;
 
 class $ConfigTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, ConfigTable> {
@@ -2364,6 +2445,13 @@ class $ConfigTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $ConfigTableWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final Config config;
+  $ConfigTableWithReferences(this._db, this.config);
+}
+
 typedef $MytableCreateCompanionBuilder = MytableCompanion Function({
   Value<int> someid,
   Value<String?> sometext,
@@ -2384,13 +2472,17 @@ class $MytableTableManager extends RootTableManager<
     $MytableFilterComposer,
     $MytableOrderingComposer,
     $MytableCreateCompanionBuilder,
-    $MytableUpdateCompanionBuilder> {
+    $MytableUpdateCompanionBuilder,
+    $MytableWithReferences,
+    MytableData> {
   $MytableTableManager(_$CustomTablesDb db, Mytable table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $MytableFilterComposer(ComposerState(db, table)),
           orderingComposer: $MytableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $MytableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> someid = const Value.absent(),
             Value<String?> sometext = const Value.absent(),
@@ -2417,6 +2509,17 @@ class $MytableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $MytableProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    Mytable,
+    MytableData,
+    $MytableFilterComposer,
+    $MytableOrderingComposer,
+    $MytableCreateCompanionBuilder,
+    $MytableUpdateCompanionBuilder,
+    $MytableWithReferences,
+    MytableData>;
 
 class $MytableFilterComposer extends FilterComposer<_$CustomTablesDb, Mytable> {
   $MytableFilterComposer(super.$state);
@@ -2465,6 +2568,13 @@ class $MytableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $MytableWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final MytableData mytableData;
+  $MytableWithReferences(this._db, this.mytableData);
+}
+
 typedef $EmailCreateCompanionBuilder = EmailCompanion Function({
   required String sender,
   required String title,
@@ -2485,13 +2595,17 @@ class $EmailTableManager extends RootTableManager<
     $EmailFilterComposer,
     $EmailOrderingComposer,
     $EmailCreateCompanionBuilder,
-    $EmailUpdateCompanionBuilder> {
+    $EmailUpdateCompanionBuilder,
+    $EmailWithReferences,
+    EMail> {
   $EmailTableManager(_$CustomTablesDb db, Email table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $EmailFilterComposer(ComposerState(db, table)),
           orderingComposer: $EmailOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $EmailWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String> sender = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -2518,6 +2632,17 @@ class $EmailTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $EmailProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    Email,
+    EMail,
+    $EmailFilterComposer,
+    $EmailOrderingComposer,
+    $EmailCreateCompanionBuilder,
+    $EmailUpdateCompanionBuilder,
+    $EmailWithReferences,
+    EMail>;
 
 class $EmailFilterComposer extends FilterComposer<_$CustomTablesDb, Email> {
   $EmailFilterComposer(super.$state);
@@ -2555,6 +2680,13 @@ class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $EmailWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final EMail eMail;
+  $EmailWithReferences(this._db, this.eMail);
+}
+
 typedef $WeirdTableCreateCompanionBuilder = WeirdTableCompanion Function({
   required int sqlClass,
   required String textColumn,
@@ -2573,7 +2705,9 @@ class $WeirdTableTableManager extends RootTableManager<
     $WeirdTableFilterComposer,
     $WeirdTableOrderingComposer,
     $WeirdTableCreateCompanionBuilder,
-    $WeirdTableUpdateCompanionBuilder> {
+    $WeirdTableUpdateCompanionBuilder,
+    $WeirdTableWithReferences,
+    WeirdData> {
   $WeirdTableTableManager(_$CustomTablesDb db, WeirdTable table)
       : super(TableManagerState(
           db: db,
@@ -2582,6 +2716,8 @@ class $WeirdTableTableManager extends RootTableManager<
               $WeirdTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $WeirdTableOrderingComposer(ComposerState(db, table)),
+          dataclassMapper: (p0) async =>
+              p0.map((e) => $WeirdTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> sqlClass = const Value.absent(),
             Value<String> textColumn = const Value.absent(),
@@ -2604,6 +2740,17 @@ class $WeirdTableTableManager extends RootTableManager<
           ),
         ));
 }
+
+typedef $WeirdTableProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    WeirdTable,
+    WeirdData,
+    $WeirdTableFilterComposer,
+    $WeirdTableOrderingComposer,
+    $WeirdTableCreateCompanionBuilder,
+    $WeirdTableUpdateCompanionBuilder,
+    $WeirdTableWithReferences,
+    WeirdData>;
 
 class $WeirdTableFilterComposer
     extends FilterComposer<_$CustomTablesDb, WeirdTable> {
@@ -2631,6 +2778,13 @@ class $WeirdTableOrderingComposer
       column: $state.table.textColumn,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $WeirdTableWithReferences {
+  // ignore: unused_field
+  final _$CustomTablesDb _db;
+  final WeirdData weirdData;
+  $WeirdTableWithReferences(this._db, this.weirdData);
 }
 
 class $CustomTablesDbManager {
