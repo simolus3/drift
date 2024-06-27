@@ -111,4 +111,42 @@ abstract class TodoItemWithCategoryNameView extends View {
             .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.string)
             .having((e) => e.nullable, 'nullable', isTrue));
   });
+
+  test('generates unique column names for conflicts', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  IntColumn get id => integer()();
+}
+
+class MyView extends View {
+  MyTable get a;
+  MyTable get b;
+  MyTable get c;
+
+  @override
+  Query as() => select([
+    a.id,
+    b.id,
+    c.id,
+  ]).from(a).join([
+    innerJoin(b, b.id.equalsExp(a.id)),
+    innerJoin(c, c.id.equalsExp(a.id)),
+  ]);
+}
+
+@DriftDatabase(tables: [MyTable], views: [MyView])
+class Database {}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final view = file.analyzedElements.whereType<DriftView>().single;
+    expect(view.columns.map((e) => e.nameInDart), ['id', 'id1', 'id2']);
+    expect(view.columns.map((e) => e.nameInSql), ['id', 'id1', 'id2']);
+  });
 }
