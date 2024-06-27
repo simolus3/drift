@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: invalid_use_of_internal_member, unused_local_variable
 
 import 'package:drift/drift.dart';
 
@@ -44,8 +44,8 @@ class AppDatabase extends _$AppDatabase {
 }
 
 extension ManagerExamples on AppDatabase {
-  // #docregion manager_create
   Future<void> createTodoItem() async {
+    // #docregion manager_create
     // Create a new item
     await managers.todoItems
         .create((o) => o(title: 'Title', content: 'Content'));
@@ -63,11 +63,11 @@ extension ManagerExamples on AppDatabase {
         o(title: 'Title 2', content: 'Content 2'),
       ],
     );
+    // #enddocregion manager_create
   }
-  // #enddocregion manager_create
 
-  // #docregion manager_update
   Future<void> updateTodoItems() async {
+    // #docregion manager_update
     // Update all items
     await managers.todoItems.update((o) => o(content: Value('New Content')));
 
@@ -75,11 +75,11 @@ extension ManagerExamples on AppDatabase {
     await managers.todoItems
         .filter((f) => f.id.isIn([1, 2, 3]))
         .update((o) => o(content: Value('New Content')));
+    // #enddocregion manager_update
   }
-  // #enddocregion manager_update
 
-  // #docregion manager_replace
   Future<void> replaceTodoItems() async {
+    // #docregion manager_replace
     // Replace a single item
     var obj = await managers.todoItems.filter((o) => o.id(1)).getSingle();
     obj = obj.copyWith(content: 'New Content');
@@ -90,21 +90,21 @@ extension ManagerExamples on AppDatabase {
         await managers.todoItems.filter((o) => o.id.isIn([1, 2, 3])).get();
     objs = objs.map((o) => o.copyWith(content: 'New Content')).toList();
     await managers.todoItems.bulkReplace(objs);
+    // #enddocregion manager_replace
   }
-  // #enddocregion manager_replace
 
-  // #docregion manager_delete
   Future<void> deleteTodoItems() async {
+    // #docregion manager_delete
     // Delete all items
     await managers.todoItems.delete();
 
     // Delete a single item
     await managers.todoItems.filter((f) => f.id(5)).delete();
+    // #enddocregion manager_delete
   }
-  // #enddocregion manager_delete
 
-  // #docregion manager_select
   Future<void> selectTodoItems() async {
+    // #docregion manager_select
     // Get all items
     managers.todoItems.get();
 
@@ -113,11 +113,11 @@ extension ManagerExamples on AppDatabase {
 
     // To get a single item, apply a filter and call `getSingle`
     await managers.todoItems.filter((f) => f.id(1)).getSingle();
+    // #enddocregion manager_select
   }
-  // #enddocregion manager_select
 
-  // #docregion manager_filter
   Future<void> filterTodoItems() async {
+    // #docregion manager_filter
     // All items with a title of "Title"
     managers.todoItems.filter((f) => f.title("Title"));
 
@@ -126,52 +126,52 @@ extension ManagerExamples on AppDatabase {
 
     // All items with a title of "Title" or content that is not null
     managers.todoItems.filter((f) => f.title("Title") | f.content.not.isNull());
+    // #enddocregion manager_filter
   }
-  // #enddocregion manager_filter
 
-  // #docregion manager_type_specific_filter
   Future filterWithType() async {
+    // #docregion manager_type_specific_filter
     // Filter all items created since 7 days ago
     managers.todoItems.filter(
         (f) => f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))));
 
     // Filter all items with a title that starts with "Title"
     managers.todoItems.filter((f) => f.title.startsWith('Title'));
-  }
 // #enddocregion manager_type_specific_filter
+  }
 
-// #docregion manager_ordering
   Future orderWithType() async {
+// #docregion manager_ordering
     // Order all items by their creation date in ascending order
     managers.todoItems.orderBy((o) => o.createdAt.asc());
 
     // Order all items by their title in ascending order and then by their content in ascending order
     managers.todoItems.orderBy((o) => o.title.asc() & o.content.asc());
-  }
 // #enddocregion manager_ordering
+  }
 
-// #docregion manager_count
   Future count() async {
+// #docregion manager_count
     // Count all items
     await managers.todoItems.count();
 
     // Count all items with a title of "Title"
     await managers.todoItems.filter((f) => f.title("Title")).count();
-  }
 // #enddocregion manager_count
+  }
 
-// #docregion manager_exists
   Future exists() async {
+// #docregion manager_exists
     // Check if any items exist
     await managers.todoItems.exists();
 
     // Check if any items with a title of "Title" exist
     await managers.todoItems.filter((f) => f.title("Title")).exists();
-  }
 // #enddocregion manager_exists
+  }
 
-// #docregion manager_filter_forward_references
   Future relationalFilter() async {
+// #docregion manager_filter_forward_references
     // Get all items with a category description of "School"
     managers.todoItems.filter((f) => f.category.description("School"));
 
@@ -182,11 +182,11 @@ extension ManagerExamples on AppDatabase {
           (f) => f.title("Title") | f.category.description("School"),
         )
         .exists();
-  }
 // #enddocregion manager_filter_forward_references
+  }
 
-// #docregion manager_filter_back_references
   Future reverseRelationalFilter() async {
+// #docregion manager_filter_back_references
     // Get the category that has a todo item with an id of 1
     managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)));
 
@@ -195,11 +195,11 @@ extension ManagerExamples on AppDatabase {
     managers.todoCategory.filter(
       (f) => f.description("School") | f.todoItemsRefs((f) => f.id(1)),
     );
-  }
 // #enddocregion manager_filter_back_references
+  }
 
-// #docregion manager_filter_custom_back_references
   Future reverseNamedRelationalFilter() async {
+// #docregion manager_filter_custom_back_references
     // Get all users who are administrators of a group with a name containing "Business"
     // or who own a group with an id of 1, 2, 4, or 5
     managers.users.filter(
@@ -207,8 +207,41 @@ extension ManagerExamples on AppDatabase {
           f.administeredGroups((f) => f.name.contains("Business")) |
           f.ownedGroups((f) => f.id.isIn([1, 2, 4, 5])),
     );
-  }
 // #enddocregion manager_filter_custom_back_references
+  }
+
+  Future managerWithRefs() async {
+// #docregion manager_with_refs
+    final todoWithCategory = await managers.todoItems
+        .filter((f) => f.id(1))
+        .withReferences()
+        .getSingle();
+    final category = await todoWithCategory.category?.getSingle();
+
+    // You could also do nested references, even with a filter
+    // Here we will get the category of this todo item, with all the todo items in that category
+    final categoryWithTodos =
+        await todoWithCategory.category?.withReferences().getSingle();
+    // And now we can get all the todo items in that category
+    final allTodoInCategory = await categoryWithTodos?.todoItemsRefs.get();
+    // We could even filter it, so here is all the todo items in that category with a title of "Title"
+    final allTodoInCategoryWithTitle = await categoryWithTodos?.todoItemsRefs
+        .filter((f) => f.title("Title"))
+        .get();
+// #enddocregion manager_with_refs
+  }
+
+  Future managerWithRefsNPlus1() async {
+// #docregion manager_with_refs_n_plus_1
+    // Get all users with their referenced groups
+    final usersWithReferences = await managers.users.withReferences().get();
+    for (var i in usersWithReferences) {
+      final user = i.user;
+      final administeredGroups =
+          await i.administeredGroups.get(); // Will run many queries
+    }
+// #enddocregion manager_with_refs_n_plus_1
+  }
 }
 
 // #docregion manager_filter_extensions
