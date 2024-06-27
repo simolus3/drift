@@ -46,6 +46,8 @@ class _TableManagerWriter {
         leaf: leaf,
         updateCompanionBuilder: updateCompanionBuilder,
         createCompanionBuilder: insertCompanionBuilder));
+    leaf.write(_templates.processedTableManagerTypeDef(
+        table: table, dbClassName: dbClassName, leaf: leaf));
 
     // Gather the relationships to and from this table
     List<_Relation> relations =
@@ -136,6 +138,11 @@ class _TableManagerWriter {
         leaf: leaf,
         dbClassName: dbClassName,
         columnOrderings: columnOrderings));
+    leaf.write(_templates.rowClassWithReferences(
+        currentTable: table,
+        relations: relations,
+        leaf: leaf,
+        dbClassName: dbClassName));
   }
 }
 

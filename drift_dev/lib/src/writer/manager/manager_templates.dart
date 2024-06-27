@@ -54,6 +54,25 @@ class _ManagerCodeTemplates {
         .dartCode(leaf.generatedElement(table, rootTableManagerName(table)));
   }
 
+  /// Returns the name of the processed table manager class for a table
+  ///
+  /// This does not contain any prefixes, as this will always be generated in the same file
+  /// as the table manager and is not used outside of the file
+  ///
+  /// E.g. `$UserTableProcessedTableManager`
+  String processedTableManagerTypeDefName(DriftTable table) {
+    return '\$${table.entityInfoName}ProcessedTableManager';
+  }
+
+  /// Returns code for the processed table manager class
+  String processedTableManagerTypeDef({
+    required DriftTable table,
+    required String dbClassName,
+    required TextEmitter leaf,
+  }) {
+    return """typedef ${processedTableManagerTypeDefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)};""";
+  }
+
   /// Class which represents a table in the database
   /// Contains the prefix if the generation is modular
   /// E.g. `i0.UserTable`
@@ -65,6 +84,11 @@ class _ManagerCodeTemplates {
   /// E.g. `i0.User`
   String rowClassWithPrefix(DriftTable table, TextEmitter leaf) =>
       leaf.dartCode(leaf.writer.rowType(table));
+
+  /// Name of the class which is used to represent a row along with it's references
+  String rowWithReferencesClassName(DriftTable table) {
+    return '\$${table.entityInfoName}WithReferences';
+  }
 
   /// Name of this tables filter composer class
   String filterComposerNameWithPrefix(DriftTable table, TextEmitter leaf) {
@@ -179,7 +203,9 @@ class _ManagerCodeTemplates {
     ${filterComposerNameWithPrefix(table, leaf)},
     ${orderingComposerNameWithPrefix(table, leaf)},
     ${createCompanionBuilderTypeDef(table)},
-    ${updateCompanionBuilderTypeDefName(table)}>""";
+    ${updateCompanionBuilderTypeDefName(table)},
+    ${rowWithReferencesClassName(table)},
+    ${rowClassWithPrefix(table, leaf)}>""";
   }
 
   /// Code for getting a table from inside a composer
@@ -344,5 +370,44 @@ class _ManagerCodeTemplates {
           \$state.db, ${_referenceTableFromComposer(relation.referencedTable, leaf)}, joinBuilder, parentComposers
         ))
               );""";
+  }
+
+  /// Code for a row class which contains references to other tables
+  String? rowClassWithReferences(
+      {required DriftTable currentTable,
+      required List<_Relation> relations,
+      required TextEmitter leaf,
+      required String dbClassName}) {
+    final currentRowField = rowClassWithPrefix(currentTable, leaf).camelCase;
+    return """
+
+        class ${rowWithReferencesClassName(currentTable)} {
+        // ignore: unused_field
+        final ${databaseType(leaf, dbClassName)} _db;
+        final ${rowClassWithPrefix(currentTable, leaf)} $currentRowField;
+        ${rowWithReferencesClassName(currentTable)}(this._db, this.$currentRowField);
+
+        ${relations.map((relation) {
+      if (_scope.generationOptions.isModular) {
+        /// There is no support for references in modular generation
+        return "";
+      }
+      if (relation.isReverse) {
+        // For a reverse relation, we return a filtered table manager
+        return """
+        ${processedTableManagerTypeDefName(relation.referencedTable)} get ${relation.fieldName} {
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db,_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}($currentRowField.${relation.currentColumn.nameInDart}));
+        }
+        """;
+      } else {
+        return """
+        ${processedTableManagerTypeDefName(relation.referencedTable)}? get ${relation.fieldName} {
+          if ($currentRowField.${relation.currentColumn.nameInDart} == null) return null;
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db, _db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}($currentRowField.${relation.currentColumn.nameInDart}!));
+        }
+        """;
+      }
+    }).join('\n')}
+        }""";
   }
 }
