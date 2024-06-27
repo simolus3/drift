@@ -485,8 +485,18 @@ abstract class BaseTableManager<
       .watchSingleOrNull();
 }
 
-/// A table manager that exposes methods to a table manager that already has filters/orderings/limit applied
-//  As of now this is identical to [BaseTableManager] but it's kept seperate for future extensibility
+/// A table manager that exposes methods to a table manager that already has
+/// filters/orderings/limit applied.
+///
+/// Some methods, like [RootTableManager.create] are intentionally not present
+/// on [ProcessedTableManager] because combining e.g. [BaseTableManager.filter]
+/// with [RootTableManager.create] makes little sense - there is no `WHERE`
+/// clause on inserts.
+/// By introducing a separate interface for managers with filters applied to
+/// them, the API doesn't allow combining incompatible clauses and operations.
+///
+// As of now this is identical to [BaseTableManager] but it's kept seperate for
+// future extensibility.
 @immutable
 class ProcessedTableManager<
         $Database extends GeneratedDatabase,
@@ -503,7 +513,8 @@ class ProcessedTableManager<
   ProcessedTableManager(super.$state);
 }
 
-/// A table manager with top level function for creating, reading, updating, and deleting items
+/// A table manager with top level function for creating, reading, updating, and
+/// deleting items.
 @immutable
 abstract class RootTableManager<
         $Database extends GeneratedDatabase,
