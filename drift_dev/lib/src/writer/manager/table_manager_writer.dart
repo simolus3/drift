@@ -95,6 +95,28 @@ class _TableManagerWriter {
       return true;
     }).toList();
 
+    // Remove any relations where the type isnt exactly the same (num and int)
+    // This is caused by using different type converters
+    relations = relations.where((relation) {
+      String typeForColumn(DriftColumn column) {
+        return column.typeConverter?.dartType.getDisplayString(
+                withNullability: false) ?? // ignore: deprecated_member_use
+            leaf.dartCode(leaf.innerColumnType(column.sqlType));
+      }
+
+      final currentType = typeForColumn(relation.currentColumn);
+      final referencedType = typeForColumn(relation.referencedColumn);
+      if (currentType != referencedType) {
+        print(
+            "\"${relation.currentTable.baseDartName}.${relation.currentColumn.nameInSql}\" has a type of \"$currentType\""
+            " and \"${relation.referencedTable.baseDartName}.${relation.referencedColumn.nameInSql}\" has a type of \"$referencedType\"."
+            " This is caused by using different type converters for the columns."
+            " Filters, orderings and reference getters for this relation wont be generated.");
+        return false;
+      }
+      return true;
+    }).toList();
+
     final columnFilters = <String>[];
     final columnOrderings = <String>[];
 

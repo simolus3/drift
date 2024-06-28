@@ -24,7 +24,7 @@ void main() {
     test('for entire table', () async {
       await db.update(db.todosTable).write(const TodosTableCompanion(
             title: Value('Updated title'),
-            category: Value(3),
+            category: Value(RowId(3)),
           ));
 
       verify(executor.runUpdate(
