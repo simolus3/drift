@@ -47,8 +47,7 @@ class DumpSchemaCommand extends Command {
       result = await _readElementsFromSource(absolute);
     }
 
-    final writer =
-        SchemaWriter(result.elements, options: cli.project.moorOptions);
+    final writer = SchemaWriter(result.elements, options: cli.project.options);
 
     var target = rest[1];
     // This command is most commonly used to write into
@@ -98,7 +97,7 @@ class DumpSchemaCommand extends Command {
   /// Extracts available drift elements from a [dart] source file defining a
   /// drift database class.
   Future<_AnalyzedDatabase> _readElementsFromSource(File dart) async {
-    final driver = await cli.createMoorDriver();
+    final driver = await cli.createAnalysisDriver();
 
     final input =
         await driver.driver.fullyAnalyze(driver.uriFromPath(dart.path));

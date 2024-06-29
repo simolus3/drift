@@ -100,4 +100,34 @@ targets:
     final options = readOptionsFromConfig(config);
     expect(options.scopedDartComponents, isFalse);
   });
+
+  test('works when disabling default builder', () {
+    // https://github.com/simolus3/drift/issues/3066
+    final config = BuildConfig.parse('a', ['drift_dev'], r'''
+targets:
+  $default:
+    builders:
+      drift_dev:
+        # Disable the default builder in favor of the modular builders configured
+        # below.
+        enabled: false
+
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          store_date_time_values_as_text: true
+          named_parameters: true
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.45.3"
+              modules: [fts5]
+      drift_dev:modular:
+        enabled: true
+        options: *options
+''');
+
+    final options = readOptionsFromConfig(config);
+    expect(options.storeDateTimeValuesAsText, isTrue);
+  });
 }
