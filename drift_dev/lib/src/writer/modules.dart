@@ -5,7 +5,6 @@ import '../analysis/custom_result_class.dart';
 import '../analysis/driver/driver.dart';
 import '../analysis/driver/state.dart';
 import '../analysis/results/results.dart';
-import '../utils/string_escaper.dart';
 import 'queries/query_writer.dart';
 import 'writer.dart';
 
@@ -76,9 +75,10 @@ class ModularAccessorWriter {
 
         restOfClass
           ..writeDart(infoType)
-          ..write(' get ${reference.dbGetterName} => this.resultSet<')
-          ..writeDart(infoType)
-          ..write('>(${asDartLiteral(reference.schemaName)});');
+          ..write(' get ${reference.dbGetterName} => ')
+          ..writeDart(
+              restOfClass.referenceElement(reference, 'attachedDatabase'))
+          ..write(';');
       }
     }
 
@@ -105,9 +105,6 @@ class ModularAccessorWriter {
   String _modular(String element) {
     return scope.refUri(modularSupport, element);
   }
-
-  static final Uri modularSupport =
-      Uri.parse('package:drift/internal/modular.dart');
 }
 
 extension WriteImplicitDaoGetter on Scope {
@@ -125,8 +122,7 @@ extension WriteImplicitDaoGetter on Scope {
       leaf()
         ..writeDart(type)
         ..write(' get $getter => ')
-        ..writeUriRef(
-            ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
+        ..writeUriRef(modularSupport, 'ReadDatabaseContainer')
         ..writeln('($db).accessor<')
         ..writeDart(type)
         ..write('>(')

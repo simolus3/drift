@@ -56,6 +56,8 @@ class Writer extends _NodeOrWriter {
   TextEmitter leaf() => _root.leaf();
 }
 
+final Uri modularSupport = Uri.parse('package:drift/internal/modular.dart');
+
 abstract class _NodeOrWriter {
   Writer get writer;
 
@@ -97,6 +99,28 @@ abstract class _NodeOrWriter {
           (throw StateError('$element does not have a row class'));
     } else {
       return generatedElement(element, element.nameOfRowClass);
+    }
+  }
+
+  /// Generates code that looks up [element] from an expression [database]
+  /// evaluating to the attached database instance.
+  ///
+  /// This calls `resultSet()` with modular code and uses a direct field
+  /// otherwise.
+  AnnotatedDartCode referenceElement(
+    DriftElementWithResultSet element,
+    String database,
+  ) {
+    if (writer.generationOptions.isModular) {
+      final infoType = entityInfoType(element);
+
+      return AnnotatedDartCode.build((b) => b
+        ..addSymbol('ReadDatabaseContainer', modularSupport)
+        ..addText('($database).resultSet<')
+        ..addCode(infoType)
+        ..addText('>(${asDartLiteral(element.schemaName)})'));
+    } else {
+      return AnnotatedDartCode.text('$database.${element.dbGetterName}');
     }
   }
 
