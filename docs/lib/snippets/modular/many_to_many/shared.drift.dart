@@ -338,6 +338,7 @@ class $$BuyableItemsTableOrderingComposer
 class $$BuyableItemsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.BuyableItem _item;
   $$BuyableItemsTableWithReferences(this._db, this._item);
 }

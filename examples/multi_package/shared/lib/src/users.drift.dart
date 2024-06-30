@@ -270,6 +270,7 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.User _item;
   $$UsersTableWithReferences(this._db, this._item);
 }

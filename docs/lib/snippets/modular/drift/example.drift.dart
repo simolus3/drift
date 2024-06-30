@@ -414,6 +414,7 @@ class $TodosOrderingComposer
 class $TodosWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.Todo _item;
   $TodosWithReferences(this._db, this._item);
 }
@@ -693,6 +694,7 @@ class $CategoriesOrderingComposer
 class $CategoriesWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.Category _item;
   $CategoriesWithReferences(this._db, this._item);
 }

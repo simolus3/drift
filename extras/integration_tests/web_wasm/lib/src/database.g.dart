@@ -285,6 +285,7 @@ class $$TestTableTableOrderingComposer
 class $$TestTableTableWithReferences {
   // ignore: unused_field
   final _$TestDatabase _db;
+  // ignore: unused_field
   final TestTableData _item;
   $$TestTableTableWithReferences(this._db, this._item);
 }

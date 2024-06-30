@@ -281,6 +281,7 @@ class $$NotesTableOrderingComposer
 class $$NotesTableWithReferences {
   // ignore: unused_field
   final _$MyEncryptedDatabase _db;
+  // ignore: unused_field
   final Note _item;
   $$NotesTableWithReferences(this._db, this._item);
 }

@@ -379,14 +379,14 @@ class _ManagerCodeTemplates {
       required List<_Relation> relations,
       required TextEmitter leaf,
       required String dbClassName}) {
-    final currentRowField = "_item"; // TODO: Replace
     return """
 
         class ${rowWithReferencesClassName(currentTable)} {
         // ignore: unused_field
         final ${databaseType(leaf, dbClassName)} _db;
-        final ${rowClassWithPrefix(currentTable, leaf)} $currentRowField;
-        ${rowWithReferencesClassName(currentTable)}(this._db, this.$currentRowField);
+        // ignore: unused_field
+        final ${rowClassWithPrefix(currentTable, leaf)} _item;
+        ${rowWithReferencesClassName(currentTable)}(this._db, this._item);
 
         ${relations.map((relation) {
       if (_scope.generationOptions.isModular) {
@@ -397,14 +397,14 @@ class _ManagerCodeTemplates {
         // For a reverse relation, we return a filtered table manager
         return """
         ${processedTableManagerTypeDefName(relation.referencedTable)} get ${relation.fieldName} {
-          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db,_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}($currentRowField.${relation.currentColumn.nameInDart}));
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db,_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(_item.${relation.currentColumn.nameInDart}));
         }
         """;
       } else {
         return """
         ${processedTableManagerTypeDefName(relation.referencedTable)}? get ${relation.fieldName} {
-          if ($currentRowField.${relation.currentColumn.nameInDart} == null) return null;
-          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db, _db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}($currentRowField.${relation.currentColumn.nameInDart}!));
+          if (_item.${relation.currentColumn.nameInDart} == null) return null;
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db, _db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}(_item.${relation.currentColumn.nameInDart}!));
         }
         """;
       }

@@ -209,6 +209,7 @@ class $UsersOrderingComposer
 class $UsersWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.User _item;
   $UsersWithReferences(this._db, this._item);
 }
@@ -555,6 +556,7 @@ class $FriendsOrderingComposer
 class $FriendsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i2.Friend _item;
   $FriendsWithReferences(this._db, this._item);
 }

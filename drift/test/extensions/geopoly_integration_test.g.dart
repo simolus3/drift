@@ -330,6 +330,7 @@ class $GeopolyTestOrderingComposer
 class $GeopolyTestWithReferences {
   // ignore: unused_field
   final _$_GeopolyTestDatabase _db;
+  // ignore: unused_field
   final GeopolyTestData _item;
   $GeopolyTestWithReferences(this._db, this._item);
 }

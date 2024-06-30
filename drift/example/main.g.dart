@@ -820,6 +820,7 @@ class $$TodoCategoriesTableOrderingComposer
 class $$TodoCategoriesTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final TodoCategory _item;
   $$TodoCategoriesTableWithReferences(this._db, this._item);
 
@@ -977,6 +978,7 @@ class $$TodoItemsTableOrderingComposer
 class $$TodoItemsTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final TodoItem _item;
   $$TodoItemsTableWithReferences(this._db, this._item);
 

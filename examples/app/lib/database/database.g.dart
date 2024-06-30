@@ -866,6 +866,7 @@ class $$CategoriesTableOrderingComposer
 class $$CategoriesTableWithReferences {
   // ignore: unused_field
   final _$AppDatabase _db;
+  // ignore: unused_field
   final Category _item;
   $$CategoriesTableWithReferences(this._db, this._item);
 
@@ -1014,6 +1015,7 @@ class $$TodoEntriesTableOrderingComposer
 class $$TodoEntriesTableWithReferences {
   // ignore: unused_field
   final _$AppDatabase _db;
+  // ignore: unused_field
   final TodoEntry _item;
   $$TodoEntriesTableWithReferences(this._db, this._item);
 
@@ -1104,6 +1106,7 @@ class $TextEntriesOrderingComposer
 class $TextEntriesWithReferences {
   // ignore: unused_field
   final _$AppDatabase _db;
+  // ignore: unused_field
   final TextEntry _item;
   $TextEntriesWithReferences(this._db, this._item);
 }

@@ -340,6 +340,7 @@ class $$PeriodicRemindersTableOrderingComposer extends i0
 class $$PeriodicRemindersTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.PeriodicReminder _item;
   $$PeriodicRemindersTableWithReferences(this._db, this._item);
 }

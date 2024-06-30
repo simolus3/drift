@@ -290,6 +290,7 @@ class $$WordsTableOrderingComposer
 class $$WordsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.Word _item;
   $$WordsTableWithReferences(this._db, this._item);
 }
@@ -687,6 +688,7 @@ class $$MatchResultsTableOrderingComposer
 class $$MatchResultsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.MatchResult _item;
   $$MatchResultsTableWithReferences(this._db, this._item);
 }

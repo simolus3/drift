@@ -858,6 +858,7 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final User _item;
   $$UsersTableWithReferences(this._db, this._item);
 }
@@ -977,6 +978,7 @@ class $$FriendshipsTableOrderingComposer
 class $$FriendshipsTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final Friendship _item;
   $$FriendshipsTableWithReferences(this._db, this._item);
 }

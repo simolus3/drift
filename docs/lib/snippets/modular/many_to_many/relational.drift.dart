@@ -260,6 +260,7 @@ class $$ShoppingCartsTableOrderingComposer
 class $$ShoppingCartsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i2.ShoppingCart _item;
   $$ShoppingCartsTableWithReferences(this._db, this._item);
 }
@@ -627,6 +628,7 @@ class $$ShoppingCartEntriesTableOrderingComposer extends i0
 class $$ShoppingCartEntriesTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i2.ShoppingCartEntry _item;
   $$ShoppingCartEntriesTableWithReferences(this._db, this._item);
 }

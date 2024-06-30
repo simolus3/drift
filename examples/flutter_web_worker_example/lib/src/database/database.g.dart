@@ -300,6 +300,7 @@ class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
 class $EntriesWithReferences {
   // ignore: unused_field
   final _$MyDatabase _db;
+  // ignore: unused_field
   final Entry _item;
   $EntriesWithReferences(this._db, this._item);
 }

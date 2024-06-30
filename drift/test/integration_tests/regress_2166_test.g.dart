@@ -291,6 +291,7 @@ class $$_SomeTableTableOrderingComposer
 class $$_SomeTableTableWithReferences {
   // ignore: unused_field
   final _$_SomeDb _db;
+  // ignore: unused_field
   final _SomeTableData _item;
   $$_SomeTableTableWithReferences(this._db, this._item);
 }

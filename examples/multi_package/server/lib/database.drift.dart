@@ -364,6 +364,7 @@ class $$ActiveSessionsTableOrderingComposer
 class $$ActiveSessionsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i3.ActiveSession _item;
   $$ActiveSessionsTableWithReferences(this._db, this._item);
 }

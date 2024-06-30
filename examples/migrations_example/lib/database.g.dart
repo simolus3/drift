@@ -1078,6 +1078,7 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final User _item;
   $$UsersTableWithReferences(this._db, this._item);
 
@@ -1225,6 +1226,7 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
 class $GroupsWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final Group _item;
   $GroupsWithReferences(this._db, this._item);
 
@@ -1343,6 +1345,7 @@ class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
 class $NotesWithReferences {
   // ignore: unused_field
   final _$Database _db;
+  // ignore: unused_field
   final Note _item;
   $NotesWithReferences(this._db, this._item);
 }

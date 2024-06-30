@@ -2094,6 +2094,7 @@ class $NoIdsOrderingComposer extends OrderingComposer<_$CustomTablesDb, NoIds> {
 class $NoIdsWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final NoIdRow _item;
   $NoIdsWithReferences(this._db, this._item);
 }
@@ -2194,6 +2195,7 @@ class $WithDefaultsOrderingComposer
 class $WithDefaultsWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final WithDefault _item;
   $WithDefaultsWithReferences(this._db, this._item);
 }
@@ -2313,6 +2315,7 @@ class $WithConstraintsOrderingComposer
 class $WithConstraintsWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final WithConstraint _item;
   $WithConstraintsWithReferences(this._db, this._item);
 }
@@ -2449,6 +2452,7 @@ class $ConfigTableOrderingComposer
 class $ConfigTableWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final Config _item;
   $ConfigTableWithReferences(this._db, this._item);
 }
@@ -2572,6 +2576,7 @@ class $MytableOrderingComposer
 class $MytableWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final MytableData _item;
   $MytableWithReferences(this._db, this._item);
 }
@@ -2684,6 +2689,7 @@ class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
 class $EmailWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final EMail _item;
   $EmailWithReferences(this._db, this._item);
 }
@@ -2784,6 +2790,7 @@ class $WeirdTableOrderingComposer
 class $WeirdTableWithReferences {
   // ignore: unused_field
   final _$CustomTablesDb _db;
+  // ignore: unused_field
   final WeirdData _item;
   $WeirdTableWithReferences(this._db, this._item);
 }

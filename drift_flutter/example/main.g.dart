@@ -292,6 +292,7 @@ class $$ExampleTableTableOrderingComposer
 class $$ExampleTableTableWithReferences {
   // ignore: unused_field
   final _$ExampleDatabase _db;
+  // ignore: unused_field
   final ExampleTableData _item;
   $$ExampleTableTableWithReferences(this._db, this._item);
 }

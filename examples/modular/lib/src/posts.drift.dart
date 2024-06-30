@@ -355,6 +355,7 @@ class $PostsOrderingComposer
 class $PostsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.Post _item;
   $PostsWithReferences(this._db, this._item);
 }
@@ -699,6 +700,7 @@ class $LikesOrderingComposer
 class $LikesWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.Like _item;
   $LikesWithReferences(this._db, this._item);
 }

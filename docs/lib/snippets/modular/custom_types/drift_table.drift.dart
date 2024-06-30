@@ -341,6 +341,7 @@ class $PeriodicRemindersOrderingComposer
 class $PeriodicRemindersWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
+  // ignore: unused_field
   final i1.PeriodicReminder _item;
   $PeriodicRemindersWithReferences(this._db, this._item);
 }

@@ -3577,6 +3577,7 @@ class $$CategoriesTableOrderingComposer
 class $$CategoriesTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final Category _item;
   $$CategoriesTableWithReferences(this._db, this._item);
 
@@ -3759,6 +3760,7 @@ class $$TodosTableTableOrderingComposer
 class $$TodosTableTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final TodoEntry _item;
   $$TodosTableTableWithReferences(this._db, this._item);
 
@@ -3908,6 +3910,7 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final User _item;
   $$UsersTableWithReferences(this._db, this._item);
 }
@@ -4011,6 +4014,7 @@ class $$SharedTodosTableOrderingComposer
 class $$SharedTodosTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final SharedTodo _item;
   $$SharedTodosTableWithReferences(this._db, this._item);
 }
@@ -4148,6 +4152,7 @@ class $$TableWithoutPKTableOrderingComposer
 class $$TableWithoutPKTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final CustomRowClass _item;
   $$TableWithoutPKTableWithReferences(this._db, this._item);
 }
@@ -4237,6 +4242,7 @@ class $$PureDefaultsTableOrderingComposer
 class $$PureDefaultsTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final PureDefault _item;
   $$PureDefaultsTableWithReferences(this._db, this._item);
 }
@@ -4324,6 +4330,7 @@ class $$WithCustomTypeTableOrderingComposer
 class $$WithCustomTypeTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final WithCustomTypeData _item;
   $$WithCustomTypeTableWithReferences(this._db, this._item);
 }
@@ -4564,6 +4571,7 @@ class $$TableWithEveryColumnTypeTableOrderingComposer
 class $$TableWithEveryColumnTypeTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final TableWithEveryColumnTypeData _item;
   $$TableWithEveryColumnTypeTableWithReferences(this._db, this._item);
 }
@@ -4672,6 +4680,7 @@ class $$DepartmentTableOrderingComposer
 class $$DepartmentTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final DepartmentData _item;
   $$DepartmentTableWithReferences(this._db, this._item);
 
@@ -4814,6 +4823,7 @@ class $$ProductTableOrderingComposer
 class $$ProductTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final ProductData _item;
   $$ProductTableWithReferences(this._db, this._item);
 
@@ -4931,6 +4941,7 @@ class $$StoreTableOrderingComposer
 class $$StoreTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final StoreData _item;
   $$StoreTableWithReferences(this._db, this._item);
 
@@ -5090,6 +5101,7 @@ class $$ListingTableOrderingComposer
 class $$ListingTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
+  // ignore: unused_field
   final ListingData _item;
   $$ListingTableWithReferences(this._db, this._item);
 
