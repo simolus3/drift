@@ -204,7 +204,7 @@ class _ManagerCodeTemplates {
     ${orderingComposerNameWithPrefix(table, leaf)},
     ${createCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)},
-    ${rowWithReferencesClassName(table)},
+    (${rowClassWithPrefix(table, leaf)},${rowWithReferencesClassName(table)}),
     ${rowClassWithPrefix(table, leaf)}>""";
   }
 
@@ -236,7 +236,7 @@ class _ManagerCodeTemplates {
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        withReferenceMapper: (p0) => p0.map((e) => ${rowWithReferencesClassName(table)}(db,e)).toList() ,
+        withReferenceMapper: (p0) => p0.map((e) => (e,${rowWithReferencesClassName(table)}(db,e))).toList() ,
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,));
         }
@@ -379,7 +379,7 @@ class _ManagerCodeTemplates {
       required List<_Relation> relations,
       required TextEmitter leaf,
       required String dbClassName}) {
-    final currentRowField = rowClassWithPrefix(currentTable, leaf).camelCase;
+    final currentRowField = "_item"; // TODO: Replace
     return """
 
         class ${rowWithReferencesClassName(currentTable)} {

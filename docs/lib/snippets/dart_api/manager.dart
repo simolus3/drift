@@ -212,33 +212,33 @@ extension ManagerExamples on AppDatabase {
 
   Future managerWithRefs() async {
 // #docregion manager_with_refs
-    final todoWithCategory = await managers.todoItems
+    final (todos, todoRefs) = await managers.todoItems
         .filter((f) => f.id(1))
         .withReferences()
         .getSingle();
-    final category = await todoWithCategory.category?.getSingle();
+    final category = await todoRefs.category?.getSingle();
 
     // You could also do nested references, even with a filter
     // Here we will get the category of this todo item, with all the todo items in that category
-    final categoryWithTodos =
-        await todoWithCategory.category?.withReferences().getSingle();
-    // And now we can get all the todo items in that category
-    final allTodoInCategory = await categoryWithTodos?.todoItemsRefs.get();
-    // We could even filter it, so here is all the todo items in that category with a title of "Title"
-    final allTodoInCategoryWithTitle = await categoryWithTodos?.todoItemsRefs
-        .filter((f) => f.title("Title"))
-        .get();
+    if (todoRefs.category != null) {
+      final (_, categoryRefs) =
+          await todoRefs.category!.withReferences().getSingle();
+      // And now we can get all the todo items in that category
+      final allTodoInCategory = await categoryRefs.todoItemsRefs.get();
+      // We could even filter it, so here is all the todo items in that category with a title of "Title"
+      final allTodoInCategoryWithTitle = await categoryRefs.todoItemsRefs
+          .filter((f) => f.title("Title"))
+          .get();
+    }
 // #enddocregion manager_with_refs
   }
 
   Future managerWithRefsNPlus1() async {
 // #docregion manager_with_refs_n_plus_1
     // Get all users with their referenced groups
-    final usersWithReferences = await managers.users.withReferences().get();
-    for (var i in usersWithReferences) {
-      final user = i.user;
+    for (final (user, refs) in await managers.users.withReferences().get()) {
       final administeredGroups =
-          await i.administeredGroups.get(); // Will run many queries
+          await refs.administeredGroups.get(); // Will run many queries
     }
 // #enddocregion manager_with_refs_n_plus_1
   }

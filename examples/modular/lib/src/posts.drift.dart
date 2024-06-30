@@ -244,7 +244,7 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.$PostsOrderingComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    $PostsWithReferences,
+    (i1.Post, $PostsWithReferences),
     i1.Post> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
@@ -255,7 +255,7 @@ class $PostsTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $PostsWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $PostsWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<int> author = const i0.Value.absent(),
@@ -287,7 +287,7 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i1.$PostsOrderingComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    $PostsWithReferences,
+    (i1.Post, $PostsWithReferences),
     i1.Post>;
 
 class $PostsFilterComposer
@@ -355,8 +355,8 @@ class $PostsOrderingComposer
 class $PostsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Post i1Post;
-  $PostsWithReferences(this._db, this.i1Post);
+  final i1.Post _item;
+  $PostsWithReferences(this._db, this._item);
 }
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
@@ -574,7 +574,7 @@ class $LikesTableManager extends i0.RootTableManager<
     i1.$LikesOrderingComposer,
     $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder,
-    $LikesWithReferences,
+    (i1.Like, $LikesWithReferences),
     i1.Like> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
       : super(i0.TableManagerState(
@@ -585,7 +585,7 @@ class $LikesTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$LikesOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $LikesWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $LikesWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<int> post = const i0.Value.absent(),
             i0.Value<int> likedBy = const i0.Value.absent(),
@@ -617,7 +617,7 @@ typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
     i1.$LikesOrderingComposer,
     $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder,
-    $LikesWithReferences,
+    (i1.Like, $LikesWithReferences),
     i1.Like>;
 
 class $LikesFilterComposer
@@ -699,6 +699,6 @@ class $LikesOrderingComposer
 class $LikesWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Like i1Like;
-  $LikesWithReferences(this._db, this.i1Like);
+  final i1.Like _item;
+  $LikesWithReferences(this._db, this._item);
 }

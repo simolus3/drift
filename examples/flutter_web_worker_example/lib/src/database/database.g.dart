@@ -231,7 +231,7 @@ class $EntriesTableManager extends RootTableManager<
     $EntriesOrderingComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
-    $EntriesWithReferences,
+    (Entry, $EntriesWithReferences),
     Entry> {
   $EntriesTableManager(_$MyDatabase db, Entries table)
       : super(TableManagerState(
@@ -240,7 +240,7 @@ class $EntriesTableManager extends RootTableManager<
           filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
           orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $EntriesWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $EntriesWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
@@ -268,7 +268,7 @@ typedef $EntriesProcessedTableManager = ProcessedTableManager<
     $EntriesOrderingComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
-    $EntriesWithReferences,
+    (Entry, $EntriesWithReferences),
     Entry>;
 
 class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
@@ -300,8 +300,8 @@ class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
 class $EntriesWithReferences {
   // ignore: unused_field
   final _$MyDatabase _db;
-  final Entry entry;
-  $EntriesWithReferences(this._db, this.entry);
+  final Entry _item;
+  $EntriesWithReferences(this._db, this._item);
 }
 
 class $MyDatabaseManager {

@@ -325,7 +325,7 @@ void main() {
             .orderBy((f) => f.name.asc())
             .withReferences()
             .get()
-            .then((value) => value.map((e) => e.productData).toList()),
+            .then((value) => value.map((e) => e.$1).toList()),
         completion([
           products[1],
           products[2],
@@ -339,7 +339,7 @@ void main() {
             .orderBy((f) => f.department.name.asc() & f.name.desc())
             .withReferences()
             .get()
-            .then((value) => value.map((e) => e.productData).toList()),
+            .then((value) => value.map((e) => e.$1).toList()),
         completion([
           products[8],
           products[2],
@@ -367,7 +367,7 @@ void main() {
             .orderBy((f) => f.name.asc())
             .withReferences()
             .get(distinct: true)
-            .then((value) => value.map((e) => e.productData).toList()),
+            .then((value) => value.map((e) => e.$1).toList()),
         completion([
           products[1],
           products[3],
@@ -540,7 +540,7 @@ void main() {
             .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
             .withReferences()
             .getSingle()
-            .then((value) => value.category.description),
+            .then((value) => value.$1.description),
         completion("School"));
 
     // Nested backreference
@@ -553,7 +553,7 @@ void main() {
                 }))
             .withReferences()
             .getSingle()
-            .then((value) => value.category.description),
+            .then((value) => value.$1.description),
         completion("School"));
   });
 
@@ -564,7 +564,7 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) =>
-                value.first.department?.getSingle() ?? Future.value(null))
+                value.first.$2.department?.getSingle() ?? Future.value(null))
             .then(
               (value) => value?.id,
             ),
@@ -575,19 +575,19 @@ void main() {
         db.managers.department
             .withReferences()
             .get(distinct: true)
-            .then((value) => value.first.productRefs.count()),
+            .then((value) => value.first.$2.productRefs.count()),
         completion(3));
 
     // Get all the products with all their listings
     final listingsWithProducts = <ProductData, List<ListingData>>{};
     for (final i
         in await db.managers.listing.withReferences().get(distinct: true)) {
-      final product = await i.product?.getSingle();
+      final product = await i.$2.product?.getSingle();
       if (product != null) {
         if (!listingsWithProducts.containsKey(product)) {
-          listingsWithProducts[product] = [i.listingData];
+          listingsWithProducts[product] = [i.$1];
         } else {
-          listingsWithProducts[product]!.add(i.listingData);
+          listingsWithProducts[product]!.add(i.$1);
         }
       }
     }
@@ -605,7 +605,7 @@ void main() {
             .filter((f) => f.id.equals(2))
             .withReferences()
             .getSingle()
-            .then((value) => value.productRefs.count()),
+            .then((value) => value.$2.productRefs.count()),
         completion(2));
   });
 }

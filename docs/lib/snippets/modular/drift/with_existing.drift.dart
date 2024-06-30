@@ -136,7 +136,7 @@ class $UsersTableManager extends i0.RootTableManager<
     i2.$UsersOrderingComposer,
     $UsersCreateCompanionBuilder,
     $UsersUpdateCompanionBuilder,
-    $UsersWithReferences,
+    (i1.User, $UsersWithReferences),
     i1.User> {
   $UsersTableManager(i0.GeneratedDatabase db, i2.Users table)
       : super(i0.TableManagerState(
@@ -147,7 +147,7 @@ class $UsersTableManager extends i0.RootTableManager<
           orderingComposer:
               i2.$UsersOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $UsersWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $UsersWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -175,7 +175,7 @@ typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
     i2.$UsersOrderingComposer,
     $UsersCreateCompanionBuilder,
     $UsersUpdateCompanionBuilder,
-    $UsersWithReferences,
+    (i1.User, $UsersWithReferences),
     i1.User>;
 
 class $UsersFilterComposer
@@ -209,8 +209,8 @@ class $UsersOrderingComposer
 class $UsersWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.User i1User;
-  $UsersWithReferences(this._db, this.i1User);
+  final i1.User _item;
+  $UsersWithReferences(this._db, this._item);
 }
 
 class Friends extends i0.Table with i0.TableInfo<Friends, i2.Friend> {
@@ -430,7 +430,7 @@ class $FriendsTableManager extends i0.RootTableManager<
     i2.$FriendsOrderingComposer,
     $FriendsCreateCompanionBuilder,
     $FriendsUpdateCompanionBuilder,
-    $FriendsWithReferences,
+    (i2.Friend, $FriendsWithReferences),
     i2.Friend> {
   $FriendsTableManager(i0.GeneratedDatabase db, i2.Friends table)
       : super(i0.TableManagerState(
@@ -441,7 +441,7 @@ class $FriendsTableManager extends i0.RootTableManager<
           orderingComposer:
               i2.$FriendsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $FriendsWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $FriendsWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<int> userA = const i0.Value.absent(),
             i0.Value<int> userB = const i0.Value.absent(),
@@ -473,7 +473,7 @@ typedef $FriendsProcessedTableManager = i0.ProcessedTableManager<
     i2.$FriendsOrderingComposer,
     $FriendsCreateCompanionBuilder,
     $FriendsUpdateCompanionBuilder,
-    $FriendsWithReferences,
+    (i2.Friend, $FriendsWithReferences),
     i2.Friend>;
 
 class $FriendsFilterComposer
@@ -555,8 +555,8 @@ class $FriendsOrderingComposer
 class $FriendsWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i2.Friend i2Friend;
-  $FriendsWithReferences(this._db, this.i2Friend);
+  final i2.Friend _item;
+  $FriendsWithReferences(this._db, this._item);
 }
 
 class WithExistingDrift extends i3.ModularAccessor {

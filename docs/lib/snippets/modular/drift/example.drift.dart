@@ -289,7 +289,7 @@ class $TodosTableManager extends i0.RootTableManager<
     i1.$TodosOrderingComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
-    $TodosWithReferences,
+    (i1.Todo, $TodosWithReferences),
     i1.Todo> {
   $TodosTableManager(i0.GeneratedDatabase db, i1.Todos table)
       : super(i0.TableManagerState(
@@ -300,7 +300,7 @@ class $TodosTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$TodosOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $TodosWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $TodosWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
@@ -336,7 +336,7 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     i1.$TodosOrderingComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
-    $TodosWithReferences,
+    (i1.Todo, $TodosWithReferences),
     i1.Todo>;
 
 class $TodosFilterComposer
@@ -414,8 +414,8 @@ class $TodosOrderingComposer
 class $TodosWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Todo i1Todo;
-  $TodosWithReferences(this._db, this.i1Todo);
+  final i1.Todo _item;
+  $TodosWithReferences(this._db, this._item);
 }
 
 class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {
@@ -620,7 +620,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
     i1.$CategoriesOrderingComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
-    $CategoriesWithReferences,
+    (i1.Category, $CategoriesWithReferences),
     i1.Category> {
   $CategoriesTableManager(i0.GeneratedDatabase db, i1.Categories table)
       : super(i0.TableManagerState(
@@ -631,7 +631,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$CategoriesOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $CategoriesWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $CategoriesWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -659,7 +659,7 @@ typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
     i1.$CategoriesOrderingComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
-    $CategoriesWithReferences,
+    (i1.Category, $CategoriesWithReferences),
     i1.Category>;
 
 class $CategoriesFilterComposer
@@ -693,8 +693,8 @@ class $CategoriesOrderingComposer
 class $CategoriesWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Category i1Category;
-  $CategoriesWithReferences(this._db, this.i1Category);
+  final i1.Category _item;
+  $CategoriesWithReferences(this._db, this._item);
 }
 
 class ExampleDrift extends i2.ModularAccessor {

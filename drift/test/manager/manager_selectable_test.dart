@@ -21,6 +21,9 @@ void main() {
   tearDown(() => db.close());
 
   test('manager - selectable tests', () async {
+    final stores = await _storeData.mapAsyncAndAwait((p0) => db.managers.store
+        .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))));
+
     final departments = await _departmentData.mapAsyncAndAwait(
       (p0) => db.managers.department
           .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))),

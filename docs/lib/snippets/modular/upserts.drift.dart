@@ -213,7 +213,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
     i1.$$WordsTableOrderingComposer,
     $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder,
-    $$WordsTableWithReferences,
+    (i1.Word, $$WordsTableWithReferences),
     i1.Word> {
   $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
       : super(i0.TableManagerState(
@@ -224,7 +224,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$WordsTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$WordsTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
@@ -256,7 +256,7 @@ typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$WordsTableOrderingComposer,
     $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder,
-    $$WordsTableWithReferences,
+    (i1.Word, $$WordsTableWithReferences),
     i1.Word>;
 
 class $$WordsTableFilterComposer
@@ -290,8 +290,8 @@ class $$WordsTableOrderingComposer
 class $$WordsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.Word i1Word;
-  $$WordsTableWithReferences(this._db, this.i1Word);
+  final i1.Word _item;
+  $$WordsTableWithReferences(this._db, this._item);
 }
 
 class $MatchResultsTable extends i2.MatchResults
@@ -584,7 +584,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
     i1.$$MatchResultsTableOrderingComposer,
     $$MatchResultsTableCreateCompanionBuilder,
     $$MatchResultsTableUpdateCompanionBuilder,
-    $$MatchResultsTableWithReferences,
+    (i1.MatchResult, $$MatchResultsTableWithReferences),
     i1.MatchResult> {
   $$MatchResultsTableTableManager(
       i0.GeneratedDatabase db, i1.$MatchResultsTable table)
@@ -595,8 +595,9 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$MatchResultsTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$MatchResultsTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
@@ -632,7 +633,7 @@ typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$MatchResultsTableOrderingComposer,
     $$MatchResultsTableCreateCompanionBuilder,
     $$MatchResultsTableUpdateCompanionBuilder,
-    $$MatchResultsTableWithReferences,
+    (i1.MatchResult, $$MatchResultsTableWithReferences),
     i1.MatchResult>;
 
 class $$MatchResultsTableFilterComposer
@@ -686,6 +687,6 @@ class $$MatchResultsTableOrderingComposer
 class $$MatchResultsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.MatchResult i1MatchResult;
-  $$MatchResultsTableWithReferences(this._db, this.i1MatchResult);
+  final i1.MatchResult _item;
+  $$MatchResultsTableWithReferences(this._db, this._item);
 }

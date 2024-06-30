@@ -238,7 +238,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
     i2.$$ShoppingCartsTableOrderingComposer,
     $$ShoppingCartsTableCreateCompanionBuilder,
     $$ShoppingCartsTableUpdateCompanionBuilder,
-    $$ShoppingCartsTableWithReferences,
+    (i2.ShoppingCart, $$ShoppingCartsTableWithReferences),
     i2.ShoppingCart> {
   $$ShoppingCartsTableTableManager(
       i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
@@ -249,8 +249,9 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$ShoppingCartsTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$ShoppingCartsTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
@@ -278,7 +279,7 @@ typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
     i2.$$ShoppingCartsTableOrderingComposer,
     $$ShoppingCartsTableCreateCompanionBuilder,
     $$ShoppingCartsTableUpdateCompanionBuilder,
-    $$ShoppingCartsTableWithReferences,
+    (i2.ShoppingCart, $$ShoppingCartsTableWithReferences),
     i2.ShoppingCart>;
 
 class $$ShoppingCartsTableFilterComposer
@@ -315,6 +316,6 @@ class $$ShoppingCartsTableOrderingComposer
 class $$ShoppingCartsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i2.ShoppingCart i2ShoppingCart;
-  $$ShoppingCartsTableWithReferences(this._db, this.i2ShoppingCart);
+  final i2.ShoppingCart _item;
+  $$ShoppingCartsTableWithReferences(this._db, this._item);
 }

@@ -217,7 +217,7 @@ class $$ExampleTableTableTableManager extends RootTableManager<
     $$ExampleTableTableOrderingComposer,
     $$ExampleTableTableCreateCompanionBuilder,
     $$ExampleTableTableUpdateCompanionBuilder,
-    $$ExampleTableTableWithReferences,
+    (ExampleTableData, $$ExampleTableTableWithReferences),
     ExampleTableData> {
   $$ExampleTableTableTableManager(
       _$ExampleDatabase db, $ExampleTableTable table)
@@ -228,8 +228,9 @@ class $$ExampleTableTableTableManager extends RootTableManager<
               $$ExampleTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ExampleTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$ExampleTableTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$ExampleTableTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -257,7 +258,7 @@ typedef $$ExampleTableTableProcessedTableManager = ProcessedTableManager<
     $$ExampleTableTableOrderingComposer,
     $$ExampleTableTableCreateCompanionBuilder,
     $$ExampleTableTableUpdateCompanionBuilder,
-    $$ExampleTableTableWithReferences,
+    (ExampleTableData, $$ExampleTableTableWithReferences),
     ExampleTableData>;
 
 class $$ExampleTableTableFilterComposer
@@ -291,8 +292,8 @@ class $$ExampleTableTableOrderingComposer
 class $$ExampleTableTableWithReferences {
   // ignore: unused_field
   final _$ExampleDatabase _db;
-  final ExampleTableData exampleTableData;
-  $$ExampleTableTableWithReferences(this._db, this.exampleTableData);
+  final ExampleTableData _item;
+  $$ExampleTableTableWithReferences(this._db, this._item);
 }
 
 class $ExampleDatabaseManager {

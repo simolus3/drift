@@ -211,7 +211,7 @@ class $$TestTableTableTableManager extends RootTableManager<
     $$TestTableTableOrderingComposer,
     $$TestTableTableCreateCompanionBuilder,
     $$TestTableTableUpdateCompanionBuilder,
-    $$TestTableTableWithReferences,
+    (TestTableData, $$TestTableTableWithReferences),
     TestTableData> {
   $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
       : super(TableManagerState(
@@ -221,8 +221,9 @@ class $$TestTableTableTableManager extends RootTableManager<
               $$TestTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TestTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$TestTableTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$TestTableTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -250,7 +251,7 @@ typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
     $$TestTableTableOrderingComposer,
     $$TestTableTableCreateCompanionBuilder,
     $$TestTableTableUpdateCompanionBuilder,
-    $$TestTableTableWithReferences,
+    (TestTableData, $$TestTableTableWithReferences),
     TestTableData>;
 
 class $$TestTableTableFilterComposer
@@ -284,8 +285,8 @@ class $$TestTableTableOrderingComposer
 class $$TestTableTableWithReferences {
   // ignore: unused_field
   final _$TestDatabase _db;
-  final TestTableData testTableData;
-  $$TestTableTableWithReferences(this._db, this.testTableData);
+  final TestTableData _item;
+  $$TestTableTableWithReferences(this._db, this._item);
 }
 
 class $TestDatabaseManager {

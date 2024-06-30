@@ -741,7 +741,7 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    $$UsersTableWithReferences,
+    (User, $$UsersTableWithReferences),
     User> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
@@ -752,7 +752,7 @@ class $$UsersTableTableManager extends RootTableManager<
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$UsersTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -792,7 +792,7 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    $$UsersTableWithReferences,
+    (User, $$UsersTableWithReferences),
     User>;
 
 class $$UsersTableFilterComposer
@@ -858,8 +858,8 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final User user;
-  $$UsersTableWithReferences(this._db, this.user);
+  final User _item;
+  $$UsersTableWithReferences(this._db, this._item);
 }
 
 typedef $$FriendshipsTableCreateCompanionBuilder = FriendshipsCompanion
@@ -885,7 +885,7 @@ class $$FriendshipsTableTableManager extends RootTableManager<
     $$FriendshipsTableOrderingComposer,
     $$FriendshipsTableCreateCompanionBuilder,
     $$FriendshipsTableUpdateCompanionBuilder,
-    $$FriendshipsTableWithReferences,
+    (Friendship, $$FriendshipsTableWithReferences),
     Friendship> {
   $$FriendshipsTableTableManager(_$Database db, $FriendshipsTable table)
       : super(TableManagerState(
@@ -895,8 +895,9 @@ class $$FriendshipsTableTableManager extends RootTableManager<
               $$FriendshipsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$FriendshipsTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$FriendshipsTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$FriendshipsTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<int> firstUser = const Value.absent(),
             Value<int> secondUser = const Value.absent(),
@@ -932,7 +933,7 @@ typedef $$FriendshipsTableProcessedTableManager = ProcessedTableManager<
     $$FriendshipsTableOrderingComposer,
     $$FriendshipsTableCreateCompanionBuilder,
     $$FriendshipsTableUpdateCompanionBuilder,
-    $$FriendshipsTableWithReferences,
+    (Friendship, $$FriendshipsTableWithReferences),
     Friendship>;
 
 class $$FriendshipsTableFilterComposer
@@ -976,8 +977,8 @@ class $$FriendshipsTableOrderingComposer
 class $$FriendshipsTableWithReferences {
   // ignore: unused_field
   final _$Database _db;
-  final Friendship friendship;
-  $$FriendshipsTableWithReferences(this._db, this.friendship);
+  final Friendship _item;
+  $$FriendshipsTableWithReferences(this._db, this._item);
 }
 
 class $DatabaseManager {

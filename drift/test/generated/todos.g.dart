@@ -3461,7 +3461,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
     $$CategoriesTableOrderingComposer,
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
-    $$CategoriesTableWithReferences,
+    (Category, $$CategoriesTableWithReferences),
     Category> {
   $$CategoriesTableTableManager(_$TodoDb db, $CategoriesTable table)
       : super(TableManagerState(
@@ -3471,8 +3471,9 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$CategoriesTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$CategoriesTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$CategoriesTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -3504,7 +3505,7 @@ typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
     $$CategoriesTableOrderingComposer,
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
-    $$CategoriesTableWithReferences,
+    (Category, $$CategoriesTableWithReferences),
     Category>;
 
 class $$CategoriesTableFilterComposer
@@ -3576,12 +3577,12 @@ class $$CategoriesTableOrderingComposer
 class $$CategoriesTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final Category category;
-  $$CategoriesTableWithReferences(this._db, this.category);
+  final Category _item;
+  $$CategoriesTableWithReferences(this._db, this._item);
 
   $$TodosTableTableProcessedTableManager get todos {
     return $$TodosTableTableTableManager(_db, _db.todosTable)
-        .filter((f) => f.category.id(category.id));
+        .filter((f) => f.category.id(_item.id));
   }
 }
 
@@ -3610,7 +3611,7 @@ class $$TodosTableTableTableManager extends RootTableManager<
     $$TodosTableTableOrderingComposer,
     $$TodosTableTableCreateCompanionBuilder,
     $$TodosTableTableUpdateCompanionBuilder,
-    $$TodosTableTableWithReferences,
+    (TodoEntry, $$TodosTableTableWithReferences),
     TodoEntry> {
   $$TodosTableTableTableManager(_$TodoDb db, $TodosTableTable table)
       : super(TableManagerState(
@@ -3620,8 +3621,9 @@ class $$TodosTableTableTableManager extends RootTableManager<
               $$TodosTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodosTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$TodosTableTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$TodosTableTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String?> title = const Value.absent(),
@@ -3665,7 +3667,7 @@ typedef $$TodosTableTableProcessedTableManager = ProcessedTableManager<
     $$TodosTableTableOrderingComposer,
     $$TodosTableTableCreateCompanionBuilder,
     $$TodosTableTableUpdateCompanionBuilder,
-    $$TodosTableTableWithReferences,
+    (TodoEntry, $$TodosTableTableWithReferences),
     TodoEntry>;
 
 class $$TodosTableTableFilterComposer
@@ -3757,13 +3759,13 @@ class $$TodosTableTableOrderingComposer
 class $$TodosTableTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final TodoEntry todoEntry;
-  $$TodosTableTableWithReferences(this._db, this.todoEntry);
+  final TodoEntry _item;
+  $$TodosTableTableWithReferences(this._db, this._item);
 
   $$CategoriesTableProcessedTableManager? get category {
-    if (todoEntry.category == null) return null;
+    if (_item.category == null) return null;
     return $$CategoriesTableTableManager(_db, _db.categories)
-        .filter((f) => f.id(todoEntry.category!));
+        .filter((f) => f.id(_item.category!));
   }
 }
 
@@ -3790,7 +3792,7 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    $$UsersTableWithReferences,
+    (User, $$UsersTableWithReferences),
     User> {
   $$UsersTableTableManager(_$TodoDb db, $UsersTable table)
       : super(TableManagerState(
@@ -3801,7 +3803,7 @@ class $$UsersTableTableManager extends RootTableManager<
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$UsersTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -3841,7 +3843,7 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    $$UsersTableWithReferences,
+    (User, $$UsersTableWithReferences),
     User>;
 
 class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
@@ -3906,8 +3908,8 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final User user;
-  $$UsersTableWithReferences(this._db, this.user);
+  final User _item;
+  $$UsersTableWithReferences(this._db, this._item);
 }
 
 typedef $$SharedTodosTableCreateCompanionBuilder = SharedTodosCompanion
@@ -3931,7 +3933,7 @@ class $$SharedTodosTableTableManager extends RootTableManager<
     $$SharedTodosTableOrderingComposer,
     $$SharedTodosTableCreateCompanionBuilder,
     $$SharedTodosTableUpdateCompanionBuilder,
-    $$SharedTodosTableWithReferences,
+    (SharedTodo, $$SharedTodosTableWithReferences),
     SharedTodo> {
   $$SharedTodosTableTableManager(_$TodoDb db, $SharedTodosTable table)
       : super(TableManagerState(
@@ -3941,8 +3943,9 @@ class $$SharedTodosTableTableManager extends RootTableManager<
               $$SharedTodosTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$SharedTodosTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$SharedTodosTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$SharedTodosTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<int> todo = const Value.absent(),
             Value<int> user = const Value.absent(),
@@ -3974,7 +3977,7 @@ typedef $$SharedTodosTableProcessedTableManager = ProcessedTableManager<
     $$SharedTodosTableOrderingComposer,
     $$SharedTodosTableCreateCompanionBuilder,
     $$SharedTodosTableUpdateCompanionBuilder,
-    $$SharedTodosTableWithReferences,
+    (SharedTodo, $$SharedTodosTableWithReferences),
     SharedTodo>;
 
 class $$SharedTodosTableFilterComposer
@@ -4008,8 +4011,8 @@ class $$SharedTodosTableOrderingComposer
 class $$SharedTodosTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final SharedTodo sharedTodo;
-  $$SharedTodosTableWithReferences(this._db, this.sharedTodo);
+  final SharedTodo _item;
+  $$SharedTodosTableWithReferences(this._db, this._item);
 }
 
 typedef $$TableWithoutPKTableCreateCompanionBuilder = TableWithoutPKCompanion
@@ -4037,7 +4040,7 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
     $$TableWithoutPKTableOrderingComposer,
     $$TableWithoutPKTableCreateCompanionBuilder,
     $$TableWithoutPKTableUpdateCompanionBuilder,
-    $$TableWithoutPKTableWithReferences,
+    (CustomRowClass, $$TableWithoutPKTableWithReferences),
     CustomRowClass> {
   $$TableWithoutPKTableTableManager(_$TodoDb db, $TableWithoutPKTable table)
       : super(TableManagerState(
@@ -4048,7 +4051,7 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
           orderingComposer:
               $$TableWithoutPKTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) => p0
-              .map((e) => $$TableWithoutPKTableWithReferences(db, e))
+              .map((e) => (e, $$TableWithoutPKTableWithReferences(db, e)))
               .toList(),
           updateCompanionCallback: ({
             Value<int> notReallyAnId = const Value.absent(),
@@ -4089,7 +4092,7 @@ typedef $$TableWithoutPKTableProcessedTableManager = ProcessedTableManager<
     $$TableWithoutPKTableOrderingComposer,
     $$TableWithoutPKTableCreateCompanionBuilder,
     $$TableWithoutPKTableUpdateCompanionBuilder,
-    $$TableWithoutPKTableWithReferences,
+    (CustomRowClass, $$TableWithoutPKTableWithReferences),
     CustomRowClass>;
 
 class $$TableWithoutPKTableFilterComposer
@@ -4145,8 +4148,8 @@ class $$TableWithoutPKTableOrderingComposer
 class $$TableWithoutPKTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final CustomRowClass customRowClass;
-  $$TableWithoutPKTableWithReferences(this._db, this.customRowClass);
+  final CustomRowClass _item;
+  $$TableWithoutPKTableWithReferences(this._db, this._item);
 }
 
 typedef $$PureDefaultsTableCreateCompanionBuilder = PureDefaultsCompanion
@@ -4168,7 +4171,7 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
     $$PureDefaultsTableOrderingComposer,
     $$PureDefaultsTableCreateCompanionBuilder,
     $$PureDefaultsTableUpdateCompanionBuilder,
-    $$PureDefaultsTableWithReferences,
+    (PureDefault, $$PureDefaultsTableWithReferences),
     PureDefault> {
   $$PureDefaultsTableTableManager(_$TodoDb db, $PureDefaultsTable table)
       : super(TableManagerState(
@@ -4178,8 +4181,9 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
               $$PureDefaultsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$PureDefaultsTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$PureDefaultsTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$PureDefaultsTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<MyCustomObject?> txt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -4207,7 +4211,7 @@ typedef $$PureDefaultsTableProcessedTableManager = ProcessedTableManager<
     $$PureDefaultsTableOrderingComposer,
     $$PureDefaultsTableCreateCompanionBuilder,
     $$PureDefaultsTableUpdateCompanionBuilder,
-    $$PureDefaultsTableWithReferences,
+    (PureDefault, $$PureDefaultsTableWithReferences),
     PureDefault>;
 
 class $$PureDefaultsTableFilterComposer
@@ -4233,8 +4237,8 @@ class $$PureDefaultsTableOrderingComposer
 class $$PureDefaultsTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final PureDefault pureDefault;
-  $$PureDefaultsTableWithReferences(this._db, this.pureDefault);
+  final PureDefault _item;
+  $$PureDefaultsTableWithReferences(this._db, this._item);
 }
 
 typedef $$WithCustomTypeTableCreateCompanionBuilder = WithCustomTypeCompanion
@@ -4256,7 +4260,7 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
     $$WithCustomTypeTableOrderingComposer,
     $$WithCustomTypeTableCreateCompanionBuilder,
     $$WithCustomTypeTableUpdateCompanionBuilder,
-    $$WithCustomTypeTableWithReferences,
+    (WithCustomTypeData, $$WithCustomTypeTableWithReferences),
     WithCustomTypeData> {
   $$WithCustomTypeTableTableManager(_$TodoDb db, $WithCustomTypeTable table)
       : super(TableManagerState(
@@ -4267,7 +4271,7 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
           orderingComposer:
               $$WithCustomTypeTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) => p0
-              .map((e) => $$WithCustomTypeTableWithReferences(db, e))
+              .map((e) => (e, $$WithCustomTypeTableWithReferences(db, e)))
               .toList(),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
@@ -4296,7 +4300,7 @@ typedef $$WithCustomTypeTableProcessedTableManager = ProcessedTableManager<
     $$WithCustomTypeTableOrderingComposer,
     $$WithCustomTypeTableCreateCompanionBuilder,
     $$WithCustomTypeTableUpdateCompanionBuilder,
-    $$WithCustomTypeTableWithReferences,
+    (WithCustomTypeData, $$WithCustomTypeTableWithReferences),
     WithCustomTypeData>;
 
 class $$WithCustomTypeTableFilterComposer
@@ -4320,8 +4324,8 @@ class $$WithCustomTypeTableOrderingComposer
 class $$WithCustomTypeTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final WithCustomTypeData withCustomTypeData;
-  $$WithCustomTypeTableWithReferences(this._db, this.withCustomTypeData);
+  final WithCustomTypeData _item;
+  $$WithCustomTypeTableWithReferences(this._db, this._item);
 }
 
 typedef $$TableWithEveryColumnTypeTableCreateCompanionBuilder
@@ -4359,7 +4363,10 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
     $$TableWithEveryColumnTypeTableOrderingComposer,
     $$TableWithEveryColumnTypeTableCreateCompanionBuilder,
     $$TableWithEveryColumnTypeTableUpdateCompanionBuilder,
-    $$TableWithEveryColumnTypeTableWithReferences,
+    (
+      TableWithEveryColumnTypeData,
+      $$TableWithEveryColumnTypeTableWithReferences
+    ),
     TableWithEveryColumnTypeData> {
   $$TableWithEveryColumnTypeTableTableManager(
       _$TodoDb db, $TableWithEveryColumnTypeTable table)
@@ -4371,7 +4378,8 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
           orderingComposer: $$TableWithEveryColumnTypeTableOrderingComposer(
               ComposerState(db, table)),
           withReferenceMapper: (p0) => p0
-              .map((e) => $$TableWithEveryColumnTypeTableWithReferences(db, e))
+              .map((e) =>
+                  (e, $$TableWithEveryColumnTypeTableWithReferences(db, e)))
               .toList(),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
@@ -4433,7 +4441,10 @@ typedef $$TableWithEveryColumnTypeTableProcessedTableManager
         $$TableWithEveryColumnTypeTableOrderingComposer,
         $$TableWithEveryColumnTypeTableCreateCompanionBuilder,
         $$TableWithEveryColumnTypeTableUpdateCompanionBuilder,
-        $$TableWithEveryColumnTypeTableWithReferences,
+        (
+          TableWithEveryColumnTypeData,
+          $$TableWithEveryColumnTypeTableWithReferences
+        ),
         TableWithEveryColumnTypeData>;
 
 class $$TableWithEveryColumnTypeTableFilterComposer
@@ -4553,9 +4564,8 @@ class $$TableWithEveryColumnTypeTableOrderingComposer
 class $$TableWithEveryColumnTypeTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final TableWithEveryColumnTypeData tableWithEveryColumnTypeData;
-  $$TableWithEveryColumnTypeTableWithReferences(
-      this._db, this.tableWithEveryColumnTypeData);
+  final TableWithEveryColumnTypeData _item;
+  $$TableWithEveryColumnTypeTableWithReferences(this._db, this._item);
 }
 
 typedef $$DepartmentTableCreateCompanionBuilder = DepartmentCompanion Function({
@@ -4575,7 +4585,7 @@ class $$DepartmentTableTableManager extends RootTableManager<
     $$DepartmentTableOrderingComposer,
     $$DepartmentTableCreateCompanionBuilder,
     $$DepartmentTableUpdateCompanionBuilder,
-    $$DepartmentTableWithReferences,
+    (DepartmentData, $$DepartmentTableWithReferences),
     DepartmentData> {
   $$DepartmentTableTableManager(_$TodoDb db, $DepartmentTable table)
       : super(TableManagerState(
@@ -4585,8 +4595,9 @@ class $$DepartmentTableTableManager extends RootTableManager<
               $$DepartmentTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$DepartmentTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$DepartmentTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$DepartmentTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -4614,7 +4625,7 @@ typedef $$DepartmentTableProcessedTableManager = ProcessedTableManager<
     $$DepartmentTableOrderingComposer,
     $$DepartmentTableCreateCompanionBuilder,
     $$DepartmentTableUpdateCompanionBuilder,
-    $$DepartmentTableWithReferences,
+    (DepartmentData, $$DepartmentTableWithReferences),
     DepartmentData>;
 
 class $$DepartmentTableFilterComposer
@@ -4661,12 +4672,12 @@ class $$DepartmentTableOrderingComposer
 class $$DepartmentTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final DepartmentData departmentData;
-  $$DepartmentTableWithReferences(this._db, this.departmentData);
+  final DepartmentData _item;
+  $$DepartmentTableWithReferences(this._db, this._item);
 
   $$ProductTableProcessedTableManager get productRefs {
     return $$ProductTableTableManager(_db, _db.product)
-        .filter((f) => f.department.id(departmentData.id));
+        .filter((f) => f.department.id(_item.id));
   }
 }
 
@@ -4689,7 +4700,7 @@ class $$ProductTableTableManager extends RootTableManager<
     $$ProductTableOrderingComposer,
     $$ProductTableCreateCompanionBuilder,
     $$ProductTableUpdateCompanionBuilder,
-    $$ProductTableWithReferences,
+    (ProductData, $$ProductTableWithReferences),
     ProductData> {
   $$ProductTableTableManager(_$TodoDb db, $ProductTable table)
       : super(TableManagerState(
@@ -4700,7 +4711,7 @@ class $$ProductTableTableManager extends RootTableManager<
           orderingComposer:
               $$ProductTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$ProductTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$ProductTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -4732,7 +4743,7 @@ typedef $$ProductTableProcessedTableManager = ProcessedTableManager<
     $$ProductTableOrderingComposer,
     $$ProductTableCreateCompanionBuilder,
     $$ProductTableUpdateCompanionBuilder,
-    $$ProductTableWithReferences,
+    (ProductData, $$ProductTableWithReferences),
     ProductData>;
 
 class $$ProductTableFilterComposer
@@ -4803,18 +4814,18 @@ class $$ProductTableOrderingComposer
 class $$ProductTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final ProductData productData;
-  $$ProductTableWithReferences(this._db, this.productData);
+  final ProductData _item;
+  $$ProductTableWithReferences(this._db, this._item);
 
   $$DepartmentTableProcessedTableManager? get department {
-    if (productData.department == null) return null;
+    if (_item.department == null) return null;
     return $$DepartmentTableTableManager(_db, _db.department)
-        .filter((f) => f.id(productData.department!));
+        .filter((f) => f.id(_item.department!));
   }
 
   $$ListingTableProcessedTableManager get listings {
     return $$ListingTableTableManager(_db, _db.listing)
-        .filter((f) => f.product.id(productData.id));
+        .filter((f) => f.product.id(_item.id));
   }
 }
 
@@ -4835,7 +4846,7 @@ class $$StoreTableTableManager extends RootTableManager<
     $$StoreTableOrderingComposer,
     $$StoreTableCreateCompanionBuilder,
     $$StoreTableUpdateCompanionBuilder,
-    $$StoreTableWithReferences,
+    (StoreData, $$StoreTableWithReferences),
     StoreData> {
   $$StoreTableTableManager(_$TodoDb db, $StoreTable table)
       : super(TableManagerState(
@@ -4846,7 +4857,7 @@ class $$StoreTableTableManager extends RootTableManager<
           orderingComposer:
               $$StoreTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$StoreTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$StoreTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -4874,7 +4885,7 @@ typedef $$StoreTableProcessedTableManager = ProcessedTableManager<
     $$StoreTableOrderingComposer,
     $$StoreTableCreateCompanionBuilder,
     $$StoreTableUpdateCompanionBuilder,
-    $$StoreTableWithReferences,
+    (StoreData, $$StoreTableWithReferences),
     StoreData>;
 
 class $$StoreTableFilterComposer extends FilterComposer<_$TodoDb, $StoreTable> {
@@ -4920,12 +4931,12 @@ class $$StoreTableOrderingComposer
 class $$StoreTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final StoreData storeData;
-  $$StoreTableWithReferences(this._db, this.storeData);
+  final StoreData _item;
+  $$StoreTableWithReferences(this._db, this._item);
 
   $$ListingTableProcessedTableManager get listings {
     return $$ListingTableTableManager(_db, _db.listing)
-        .filter((f) => f.store.id(storeData.id));
+        .filter((f) => f.store.id(_item.id));
   }
 }
 
@@ -4950,7 +4961,7 @@ class $$ListingTableTableManager extends RootTableManager<
     $$ListingTableOrderingComposer,
     $$ListingTableCreateCompanionBuilder,
     $$ListingTableUpdateCompanionBuilder,
-    $$ListingTableWithReferences,
+    (ListingData, $$ListingTableWithReferences),
     ListingData> {
   $$ListingTableTableManager(_$TodoDb db, $ListingTable table)
       : super(TableManagerState(
@@ -4961,7 +4972,7 @@ class $$ListingTableTableManager extends RootTableManager<
           orderingComposer:
               $$ListingTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$ListingTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$ListingTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int?> product = const Value.absent(),
@@ -4997,7 +5008,7 @@ typedef $$ListingTableProcessedTableManager = ProcessedTableManager<
     $$ListingTableOrderingComposer,
     $$ListingTableCreateCompanionBuilder,
     $$ListingTableUpdateCompanionBuilder,
-    $$ListingTableWithReferences,
+    (ListingData, $$ListingTableWithReferences),
     ListingData>;
 
 class $$ListingTableFilterComposer
@@ -5079,19 +5090,19 @@ class $$ListingTableOrderingComposer
 class $$ListingTableWithReferences {
   // ignore: unused_field
   final _$TodoDb _db;
-  final ListingData listingData;
-  $$ListingTableWithReferences(this._db, this.listingData);
+  final ListingData _item;
+  $$ListingTableWithReferences(this._db, this._item);
 
   $$ProductTableProcessedTableManager? get product {
-    if (listingData.product == null) return null;
+    if (_item.product == null) return null;
     return $$ProductTableTableManager(_db, _db.product)
-        .filter((f) => f.id(listingData.product!));
+        .filter((f) => f.id(_item.product!));
   }
 
   $$StoreTableProcessedTableManager? get store {
-    if (listingData.store == null) return null;
+    if (_item.store == null) return null;
     return $$StoreTableTableManager(_db, _db.store)
-        .filter((f) => f.id(listingData.store!));
+        .filter((f) => f.id(_item.store!));
   }
 }
 

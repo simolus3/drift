@@ -219,7 +219,7 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    $$UsersTableWithReferences,
+    (User, $$UsersTableWithReferences),
     User> {
   $$UsersTableTableManager(_$DriftPostgresDatabase db, $UsersTable table)
       : super(TableManagerState(
@@ -230,7 +230,7 @@ class $$UsersTableTableManager extends RootTableManager<
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
+              p0.map((e) => (e, $$UsersTableWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -262,7 +262,7 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    $$UsersTableWithReferences,
+    (User, $$UsersTableWithReferences),
     User>;
 
 class $$UsersTableFilterComposer
@@ -296,8 +296,8 @@ class $$UsersTableOrderingComposer
 class $$UsersTableWithReferences {
   // ignore: unused_field
   final _$DriftPostgresDatabase _db;
-  final User user;
-  $$UsersTableWithReferences(this._db, this.user);
+  final User _item;
+  $$UsersTableWithReferences(this._db, this._item);
 }
 
 class $DriftPostgresDatabaseManager {

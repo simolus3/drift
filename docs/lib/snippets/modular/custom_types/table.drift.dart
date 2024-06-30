@@ -250,7 +250,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
     i1.$$PeriodicRemindersTableOrderingComposer,
     $$PeriodicRemindersTableCreateCompanionBuilder,
     $$PeriodicRemindersTableUpdateCompanionBuilder,
-    $$PeriodicRemindersTableWithReferences,
+    (i1.PeriodicReminder, $$PeriodicRemindersTableWithReferences),
     i1.PeriodicReminder> {
   $$PeriodicRemindersTableTableManager(
       i0.GeneratedDatabase db, i1.$PeriodicRemindersTable table)
@@ -262,7 +262,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
           orderingComposer: i1.$$PeriodicRemindersTableOrderingComposer(
               i0.ComposerState(db, table)),
           withReferenceMapper: (p0) => p0
-              .map((e) => $$PeriodicRemindersTableWithReferences(db, e))
+              .map((e) => (e, $$PeriodicRemindersTableWithReferences(db, e)))
               .toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -296,7 +296,7 @@ typedef $$PeriodicRemindersTableProcessedTableManager
         i1.$$PeriodicRemindersTableOrderingComposer,
         $$PeriodicRemindersTableCreateCompanionBuilder,
         $$PeriodicRemindersTableUpdateCompanionBuilder,
-        $$PeriodicRemindersTableWithReferences,
+        (i1.PeriodicReminder, $$PeriodicRemindersTableWithReferences),
         i1.PeriodicReminder>;
 
 class $$PeriodicRemindersTableFilterComposer extends i0
@@ -340,6 +340,6 @@ class $$PeriodicRemindersTableOrderingComposer extends i0
 class $$PeriodicRemindersTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.PeriodicReminder i1PeriodicReminder;
-  $$PeriodicRemindersTableWithReferences(this._db, this.i1PeriodicReminder);
+  final i1.PeriodicReminder _item;
+  $$PeriodicRemindersTableWithReferences(this._db, this._item);
 }

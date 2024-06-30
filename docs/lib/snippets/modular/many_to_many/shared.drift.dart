@@ -249,7 +249,7 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
     i1.$$BuyableItemsTableOrderingComposer,
     $$BuyableItemsTableCreateCompanionBuilder,
     $$BuyableItemsTableUpdateCompanionBuilder,
-    $$BuyableItemsTableWithReferences,
+    (i1.BuyableItem, $$BuyableItemsTableWithReferences),
     i1.BuyableItem> {
   $$BuyableItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
@@ -260,8 +260,9 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
               i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => $$BuyableItemsTableWithReferences(db, e)).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e, $$BuyableItemsTableWithReferences(db, e)))
+              .toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -293,7 +294,7 @@ typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$BuyableItemsTableOrderingComposer,
     $$BuyableItemsTableCreateCompanionBuilder,
     $$BuyableItemsTableUpdateCompanionBuilder,
-    $$BuyableItemsTableWithReferences,
+    (i1.BuyableItem, $$BuyableItemsTableWithReferences),
     i1.BuyableItem>;
 
 class $$BuyableItemsTableFilterComposer
@@ -337,6 +338,6 @@ class $$BuyableItemsTableOrderingComposer
 class $$BuyableItemsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i1.BuyableItem i1BuyableItem;
-  $$BuyableItemsTableWithReferences(this._db, this.i1BuyableItem);
+  final i1.BuyableItem _item;
+  $$BuyableItemsTableWithReferences(this._db, this._item);
 }

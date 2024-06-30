@@ -261,7 +261,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
     i3.$$ActiveSessionsTableOrderingComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder,
-    $$ActiveSessionsTableWithReferences,
+    (i3.ActiveSession, $$ActiveSessionsTableWithReferences),
     i3.ActiveSession> {
   $$ActiveSessionsTableTableManager(
       i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
@@ -273,7 +273,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
           orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
               i0.ComposerState(db, table)),
           withReferenceMapper: (p0) => p0
-              .map((e) => $$ActiveSessionsTableWithReferences(db, e))
+              .map((e) => (e, $$ActiveSessionsTableWithReferences(db, e)))
               .toList(),
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
@@ -306,7 +306,7 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
     i3.$$ActiveSessionsTableOrderingComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder,
-    $$ActiveSessionsTableWithReferences,
+    (i3.ActiveSession, $$ActiveSessionsTableWithReferences),
     i3.ActiveSession>;
 
 class $$ActiveSessionsTableFilterComposer
@@ -364,6 +364,6 @@ class $$ActiveSessionsTableOrderingComposer
 class $$ActiveSessionsTableWithReferences {
   // ignore: unused_field
   final i0.GeneratedDatabase _db;
-  final i3.ActiveSession i3ActiveSession;
-  $$ActiveSessionsTableWithReferences(this._db, this.i3ActiveSession);
+  final i3.ActiveSession _item;
+  $$ActiveSessionsTableWithReferences(this._db, this._item);
 }
