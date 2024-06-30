@@ -85,8 +85,7 @@ class TableManagerState<
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
   /// When `withReferences` is called on a manager, and its `$ActiveDataclass` changes to `$DataclassWithReferences`, this function will do the actual conversion
   /// Every return from the manager should map its results using this function before returning.
-  Future<List<$ActiveDataclass>> toActiveDataclass(
-      List<$Dataclass> items) async {
+  List<$ActiveDataclass> toActiveDataclass(List<$Dataclass> items) {
     if ($DataclassWithReferences == $ActiveDataclass) {
       return _withReferenceMapper(items) as List<$ActiveDataclass>;
     } else {
