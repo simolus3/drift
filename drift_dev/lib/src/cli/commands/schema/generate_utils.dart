@@ -91,7 +91,7 @@ class GenerateUtilsCommand extends Command {
     // let serialized options take precedence, otherwise use current options
     // from project.
     final options = DriftOptions.fromJson({
-      ...cli.project.moorOptions.toJson(),
+      ...cli.project.options.toJson(),
       ...schema.options,
       'generate_manager': false,
     });

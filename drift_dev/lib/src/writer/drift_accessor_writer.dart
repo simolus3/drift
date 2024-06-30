@@ -1,5 +1,4 @@
 import '../analysis/results/results.dart';
-import '../utils/string_escaper.dart';
 import 'database_writer.dart';
 import 'modules.dart';
 import 'queries/query_writer.dart';
@@ -35,11 +34,8 @@ class AccessorWriter {
 
       if (isModular) {
         getterText
-          ..writeUriRef(
-              ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer')
-          ..write('(attachedDatabase).resultSet(')
-          ..write(asDartLiteral(entity.schemaName))
-          ..writeln(');');
+          ..writeDart(getterText.referenceElement(entity, 'attachedDatabase'))
+          ..writeln(';');
       } else {
         getterText.writeln('attachedDatabase.$getterName;');
       }

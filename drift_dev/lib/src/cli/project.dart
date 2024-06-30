@@ -8,15 +8,15 @@ import 'package:stream_transform/stream_transform.dart';
 
 /// A project using moor. This is typically a dart project with a dependency on
 /// moor and moor_generator.
-class MoorProject {
+class DriftProject {
   /// The build configuration for this project.
   final BuildConfig buildConfig;
-  final DriftOptions moorOptions;
+  final DriftOptions options;
 
   final Directory directory;
 
-  MoorProject(this.buildConfig, this.directory)
-      : moorOptions = readOptionsFromConfig(buildConfig);
+  DriftProject(this.buildConfig, this.directory)
+      : options = readOptionsFromConfig(buildConfig);
 
   Stream<File> get sourceFiles {
     const topLevelDirs = {'lib', 'test', 'bin', 'example', 'web'};
@@ -34,9 +34,9 @@ class MoorProject {
     }).whereType();
   }
 
-  static Future<MoorProject> readFromDir(Directory directory) async {
+  static Future<DriftProject> readFromDir(Directory directory) async {
     final config = await BuildConfig.fromPackageDir(directory.path);
 
-    return MoorProject(config, directory);
+    return DriftProject(config, directory);
   }
 }

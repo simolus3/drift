@@ -590,6 +590,8 @@ class WithExistingDrift extends i3.ModularAccessor {
         ));
   }
 
-  i2.Users get users => this.resultSet<i2.Users>('users');
-  i2.Friends get friends => this.resultSet<i2.Friends>('friends');
+  i2.Users get users =>
+      i3.ReadDatabaseContainer(attachedDatabase).resultSet<i2.Users>('users');
+  i2.Friends get friends => i3.ReadDatabaseContainer(attachedDatabase)
+      .resultSet<i2.Friends>('friends');
 }
