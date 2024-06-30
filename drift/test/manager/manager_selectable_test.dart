@@ -1,6 +1,7 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:drift/drift.dart';
+import 'package:drift/src/utils/async.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -20,164 +21,22 @@ void main() {
   tearDown(() => db.close());
 
   test('manager - selectable tests', () async {
-    final stores = [
-      await db.managers.store.createReturning((o) => o(name: Value("Walmart"))),
-      await db.managers.store.createReturning((o) => o(name: Value("Target"))),
-      await db.managers.store.createReturning((o) => o(name: Value("Costco")))
-    ];
+    final departments = await _departmentData.mapAsyncAndAwait(
+      (p0) => db.managers.department
+          .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))),
+    );
 
-    final departments = [
-      await db.managers.department
-          .createReturning((o) => o(name: Value("Electronics"))),
-      await db.managers.department
-          .createReturning((o) => o(name: Value("Grocery"))),
-      await db.managers.department
-          .createReturning((o) => o(name: Value("Clothing")))
-    ];
+    final products = await _productData.mapAsyncAndAwait(
+      (p0) => db.managers.product.createReturning(
+          (o) => o(name: p0.name, department: p0.department, id: Value(p0.id))),
+    );
 
-    final products = [
-      // Electronics
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("TV"), department: Value(departments[0].id))),
-      await db.managers.product.createReturning((o) =>
-          o(name: Value("Cell Phone"), department: Value(departments[0].id))),
-      await db.managers.product.createReturning((o) =>
-          o(name: Value("Charger"), department: Value(departments[0].id))),
-      // Grocery
-      await db.managers.product.createReturning((o) =>
-          o(name: Value("Cereal"), department: Value(departments[1].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Meat"), department: Value(departments[1].id))),
-      // Clothing
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Shirt"), department: Value(departments[2].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Pants"), department: Value(departments[2].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Socks"), department: Value(departments[2].id))),
-      await db.managers.product.createReturning(
-          (o) => o(name: Value("Cap"), department: Value(departments[2].id)))
-    ];
-
-    final listings = [
-      // Walmart - Electronics
-      await db.managers.listing.create((o) => o(
-          product: Value(products[0].id),
-          store: Value(stores[0].id),
-          price: Value(100.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[1].id),
-          store: Value(stores[0].id),
-          price: Value(200.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[2].id),
-          store: Value(stores[0].id),
-          price: Value(10.0))),
-
-      // Walmart - Grocery
-      await db.managers.listing.create((o) => o(
-          product: Value(products[3].id),
-          store: Value(stores[0].id),
-          price: Value(5.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[4].id),
-          store: Value(stores[0].id),
-          price: Value(15.0))),
-
-      // Walmart - Clothing
-      await db.managers.listing.create((o) => o(
-          product: Value(products[5].id),
-          store: Value(stores[0].id),
-          price: Value(20.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[6].id),
-          store: Value(stores[0].id),
-          price: Value(30.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[7].id),
-          store: Value(stores[0].id),
-          price: Value(5.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[8].id),
-          store: Value(stores[0].id),
-          price: Value(10.0))),
-
-      // Target - Electronics
-
-      // Target does not have any TVs
-      // But is otherwise cheaper on electronics
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[0].id),
-      //     store: Value(stores[0].id),
-      //     price: Value(100.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[1].id),
-          store: Value(stores[1].id),
-          price: Value(150.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[2].id),
-          store: Value(stores[1].id),
-          price: Value(15.0))),
-
-      // Target - Grocery
-
-      // More expensive groceries
-      await db.managers.listing.create((o) => o(
-          product: Value(products[3].id),
-          store: Value(stores[1].id),
-          price: Value(10.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[4].id),
-          store: Value(stores[1].id),
-          price: Value(20.0))),
-
-      // Target - Clothing
-
-      // Does not have any shirts or pants
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[5].id),
-      //     store: Value(stores[1].id),
-      //     price: Value(20.0))),
-      // await db.managers.listing.create((o) => o(
-      //     product: Value(products[6].id),
-      //     store: Value(stores[1].id),
-      //     price: Value(30.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[7].id),
-          store: Value(stores[1].id),
-          price: Value(5.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[8].id),
-          store: Value(stores[1].id),
-          price: Value(10.0))),
-
-      // Costco - Electronics
-      // Much cheaper electronics
-      await db.managers.listing.create((o) => o(
-          product: Value(products[0].id),
-          store: Value(stores[2].id),
-          price: Value(50.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[1].id),
-          store: Value(stores[2].id),
-          price: Value(100.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[2].id),
-          store: Value(stores[2].id),
-          price: Value(2.50))),
-
-      // Costco - Grocery
-
-      // More expensive groceries
-      await db.managers.listing.create((o) => o(
-          product: Value(products[3].id),
-          store: Value(stores[2].id),
-          price: Value(20.0))),
-      await db.managers.listing.create((o) => o(
-          product: Value(products[4].id),
-          store: Value(stores[2].id),
-          price: Value(900.0)))
-    ];
+    final listings = await _listingsData.mapAsyncAndAwait(
+      (p0) => db.managers.listing.createReturning((o) => o(
+          product: Value(p0.product),
+          store: Value(p0.store),
+          price: Value(p0.price))),
+    );
 
     final getAllStores = db.managers.store;
     final getAllStoresWithFilter =
@@ -192,16 +51,14 @@ void main() {
         .orderBy((f) => f.id.asc())
         .withReferences();
 
-    void testManager<T, M>(
+    Future testManager<T, M>(
         BaseTableManager<dynamic, dynamic, T, dynamic, dynamic, dynamic,
                 dynamic, M, T>
-            selectable) {
-      expect(selectable.get().then((v) => v.length), completion(3));
-      expect(selectable.get(limit: 1).then((v) => v.length), completion(1));
-      expect(selectable.get(offset: 1, limit: 2).then((v) => v.length),
-          completion(2));
-      expect(selectable.get(offset: 1, limit: 2).then((v) => v.length),
-          completion(2));
+            selectable) async {
+      expect(await selectable.get(), hasLength(3));
+      expect(await selectable.get(limit: 1), hasLength(1));
+      expect(await selectable.get(offset: 1, limit: 2), hasLength(2));
+      expect(await selectable.get(offset: 1, limit: 2), hasLength(2));
     }
 
     for (final selectable in <BaseTableManager>[
@@ -211,7 +68,61 @@ void main() {
       getAllStoresWithFilterAndOrdering,
       getAllStoresWithFilterAndOrderingWithReferences,
     ]) {
-      testManager(selectable);
+      await testManager(selectable);
     }
   });
 }
+
+const _storeData = [
+  (name: "Walmart", id: 1),
+  (name: "Target", id: 2),
+  (name: "Costco", id: 3),
+];
+
+const _departmentData = [
+  (name: "Electronics", id: 1),
+  (name: "Grocery", id: 2),
+  (name: "Clothing", id: 3),
+];
+
+final _productData = [
+  (name: Value("TV"), department: Value(_departmentData[0].id), id: 1),
+  (name: Value("Cell Phone"), department: Value(_departmentData[0].id), id: 2),
+  (name: Value("Charger"), department: Value(_departmentData[0].id), id: 3),
+  (name: Value("Cereal"), department: Value(_departmentData[1].id), id: 4),
+  (name: Value("Meat"), department: Value(_departmentData[1].id), id: 5),
+  (name: Value("Shirt"), department: Value(_departmentData[2].id), id: 6),
+  (name: Value("Pants"), department: Value(_departmentData[2].id), id: 7),
+  (name: Value("Socks"), department: Value(_departmentData[2].id), id: 8),
+  (name: Value("Cap"), department: Value(_departmentData[2].id), id: 9),
+];
+final _listingsData = [
+  // Walmart - Electronics
+  (product: 1, store: 1, price: 100.0),
+  (product: 2, store: 1, price: 200.0),
+  (product: 3, store: 1, price: 10.0),
+  // Walmart - Grocery
+  (product: 4, store: 1, price: 5.0),
+  (product: 5, store: 1, price: 15.0),
+  // Walmart - Clothing
+  (product: 6, store: 1, price: 20.0),
+  (product: 7, store: 1, price: 30.0),
+  (product: 8, store: 1, price: 5.0),
+  (product: 9, store: 1, price: 10.0),
+  // Target - Electronics
+  (product: 2, store: 2, price: 150.0),
+  (product: 3, store: 2, price: 15.0),
+  // Target - Grocery
+  (product: 4, store: 2, price: 10.0),
+  (product: 5, store: 2, price: 20.0),
+  // Target - Clothing
+  (product: 8, store: 2, price: 5.0),
+  (product: 9, store: 2, price: 10.0),
+  // Costco - Electronics
+  (product: 1, store: 3, price: 50.0),
+  (product: 2, store: 3, price: 100.0),
+  (product: 3, store: 3, price: 2.50),
+  // Costco - Grocery
+  (product: 4, store: 3, price: 20.0),
+  (product: 5, store: 3, price: 900.0),
+];
