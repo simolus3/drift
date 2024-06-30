@@ -229,7 +229,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $$UsersTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),

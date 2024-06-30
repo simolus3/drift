@@ -254,7 +254,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $PostsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -584,7 +584,7 @@ class $LikesTableManager extends i0.RootTableManager<
               i1.$LikesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$LikesOrderingComposer(i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $LikesWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> post = const i0.Value.absent(),

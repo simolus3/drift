@@ -2047,7 +2047,7 @@ class $NoIdsTableManager extends RootTableManager<
           table: table,
           filteringComposer: $NoIdsFilterComposer(ComposerState(db, table)),
           orderingComposer: $NoIdsOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $NoIdsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<Uint8List> payload = const Value.absent(),
@@ -2127,7 +2127,7 @@ class $WithDefaultsTableManager extends RootTableManager<
               $WithDefaultsFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $WithDefaultsOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $WithDefaultsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
@@ -2231,7 +2231,7 @@ class $WithConstraintsTableManager extends RootTableManager<
               $WithConstraintsFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $WithConstraintsOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $WithConstraintsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
@@ -2349,7 +2349,7 @@ class $ConfigTableTableManager extends RootTableManager<
               $ConfigTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $ConfigTableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $ConfigTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String> configKey = const Value.absent(),
@@ -2481,7 +2481,7 @@ class $MytableTableManager extends RootTableManager<
           table: table,
           filteringComposer: $MytableFilterComposer(ComposerState(db, table)),
           orderingComposer: $MytableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $MytableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> someid = const Value.absent(),
@@ -2604,7 +2604,7 @@ class $EmailTableManager extends RootTableManager<
           table: table,
           filteringComposer: $EmailFilterComposer(ComposerState(db, table)),
           orderingComposer: $EmailOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $EmailWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<String> sender = const Value.absent(),
@@ -2716,7 +2716,7 @@ class $WeirdTableTableManager extends RootTableManager<
               $WeirdTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $WeirdTableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $WeirdTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> sqlClass = const Value.absent(),

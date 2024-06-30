@@ -272,7 +272,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
               .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async => p0
+          withReferenceMapper: (p0) => p0
               .map((e) => $$ActiveSessionsTableWithReferences(db, e))
               .toList(),
           updateCompanionCallback: ({

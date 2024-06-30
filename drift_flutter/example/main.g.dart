@@ -228,7 +228,7 @@ class $$ExampleTableTableTableManager extends RootTableManager<
               $$ExampleTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ExampleTableTableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $$ExampleTableTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),

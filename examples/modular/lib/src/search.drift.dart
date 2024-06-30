@@ -242,7 +242,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $SearchInPostsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),

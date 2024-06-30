@@ -210,7 +210,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $$ShoppingCartsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -503,7 +503,7 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartEntriesTableOrderingComposer(
               i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async => p0
+          withReferenceMapper: (p0) => p0
               .map((e) => $$ShoppingCartEntriesTableWithReferences(db, e))
               .toList(),
           updateCompanionCallback: ({

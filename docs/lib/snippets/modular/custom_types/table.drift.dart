@@ -261,7 +261,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           orderingComposer: i1.$$PeriodicRemindersTableOrderingComposer(
               i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async => p0
+          withReferenceMapper: (p0) => p0
               .map((e) => $$PeriodicRemindersTableWithReferences(db, e))
               .toList(),
           updateCompanionCallback: ({

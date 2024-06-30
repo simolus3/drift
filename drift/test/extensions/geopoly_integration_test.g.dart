@@ -263,7 +263,7 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $GeopolyTestOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $GeopolyTestWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),

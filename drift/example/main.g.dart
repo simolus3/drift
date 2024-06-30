@@ -743,7 +743,7 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
               $$TodoCategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoCategoriesTableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async => p0
+          withReferenceMapper: (p0) => p0
               .map((e) => $$TodoCategoriesTableWithReferences(db, e))
               .toList(),
           updateCompanionCallback: ({
@@ -860,7 +860,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
               $$TodoItemsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoItemsTableOrderingComposer(ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $$TodoItemsTableWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),

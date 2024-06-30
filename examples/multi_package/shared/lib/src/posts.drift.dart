@@ -234,7 +234,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
-          dataclassMapper: (p0) async =>
+          withReferenceMapper: (p0) =>
               p0.map((e) => $PostsWithReferences(db, e)).toList(),
           updateCompanionCallback: ({
             i0.Value<int> author = const i0.Value.absent(),
