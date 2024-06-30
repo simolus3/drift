@@ -236,7 +236,7 @@ class _ManagerCodeTemplates {
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        dataclassMapper: (p0)  async => p0.map((e) => ${rowWithReferencesClassName(table)}(db,e)).toList() ,
+        dataclassMapper: (p0) => p0.map((e) => ${rowWithReferencesClassName(table)}(db,e)).toList() ,
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,));
         }

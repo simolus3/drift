@@ -87,7 +87,7 @@ class TableManagerState<
   Future<List<$ActiveDataclass>> applyDataclassMapper(
       List<$Dataclass> items) async {
     if ($MappedDataclass == $ActiveDataclass) {
-      return await _dataclassMapper(items) as List<$ActiveDataclass>;
+      return _dataclassMapper(items) as List<$ActiveDataclass>;
     } else {
       return items as List<$ActiveDataclass>;
     }
@@ -814,5 +814,5 @@ class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
 }
 
 /// A function for asynchronously wrapping a [$Dataclass] into a [$MappedDataclass]
-typedef DataclassMapper<$Dataclass, $MappedDataclass>
-    = Future<List<$MappedDataclass>> Function(List<$Dataclass>);
+typedef DataclassMapper<$Dataclass, $MappedDataclass> = List<$MappedDataclass>
+    Function(List<$Dataclass>);
