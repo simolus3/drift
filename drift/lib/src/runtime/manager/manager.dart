@@ -813,3 +813,17 @@ class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
 
   const _JoinedResult(this.statement);
 }
+
+/// Base class for the "WithReferece" classes that
+class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass> {
+  /// The database instance
+  // ignore: non_constant_identifier_names
+  final $Database $_db;
+
+  /// The dataclass these references are for
+  // ignore: non_constant_identifier_names
+  final $Dataclass $_item;
+
+  /// Create a [BaseWithReferences] class
+  BaseWithReferences(this.$_db, this.$_item);
+}

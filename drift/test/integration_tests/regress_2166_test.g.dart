@@ -209,57 +209,6 @@ typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
   Value<String?> name,
 });
 
-class $$_SomeTableTableTableManager extends RootTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder,
-    (_SomeTableData, $$_SomeTableTableWithReferences),
-    _SomeTableData> {
-  $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$_SomeTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$_SomeTableTableWithReferences(db, e)))
-              .toList(),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              _SomeTableCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              _SomeTableCompanion.insert(
-            id: id,
-            name: name,
-          ),
-        ));
-}
-
-typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder,
-    (_SomeTableData, $$_SomeTableTableWithReferences),
-    _SomeTableData>;
-
 class $$_SomeTableTableFilterComposer
     extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
   $$_SomeTableTableFilterComposer(super.$state);
@@ -288,13 +237,55 @@ class $$_SomeTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$_SomeTableTableWithReferences {
-  // ignore: unused_field
-  final _$_SomeDb _db;
-  // ignore: unused_field
-  final _SomeTableData _item;
-  $$_SomeTableTableWithReferences(this._db, this._item);
+class $$_SomeTableTableTableManager extends RootTableManager<
+    _$_SomeDb,
+    $_SomeTableTable,
+    _SomeTableData,
+    $$_SomeTableTableFilterComposer,
+    $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableCreateCompanionBuilder,
+    $$_SomeTableTableUpdateCompanionBuilder,
+    (_SomeTableData, BaseWithReferences<_$_SomeDb, _SomeTableData>),
+    _SomeTableData> {
+  $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$_SomeTableTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
+          withReferenceMapper: (p0) =>
+              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              _SomeTableCompanion(
+            id: id,
+            name: name,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              _SomeTableCompanion.insert(
+            id: id,
+            name: name,
+          ),
+        ));
 }
+
+typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
+    _$_SomeDb,
+    $_SomeTableTable,
+    _SomeTableData,
+    $$_SomeTableTableFilterComposer,
+    $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableCreateCompanionBuilder,
+    $$_SomeTableTableUpdateCompanionBuilder,
+    (_SomeTableData, BaseWithReferences<_$_SomeDb, _SomeTableData>),
+    _SomeTableData>;
 
 class $_SomeDbManager {
   final _$_SomeDb _db;

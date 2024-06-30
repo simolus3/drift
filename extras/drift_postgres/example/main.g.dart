@@ -211,6 +211,34 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<int> rowid,
 });
 
+class $$UsersTableFilterComposer
+    extends FilterComposer<_$DriftPostgresDatabase, $UsersTable> {
+  $$UsersTableFilterComposer(super.$state);
+  ColumnFilters<UuidValue> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$UsersTableOrderingComposer
+    extends OrderingComposer<_$DriftPostgresDatabase, $UsersTable> {
+  $$UsersTableOrderingComposer(super.$state);
+  ColumnOrderings<UuidValue> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $$UsersTableTableManager extends RootTableManager<
     _$DriftPostgresDatabase,
     $UsersTable,
@@ -219,7 +247,7 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    (User, $$UsersTableWithReferences),
+    (User, BaseWithReferences<_$DriftPostgresDatabase, User>),
     User> {
   $$UsersTableTableManager(_$DriftPostgresDatabase db, $UsersTable table)
       : super(TableManagerState(
@@ -230,7 +258,7 @@ class $$UsersTableTableManager extends RootTableManager<
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $$UsersTableWithReferences(db, e))).toList(),
+              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -262,44 +290,8 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    (User, $$UsersTableWithReferences),
+    (User, BaseWithReferences<_$DriftPostgresDatabase, User>),
     User>;
-
-class $$UsersTableFilterComposer
-    extends FilterComposer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableFilterComposer(super.$state);
-  ColumnFilters<UuidValue> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$UsersTableOrderingComposer
-    extends OrderingComposer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableOrderingComposer(super.$state);
-  ColumnOrderings<UuidValue> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$UsersTableWithReferences {
-  // ignore: unused_field
-  final _$DriftPostgresDatabase _db;
-  // ignore: unused_field
-  final User _item;
-  $$UsersTableWithReferences(this._db, this._item);
-}
 
 class $DriftPostgresDatabaseManager {
   final _$DriftPostgresDatabase _db;

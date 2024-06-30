@@ -245,6 +245,34 @@ typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
   Value<int> rowid,
 });
 
+class $GeopolyTestFilterComposer
+    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestFilterComposer(super.$state);
+  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $GeopolyTestOrderingComposer
+    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestOrderingComposer(super.$state);
+  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $GeopolyTestTableManager extends RootTableManager<
     _$_GeopolyTestDatabase,
     GeopolyTest,
@@ -253,7 +281,10 @@ class $GeopolyTestTableManager extends RootTableManager<
     $GeopolyTestOrderingComposer,
     $GeopolyTestCreateCompanionBuilder,
     $GeopolyTestUpdateCompanionBuilder,
-    (GeopolyTestData, $GeopolyTestWithReferences),
+    (
+      GeopolyTestData,
+      BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData>
+    ),
     GeopolyTestData> {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
       : super(TableManagerState(
@@ -264,7 +295,7 @@ class $GeopolyTestTableManager extends RootTableManager<
           orderingComposer:
               $GeopolyTestOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $GeopolyTestWithReferences(db, e))).toList(),
+              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
@@ -296,44 +327,11 @@ typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
     $GeopolyTestOrderingComposer,
     $GeopolyTestCreateCompanionBuilder,
     $GeopolyTestUpdateCompanionBuilder,
-    (GeopolyTestData, $GeopolyTestWithReferences),
+    (
+      GeopolyTestData,
+      BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData>
+    ),
     GeopolyTestData>;
-
-class $GeopolyTestFilterComposer
-    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestFilterComposer(super.$state);
-  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $GeopolyTestOrderingComposer
-    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestOrderingComposer(super.$state);
-  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $GeopolyTestWithReferences {
-  // ignore: unused_field
-  final _$_GeopolyTestDatabase _db;
-  // ignore: unused_field
-  final GeopolyTestData _item;
-  $GeopolyTestWithReferences(this._db, this._item);
-}
 
 class $_GeopolyTestDatabaseManager {
   final _$_GeopolyTestDatabase _db;

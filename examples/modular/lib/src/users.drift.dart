@@ -342,68 +342,6 @@ typedef $UsersUpdateCompanionBuilder = i1.UsersCompanion Function({
   i0.Value<i3.Uint8List?> profilePicture,
 });
 
-class $UsersTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    i1.$UsersFilterComposer,
-    i1.$UsersOrderingComposer,
-    $UsersCreateCompanionBuilder,
-    $UsersUpdateCompanionBuilder,
-    (i1.User, $UsersWithReferences),
-    i1.User> {
-  $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$UsersFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $UsersWithReferences(db, e))).toList(),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> name = const i0.Value.absent(),
-            i0.Value<String?> biography = const i0.Value.absent(),
-            i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
-            i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent(),
-          }) =>
-              i1.UsersCompanion(
-            id: id,
-            name: name,
-            biography: biography,
-            preferences: preferences,
-            profilePicture: profilePicture,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String name,
-            i0.Value<String?> biography = const i0.Value.absent(),
-            i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
-            i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent(),
-          }) =>
-              i1.UsersCompanion.insert(
-            id: id,
-            name: name,
-            biography: biography,
-            preferences: preferences,
-            profilePicture: profilePicture,
-          ),
-        ));
-}
-
-typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    i1.$UsersFilterComposer,
-    i1.$UsersOrderingComposer,
-    $UsersCreateCompanionBuilder,
-    $UsersUpdateCompanionBuilder,
-    (i1.User, $UsersWithReferences),
-    i1.User>;
-
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
   $UsersFilterComposer(super.$state);
@@ -465,14 +403,67 @@ class $UsersOrderingComposer
               i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $UsersWithReferences {
-  // ignore: unused_field
-  final i0.GeneratedDatabase _db;
-  // ignore: unused_field
-  final i1.User _item;
-  $UsersWithReferences(this._db, this._item);
+class $UsersTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.Users,
+    i1.User,
+    i1.$UsersFilterComposer,
+    i1.$UsersOrderingComposer,
+    $UsersCreateCompanionBuilder,
+    $UsersUpdateCompanionBuilder,
+    (i1.User, i0.BaseWithReferences<i0.GeneratedDatabase, i1.User>),
+    i1.User> {
+  $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$UsersFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
+          withReferenceMapper: (p0) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> name = const i0.Value.absent(),
+            i0.Value<String?> biography = const i0.Value.absent(),
+            i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
+            i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent(),
+          }) =>
+              i1.UsersCompanion(
+            id: id,
+            name: name,
+            biography: biography,
+            preferences: preferences,
+            profilePicture: profilePicture,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String name,
+            i0.Value<String?> biography = const i0.Value.absent(),
+            i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
+            i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent(),
+          }) =>
+              i1.UsersCompanion.insert(
+            id: id,
+            name: name,
+            biography: biography,
+            preferences: preferences,
+            profilePicture: profilePicture,
+          ),
+        ));
 }
 
+typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Users,
+    i1.User,
+    i1.$UsersFilterComposer,
+    i1.$UsersOrderingComposer,
+    $UsersCreateCompanionBuilder,
+    $UsersUpdateCompanionBuilder,
+    (i1.User, i0.BaseWithReferences<i0.GeneratedDatabase, i1.User>),
+    i1.User>;
 i0.Index get usersName =>
     i0.Index('users_name', 'CREATE INDEX users_name ON users (name)');
 
@@ -688,60 +679,6 @@ typedef $FollowsUpdateCompanionBuilder = i1.FollowsCompanion Function({
   i0.Value<int> rowid,
 });
 
-class $FollowsTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.Follows,
-    i1.Follow,
-    i1.$FollowsFilterComposer,
-    i1.$FollowsOrderingComposer,
-    $FollowsCreateCompanionBuilder,
-    $FollowsUpdateCompanionBuilder,
-    (i1.Follow, $FollowsWithReferences),
-    i1.Follow> {
-  $FollowsTableManager(i0.GeneratedDatabase db, i1.Follows table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$FollowsFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$FollowsOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $FollowsWithReferences(db, e))).toList(),
-          updateCompanionCallback: ({
-            i0.Value<int> followed = const i0.Value.absent(),
-            i0.Value<int> follower = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.FollowsCompanion(
-            followed: followed,
-            follower: follower,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int followed,
-            required int follower,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.FollowsCompanion.insert(
-            followed: followed,
-            follower: follower,
-            rowid: rowid,
-          ),
-        ));
-}
-
-typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Follows,
-    i1.Follow,
-    i1.$FollowsFilterComposer,
-    i1.$FollowsOrderingComposer,
-    $FollowsCreateCompanionBuilder,
-    $FollowsUpdateCompanionBuilder,
-    (i1.Follow, $FollowsWithReferences),
-    i1.Follow>;
-
 class $FollowsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.Follows> {
   $FollowsFilterComposer(super.$state);
@@ -818,13 +755,59 @@ class $FollowsOrderingComposer
   }
 }
 
-class $FollowsWithReferences {
-  // ignore: unused_field
-  final i0.GeneratedDatabase _db;
-  // ignore: unused_field
-  final i1.Follow _item;
-  $FollowsWithReferences(this._db, this._item);
+class $FollowsTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.Follows,
+    i1.Follow,
+    i1.$FollowsFilterComposer,
+    i1.$FollowsOrderingComposer,
+    $FollowsCreateCompanionBuilder,
+    $FollowsUpdateCompanionBuilder,
+    (i1.Follow, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Follow>),
+    i1.Follow> {
+  $FollowsTableManager(i0.GeneratedDatabase db, i1.Follows table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$FollowsFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$FollowsOrderingComposer(i0.ComposerState(db, table)),
+          withReferenceMapper: (p0) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          updateCompanionCallback: ({
+            i0.Value<int> followed = const i0.Value.absent(),
+            i0.Value<int> follower = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.FollowsCompanion(
+            followed: followed,
+            follower: follower,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int followed,
+            required int follower,
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.FollowsCompanion.insert(
+            followed: followed,
+            follower: follower,
+            rowid: rowid,
+          ),
+        ));
 }
+
+typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.Follows,
+    i1.Follow,
+    i1.$FollowsFilterComposer,
+    i1.$FollowsOrderingComposer,
+    $FollowsCreateCompanionBuilder,
+    $FollowsUpdateCompanionBuilder,
+    (i1.Follow, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Follow>),
+    i1.Follow>;
 
 class PopularUser extends i0.DataClass {
   final int id;

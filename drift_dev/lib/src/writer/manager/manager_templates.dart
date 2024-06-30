@@ -69,8 +69,9 @@ class _ManagerCodeTemplates {
     required DriftTable table,
     required String dbClassName,
     required TextEmitter leaf,
+    required List<_Relation> relations,
   }) {
-    return """typedef ${processedTableManagerTypeDefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)};""";
+    return """typedef ${processedTableManagerTypeDefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)};""";
   }
 
   /// Class which represents a table in the database
@@ -195,7 +196,18 @@ class _ManagerCodeTemplates {
 
   /// Generic type arguments for the root and processed table manager
   String _tableManagerTypeArguments(
-      DriftTable table, String dbClassName, TextEmitter leaf) {
+    DriftTable table,
+    String dbClassName,
+    TextEmitter leaf,
+    List<_Relation> relations,
+  ) {
+    final String rowClassWithReferencesTypeArg;
+    if (!_scope.generationOptions.isModular && relations.isNotEmpty) {
+      rowClassWithReferencesTypeArg = rowWithReferencesClassName(table);
+    } else {
+      rowClassWithReferencesTypeArg =
+          "${leaf.drift('BaseWithReferences')}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(table, leaf)}>";
+    }
     return """
     <${databaseType(leaf, dbClassName)},
     ${tableClassWithPrefix(table, leaf)},
@@ -204,7 +216,7 @@ class _ManagerCodeTemplates {
     ${orderingComposerNameWithPrefix(table, leaf)},
     ${createCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)},
-    (${rowClassWithPrefix(table, leaf)},${rowWithReferencesClassName(table)}),
+    (${rowClassWithPrefix(table, leaf)},$rowClassWithReferencesTypeArg),
     ${rowClassWithPrefix(table, leaf)}>""";
   }
 
@@ -221,15 +233,23 @@ class _ManagerCodeTemplates {
     required TextEmitter leaf,
     required String updateCompanionBuilder,
     required String createCompanionBuilder,
+    required List<_Relation> relations,
   }) {
-    return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf)} {
+    final String rowClassWithReferencesConstructor;
+    if (!_scope.generationOptions.isModular && relations.isNotEmpty) {
+      rowClassWithReferencesConstructor = rowWithReferencesClassName(table);
+    } else {
+      rowClassWithReferencesConstructor = leaf.drift('BaseWithReferences');
+    }
+
+    return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)} {
     ${rootTableManagerName(table)}(${databaseType(leaf, dbClassName)} db, ${tableClassWithPrefix(table, leaf)} table) : super(
       ${leaf.drift("TableManagerState")}(
         db: db,
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        withReferenceMapper: (p0) => p0.map((e) => (e,${rowWithReferencesClassName(table)}(db,e))).toList() ,
+        withReferenceMapper: (p0) => p0.map((e) => (e,$rowClassWithReferencesConstructor(db,e))).toList() ,
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,));
         }
@@ -374,13 +394,9 @@ class _ManagerCodeTemplates {
       required String dbClassName}) {
     return """
 
-        class ${rowWithReferencesClassName(currentTable)} {
-        // ignore: unused_field
-        final ${databaseType(leaf, dbClassName)} _db;
-        // ignore: unused_field
-        final ${rowClassWithPrefix(currentTable, leaf)} _item;
-        ${rowWithReferencesClassName(currentTable)}(this._db, this._item);
-
+        class ${rowWithReferencesClassName(currentTable)}  extends ${leaf.drift("BaseWithReferences")}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(currentTable, leaf)}> {
+        ${rowWithReferencesClassName(currentTable)}(super.\$_db, super.\$_item);
+        
         ${relations.map((relation) {
       if (_scope.generationOptions.isModular) {
         /// There is no support for references in modular generation
@@ -390,14 +406,14 @@ class _ManagerCodeTemplates {
         // For a reverse relation, we return a filtered table manager
         return """
         ${processedTableManagerTypeDefName(relation.referencedTable)} get ${relation.fieldName} {
-          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db,_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(_item.${relation.currentColumn.nameInDart}));
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db,\$_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(\$_item.${relation.currentColumn.nameInDart}));
         }
         """;
       } else {
         return """
         ${processedTableManagerTypeDefName(relation.referencedTable)}? get ${relation.fieldName} {
-          if (_item.${relation.currentColumn.nameInDart} == null) return null;
-          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(_db, _db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}(_item.${relation.currentColumn.nameInDart}!));
+          if (\$_item.${relation.currentColumn.nameInDart} == null) return null;
+          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db, \$_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}(\$_item.${relation.currentColumn.nameInDart}!));
         }
         """;
       }

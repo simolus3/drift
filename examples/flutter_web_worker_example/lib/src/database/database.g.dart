@@ -223,6 +223,32 @@ typedef $EntriesUpdateCompanionBuilder = EntriesCompanion Function({
   Value<String> value,
 });
 
+class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
+  $EntriesFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
+  $EntriesOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $EntriesTableManager extends RootTableManager<
     _$MyDatabase,
     Entries,
@@ -231,7 +257,7 @@ class $EntriesTableManager extends RootTableManager<
     $EntriesOrderingComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
-    (Entry, $EntriesWithReferences),
+    (Entry, BaseWithReferences<_$MyDatabase, Entry>),
     Entry> {
   $EntriesTableManager(_$MyDatabase db, Entries table)
       : super(TableManagerState(
@@ -240,7 +266,7 @@ class $EntriesTableManager extends RootTableManager<
           filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
           orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $EntriesWithReferences(db, e))).toList(),
+              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
@@ -268,42 +294,8 @@ typedef $EntriesProcessedTableManager = ProcessedTableManager<
     $EntriesOrderingComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
-    (Entry, $EntriesWithReferences),
+    (Entry, BaseWithReferences<_$MyDatabase, Entry>),
     Entry>;
-
-class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
-  $EntriesFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
-  $EntriesOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $EntriesWithReferences {
-  // ignore: unused_field
-  final _$MyDatabase _db;
-  // ignore: unused_field
-  final Entry _item;
-  $EntriesWithReferences(this._db, this._item);
-}
 
 class $MyDatabaseManager {
   final _$MyDatabase _db;

@@ -203,57 +203,6 @@ typedef $$TestTableTableUpdateCompanionBuilder = TestTableCompanion Function({
   Value<String> content,
 });
 
-class $$TestTableTableTableManager extends RootTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableCreateCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder,
-    (TestTableData, $$TestTableTableWithReferences),
-    TestTableData> {
-  $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TestTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TestTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$TestTableTableWithReferences(db, e)))
-              .toList(),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> content = const Value.absent(),
-          }) =>
-              TestTableCompanion(
-            id: id,
-            content: content,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String content,
-          }) =>
-              TestTableCompanion.insert(
-            id: id,
-            content: content,
-          ),
-        ));
-}
-
-typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableCreateCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder,
-    (TestTableData, $$TestTableTableWithReferences),
-    TestTableData>;
-
 class $$TestTableTableFilterComposer
     extends FilterComposer<_$TestDatabase, $TestTableTable> {
   $$TestTableTableFilterComposer(super.$state);
@@ -282,13 +231,55 @@ class $$TestTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$TestTableTableWithReferences {
-  // ignore: unused_field
-  final _$TestDatabase _db;
-  // ignore: unused_field
-  final TestTableData _item;
-  $$TestTableTableWithReferences(this._db, this._item);
+class $$TestTableTableTableManager extends RootTableManager<
+    _$TestDatabase,
+    $TestTableTable,
+    TestTableData,
+    $$TestTableTableFilterComposer,
+    $$TestTableTableOrderingComposer,
+    $$TestTableTableCreateCompanionBuilder,
+    $$TestTableTableUpdateCompanionBuilder,
+    (TestTableData, BaseWithReferences<_$TestDatabase, TestTableData>),
+    TestTableData> {
+  $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TestTableTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TestTableTableOrderingComposer(ComposerState(db, table)),
+          withReferenceMapper: (p0) =>
+              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> content = const Value.absent(),
+          }) =>
+              TestTableCompanion(
+            id: id,
+            content: content,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String content,
+          }) =>
+              TestTableCompanion.insert(
+            id: id,
+            content: content,
+          ),
+        ));
 }
+
+typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
+    _$TestDatabase,
+    $TestTableTable,
+    TestTableData,
+    $$TestTableTableFilterComposer,
+    $$TestTableTableOrderingComposer,
+    $$TestTableTableCreateCompanionBuilder,
+    $$TestTableTableUpdateCompanionBuilder,
+    (TestTableData, BaseWithReferences<_$TestDatabase, TestTableData>),
+    TestTableData>;
 
 class $TestDatabaseManager {
   final _$TestDatabase _db;

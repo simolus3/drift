@@ -39,16 +39,6 @@ class _TableManagerWriter {
     leaf.writeln(insertCompanionBuilderTypeDef);
     leaf.writeln(updateCompanionBuilderTypeDef);
 
-    // Write the root and processed table managers
-    leaf.write(_templates.rootTableManager(
-        table: table,
-        dbClassName: dbClassName,
-        leaf: leaf,
-        updateCompanionBuilder: updateCompanionBuilder,
-        createCompanionBuilder: insertCompanionBuilder));
-    leaf.write(_templates.processedTableManagerTypeDef(
-        table: table, dbClassName: dbClassName, leaf: leaf));
-
     // Gather the relationships to and from this table
     List<_Relation> relations =
         table.columns.map((e) => _getRelationForColumn(e)).nonNulls.toList();
@@ -160,11 +150,27 @@ class _TableManagerWriter {
         leaf: leaf,
         dbClassName: dbClassName,
         columnOrderings: columnOrderings));
-    leaf.write(_templates.rowClassWithReferences(
-        currentTable: table,
-        relations: relations,
+    if (!scope.generationOptions.isModular && relations.isNotEmpty) {
+      leaf.write(_templates.rowClassWithReferences(
+          currentTable: table,
+          relations: relations,
+          leaf: leaf,
+          dbClassName: dbClassName));
+    }
+
+    // Write the root and processed table managers
+    leaf.write(_templates.rootTableManager(
+        table: table,
+        dbClassName: dbClassName,
         leaf: leaf,
-        dbClassName: dbClassName));
+        updateCompanionBuilder: updateCompanionBuilder,
+        createCompanionBuilder: insertCompanionBuilder,
+        relations: relations));
+    leaf.write(_templates.processedTableManagerTypeDef(
+        table: table,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        relations: relations));
   }
 }
 

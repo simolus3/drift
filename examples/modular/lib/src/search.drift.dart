@@ -224,6 +224,34 @@ typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
   i0.Value<int> rowid,
 });
 
+class $SearchInPostsFilterComposer
+    extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsFilterComposer(super.$state);
+  i0.ColumnFilters<String> get author => $state.composableBuilder(
+      column: $state.table.author,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $SearchInPostsOrderingComposer
+    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsOrderingComposer(super.$state);
+  i0.ColumnOrderings<String> get author => $state.composableBuilder(
+      column: $state.table.author,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get content => $state.composableBuilder(
+      column: $state.table.content,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $SearchInPostsTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.SearchInPosts,
@@ -232,7 +260,10 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
     i1.$SearchInPostsOrderingComposer,
     $SearchInPostsCreateCompanionBuilder,
     $SearchInPostsUpdateCompanionBuilder,
-    (i1.SearchInPost, $SearchInPostsWithReferences),
+    (
+      i1.SearchInPost,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost>
+    ),
     i1.SearchInPost> {
   $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
       : super(i0.TableManagerState(
@@ -243,7 +274,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $SearchInPostsWithReferences(db, e))).toList(),
+              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
@@ -275,45 +306,11 @@ typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
     i1.$SearchInPostsOrderingComposer,
     $SearchInPostsCreateCompanionBuilder,
     $SearchInPostsUpdateCompanionBuilder,
-    (i1.SearchInPost, $SearchInPostsWithReferences),
+    (
+      i1.SearchInPost,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost>
+    ),
     i1.SearchInPost>;
-
-class $SearchInPostsFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsFilterComposer(super.$state);
-  i0.ColumnFilters<String> get author => $state.composableBuilder(
-      column: $state.table.author,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $SearchInPostsOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get author => $state.composableBuilder(
-      column: $state.table.author,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $SearchInPostsWithReferences {
-  // ignore: unused_field
-  final i0.GeneratedDatabase _db;
-  // ignore: unused_field
-  final i1.SearchInPost _item;
-  $SearchInPostsWithReferences(this._db, this._item);
-}
-
 i0.Trigger get postsInsert => i0.Trigger(
     'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
     'posts_insert');
