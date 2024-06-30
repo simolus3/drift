@@ -19,7 +19,7 @@ import 'package:yaml/yaml.dart';
 
 import '../cli.dart';
 
-class MigrateCommand extends MoorCommand {
+class MigrateCommand extends DriftCommand {
   static final RegExp _buildYamlPattern =
       RegExp('(?:\\w+\\.)?build(?:\\.\\w+)?');
   static final RegExp _builderKeyPattern = RegExp('(?:(\\w+)[:|])?(\\w+)');

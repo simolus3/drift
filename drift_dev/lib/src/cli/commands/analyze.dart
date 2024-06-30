@@ -2,7 +2,7 @@ import 'dart:io';
 
 import '../cli.dart';
 
-class AnalyzeCommand extends MoorCommand {
+class AnalyzeCommand extends DriftCommand {
   AnalyzeCommand(super.cli);
 
   @override
@@ -13,7 +13,7 @@ class AnalyzeCommand extends MoorCommand {
 
   @override
   Future<void> run() async {
-    final driver = await cli.createMoorDriver();
+    final driver = await cli.createAnalysisDriver();
 
     var errorCount = 0;
 

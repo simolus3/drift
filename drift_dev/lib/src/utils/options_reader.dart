@@ -9,11 +9,19 @@ Future<DriftOptions> fromRootDir(String path) async {
 
 DriftOptions readOptionsFromConfig(BuildConfig config) {
   return config.buildTargets.values
-          .map((t) {
-            return t.builders['drift_dev:drift_dev']?.options ??
-                t.builders['drift_dev:not_shared']?.options;
+          .expand((t) {
+            const driftBuilders = {
+              'drift_dev:drift_dev',
+              'drift_dev:not_shared',
+              'drift_dev:modular'
+            };
+
+            return [
+              for (final MapEntry(:key, :value) in t.builders.entries)
+                if (value.isEnabled && driftBuilders.contains(key))
+                  value.options
+            ];
           })
-          .whereType<Map>()
           .map((json) => DriftOptions.fromJson(json))
           .firstOrNull ??
       DriftOptions.defaults();

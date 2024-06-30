@@ -211,14 +211,7 @@ class _ManagerCodeTemplates {
   /// Code for getting a table from inside a composer
   /// handles modular generation correctly
   String _referenceTableFromComposer(DriftTable table, TextEmitter leaf) {
-    if (_scope.generationOptions.isModular) {
-      final extension = leaf.refUri(
-          ModularAccessorWriter.modularSupport, 'ReadDatabaseContainer');
-      final type = leaf.dartCode(leaf.entityInfoType(table));
-      return "$extension(\$state.db).resultSet<$type>('${table.schemaName}')";
-    } else {
-      return '\$state.db.${table.dbGetterName}';
-    }
+    return leaf.dartCode(leaf.referenceElement(table, '\$state.db'));
   }
 
   /// Returns code for the root table manager class

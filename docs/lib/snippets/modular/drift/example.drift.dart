@@ -732,7 +732,8 @@ class ExampleDrift extends i2.ModularAccessor {
         }).asyncMap(todos.mapFromRow);
   }
 
-  i1.Todos get todos => this.resultSet<i1.Todos>('todos');
+  i1.Todos get todos =>
+      i2.ReadDatabaseContainer(attachedDatabase).resultSet<i1.Todos>('todos');
 }
 
 typedef FilterTodos$predicate = i0.Expression<bool> Function(i1.Todos todos);

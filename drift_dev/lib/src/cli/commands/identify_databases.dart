@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 import '../../analysis/results/results.dart';
 import '../cli.dart';
 
-class IdentifyDatabases extends MoorCommand {
+class IdentifyDatabases extends DriftCommand {
   IdentifyDatabases(super.cli);
 
   @override
@@ -21,7 +21,7 @@ class IdentifyDatabases extends MoorCommand {
     final directory = Directory.current;
     print('Starting to scan in ${directory.path}...');
 
-    final driver = await cli.createMoorDriver();
+    final driver = await cli.createAnalysisDriver();
 
     await for (final file in cli.project.sourceFiles) {
       if (p.extension(file.path) != '.dart') continue;

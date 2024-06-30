@@ -339,6 +339,8 @@ class SearchDrift extends i2.ModularAccessor {
   }
 
   i1.SearchInPosts get searchInPosts =>
-      this.resultSet<i1.SearchInPosts>('search_in_posts');
-  i3.Posts get posts => this.resultSet<i3.Posts>('posts');
+      i2.ReadDatabaseContainer(attachedDatabase)
+          .resultSet<i1.SearchInPosts>('search_in_posts');
+  i3.Posts get posts =>
+      i2.ReadDatabaseContainer(attachedDatabase).resultSet<i3.Posts>('posts');
 }

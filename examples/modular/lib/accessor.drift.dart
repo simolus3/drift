@@ -7,11 +7,11 @@ import 'package:modular/src/user_queries.drift.dart' as i4;
 
 mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
   i2.Users get users =>
-      i3.ReadDatabaseContainer(attachedDatabase).resultSet('users');
-  i2.Follows get follows =>
-      i3.ReadDatabaseContainer(attachedDatabase).resultSet('follows');
-  i2.PopularUsers get popularUsers =>
-      i3.ReadDatabaseContainer(attachedDatabase).resultSet('popular_users');
+      i3.ReadDatabaseContainer(attachedDatabase).resultSet<i2.Users>('users');
+  i2.Follows get follows => i3.ReadDatabaseContainer(attachedDatabase)
+      .resultSet<i2.Follows>('follows');
+  i2.PopularUsers get popularUsers => i3.ReadDatabaseContainer(attachedDatabase)
+      .resultSet<i2.PopularUsers>('popular_users');
   Future<int> addUser({required i0.Insertable<i2.User> user}) {
     var $arrayStartIndex = 1;
     final generateduser =
