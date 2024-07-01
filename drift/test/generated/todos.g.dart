@@ -3527,11 +3527,10 @@ class $$CategoriesTableWithReferences extends BaseWithReferences<_$TodoDb,
   $$TodosTableTableProcessedTableManager get todos {
     final manager = $$TodosTableTableTableManager($_db, $_db.todosTable)
         .filter((f) => f.category.id($_item.id));
-    final state = manager.$state.copyWith(
-        cache: $_prefetchedData?.todos
-            ?.where((e) => e.category == $_item.id)
-            .toList());
-    return ProcessedTableManager(state);
+    return loadCacheIntoManager(
+      manager,
+      filter: (p0) => p0?.todos?.where((e) => e.category == $_item.id),
+    );
   }
 }
 
@@ -4765,11 +4764,10 @@ class $$DepartmentTableWithReferences extends BaseWithReferences<_$TodoDb,
   $$ProductTableProcessedTableManager get productRefs {
     final manager = $$ProductTableTableManager($_db, $_db.product)
         .filter((f) => f.department.id($_item.id));
-    final state = manager.$state.copyWith(
-        cache: $_prefetchedData?.productRefs
-            ?.where((e) => e.department == $_item.id)
-            .toList());
-    return ProcessedTableManager(state);
+    return loadCacheIntoManager(
+      manager,
+      filter: (p0) => p0?.productRefs?.where((e) => e.department == $_item.id),
+    );
   }
 }
 
@@ -4942,11 +4940,10 @@ class $$ProductTableWithReferences extends BaseWithReferences<_$TodoDb,
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager($_db, $_db.listing)
         .filter((f) => f.product.id($_item.id));
-    final state = manager.$state.copyWith(
-        cache: $_prefetchedData?.listings
-            ?.where((e) => e.product == $_item.id)
-            .toList());
-    return ProcessedTableManager(state);
+    return loadCacheIntoManager(
+      manager,
+      filter: (p0) => p0?.listings?.where((e) => e.product == $_item.id),
+    );
   }
 }
 
@@ -5088,11 +5085,10 @@ class $$StoreTableWithReferences extends BaseWithReferences<_$TodoDb, StoreData,
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager($_db, $_db.listing)
         .filter((f) => f.store.id($_item.id));
-    final state = manager.$state.copyWith(
-        cache: $_prefetchedData?.listings
-            ?.where((e) => e.store == $_item.id)
-            .toList());
-    return ProcessedTableManager(state);
+    return loadCacheIntoManager(
+      manager,
+      filter: (p0) => p0?.listings?.where((e) => e.store == $_item.id),
+    );
   }
 }
 

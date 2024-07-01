@@ -774,11 +774,11 @@ class $$TodoCategoriesTableWithReferences extends BaseWithReferences<_$Database,
   $$TodoItemsTableProcessedTableManager get todoItemsRefs {
     final manager = $$TodoItemsTableTableManager($_db, $_db.todoItems)
         .filter((f) => f.categoryId.id($_item.id));
-    final state = manager.$state.copyWith(
-        cache: $_prefetchedData?.todoItemsRefs
-            ?.where((e) => e.categoryId == $_item.id)
-            .toList());
-    return ProcessedTableManager(state);
+    return loadCacheIntoManager(
+      manager,
+      filter: (p0) =>
+          p0?.todoItemsRefs?.where((e) => e.categoryId == $_item.id),
+    );
   }
 }
 

@@ -1022,6 +1022,51 @@ class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass,
   /// Create a [BaseWithReferences] class
   // ignore: non_constant_identifier_names
   BaseWithReferences(this.$_db, this.$_item, [this.$_prefetchedData]);
+
+  /// A helper function for inserting the appropritate dataclasses from
+  /// the prefetched data into the cache of child managers
+  ProcessedTableManager<
+      $ReferencedDatabase,
+      $Table,
+      $ReferencedDataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback,
+      $DataclassWithReferences,
+      $ActiveDataclass,
+      $CreatePrefetchedDataGetterCallback,
+      $ReferencedPrefetchedData> loadCacheIntoManager<
+          $ReferencedDatabase extends GeneratedDatabase,
+          $Table extends Table,
+          $ReferencedDataclass,
+          $FilterComposer extends FilterComposer<$ReferencedDatabase, $Table>,
+          $OrderingComposer extends OrderingComposer<$ReferencedDatabase, $Table>,
+          $CreateCompanionCallback extends Function,
+          $UpdateCompanionCallback extends Function,
+          $DataclassWithReferences,
+          $ActiveDataclass,
+          $CreatePrefetchedDataGetterCallback extends Function,
+          $ReferencedPrefetchedData>(
+      BaseTableManager<
+              $ReferencedDatabase,
+              $Table,
+              $ReferencedDataclass,
+              $FilterComposer,
+              $OrderingComposer,
+              $CreateCompanionCallback,
+              $UpdateCompanionCallback,
+              $DataclassWithReferences,
+              $ActiveDataclass,
+              $CreatePrefetchedDataGetterCallback,
+              $ReferencedPrefetchedData>
+          manager,
+      {required Iterable<$ReferencedDataclass>? Function($PrefetchedData?)
+          filter}) {
+    final state =
+        manager.$state.copyWith(cache: filter($_prefetchedData)?.toList());
+    return ProcessedTableManager(state);
+  }
 }
 
 /// This function is used internally to prefetch all the rows for a single reference.

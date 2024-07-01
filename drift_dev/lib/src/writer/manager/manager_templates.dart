@@ -463,12 +463,11 @@ class _ManagerCodeTemplates {
               \$_item.${relation.currentColumn.nameInDart}
             )
           );
-          final state = manager.\$state.copyWith(
-          cache:\$_prefetchedData
-            ?.${relation.fieldName}
-            ?.where((e) => e.${relation.referencedColumn.nameInDart} == \$_item.${relation.currentColumn.nameInDart})
-            .toList());
-          return ${leaf.drift("ProcessedTableManager")}(state);
+          return loadCacheIntoManager(
+      manager,
+      filter: (p0) => p0?.${relation.fieldName}?.where((e) => e.${relation.referencedColumn.nameInDart} == \$_item.${relation.currentColumn.nameInDart}),
+    );
+
         }
         """;
       } else {

@@ -1031,11 +1031,10 @@ class $$UsersTableWithReferences
   $GroupsProcessedTableManager get groupsRefs {
     final manager = $GroupsTableManager($_db, $_db.groups)
         .filter((f) => f.owner.id($_item.id));
-    final state = manager.$state.copyWith(
-        cache: $_prefetchedData?.groupsRefs
-            ?.where((e) => e.owner == $_item.id)
-            .toList());
-    return ProcessedTableManager(state);
+    return loadCacheIntoManager(
+      manager,
+      filter: (p0) => p0?.groupsRefs?.where((e) => e.owner == $_item.id),
+    );
   }
 }
 
