@@ -171,6 +171,13 @@ class _TableManagerWriter {
         dbClassName: dbClassName,
         leaf: leaf,
         relations: relations));
+    leaf.write(_templates.createPrefetcherCallbackTypeDef(
+        leaf: leaf,
+        dbClassName: dbClassName,
+        currentTable: table,
+        relations: relations));
+    leaf.write(_templates.prefetchedDataClass(
+        currentTable: table, relations: relations, leaf: leaf));
   }
 }
 

@@ -808,13 +808,19 @@ class $$CategoriesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$CategoriesTableWithReferences
-    extends BaseWithReferences<_$AppDatabase, Category> {
-  $$CategoriesTableWithReferences(super.$_db, super.$_item);
+class $$CategoriesTableWithReferences extends BaseWithReferences<_$AppDatabase,
+    Category, $$CategoriesTablePrefetchedData> {
+  $$CategoriesTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$TodoEntriesTableProcessedTableManager get todoEntriesRefs {
-    return $$TodoEntriesTableTableManager($_db, $_db.todoEntries)
+    final manager = $$TodoEntriesTableTableManager($_db, $_db.todoEntries)
         .filter((f) => f.category.id($_item.id));
+    final state = manager.$state.copyWith(
+        cache: $_prefetchedData?.todoEntriesRefs
+            ?.where((e) => e.category == $_item.id)
+            .toList());
+    return ProcessedTableManager(state);
   }
 }
 
@@ -827,7 +833,9 @@ class $$CategoriesTableTableManager extends RootTableManager<
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
     (Category, $$CategoriesTableWithReferences),
-    Category> {
+    Category,
+    $$CategoriesTableCreatePrefetchedDataCallback,
+    $$CategoriesTablePrefetchedData> {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
       : super(TableManagerState(
           db: db,
@@ -836,9 +844,26 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$CategoriesTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$CategoriesTableWithReferences(db, e)))
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$CategoriesTableWithReferences(db, e, p1)))
               .toList(),
+          createPrefetchedDataGetterCallback: ({todoEntriesRefs = false}) {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$CategoriesTableWithReferences(db, e));
+
+              final prefetchedtodoEntriesRefs = todoEntriesRefs
+                  ? await managers
+                      .map((e) => e.todoEntriesRefs)
+                      .reduceToSingleTableManager()
+                      ?.get()
+                  : null;
+
+              return $$CategoriesTablePrefetchedData(
+                todoEntriesRefs: prefetchedtodoEntriesRefs,
+              );
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -871,7 +896,22 @@ typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
     (Category, $$CategoriesTableWithReferences),
-    Category>;
+    Category,
+    $$CategoriesTableCreatePrefetchedDataCallback,
+    $$CategoriesTablePrefetchedData>;
+typedef $$CategoriesTableCreatePrefetchedDataCallback
+    = Future<$$CategoriesTablePrefetchedData> Function(
+            _$AppDatabase, List<Category>)
+        Function({bool todoEntriesRefs});
+
+class $$CategoriesTablePrefetchedData {
+  $$CategoriesTablePrefetchedData({
+    this.todoEntriesRefs,
+  });
+
+  final List<TodoEntry>? todoEntriesRefs;
+}
+
 typedef $$TodoEntriesTableCreateCompanionBuilder = TodoEntriesCompanion
     Function({
   Value<int> id,
@@ -949,9 +989,10 @@ class $$TodoEntriesTableOrderingComposer
   }
 }
 
-class $$TodoEntriesTableWithReferences
-    extends BaseWithReferences<_$AppDatabase, TodoEntry> {
-  $$TodoEntriesTableWithReferences(super.$_db, super.$_item);
+class $$TodoEntriesTableWithReferences extends BaseWithReferences<_$AppDatabase,
+    TodoEntry, $$TodoEntriesTablePrefetchedData> {
+  $$TodoEntriesTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$CategoriesTableProcessedTableManager? get category {
     if ($_item.category == null) return null;
@@ -969,7 +1010,9 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
     $$TodoEntriesTableCreateCompanionBuilder,
     $$TodoEntriesTableUpdateCompanionBuilder,
     (TodoEntry, $$TodoEntriesTableWithReferences),
-    TodoEntry> {
+    TodoEntry,
+    $$TodoEntriesTableCreatePrefetchedDataCallback,
+    $$TodoEntriesTablePrefetchedData> {
   $$TodoEntriesTableTableManager(_$AppDatabase db, $TodoEntriesTable table)
       : super(TableManagerState(
           db: db,
@@ -978,9 +1021,17 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
               $$TodoEntriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodoEntriesTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$TodoEntriesTableWithReferences(db, e)))
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$TodoEntriesTableWithReferences(db, e, p1)))
               .toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$TodoEntriesTableWithReferences(db, e));
+
+              return $$TodoEntriesTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -1017,7 +1068,18 @@ typedef $$TodoEntriesTableProcessedTableManager = ProcessedTableManager<
     $$TodoEntriesTableCreateCompanionBuilder,
     $$TodoEntriesTableUpdateCompanionBuilder,
     (TodoEntry, $$TodoEntriesTableWithReferences),
-    TodoEntry>;
+    TodoEntry,
+    $$TodoEntriesTableCreatePrefetchedDataCallback,
+    $$TodoEntriesTablePrefetchedData>;
+typedef $$TodoEntriesTableCreatePrefetchedDataCallback
+    = Future<$$TodoEntriesTablePrefetchedData> Function(
+            _$AppDatabase, List<TodoEntry>)
+        Function();
+
+class $$TodoEntriesTablePrefetchedData {
+  $$TodoEntriesTablePrefetchedData();
+}
+
 typedef $TextEntriesCreateCompanionBuilder = TextEntriesCompanion Function({
   required String description,
   Value<int> rowid,
@@ -1053,8 +1115,13 @@ class $TextEntriesTableManager extends RootTableManager<
     $TextEntriesOrderingComposer,
     $TextEntriesCreateCompanionBuilder,
     $TextEntriesUpdateCompanionBuilder,
-    (TextEntry, BaseWithReferences<_$AppDatabase, TextEntry>),
-    TextEntry> {
+    (
+      TextEntry,
+      BaseWithReferences<_$AppDatabase, TextEntry, $TextEntriesPrefetchedData>
+    ),
+    TextEntry,
+    $TextEntriesCreatePrefetchedDataCallback,
+    $TextEntriesPrefetchedData> {
   $TextEntriesTableManager(_$AppDatabase db, TextEntries table)
       : super(TableManagerState(
           db: db,
@@ -1063,8 +1130,15 @@ class $TextEntriesTableManager extends RootTableManager<
               $TextEntriesFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $TextEntriesOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $TextEntriesPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<String> description = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -1092,8 +1166,21 @@ typedef $TextEntriesProcessedTableManager = ProcessedTableManager<
     $TextEntriesOrderingComposer,
     $TextEntriesCreateCompanionBuilder,
     $TextEntriesUpdateCompanionBuilder,
-    (TextEntry, BaseWithReferences<_$AppDatabase, TextEntry>),
-    TextEntry>;
+    (
+      TextEntry,
+      BaseWithReferences<_$AppDatabase, TextEntry, $TextEntriesPrefetchedData>
+    ),
+    TextEntry,
+    $TextEntriesCreatePrefetchedDataCallback,
+    $TextEntriesPrefetchedData>;
+typedef $TextEntriesCreatePrefetchedDataCallback
+    = Future<$TextEntriesPrefetchedData> Function(
+            _$AppDatabase, List<TextEntry>)
+        Function();
+
+class $TextEntriesPrefetchedData {
+  $TextEntriesPrefetchedData();
+}
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;

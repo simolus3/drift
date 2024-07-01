@@ -219,9 +219,12 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
     $$ShoppingCartsTableUpdateCompanionBuilder,
     (
       i2.ShoppingCart,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCart>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCart,
+          $$ShoppingCartsTablePrefetchedData>
     ),
-    i2.ShoppingCart> {
+    i2.ShoppingCart,
+    $$ShoppingCartsTableCreatePrefetchedDataCallback,
+    $$ShoppingCartsTablePrefetchedData> {
   $$ShoppingCartsTableTableManager(
       i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
       : super(i0.TableManagerState(
@@ -231,8 +234,15 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $$ShoppingCartsTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
           }) =>
@@ -258,9 +268,20 @@ typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
     $$ShoppingCartsTableUpdateCompanionBuilder,
     (
       i2.ShoppingCart,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCart>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCart,
+          $$ShoppingCartsTablePrefetchedData>
     ),
-    i2.ShoppingCart>;
+    i2.ShoppingCart,
+    $$ShoppingCartsTableCreatePrefetchedDataCallback,
+    $$ShoppingCartsTablePrefetchedData>;
+typedef $$ShoppingCartsTableCreatePrefetchedDataCallback
+    = Future<$$ShoppingCartsTablePrefetchedData> Function(
+            i0.GeneratedDatabase, List<i2.ShoppingCart>)
+        Function();
+
+class $$ShoppingCartsTablePrefetchedData {
+  $$ShoppingCartsTablePrefetchedData();
+}
 
 class $ShoppingCartEntriesTable extends i3.ShoppingCartEntries
     with i0.TableInfo<$ShoppingCartEntriesTable, i2.ShoppingCartEntry> {
@@ -575,9 +596,12 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
     $$ShoppingCartEntriesTableUpdateCompanionBuilder,
     (
       i2.ShoppingCartEntry,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCartEntry>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCartEntry,
+          $$ShoppingCartEntriesTablePrefetchedData>
     ),
-    i2.ShoppingCartEntry> {
+    i2.ShoppingCartEntry,
+    $$ShoppingCartEntriesTableCreatePrefetchedDataCallback,
+    $$ShoppingCartEntriesTablePrefetchedData> {
   $$ShoppingCartEntriesTableTableManager(
       i0.GeneratedDatabase db, i2.$ShoppingCartEntriesTable table)
       : super(i0.TableManagerState(
@@ -587,8 +611,15 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           orderingComposer: i2.$$ShoppingCartEntriesTableOrderingComposer(
               i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $$ShoppingCartEntriesTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> shoppingCart = const i0.Value.absent(),
             i0.Value<int> item = const i0.Value.absent(),
@@ -623,6 +654,17 @@ typedef $$ShoppingCartEntriesTableProcessedTableManager
         $$ShoppingCartEntriesTableUpdateCompanionBuilder,
         (
           i2.ShoppingCartEntry,
-          i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCartEntry>
+          i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCartEntry,
+              $$ShoppingCartEntriesTablePrefetchedData>
         ),
-        i2.ShoppingCartEntry>;
+        i2.ShoppingCartEntry,
+        $$ShoppingCartEntriesTableCreatePrefetchedDataCallback,
+        $$ShoppingCartEntriesTablePrefetchedData>;
+typedef $$ShoppingCartEntriesTableCreatePrefetchedDataCallback
+    = Future<$$ShoppingCartEntriesTablePrefetchedData> Function(
+            i0.GeneratedDatabase, List<i2.ShoppingCartEntry>)
+        Function();
+
+class $$ShoppingCartEntriesTablePrefetchedData {
+  $$ShoppingCartEntriesTablePrefetchedData();
+}

@@ -245,8 +245,14 @@ class $$ExampleTableTableTableManager extends RootTableManager<
     $$ExampleTableTableOrderingComposer,
     $$ExampleTableTableCreateCompanionBuilder,
     $$ExampleTableTableUpdateCompanionBuilder,
-    (ExampleTableData, BaseWithReferences<_$ExampleDatabase, ExampleTableData>),
-    ExampleTableData> {
+    (
+      ExampleTableData,
+      BaseWithReferences<_$ExampleDatabase, ExampleTableData,
+          $$ExampleTableTablePrefetchedData>
+    ),
+    ExampleTableData,
+    $$ExampleTableTableCreatePrefetchedDataCallback,
+    $$ExampleTableTablePrefetchedData> {
   $$ExampleTableTableTableManager(
       _$ExampleDatabase db, $ExampleTableTable table)
       : super(TableManagerState(
@@ -256,8 +262,15 @@ class $$ExampleTableTableTableManager extends RootTableManager<
               $$ExampleTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ExampleTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$ExampleTableTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -285,8 +298,22 @@ typedef $$ExampleTableTableProcessedTableManager = ProcessedTableManager<
     $$ExampleTableTableOrderingComposer,
     $$ExampleTableTableCreateCompanionBuilder,
     $$ExampleTableTableUpdateCompanionBuilder,
-    (ExampleTableData, BaseWithReferences<_$ExampleDatabase, ExampleTableData>),
-    ExampleTableData>;
+    (
+      ExampleTableData,
+      BaseWithReferences<_$ExampleDatabase, ExampleTableData,
+          $$ExampleTableTablePrefetchedData>
+    ),
+    ExampleTableData,
+    $$ExampleTableTableCreatePrefetchedDataCallback,
+    $$ExampleTableTablePrefetchedData>;
+typedef $$ExampleTableTableCreatePrefetchedDataCallback
+    = Future<$$ExampleTableTablePrefetchedData> Function(
+            _$ExampleDatabase, List<ExampleTableData>)
+        Function();
+
+class $$ExampleTableTablePrefetchedData {
+  $$ExampleTableTablePrefetchedData();
+}
 
 class $ExampleDatabaseManager {
   final _$ExampleDatabase _db;

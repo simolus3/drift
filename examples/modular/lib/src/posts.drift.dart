@@ -306,8 +306,13 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.$PostsOrderingComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    (i1.Post, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Post>),
-    i1.Post> {
+    (
+      i1.Post,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Post, $PostsPrefetchedData>
+    ),
+    i1.Post,
+    $PostsCreatePrefetchedDataCallback,
+    $PostsPrefetchedData> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
           db: db,
@@ -316,8 +321,15 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $PostsPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<int> author = const i0.Value.absent(),
@@ -349,8 +361,20 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i1.$PostsOrderingComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    (i1.Post, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Post>),
-    i1.Post>;
+    (
+      i1.Post,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Post, $PostsPrefetchedData>
+    ),
+    i1.Post,
+    $PostsCreatePrefetchedDataCallback,
+    $PostsPrefetchedData>;
+typedef $PostsCreatePrefetchedDataCallback = Future<$PostsPrefetchedData>
+        Function(i0.GeneratedDatabase, List<i1.Post>)
+    Function();
+
+class $PostsPrefetchedData {
+  $PostsPrefetchedData();
+}
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
   @override
@@ -643,8 +667,13 @@ class $LikesTableManager extends i0.RootTableManager<
     i1.$LikesOrderingComposer,
     $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder,
-    (i1.Like, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Like>),
-    i1.Like> {
+    (
+      i1.Like,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Like, $LikesPrefetchedData>
+    ),
+    i1.Like,
+    $LikesCreatePrefetchedDataCallback,
+    $LikesPrefetchedData> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
       : super(i0.TableManagerState(
           db: db,
@@ -653,8 +682,15 @@ class $LikesTableManager extends i0.RootTableManager<
               i1.$LikesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$LikesOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $LikesPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> post = const i0.Value.absent(),
             i0.Value<int> likedBy = const i0.Value.absent(),
@@ -686,5 +722,17 @@ typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
     i1.$LikesOrderingComposer,
     $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder,
-    (i1.Like, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Like>),
-    i1.Like>;
+    (
+      i1.Like,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Like, $LikesPrefetchedData>
+    ),
+    i1.Like,
+    $LikesCreatePrefetchedDataCallback,
+    $LikesPrefetchedData>;
+typedef $LikesCreatePrefetchedDataCallback = Future<$LikesPrefetchedData>
+        Function(i0.GeneratedDatabase, List<i1.Like>)
+    Function();
+
+class $LikesPrefetchedData {
+  $LikesPrefetchedData();
+}

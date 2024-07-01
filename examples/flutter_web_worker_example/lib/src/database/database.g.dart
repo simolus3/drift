@@ -257,16 +257,25 @@ class $EntriesTableManager extends RootTableManager<
     $EntriesOrderingComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
-    (Entry, BaseWithReferences<_$MyDatabase, Entry>),
-    Entry> {
+    (Entry, BaseWithReferences<_$MyDatabase, Entry, $EntriesPrefetchedData>),
+    Entry,
+    $EntriesCreatePrefetchedDataCallback,
+    $EntriesPrefetchedData> {
   $EntriesTableManager(_$MyDatabase db, Entries table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
           orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $EntriesPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
@@ -294,8 +303,17 @@ typedef $EntriesProcessedTableManager = ProcessedTableManager<
     $EntriesOrderingComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
-    (Entry, BaseWithReferences<_$MyDatabase, Entry>),
-    Entry>;
+    (Entry, BaseWithReferences<_$MyDatabase, Entry, $EntriesPrefetchedData>),
+    Entry,
+    $EntriesCreatePrefetchedDataCallback,
+    $EntriesPrefetchedData>;
+typedef $EntriesCreatePrefetchedDataCallback = Future<$EntriesPrefetchedData>
+        Function(_$MyDatabase, List<Entry>)
+    Function();
+
+class $EntriesPrefetchedData {
+  $EntriesPrefetchedData();
+}
 
 class $MyDatabaseManager {
   final _$MyDatabase _db;

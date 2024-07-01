@@ -361,8 +361,13 @@ class $TodosTableManager extends i0.RootTableManager<
     i1.$TodosOrderingComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
-    (i1.Todo, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Todo>),
-    i1.Todo> {
+    (
+      i1.Todo,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Todo, $TodosPrefetchedData>
+    ),
+    i1.Todo,
+    $TodosCreatePrefetchedDataCallback,
+    $TodosPrefetchedData> {
   $TodosTableManager(i0.GeneratedDatabase db, i1.Todos table)
       : super(i0.TableManagerState(
           db: db,
@@ -371,8 +376,15 @@ class $TodosTableManager extends i0.RootTableManager<
               i1.$TodosFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$TodosOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $TodosPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
@@ -408,8 +420,20 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     i1.$TodosOrderingComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
-    (i1.Todo, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Todo>),
-    i1.Todo>;
+    (
+      i1.Todo,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Todo, $TodosPrefetchedData>
+    ),
+    i1.Todo,
+    $TodosCreatePrefetchedDataCallback,
+    $TodosPrefetchedData>;
+typedef $TodosCreatePrefetchedDataCallback = Future<$TodosPrefetchedData>
+        Function(i0.GeneratedDatabase, List<i1.Todo>)
+    Function();
+
+class $TodosPrefetchedData {
+  $TodosPrefetchedData();
+}
 
 class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {
   @override
@@ -641,8 +665,14 @@ class $CategoriesTableManager extends i0.RootTableManager<
     i1.$CategoriesOrderingComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
-    (i1.Category, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Category>),
-    i1.Category> {
+    (
+      i1.Category,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Category,
+          $CategoriesPrefetchedData>
+    ),
+    i1.Category,
+    $CategoriesCreatePrefetchedDataCallback,
+    $CategoriesPrefetchedData> {
   $CategoriesTableManager(i0.GeneratedDatabase db, i1.Categories table)
       : super(i0.TableManagerState(
           db: db,
@@ -651,8 +681,15 @@ class $CategoriesTableManager extends i0.RootTableManager<
               i1.$CategoriesFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$CategoriesOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $CategoriesPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -680,8 +717,22 @@ typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
     i1.$CategoriesOrderingComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
-    (i1.Category, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Category>),
-    i1.Category>;
+    (
+      i1.Category,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Category,
+          $CategoriesPrefetchedData>
+    ),
+    i1.Category,
+    $CategoriesCreatePrefetchedDataCallback,
+    $CategoriesPrefetchedData>;
+typedef $CategoriesCreatePrefetchedDataCallback
+    = Future<$CategoriesPrefetchedData> Function(
+            i0.GeneratedDatabase, List<i1.Category>)
+        Function();
+
+class $CategoriesPrefetchedData {
+  $CategoriesPrefetchedData();
+}
 
 class ExampleDrift extends i2.ModularAccessor {
   ExampleDrift(i0.GeneratedDatabase db) : super(db);

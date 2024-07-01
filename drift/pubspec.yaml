@@ -19,6 +19,7 @@ dependencies:
   path: ^1.8.0
   stack_trace: ^1.11.1
   web: ^0.5.0
+  stream_transform: ^2.1.0
 
 dev_dependencies:
   archive: ^3.3.1

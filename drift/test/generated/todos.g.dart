@@ -3519,13 +3519,19 @@ class $$CategoriesTableOrderingComposer
               ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$CategoriesTableWithReferences
-    extends BaseWithReferences<_$TodoDb, Category> {
-  $$CategoriesTableWithReferences(super.$_db, super.$_item);
+class $$CategoriesTableWithReferences extends BaseWithReferences<_$TodoDb,
+    Category, $$CategoriesTablePrefetchedData> {
+  $$CategoriesTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$TodosTableTableProcessedTableManager get todos {
-    return $$TodosTableTableTableManager($_db, $_db.todosTable)
+    final manager = $$TodosTableTableTableManager($_db, $_db.todosTable)
         .filter((f) => f.category.id($_item.id));
+    final state = manager.$state.copyWith(
+        cache: $_prefetchedData?.todos
+            ?.where((e) => e.category == $_item.id)
+            .toList());
+    return ProcessedTableManager(state);
   }
 }
 
@@ -3538,7 +3544,9 @@ class $$CategoriesTableTableManager extends RootTableManager<
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
     (Category, $$CategoriesTableWithReferences),
-    Category> {
+    Category,
+    $$CategoriesTableCreatePrefetchedDataCallback,
+    $$CategoriesTablePrefetchedData> {
   $$CategoriesTableTableManager(_$TodoDb db, $CategoriesTable table)
       : super(TableManagerState(
           db: db,
@@ -3547,9 +3555,26 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$CategoriesTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$CategoriesTableWithReferences(db, e)))
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$CategoriesTableWithReferences(db, e, p1)))
               .toList(),
+          createPrefetchedDataGetterCallback: ({todos = false}) {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$CategoriesTableWithReferences(db, e));
+
+              final prefetchedtodos = todos
+                  ? await managers
+                      .map((e) => e.todos)
+                      .reduceToSingleTableManager()
+                      ?.get()
+                  : null;
+
+              return $$CategoriesTablePrefetchedData(
+                todos: prefetchedtodos,
+              );
+            };
+          },
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -3582,7 +3607,21 @@ typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
     (Category, $$CategoriesTableWithReferences),
-    Category>;
+    Category,
+    $$CategoriesTableCreatePrefetchedDataCallback,
+    $$CategoriesTablePrefetchedData>;
+typedef $$CategoriesTableCreatePrefetchedDataCallback
+    = Future<$$CategoriesTablePrefetchedData> Function(_$TodoDb, List<Category>)
+        Function({bool todos});
+
+class $$CategoriesTablePrefetchedData {
+  $$CategoriesTablePrefetchedData({
+    this.todos,
+  });
+
+  final List<TodoEntry>? todos;
+}
+
 typedef $$TodosTableTableCreateCompanionBuilder = TodosTableCompanion Function({
   Value<RowId> id,
   Value<String?> title,
@@ -3686,9 +3725,10 @@ class $$TodosTableTableOrderingComposer
   }
 }
 
-class $$TodosTableTableWithReferences
-    extends BaseWithReferences<_$TodoDb, TodoEntry> {
-  $$TodosTableTableWithReferences(super.$_db, super.$_item);
+class $$TodosTableTableWithReferences extends BaseWithReferences<_$TodoDb,
+    TodoEntry, $$TodosTableTablePrefetchedData> {
+  $$TodosTableTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$CategoriesTableProcessedTableManager? get category {
     if ($_item.category == null) return null;
@@ -3706,7 +3746,9 @@ class $$TodosTableTableTableManager extends RootTableManager<
     $$TodosTableTableCreateCompanionBuilder,
     $$TodosTableTableUpdateCompanionBuilder,
     (TodoEntry, $$TodosTableTableWithReferences),
-    TodoEntry> {
+    TodoEntry,
+    $$TodosTableTableCreatePrefetchedDataCallback,
+    $$TodosTableTablePrefetchedData> {
   $$TodosTableTableTableManager(_$TodoDb db, $TodosTableTable table)
       : super(TableManagerState(
           db: db,
@@ -3715,9 +3757,17 @@ class $$TodosTableTableTableManager extends RootTableManager<
               $$TodosTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TodosTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$TodosTableTableWithReferences(db, e)))
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$TodosTableTableWithReferences(db, e, p1)))
               .toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$TodosTableTableWithReferences(db, e));
+
+              return $$TodosTableTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String?> title = const Value.absent(),
@@ -3762,7 +3812,18 @@ typedef $$TodosTableTableProcessedTableManager = ProcessedTableManager<
     $$TodosTableTableCreateCompanionBuilder,
     $$TodosTableTableUpdateCompanionBuilder,
     (TodoEntry, $$TodosTableTableWithReferences),
-    TodoEntry>;
+    TodoEntry,
+    $$TodosTableTableCreatePrefetchedDataCallback,
+    $$TodosTableTablePrefetchedData>;
+typedef $$TodosTableTableCreatePrefetchedDataCallback
+    = Future<$$TodosTableTablePrefetchedData> Function(
+            _$TodoDb, List<TodoEntry>)
+        Function();
+
+class $$TodosTableTablePrefetchedData {
+  $$TodosTableTablePrefetchedData();
+}
+
 typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
   Value<RowId> id,
   required String name,
@@ -3845,8 +3906,10 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    (User, BaseWithReferences<_$TodoDb, User>),
-    User> {
+    (User, BaseWithReferences<_$TodoDb, User, $$UsersTablePrefetchedData>),
+    User,
+    $$UsersTableCreatePrefetchedDataCallback,
+    $$UsersTablePrefetchedData> {
   $$UsersTableTableManager(_$TodoDb db, $UsersTable table)
       : super(TableManagerState(
           db: db,
@@ -3855,8 +3918,15 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$UsersTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -3896,8 +3966,18 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableOrderingComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
-    (User, BaseWithReferences<_$TodoDb, User>),
-    User>;
+    (User, BaseWithReferences<_$TodoDb, User, $$UsersTablePrefetchedData>),
+    User,
+    $$UsersTableCreatePrefetchedDataCallback,
+    $$UsersTablePrefetchedData>;
+typedef $$UsersTableCreatePrefetchedDataCallback
+    = Future<$$UsersTablePrefetchedData> Function(_$TodoDb, List<User>)
+        Function();
+
+class $$UsersTablePrefetchedData {
+  $$UsersTablePrefetchedData();
+}
+
 typedef $$SharedTodosTableCreateCompanionBuilder = SharedTodosCompanion
     Function({
   required int todo,
@@ -3947,8 +4027,13 @@ class $$SharedTodosTableTableManager extends RootTableManager<
     $$SharedTodosTableOrderingComposer,
     $$SharedTodosTableCreateCompanionBuilder,
     $$SharedTodosTableUpdateCompanionBuilder,
-    (SharedTodo, BaseWithReferences<_$TodoDb, SharedTodo>),
-    SharedTodo> {
+    (
+      SharedTodo,
+      BaseWithReferences<_$TodoDb, SharedTodo, $$SharedTodosTablePrefetchedData>
+    ),
+    SharedTodo,
+    $$SharedTodosTableCreatePrefetchedDataCallback,
+    $$SharedTodosTablePrefetchedData> {
   $$SharedTodosTableTableManager(_$TodoDb db, $SharedTodosTable table)
       : super(TableManagerState(
           db: db,
@@ -3957,8 +4042,15 @@ class $$SharedTodosTableTableManager extends RootTableManager<
               $$SharedTodosTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$SharedTodosTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$SharedTodosTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> todo = const Value.absent(),
             Value<int> user = const Value.absent(),
@@ -3990,8 +4082,22 @@ typedef $$SharedTodosTableProcessedTableManager = ProcessedTableManager<
     $$SharedTodosTableOrderingComposer,
     $$SharedTodosTableCreateCompanionBuilder,
     $$SharedTodosTableUpdateCompanionBuilder,
-    (SharedTodo, BaseWithReferences<_$TodoDb, SharedTodo>),
-    SharedTodo>;
+    (
+      SharedTodo,
+      BaseWithReferences<_$TodoDb, SharedTodo, $$SharedTodosTablePrefetchedData>
+    ),
+    SharedTodo,
+    $$SharedTodosTableCreatePrefetchedDataCallback,
+    $$SharedTodosTablePrefetchedData>;
+typedef $$SharedTodosTableCreatePrefetchedDataCallback
+    = Future<$$SharedTodosTablePrefetchedData> Function(
+            _$TodoDb, List<SharedTodo>)
+        Function();
+
+class $$SharedTodosTablePrefetchedData {
+  $$SharedTodosTablePrefetchedData();
+}
+
 typedef $$TableWithoutPKTableCreateCompanionBuilder = TableWithoutPKCompanion
     Function({
   required int notReallyAnId,
@@ -4067,8 +4173,14 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
     $$TableWithoutPKTableOrderingComposer,
     $$TableWithoutPKTableCreateCompanionBuilder,
     $$TableWithoutPKTableUpdateCompanionBuilder,
-    (CustomRowClass, BaseWithReferences<_$TodoDb, CustomRowClass>),
-    CustomRowClass> {
+    (
+      CustomRowClass,
+      BaseWithReferences<_$TodoDb, CustomRowClass,
+          $$TableWithoutPKTablePrefetchedData>
+    ),
+    CustomRowClass,
+    $$TableWithoutPKTableCreatePrefetchedDataCallback,
+    $$TableWithoutPKTablePrefetchedData> {
   $$TableWithoutPKTableTableManager(_$TodoDb db, $TableWithoutPKTable table)
       : super(TableManagerState(
           db: db,
@@ -4077,8 +4189,15 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
               $$TableWithoutPKTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TableWithoutPKTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$TableWithoutPKTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> notReallyAnId = const Value.absent(),
             Value<double> someFloat = const Value.absent(),
@@ -4118,8 +4237,23 @@ typedef $$TableWithoutPKTableProcessedTableManager = ProcessedTableManager<
     $$TableWithoutPKTableOrderingComposer,
     $$TableWithoutPKTableCreateCompanionBuilder,
     $$TableWithoutPKTableUpdateCompanionBuilder,
-    (CustomRowClass, BaseWithReferences<_$TodoDb, CustomRowClass>),
-    CustomRowClass>;
+    (
+      CustomRowClass,
+      BaseWithReferences<_$TodoDb, CustomRowClass,
+          $$TableWithoutPKTablePrefetchedData>
+    ),
+    CustomRowClass,
+    $$TableWithoutPKTableCreatePrefetchedDataCallback,
+    $$TableWithoutPKTablePrefetchedData>;
+typedef $$TableWithoutPKTableCreatePrefetchedDataCallback
+    = Future<$$TableWithoutPKTablePrefetchedData> Function(
+            _$TodoDb, List<CustomRowClass>)
+        Function();
+
+class $$TableWithoutPKTablePrefetchedData {
+  $$TableWithoutPKTablePrefetchedData();
+}
+
 typedef $$PureDefaultsTableCreateCompanionBuilder = PureDefaultsCompanion
     Function({
   Value<MyCustomObject?> txt,
@@ -4159,8 +4293,14 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
     $$PureDefaultsTableOrderingComposer,
     $$PureDefaultsTableCreateCompanionBuilder,
     $$PureDefaultsTableUpdateCompanionBuilder,
-    (PureDefault, BaseWithReferences<_$TodoDb, PureDefault>),
-    PureDefault> {
+    (
+      PureDefault,
+      BaseWithReferences<_$TodoDb, PureDefault,
+          $$PureDefaultsTablePrefetchedData>
+    ),
+    PureDefault,
+    $$PureDefaultsTableCreatePrefetchedDataCallback,
+    $$PureDefaultsTablePrefetchedData> {
   $$PureDefaultsTableTableManager(_$TodoDb db, $PureDefaultsTable table)
       : super(TableManagerState(
           db: db,
@@ -4169,8 +4309,15 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
               $$PureDefaultsTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$PureDefaultsTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$PureDefaultsTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<MyCustomObject?> txt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -4198,8 +4345,23 @@ typedef $$PureDefaultsTableProcessedTableManager = ProcessedTableManager<
     $$PureDefaultsTableOrderingComposer,
     $$PureDefaultsTableCreateCompanionBuilder,
     $$PureDefaultsTableUpdateCompanionBuilder,
-    (PureDefault, BaseWithReferences<_$TodoDb, PureDefault>),
-    PureDefault>;
+    (
+      PureDefault,
+      BaseWithReferences<_$TodoDb, PureDefault,
+          $$PureDefaultsTablePrefetchedData>
+    ),
+    PureDefault,
+    $$PureDefaultsTableCreatePrefetchedDataCallback,
+    $$PureDefaultsTablePrefetchedData>;
+typedef $$PureDefaultsTableCreatePrefetchedDataCallback
+    = Future<$$PureDefaultsTablePrefetchedData> Function(
+            _$TodoDb, List<PureDefault>)
+        Function();
+
+class $$PureDefaultsTablePrefetchedData {
+  $$PureDefaultsTablePrefetchedData();
+}
+
 typedef $$WithCustomTypeTableCreateCompanionBuilder = WithCustomTypeCompanion
     Function({
   required UuidValue id,
@@ -4237,8 +4399,14 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
     $$WithCustomTypeTableOrderingComposer,
     $$WithCustomTypeTableCreateCompanionBuilder,
     $$WithCustomTypeTableUpdateCompanionBuilder,
-    (WithCustomTypeData, BaseWithReferences<_$TodoDb, WithCustomTypeData>),
-    WithCustomTypeData> {
+    (
+      WithCustomTypeData,
+      BaseWithReferences<_$TodoDb, WithCustomTypeData,
+          $$WithCustomTypeTablePrefetchedData>
+    ),
+    WithCustomTypeData,
+    $$WithCustomTypeTableCreatePrefetchedDataCallback,
+    $$WithCustomTypeTablePrefetchedData> {
   $$WithCustomTypeTableTableManager(_$TodoDb db, $WithCustomTypeTable table)
       : super(TableManagerState(
           db: db,
@@ -4247,8 +4415,15 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
               $$WithCustomTypeTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$WithCustomTypeTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$WithCustomTypeTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -4276,8 +4451,23 @@ typedef $$WithCustomTypeTableProcessedTableManager = ProcessedTableManager<
     $$WithCustomTypeTableOrderingComposer,
     $$WithCustomTypeTableCreateCompanionBuilder,
     $$WithCustomTypeTableUpdateCompanionBuilder,
-    (WithCustomTypeData, BaseWithReferences<_$TodoDb, WithCustomTypeData>),
-    WithCustomTypeData>;
+    (
+      WithCustomTypeData,
+      BaseWithReferences<_$TodoDb, WithCustomTypeData,
+          $$WithCustomTypeTablePrefetchedData>
+    ),
+    WithCustomTypeData,
+    $$WithCustomTypeTableCreatePrefetchedDataCallback,
+    $$WithCustomTypeTablePrefetchedData>;
+typedef $$WithCustomTypeTableCreatePrefetchedDataCallback
+    = Future<$$WithCustomTypeTablePrefetchedData> Function(
+            _$TodoDb, List<WithCustomTypeData>)
+        Function();
+
+class $$WithCustomTypeTablePrefetchedData {
+  $$WithCustomTypeTablePrefetchedData();
+}
+
 typedef $$TableWithEveryColumnTypeTableCreateCompanionBuilder
     = TableWithEveryColumnTypeCompanion Function({
   Value<RowId> id,
@@ -4429,9 +4619,12 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
     $$TableWithEveryColumnTypeTableUpdateCompanionBuilder,
     (
       TableWithEveryColumnTypeData,
-      BaseWithReferences<_$TodoDb, TableWithEveryColumnTypeData>
+      BaseWithReferences<_$TodoDb, TableWithEveryColumnTypeData,
+          $$TableWithEveryColumnTypeTablePrefetchedData>
     ),
-    TableWithEveryColumnTypeData> {
+    TableWithEveryColumnTypeData,
+    $$TableWithEveryColumnTypeTableCreatePrefetchedDataCallback,
+    $$TableWithEveryColumnTypeTablePrefetchedData> {
   $$TableWithEveryColumnTypeTableTableManager(
       _$TodoDb db, $TableWithEveryColumnTypeTable table)
       : super(TableManagerState(
@@ -4441,8 +4634,15 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
               ComposerState(db, table)),
           orderingComposer: $$TableWithEveryColumnTypeTableOrderingComposer(
               ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$TableWithEveryColumnTypeTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<bool?> aBool = const Value.absent(),
@@ -4505,9 +4705,21 @@ typedef $$TableWithEveryColumnTypeTableProcessedTableManager
         $$TableWithEveryColumnTypeTableUpdateCompanionBuilder,
         (
           TableWithEveryColumnTypeData,
-          BaseWithReferences<_$TodoDb, TableWithEveryColumnTypeData>
+          BaseWithReferences<_$TodoDb, TableWithEveryColumnTypeData,
+              $$TableWithEveryColumnTypeTablePrefetchedData>
         ),
-        TableWithEveryColumnTypeData>;
+        TableWithEveryColumnTypeData,
+        $$TableWithEveryColumnTypeTableCreatePrefetchedDataCallback,
+        $$TableWithEveryColumnTypeTablePrefetchedData>;
+typedef $$TableWithEveryColumnTypeTableCreatePrefetchedDataCallback
+    = Future<$$TableWithEveryColumnTypeTablePrefetchedData> Function(
+            _$TodoDb, List<TableWithEveryColumnTypeData>)
+        Function();
+
+class $$TableWithEveryColumnTypeTablePrefetchedData {
+  $$TableWithEveryColumnTypeTablePrefetchedData();
+}
+
 typedef $$DepartmentTableCreateCompanionBuilder = DepartmentCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -4558,13 +4770,19 @@ class $$DepartmentTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$DepartmentTableWithReferences
-    extends BaseWithReferences<_$TodoDb, DepartmentData> {
-  $$DepartmentTableWithReferences(super.$_db, super.$_item);
+class $$DepartmentTableWithReferences extends BaseWithReferences<_$TodoDb,
+    DepartmentData, $$DepartmentTablePrefetchedData> {
+  $$DepartmentTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$ProductTableProcessedTableManager get productRefs {
-    return $$ProductTableTableManager($_db, $_db.product)
+    final manager = $$ProductTableTableManager($_db, $_db.product)
         .filter((f) => f.department.id($_item.id));
+    final state = manager.$state.copyWith(
+        cache: $_prefetchedData?.productRefs
+            ?.where((e) => e.department == $_item.id)
+            .toList());
+    return ProcessedTableManager(state);
   }
 }
 
@@ -4577,7 +4795,9 @@ class $$DepartmentTableTableManager extends RootTableManager<
     $$DepartmentTableCreateCompanionBuilder,
     $$DepartmentTableUpdateCompanionBuilder,
     (DepartmentData, $$DepartmentTableWithReferences),
-    DepartmentData> {
+    DepartmentData,
+    $$DepartmentTableCreatePrefetchedDataCallback,
+    $$DepartmentTablePrefetchedData> {
   $$DepartmentTableTableManager(_$TodoDb db, $DepartmentTable table)
       : super(TableManagerState(
           db: db,
@@ -4586,9 +4806,26 @@ class $$DepartmentTableTableManager extends RootTableManager<
               $$DepartmentTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$DepartmentTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e, $$DepartmentTableWithReferences(db, e)))
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$DepartmentTableWithReferences(db, e, p1)))
               .toList(),
+          createPrefetchedDataGetterCallback: ({productRefs = false}) {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$DepartmentTableWithReferences(db, e));
+
+              final prefetchedproductRefs = productRefs
+                  ? await managers
+                      .map((e) => e.productRefs)
+                      .reduceToSingleTableManager()
+                      ?.get()
+                  : null;
+
+              return $$DepartmentTablePrefetchedData(
+                productRefs: prefetchedproductRefs,
+              );
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -4617,7 +4854,22 @@ typedef $$DepartmentTableProcessedTableManager = ProcessedTableManager<
     $$DepartmentTableCreateCompanionBuilder,
     $$DepartmentTableUpdateCompanionBuilder,
     (DepartmentData, $$DepartmentTableWithReferences),
-    DepartmentData>;
+    DepartmentData,
+    $$DepartmentTableCreatePrefetchedDataCallback,
+    $$DepartmentTablePrefetchedData>;
+typedef $$DepartmentTableCreatePrefetchedDataCallback
+    = Future<$$DepartmentTablePrefetchedData> Function(
+            _$TodoDb, List<DepartmentData>)
+        Function({bool productRefs});
+
+class $$DepartmentTablePrefetchedData {
+  $$DepartmentTablePrefetchedData({
+    this.productRefs,
+  });
+
+  final List<ProductData>? productRefs;
+}
+
 typedef $$ProductTableCreateCompanionBuilder = ProductCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -4694,9 +4946,10 @@ class $$ProductTableOrderingComposer
   }
 }
 
-class $$ProductTableWithReferences
-    extends BaseWithReferences<_$TodoDb, ProductData> {
-  $$ProductTableWithReferences(super.$_db, super.$_item);
+class $$ProductTableWithReferences extends BaseWithReferences<_$TodoDb,
+    ProductData, $$ProductTablePrefetchedData> {
+  $$ProductTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$DepartmentTableProcessedTableManager? get department {
     if ($_item.department == null) return null;
@@ -4705,8 +4958,13 @@ class $$ProductTableWithReferences
   }
 
   $$ListingTableProcessedTableManager get listings {
-    return $$ListingTableTableManager($_db, $_db.listing)
+    final manager = $$ListingTableTableManager($_db, $_db.listing)
         .filter((f) => f.product.id($_item.id));
+    final state = manager.$state.copyWith(
+        cache: $_prefetchedData?.listings
+            ?.where((e) => e.product == $_item.id)
+            .toList());
+    return ProcessedTableManager(state);
   }
 }
 
@@ -4719,7 +4977,9 @@ class $$ProductTableTableManager extends RootTableManager<
     $$ProductTableCreateCompanionBuilder,
     $$ProductTableUpdateCompanionBuilder,
     (ProductData, $$ProductTableWithReferences),
-    ProductData> {
+    ProductData,
+    $$ProductTableCreatePrefetchedDataCallback,
+    $$ProductTablePrefetchedData> {
   $$ProductTableTableManager(_$TodoDb db, $ProductTable table)
       : super(TableManagerState(
           db: db,
@@ -4728,8 +4988,26 @@ class $$ProductTableTableManager extends RootTableManager<
               $$ProductTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ProductTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $$ProductTableWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$ProductTableWithReferences(db, e, p1)))
+              .toList(),
+          createPrefetchedDataGetterCallback: ({listings = false}) {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$ProductTableWithReferences(db, e));
+
+              final prefetchedlistings = listings
+                  ? await managers
+                      .map((e) => e.listings)
+                      .reduceToSingleTableManager()
+                      ?.get()
+                  : null;
+
+              return $$ProductTablePrefetchedData(
+                listings: prefetchedlistings,
+              );
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -4762,7 +5040,21 @@ typedef $$ProductTableProcessedTableManager = ProcessedTableManager<
     $$ProductTableCreateCompanionBuilder,
     $$ProductTableUpdateCompanionBuilder,
     (ProductData, $$ProductTableWithReferences),
-    ProductData>;
+    ProductData,
+    $$ProductTableCreatePrefetchedDataCallback,
+    $$ProductTablePrefetchedData>;
+typedef $$ProductTableCreatePrefetchedDataCallback
+    = Future<$$ProductTablePrefetchedData> Function(_$TodoDb, List<ProductData>)
+        Function({bool listings});
+
+class $$ProductTablePrefetchedData {
+  $$ProductTablePrefetchedData({
+    this.listings,
+  });
+
+  final List<ListingData>? listings;
+}
+
 typedef $$StoreTableCreateCompanionBuilder = StoreCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -4812,13 +5104,19 @@ class $$StoreTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class $$StoreTableWithReferences
-    extends BaseWithReferences<_$TodoDb, StoreData> {
-  $$StoreTableWithReferences(super.$_db, super.$_item);
+class $$StoreTableWithReferences extends BaseWithReferences<_$TodoDb, StoreData,
+    $$StoreTablePrefetchedData> {
+  $$StoreTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$ListingTableProcessedTableManager get listings {
-    return $$ListingTableTableManager($_db, $_db.listing)
+    final manager = $$ListingTableTableManager($_db, $_db.listing)
         .filter((f) => f.store.id($_item.id));
+    final state = manager.$state.copyWith(
+        cache: $_prefetchedData?.listings
+            ?.where((e) => e.store == $_item.id)
+            .toList());
+    return ProcessedTableManager(state);
   }
 }
 
@@ -4831,7 +5129,9 @@ class $$StoreTableTableManager extends RootTableManager<
     $$StoreTableCreateCompanionBuilder,
     $$StoreTableUpdateCompanionBuilder,
     (StoreData, $$StoreTableWithReferences),
-    StoreData> {
+    StoreData,
+    $$StoreTableCreatePrefetchedDataCallback,
+    $$StoreTablePrefetchedData> {
   $$StoreTableTableManager(_$TodoDb db, $StoreTable table)
       : super(TableManagerState(
           db: db,
@@ -4840,8 +5140,26 @@ class $$StoreTableTableManager extends RootTableManager<
               $$StoreTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$StoreTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $$StoreTableWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$StoreTableWithReferences(db, e, p1)))
+              .toList(),
+          createPrefetchedDataGetterCallback: ({listings = false}) {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$StoreTableWithReferences(db, e));
+
+              final prefetchedlistings = listings
+                  ? await managers
+                      .map((e) => e.listings)
+                      .reduceToSingleTableManager()
+                      ?.get()
+                  : null;
+
+              return $$StoreTablePrefetchedData(
+                listings: prefetchedlistings,
+              );
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -4870,7 +5188,21 @@ typedef $$StoreTableProcessedTableManager = ProcessedTableManager<
     $$StoreTableCreateCompanionBuilder,
     $$StoreTableUpdateCompanionBuilder,
     (StoreData, $$StoreTableWithReferences),
-    StoreData>;
+    StoreData,
+    $$StoreTableCreatePrefetchedDataCallback,
+    $$StoreTablePrefetchedData>;
+typedef $$StoreTableCreatePrefetchedDataCallback
+    = Future<$$StoreTablePrefetchedData> Function(_$TodoDb, List<StoreData>)
+        Function({bool listings});
+
+class $$StoreTablePrefetchedData {
+  $$StoreTablePrefetchedData({
+    this.listings,
+  });
+
+  final List<ListingData>? listings;
+}
+
 typedef $$ListingTableCreateCompanionBuilder = ListingCompanion Function({
   Value<int> id,
   Value<int?> product,
@@ -4960,9 +5292,10 @@ class $$ListingTableOrderingComposer
   }
 }
 
-class $$ListingTableWithReferences
-    extends BaseWithReferences<_$TodoDb, ListingData> {
-  $$ListingTableWithReferences(super.$_db, super.$_item);
+class $$ListingTableWithReferences extends BaseWithReferences<_$TodoDb,
+    ListingData, $$ListingTablePrefetchedData> {
+  $$ListingTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$ProductTableProcessedTableManager? get product {
     if ($_item.product == null) return null;
@@ -4986,7 +5319,9 @@ class $$ListingTableTableManager extends RootTableManager<
     $$ListingTableCreateCompanionBuilder,
     $$ListingTableUpdateCompanionBuilder,
     (ListingData, $$ListingTableWithReferences),
-    ListingData> {
+    ListingData,
+    $$ListingTableCreatePrefetchedDataCallback,
+    $$ListingTablePrefetchedData> {
   $$ListingTableTableManager(_$TodoDb db, $ListingTable table)
       : super(TableManagerState(
           db: db,
@@ -4995,8 +5330,17 @@ class $$ListingTableTableManager extends RootTableManager<
               $$ListingTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$ListingTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $$ListingTableWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$ListingTableWithReferences(db, e, p1)))
+              .toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$ListingTableWithReferences(db, e));
+
+              return $$ListingTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int?> product = const Value.absent(),
@@ -5033,7 +5377,16 @@ typedef $$ListingTableProcessedTableManager = ProcessedTableManager<
     $$ListingTableCreateCompanionBuilder,
     $$ListingTableUpdateCompanionBuilder,
     (ListingData, $$ListingTableWithReferences),
-    ListingData>;
+    ListingData,
+    $$ListingTableCreatePrefetchedDataCallback,
+    $$ListingTablePrefetchedData>;
+typedef $$ListingTableCreatePrefetchedDataCallback
+    = Future<$$ListingTablePrefetchedData> Function(_$TodoDb, List<ListingData>)
+        Function();
+
+class $$ListingTablePrefetchedData {
+  $$ListingTablePrefetchedData();
+}
 
 class $TodoDbManager {
   final _$TodoDb _db;

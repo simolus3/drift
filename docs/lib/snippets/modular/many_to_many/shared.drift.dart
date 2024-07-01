@@ -289,9 +289,12 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
     $$BuyableItemsTableUpdateCompanionBuilder,
     (
       i1.BuyableItem,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.BuyableItem>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.BuyableItem,
+          $$BuyableItemsTablePrefetchedData>
     ),
-    i1.BuyableItem> {
+    i1.BuyableItem,
+    $$BuyableItemsTableCreatePrefetchedDataCallback,
+    $$BuyableItemsTablePrefetchedData> {
   $$BuyableItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
       : super(i0.TableManagerState(
@@ -301,8 +304,15 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
               i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $$BuyableItemsTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -336,6 +346,17 @@ typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
     $$BuyableItemsTableUpdateCompanionBuilder,
     (
       i1.BuyableItem,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.BuyableItem>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.BuyableItem,
+          $$BuyableItemsTablePrefetchedData>
     ),
-    i1.BuyableItem>;
+    i1.BuyableItem,
+    $$BuyableItemsTableCreatePrefetchedDataCallback,
+    $$BuyableItemsTablePrefetchedData>;
+typedef $$BuyableItemsTableCreatePrefetchedDataCallback
+    = Future<$$BuyableItemsTablePrefetchedData> Function(
+            i0.GeneratedDatabase, List<i1.BuyableItem>)
+        Function();
+
+class $$BuyableItemsTablePrefetchedData {
+  $$BuyableItemsTablePrefetchedData();
+}

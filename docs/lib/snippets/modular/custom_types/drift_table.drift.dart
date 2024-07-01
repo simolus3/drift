@@ -292,9 +292,12 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
     $PeriodicRemindersUpdateCompanionBuilder,
     (
       i1.PeriodicReminder,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.PeriodicReminder>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.PeriodicReminder,
+          $PeriodicRemindersPrefetchedData>
     ),
-    i1.PeriodicReminder> {
+    i1.PeriodicReminder,
+    $PeriodicRemindersCreatePrefetchedDataCallback,
+    $PeriodicRemindersPrefetchedData> {
   $PeriodicRemindersTableManager(
       i0.GeneratedDatabase db, i1.PeriodicReminders table)
       : super(i0.TableManagerState(
@@ -304,8 +307,15 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
               i1.$PeriodicRemindersFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$PeriodicRemindersOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $PeriodicRemindersPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<Duration> frequency = const i0.Value.absent(),
@@ -339,6 +349,17 @@ typedef $PeriodicRemindersProcessedTableManager = i0.ProcessedTableManager<
     $PeriodicRemindersUpdateCompanionBuilder,
     (
       i1.PeriodicReminder,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.PeriodicReminder>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.PeriodicReminder,
+          $PeriodicRemindersPrefetchedData>
     ),
-    i1.PeriodicReminder>;
+    i1.PeriodicReminder,
+    $PeriodicRemindersCreatePrefetchedDataCallback,
+    $PeriodicRemindersPrefetchedData>;
+typedef $PeriodicRemindersCreatePrefetchedDataCallback
+    = Future<$PeriodicRemindersPrefetchedData> Function(
+            i0.GeneratedDatabase, List<i1.PeriodicReminder>)
+        Function();
+
+class $PeriodicRemindersPrefetchedData {
+  $PeriodicRemindersPrefetchedData();
+}

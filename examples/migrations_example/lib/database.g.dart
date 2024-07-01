@@ -1017,8 +1017,10 @@ class $$UsersTableOrderingComposer
   }
 }
 
-class $$UsersTableWithReferences extends BaseWithReferences<_$Database, User> {
-  $$UsersTableWithReferences(super.$_db, super.$_item);
+class $$UsersTableWithReferences
+    extends BaseWithReferences<_$Database, User, $$UsersTablePrefetchedData> {
+  $$UsersTableWithReferences(super.$_db, super.$_item,
+      [super.$_prefetchedData]);
 
   $$UsersTableProcessedTableManager? get nextUser {
     if ($_item.nextUser == null) return null;
@@ -1027,8 +1029,13 @@ class $$UsersTableWithReferences extends BaseWithReferences<_$Database, User> {
   }
 
   $GroupsProcessedTableManager get groupsRefs {
-    return $GroupsTableManager($_db, $_db.groups)
+    final manager = $GroupsTableManager($_db, $_db.groups)
         .filter((f) => f.owner.id($_item.id));
+    final state = manager.$state.copyWith(
+        cache: $_prefetchedData?.groupsRefs
+            ?.where((e) => e.owner == $_item.id)
+            .toList());
+    return ProcessedTableManager(state);
   }
 }
 
@@ -1041,7 +1048,9 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
     (User, $$UsersTableWithReferences),
-    User> {
+    User,
+    $$UsersTableCreatePrefetchedDataCallback,
+    $$UsersTablePrefetchedData> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
           db: db,
@@ -1050,8 +1059,26 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$UsersTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $$UsersTableWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) => p0
+              .map((e) => (e, $$UsersTableWithReferences(db, e, p1)))
+              .toList(),
+          createPrefetchedDataGetterCallback: ({groupsRefs = false}) {
+            return (db, data) async {
+              final managers =
+                  data.map((e) => $$UsersTableWithReferences(db, e));
+
+              final prefetchedgroupsRefs = groupsRefs
+                  ? await managers
+                      .map((e) => e.groupsRefs)
+                      .reduceToSingleTableManager()
+                      ?.get()
+                  : null;
+
+              return $$UsersTablePrefetchedData(
+                groupsRefs: prefetchedgroupsRefs,
+              );
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -1088,7 +1115,21 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
     (User, $$UsersTableWithReferences),
-    User>;
+    User,
+    $$UsersTableCreatePrefetchedDataCallback,
+    $$UsersTablePrefetchedData>;
+typedef $$UsersTableCreatePrefetchedDataCallback
+    = Future<$$UsersTablePrefetchedData> Function(_$Database, List<User>)
+        Function({bool groupsRefs});
+
+class $$UsersTablePrefetchedData {
+  $$UsersTablePrefetchedData({
+    this.groupsRefs,
+  });
+
+  final List<Group>? groupsRefs;
+}
+
 typedef $GroupsCreateCompanionBuilder = GroupsCompanion Function({
   Value<int> id,
   required String title,
@@ -1162,8 +1203,9 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
   }
 }
 
-class $GroupsWithReferences extends BaseWithReferences<_$Database, Group> {
-  $GroupsWithReferences(super.$_db, super.$_item);
+class $GroupsWithReferences
+    extends BaseWithReferences<_$Database, Group, $GroupsPrefetchedData> {
+  $GroupsWithReferences(super.$_db, super.$_item, [super.$_prefetchedData]);
 
   $$UsersTableProcessedTableManager? get owner {
     if ($_item.owner == null) return null;
@@ -1181,15 +1223,24 @@ class $GroupsTableManager extends RootTableManager<
     $GroupsCreateCompanionBuilder,
     $GroupsUpdateCompanionBuilder,
     (Group, $GroupsWithReferences),
-    Group> {
+    Group,
+    $GroupsCreatePrefetchedDataCallback,
+    $GroupsPrefetchedData> {
   $GroupsTableManager(_$Database db, Groups table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
           orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, $GroupsWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, $GroupsWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => $GroupsWithReferences(db, e));
+
+              return $GroupsPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -1226,7 +1277,17 @@ typedef $GroupsProcessedTableManager = ProcessedTableManager<
     $GroupsCreateCompanionBuilder,
     $GroupsUpdateCompanionBuilder,
     (Group, $GroupsWithReferences),
-    Group>;
+    Group,
+    $GroupsCreatePrefetchedDataCallback,
+    $GroupsPrefetchedData>;
+typedef $GroupsCreatePrefetchedDataCallback = Future<$GroupsPrefetchedData>
+        Function(_$Database, List<Group>)
+    Function();
+
+class $GroupsPrefetchedData {
+  $GroupsPrefetchedData();
+}
+
 typedef $NotesCreateCompanionBuilder = NotesCompanion Function({
   required String title,
   required String content,
@@ -1284,16 +1345,25 @@ class $NotesTableManager extends RootTableManager<
     $NotesOrderingComposer,
     $NotesCreateCompanionBuilder,
     $NotesUpdateCompanionBuilder,
-    (Note, BaseWithReferences<_$Database, Note>),
-    Note> {
+    (Note, BaseWithReferences<_$Database, Note, $NotesPrefetchedData>),
+    Note,
+    $NotesCreatePrefetchedDataCallback,
+    $NotesPrefetchedData> {
   $NotesTableManager(_$Database db, Notes table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
           orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $NotesPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<String> title = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -1329,8 +1399,16 @@ typedef $NotesProcessedTableManager = ProcessedTableManager<
     $NotesOrderingComposer,
     $NotesCreateCompanionBuilder,
     $NotesUpdateCompanionBuilder,
-    (Note, BaseWithReferences<_$Database, Note>),
-    Note>;
+    (Note, BaseWithReferences<_$Database, Note, $NotesPrefetchedData>),
+    Note,
+    $NotesCreatePrefetchedDataCallback,
+    $NotesPrefetchedData>;
+typedef $NotesCreatePrefetchedDataCallback
+    = Future<$NotesPrefetchedData> Function(_$Database, List<Note>) Function();
+
+class $NotesPrefetchedData {
+  $NotesPrefetchedData();
+}
 
 class $DatabaseManager {
   final _$Database _db;

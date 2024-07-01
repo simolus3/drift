@@ -315,9 +315,12 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
     $$ActiveSessionsTableUpdateCompanionBuilder,
     (
       i3.ActiveSession,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i3.ActiveSession>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i3.ActiveSession,
+          $$ActiveSessionsTablePrefetchedData>
     ),
-    i3.ActiveSession> {
+    i3.ActiveSession,
+    $$ActiveSessionsTableCreatePrefetchedDataCallback,
+    $$ActiveSessionsTablePrefetchedData> {
   $$ActiveSessionsTableTableManager(
       i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
       : super(i0.TableManagerState(
@@ -327,8 +330,15 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
               .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
               i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $$ActiveSessionsTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
             i0.Value<String> bearerToken = const i0.Value.absent(),
@@ -362,6 +372,17 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
     $$ActiveSessionsTableUpdateCompanionBuilder,
     (
       i3.ActiveSession,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i3.ActiveSession>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i3.ActiveSession,
+          $$ActiveSessionsTablePrefetchedData>
     ),
-    i3.ActiveSession>;
+    i3.ActiveSession,
+    $$ActiveSessionsTableCreatePrefetchedDataCallback,
+    $$ActiveSessionsTablePrefetchedData>;
+typedef $$ActiveSessionsTableCreatePrefetchedDataCallback
+    = Future<$$ActiveSessionsTablePrefetchedData> Function(
+            i0.GeneratedDatabase, List<i3.ActiveSession>)
+        Function();
+
+class $$ActiveSessionsTablePrefetchedData {
+  $$ActiveSessionsTablePrefetchedData();
+}

@@ -241,8 +241,14 @@ class $$WordsTableTableManager extends i0.RootTableManager<
     i1.$$WordsTableOrderingComposer,
     $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder,
-    (i1.Word, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Word>),
-    i1.Word> {
+    (
+      i1.Word,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Word,
+          $$WordsTablePrefetchedData>
+    ),
+    i1.Word,
+    $$WordsTableCreatePrefetchedDataCallback,
+    $$WordsTablePrefetchedData> {
   $$WordsTableTableManager(i0.GeneratedDatabase db, i1.$WordsTable table)
       : super(i0.TableManagerState(
           db: db,
@@ -251,8 +257,15 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $$WordsTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
@@ -284,8 +297,22 @@ typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$WordsTableOrderingComposer,
     $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder,
-    (i1.Word, i0.BaseWithReferences<i0.GeneratedDatabase, i1.Word>),
-    i1.Word>;
+    (
+      i1.Word,
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.Word,
+          $$WordsTablePrefetchedData>
+    ),
+    i1.Word,
+    $$WordsTableCreatePrefetchedDataCallback,
+    $$WordsTablePrefetchedData>;
+typedef $$WordsTableCreatePrefetchedDataCallback
+    = Future<$$WordsTablePrefetchedData> Function(
+            i0.GeneratedDatabase, List<i1.Word>)
+        Function();
+
+class $$WordsTablePrefetchedData {
+  $$WordsTablePrefetchedData();
+}
 
 class $MatchResultsTable extends i2.MatchResults
     with i0.TableInfo<$MatchResultsTable, i1.MatchResult> {
@@ -627,9 +654,12 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
     $$MatchResultsTableUpdateCompanionBuilder,
     (
       i1.MatchResult,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.MatchResult>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.MatchResult,
+          $$MatchResultsTablePrefetchedData>
     ),
-    i1.MatchResult> {
+    i1.MatchResult,
+    $$MatchResultsTableCreatePrefetchedDataCallback,
+    $$MatchResultsTablePrefetchedData> {
   $$MatchResultsTableTableManager(
       i0.GeneratedDatabase db, i1.$MatchResultsTable table)
       : super(i0.TableManagerState(
@@ -639,8 +669,15 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer(i0.ComposerState(db, table)),
           orderingComposer: i1
               .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $$MatchResultsTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
@@ -678,6 +715,17 @@ typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
     $$MatchResultsTableUpdateCompanionBuilder,
     (
       i1.MatchResult,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.MatchResult>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.MatchResult,
+          $$MatchResultsTablePrefetchedData>
     ),
-    i1.MatchResult>;
+    i1.MatchResult,
+    $$MatchResultsTableCreatePrefetchedDataCallback,
+    $$MatchResultsTablePrefetchedData>;
+typedef $$MatchResultsTableCreatePrefetchedDataCallback
+    = Future<$$MatchResultsTablePrefetchedData> Function(
+            i0.GeneratedDatabase, List<i1.MatchResult>)
+        Function();
+
+class $$MatchResultsTablePrefetchedData {
+  $$MatchResultsTablePrefetchedData();
+}

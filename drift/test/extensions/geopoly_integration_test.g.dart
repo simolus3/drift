@@ -283,9 +283,12 @@ class $GeopolyTestTableManager extends RootTableManager<
     $GeopolyTestUpdateCompanionBuilder,
     (
       GeopolyTestData,
-      BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData>
+      BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData,
+          $GeopolyTestPrefetchedData>
     ),
-    GeopolyTestData> {
+    GeopolyTestData,
+    $GeopolyTestCreatePrefetchedDataCallback,
+    $GeopolyTestPrefetchedData> {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
       : super(TableManagerState(
           db: db,
@@ -294,8 +297,15 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $GeopolyTestOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $GeopolyTestPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
@@ -329,9 +339,20 @@ typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
     $GeopolyTestUpdateCompanionBuilder,
     (
       GeopolyTestData,
-      BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData>
+      BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData,
+          $GeopolyTestPrefetchedData>
     ),
-    GeopolyTestData>;
+    GeopolyTestData,
+    $GeopolyTestCreatePrefetchedDataCallback,
+    $GeopolyTestPrefetchedData>;
+typedef $GeopolyTestCreatePrefetchedDataCallback
+    = Future<$GeopolyTestPrefetchedData> Function(
+            _$_GeopolyTestDatabase, List<GeopolyTestData>)
+        Function();
+
+class $GeopolyTestPrefetchedData {
+  $GeopolyTestPrefetchedData();
+}
 
 class $_GeopolyTestDatabaseManager {
   final _$_GeopolyTestDatabase _db;

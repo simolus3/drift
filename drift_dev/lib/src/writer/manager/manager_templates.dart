@@ -129,6 +129,16 @@ class _ManagerCodeTemplates {
     return '\$${table.entityInfoName}UpdateCompanionBuilder';
   }
 
+  // The name of the type defenition to use for the callback that creates the prefetches class
+  String createPrefetchedDataGetterCallbackTypeDefName(DriftTable table) {
+    return '\$${table.entityInfoName}CreatePrefetchedDataCallback';
+  }
+
+  /// Name for a class which holds prefetches data
+  String prefetchedDataClassName(DriftTable table) {
+    return '\$${table.entityInfoName}PrefetchedData';
+  }
+
   /// Build the builder for a companion class
   /// This is used to build the create and update companions
   /// Returns a tuple with the typedef and the builder
@@ -206,7 +216,7 @@ class _ManagerCodeTemplates {
       rowClassWithReferencesTypeArg = rowWithReferencesClassName(table);
     } else {
       rowClassWithReferencesTypeArg =
-          "${leaf.drift('BaseWithReferences')}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(table, leaf)}>";
+          "${leaf.drift('BaseWithReferences')}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(table, leaf)},${prefetchedDataClassName(table)}>";
     }
     return """
     <${databaseType(leaf, dbClassName)},
@@ -217,7 +227,8 @@ class _ManagerCodeTemplates {
     ${createCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)},
     (${rowClassWithPrefix(table, leaf)},$rowClassWithReferencesTypeArg),
-    ${rowClassWithPrefix(table, leaf)}>""";
+    ${rowClassWithPrefix(table, leaf)},${createPrefetchedDataGetterCallbackTypeDefName(table)},
+    ${prefetchedDataClassName(table)}>""";
   }
 
   /// Code for getting a table from inside a composer
@@ -241,6 +252,7 @@ class _ManagerCodeTemplates {
     } else {
       rowClassWithReferencesConstructor = leaf.drift('BaseWithReferences');
     }
+    final reverseRelations = relations.where((element) => element.isReverse);
 
     return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)} {
     ${rootTableManagerName(table)}(${databaseType(leaf, dbClassName)} db, ${tableClassWithPrefix(table, leaf)} table) : super(
@@ -249,7 +261,24 @@ class _ManagerCodeTemplates {
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        withReferenceMapper: (p0) => p0.map((e) => (e,$rowClassWithReferencesConstructor(db,e))).toList() ,
+        withReferenceMapper: (p0,p1) => p0.map((e) => (e,$rowClassWithReferencesConstructor(db,e,p1))).toList() ,
+                createPrefetchedDataGetterCallback: (${reverseRelations.isEmpty ? "" : "{${reverseRelations.map(
+              (e) => "${e.fieldName} = false",
+            ).join(",")}}"}) {
+            return (db, data) async {
+              final managers = data.map((e) => $rowClassWithReferencesConstructor(db, e));
+
+              ${relations.where((i) => i.isReverse).map((relation) {
+      return """
+                final prefetched${relation.fieldName} = ${relation.fieldName} ? await managers.map((e) => e.${relation.fieldName}).reduceToSingleTableManager()?.get():null;
+                """;
+    }).join('\n')}
+
+              return ${prefetchedDataClassName(table)}(
+                ${relations.where((i) => i.isReverse).map((relation) => "${relation.fieldName}: prefetched${relation.fieldName},").join('\n')}
+              );
+            };
+          },
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,));
         }
@@ -394,8 +423,8 @@ class _ManagerCodeTemplates {
       required String dbClassName}) {
     return """
 
-        class ${rowWithReferencesClassName(currentTable)}  extends ${leaf.drift("BaseWithReferences")}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(currentTable, leaf)}> {
-        ${rowWithReferencesClassName(currentTable)}(super.\$_db, super.\$_item);
+        class ${rowWithReferencesClassName(currentTable)}  extends ${leaf.drift("BaseWithReferences")}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(currentTable, leaf)}, ${prefetchedDataClassName(currentTable)}> {
+        ${rowWithReferencesClassName(currentTable)}(super.\$_db, super.\$_item,[super.\$_prefetchedData]);
         
         ${relations.map((relation) {
       if (_scope.generationOptions.isModular) {
@@ -406,7 +435,19 @@ class _ManagerCodeTemplates {
         // For a reverse relation, we return a filtered table manager
         return """
         ${processedTableManagerTypeDefName(relation.referencedTable)} get ${relation.fieldName} {
-          return ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db,\$_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(\$_item.${relation.currentColumn.nameInDart}));
+        final manager = ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(
+            \$_db, \$_db.${relation.referencedTable.dbGetterName}
+            ).filter(
+              (f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(
+              \$_item.${relation.currentColumn.nameInDart}
+            )
+          );
+          final state = manager.\$state.copyWith(
+          cache:\$_prefetchedData
+            ?.${relation.fieldName}
+            ?.where((e) => e.${relation.referencedColumn.nameInDart} == \$_item.${relation.currentColumn.nameInDart})
+            .toList());
+          return ${leaf.drift("ProcessedTableManager")}(state);
         }
         """;
       } else {
@@ -418,6 +459,45 @@ class _ManagerCodeTemplates {
         """;
       }
     }).join('\n')}
+        }""";
+  }
+
+  /// Type defenition for  the callback that creates the prefetches class
+  String createPrefetcherCallbackTypeDef(
+      {required DriftTable currentTable,
+      required List<_Relation> relations,
+      required TextEmitter leaf,
+      required String dbClassName}) {
+    final reverseReferences =
+        relations.where((element) => element.isReverse).toList();
+    return 'typedef ${createPrefetchedDataGetterCallbackTypeDefName(currentTable)} = Future<${prefetchedDataClassName(currentTable)}> Function(${databaseType(leaf, dbClassName)},List<${rowClassWithPrefix(currentTable, leaf)}>) Function(${reverseReferences.isEmpty ? "" : "{${reverseReferences.map(
+          (e) => "bool ${e.fieldName}",
+        ).join(",")}}"});';
+  }
+
+  // Code for a managers prefetcher
+  String? prefetchedDataClass({
+    required DriftTable currentTable,
+    required List<_Relation> relations,
+    required TextEmitter leaf,
+  }) {
+    Iterable<({String fieldName, String type})> fields =
+        relations.where((relation) => relation.isReverse).map((relation) {
+      return (
+        fieldName: relation.fieldName,
+        type: "List<${rowClassWithPrefix(relation.referencedTable, leaf)}>?"
+      );
+    });
+
+    return """
+
+        class ${prefetchedDataClassName(currentTable)} {
+          ${prefetchedDataClassName(currentTable)}(
+            ${fields.isEmpty ? "" : "{${fields.map((e) => "this.${e.fieldName},").join("\n")}}"}
+          );
+        
+          ${fields.map((e) => "final ${e.type} ${e.fieldName};").join("\n")}
+        
         }""";
   }
 }

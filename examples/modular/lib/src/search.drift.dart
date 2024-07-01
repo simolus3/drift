@@ -262,9 +262,12 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
     $SearchInPostsUpdateCompanionBuilder,
     (
       i1.SearchInPost,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost,
+          $SearchInPostsPrefetchedData>
     ),
-    i1.SearchInPost> {
+    i1.SearchInPost,
+    $SearchInPostsCreatePrefetchedDataCallback,
+    $SearchInPostsPrefetchedData> {
   $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
       : super(i0.TableManagerState(
           db: db,
@@ -273,8 +276,15 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
           orderingComposer:
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, i0.BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => i0.BaseWithReferences(db, e));
+
+              return $SearchInPostsPrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
@@ -308,9 +318,21 @@ typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
     $SearchInPostsUpdateCompanionBuilder,
     (
       i1.SearchInPost,
-      i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost>
+      i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost,
+          $SearchInPostsPrefetchedData>
     ),
-    i1.SearchInPost>;
+    i1.SearchInPost,
+    $SearchInPostsCreatePrefetchedDataCallback,
+    $SearchInPostsPrefetchedData>;
+typedef $SearchInPostsCreatePrefetchedDataCallback
+    = Future<$SearchInPostsPrefetchedData> Function(
+            i0.GeneratedDatabase, List<i1.SearchInPost>)
+        Function();
+
+class $SearchInPostsPrefetchedData {
+  $SearchInPostsPrefetchedData();
+}
+
 i0.Trigger get postsInsert => i0.Trigger(
     'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
     'posts_insert');

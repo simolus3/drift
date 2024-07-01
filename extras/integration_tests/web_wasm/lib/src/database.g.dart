@@ -239,8 +239,14 @@ class $$TestTableTableTableManager extends RootTableManager<
     $$TestTableTableOrderingComposer,
     $$TestTableTableCreateCompanionBuilder,
     $$TestTableTableUpdateCompanionBuilder,
-    (TestTableData, BaseWithReferences<_$TestDatabase, TestTableData>),
-    TestTableData> {
+    (
+      TestTableData,
+      BaseWithReferences<_$TestDatabase, TestTableData,
+          $$TestTableTablePrefetchedData>
+    ),
+    TestTableData,
+    $$TestTableTableCreatePrefetchedDataCallback,
+    $$TestTableTablePrefetchedData> {
   $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
       : super(TableManagerState(
           db: db,
@@ -249,8 +255,15 @@ class $$TestTableTableTableManager extends RootTableManager<
               $$TestTableTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
               $$TestTableTableOrderingComposer(ComposerState(db, table)),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e, BaseWithReferences(db, e))).toList(),
+          withReferenceMapper: (p0, p1) =>
+              p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
+          createPrefetchedDataGetterCallback: () {
+            return (db, data) async {
+              final managers = data.map((e) => BaseWithReferences(db, e));
+
+              return $$TestTableTablePrefetchedData();
+            };
+          },
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -278,8 +291,22 @@ typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
     $$TestTableTableOrderingComposer,
     $$TestTableTableCreateCompanionBuilder,
     $$TestTableTableUpdateCompanionBuilder,
-    (TestTableData, BaseWithReferences<_$TestDatabase, TestTableData>),
-    TestTableData>;
+    (
+      TestTableData,
+      BaseWithReferences<_$TestDatabase, TestTableData,
+          $$TestTableTablePrefetchedData>
+    ),
+    TestTableData,
+    $$TestTableTableCreatePrefetchedDataCallback,
+    $$TestTableTablePrefetchedData>;
+typedef $$TestTableTableCreatePrefetchedDataCallback
+    = Future<$$TestTableTablePrefetchedData> Function(
+            _$TestDatabase, List<TestTableData>)
+        Function();
+
+class $$TestTableTablePrefetchedData {
+  $$TestTableTablePrefetchedData();
+}
 
 class $TestDatabaseManager {
   final _$TestDatabase _db;

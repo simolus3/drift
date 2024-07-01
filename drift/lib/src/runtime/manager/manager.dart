@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/utils/single_transformer.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'package:meta/meta.dart';
 
 part 'composer.dart';
@@ -22,6 +23,11 @@ part 'ordering.dart';
 ///
 /// It also holds the [$CreateCompanionCallback] and [$UpdateCompanionCallback] functions that are used to create companion builders for inserting and updating data.
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
+///
+/// The [$CreatePrefetchedDataGetterCallback] is used by the `withReferences` to set which references should be prefetched. If `withReferences` is called with a prefetch, the getter for the prefetcher
+/// will be stores in
+///
+/// Once a prefetch is ran, the result will be stores as a [$PrefetchedData] object.
 @immutable
 class TableManagerState<
     $Database extends GeneratedDatabase,
@@ -32,7 +38,9 @@ class TableManagerState<
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function,
     $DataclassWithReferences,
-    $ActiveDataclass> {
+    $ActiveDataclass,
+    $CreatePrefetchedDataGetterCallback extends Function,
+    $PrefetchedData> {
   /// The database used to run the query.
   final $Database db;
 
@@ -79,19 +87,40 @@ class TableManagerState<
 
   /// This function is used internally to convert a simple [$Dataclass] into one which has its references attached ([$DataclassWithReferences]).
   /// This is used internaly by [toActiveDataclass] and should not be used outside of this class.
-  final List<$DataclassWithReferences> Function(List<$Dataclass>)
-      _withReferenceMapper;
+  final List<$DataclassWithReferences> Function(
+      List<$Dataclass>, $PrefetchedData?) _withReferenceMapper;
 
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
   /// When `withReferences` is called on a manager, and its `$ActiveDataclass` changes to `$DataclassWithReferences`, this function will do the actual conversion
   /// Every return from the manager should map its results using this function before returning.
-  List<$ActiveDataclass> toActiveDataclass(List<$Dataclass> items) {
+  List<$ActiveDataclass> toActiveDataclass(
+      List<$Dataclass> items, $PrefetchedData? prefetchedData) {
     if ($DataclassWithReferences == $ActiveDataclass) {
-      return _withReferenceMapper(items) as List<$ActiveDataclass>;
+      return _withReferenceMapper(items, prefetchedData)
+          as List<$ActiveDataclass>;
     } else {
       return items as List<$ActiveDataclass>;
     }
   }
+
+  final List<$Dataclass>? cache;
+
+  final $CreatePrefetchedDataGetterCallback _createPrefetchedDataGetterCallback;
+
+  final Future<$PrefetchedData?> Function(
+      TableManagerState<
+              $Database,
+              $Table,
+              $Dataclass,
+              $FilterComposer,
+              $OrderingComposer,
+              $CreateCompanionCallback,
+              $UpdateCompanionCallback,
+              $DataclassWithReferences,
+              $ActiveDataclass,
+              $CreatePrefetchedDataGetterCallback,
+              $PrefetchedData>
+          s)? getPrefetchedData;
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
@@ -106,19 +135,81 @@ class TableManagerState<
       required this.orderingComposer,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
-      required List<$DataclassWithReferences> Function(List<$Dataclass>)
+      required List<$DataclassWithReferences> Function(
+              List<$Dataclass>, $PrefetchedData?)
           withReferenceMapper,
+      required $CreatePrefetchedDataGetterCallback
+          createPrefetchedDataGetterCallback,
+      this.getPrefetchedData,
+      this.cache,
       this.filter,
       this.distinct,
       this.limit,
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : _withReferenceMapper = withReferenceMapper,
+      : _createPrefetchedDataGetterCallback =
+            createPrefetchedDataGetterCallback,
+        _withReferenceMapper = withReferenceMapper,
         _createCompanionCallback = createCompanionCallback,
         _updateCompanionCallback = updateCompanionCallback;
 
   /// Copy this state with the given values
+  TableManagerState<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $DataclassWithReferences,
+          $ActiveDataclass,
+          $CreatePrefetchedDataGetterCallback,
+          $PrefetchedData>
+      copyWith(
+          {bool? distinct,
+          int? limit,
+          int? offset,
+          Expression<bool>? filter,
+          Set<OrderingBuilder>? orderingBuilders,
+          Set<JoinBuilder>? joinBuilders,
+          List<$Dataclass>? cache,
+          Future<$PrefetchedData?> Function(
+                  TableManagerState<
+                          $Database,
+                          $Table,
+                          $Dataclass,
+                          $FilterComposer,
+                          $OrderingComposer,
+                          $CreateCompanionCallback,
+                          $UpdateCompanionCallback,
+                          $DataclassWithReferences,
+                          $ActiveDataclass,
+                          $CreatePrefetchedDataGetterCallback,
+                          $PrefetchedData>
+                      s)?
+              getPrefetchedData}) {
+    return TableManagerState(
+      db: db,
+      table: table,
+      filteringComposer: filteringComposer,
+      orderingComposer: orderingComposer,
+      createCompanionCallback: _createCompanionCallback,
+      updateCompanionCallback: _updateCompanionCallback,
+      withReferenceMapper: _withReferenceMapper,
+      cache: cache ?? this.cache,
+      createPrefetchedDataGetterCallback: _createPrefetchedDataGetterCallback,
+      getPrefetchedData: getPrefetchedData ?? this.getPrefetchedData,
+      filter: filter ?? this.filter,
+      joinBuilders: joinBuilders ?? this.joinBuilders,
+      orderingBuilders: orderingBuilders ?? this.orderingBuilders,
+      distinct: distinct ?? this.distinct,
+      limit: limit ?? this.limit,
+      offset: offset ?? this.offset,
+    );
+  }
+
   TableManagerState<
       $Database,
       $Table,
@@ -128,14 +219,9 @@ class TableManagerState<
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
-      $ActiveDataclass> copyWith({
-    bool? distinct,
-    int? limit,
-    int? offset,
-    Expression<bool>? filter,
-    Set<OrderingBuilder>? orderingBuilders,
-    Set<JoinBuilder>? joinBuilders,
-  }) {
+      $ActiveDataclass,
+      $CreatePrefetchedDataGetterCallback,
+      $PrefetchedData> withInvalidatedCache() {
     return TableManagerState(
       db: db,
       table: table,
@@ -144,12 +230,15 @@ class TableManagerState<
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
-      filter: filter ?? this.filter,
-      joinBuilders: joinBuilders ?? this.joinBuilders,
-      orderingBuilders: orderingBuilders ?? this.orderingBuilders,
-      distinct: distinct ?? this.distinct,
-      limit: limit ?? this.limit,
-      offset: offset ?? this.offset,
+      cache: null,
+      createPrefetchedDataGetterCallback: _createPrefetchedDataGetterCallback,
+      getPrefetchedData: getPrefetchedData,
+      filter: filter,
+      joinBuilders: joinBuilders,
+      orderingBuilders: orderingBuilders,
+      distinct: distinct,
+      limit: limit,
+      offset: offset,
     );
   }
 
@@ -164,7 +253,9 @@ class TableManagerState<
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
-      $NewActiveDataclass> copyWithNewActiveDataclass<$NewActiveDataclass>() {
+      $NewActiveDataclass,
+      $CreatePrefetchedDataGetterCallback,
+      $PrefetchedData> copyWithNewActiveDataclass<$NewActiveDataclass>() {
     return TableManagerState(
       db: db,
       table: table,
@@ -179,6 +270,8 @@ class TableManagerState<
       distinct: distinct,
       limit: limit,
       offset: offset,
+      createPrefetchedDataGetterCallback: _createPrefetchedDataGetterCallback,
+      cache: cache,
     );
   }
 
@@ -344,7 +437,9 @@ abstract class BaseTableManager<
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function,
     $DataclassWithReferences,
-    $ActiveDataclass> extends Selectable<$ActiveDataclass> {
+    $ActiveDataclass,
+    $CreatePrefetchedDataGetterCallback extends Function,
+    $PrefetchedData> extends Selectable<$ActiveDataclass> {
   /// The state for this manager
   final TableManagerState<
       $Database,
@@ -355,7 +450,9 @@ abstract class BaseTableManager<
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
-      $ActiveDataclass> $state;
+      $ActiveDataclass,
+      $CreatePrefetchedDataGetterCallback,
+      $PrefetchedData> $state;
 
   /// Create a new [BaseTableManager] instance
   ///
@@ -375,17 +472,6 @@ abstract class BaseTableManager<
   /// Note: Using this method incorrectly can lead to N+1 queries, where each row in the result set triggers a new query.
   /// Use this method with caution and always profile your queries to ensure they are efficient.
   ProcessedTableManager<
-      $Database,
-      $Table,
-      $Dataclass,
-      $FilterComposer,
-      $OrderingComposer,
-      $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $DataclassWithReferences> withReferences() {
-    if ($DataclassWithReferences == $ActiveDataclass) {
-      return ProcessedTableManager($state as TableManagerState<
           $Database,
           $Table,
           $Dataclass,
@@ -394,10 +480,47 @@ abstract class BaseTableManager<
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
-          $DataclassWithReferences>);
+          $DataclassWithReferences,
+          $CreatePrefetchedDataGetterCallback,
+          $PrefetchedData>
+      withReferences(
+          [Future<$PrefetchedData> Function($Database, List<$Dataclass>)
+                  Function($CreatePrefetchedDataGetterCallback o)?
+              prefetch]) {
+    final stateWithGetPrefetched = $state.copyWith(getPrefetchedData:
+        <T>(TableManagerState<
+                $Database,
+                $Table,
+                $Dataclass,
+                $FilterComposer,
+                $OrderingComposer,
+                $CreateCompanionCallback,
+                $UpdateCompanionCallback,
+                $DataclassWithReferences,
+                T,
+                $CreatePrefetchedDataGetterCallback,
+                $PrefetchedData>
+            state) async {
+      return await prefetch?.call(state._createPrefetchedDataGetterCallback)(
+          state.db, await state.buildSelectStatement().get());
+    });
+
+    if ($DataclassWithReferences == $ActiveDataclass) {
+      return ProcessedTableManager(stateWithGetPrefetched as TableManagerState<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $DataclassWithReferences,
+          $DataclassWithReferences,
+          $CreatePrefetchedDataGetterCallback,
+          $PrefetchedData>);
     }
-    return ProcessedTableManager(
-        $state.copyWithNewActiveDataclass<$DataclassWithReferences>());
+    return ProcessedTableManager(stateWithGetPrefetched
+        .copyWithNewActiveDataclass<$DataclassWithReferences>());
   }
 
   /// Add a limit to the statement
@@ -410,8 +533,11 @@ abstract class BaseTableManager<
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
-      $ActiveDataclass> limit(int limit, {int? offset}) {
-    return ProcessedTableManager($state.copyWith(limit: limit, offset: offset));
+      $ActiveDataclass,
+      $CreatePrefetchedDataGetterCallback,
+      $PrefetchedData> limit(int limit, {int? offset}) {
+    return ProcessedTableManager(
+        $state.copyWith(limit: limit, offset: offset).withInvalidatedCache());
   }
 
   /// Add ordering to the statement
@@ -424,13 +550,17 @@ abstract class BaseTableManager<
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
-          $ActiveDataclass>
+          $ActiveDataclass,
+          $CreatePrefetchedDataGetterCallback,
+          $PrefetchedData>
       orderBy(ComposableOrdering Function($OrderingComposer o) o) {
     final orderings = o($state.orderingComposer);
-    return ProcessedTableManager($state.copyWith(
-        orderingBuilders:
-            $state.orderingBuilders.union(orderings.orderingBuilders),
-        joinBuilders: $state.joinBuilders.union(orderings.joinBuilders)));
+    return ProcessedTableManager($state
+        .copyWith(
+            orderingBuilders:
+                $state.orderingBuilders.union(orderings.orderingBuilders),
+            joinBuilders: $state.joinBuilders.union(orderings.joinBuilders))
+        .withInvalidatedCache());
   }
 
   /// Add a filter to the statement
@@ -445,7 +575,9 @@ abstract class BaseTableManager<
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
-      $ActiveDataclass> filter(
+      $ActiveDataclass,
+      $CreatePrefetchedDataGetterCallback,
+      $PrefetchedData> filter(
     ComposableFilter Function($FilterComposer f) f,
   ) {
     return _filter(f, _BooleanOperator.and);
@@ -463,7 +595,9 @@ abstract class BaseTableManager<
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
-          $ActiveDataclass>
+          $ActiveDataclass,
+          $CreatePrefetchedDataGetterCallback,
+          $PrefetchedData>
       _filter(ComposableFilter Function($FilterComposer f) f,
           _BooleanOperator combineWith) {
     final filter = f($state.filteringComposer);
@@ -475,9 +609,11 @@ abstract class BaseTableManager<
           ? (filter1!) & (filter2!)
           : (filter1!) | (filter2!)
     };
-    return ProcessedTableManager($state.copyWith(
-        filter: combinedFilter,
-        joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
+    return ProcessedTableManager($state
+        .copyWith(
+            filter: combinedFilter,
+            joinBuilders: $state.joinBuilders.union(filter.joinBuilders))
+        .withInvalidatedCache());
   }
 
   /// Writes all non-null fields from the entity into the columns of all rows
@@ -499,11 +635,20 @@ abstract class BaseTableManager<
   /// Return the count of rows matched by the built statement
   /// When counting rows, the query will only count distinct rows by default
   Future<int> count({bool distinct = true}) {
+    if ($state.cache != null) {
+      return Future.value($state.cache!.length);
+    }
     return $state.copyWith(distinct: distinct).count();
   }
 
   /// Checks whether any rows exist
-  Future<bool> exists() => $state.exists();
+  Future<bool> exists() {
+    if ($state.cache != null) {
+      return Future.value($state.cache!.isNotEmpty);
+    }
+
+    return $state.exists();
+  }
 
   /// Deletes all rows matched by built statement
   ///
@@ -552,12 +697,18 @@ abstract class BaseTableManager<
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Future<List<$ActiveDataclass>> get(
-          {bool distinct = false, int? limit, int? offset}) =>
-      $state
-          .copyWith(distinct: distinct, limit: limit, offset: offset)
-          .buildSelectStatement()
-          .get()
-          .then($state.toActiveDataclass);
+      {bool distinct = false, int? limit, int? offset}) async {
+    final prefetchedData = await $state.getPrefetchedData?.call($state);
+    if ($state.cache != null) {
+      return Future.value(
+          $state.toActiveDataclass($state.cache!, prefetchedData));
+    }
+    return $state
+        .copyWith(distinct: distinct, limit: limit, offset: offset)
+        .buildSelectStatement()
+        .get()
+        .then((v) => $state.toActiveDataclass(v, prefetchedData));
+  }
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
@@ -569,12 +720,23 @@ abstract class BaseTableManager<
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Stream<List<$ActiveDataclass>> watch(
-          {bool distinct = false, int? limit, int? offset}) =>
-      $state
-          .copyWith(distinct: distinct, limit: limit, offset: offset)
-          .buildSelectStatement()
-          .watch()
-          .asyncMap($state.toActiveDataclass);
+      {bool distinct = false, int? limit, int? offset}) {
+    final prefetchedDataStream =
+        $state.getPrefetchedData?.call($state).asStream() ?? Stream.value(null);
+    final dataclassStream = $state.cache != null
+        ? Stream.value($state.cache!)
+        : $state
+            .copyWith(
+              distinct: distinct,
+              limit: limit,
+              offset: offset,
+              cache: $state.cache,
+            )
+            .buildSelectStatement()
+            .watch();
+    return prefetchedDataStream.combineLatest(
+        dataclassStream, (p0, p1) => $state.toActiveDataclass(p1, p0));
+  }
 
   /// Executes this statement, like [get], but only returns one
   /// value. If the result too many values, this method will throw. If no
@@ -637,7 +799,9 @@ class ProcessedTableManager<
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
-        $ActiveDataclass>
+        $ActiveDataclass,
+        $CreatePrefetchedDataGetterCallback extends Function,
+        $PrefetchedData>
     extends BaseTableManager<
         $Database,
         $Table,
@@ -647,7 +811,9 @@ class ProcessedTableManager<
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
-        $ActiveDataclass> {
+        $ActiveDataclass,
+        $CreatePrefetchedDataGetterCallback,
+        $PrefetchedData> {
   /// Create a new [ProcessedTableManager] instance
   @internal
   ProcessedTableManager(super.$state);
@@ -665,7 +831,9 @@ abstract class RootTableManager<
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
-        $ActiveDataclass>
+        $ActiveDataclass,
+        $CreatePrefetchedDataGetterCallback extends Function,
+        $PrefetchedData>
     extends BaseTableManager<
         $Database,
         $Table,
@@ -675,7 +843,9 @@ abstract class RootTableManager<
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
-        $ActiveDataclass> {
+        $ActiveDataclass,
+        $CreatePrefetchedDataGetterCallback,
+        $PrefetchedData> {
   /// Create a new [RootTableManager] instance
   ///
   /// {@template manager_internal_use_only}
@@ -815,7 +985,8 @@ class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
 }
 
 /// Base class for the "WithReferece" classes that
-class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass> {
+class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass,
+    $PrefetchedData> {
   /// The database instance
   // ignore: non_constant_identifier_names
   final $Database $_db;
@@ -824,6 +995,75 @@ class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass> {
   // ignore: non_constant_identifier_names
   final $Dataclass $_item;
 
+  /// The prefetched data of the manager which created this class
+  // ignore: non_constant_identifier_names
+  final $PrefetchedData? $_prefetchedData;
+
   /// Create a [BaseWithReferences] class
-  BaseWithReferences(this.$_db, this.$_item);
+  // ignore: non_constant_identifier_names
+  BaseWithReferences(this.$_db, this.$_item, [this.$_prefetchedData]);
+}
+
+extension CombineManagersExt<
+        $Database extends GeneratedDatabase,
+        $Table extends Table,
+        $Dataclass,
+        $FilterComposer extends FilterComposer<$Database, $Table>,
+        $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $CreateCompanionCallback extends Function,
+        $UpdateCompanionCallback extends Function,
+        $MappedDataclass,
+        $ActiveDataclass,
+        $CreatePrefetcherCallback extends Function,
+        $TablePrefetcher>
+    on Iterable<
+        BaseTableManager<
+            $Database,
+            $Table,
+            $Dataclass,
+            $FilterComposer,
+            $OrderingComposer,
+            $CreateCompanionCallback,
+            $UpdateCompanionCallback,
+            $MappedDataclass,
+            $ActiveDataclass,
+            $CreatePrefetcherCallback,
+            $TablePrefetcher>> {
+  ProcessedTableManager<
+      $Database,
+      $Table,
+      $Dataclass,
+      $FilterComposer,
+      $OrderingComposer,
+      $CreateCompanionCallback,
+      $UpdateCompanionCallback,
+      $MappedDataclass,
+      $ActiveDataclass,
+      $CreatePrefetcherCallback,
+      $TablePrefetcher>? reduceToSingleTableManager() {
+    if (isEmpty) {
+      return null;
+    }
+    ProcessedTableManager<
+        $Database,
+        $Table,
+        $Dataclass,
+        $FilterComposer,
+        $OrderingComposer,
+        $CreateCompanionCallback,
+        $UpdateCompanionCallback,
+        $MappedDataclass,
+        $ActiveDataclass,
+        $CreatePrefetcherCallback,
+        $TablePrefetcher> initialValue = ProcessedTableManager(first.$state);
+    if (length == 1) {
+      return initialValue;
+    }
+    for (var manager in toList().sublist(1)) {
+      initialValue = initialValue._filter(
+          (_) => ComposableFilter._(manager.$state.filter, {}),
+          _BooleanOperator.or);
+    }
+    return initialValue;
+  }
 }
