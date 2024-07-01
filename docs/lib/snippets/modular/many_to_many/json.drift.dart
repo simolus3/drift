@@ -288,13 +288,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $$ShoppingCartsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
@@ -332,7 +326,13 @@ typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
     $$ShoppingCartsTablePrefetchedData>;
 typedef $$ShoppingCartsTableCreatePrefetchedDataCallback
     = Future<$$ShoppingCartsTablePrefetchedData> Function(
-            i0.GeneratedDatabase, List<i2.ShoppingCart>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i2.ShoppingCart,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i2.ShoppingCart,
+                      $$ShoppingCartsTablePrefetchedData>
+                )>)
         Function();
 
 class $$ShoppingCartsTablePrefetchedData {

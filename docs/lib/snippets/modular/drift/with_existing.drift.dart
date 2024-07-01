@@ -181,13 +181,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i2.$UsersOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $UsersPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -222,9 +216,16 @@ typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
     i1.User,
     $UsersCreatePrefetchedDataCallback,
     $UsersPrefetchedData>;
-typedef $UsersCreatePrefetchedDataCallback = Future<$UsersPrefetchedData>
-        Function(i0.GeneratedDatabase, List<i1.User>)
-    Function();
+typedef $UsersCreatePrefetchedDataCallback
+    = Future<$UsersPrefetchedData> Function(
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.User,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.User,
+                      $UsersPrefetchedData>
+                )>)
+        Function();
 
 class $UsersPrefetchedData {
   $UsersPrefetchedData();
@@ -541,13 +542,7 @@ class $FriendsTableManager extends i0.RootTableManager<
               i2.$FriendsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $FriendsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> userA = const i0.Value.absent(),
             i0.Value<int> userB = const i0.Value.absent(),
@@ -587,9 +582,16 @@ typedef $FriendsProcessedTableManager = i0.ProcessedTableManager<
     i2.Friend,
     $FriendsCreatePrefetchedDataCallback,
     $FriendsPrefetchedData>;
-typedef $FriendsCreatePrefetchedDataCallback = Future<$FriendsPrefetchedData>
-        Function(i0.GeneratedDatabase, List<i2.Friend>)
-    Function();
+typedef $FriendsCreatePrefetchedDataCallback
+    = Future<$FriendsPrefetchedData> Function(
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i2.Friend,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i2.Friend,
+                      $FriendsPrefetchedData>
+                )>)
+        Function();
 
 class $FriendsPrefetchedData {
   $FriendsPrefetchedData();

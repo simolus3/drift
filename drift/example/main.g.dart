@@ -805,20 +805,16 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
           withReferenceMapper: (p0, p1) => p0
               .map((e) => (e, $$TodoCategoriesTableWithReferences(db, e, p1)))
               .toList(),
-          createPrefetchedDataGetterCallback: ({todoItemsRefs = false}) {
-            return (db, data) async {
-              final managers =
-                  data.map((e) => $$TodoCategoriesTableWithReferences(db, e));
-
-              final prefetchedtodoItemsRefs = todoItemsRefs
-                  ? await managers
-                      .map((e) => e.todoItemsRefs)
-                      .reduceToSingleTableManager()
-                      ?.get()
-                  : null;
+          createPrefetchedDataGetterCallback: (
+              {prefetchTodoItemsRefs = false}) {
+            return (db, refs) async {
+              final todoItemsRefs = await prefetchRelatedField(
+                  prefetch: prefetchTodoItemsRefs,
+                  refs,
+                  (p0) => p0.$2.todoItemsRefs);
 
               return $$TodoCategoriesTablePrefetchedData(
-                todoItemsRefs: prefetchedtodoItemsRefs,
+                todoItemsRefs: todoItemsRefs,
               );
             };
           },
@@ -854,9 +850,9 @@ typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
     $$TodoCategoriesTableCreatePrefetchedDataCallback,
     $$TodoCategoriesTablePrefetchedData>;
 typedef $$TodoCategoriesTableCreatePrefetchedDataCallback
-    = Future<$$TodoCategoriesTablePrefetchedData> Function(
-            _$Database, List<TodoCategory>)
-        Function({bool todoItemsRefs});
+    = Future<$$TodoCategoriesTablePrefetchedData> Function(_$Database,
+            List<(TodoCategory, $$TodoCategoriesTableWithReferences)>)
+        Function({bool prefetchTodoItemsRefs});
 
 class $$TodoCategoriesTablePrefetchedData {
   $$TodoCategoriesTablePrefetchedData({
@@ -987,14 +983,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
           withReferenceMapper: (p0, p1) => p0
               .map((e) => (e, $$TodoItemsTableWithReferences(db, e, p1)))
               .toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers =
-                  data.map((e) => $$TodoItemsTableWithReferences(db, e));
-
-              return $$TodoItemsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -1036,7 +1025,7 @@ typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
     $$TodoItemsTablePrefetchedData>;
 typedef $$TodoItemsTableCreatePrefetchedDataCallback
     = Future<$$TodoItemsTablePrefetchedData> Function(
-            _$Database, List<TodoItem>)
+            _$Database, List<(TodoItem, $$TodoItemsTableWithReferences)>)
         Function();
 
 class $$TodoItemsTablePrefetchedData {

@@ -282,7 +282,8 @@ void main() {
 
   test('manager - with references tests', () async {
     // Get department for the 1st product
-    final q = db.managers.store.withReferences((o) => o(listings: true));
+    final q =
+        db.managers.store.withReferences((o) => o(prefetchListings: true));
     for (final (store, refs) in await q.get()) {
       print(store.name);
       for (var listing in await refs.listings.get()) {

@@ -299,13 +299,7 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $GeopolyTestPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
@@ -347,7 +341,13 @@ typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
     $GeopolyTestPrefetchedData>;
 typedef $GeopolyTestCreatePrefetchedDataCallback
     = Future<$GeopolyTestPrefetchedData> Function(
-            _$_GeopolyTestDatabase, List<GeopolyTestData>)
+            _$_GeopolyTestDatabase,
+            List<
+                (
+                  GeopolyTestData,
+                  BaseWithReferences<_$_GeopolyTestDatabase, GeopolyTestData,
+                      $GeopolyTestPrefetchedData>
+                )>)
         Function();
 
 class $GeopolyTestPrefetchedData {

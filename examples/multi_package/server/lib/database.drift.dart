@@ -332,13 +332,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
               i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $$ActiveSessionsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
             i0.Value<String> bearerToken = const i0.Value.absent(),
@@ -380,7 +374,13 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
     $$ActiveSessionsTablePrefetchedData>;
 typedef $$ActiveSessionsTableCreatePrefetchedDataCallback
     = Future<$$ActiveSessionsTablePrefetchedData> Function(
-            i0.GeneratedDatabase, List<i3.ActiveSession>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i3.ActiveSession,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i3.ActiveSession,
+                      $$ActiveSessionsTablePrefetchedData>
+                )>)
         Function();
 
 class $$ActiveSessionsTablePrefetchedData {

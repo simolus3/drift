@@ -428,13 +428,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i1.$UsersOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $UsersPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -481,9 +475,16 @@ typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
     i1.User,
     $UsersCreatePrefetchedDataCallback,
     $UsersPrefetchedData>;
-typedef $UsersCreatePrefetchedDataCallback = Future<$UsersPrefetchedData>
-        Function(i0.GeneratedDatabase, List<i1.User>)
-    Function();
+typedef $UsersCreatePrefetchedDataCallback
+    = Future<$UsersPrefetchedData> Function(
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.User,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.User,
+                      $UsersPrefetchedData>
+                )>)
+        Function();
 
 class $UsersPrefetchedData {
   $UsersPrefetchedData();
@@ -806,13 +807,7 @@ class $FollowsTableManager extends i0.RootTableManager<
               i1.$FollowsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $FollowsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> followed = const i0.Value.absent(),
             i0.Value<int> follower = const i0.Value.absent(),
@@ -852,9 +847,16 @@ typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
     i1.Follow,
     $FollowsCreatePrefetchedDataCallback,
     $FollowsPrefetchedData>;
-typedef $FollowsCreatePrefetchedDataCallback = Future<$FollowsPrefetchedData>
-        Function(i0.GeneratedDatabase, List<i1.Follow>)
-    Function();
+typedef $FollowsCreatePrefetchedDataCallback
+    = Future<$FollowsPrefetchedData> Function(
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.Follow,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.Follow,
+                      $FollowsPrefetchedData>
+                )>)
+        Function();
 
 class $FollowsPrefetchedData {
   $FollowsPrefetchedData();

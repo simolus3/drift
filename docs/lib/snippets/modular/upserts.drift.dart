@@ -259,13 +259,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $$WordsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
@@ -307,7 +301,13 @@ typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
     $$WordsTablePrefetchedData>;
 typedef $$WordsTableCreatePrefetchedDataCallback
     = Future<$$WordsTablePrefetchedData> Function(
-            i0.GeneratedDatabase, List<i1.Word>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.Word,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.Word,
+                      $$WordsTablePrefetchedData>
+                )>)
         Function();
 
 class $$WordsTablePrefetchedData {
@@ -671,13 +671,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               .$$MatchResultsTableOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $$MatchResultsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
@@ -723,7 +717,13 @@ typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
     $$MatchResultsTablePrefetchedData>;
 typedef $$MatchResultsTableCreatePrefetchedDataCallback
     = Future<$$MatchResultsTablePrefetchedData> Function(
-            i0.GeneratedDatabase, List<i1.MatchResult>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.MatchResult,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.MatchResult,
+                      $$MatchResultsTablePrefetchedData>
+                )>)
         Function();
 
 class $$MatchResultsTablePrefetchedData {

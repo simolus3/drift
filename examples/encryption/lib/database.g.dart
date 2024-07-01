@@ -254,13 +254,7 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $$NotesTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -298,7 +292,13 @@ typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
     $$NotesTablePrefetchedData>;
 typedef $$NotesTableCreatePrefetchedDataCallback
     = Future<$$NotesTablePrefetchedData> Function(
-            _$MyEncryptedDatabase, List<Note>)
+            _$MyEncryptedDatabase,
+            List<
+                (
+                  Note,
+                  BaseWithReferences<_$MyEncryptedDatabase, Note,
+                      $$NotesTablePrefetchedData>
+                )>)
         Function();
 
 class $$NotesTablePrefetchedData {

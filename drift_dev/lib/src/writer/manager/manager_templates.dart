@@ -87,8 +87,21 @@ class _ManagerCodeTemplates {
       leaf.dartCode(leaf.writer.rowType(table));
 
   /// Name of the class which is used to represent a row along with it's references
-  String rowWithReferencesClassName(DriftTable table) {
-    return '\$${table.entityInfoName}WithReferences';
+  String rowWithReferencesClassName(
+      {required DriftTable table,
+      required List<_Relation> relations,
+      required String dbClassName,
+      required TextEmitter leaf,
+      required bool withTypeArgs}) {
+    if (!_scope.generationOptions.isModular && relations.isNotEmpty) {
+      return '\$${table.entityInfoName}WithReferences';
+    } else {
+      if (withTypeArgs) {
+        return "${leaf.drift('BaseWithReferences')}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(table, leaf)},${prefetchedDataClassName(table)}>";
+      } else {
+        return leaf.drift('BaseWithReferences');
+      }
+    }
   }
 
   /// Name of this tables filter composer class
@@ -211,13 +224,13 @@ class _ManagerCodeTemplates {
     TextEmitter leaf,
     List<_Relation> relations,
   ) {
-    final String rowClassWithReferencesTypeArg;
-    if (!_scope.generationOptions.isModular && relations.isNotEmpty) {
-      rowClassWithReferencesTypeArg = rowWithReferencesClassName(table);
-    } else {
-      rowClassWithReferencesTypeArg =
-          "${leaf.drift('BaseWithReferences')}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(table, leaf)},${prefetchedDataClassName(table)}>";
-    }
+    final String rowClassWithReferences = rowWithReferencesClassName(
+        table: table,
+        relations: relations,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        withTypeArgs: true);
+
     return """
     <${databaseType(leaf, dbClassName)},
     ${tableClassWithPrefix(table, leaf)},
@@ -226,7 +239,7 @@ class _ManagerCodeTemplates {
     ${orderingComposerNameWithPrefix(table, leaf)},
     ${createCompanionBuilderTypeDef(table)},
     ${updateCompanionBuilderTypeDefName(table)},
-    (${rowClassWithPrefix(table, leaf)},$rowClassWithReferencesTypeArg),
+    (${rowClassWithPrefix(table, leaf)},$rowClassWithReferences),
     ${rowClassWithPrefix(table, leaf)},${createPrefetchedDataGetterCallbackTypeDefName(table)},
     ${prefetchedDataClassName(table)}>""";
   }
@@ -246,12 +259,12 @@ class _ManagerCodeTemplates {
     required String createCompanionBuilder,
     required List<_Relation> relations,
   }) {
-    final String rowClassWithReferencesConstructor;
-    if (!_scope.generationOptions.isModular && relations.isNotEmpty) {
-      rowClassWithReferencesConstructor = rowWithReferencesClassName(table);
-    } else {
-      rowClassWithReferencesConstructor = leaf.drift('BaseWithReferences');
-    }
+    final String rowClassWithReferences = rowWithReferencesClassName(
+        table: table,
+        relations: relations,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        withTypeArgs: false);
     final reverseRelations = relations.where((element) => element.isReverse);
 
     return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)} {
@@ -261,24 +274,24 @@ class _ManagerCodeTemplates {
         table: table,
         filteringComposer: ${filterComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
         orderingComposer: ${orderingComposerNameWithPrefix(table, leaf)}(${leaf.drift("ComposerState")}(db, table)),
-        withReferenceMapper: (p0,p1) => p0.map((e) => (e,$rowClassWithReferencesConstructor(db,e,p1))).toList() ,
-                createPrefetchedDataGetterCallback: (${reverseRelations.isEmpty ? "" : "{${reverseRelations.map(
-              (e) => "${e.fieldName} = false",
-            ).join(",")}}"}) {
-            return (db, data) async {
-              final managers = data.map((e) => $rowClassWithReferencesConstructor(db, e));
-
-              ${relations.where((i) => i.isReverse).map((relation) {
-      return """
-                final prefetched${relation.fieldName} = ${relation.fieldName} ? await managers.map((e) => e.${relation.fieldName}).reduceToSingleTableManager()?.get():null;
+        withReferenceMapper: (p0,p1) => p0.map((e) => (e,$rowClassWithReferences(db,e,p1))).toList() ,
+        createPrefetchedDataGetterCallback: ${reverseRelations.isEmpty ? "null" : """
+              (${"{${reverseRelations.map(
+                  (e) => "prefetch${e.fieldName.pascalCase} = false",
+                ).join(",")}}"}) {
+            return (db, refs) async {
+              ${reverseRelations.map((relation) {
+                return """
+                 final ${relation.fieldName} = await ${leaf.drift('prefetchRelatedField')}(
+                  prefetch: prefetch${relation.fieldName.pascalCase}, refs, (p0) => p0.\$2.${relation.fieldName});
                 """;
-    }).join('\n')}
-
+              }).join('\n')}
               return ${prefetchedDataClassName(table)}(
-                ${relations.where((i) => i.isReverse).map((relation) => "${relation.fieldName}: prefetched${relation.fieldName},").join('\n')}
+                ${reverseRelations.map((relation) => "${relation.fieldName}: ${relation.fieldName},").join('\n')}
               );
             };
-          },
+          }
+          """},
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,));
         }
@@ -421,10 +434,18 @@ class _ManagerCodeTemplates {
       required List<_Relation> relations,
       required TextEmitter leaf,
       required String dbClassName}) {
+    final String rowClassWithReferencesName = rowWithReferencesClassName(
+        table: currentTable,
+        relations: relations,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        withTypeArgs: false);
+
     return """
 
-        class ${rowWithReferencesClassName(currentTable)}  extends ${leaf.drift("BaseWithReferences")}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(currentTable, leaf)}, ${prefetchedDataClassName(currentTable)}> {
-        ${rowWithReferencesClassName(currentTable)}(super.\$_db, super.\$_item,[super.\$_prefetchedData]);
+
+        class $rowClassWithReferencesName  extends ${leaf.drift("BaseWithReferences")}<${databaseType(leaf, dbClassName)},${rowClassWithPrefix(currentTable, leaf)}, ${prefetchedDataClassName(currentTable)}> {
+        $rowClassWithReferencesName(super.\$_db, super.\$_item,[super.\$_prefetchedData]);
         
         ${relations.map((relation) {
       if (_scope.generationOptions.isModular) {
@@ -470,8 +491,16 @@ class _ManagerCodeTemplates {
       required String dbClassName}) {
     final reverseReferences =
         relations.where((element) => element.isReverse).toList();
-    return 'typedef ${createPrefetchedDataGetterCallbackTypeDefName(currentTable)} = Future<${prefetchedDataClassName(currentTable)}> Function(${databaseType(leaf, dbClassName)},List<${rowClassWithPrefix(currentTable, leaf)}>) Function(${reverseReferences.isEmpty ? "" : "{${reverseReferences.map(
-          (e) => "bool ${e.fieldName}",
+
+    final String rowClassWithReferencesTypeArg = rowWithReferencesClassName(
+        table: currentTable,
+        relations: relations,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        withTypeArgs: true);
+
+    return 'typedef ${createPrefetchedDataGetterCallbackTypeDefName(currentTable)} = Future<${prefetchedDataClassName(currentTable)}> Function(${databaseType(leaf, dbClassName)},List<(${rowClassWithPrefix(currentTable, leaf)},$rowClassWithReferencesTypeArg)>) Function(${reverseReferences.isEmpty ? "" : "{${reverseReferences.map(
+          (e) => "bool prefetch${e.fieldName.pascalCase}",
         ).join(",")}}"});';
   }
 

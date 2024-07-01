@@ -103,10 +103,16 @@ class TableManagerState<
     }
   }
 
+  /// If this manager was created by a referenced manager with a prefetch.
+  /// Then the manager won't run a queries and instead return from this cache
   final List<$Dataclass>? cache;
 
-  final $CreatePrefetchedDataGetterCallback _createPrefetchedDataGetterCallback;
+  /// This field holds the function that is used in the [withReferences] callback.
+  /// The result of this callback is stored in [getPrefetchedData] which is responsible for retrieving the prefetched data and
+  final $CreatePrefetchedDataGetterCallback?
+      _createPrefetchedDataGetterCallback;
 
+  /// If prefetches have been applied to the manager, this field will hold the final function for retrieving the prefetched data
   final Future<$PrefetchedData?> Function(
       TableManagerState<
               $Database,
@@ -138,7 +144,7 @@ class TableManagerState<
       required List<$DataclassWithReferences> Function(
               List<$Dataclass>, $PrefetchedData?)
           withReferenceMapper,
-      required $CreatePrefetchedDataGetterCallback
+      required $CreatePrefetchedDataGetterCallback?
           createPrefetchedDataGetterCallback,
       this.getPrefetchedData,
       this.cache,
@@ -210,6 +216,9 @@ class TableManagerState<
     );
   }
 
+  /// Return a acopy of this state that has the cache removed
+  /// This is used whenever filters or orderings are applied to a manager with cache.
+  /// We can apply filters or orderings to queries. So the cache is discarded when filters or orderings are applied.
   TableManagerState<
       $Database,
       $Table,
@@ -471,6 +480,8 @@ abstract class BaseTableManager<
   ///
   /// Note: Using this method incorrectly can lead to N+1 queries, where each row in the result set triggers a new query.
   /// Use this method with caution and always profile your queries to ensure they are efficient.
+  ///
+  /// TODO: More docs for prefetch
   ProcessedTableManager<
           $Database,
           $Table,
@@ -484,26 +495,35 @@ abstract class BaseTableManager<
           $CreatePrefetchedDataGetterCallback,
           $PrefetchedData>
       withReferences(
-          [Future<$PrefetchedData> Function($Database, List<$Dataclass>)
+          [Future<$PrefetchedData> Function(
+                      $Database, List<$DataclassWithReferences>)
                   Function($CreatePrefetchedDataGetterCallback o)?
               prefetch]) {
-    final stateWithGetPrefetched = $state.copyWith(getPrefetchedData:
-        <T>(TableManagerState<
-                $Database,
-                $Table,
-                $Dataclass,
-                $FilterComposer,
-                $OrderingComposer,
-                $CreateCompanionCallback,
-                $UpdateCompanionCallback,
-                $DataclassWithReferences,
-                T,
-                $CreatePrefetchedDataGetterCallback,
-                $PrefetchedData>
-            state) async {
-      return await prefetch?.call(state._createPrefetchedDataGetterCallback)(
-          state.db, await state.buildSelectStatement().get());
-    });
+    final stateWithGetPrefetched = $state.copyWith(
+      getPrefetchedData: <T>(TableManagerState<
+              $Database,
+              $Table,
+              $Dataclass,
+              $FilterComposer,
+              $OrderingComposer,
+              $CreateCompanionCallback,
+              $UpdateCompanionCallback,
+              $DataclassWithReferences,
+              T,
+              $CreatePrefetchedDataGetterCallback,
+              $PrefetchedData>
+          state) async {
+        if (state._createPrefetchedDataGetterCallback == null) {
+          return null;
+        }
+        return await prefetch?.call(state._createPrefetchedDataGetterCallback)(
+            state.db,
+            await state
+                .buildSelectStatement()
+                .get()
+                .then((items) => $state._withReferenceMapper(items, null)));
+      },
+    );
 
     if ($DataclassWithReferences == $ActiveDataclass) {
       return ProcessedTableManager(stateWithGetPrefetched as TableManagerState<
@@ -1004,66 +1024,26 @@ class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass,
   BaseWithReferences(this.$_db, this.$_item, [this.$_prefetchedData]);
 }
 
-extension CombineManagersExt<
-        $Database extends GeneratedDatabase,
-        $Table extends Table,
-        $Dataclass,
-        $FilterComposer extends FilterComposer<$Database, $Table>,
-        $OrderingComposer extends OrderingComposer<$Database, $Table>,
-        $CreateCompanionCallback extends Function,
-        $UpdateCompanionCallback extends Function,
-        $MappedDataclass,
-        $ActiveDataclass,
-        $CreatePrefetcherCallback extends Function,
-        $TablePrefetcher>
-    on Iterable<
-        BaseTableManager<
-            $Database,
-            $Table,
-            $Dataclass,
-            $FilterComposer,
-            $OrderingComposer,
-            $CreateCompanionCallback,
-            $UpdateCompanionCallback,
-            $MappedDataclass,
-            $ActiveDataclass,
-            $CreatePrefetcherCallback,
-            $TablePrefetcher>> {
-  ProcessedTableManager<
-      $Database,
-      $Table,
-      $Dataclass,
-      $FilterComposer,
-      $OrderingComposer,
-      $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $MappedDataclass,
-      $ActiveDataclass,
-      $CreatePrefetcherCallback,
-      $TablePrefetcher>? reduceToSingleTableManager() {
-    if (isEmpty) {
-      return null;
-    }
-    ProcessedTableManager<
-        $Database,
-        $Table,
-        $Dataclass,
-        $FilterComposer,
-        $OrderingComposer,
-        $CreateCompanionCallback,
-        $UpdateCompanionCallback,
-        $MappedDataclass,
-        $ActiveDataclass,
-        $CreatePrefetcherCallback,
-        $TablePrefetcher> initialValue = ProcessedTableManager(first.$state);
-    if (length == 1) {
-      return initialValue;
-    }
-    for (var manager in toList().sublist(1)) {
-      initialValue = initialValue._filter(
-          (_) => ComposableFilter._(manager.$state.filter, {}),
-          _BooleanOperator.or);
-    }
-    return initialValue;
+/// This function is used internally to prefetch all the rows for a single reference.
+/// It's used by the generated code to combine referenced managers into a single manager that
+/// returns all the referenced objects and then retreives the data.
+///
+/// {@macro manager_internal_use_only}
+Future<List<$Dataclass>?>
+    prefetchRelatedField<$Dataclass, $DataclassWithReferences>(
+        List<$DataclassWithReferences> refs,
+        ProcessedTableManager<dynamic, dynamic, $Dataclass, dynamic, dynamic,
+                    dynamic, dynamic, dynamic, $Dataclass, dynamic, dynamic>
+                Function($DataclassWithReferences)
+            referencedManager,
+        {required bool prefetch}) async {
+  if (prefetch && refs.isNotEmpty) {
+    final managers = refs.map(referencedManager);
+    final manager = managers.reduce((value, element) => value._filter(
+        (_) => ComposableFilter._(element.$state.filter, {}),
+        _BooleanOperator.or));
+    return await manager.get();
+  } else {
+    return null;
   }
 }

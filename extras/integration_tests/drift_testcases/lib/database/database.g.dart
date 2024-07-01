@@ -815,13 +815,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $$UsersTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -866,7 +860,14 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableCreatePrefetchedDataCallback,
     $$UsersTablePrefetchedData>;
 typedef $$UsersTableCreatePrefetchedDataCallback
-    = Future<$$UsersTablePrefetchedData> Function(_$Database, List<User>)
+    = Future<$$UsersTablePrefetchedData> Function(
+            _$Database,
+            List<
+                (
+                  User,
+                  BaseWithReferences<_$Database, User,
+                      $$UsersTablePrefetchedData>
+                )>)
         Function();
 
 class $$UsersTablePrefetchedData {
@@ -952,13 +953,7 @@ class $$FriendshipsTableTableManager extends RootTableManager<
               $$FriendshipsTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $$FriendshipsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> firstUser = const Value.absent(),
             Value<int> secondUser = const Value.absent(),
@@ -1004,7 +999,13 @@ typedef $$FriendshipsTableProcessedTableManager = ProcessedTableManager<
     $$FriendshipsTablePrefetchedData>;
 typedef $$FriendshipsTableCreatePrefetchedDataCallback
     = Future<$$FriendshipsTablePrefetchedData> Function(
-            _$Database, List<Friendship>)
+            _$Database,
+            List<
+                (
+                  Friendship,
+                  BaseWithReferences<_$Database, Friendship,
+                      $$FriendshipsTablePrefetchedData>
+                )>)
         Function();
 
 class $$FriendshipsTablePrefetchedData {

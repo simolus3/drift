@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/tables/update_companion_writer.dart';
 import 'package:drift_dev/src/writer/writer.dart';
+import 'package:recase/recase.dart';
 
 part 'manager_templates.dart';
 part 'table_manager_writer.dart';

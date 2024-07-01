@@ -278,13 +278,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $SearchInPostsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),
@@ -326,7 +320,13 @@ typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
     $SearchInPostsPrefetchedData>;
 typedef $SearchInPostsCreatePrefetchedDataCallback
     = Future<$SearchInPostsPrefetchedData> Function(
-            i0.GeneratedDatabase, List<i1.SearchInPost>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.SearchInPost,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.SearchInPost,
+                      $SearchInPostsPrefetchedData>
+                )>)
         Function();
 
 class $SearchInPostsPrefetchedData {

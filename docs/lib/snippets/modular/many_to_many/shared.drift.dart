@@ -306,13 +306,7 @@ class $$BuyableItemsTableTableManager extends i0.RootTableManager<
               .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $$BuyableItemsTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -354,7 +348,13 @@ typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
     $$BuyableItemsTablePrefetchedData>;
 typedef $$BuyableItemsTableCreatePrefetchedDataCallback
     = Future<$$BuyableItemsTablePrefetchedData> Function(
-            i0.GeneratedDatabase, List<i1.BuyableItem>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.BuyableItem,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.BuyableItem,
+                      $$BuyableItemsTablePrefetchedData>
+                )>)
         Function();
 
 class $$BuyableItemsTablePrefetchedData {

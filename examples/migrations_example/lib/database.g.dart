@@ -1062,20 +1062,13 @@ class $$UsersTableTableManager extends RootTableManager<
           withReferenceMapper: (p0, p1) => p0
               .map((e) => (e, $$UsersTableWithReferences(db, e, p1)))
               .toList(),
-          createPrefetchedDataGetterCallback: ({groupsRefs = false}) {
-            return (db, data) async {
-              final managers =
-                  data.map((e) => $$UsersTableWithReferences(db, e));
-
-              final prefetchedgroupsRefs = groupsRefs
-                  ? await managers
-                      .map((e) => e.groupsRefs)
-                      .reduceToSingleTableManager()
-                      ?.get()
-                  : null;
+          createPrefetchedDataGetterCallback: ({prefetchGroupsRefs = false}) {
+            return (db, refs) async {
+              final groupsRefs = await prefetchRelatedField(
+                  prefetch: prefetchGroupsRefs, refs, (p0) => p0.$2.groupsRefs);
 
               return $$UsersTablePrefetchedData(
-                groupsRefs: prefetchedgroupsRefs,
+                groupsRefs: groupsRefs,
               );
             };
           },
@@ -1119,8 +1112,9 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableCreatePrefetchedDataCallback,
     $$UsersTablePrefetchedData>;
 typedef $$UsersTableCreatePrefetchedDataCallback
-    = Future<$$UsersTablePrefetchedData> Function(_$Database, List<User>)
-        Function({bool groupsRefs});
+    = Future<$$UsersTablePrefetchedData> Function(
+            _$Database, List<(User, $$UsersTableWithReferences)>)
+        Function({bool prefetchGroupsRefs});
 
 class $$UsersTablePrefetchedData {
   $$UsersTablePrefetchedData({
@@ -1234,13 +1228,7 @@ class $GroupsTableManager extends RootTableManager<
           orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, $GroupsWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => $GroupsWithReferences(db, e));
-
-              return $GroupsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -1281,7 +1269,7 @@ typedef $GroupsProcessedTableManager = ProcessedTableManager<
     $GroupsCreatePrefetchedDataCallback,
     $GroupsPrefetchedData>;
 typedef $GroupsCreatePrefetchedDataCallback = Future<$GroupsPrefetchedData>
-        Function(_$Database, List<Group>)
+        Function(_$Database, List<(Group, $GroupsWithReferences)>)
     Function();
 
 class $GroupsPrefetchedData {
@@ -1357,13 +1345,7 @@ class $NotesTableManager extends RootTableManager<
           orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $NotesPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<String> title = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -1404,7 +1386,14 @@ typedef $NotesProcessedTableManager = ProcessedTableManager<
     $NotesCreatePrefetchedDataCallback,
     $NotesPrefetchedData>;
 typedef $NotesCreatePrefetchedDataCallback
-    = Future<$NotesPrefetchedData> Function(_$Database, List<Note>) Function();
+    = Future<$NotesPrefetchedData> Function(
+            _$Database,
+            List<
+                (
+                  Note,
+                  BaseWithReferences<_$Database, Note, $NotesPrefetchedData>
+                )>)
+        Function();
 
 class $NotesPrefetchedData {
   $NotesPrefetchedData();

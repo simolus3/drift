@@ -2070,13 +2070,7 @@ class $NoIdsTableManager extends RootTableManager<
           orderingComposer: $NoIdsOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $NoIdsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<Uint8List> payload = const Value.absent(),
           }) =>
@@ -2107,9 +2101,16 @@ typedef $NoIdsProcessedTableManager = ProcessedTableManager<
     NoIdRow,
     $NoIdsCreatePrefetchedDataCallback,
     $NoIdsPrefetchedData>;
-typedef $NoIdsCreatePrefetchedDataCallback = Future<$NoIdsPrefetchedData>
-        Function(_$CustomTablesDb, List<NoIdRow>)
-    Function();
+typedef $NoIdsCreatePrefetchedDataCallback
+    = Future<$NoIdsPrefetchedData> Function(
+            _$CustomTablesDb,
+            List<
+                (
+                  NoIdRow,
+                  BaseWithReferences<_$CustomTablesDb, NoIdRow,
+                      $NoIdsPrefetchedData>
+                )>)
+        Function();
 
 class $NoIdsPrefetchedData {
   $NoIdsPrefetchedData();
@@ -2180,13 +2181,7 @@ class $WithDefaultsTableManager extends RootTableManager<
               $WithDefaultsOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $WithDefaultsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
             Value<int?> b = const Value.absent(),
@@ -2228,7 +2223,13 @@ typedef $WithDefaultsProcessedTableManager = ProcessedTableManager<
     $WithDefaultsPrefetchedData>;
 typedef $WithDefaultsCreatePrefetchedDataCallback
     = Future<$WithDefaultsPrefetchedData> Function(
-            _$CustomTablesDb, List<WithDefault>)
+            _$CustomTablesDb,
+            List<
+                (
+                  WithDefault,
+                  BaseWithReferences<_$CustomTablesDb, WithDefault,
+                      $WithDefaultsPrefetchedData>
+                )>)
         Function();
 
 class $WithDefaultsPrefetchedData {
@@ -2314,13 +2315,7 @@ class $WithConstraintsTableManager extends RootTableManager<
               $WithConstraintsOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $WithConstraintsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
             Value<int> b = const Value.absent(),
@@ -2366,7 +2361,13 @@ typedef $WithConstraintsProcessedTableManager = ProcessedTableManager<
     $WithConstraintsPrefetchedData>;
 typedef $WithConstraintsCreatePrefetchedDataCallback
     = Future<$WithConstraintsPrefetchedData> Function(
-            _$CustomTablesDb, List<WithConstraint>)
+            _$CustomTablesDb,
+            List<
+                (
+                  WithConstraint,
+                  BaseWithReferences<_$CustomTablesDb, WithConstraint,
+                      $WithConstraintsPrefetchedData>
+                )>)
         Function();
 
 class $WithConstraintsPrefetchedData {
@@ -2465,13 +2466,7 @@ class $ConfigTableTableManager extends RootTableManager<
               $ConfigTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $ConfigTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<String> configKey = const Value.absent(),
             Value<DriftAny?> configValue = const Value.absent(),
@@ -2520,7 +2515,13 @@ typedef $ConfigTableProcessedTableManager = ProcessedTableManager<
     $ConfigTablePrefetchedData>;
 typedef $ConfigTableCreatePrefetchedDataCallback
     = Future<$ConfigTablePrefetchedData> Function(
-            _$CustomTablesDb, List<Config>)
+            _$CustomTablesDb,
+            List<
+                (
+                  Config,
+                  BaseWithReferences<_$CustomTablesDb, Config,
+                      $ConfigTablePrefetchedData>
+                )>)
         Function();
 
 class $ConfigTablePrefetchedData {
@@ -2610,13 +2611,7 @@ class $MytableTableManager extends RootTableManager<
           orderingComposer: $MytableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $MytablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> someid = const Value.absent(),
             Value<String?> sometext = const Value.absent(),
@@ -2659,9 +2654,16 @@ typedef $MytableProcessedTableManager = ProcessedTableManager<
     MytableData,
     $MytableCreatePrefetchedDataCallback,
     $MytablePrefetchedData>;
-typedef $MytableCreatePrefetchedDataCallback = Future<$MytablePrefetchedData>
-        Function(_$CustomTablesDb, List<MytableData>)
-    Function();
+typedef $MytableCreatePrefetchedDataCallback
+    = Future<$MytablePrefetchedData> Function(
+            _$CustomTablesDb,
+            List<
+                (
+                  MytableData,
+                  BaseWithReferences<_$CustomTablesDb, MytableData,
+                      $MytablePrefetchedData>
+                )>)
+        Function();
 
 class $MytablePrefetchedData {
   $MytablePrefetchedData();
@@ -2736,13 +2738,7 @@ class $EmailTableManager extends RootTableManager<
           orderingComposer: $EmailOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $EmailPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<String> sender = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -2782,9 +2778,16 @@ typedef $EmailProcessedTableManager = ProcessedTableManager<
     EMail,
     $EmailCreatePrefetchedDataCallback,
     $EmailPrefetchedData>;
-typedef $EmailCreatePrefetchedDataCallback = Future<$EmailPrefetchedData>
-        Function(_$CustomTablesDb, List<EMail>)
-    Function();
+typedef $EmailCreatePrefetchedDataCallback
+    = Future<$EmailPrefetchedData> Function(
+            _$CustomTablesDb,
+            List<
+                (
+                  EMail,
+                  BaseWithReferences<_$CustomTablesDb, EMail,
+                      $EmailPrefetchedData>
+                )>)
+        Function();
 
 class $EmailPrefetchedData {
   $EmailPrefetchedData();
@@ -2854,13 +2857,7 @@ class $WeirdTableTableManager extends RootTableManager<
               $WeirdTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $WeirdTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> sqlClass = const Value.absent(),
             Value<String> textColumn = const Value.absent(),
@@ -2901,7 +2898,13 @@ typedef $WeirdTableProcessedTableManager = ProcessedTableManager<
     $WeirdTablePrefetchedData>;
 typedef $WeirdTableCreatePrefetchedDataCallback
     = Future<$WeirdTablePrefetchedData> Function(
-            _$CustomTablesDb, List<WeirdData>)
+            _$CustomTablesDb,
+            List<
+                (
+                  WeirdData,
+                  BaseWithReferences<_$CustomTablesDb, WeirdData,
+                      $WeirdTablePrefetchedData>
+                )>)
         Function();
 
 class $WeirdTablePrefetchedData {

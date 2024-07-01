@@ -293,13 +293,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $PostsPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),
@@ -338,9 +332,16 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i1.Post,
     $PostsCreatePrefetchedDataCallback,
     $PostsPrefetchedData>;
-typedef $PostsCreatePrefetchedDataCallback = Future<$PostsPrefetchedData>
-        Function(i0.GeneratedDatabase, List<i1.Post>)
-    Function();
+typedef $PostsCreatePrefetchedDataCallback
+    = Future<$PostsPrefetchedData> Function(
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.Post,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.Post,
+                      $PostsPrefetchedData>
+                )>)
+        Function();
 
 class $PostsPrefetchedData {
   $PostsPrefetchedData();

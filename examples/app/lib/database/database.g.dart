@@ -847,20 +847,16 @@ class $$CategoriesTableTableManager extends RootTableManager<
           withReferenceMapper: (p0, p1) => p0
               .map((e) => (e, $$CategoriesTableWithReferences(db, e, p1)))
               .toList(),
-          createPrefetchedDataGetterCallback: ({todoEntriesRefs = false}) {
-            return (db, data) async {
-              final managers =
-                  data.map((e) => $$CategoriesTableWithReferences(db, e));
-
-              final prefetchedtodoEntriesRefs = todoEntriesRefs
-                  ? await managers
-                      .map((e) => e.todoEntriesRefs)
-                      .reduceToSingleTableManager()
-                      ?.get()
-                  : null;
+          createPrefetchedDataGetterCallback: (
+              {prefetchTodoEntriesRefs = false}) {
+            return (db, refs) async {
+              final todoEntriesRefs = await prefetchRelatedField(
+                  prefetch: prefetchTodoEntriesRefs,
+                  refs,
+                  (p0) => p0.$2.todoEntriesRefs);
 
               return $$CategoriesTablePrefetchedData(
-                todoEntriesRefs: prefetchedtodoEntriesRefs,
+                todoEntriesRefs: todoEntriesRefs,
               );
             };
           },
@@ -901,8 +897,8 @@ typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
     $$CategoriesTablePrefetchedData>;
 typedef $$CategoriesTableCreatePrefetchedDataCallback
     = Future<$$CategoriesTablePrefetchedData> Function(
-            _$AppDatabase, List<Category>)
-        Function({bool todoEntriesRefs});
+            _$AppDatabase, List<(Category, $$CategoriesTableWithReferences)>)
+        Function({bool prefetchTodoEntriesRefs});
 
 class $$CategoriesTablePrefetchedData {
   $$CategoriesTablePrefetchedData({
@@ -1024,14 +1020,7 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
           withReferenceMapper: (p0, p1) => p0
               .map((e) => (e, $$TodoEntriesTableWithReferences(db, e, p1)))
               .toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers =
-                  data.map((e) => $$TodoEntriesTableWithReferences(db, e));
-
-              return $$TodoEntriesTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -1073,7 +1062,7 @@ typedef $$TodoEntriesTableProcessedTableManager = ProcessedTableManager<
     $$TodoEntriesTablePrefetchedData>;
 typedef $$TodoEntriesTableCreatePrefetchedDataCallback
     = Future<$$TodoEntriesTablePrefetchedData> Function(
-            _$AppDatabase, List<TodoEntry>)
+            _$AppDatabase, List<(TodoEntry, $$TodoEntriesTableWithReferences)>)
         Function();
 
 class $$TodoEntriesTablePrefetchedData {
@@ -1132,13 +1121,7 @@ class $TextEntriesTableManager extends RootTableManager<
               $TextEntriesOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $TextEntriesPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<String> description = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -1175,7 +1158,13 @@ typedef $TextEntriesProcessedTableManager = ProcessedTableManager<
     $TextEntriesPrefetchedData>;
 typedef $TextEntriesCreatePrefetchedDataCallback
     = Future<$TextEntriesPrefetchedData> Function(
-            _$AppDatabase, List<TextEntry>)
+            _$AppDatabase,
+            List<
+                (
+                  TextEntry,
+                  BaseWithReferences<_$AppDatabase, TextEntry,
+                      $TextEntriesPrefetchedData>
+                )>)
         Function();
 
 class $TextEntriesPrefetchedData {

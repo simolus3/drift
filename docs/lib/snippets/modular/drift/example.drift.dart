@@ -378,13 +378,7 @@ class $TodosTableManager extends i0.RootTableManager<
               i1.$TodosOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $TodosPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
@@ -427,9 +421,16 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     i1.Todo,
     $TodosCreatePrefetchedDataCallback,
     $TodosPrefetchedData>;
-typedef $TodosCreatePrefetchedDataCallback = Future<$TodosPrefetchedData>
-        Function(i0.GeneratedDatabase, List<i1.Todo>)
-    Function();
+typedef $TodosCreatePrefetchedDataCallback
+    = Future<$TodosPrefetchedData> Function(
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.Todo,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.Todo,
+                      $TodosPrefetchedData>
+                )>)
+        Function();
 
 class $TodosPrefetchedData {
   $TodosPrefetchedData();
@@ -683,13 +684,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
               i1.$CategoriesOrderingComposer(i0.ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, i0.BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => i0.BaseWithReferences(db, e));
-
-              return $CategoriesPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -727,7 +722,13 @@ typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
     $CategoriesPrefetchedData>;
 typedef $CategoriesCreatePrefetchedDataCallback
     = Future<$CategoriesPrefetchedData> Function(
-            i0.GeneratedDatabase, List<i1.Category>)
+            i0.GeneratedDatabase,
+            List<
+                (
+                  i1.Category,
+                  i0.BaseWithReferences<i0.GeneratedDatabase, i1.Category,
+                      $CategoriesPrefetchedData>
+                )>)
         Function();
 
 class $CategoriesPrefetchedData {

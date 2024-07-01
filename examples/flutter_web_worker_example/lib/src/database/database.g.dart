@@ -269,13 +269,7 @@ class $EntriesTableManager extends RootTableManager<
           orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $EntriesPrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
@@ -307,9 +301,16 @@ typedef $EntriesProcessedTableManager = ProcessedTableManager<
     Entry,
     $EntriesCreatePrefetchedDataCallback,
     $EntriesPrefetchedData>;
-typedef $EntriesCreatePrefetchedDataCallback = Future<$EntriesPrefetchedData>
-        Function(_$MyDatabase, List<Entry>)
-    Function();
+typedef $EntriesCreatePrefetchedDataCallback
+    = Future<$EntriesPrefetchedData> Function(
+            _$MyDatabase,
+            List<
+                (
+                  Entry,
+                  BaseWithReferences<_$MyDatabase, Entry,
+                      $EntriesPrefetchedData>
+                )>)
+        Function();
 
 class $EntriesPrefetchedData {
   $EntriesPrefetchedData();

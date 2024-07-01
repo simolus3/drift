@@ -265,13 +265,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $$UsersTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -313,7 +307,13 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTablePrefetchedData>;
 typedef $$UsersTableCreatePrefetchedDataCallback
     = Future<$$UsersTablePrefetchedData> Function(
-            _$DriftPostgresDatabase, List<User>)
+            _$DriftPostgresDatabase,
+            List<
+                (
+                  User,
+                  BaseWithReferences<_$DriftPostgresDatabase, User,
+                      $$UsersTablePrefetchedData>
+                )>)
         Function();
 
 class $$UsersTablePrefetchedData {

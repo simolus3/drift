@@ -263,13 +263,7 @@ class $$_SomeTableTableTableManager extends RootTableManager<
               $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
           withReferenceMapper: (p0, p1) =>
               p0.map((e) => (e, BaseWithReferences(db, e, p1))).toList(),
-          createPrefetchedDataGetterCallback: () {
-            return (db, data) async {
-              final managers = data.map((e) => BaseWithReferences(db, e));
-
-              return $$_SomeTableTablePrefetchedData();
-            };
-          },
+          createPrefetchedDataGetterCallback: null,
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -307,7 +301,13 @@ typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
     $$_SomeTableTablePrefetchedData>;
 typedef $$_SomeTableTableCreatePrefetchedDataCallback
     = Future<$$_SomeTableTablePrefetchedData> Function(
-            _$_SomeDb, List<_SomeTableData>)
+            _$_SomeDb,
+            List<
+                (
+                  _SomeTableData,
+                  BaseWithReferences<_$_SomeDb, _SomeTableData,
+                      $$_SomeTableTablePrefetchedData>
+                )>)
         Function();
 
 class $$_SomeTableTablePrefetchedData {
