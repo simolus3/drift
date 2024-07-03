@@ -68,7 +68,7 @@ Drift supports the `int64()` column builder to indicate that a column stores
 large integers and should be mapped to Dart as a `BigInt`.
 
 This is mainly useful for Dart apps compiled to JavaScript, where an `int`
-really is a `double` that can't store large integers without loosing information.
+really is a `double` that can't store large integers without losing information.
 Here, representing integers as `BigInt` (and passing those to the underlying
 database implementation) ensures that you can store large intergers without any
 loss of precision.
