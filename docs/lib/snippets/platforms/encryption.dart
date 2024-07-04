@@ -24,7 +24,7 @@ void databases() {
   final myDatabaseFile = File('/dev/null');
 
   // #docregion encrypted1
-  final token = RootIsolateToken.instance;
+  final token = RootIsolateToken.instance!;
   NativeDatabase.createInBackground(
     myDatabaseFile,
     isolateSetup: () async {

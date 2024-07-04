@@ -25,7 +25,7 @@ class SomeTable extends Table {
 // Copying the definitions here because we can't import Flutter in documentation
 // snippets.
 class RootIsolateToken {
-  static final instance = RootIsolateToken();
+  static RootIsolateToken? instance;
 }
 
 class BackgroundIsolateBinaryMessenger {
@@ -47,7 +47,7 @@ class MyDatabase extends _$MyDatabase {
 
 // #docregion driftisolate-spawn
 Future<DriftIsolate> createIsolateWithSpawn() async {
-  final token = RootIsolateToken.instance;
+  final token = RootIsolateToken.instance!;
   return await DriftIsolate.spawn(() {
     // This function runs in a new isolate, so we must first initialize the
     // messenger to use platform channels.
