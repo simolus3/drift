@@ -41,7 +41,8 @@ class $CategoriesTable extends Categories
   @override
   late final GeneratedColumn<String> descriptionInUpperCase =
       GeneratedColumn<String>('description_in_upper_case', aliasedName, false,
-          generatedAs: GeneratedAs(description.upper(), false),
+          generatedAs: GeneratedAs(
+              StringExpressionOperators(description).upper(), false),
           type: DriftSqlType.string,
           requiredDuringInsert: false);
   @override
@@ -689,7 +690,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedColumn<DateTime> creationTime = GeneratedColumn<DateTime>(
       'creation_time', aliasedName, false,
-      check: () => creationTime.isBiggerThan(Constant(DateTime.utc(1950))),
+      check: () => ComparableExpr(creationTime)
+          .isBiggerThan(Constant(DateTime.utc(1950))),
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
@@ -3210,7 +3212,7 @@ class $CategoryTodoCountViewView
       type: DriftSqlType.string);
   late final GeneratedColumn<int> itemCount = GeneratedColumn<int>(
       'item_count', aliasedName, true,
-      generatedAs: GeneratedAs(todos.id.count(), false),
+      generatedAs: GeneratedAs(BaseAggregate(todos.id).count(), false),
       type: DriftSqlType.int);
   @override
   $CategoryTodoCountViewView createAlias(String alias) {

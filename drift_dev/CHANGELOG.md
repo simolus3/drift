@@ -1,4 +1,4 @@
-## 2.18.1-dev
+## 2.19.0-dev
 
 - Fix generated `CREATE VIEW` statements containing existing row class syntax
   only supposed to be used during static analysis.
@@ -6,6 +6,7 @@
   columns with the same name.
 - Fix `drift_dev schema steps` generating invalid code when no migrations have
   been defined yet.
+- Fix generated imports for extension member references in modular mode.
 
 ## 2.18.0
 

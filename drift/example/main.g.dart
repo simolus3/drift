@@ -564,7 +564,7 @@ class $TodoCategoryItemCountView
       type: DriftSqlType.string);
   late final GeneratedColumn<int> itemCount = GeneratedColumn<int>(
       'item_count', aliasedName, true,
-      generatedAs: GeneratedAs(todoItems.id.count(), false),
+      generatedAs: GeneratedAs(BaseAggregate(todoItems.id).count(), false),
       type: DriftSqlType.int);
   @override
   $TodoCategoryItemCountView createAlias(String alias) {

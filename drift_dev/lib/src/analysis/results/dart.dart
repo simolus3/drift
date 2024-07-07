@@ -16,6 +16,10 @@ import 'types.dart';
 
 part '../../generated/analysis/results/dart.g.dart';
 
+/// A syntactic representation of Dart code where top-level symbols (that would)
+/// have to be imported are explicitly represented with their defining URL.
+///
+/// This allows generating code with independent import management.
 class AnnotatedDartCode {
   static final Uri dartAsync = Uri.parse('dart:async');
   static final Uri dartCore = Uri.parse('dart:core');
@@ -505,6 +509,37 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitExtensionOverride(ExtensionOverride node) {
     _addTopLevelReference(node.element, node.name); // Transform identifier
+    node.typeArguments?.accept(this);
+    node.argumentList.accept(this);
+  }
+
+  @override
+  void visitMethodInvocation(MethodInvocation node) {
+    // Rewrite extension invocations (e.g. `myList.indexed`) to explicitly
+    // mention the extension in use (e.g `IterableExtensions(myList).indexed`).
+    // This is because extensions aren't visible as soon as the library defining
+    // them is imported under an import alias. Explicitly mentioning the
+    // extension fixes this problem.
+    if (node.target == null || node.realTarget != node.target) {
+      // Unfortunately there's no easy way to apply this to cascade expressions
+      return super.visitMethodInvocation(node);
+    }
+
+    final element = node.methodName.staticElement;
+    final enclosing = element?.enclosingElement;
+    if (enclosing is! ExtensionElement || enclosing.name == null) {
+      return super.visitMethodInvocation(node);
+    }
+
+    _builder
+      ..addTopLevel(
+          DartTopLevelSymbol.topLevelElement(enclosing, enclosing.name!))
+      ..addText('(');
+    node.target?.accept(this);
+    _builder
+      ..addText(node.isNullAware ? ')?.' : ').')
+      ..addText(node.methodName.name);
+
     node.typeArguments?.accept(this);
     node.argumentList.accept(this);
   }
