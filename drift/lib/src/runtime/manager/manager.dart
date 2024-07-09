@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
 part 'composer.dart';
@@ -12,13 +11,8 @@ part 'ordering.dart';
 
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
-/// It holds the state for manager of [$Table] table in [$Database] database.
+/// It holds the state for manager of [$Table] table in [$Database] database, used to return [$Dataclass] data classes/rows.
 /// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings for the manager.
-///
-/// There are 3 Dataclass generics:
-///   - [$Dataclass] is the dataclass that is used to interact with the table
-///   - [$DataclassWithReferences] is the dataclass that is returned when the manager is used with the [withReferences] method, this contains the dataclass and any referenced dataclasses
-///   - [$ActiveDataclass] is the dataclass that is returned when the manager is used, this is either [$Dataclass] or [$DataclassWithReferences], depending if the manager has had the [withReferences] method called on it
 ///
 /// It also holds the [$CreateCompanionCallback] and [$UpdateCompanionCallback] functions that are used to create companion builders for inserting and updating data.
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
@@ -30,9 +24,7 @@ class TableManagerState<
     $FilterComposer extends FilterComposer<$Database, $Table>,
     $OrderingComposer extends OrderingComposer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
-    $UpdateCompanionCallback extends Function,
-    $DataclassWithReferences,
-    $ActiveDataclass> {
+    $UpdateCompanionCallback extends Function> {
   /// The database used to run the query.
   final $Database db;
 
@@ -77,22 +69,6 @@ class TableManagerState<
   /// for updating data in the table
   final $UpdateCompanionCallback _updateCompanionCallback;
 
-  /// This function is used internally to convert a simple [$Dataclass] into one which has its references attached ([$DataclassWithReferences]).
-  /// This is used internaly by [toActiveDataclass] and should not be used outside of this class.
-  final List<$DataclassWithReferences> Function(List<$Dataclass>)
-      _withReferenceMapper;
-
-  /// This function is used to ensure that the correct dataclass type is returned by the manager.
-  /// When `withReferences` is called on a manager, and its `$ActiveDataclass` changes to `$DataclassWithReferences`, this function will do the actual conversion
-  /// Every return from the manager should map its results using this function before returning.
-  List<$ActiveDataclass> toActiveDataclass(List<$Dataclass> items) {
-    if ($DataclassWithReferences == $ActiveDataclass) {
-      return _withReferenceMapper(items) as List<$ActiveDataclass>;
-    } else {
-      return items as List<$ActiveDataclass>;
-    }
-  }
-
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
   /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
@@ -106,16 +82,13 @@ class TableManagerState<
       required this.orderingComposer,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
-      required List<$DataclassWithReferences> Function(List<$Dataclass>)
-          withReferenceMapper,
       this.filter,
       this.distinct,
       this.limit,
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : _withReferenceMapper = withReferenceMapper,
-        _createCompanionCallback = createCompanionCallback,
+      : _createCompanionCallback = createCompanionCallback,
         _updateCompanionCallback = updateCompanionCallback;
 
   /// Copy this state with the given values
@@ -126,9 +99,7 @@ class TableManagerState<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $ActiveDataclass> copyWith({
+      $UpdateCompanionCallback> copyWith({
     bool? distinct,
     int? limit,
     int? offset,
@@ -143,42 +114,12 @@ class TableManagerState<
       orderingComposer: orderingComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
-      withReferenceMapper: _withReferenceMapper,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
       distinct: distinct ?? this.distinct,
       limit: limit ?? this.limit,
       offset: offset ?? this.offset,
-    );
-  }
-
-  /// Create a copy of this state with a new active dataclass
-  /// This is used internally to mark a manager for having the mapper applied
-  TableManagerState<
-      $Database,
-      $Table,
-      $Dataclass,
-      $FilterComposer,
-      $OrderingComposer,
-      $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $NewActiveDataclass> copyWithNewActiveDataclass<$NewActiveDataclass>() {
-    return TableManagerState(
-      db: db,
-      table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
-      createCompanionCallback: _createCompanionCallback,
-      updateCompanionCallback: _updateCompanionCallback,
-      withReferenceMapper: _withReferenceMapper,
-      filter: filter,
-      joinBuilders: joinBuilders,
-      orderingBuilders: orderingBuilders,
-      distinct: distinct,
-      limit: limit,
-      offset: offset,
     );
   }
 
@@ -342,9 +283,7 @@ abstract class BaseTableManager<
     $FilterComposer extends FilterComposer<$Database, $Table>,
     $OrderingComposer extends OrderingComposer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
-    $UpdateCompanionCallback extends Function,
-    $DataclassWithReferences,
-    $ActiveDataclass> extends Selectable<$ActiveDataclass> {
+    $UpdateCompanionCallback extends Function> extends Selectable<$Dataclass> {
   /// The state for this manager
   final TableManagerState<
       $Database,
@@ -353,52 +292,12 @@ abstract class BaseTableManager<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $ActiveDataclass> $state;
+      $UpdateCompanionCallback> $state;
 
   /// Create a new [BaseTableManager] instance
   ///
   /// {@macro manager_internal_use_only}
   BaseTableManager(this.$state);
-
-  /// Returns a manager which will return each row along with prefiltered managers for the referenced tables
-  ///
-  /// E.G
-  /// ```dart
-  /// final usersWithReferences = await db.users.withReferences().get();
-  /// for (final userWithReferences in usersWithReferences) {
-  ///   final user = userWithReferences.user;
-  ///   final profile = await userWithReferences.profile.getSingle();
-  /// }
-  ///
-  /// Note: Using this method incorrectly can lead to N+1 queries, where each row in the result set triggers a new query.
-  /// Use this method with caution and always profile your queries to ensure they are efficient.
-  ProcessedTableManager<
-      $Database,
-      $Table,
-      $Dataclass,
-      $FilterComposer,
-      $OrderingComposer,
-      $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $DataclassWithReferences> withReferences() {
-    if ($DataclassWithReferences == $ActiveDataclass) {
-      return ProcessedTableManager($state as TableManagerState<
-          $Database,
-          $Table,
-          $Dataclass,
-          $FilterComposer,
-          $OrderingComposer,
-          $CreateCompanionCallback,
-          $UpdateCompanionCallback,
-          $DataclassWithReferences,
-          $DataclassWithReferences>);
-    }
-    return ProcessedTableManager(
-        $state.copyWithNewActiveDataclass<$DataclassWithReferences>());
-  }
 
   /// Add a limit to the statement
   ProcessedTableManager<
@@ -408,23 +307,13 @@ abstract class BaseTableManager<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $ActiveDataclass> limit(int limit, {int? offset}) {
+      $UpdateCompanionCallback> limit(int limit, {int? offset}) {
     return ProcessedTableManager($state.copyWith(limit: limit, offset: offset));
   }
 
   /// Add ordering to the statement
-  ProcessedTableManager<
-          $Database,
-          $Table,
-          $Dataclass,
-          $FilterComposer,
-          $OrderingComposer,
-          $CreateCompanionCallback,
-          $UpdateCompanionCallback,
-          $DataclassWithReferences,
-          $ActiveDataclass>
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
       orderBy(ComposableOrdering Function($OrderingComposer o) o) {
     final orderings = o($state.orderingComposer);
     return ProcessedTableManager($state.copyWith(
@@ -443,9 +332,7 @@ abstract class BaseTableManager<
       $FilterComposer,
       $OrderingComposer,
       $CreateCompanionCallback,
-      $UpdateCompanionCallback,
-      $DataclassWithReferences,
-      $ActiveDataclass> filter(
+      $UpdateCompanionCallback> filter(
     ComposableFilter Function($FilterComposer f) f,
   ) {
     return _filter(f, _BooleanOperator.and);
@@ -454,16 +341,8 @@ abstract class BaseTableManager<
   /// Add a filter to the statement
   ///
   /// The [combineWith] parameter can be used to specify how the new filter should be combined with the existing filter
-  ProcessedTableManager<
-          $Database,
-          $Table,
-          $Dataclass,
-          $FilterComposer,
-          $OrderingComposer,
-          $CreateCompanionCallback,
-          $UpdateCompanionCallback,
-          $DataclassWithReferences,
-          $ActiveDataclass>
+  ProcessedTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+          $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback>
       _filter(ComposableFilter Function($FilterComposer f) f,
           _BooleanOperator combineWith) {
     final filter = f($state.filteringComposer);
@@ -528,8 +407,8 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (enabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Future<$ActiveDataclass> getSingle({bool distinct = true}) async =>
-      (await get(distinct: distinct)).single;
+  Future<$Dataclass> getSingle({bool distinct = true}) =>
+      $state.copyWith(distinct: distinct).buildSelectStatement().getSingle();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only emit
@@ -540,8 +419,8 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (enabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Stream<$ActiveDataclass> watchSingle({bool distinct = true}) =>
-      watch(distinct: distinct).transform(singleElements());
+  Stream<$Dataclass> watchSingle({bool distinct = true}) =>
+      $state.copyWith(distinct: distinct).buildSelectStatement().watchSingle();
 
   /// Executes the statement and returns all rows as a list.
   ///
@@ -551,13 +430,12 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (disabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Future<List<$ActiveDataclass>> get(
+  Future<List<$Dataclass>> get(
           {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
           .buildSelectStatement()
-          .get()
-          .then($state.toActiveDataclass);
+          .get();
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
@@ -568,13 +446,12 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (disabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Stream<List<$ActiveDataclass>> watch(
+  Stream<List<$Dataclass>> watch(
           {bool distinct = false, int? limit, int? offset}) =>
       $state
           .copyWith(distinct: distinct, limit: limit, offset: offset)
           .buildSelectStatement()
-          .watch()
-          .asyncMap($state.toActiveDataclass);
+          .watch();
 
   /// Executes this statement, like [get], but only returns one
   /// value. If the result too many values, this method will throw. If no
@@ -586,19 +463,10 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (enabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Future<$ActiveDataclass?> getSingleOrNull({bool distinct = true}) async {
-    final list = await get(distinct: distinct);
-    final iterator = list.iterator;
-
-    if (!iterator.moveNext()) {
-      return null;
-    }
-    final element = iterator.current;
-    if (iterator.moveNext()) {
-      throw StateError('Expected exactly one result, but found more than one!');
-    }
-    return element;
-  }
+  Future<$Dataclass?> getSingleOrNull({bool distinct = true}) => $state
+      .copyWith(distinct: distinct)
+      .buildSelectStatement()
+      .getSingleOrNull();
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only
@@ -611,8 +479,10 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (enabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Stream<$ActiveDataclass?> watchSingleOrNull({bool distinct = true}) =>
-      watch(distinct: distinct).transform(singleElementsOrNull());
+  Stream<$Dataclass?> watchSingleOrNull({bool distinct = true}) => $state
+      .copyWith(distinct: distinct)
+      .buildSelectStatement()
+      .watchSingleOrNull();
 }
 
 /// A table manager that exposes methods to a table manager that already has
@@ -635,19 +505,9 @@ class ProcessedTableManager<
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
-        $UpdateCompanionCallback extends Function,
-        $DataclassWithReferences,
-        $ActiveDataclass>
-    extends BaseTableManager<
-        $Database,
-        $Table,
-        $Dataclass,
-        $FilterComposer,
-        $OrderingComposer,
-        $CreateCompanionCallback,
-        $UpdateCompanionCallback,
-        $DataclassWithReferences,
-        $ActiveDataclass> {
+        $UpdateCompanionCallback extends Function>
+    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback> {
   /// Create a new [ProcessedTableManager] instance
   @internal
   ProcessedTableManager(super.$state);
@@ -663,19 +523,9 @@ abstract class RootTableManager<
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
-        $UpdateCompanionCallback extends Function,
-        $DataclassWithReferences,
-        $ActiveDataclass>
-    extends BaseTableManager<
-        $Database,
-        $Table,
-        $Dataclass,
-        $FilterComposer,
-        $OrderingComposer,
-        $CreateCompanionCallback,
-        $UpdateCompanionCallback,
-        $DataclassWithReferences,
-        $ActiveDataclass> {
+        $UpdateCompanionCallback extends Function>
+    extends BaseTableManager<$Database, $Table, $Dataclass, $FilterComposer,
+        $OrderingComposer, $CreateCompanionCallback, $UpdateCompanionCallback> {
   /// Create a new [RootTableManager] instance
   ///
   /// {@template manager_internal_use_only}
@@ -812,18 +662,4 @@ class _JoinedResult<T extends Table, DT> extends _StatementType<T, DT> {
   final JoinedSelectStatement<T, DT> statement;
 
   const _JoinedResult(this.statement);
-}
-
-/// Base class for the "WithReferece" classes that
-class BaseWithReferences<$Database extends GeneratedDatabase, $Dataclass> {
-  /// The database instance
-  // ignore: non_constant_identifier_names
-  final $Database $_db;
-
-  /// The dataclass these references are for
-  // ignore: non_constant_identifier_names
-  final $Dataclass $_item;
-
-  /// Create a [BaseWithReferences] class
-  BaseWithReferences(this.$_db, this.$_item);
 }

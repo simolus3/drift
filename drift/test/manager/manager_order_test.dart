@@ -55,14 +55,14 @@ void main() {
         id: Value(RowId(1)),
         content: "Get that english homework done",
         title: Value("English Homework"),
-        category: Value(RowId(workCategoryId)),
+        category: Value(workCategoryId),
         status: Value(TodoStatus.open),
         targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 15)))));
     await db.managers.todosTable.create((o) => o(
         id: Value(RowId(2)),
         content: "Finish that Book report",
         title: Value("Book Report"),
-        category: Value(RowId(workCategoryId)),
+        category: Value(workCategoryId),
         status: Value(TodoStatus.done),
         targetDate:
             Value(DateTime.now().subtract(Duration(days: 2, seconds: 15)))));
@@ -70,14 +70,14 @@ void main() {
         id: Value(RowId(3)),
         content: "Get that math homework done",
         title: Value("Math Homework"),
-        category: Value(RowId(schoolCategoryId)),
+        category: Value(schoolCategoryId),
         status: Value(TodoStatus.open),
         targetDate: Value(DateTime.now().add(Duration(days: 1, seconds: 10)))));
     await db.managers.todosTable.create((o) => o(
         id: Value(RowId(4)),
         content: "Finish that report",
         title: Value("Report"),
-        category: Value(RowId(schoolCategoryId)),
+        category: Value(schoolCategoryId),
         status: Value(TodoStatus.workInProgress),
         targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))));
     // Order by related

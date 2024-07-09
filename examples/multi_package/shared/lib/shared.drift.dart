@@ -28,10 +28,8 @@ class SharedDrift extends i1.ModularAccessor {
         ));
   }
 
-  i2.Posts get posts =>
-      i1.ReadDatabaseContainer(attachedDatabase).resultSet<i2.Posts>('posts');
-  i3.$UsersTable get users => i1.ReadDatabaseContainer(attachedDatabase)
-      .resultSet<i3.$UsersTable>('users');
+  i2.Posts get posts => this.resultSet<i2.Posts>('posts');
+  i3.$UsersTable get users => this.resultSet<i3.$UsersTable>('users');
 }
 
 class AllPostsResult {

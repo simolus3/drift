@@ -262,7 +262,7 @@ void main() {
       final id = await db.categories
           .insertOne(CategoriesCompanion.insert(description: 'with entry'));
       await db.todosTable.insertOne(TodosTableCompanion.insert(
-          content: 'my content', category: Value(RowId(id))));
+          content: 'my content', category: Value(id)));
 
       final amountOfTodos =
           db.todosTable.id.count(filter: db.todosTable.id.isNotNull());

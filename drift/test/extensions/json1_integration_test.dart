@@ -85,12 +85,12 @@ void main() {
             TodosTableCompanion.insert(
                 title: Value('first title'),
                 content: 'entry in category',
-                category: Value(RowId(1))),
+                category: Value(1)),
             TodosTableCompanion.insert(content: 'not in category'),
             TodosTableCompanion.insert(
                 title: Value('second title'),
                 content: 'another in category',
-                category: Value(RowId(1)))
+                category: Value(1))
           ]);
       });
     });
