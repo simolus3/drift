@@ -12,7 +12,7 @@ void main() {
     final nonEmptyId = await db.categories
         .insertOne(CategoriesCompanion.insert(description: 'category'));
     await db.todosTable.insertOne(TodosTableCompanion.insert(
-        content: 'entry', category: Value(RowId(nonEmptyId))));
+        content: 'entry', category: Value(nonEmptyId)));
 
     final emptyId = await db.categories.insertOne(
         CategoriesCompanion.insert(description: 'this category empty YEET'));

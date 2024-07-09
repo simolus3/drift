@@ -39,7 +39,7 @@ void main() {
         id: RowId(13),
         title: 'Title',
         content: 'Content',
-        category: RowId(3),
+        category: 3,
         targetDate: DateTime.now(),
       );
       expect(

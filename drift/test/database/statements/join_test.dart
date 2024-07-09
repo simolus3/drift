@@ -85,7 +85,7 @@ void main() {
           title: 'title',
           content: 'content',
           targetDate: date,
-          category: RowId(3),
+          category: 3,
           status: TodoStatus.workInProgress,
         ));
 
