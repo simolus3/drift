@@ -733,7 +733,8 @@ class $$TodoCategoriesTableReferences
   static MultiTypedResultKey<$TodoItemsTable, List<TodoItem>>
       _todoItemsRefsTable(_$Database db) =>
           MultiTypedResultKey.fromTable(db.todoItems,
-              aliasName: "todoItemsRefs__eyteWISGIb");
+              aliasName: $_aliasNameGenerator(
+                  db.todoCategories.id, db.todoItems.categoryId));
 
   $$TodoItemsTableProcessedTableManager get todoItemsRefs {
     final manager = $$TodoItemsTableTableManager($_db, $_db.todoItems)

@@ -760,9 +760,10 @@ class $$CategoriesTableReferences
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$TodoEntriesTable, List<TodoEntry>>
-      _todoEntriesRefsTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.todoEntries,
-              aliasName: "todoEntriesRefs__JDlFHElYWn");
+      _todoEntriesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.todoEntries,
+          aliasName:
+              $_aliasNameGenerator(db.categories.id, db.todoEntries.category));
 
   $$TodoEntriesTableProcessedTableManager get todoEntriesRefs {
     final manager = $$TodoEntriesTableTableManager($_db, $_db.todoEntries)

@@ -498,7 +498,9 @@ class _ManagerCodeTemplates {
         > _${relation.fieldName}Table($dbName db) =>
           ${leaf.drift("MultiTypedResultKey")}.fromTable(
           db.${relation.referencedTable.dbGetterName}, 
-          aliasName: "${relation.fieldName}__${_generateRandomString(10)}"
+          aliasName: ${leaf.drift("\$_aliasNameGenerator")}(
+            db.${relation.currentTable.dbGetterName}.${relation.currentColumn.nameInDart},
+            db.${relation.referencedTable.dbGetterName}.${relation.referencedColumn.nameInDart})
         );""";
 
           return """

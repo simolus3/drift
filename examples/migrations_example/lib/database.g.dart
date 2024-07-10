@@ -962,7 +962,7 @@ class $$UsersTableReferences
   static MultiTypedResultKey<Groups, List<Group>> _groupsRefsTable(
           _$Database db) =>
       MultiTypedResultKey.fromTable(db.groups,
-          aliasName: "groupsRefs__mmDrTcdMYq");
+          aliasName: $_aliasNameGenerator(db.users.id, db.groups.owner));
 
   $GroupsProcessedTableManager get groupsRefs {
     final manager = $GroupsTableManager($_db, $_db.groups)

@@ -3462,7 +3462,8 @@ class $$CategoriesTableReferences
   static MultiTypedResultKey<$TodosTableTable, List<TodoEntry>> _todosTable(
           _$TodoDb db) =>
       MultiTypedResultKey.fromTable(db.todosTable,
-          aliasName: "todos__PAQghpCEKc");
+          aliasName:
+              $_aliasNameGenerator(db.categories.id, db.todosTable.category));
 
   $$TodosTableTableProcessedTableManager get todos {
     final manager = $$TodosTableTableTableManager($_db, $_db.todosTable)
@@ -4640,9 +4641,10 @@ class $$DepartmentTableReferences
   $$DepartmentTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$ProductTable, List<ProductData>>
-      _productRefsTable(_$TodoDb db) =>
-          MultiTypedResultKey.fromTable(db.product,
-              aliasName: "productRefs__YnLqMtvQxi");
+      _productRefsTable(_$TodoDb db) => MultiTypedResultKey.fromTable(
+          db.product,
+          aliasName:
+              $_aliasNameGenerator(db.department.id, db.product.department));
 
   $$ProductTableProcessedTableManager get productRefs {
     final manager = $$ProductTableTableManager($_db, $_db.product)
@@ -4801,7 +4803,7 @@ class $$ProductTableReferences
   static MultiTypedResultKey<$ListingTable, List<ListingData>> _listingsTable(
           _$TodoDb db) =>
       MultiTypedResultKey.fromTable(db.listing,
-          aliasName: "listings__KEmAGPfGKG");
+          aliasName: $_aliasNameGenerator(db.product.id, db.listing.product));
 
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager($_db, $_db.listing)
@@ -4994,11 +4996,12 @@ class $$StoreTableReferences
   static MultiTypedResultKey<$ListingTable, List<ListingData>> _listingsTable(
           _$TodoDb db) =>
       MultiTypedResultKey.fromTable(db.listing,
-          aliasName: "listings__nJkbMhCzXE");
+          aliasName: $_aliasNameGenerator(db.store.id, db.listing.store));
 
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager($_db, $_db.listing)
         .filter((f) => f.store.id($_item.id));
+
     final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
