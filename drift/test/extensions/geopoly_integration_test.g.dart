@@ -245,6 +245,34 @@ typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
   Value<int> rowid,
 });
 
+class $GeopolyTestFilterComposer
+    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestFilterComposer(super.$state);
+  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $GeopolyTestOrderingComposer
+    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestOrderingComposer(super.$state);
+  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
+      column: $state.table.shape,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
+      column: $state.table.a,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $GeopolyTestTableManager extends RootTableManager<
     _$_GeopolyTestDatabase,
     GeopolyTest,
@@ -252,7 +280,13 @@ class $GeopolyTestTableManager extends RootTableManager<
     $GeopolyTestFilterComposer,
     $GeopolyTestOrderingComposer,
     $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder> {
+    $GeopolyTestUpdateCompanionBuilder,
+    (
+      GeopolyTestData,
+      BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>
+    ),
+    GeopolyTestData,
+    PrefetchHooks Function()> {
   $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
       : super(TableManagerState(
           db: db,
@@ -281,36 +315,27 @@ class $GeopolyTestTableManager extends RootTableManager<
             a: a,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $GeopolyTestFilterComposer
-    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestFilterComposer(super.$state);
-  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $GeopolyTestOrderingComposer
-    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestOrderingComposer(super.$state);
-  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
+typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
+    _$_GeopolyTestDatabase,
+    GeopolyTest,
+    GeopolyTestData,
+    $GeopolyTestFilterComposer,
+    $GeopolyTestOrderingComposer,
+    $GeopolyTestCreateCompanionBuilder,
+    $GeopolyTestUpdateCompanionBuilder,
+    (
+      GeopolyTestData,
+      BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>
+    ),
+    GeopolyTestData,
+    PrefetchHooks Function()>;
 
 class $_GeopolyTestDatabaseManager {
   final _$_GeopolyTestDatabase _db;

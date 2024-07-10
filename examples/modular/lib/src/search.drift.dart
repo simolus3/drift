@@ -224,45 +224,6 @@ typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
   i0.Value<int> rowid,
 });
 
-class $SearchInPostsTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder> {
-  $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<String> author = const i0.Value.absent(),
-            i0.Value<String> content = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.SearchInPostsCompanion(
-            author: author,
-            content: content,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String author,
-            required String content,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.SearchInPostsCompanion.insert(
-            author: author,
-            content: content,
-            rowid: rowid,
-          ),
-        ));
-}
-
 class $SearchInPostsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsFilterComposer(super.$state);
@@ -291,6 +252,69 @@ class $SearchInPostsOrderingComposer
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $SearchInPostsTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    i1.$SearchInPostsFilterComposer,
+    i1.$SearchInPostsOrderingComposer,
+    $SearchInPostsCreateCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder,
+    (
+      i1.SearchInPost,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
+    ),
+    i1.SearchInPost,
+    i0.PrefetchHooks Function()> {
+  $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer:
+              i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            i0.Value<String> author = const i0.Value.absent(),
+            i0.Value<String> content = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.SearchInPostsCompanion(
+            author: author,
+            content: content,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String author,
+            required String content,
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.SearchInPostsCompanion.insert(
+            author: author,
+            content: content,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    i1.$SearchInPostsFilterComposer,
+    i1.$SearchInPostsOrderingComposer,
+    $SearchInPostsCreateCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder,
+    (
+      i1.SearchInPost,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
+    ),
+    i1.SearchInPost,
+    i0.PrefetchHooks Function()>;
 i0.Trigger get postsInsert => i0.Trigger(
     'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
     'posts_insert');

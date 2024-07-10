@@ -942,47 +942,36 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<int?> nextUser,
 });
 
-class $$UsersTableTableManager extends RootTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
-  $$UsersTableTableManager(_$Database db, $UsersTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$UsersTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$UsersTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<DateTime?> birthday = const Value.absent(),
-            Value<int?> nextUser = const Value.absent(),
-          }) =>
-              UsersCompanion(
-            id: id,
-            name: name,
-            birthday: birthday,
-            nextUser: nextUser,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<DateTime?> birthday = const Value.absent(),
-            Value<int?> nextUser = const Value.absent(),
-          }) =>
-              UsersCompanion.insert(
-            id: id,
-            name: name,
-            birthday: birthday,
-            nextUser: nextUser,
-          ),
-        ));
+class $$UsersTableReferences
+    extends BaseReferences<_$Database, $UsersTable, User> {
+  $$UsersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _nextUserTable(_$Database db) => db.users
+      .createAlias($_aliasNameGenerator(db.users.nextUser, db.users.id));
+
+  $$UsersTableProcessedTableManager? get nextUser {
+    if ($_item.nextUser == null) return null;
+    final manager = $$UsersTableTableManager($_db, $_db.users)
+        .filter((f) => f.id($_item.nextUser!));
+    final item = $_typedResult.readTableOrNull(_nextUserTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<Groups, List<Group>> _groupsRefsTable(
+          _$Database db) =>
+      MultiTypedResultKey.fromTable(db.groups,
+          aliasName: "groupsRefs__mmDrTcdMYq");
+
+  $GroupsProcessedTableManager get groupsRefs {
+    final manager = $GroupsTableManager($_db, $_db.groups)
+        .filter((f) => f.owner.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_groupsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$UsersTableFilterComposer
@@ -1060,6 +1049,109 @@ class $$UsersTableOrderingComposer
   }
 }
 
+class $$UsersTableTableManager extends RootTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    (User, $$UsersTableReferences),
+    User,
+    PrefetchHooks Function({bool nextUser, bool groupsRefs})> {
+  $$UsersTableTableManager(_$Database db, $UsersTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$UsersTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$UsersTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<DateTime?> birthday = const Value.absent(),
+            Value<int?> nextUser = const Value.absent(),
+          }) =>
+              UsersCompanion(
+            id: id,
+            name: name,
+            birthday: birthday,
+            nextUser: nextUser,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<DateTime?> birthday = const Value.absent(),
+            Value<int?> nextUser = const Value.absent(),
+          }) =>
+              UsersCompanion.insert(
+            id: id,
+            name: name,
+            birthday: birthday,
+            nextUser: nextUser,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$UsersTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({nextUser = false, groupsRefs = false}) {
+            return PrefetchHooks(
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (nextUser) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.nextUser,
+                    referencedTable: $$UsersTableReferences._nextUserTable(db),
+                    referencedColumn:
+                        $$UsersTableReferences._nextUserTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              withPrefetches: (items) async {
+                items = await typedResultsWithPrefetched(
+                    doPrefetch: groupsRefs,
+                    currentTable: table,
+                    referencedTable:
+                        $$UsersTableReferences._groupsRefsTable(db),
+                    managerFromTypedResult: (p0) =>
+                        $$UsersTableReferences(db, table, p0).groupsRefs,
+                    referencedItemsForCurrentItem: (item, referencedItems) =>
+                        referencedItems.where((e) => e.owner == item.id),
+                    typedResults: items);
+
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    (User, $$UsersTableReferences),
+    User,
+    PrefetchHooks Function({bool nextUser, bool groupsRefs})>;
 typedef $GroupsCreateCompanionBuilder = GroupsCompanion Function({
   Value<int> id,
   required String title,
@@ -1073,45 +1165,21 @@ typedef $GroupsUpdateCompanionBuilder = GroupsCompanion Function({
   Value<int> owner,
 });
 
-class $GroupsTableManager extends RootTableManager<
-    _$Database,
-    Groups,
-    Group,
-    $GroupsFilterComposer,
-    $GroupsOrderingComposer,
-    $GroupsCreateCompanionBuilder,
-    $GroupsUpdateCompanionBuilder> {
-  $GroupsTableManager(_$Database db, Groups table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
-          orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<bool?> deleted = const Value.absent(),
-            Value<int> owner = const Value.absent(),
-          }) =>
-              GroupsCompanion(
-            id: id,
-            title: title,
-            deleted: deleted,
-            owner: owner,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String title,
-            Value<bool?> deleted = const Value.absent(),
-            required int owner,
-          }) =>
-              GroupsCompanion.insert(
-            id: id,
-            title: title,
-            deleted: deleted,
-            owner: owner,
-          ),
-        ));
+class $GroupsReferences extends BaseReferences<_$Database, Groups, Group> {
+  $GroupsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _ownerTable(_$Database db) =>
+      db.users.createAlias($_aliasNameGenerator(db.groups.owner, db.users.id));
+
+  $$UsersTableProcessedTableManager? get owner {
+    if ($_item.owner == null) return null;
+    final manager = $$UsersTableTableManager($_db, $_db.users)
+        .filter((f) => f.id($_item.owner!));
+    final item = $_typedResult.readTableOrNull(_ownerTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 }
 
 class $GroupsFilterComposer extends FilterComposer<_$Database, Groups> {
@@ -1174,6 +1242,94 @@ class $GroupsOrderingComposer extends OrderingComposer<_$Database, Groups> {
   }
 }
 
+class $GroupsTableManager extends RootTableManager<
+    _$Database,
+    Groups,
+    Group,
+    $GroupsFilterComposer,
+    $GroupsOrderingComposer,
+    $GroupsCreateCompanionBuilder,
+    $GroupsUpdateCompanionBuilder,
+    (Group, $GroupsReferences),
+    Group,
+    PrefetchHooks Function({bool owner})> {
+  $GroupsTableManager(_$Database db, Groups table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $GroupsFilterComposer(ComposerState(db, table)),
+          orderingComposer: $GroupsOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<bool?> deleted = const Value.absent(),
+            Value<int> owner = const Value.absent(),
+          }) =>
+              GroupsCompanion(
+            id: id,
+            title: title,
+            deleted: deleted,
+            owner: owner,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String title,
+            Value<bool?> deleted = const Value.absent(),
+            required int owner,
+          }) =>
+              GroupsCompanion.insert(
+            id: id,
+            title: title,
+            deleted: deleted,
+            owner: owner,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), $GroupsReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({owner = false}) {
+            return PrefetchHooks(
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (owner) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.owner,
+                    referencedTable: $GroupsReferences._ownerTable(db),
+                    referencedColumn: $GroupsReferences._ownerTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              withPrefetches: (items) async {
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $GroupsProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    Groups,
+    Group,
+    $GroupsFilterComposer,
+    $GroupsOrderingComposer,
+    $GroupsCreateCompanionBuilder,
+    $GroupsUpdateCompanionBuilder,
+    (Group, $GroupsReferences),
+    Group,
+    PrefetchHooks Function({bool owner})>;
 typedef $NotesCreateCompanionBuilder = NotesCompanion Function({
   required String title,
   required String content,
@@ -1186,47 +1342,6 @@ typedef $NotesUpdateCompanionBuilder = NotesCompanion Function({
   Value<String> searchTerms,
   Value<int> rowid,
 });
-
-class $NotesTableManager extends RootTableManager<
-    _$Database,
-    Notes,
-    Note,
-    $NotesFilterComposer,
-    $NotesOrderingComposer,
-    $NotesCreateCompanionBuilder,
-    $NotesUpdateCompanionBuilder> {
-  $NotesTableManager(_$Database db, Notes table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
-          orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<String> title = const Value.absent(),
-            Value<String> content = const Value.absent(),
-            Value<String> searchTerms = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              NotesCompanion(
-            title: title,
-            content: content,
-            searchTerms: searchTerms,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String title,
-            required String content,
-            required String searchTerms,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              NotesCompanion.insert(
-            title: title,
-            content: content,
-            searchTerms: searchTerms,
-            rowid: rowid,
-          ),
-        ));
-}
 
 class $NotesFilterComposer extends FilterComposer<_$Database, Notes> {
   $NotesFilterComposer(super.$state);
@@ -1263,6 +1378,66 @@ class $NotesOrderingComposer extends OrderingComposer<_$Database, Notes> {
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $NotesTableManager extends RootTableManager<
+    _$Database,
+    Notes,
+    Note,
+    $NotesFilterComposer,
+    $NotesOrderingComposer,
+    $NotesCreateCompanionBuilder,
+    $NotesUpdateCompanionBuilder,
+    (Note, BaseReferences<_$Database, Notes, Note>),
+    Note,
+    PrefetchHooks Function()> {
+  $NotesTableManager(_$Database db, Notes table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $NotesFilterComposer(ComposerState(db, table)),
+          orderingComposer: $NotesOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<String> title = const Value.absent(),
+            Value<String> content = const Value.absent(),
+            Value<String> searchTerms = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NotesCompanion(
+            title: title,
+            content: content,
+            searchTerms: searchTerms,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String title,
+            required String content,
+            required String searchTerms,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              NotesCompanion.insert(
+            title: title,
+            content: content,
+            searchTerms: searchTerms,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $NotesProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    Notes,
+    Note,
+    $NotesFilterComposer,
+    $NotesOrderingComposer,
+    $NotesCreateCompanionBuilder,
+    $NotesUpdateCompanionBuilder,
+    (Note, BaseReferences<_$Database, Notes, Note>),
+    Note,
+    PrefetchHooks Function()>;
 
 class $DatabaseManager {
   final _$Database _db;

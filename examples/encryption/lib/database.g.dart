@@ -200,41 +200,6 @@ typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
   Value<String> content,
 });
 
-class $$NotesTableTableManager extends RootTableManager<
-    _$MyEncryptedDatabase,
-    $NotesTable,
-    Note,
-    $$NotesTableFilterComposer,
-    $$NotesTableOrderingComposer,
-    $$NotesTableCreateCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder> {
-  $$NotesTableTableManager(_$MyEncryptedDatabase db, $NotesTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$NotesTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$NotesTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> content = const Value.absent(),
-          }) =>
-              NotesCompanion(
-            id: id,
-            content: content,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String content,
-          }) =>
-              NotesCompanion.insert(
-            id: id,
-            content: content,
-          ),
-        ));
-}
-
 class $$NotesTableFilterComposer
     extends FilterComposer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableFilterComposer(super.$state);
@@ -262,6 +227,60 @@ class $$NotesTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$NotesTableTableManager extends RootTableManager<
+    _$MyEncryptedDatabase,
+    $NotesTable,
+    Note,
+    $$NotesTableFilterComposer,
+    $$NotesTableOrderingComposer,
+    $$NotesTableCreateCompanionBuilder,
+    $$NotesTableUpdateCompanionBuilder,
+    (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
+    Note,
+    PrefetchHooks Function()> {
+  $$NotesTableTableManager(_$MyEncryptedDatabase db, $NotesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$NotesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$NotesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> content = const Value.absent(),
+          }) =>
+              NotesCompanion(
+            id: id,
+            content: content,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String content,
+          }) =>
+              NotesCompanion.insert(
+            id: id,
+            content: content,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
+    _$MyEncryptedDatabase,
+    $NotesTable,
+    Note,
+    $$NotesTableFilterComposer,
+    $$NotesTableOrderingComposer,
+    $$NotesTableCreateCompanionBuilder,
+    $$NotesTableUpdateCompanionBuilder,
+    (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
+    Note,
+    PrefetchHooks Function()>;
 
 class $MyEncryptedDatabaseManager {
   final _$MyEncryptedDatabase _db;

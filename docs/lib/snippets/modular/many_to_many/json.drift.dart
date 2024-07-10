@@ -230,42 +230,6 @@ typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
   i0.Value<i3.ShoppingCartEntries> entries,
 });
 
-class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i2.$ShoppingCartsTable,
-    i2.ShoppingCart,
-    i2.$$ShoppingCartsTableFilterComposer,
-    i2.$$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableCreateCompanionBuilder,
-    $$ShoppingCartsTableUpdateCompanionBuilder> {
-  $$ShoppingCartsTableTableManager(
-      i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: i2
-              .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
-              i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
-          }) =>
-              i2.ShoppingCartsCompanion(
-            id: id,
-            entries: entries,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required i3.ShoppingCartEntries entries,
-          }) =>
-              i2.ShoppingCartsCompanion.insert(
-            id: id,
-            entries: entries,
-          ),
-        ));
-}
-
 class $$ShoppingCartsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableFilterComposer(super.$state);
@@ -296,3 +260,66 @@ class $$ShoppingCartsTableOrderingComposer
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartsTable,
+    i2.ShoppingCart,
+    i2.$$ShoppingCartsTableFilterComposer,
+    i2.$$ShoppingCartsTableOrderingComposer,
+    $$ShoppingCartsTableCreateCompanionBuilder,
+    $$ShoppingCartsTableUpdateCompanionBuilder,
+    (
+      i2.ShoppingCart,
+      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
+          i2.ShoppingCart>
+    ),
+    i2.ShoppingCart,
+    i0.PrefetchHooks Function()> {
+  $$ShoppingCartsTableTableManager(
+      i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: i2
+              .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
+              i0.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
+          }) =>
+              i2.ShoppingCartsCompanion(
+            id: id,
+            entries: entries,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required i3.ShoppingCartEntries entries,
+          }) =>
+              i2.ShoppingCartsCompanion.insert(
+            id: id,
+            entries: entries,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartsTable,
+    i2.ShoppingCart,
+    i2.$$ShoppingCartsTableFilterComposer,
+    i2.$$ShoppingCartsTableOrderingComposer,
+    $$ShoppingCartsTableCreateCompanionBuilder,
+    $$ShoppingCartsTableUpdateCompanionBuilder,
+    (
+      i2.ShoppingCart,
+      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
+          i2.ShoppingCart>
+    ),
+    i2.ShoppingCart,
+    i0.PrefetchHooks Function()>;

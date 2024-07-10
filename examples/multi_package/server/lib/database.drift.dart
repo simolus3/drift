@@ -253,46 +253,6 @@ typedef $$ActiveSessionsTableUpdateCompanionBuilder = i3.ActiveSessionsCompanion
   i0.Value<int> rowid,
 });
 
-class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i3.$ActiveSessionsTable,
-    i3.ActiveSession,
-    i3.$$ActiveSessionsTableFilterComposer,
-    i3.$$ActiveSessionsTableOrderingComposer,
-    $$ActiveSessionsTableCreateCompanionBuilder,
-    $$ActiveSessionsTableUpdateCompanionBuilder> {
-  $$ActiveSessionsTableTableManager(
-      i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: i3
-              .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
-              i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> user = const i0.Value.absent(),
-            i0.Value<String> bearerToken = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i3.ActiveSessionsCompanion(
-            user: user,
-            bearerToken: bearerToken,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int user,
-            required String bearerToken,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i3.ActiveSessionsCompanion.insert(
-            user: user,
-            bearerToken: bearerToken,
-            rowid: rowid,
-          ),
-        ));
-}
-
 class $$ActiveSessionsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableFilterComposer(super.$state);
@@ -344,3 +304,70 @@ class $$ActiveSessionsTableOrderingComposer
     return composer;
   }
 }
+
+class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i3.$ActiveSessionsTable,
+    i3.ActiveSession,
+    i3.$$ActiveSessionsTableFilterComposer,
+    i3.$$ActiveSessionsTableOrderingComposer,
+    $$ActiveSessionsTableCreateCompanionBuilder,
+    $$ActiveSessionsTableUpdateCompanionBuilder,
+    (
+      i3.ActiveSession,
+      i0.BaseReferences<i0.GeneratedDatabase, i3.$ActiveSessionsTable,
+          i3.ActiveSession>
+    ),
+    i3.ActiveSession,
+    i0.PrefetchHooks Function({bool user})> {
+  $$ActiveSessionsTableTableManager(
+      i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: i3
+              .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
+              i0.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            i0.Value<int> user = const i0.Value.absent(),
+            i0.Value<String> bearerToken = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i3.ActiveSessionsCompanion(
+            user: user,
+            bearerToken: bearerToken,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int user,
+            required String bearerToken,
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i3.ActiveSessionsCompanion.insert(
+            user: user,
+            bearerToken: bearerToken,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i3.$ActiveSessionsTable,
+    i3.ActiveSession,
+    i3.$$ActiveSessionsTableFilterComposer,
+    i3.$$ActiveSessionsTableOrderingComposer,
+    $$ActiveSessionsTableCreateCompanionBuilder,
+    $$ActiveSessionsTableUpdateCompanionBuilder,
+    (
+      i3.ActiveSession,
+      i0.BaseReferences<i0.GeneratedDatabase, i3.$ActiveSessionsTable,
+          i3.ActiveSession>
+    ),
+    i3.ActiveSession,
+    i0.PrefetchHooks Function({bool user})>;

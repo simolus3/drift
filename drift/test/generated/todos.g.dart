@@ -309,12 +309,13 @@ class $TodosTableTable extends TodosTable
   static const VerificationMeta _categoryMeta =
       const VerificationMeta('category');
   @override
-  late final GeneratedColumn<int> category = GeneratedColumn<int>(
-      'category', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED'));
+  late final GeneratedColumnWithTypeConverter<RowId?, int> category =
+      GeneratedColumn<int>('category', aliasedName, true,
+              type: DriftSqlType.int,
+              requiredDuringInsert: false,
+              defaultConstraints: GeneratedColumn.constraintIsAlways(
+                  'REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED'))
+          .withConverter<RowId?>($TodosTableTable.$convertercategoryn);
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumnWithTypeConverter<TodoStatus?, String> status =
@@ -351,10 +352,7 @@ class $TodosTableTable extends TodosTable
           targetDate.isAcceptableOrUnknown(
               data['target_date']!, _targetDateMeta));
     }
-    if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
-    }
+    context.handle(_categoryMeta, const VerificationResult.success());
     context.handle(_statusMeta, const VerificationResult.success());
     return context;
   }
@@ -378,8 +376,9 @@ class $TodosTableTable extends TodosTable
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
       targetDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}target_date']),
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category']),
+      category: $TodosTableTable.$convertercategoryn.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}category'])),
       status: $TodosTableTable.$converterstatusn.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])),
@@ -393,6 +392,10 @@ class $TodosTableTable extends TodosTable
 
   static JsonTypeConverter2<RowId, int, int> $converterid =
       TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<RowId, int, int> $convertercategory =
+      TypeConverter.extensionType<RowId, int>();
+  static JsonTypeConverter2<RowId?, int?, int?> $convertercategoryn =
+      JsonTypeConverter2.asNullable($convertercategory);
   static JsonTypeConverter2<TodoStatus, String, String> $converterstatus =
       const EnumNameConverter<TodoStatus>(TodoStatus.values);
   static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
@@ -404,7 +407,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String? title;
   final String content;
   final DateTime? targetDate;
-  final int? category;
+  final RowId? category;
   final TodoStatus? status;
   const TodoEntry(
       {required this.id,
@@ -427,7 +430,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       map['target_date'] = Variable<DateTime>(targetDate);
     }
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int>(category);
+      map['category'] =
+          Variable<int>($TodosTableTable.$convertercategoryn.toSql(category));
     }
     if (!nullToAbsent || status != null) {
       map['status'] =
@@ -462,7 +466,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       title: serializer.fromJson<String?>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       targetDate: serializer.fromJson<DateTime?>(json['target_date']),
-      category: serializer.fromJson<int?>(json['category']),
+      category: $TodosTableTable.$convertercategoryn
+          .fromJson(serializer.fromJson<int?>(json['category'])),
       status: $TodosTableTable.$converterstatusn
           .fromJson(serializer.fromJson<String?>(json['status'])),
     );
@@ -480,7 +485,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       'title': serializer.toJson<String?>(title),
       'content': serializer.toJson<String>(content),
       'target_date': serializer.toJson<DateTime?>(targetDate),
-      'category': serializer.toJson<int?>(category),
+      'category': serializer
+          .toJson<int?>($TodosTableTable.$convertercategoryn.toJson(category)),
       'status': serializer
           .toJson<String?>($TodosTableTable.$converterstatusn.toJson(status)),
     };
@@ -491,7 +497,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           Value<String?> title = const Value.absent(),
           String? content,
           Value<DateTime?> targetDate = const Value.absent(),
-          Value<int?> category = const Value.absent(),
+          Value<RowId?> category = const Value.absent(),
           Value<TodoStatus?> status = const Value.absent()}) =>
       TodoEntry(
         id: id ?? this.id,
@@ -546,7 +552,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   final Value<String?> title;
   final Value<String> content;
   final Value<DateTime?> targetDate;
-  final Value<int?> category;
+  final Value<RowId?> category;
   final Value<TodoStatus?> status;
   const TodosTableCompanion({
     this.id = const Value.absent(),
@@ -587,7 +593,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       Value<String?>? title,
       Value<String>? content,
       Value<DateTime?>? targetDate,
-      Value<int?>? category,
+      Value<RowId?>? category,
       Value<TodoStatus?>? status}) {
     return TodosTableCompanion(
       id: id ?? this.id,
@@ -615,7 +621,8 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       map['target_date'] = Variable<DateTime>(targetDate.value);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value);
+      map['category'] = Variable<int>(
+          $TodosTableTable.$convertercategoryn.toSql(category.value));
     }
     if (status.present) {
       map['status'] = Variable<String>(
@@ -3357,7 +3364,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
           title: row.readNullable<String>('title'),
           content: row.read<String>('content'),
           targetDate: row.readNullable<DateTime>('target_date'),
-          category: row.readNullable<int>('category'),
+          category: NullAwareTypeConverter.wrapFromSql(
+              $TodosTableTable.$convertercategory,
+              row.readNullable<int>('category')),
           status: NullAwareTypeConverter.wrapFromSql(
               $TodosTableTable.$converterstatus,
               row.readNullable<String>('status')),
@@ -3446,43 +3455,23 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<CategoryPriority> priority,
 });
 
-class $$CategoriesTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $CategoriesTable,
-    Category,
-    $$CategoriesTableFilterComposer,
-    $$CategoriesTableOrderingComposer,
-    $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder> {
-  $$CategoriesTableTableManager(_$TodoDb db, $CategoriesTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$CategoriesTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$CategoriesTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            Value<String> description = const Value.absent(),
-            Value<CategoryPriority> priority = const Value.absent(),
-          }) =>
-              CategoriesCompanion(
-            id: id,
-            description: description,
-            priority: priority,
-          ),
-          createCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            required String description,
-            Value<CategoryPriority> priority = const Value.absent(),
-          }) =>
-              CategoriesCompanion.insert(
-            id: id,
-            description: description,
-            priority: priority,
-          ),
-        ));
+class $$CategoriesTableReferences
+    extends BaseReferences<_$TodoDb, $CategoriesTable, Category> {
+  $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TodosTableTable, List<TodoEntry>> _todosTable(
+          _$TodoDb db) =>
+      MultiTypedResultKey.fromTable(db.todosTable,
+          aliasName: "todos__PAQghpCEKc");
+
+  $$TodosTableTableProcessedTableManager get todos {
+    final manager = $$TodosTableTableTableManager($_db, $_db.todosTable)
+        .filter((f) => f.category.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_todosTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$CategoriesTableFilterComposer
@@ -3551,12 +3540,90 @@ class $$CategoriesTableOrderingComposer
               ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$CategoriesTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $CategoriesTable,
+    Category,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    (Category, $$CategoriesTableReferences),
+    Category,
+    PrefetchHooks Function({bool todos})> {
+  $$CategoriesTableTableManager(_$TodoDb db, $CategoriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$CategoriesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$CategoriesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            Value<String> description = const Value.absent(),
+            Value<CategoryPriority> priority = const Value.absent(),
+          }) =>
+              CategoriesCompanion(
+            id: id,
+            description: description,
+            priority: priority,
+          ),
+          createCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            required String description,
+            Value<CategoryPriority> priority = const Value.absent(),
+          }) =>
+              CategoriesCompanion.insert(
+            id: id,
+            description: description,
+            priority: priority,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CategoriesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({todos = false}) {
+            return PrefetchHooks(
+              addJoins: null,
+              withPrefetches: (items) async {
+                items = await typedResultsWithPrefetched(
+                    doPrefetch: todos,
+                    currentTable: table,
+                    referencedTable:
+                        $$CategoriesTableReferences._todosTable(db),
+                    managerFromTypedResult: (p0) =>
+                        $$CategoriesTableReferences(db, table, p0).todos,
+                    referencedItemsForCurrentItem: (item, referencedItems) =>
+                        referencedItems.where((e) => e.category == item.id),
+                    typedResults: items);
+
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $CategoriesTable,
+    Category,
+    $$CategoriesTableFilterComposer,
+    $$CategoriesTableOrderingComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    (Category, $$CategoriesTableReferences),
+    Category,
+    PrefetchHooks Function({bool todos})>;
 typedef $$TodosTableTableCreateCompanionBuilder = TodosTableCompanion Function({
   Value<RowId> id,
   Value<String?> title,
   required String content,
   Value<DateTime?> targetDate,
-  Value<int?> category,
+  Value<RowId?> category,
   Value<TodoStatus?> status,
 });
 typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
@@ -3564,59 +3631,27 @@ typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
   Value<String?> title,
   Value<String> content,
   Value<DateTime?> targetDate,
-  Value<int?> category,
+  Value<RowId?> category,
   Value<TodoStatus?> status,
 });
 
-class $$TodosTableTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $TodosTableTable,
-    TodoEntry,
-    $$TodosTableTableFilterComposer,
-    $$TodosTableTableOrderingComposer,
-    $$TodosTableTableCreateCompanionBuilder,
-    $$TodosTableTableUpdateCompanionBuilder> {
-  $$TodosTableTableTableManager(_$TodoDb db, $TodosTableTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TodosTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TodosTableTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            Value<String?> title = const Value.absent(),
-            Value<String> content = const Value.absent(),
-            Value<DateTime?> targetDate = const Value.absent(),
-            Value<int?> category = const Value.absent(),
-            Value<TodoStatus?> status = const Value.absent(),
-          }) =>
-              TodosTableCompanion(
-            id: id,
-            title: title,
-            content: content,
-            targetDate: targetDate,
-            category: category,
-            status: status,
-          ),
-          createCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            Value<String?> title = const Value.absent(),
-            required String content,
-            Value<DateTime?> targetDate = const Value.absent(),
-            Value<int?> category = const Value.absent(),
-            Value<TodoStatus?> status = const Value.absent(),
-          }) =>
-              TodosTableCompanion.insert(
-            id: id,
-            title: title,
-            content: content,
-            targetDate: targetDate,
-            category: category,
-            status: status,
-          ),
-        ));
+class $$TodosTableTableReferences
+    extends BaseReferences<_$TodoDb, $TodosTableTable, TodoEntry> {
+  $$TodosTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CategoriesTable _categoryTable(_$TodoDb db) =>
+      db.categories.createAlias(
+          $_aliasNameGenerator(db.todosTable.category, db.categories.id));
+
+  $$CategoriesTableProcessedTableManager? get category {
+    if ($_item.category == null) return null;
+    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+        .filter((f) => f.id($_item.category!));
+    final item = $_typedResult.readTableOrNull(_categoryTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 }
 
 class $$TodosTableTableFilterComposer
@@ -3705,6 +3740,109 @@ class $$TodosTableTableOrderingComposer
   }
 }
 
+class $$TodosTableTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TodosTableTable,
+    TodoEntry,
+    $$TodosTableTableFilterComposer,
+    $$TodosTableTableOrderingComposer,
+    $$TodosTableTableCreateCompanionBuilder,
+    $$TodosTableTableUpdateCompanionBuilder,
+    (TodoEntry, $$TodosTableTableReferences),
+    TodoEntry,
+    PrefetchHooks Function({bool category})> {
+  $$TodosTableTableTableManager(_$TodoDb db, $TodosTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TodosTableTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TodosTableTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            Value<String?> title = const Value.absent(),
+            Value<String> content = const Value.absent(),
+            Value<DateTime?> targetDate = const Value.absent(),
+            Value<RowId?> category = const Value.absent(),
+            Value<TodoStatus?> status = const Value.absent(),
+          }) =>
+              TodosTableCompanion(
+            id: id,
+            title: title,
+            content: content,
+            targetDate: targetDate,
+            category: category,
+            status: status,
+          ),
+          createCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            Value<String?> title = const Value.absent(),
+            required String content,
+            Value<DateTime?> targetDate = const Value.absent(),
+            Value<RowId?> category = const Value.absent(),
+            Value<TodoStatus?> status = const Value.absent(),
+          }) =>
+              TodosTableCompanion.insert(
+            id: id,
+            title: title,
+            content: content,
+            targetDate: targetDate,
+            category: category,
+            status: status,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$TodosTableTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({category = false}) {
+            return PrefetchHooks(
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (category) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.category,
+                    referencedTable:
+                        $$TodosTableTableReferences._categoryTable(db),
+                    referencedColumn:
+                        $$TodosTableTableReferences._categoryTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              withPrefetches: (items) async {
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$TodosTableTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $TodosTableTable,
+    TodoEntry,
+    $$TodosTableTableFilterComposer,
+    $$TodosTableTableOrderingComposer,
+    $$TodosTableTableCreateCompanionBuilder,
+    $$TodosTableTableUpdateCompanionBuilder,
+    (TodoEntry, $$TodosTableTableReferences),
+    TodoEntry,
+    PrefetchHooks Function({bool category})>;
 typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
   Value<RowId> id,
   required String name,
@@ -3719,53 +3857,6 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<Uint8List> profilePicture,
   Value<DateTime> creationTime,
 });
-
-class $$UsersTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder> {
-  $$UsersTableTableManager(_$TodoDb db, $UsersTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$UsersTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$UsersTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<bool> isAwesome = const Value.absent(),
-            Value<Uint8List> profilePicture = const Value.absent(),
-            Value<DateTime> creationTime = const Value.absent(),
-          }) =>
-              UsersCompanion(
-            id: id,
-            name: name,
-            isAwesome: isAwesome,
-            profilePicture: profilePicture,
-            creationTime: creationTime,
-          ),
-          createCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            required String name,
-            Value<bool> isAwesome = const Value.absent(),
-            required Uint8List profilePicture,
-            Value<DateTime> creationTime = const Value.absent(),
-          }) =>
-              UsersCompanion.insert(
-            id: id,
-            name: name,
-            isAwesome: isAwesome,
-            profilePicture: profilePicture,
-            creationTime: creationTime,
-          ),
-        ));
-}
 
 class $$UsersTableFilterComposer extends FilterComposer<_$TodoDb, $UsersTable> {
   $$UsersTableFilterComposer(super.$state);
@@ -3826,6 +3917,71 @@ class $$UsersTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$UsersTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    (User, BaseReferences<_$TodoDb, $UsersTable, User>),
+    User,
+    PrefetchHooks Function()> {
+  $$UsersTableTableManager(_$TodoDb db, $UsersTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$UsersTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$UsersTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<bool> isAwesome = const Value.absent(),
+            Value<Uint8List> profilePicture = const Value.absent(),
+            Value<DateTime> creationTime = const Value.absent(),
+          }) =>
+              UsersCompanion(
+            id: id,
+            name: name,
+            isAwesome: isAwesome,
+            profilePicture: profilePicture,
+            creationTime: creationTime,
+          ),
+          createCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            required String name,
+            Value<bool> isAwesome = const Value.absent(),
+            required Uint8List profilePicture,
+            Value<DateTime> creationTime = const Value.absent(),
+          }) =>
+              UsersCompanion.insert(
+            id: id,
+            name: name,
+            isAwesome: isAwesome,
+            profilePicture: profilePicture,
+            creationTime: creationTime,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $UsersTable,
+    User,
+    $$UsersTableFilterComposer,
+    $$UsersTableOrderingComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    (User, BaseReferences<_$TodoDb, $UsersTable, User>),
+    User,
+    PrefetchHooks Function()>;
 typedef $$SharedTodosTableCreateCompanionBuilder = SharedTodosCompanion
     Function({
   required int todo,
@@ -3838,45 +3994,6 @@ typedef $$SharedTodosTableUpdateCompanionBuilder = SharedTodosCompanion
   Value<int> user,
   Value<int> rowid,
 });
-
-class $$SharedTodosTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $SharedTodosTable,
-    SharedTodo,
-    $$SharedTodosTableFilterComposer,
-    $$SharedTodosTableOrderingComposer,
-    $$SharedTodosTableCreateCompanionBuilder,
-    $$SharedTodosTableUpdateCompanionBuilder> {
-  $$SharedTodosTableTableManager(_$TodoDb db, $SharedTodosTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$SharedTodosTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$SharedTodosTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> todo = const Value.absent(),
-            Value<int> user = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              SharedTodosCompanion(
-            todo: todo,
-            user: user,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int todo,
-            required int user,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              SharedTodosCompanion.insert(
-            todo: todo,
-            user: user,
-            rowid: rowid,
-          ),
-        ));
-}
 
 class $$SharedTodosTableFilterComposer
     extends FilterComposer<_$TodoDb, $SharedTodosTable> {
@@ -3906,6 +4023,63 @@ class $$SharedTodosTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$SharedTodosTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $SharedTodosTable,
+    SharedTodo,
+    $$SharedTodosTableFilterComposer,
+    $$SharedTodosTableOrderingComposer,
+    $$SharedTodosTableCreateCompanionBuilder,
+    $$SharedTodosTableUpdateCompanionBuilder,
+    (SharedTodo, BaseReferences<_$TodoDb, $SharedTodosTable, SharedTodo>),
+    SharedTodo,
+    PrefetchHooks Function()> {
+  $$SharedTodosTableTableManager(_$TodoDb db, $SharedTodosTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$SharedTodosTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$SharedTodosTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> todo = const Value.absent(),
+            Value<int> user = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SharedTodosCompanion(
+            todo: todo,
+            user: user,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int todo,
+            required int user,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SharedTodosCompanion.insert(
+            todo: todo,
+            user: user,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SharedTodosTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $SharedTodosTable,
+    SharedTodo,
+    $$SharedTodosTableFilterComposer,
+    $$SharedTodosTableOrderingComposer,
+    $$SharedTodosTableCreateCompanionBuilder,
+    $$SharedTodosTableUpdateCompanionBuilder,
+    (SharedTodo, BaseReferences<_$TodoDb, $SharedTodosTable, SharedTodo>),
+    SharedTodo,
+    PrefetchHooks Function()>;
 typedef $$TableWithoutPKTableCreateCompanionBuilder = TableWithoutPKCompanion
     Function({
   required int notReallyAnId,
@@ -3922,53 +4096,6 @@ typedef $$TableWithoutPKTableUpdateCompanionBuilder = TableWithoutPKCompanion
   Value<MyCustomObject> custom,
   Value<int> rowid,
 });
-
-class $$TableWithoutPKTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $TableWithoutPKTable,
-    CustomRowClass,
-    $$TableWithoutPKTableFilterComposer,
-    $$TableWithoutPKTableOrderingComposer,
-    $$TableWithoutPKTableCreateCompanionBuilder,
-    $$TableWithoutPKTableUpdateCompanionBuilder> {
-  $$TableWithoutPKTableTableManager(_$TodoDb db, $TableWithoutPKTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TableWithoutPKTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TableWithoutPKTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> notReallyAnId = const Value.absent(),
-            Value<double> someFloat = const Value.absent(),
-            Value<BigInt?> webSafeInt = const Value.absent(),
-            Value<MyCustomObject> custom = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              TableWithoutPKCompanion(
-            notReallyAnId: notReallyAnId,
-            someFloat: someFloat,
-            webSafeInt: webSafeInt,
-            custom: custom,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int notReallyAnId,
-            required double someFloat,
-            Value<BigInt?> webSafeInt = const Value.absent(),
-            Value<MyCustomObject> custom = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              TableWithoutPKCompanion.insert(
-            notReallyAnId: notReallyAnId,
-            someFloat: someFloat,
-            webSafeInt: webSafeInt,
-            custom: custom,
-            rowid: rowid,
-          ),
-        ));
-}
 
 class $$TableWithoutPKTableFilterComposer
     extends FilterComposer<_$TodoDb, $TableWithoutPKTable> {
@@ -4020,6 +4147,77 @@ class $$TableWithoutPKTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$TableWithoutPKTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TableWithoutPKTable,
+    CustomRowClass,
+    $$TableWithoutPKTableFilterComposer,
+    $$TableWithoutPKTableOrderingComposer,
+    $$TableWithoutPKTableCreateCompanionBuilder,
+    $$TableWithoutPKTableUpdateCompanionBuilder,
+    (
+      CustomRowClass,
+      BaseReferences<_$TodoDb, $TableWithoutPKTable, CustomRowClass>
+    ),
+    CustomRowClass,
+    PrefetchHooks Function()> {
+  $$TableWithoutPKTableTableManager(_$TodoDb db, $TableWithoutPKTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TableWithoutPKTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TableWithoutPKTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> notReallyAnId = const Value.absent(),
+            Value<double> someFloat = const Value.absent(),
+            Value<BigInt?> webSafeInt = const Value.absent(),
+            Value<MyCustomObject> custom = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TableWithoutPKCompanion(
+            notReallyAnId: notReallyAnId,
+            someFloat: someFloat,
+            webSafeInt: webSafeInt,
+            custom: custom,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int notReallyAnId,
+            required double someFloat,
+            Value<BigInt?> webSafeInt = const Value.absent(),
+            Value<MyCustomObject> custom = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TableWithoutPKCompanion.insert(
+            notReallyAnId: notReallyAnId,
+            someFloat: someFloat,
+            webSafeInt: webSafeInt,
+            custom: custom,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TableWithoutPKTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $TableWithoutPKTable,
+    CustomRowClass,
+    $$TableWithoutPKTableFilterComposer,
+    $$TableWithoutPKTableOrderingComposer,
+    $$TableWithoutPKTableCreateCompanionBuilder,
+    $$TableWithoutPKTableUpdateCompanionBuilder,
+    (
+      CustomRowClass,
+      BaseReferences<_$TodoDb, $TableWithoutPKTable, CustomRowClass>
+    ),
+    CustomRowClass,
+    PrefetchHooks Function()>;
 typedef $$PureDefaultsTableCreateCompanionBuilder = PureDefaultsCompanion
     Function({
   Value<MyCustomObject?> txt,
@@ -4031,6 +4229,26 @@ typedef $$PureDefaultsTableUpdateCompanionBuilder = PureDefaultsCompanion
   Value<int> rowid,
 });
 
+class $$PureDefaultsTableFilterComposer
+    extends FilterComposer<_$TodoDb, $PureDefaultsTable> {
+  $$PureDefaultsTableFilterComposer(super.$state);
+  ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
+      get txt => $state.composableBuilder(
+          column: $state.table.txt,
+          builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
+              column,
+              joinBuilders: joinBuilders));
+}
+
+class $$PureDefaultsTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $PureDefaultsTable> {
+  $$PureDefaultsTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get txt => $state.composableBuilder(
+      column: $state.table.txt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $$PureDefaultsTableTableManager extends RootTableManager<
     _$TodoDb,
     $PureDefaultsTable,
@@ -4038,7 +4256,10 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
     $$PureDefaultsTableFilterComposer,
     $$PureDefaultsTableOrderingComposer,
     $$PureDefaultsTableCreateCompanionBuilder,
-    $$PureDefaultsTableUpdateCompanionBuilder> {
+    $$PureDefaultsTableUpdateCompanionBuilder,
+    (PureDefault, BaseReferences<_$TodoDb, $PureDefaultsTable, PureDefault>),
+    PureDefault,
+    PrefetchHooks Function()> {
   $$PureDefaultsTableTableManager(_$TodoDb db, $PureDefaultsTable table)
       : super(TableManagerState(
           db: db,
@@ -4063,29 +4284,24 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
             txt: txt,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$PureDefaultsTableFilterComposer
-    extends FilterComposer<_$TodoDb, $PureDefaultsTable> {
-  $$PureDefaultsTableFilterComposer(super.$state);
-  ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
-      get txt => $state.composableBuilder(
-          column: $state.table.txt,
-          builder: (column, joinBuilders) => ColumnWithTypeConverterFilters(
-              column,
-              joinBuilders: joinBuilders));
-}
-
-class $$PureDefaultsTableOrderingComposer
-    extends OrderingComposer<_$TodoDb, $PureDefaultsTable> {
-  $$PureDefaultsTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get txt => $state.composableBuilder(
-      column: $state.table.txt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
+typedef $$PureDefaultsTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $PureDefaultsTable,
+    PureDefault,
+    $$PureDefaultsTableFilterComposer,
+    $$PureDefaultsTableOrderingComposer,
+    $$PureDefaultsTableCreateCompanionBuilder,
+    $$PureDefaultsTableUpdateCompanionBuilder,
+    (PureDefault, BaseReferences<_$TodoDb, $PureDefaultsTable, PureDefault>),
+    PureDefault,
+    PrefetchHooks Function()>;
 typedef $$WithCustomTypeTableCreateCompanionBuilder = WithCustomTypeCompanion
     Function({
   required UuidValue id,
@@ -4097,6 +4313,24 @@ typedef $$WithCustomTypeTableUpdateCompanionBuilder = WithCustomTypeCompanion
   Value<int> rowid,
 });
 
+class $$WithCustomTypeTableFilterComposer
+    extends FilterComposer<_$TodoDb, $WithCustomTypeTable> {
+  $$WithCustomTypeTableFilterComposer(super.$state);
+  ColumnFilters<UuidValue> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$WithCustomTypeTableOrderingComposer
+    extends OrderingComposer<_$TodoDb, $WithCustomTypeTable> {
+  $$WithCustomTypeTableOrderingComposer(super.$state);
+  ColumnOrderings<UuidValue> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class $$WithCustomTypeTableTableManager extends RootTableManager<
     _$TodoDb,
     $WithCustomTypeTable,
@@ -4104,7 +4338,13 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
     $$WithCustomTypeTableFilterComposer,
     $$WithCustomTypeTableOrderingComposer,
     $$WithCustomTypeTableCreateCompanionBuilder,
-    $$WithCustomTypeTableUpdateCompanionBuilder> {
+    $$WithCustomTypeTableUpdateCompanionBuilder,
+    (
+      WithCustomTypeData,
+      BaseReferences<_$TodoDb, $WithCustomTypeTable, WithCustomTypeData>
+    ),
+    WithCustomTypeData,
+    PrefetchHooks Function()> {
   $$WithCustomTypeTableTableManager(_$TodoDb db, $WithCustomTypeTable table)
       : super(TableManagerState(
           db: db,
@@ -4129,27 +4369,27 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
             id: id,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$WithCustomTypeTableFilterComposer
-    extends FilterComposer<_$TodoDb, $WithCustomTypeTable> {
-  $$WithCustomTypeTableFilterComposer(super.$state);
-  ColumnFilters<UuidValue> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$WithCustomTypeTableOrderingComposer
-    extends OrderingComposer<_$TodoDb, $WithCustomTypeTable> {
-  $$WithCustomTypeTableOrderingComposer(super.$state);
-  ColumnOrderings<UuidValue> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
+typedef $$WithCustomTypeTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $WithCustomTypeTable,
+    WithCustomTypeData,
+    $$WithCustomTypeTableFilterComposer,
+    $$WithCustomTypeTableOrderingComposer,
+    $$WithCustomTypeTableCreateCompanionBuilder,
+    $$WithCustomTypeTableUpdateCompanionBuilder,
+    (
+      WithCustomTypeData,
+      BaseReferences<_$TodoDb, $WithCustomTypeTable, WithCustomTypeData>
+    ),
+    WithCustomTypeData,
+    PrefetchHooks Function()>;
 typedef $$TableWithEveryColumnTypeTableCreateCompanionBuilder
     = TableWithEveryColumnTypeCompanion Function({
   Value<RowId> id,
@@ -4176,74 +4416,6 @@ typedef $$TableWithEveryColumnTypeTableUpdateCompanionBuilder
   Value<TodoStatus?> anIntEnum,
   Value<MyCustomObject?> aTextWithConverter,
 });
-
-class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $TableWithEveryColumnTypeTable,
-    TableWithEveryColumnTypeData,
-    $$TableWithEveryColumnTypeTableFilterComposer,
-    $$TableWithEveryColumnTypeTableOrderingComposer,
-    $$TableWithEveryColumnTypeTableCreateCompanionBuilder,
-    $$TableWithEveryColumnTypeTableUpdateCompanionBuilder> {
-  $$TableWithEveryColumnTypeTableTableManager(
-      _$TodoDb db, $TableWithEveryColumnTypeTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: $$TableWithEveryColumnTypeTableFilterComposer(
-              ComposerState(db, table)),
-          orderingComposer: $$TableWithEveryColumnTypeTableOrderingComposer(
-              ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            Value<bool?> aBool = const Value.absent(),
-            Value<DateTime?> aDateTime = const Value.absent(),
-            Value<String?> aText = const Value.absent(),
-            Value<int?> anInt = const Value.absent(),
-            Value<BigInt?> anInt64 = const Value.absent(),
-            Value<double?> aReal = const Value.absent(),
-            Value<Uint8List?> aBlob = const Value.absent(),
-            Value<TodoStatus?> anIntEnum = const Value.absent(),
-            Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
-          }) =>
-              TableWithEveryColumnTypeCompanion(
-            id: id,
-            aBool: aBool,
-            aDateTime: aDateTime,
-            aText: aText,
-            anInt: anInt,
-            anInt64: anInt64,
-            aReal: aReal,
-            aBlob: aBlob,
-            anIntEnum: anIntEnum,
-            aTextWithConverter: aTextWithConverter,
-          ),
-          createCompanionCallback: ({
-            Value<RowId> id = const Value.absent(),
-            Value<bool?> aBool = const Value.absent(),
-            Value<DateTime?> aDateTime = const Value.absent(),
-            Value<String?> aText = const Value.absent(),
-            Value<int?> anInt = const Value.absent(),
-            Value<BigInt?> anInt64 = const Value.absent(),
-            Value<double?> aReal = const Value.absent(),
-            Value<Uint8List?> aBlob = const Value.absent(),
-            Value<TodoStatus?> anIntEnum = const Value.absent(),
-            Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
-          }) =>
-              TableWithEveryColumnTypeCompanion.insert(
-            id: id,
-            aBool: aBool,
-            aDateTime: aDateTime,
-            aText: aText,
-            anInt: anInt,
-            anInt64: anInt64,
-            aReal: aReal,
-            aBlob: aBlob,
-            anIntEnum: anIntEnum,
-            aTextWithConverter: aTextWithConverter,
-          ),
-        ));
-}
 
 class $$TableWithEveryColumnTypeTableFilterComposer
     extends FilterComposer<_$TodoDb, $TableWithEveryColumnTypeTable> {
@@ -4359,6 +4531,101 @@ class $$TableWithEveryColumnTypeTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $TableWithEveryColumnTypeTable,
+    TableWithEveryColumnTypeData,
+    $$TableWithEveryColumnTypeTableFilterComposer,
+    $$TableWithEveryColumnTypeTableOrderingComposer,
+    $$TableWithEveryColumnTypeTableCreateCompanionBuilder,
+    $$TableWithEveryColumnTypeTableUpdateCompanionBuilder,
+    (
+      TableWithEveryColumnTypeData,
+      BaseReferences<_$TodoDb, $TableWithEveryColumnTypeTable,
+          TableWithEveryColumnTypeData>
+    ),
+    TableWithEveryColumnTypeData,
+    PrefetchHooks Function()> {
+  $$TableWithEveryColumnTypeTableTableManager(
+      _$TodoDb db, $TableWithEveryColumnTypeTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $$TableWithEveryColumnTypeTableFilterComposer(
+              ComposerState(db, table)),
+          orderingComposer: $$TableWithEveryColumnTypeTableOrderingComposer(
+              ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            Value<bool?> aBool = const Value.absent(),
+            Value<DateTime?> aDateTime = const Value.absent(),
+            Value<String?> aText = const Value.absent(),
+            Value<int?> anInt = const Value.absent(),
+            Value<BigInt?> anInt64 = const Value.absent(),
+            Value<double?> aReal = const Value.absent(),
+            Value<Uint8List?> aBlob = const Value.absent(),
+            Value<TodoStatus?> anIntEnum = const Value.absent(),
+            Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+          }) =>
+              TableWithEveryColumnTypeCompanion(
+            id: id,
+            aBool: aBool,
+            aDateTime: aDateTime,
+            aText: aText,
+            anInt: anInt,
+            anInt64: anInt64,
+            aReal: aReal,
+            aBlob: aBlob,
+            anIntEnum: anIntEnum,
+            aTextWithConverter: aTextWithConverter,
+          ),
+          createCompanionCallback: ({
+            Value<RowId> id = const Value.absent(),
+            Value<bool?> aBool = const Value.absent(),
+            Value<DateTime?> aDateTime = const Value.absent(),
+            Value<String?> aText = const Value.absent(),
+            Value<int?> anInt = const Value.absent(),
+            Value<BigInt?> anInt64 = const Value.absent(),
+            Value<double?> aReal = const Value.absent(),
+            Value<Uint8List?> aBlob = const Value.absent(),
+            Value<TodoStatus?> anIntEnum = const Value.absent(),
+            Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
+          }) =>
+              TableWithEveryColumnTypeCompanion.insert(
+            id: id,
+            aBool: aBool,
+            aDateTime: aDateTime,
+            aText: aText,
+            anInt: anInt,
+            anInt64: anInt64,
+            aReal: aReal,
+            aBlob: aBlob,
+            anIntEnum: anIntEnum,
+            aTextWithConverter: aTextWithConverter,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TableWithEveryColumnTypeTableProcessedTableManager
+    = ProcessedTableManager<
+        _$TodoDb,
+        $TableWithEveryColumnTypeTable,
+        TableWithEveryColumnTypeData,
+        $$TableWithEveryColumnTypeTableFilterComposer,
+        $$TableWithEveryColumnTypeTableOrderingComposer,
+        $$TableWithEveryColumnTypeTableCreateCompanionBuilder,
+        $$TableWithEveryColumnTypeTableUpdateCompanionBuilder,
+        (
+          TableWithEveryColumnTypeData,
+          BaseReferences<_$TodoDb, $TableWithEveryColumnTypeTable,
+              TableWithEveryColumnTypeData>
+        ),
+        TableWithEveryColumnTypeData,
+        PrefetchHooks Function()>;
 typedef $$DepartmentTableCreateCompanionBuilder = DepartmentCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -4368,39 +4635,23 @@ typedef $$DepartmentTableUpdateCompanionBuilder = DepartmentCompanion Function({
   Value<String?> name,
 });
 
-class $$DepartmentTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $DepartmentTable,
-    DepartmentData,
-    $$DepartmentTableFilterComposer,
-    $$DepartmentTableOrderingComposer,
-    $$DepartmentTableCreateCompanionBuilder,
-    $$DepartmentTableUpdateCompanionBuilder> {
-  $$DepartmentTableTableManager(_$TodoDb db, $DepartmentTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$DepartmentTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$DepartmentTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              DepartmentCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              DepartmentCompanion.insert(
-            id: id,
-            name: name,
-          ),
-        ));
+class $$DepartmentTableReferences
+    extends BaseReferences<_$TodoDb, $DepartmentTable, DepartmentData> {
+  $$DepartmentTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ProductTable, List<ProductData>>
+      _productRefsTable(_$TodoDb db) =>
+          MultiTypedResultKey.fromTable(db.product,
+              aliasName: "productRefs__YnLqMtvQxi");
+
+  $$ProductTableProcessedTableManager get productRefs {
+    final manager = $$ProductTableTableManager($_db, $_db.product)
+        .filter((f) => f.department.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_productRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$DepartmentTableFilterComposer
@@ -4444,6 +4695,80 @@ class $$DepartmentTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$DepartmentTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $DepartmentTable,
+    DepartmentData,
+    $$DepartmentTableFilterComposer,
+    $$DepartmentTableOrderingComposer,
+    $$DepartmentTableCreateCompanionBuilder,
+    $$DepartmentTableUpdateCompanionBuilder,
+    (DepartmentData, $$DepartmentTableReferences),
+    DepartmentData,
+    PrefetchHooks Function({bool productRefs})> {
+  $$DepartmentTableTableManager(_$TodoDb db, $DepartmentTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$DepartmentTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$DepartmentTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              DepartmentCompanion(
+            id: id,
+            name: name,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              DepartmentCompanion.insert(
+            id: id,
+            name: name,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$DepartmentTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({productRefs = false}) {
+            return PrefetchHooks(
+              addJoins: null,
+              withPrefetches: (items) async {
+                items = await typedResultsWithPrefetched(
+                    doPrefetch: productRefs,
+                    currentTable: table,
+                    referencedTable:
+                        $$DepartmentTableReferences._productRefsTable(db),
+                    managerFromTypedResult: (p0) =>
+                        $$DepartmentTableReferences(db, table, p0).productRefs,
+                    referencedItemsForCurrentItem: (item, referencedItems) =>
+                        referencedItems.where((e) => e.department == item.id),
+                    typedResults: items);
+
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$DepartmentTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $DepartmentTable,
+    DepartmentData,
+    $$DepartmentTableFilterComposer,
+    $$DepartmentTableOrderingComposer,
+    $$DepartmentTableCreateCompanionBuilder,
+    $$DepartmentTableUpdateCompanionBuilder,
+    (DepartmentData, $$DepartmentTableReferences),
+    DepartmentData,
+    PrefetchHooks Function({bool productRefs})>;
 typedef $$ProductTableCreateCompanionBuilder = ProductCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -4455,43 +4780,37 @@ typedef $$ProductTableUpdateCompanionBuilder = ProductCompanion Function({
   Value<int?> department,
 });
 
-class $$ProductTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $ProductTable,
-    ProductData,
-    $$ProductTableFilterComposer,
-    $$ProductTableOrderingComposer,
-    $$ProductTableCreateCompanionBuilder,
-    $$ProductTableUpdateCompanionBuilder> {
-  $$ProductTableTableManager(_$TodoDb db, $ProductTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$ProductTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$ProductTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<int?> department = const Value.absent(),
-          }) =>
-              ProductCompanion(
-            id: id,
-            name: name,
-            department: department,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<int?> department = const Value.absent(),
-          }) =>
-              ProductCompanion.insert(
-            id: id,
-            name: name,
-            department: department,
-          ),
-        ));
+class $$ProductTableReferences
+    extends BaseReferences<_$TodoDb, $ProductTable, ProductData> {
+  $$ProductTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $DepartmentTable _departmentTable(_$TodoDb db) =>
+      db.department.createAlias(
+          $_aliasNameGenerator(db.product.department, db.department.id));
+
+  $$DepartmentTableProcessedTableManager? get department {
+    if ($_item.department == null) return null;
+    final manager = $$DepartmentTableTableManager($_db, $_db.department)
+        .filter((f) => f.id($_item.department!));
+    final item = $_typedResult.readTableOrNull(_departmentTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<$ListingTable, List<ListingData>> _listingsTable(
+          _$TodoDb db) =>
+      MultiTypedResultKey.fromTable(db.listing,
+          aliasName: "listings__KEmAGPfGKG");
+
+  $$ListingTableProcessedTableManager get listings {
+    final manager = $$ListingTableTableManager($_db, $_db.listing)
+        .filter((f) => f.product.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$ProductTableFilterComposer
@@ -4559,6 +4878,106 @@ class $$ProductTableOrderingComposer
   }
 }
 
+class $$ProductTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $ProductTable,
+    ProductData,
+    $$ProductTableFilterComposer,
+    $$ProductTableOrderingComposer,
+    $$ProductTableCreateCompanionBuilder,
+    $$ProductTableUpdateCompanionBuilder,
+    (ProductData, $$ProductTableReferences),
+    ProductData,
+    PrefetchHooks Function({bool department, bool listings})> {
+  $$ProductTableTableManager(_$TodoDb db, $ProductTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$ProductTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ProductTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+            Value<int?> department = const Value.absent(),
+          }) =>
+              ProductCompanion(
+            id: id,
+            name: name,
+            department: department,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+            Value<int?> department = const Value.absent(),
+          }) =>
+              ProductCompanion.insert(
+            id: id,
+            name: name,
+            department: department,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$ProductTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({department = false, listings = false}) {
+            return PrefetchHooks(
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (department) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.department,
+                    referencedTable:
+                        $$ProductTableReferences._departmentTable(db),
+                    referencedColumn:
+                        $$ProductTableReferences._departmentTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              withPrefetches: (items) async {
+                items = await typedResultsWithPrefetched(
+                    doPrefetch: listings,
+                    currentTable: table,
+                    referencedTable:
+                        $$ProductTableReferences._listingsTable(db),
+                    managerFromTypedResult: (p0) =>
+                        $$ProductTableReferences(db, table, p0).listings,
+                    referencedItemsForCurrentItem: (item, referencedItems) =>
+                        referencedItems.where((e) => e.product == item.id),
+                    typedResults: items);
+
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ProductTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $ProductTable,
+    ProductData,
+    $$ProductTableFilterComposer,
+    $$ProductTableOrderingComposer,
+    $$ProductTableCreateCompanionBuilder,
+    $$ProductTableUpdateCompanionBuilder,
+    (ProductData, $$ProductTableReferences),
+    ProductData,
+    PrefetchHooks Function({bool department, bool listings})>;
 typedef $$StoreTableCreateCompanionBuilder = StoreCompanion Function({
   Value<int> id,
   Value<String?> name,
@@ -4568,39 +4987,23 @@ typedef $$StoreTableUpdateCompanionBuilder = StoreCompanion Function({
   Value<String?> name,
 });
 
-class $$StoreTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $StoreTable,
-    StoreData,
-    $$StoreTableFilterComposer,
-    $$StoreTableOrderingComposer,
-    $$StoreTableCreateCompanionBuilder,
-    $$StoreTableUpdateCompanionBuilder> {
-  $$StoreTableTableManager(_$TodoDb db, $StoreTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$StoreTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$StoreTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              StoreCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              StoreCompanion.insert(
-            id: id,
-            name: name,
-          ),
-        ));
+class $$StoreTableReferences
+    extends BaseReferences<_$TodoDb, $StoreTable, StoreData> {
+  $$StoreTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ListingTable, List<ListingData>> _listingsTable(
+          _$TodoDb db) =>
+      MultiTypedResultKey.fromTable(db.listing,
+          aliasName: "listings__nJkbMhCzXE");
+
+  $$ListingTableProcessedTableManager get listings {
+    final manager = $$ListingTableTableManager($_db, $_db.listing)
+        .filter((f) => f.store.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$StoreTableFilterComposer extends FilterComposer<_$TodoDb, $StoreTable> {
@@ -4643,6 +5046,77 @@ class $$StoreTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$StoreTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $StoreTable,
+    StoreData,
+    $$StoreTableFilterComposer,
+    $$StoreTableOrderingComposer,
+    $$StoreTableCreateCompanionBuilder,
+    $$StoreTableUpdateCompanionBuilder,
+    (StoreData, $$StoreTableReferences),
+    StoreData,
+    PrefetchHooks Function({bool listings})> {
+  $$StoreTableTableManager(_$TodoDb db, $StoreTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$StoreTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$StoreTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              StoreCompanion(
+            id: id,
+            name: name,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+          }) =>
+              StoreCompanion.insert(
+            id: id,
+            name: name,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$StoreTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({listings = false}) {
+            return PrefetchHooks(
+              addJoins: null,
+              withPrefetches: (items) async {
+                items = await typedResultsWithPrefetched(
+                    doPrefetch: listings,
+                    currentTable: table,
+                    referencedTable: $$StoreTableReferences._listingsTable(db),
+                    managerFromTypedResult: (p0) =>
+                        $$StoreTableReferences(db, table, p0).listings,
+                    referencedItemsForCurrentItem: (item, referencedItems) =>
+                        referencedItems.where((e) => e.store == item.id),
+                    typedResults: items);
+
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$StoreTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $StoreTable,
+    StoreData,
+    $$StoreTableFilterComposer,
+    $$StoreTableOrderingComposer,
+    $$StoreTableCreateCompanionBuilder,
+    $$StoreTableUpdateCompanionBuilder,
+    (StoreData, $$StoreTableReferences),
+    StoreData,
+    PrefetchHooks Function({bool listings})>;
 typedef $$ListingTableCreateCompanionBuilder = ListingCompanion Function({
   Value<int> id,
   Value<int?> product,
@@ -4656,47 +5130,35 @@ typedef $$ListingTableUpdateCompanionBuilder = ListingCompanion Function({
   Value<double?> price,
 });
 
-class $$ListingTableTableManager extends RootTableManager<
-    _$TodoDb,
-    $ListingTable,
-    ListingData,
-    $$ListingTableFilterComposer,
-    $$ListingTableOrderingComposer,
-    $$ListingTableCreateCompanionBuilder,
-    $$ListingTableUpdateCompanionBuilder> {
-  $$ListingTableTableManager(_$TodoDb db, $ListingTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$ListingTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$ListingTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<int?> product = const Value.absent(),
-            Value<int?> store = const Value.absent(),
-            Value<double?> price = const Value.absent(),
-          }) =>
-              ListingCompanion(
-            id: id,
-            product: product,
-            store: store,
-            price: price,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<int?> product = const Value.absent(),
-            Value<int?> store = const Value.absent(),
-            Value<double?> price = const Value.absent(),
-          }) =>
-              ListingCompanion.insert(
-            id: id,
-            product: product,
-            store: store,
-            price: price,
-          ),
-        ));
+class $$ListingTableReferences
+    extends BaseReferences<_$TodoDb, $ListingTable, ListingData> {
+  $$ListingTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProductTable _productTable(_$TodoDb db) => db.product
+      .createAlias($_aliasNameGenerator(db.listing.product, db.product.id));
+
+  $$ProductTableProcessedTableManager? get product {
+    if ($_item.product == null) return null;
+    final manager = $$ProductTableTableManager($_db, $_db.product)
+        .filter((f) => f.id($_item.product!));
+    final item = $_typedResult.readTableOrNull(_productTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $StoreTable _storeTable(_$TodoDb db) =>
+      db.store.createAlias($_aliasNameGenerator(db.listing.store, db.store.id));
+
+  $$StoreTableProcessedTableManager? get store {
+    if ($_item.store == null) return null;
+    final manager = $$StoreTableTableManager($_db, $_db.store)
+        .filter((f) => f.id($_item.store!));
+    final item = $_typedResult.readTableOrNull(_storeTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 }
 
 class $$ListingTableFilterComposer
@@ -4775,6 +5237,108 @@ class $$ListingTableOrderingComposer
   }
 }
 
+class $$ListingTableTableManager extends RootTableManager<
+    _$TodoDb,
+    $ListingTable,
+    ListingData,
+    $$ListingTableFilterComposer,
+    $$ListingTableOrderingComposer,
+    $$ListingTableCreateCompanionBuilder,
+    $$ListingTableUpdateCompanionBuilder,
+    (ListingData, $$ListingTableReferences),
+    ListingData,
+    PrefetchHooks Function({bool product, bool store})> {
+  $$ListingTableTableManager(_$TodoDb db, $ListingTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$ListingTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ListingTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int?> product = const Value.absent(),
+            Value<int?> store = const Value.absent(),
+            Value<double?> price = const Value.absent(),
+          }) =>
+              ListingCompanion(
+            id: id,
+            product: product,
+            store: store,
+            price: price,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int?> product = const Value.absent(),
+            Value<int?> store = const Value.absent(),
+            Value<double?> price = const Value.absent(),
+          }) =>
+              ListingCompanion.insert(
+            id: id,
+            product: product,
+            store: store,
+            price: price,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$ListingTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({product = false, store = false}) {
+            return PrefetchHooks(
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (product) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.product,
+                    referencedTable: $$ListingTableReferences._productTable(db),
+                    referencedColumn:
+                        $$ListingTableReferences._productTable(db).id,
+                  ) as T;
+                }
+                if (store) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.store,
+                    referencedTable: $$ListingTableReferences._storeTable(db),
+                    referencedColumn:
+                        $$ListingTableReferences._storeTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              withPrefetches: (items) async {
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ListingTableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $ListingTable,
+    ListingData,
+    $$ListingTableFilterComposer,
+    $$ListingTableOrderingComposer,
+    $$ListingTableCreateCompanionBuilder,
+    $$ListingTableUpdateCompanionBuilder,
+    (ListingData, $$ListingTableReferences),
+    ListingData,
+    PrefetchHooks Function({bool product, bool store})>;
+
 class $TodoDbManager {
   final _$TodoDb _db;
   $TodoDbManager(this._db);
@@ -4810,7 +5374,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   final String? title;
   final String content;
   final DateTime? targetDate;
-  final int? category;
+  final RowId? category;
   final TodoStatus? status;
   final RowId catId;
   final String catDesc;

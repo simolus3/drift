@@ -725,39 +725,24 @@ typedef $$TodoCategoriesTableUpdateCompanionBuilder = TodoCategoriesCompanion
   Value<String> name,
 });
 
-class $$TodoCategoriesTableTableManager extends RootTableManager<
-    _$Database,
-    $TodoCategoriesTable,
-    TodoCategory,
-    $$TodoCategoriesTableFilterComposer,
-    $$TodoCategoriesTableOrderingComposer,
-    $$TodoCategoriesTableCreateCompanionBuilder,
-    $$TodoCategoriesTableUpdateCompanionBuilder> {
-  $$TodoCategoriesTableTableManager(_$Database db, $TodoCategoriesTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TodoCategoriesTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TodoCategoriesTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-          }) =>
-              TodoCategoriesCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-          }) =>
-              TodoCategoriesCompanion.insert(
-            id: id,
-            name: name,
-          ),
-        ));
+class $$TodoCategoriesTableReferences
+    extends BaseReferences<_$Database, $TodoCategoriesTable, TodoCategory> {
+  $$TodoCategoriesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TodoItemsTable, List<TodoItem>>
+      _todoItemsRefsTable(_$Database db) =>
+          MultiTypedResultKey.fromTable(db.todoItems,
+              aliasName: "todoItemsRefs__eyteWISGIb");
+
+  $$TodoItemsTableProcessedTableManager get todoItemsRefs {
+    final manager = $$TodoItemsTableTableManager($_db, $_db.todoItems)
+        .filter((f) => f.categoryId.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_todoItemsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$TodoCategoriesTableFilterComposer
@@ -801,6 +786,81 @@ class $$TodoCategoriesTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$TodoCategoriesTableTableManager extends RootTableManager<
+    _$Database,
+    $TodoCategoriesTable,
+    TodoCategory,
+    $$TodoCategoriesTableFilterComposer,
+    $$TodoCategoriesTableOrderingComposer,
+    $$TodoCategoriesTableCreateCompanionBuilder,
+    $$TodoCategoriesTableUpdateCompanionBuilder,
+    (TodoCategory, $$TodoCategoriesTableReferences),
+    TodoCategory,
+    PrefetchHooks Function({bool todoItemsRefs})> {
+  $$TodoCategoriesTableTableManager(_$Database db, $TodoCategoriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TodoCategoriesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TodoCategoriesTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+          }) =>
+              TodoCategoriesCompanion(
+            id: id,
+            name: name,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+          }) =>
+              TodoCategoriesCompanion.insert(
+            id: id,
+            name: name,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$TodoCategoriesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({todoItemsRefs = false}) {
+            return PrefetchHooks(
+              addJoins: null,
+              withPrefetches: (items) async {
+                items = await typedResultsWithPrefetched(
+                    doPrefetch: todoItemsRefs,
+                    currentTable: table,
+                    referencedTable:
+                        $$TodoCategoriesTableReferences._todoItemsRefsTable(db),
+                    managerFromTypedResult: (p0) =>
+                        $$TodoCategoriesTableReferences(db, table, p0)
+                            .todoItemsRefs,
+                    referencedItemsForCurrentItem: (item, referencedItems) =>
+                        referencedItems.where((e) => e.categoryId == item.id),
+                    typedResults: items);
+
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $TodoCategoriesTable,
+    TodoCategory,
+    $$TodoCategoriesTableFilterComposer,
+    $$TodoCategoriesTableOrderingComposer,
+    $$TodoCategoriesTableCreateCompanionBuilder,
+    $$TodoCategoriesTableUpdateCompanionBuilder,
+    (TodoCategory, $$TodoCategoriesTableReferences),
+    TodoCategory,
+    PrefetchHooks Function({bool todoItemsRefs})>;
 typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> id,
   required String title,
@@ -814,47 +874,23 @@ typedef $$TodoItemsTableUpdateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> categoryId,
 });
 
-class $$TodoItemsTableTableManager extends RootTableManager<
-    _$Database,
-    $TodoItemsTable,
-    TodoItem,
-    $$TodoItemsTableFilterComposer,
-    $$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder> {
-  $$TodoItemsTableTableManager(_$Database db, $TodoItemsTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TodoItemsTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TodoItemsTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String?> content = const Value.absent(),
-            Value<int> categoryId = const Value.absent(),
-          }) =>
-              TodoItemsCompanion(
-            id: id,
-            title: title,
-            content: content,
-            categoryId: categoryId,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String title,
-            Value<String?> content = const Value.absent(),
-            required int categoryId,
-          }) =>
-              TodoItemsCompanion.insert(
-            id: id,
-            title: title,
-            content: content,
-            categoryId: categoryId,
-          ),
-        ));
+class $$TodoItemsTableReferences
+    extends BaseReferences<_$Database, $TodoItemsTable, TodoItem> {
+  $$TodoItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TodoCategoriesTable _categoryIdTable(_$Database db) =>
+      db.todoCategories.createAlias(
+          $_aliasNameGenerator(db.todoItems.categoryId, db.todoCategories.id));
+
+  $$TodoCategoriesTableProcessedTableManager? get categoryId {
+    if ($_item.categoryId == null) return null;
+    final manager = $$TodoCategoriesTableTableManager($_db, $_db.todoCategories)
+        .filter((f) => f.id($_item.categoryId!));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 }
 
 class $$TodoItemsTableFilterComposer
@@ -929,6 +965,102 @@ class $$TodoItemsTableOrderingComposer
     return composer;
   }
 }
+
+class $$TodoItemsTableTableManager extends RootTableManager<
+    _$Database,
+    $TodoItemsTable,
+    TodoItem,
+    $$TodoItemsTableFilterComposer,
+    $$TodoItemsTableOrderingComposer,
+    $$TodoItemsTableCreateCompanionBuilder,
+    $$TodoItemsTableUpdateCompanionBuilder,
+    (TodoItem, $$TodoItemsTableReferences),
+    TodoItem,
+    PrefetchHooks Function({bool categoryId})> {
+  $$TodoItemsTableTableManager(_$Database db, $TodoItemsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TodoItemsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TodoItemsTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<String?> content = const Value.absent(),
+            Value<int> categoryId = const Value.absent(),
+          }) =>
+              TodoItemsCompanion(
+            id: id,
+            title: title,
+            content: content,
+            categoryId: categoryId,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String title,
+            Value<String?> content = const Value.absent(),
+            required int categoryId,
+          }) =>
+              TodoItemsCompanion.insert(
+            id: id,
+            title: title,
+            content: content,
+            categoryId: categoryId,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$TodoItemsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({categoryId = false}) {
+            return PrefetchHooks(
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (categoryId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.categoryId,
+                    referencedTable:
+                        $$TodoItemsTableReferences._categoryIdTable(db),
+                    referencedColumn:
+                        $$TodoItemsTableReferences._categoryIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              withPrefetches: (items) async {
+                return items;
+              },
+            );
+          },
+        ));
+}
+
+typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $TodoItemsTable,
+    TodoItem,
+    $$TodoItemsTableFilterComposer,
+    $$TodoItemsTableOrderingComposer,
+    $$TodoItemsTableCreateCompanionBuilder,
+    $$TodoItemsTableUpdateCompanionBuilder,
+    (TodoItem, $$TodoItemsTableReferences),
+    TodoItem,
+    PrefetchHooks Function({bool categoryId})>;
 
 class $DatabaseManager {
   final _$Database _db;

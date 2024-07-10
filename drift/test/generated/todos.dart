@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift/isolate.dart';
 import 'package:mockito/annotations.dart';
 import 'package:uuid/uuid.dart';
 
@@ -31,6 +32,7 @@ class TodosTable extends Table with AutoIncrement {
   @ReferenceName("todos")
   IntColumn get category => integer()
       .references(Categories, #id, initiallyDeferred: true)
+      .map(TypeConverter.extensionType<RowId, int>())
       .nullable()();
 
   TextColumn get status => textEnum<TodoStatus>().nullable()();
