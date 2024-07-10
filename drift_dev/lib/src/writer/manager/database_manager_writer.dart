@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/tables/update_companion_writer.dart';

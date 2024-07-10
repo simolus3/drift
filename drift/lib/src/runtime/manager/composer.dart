@@ -83,8 +83,7 @@ class ComposerState<Database extends GeneratedDatabase,
 
     // Use the provided callbacks to create a join builder
     final referencedColumn = getReferencedColumn(referencedTable);
-    final aliasName =
-        '${aliasedColumn.tableName}__${aliasedColumn.name}__${referencedColumn.tableName}__${referencedColumn.name}';
+    final aliasName = $_aliasNameGenerator(aliasedColumn, referencedColumn);
     final aliasedReferencedTable =
         db.alias(referencedTable as TableInfo, aliasName);
     final aliasedReferencedColumn =
