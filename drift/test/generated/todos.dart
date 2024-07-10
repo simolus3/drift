@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:drift/isolate.dart';
 import 'package:mockito/annotations.dart';
 import 'package:uuid/uuid.dart';
 

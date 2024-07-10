@@ -445,6 +445,34 @@ abstract class BaseTableManager<
   /// {@macro manager_internal_use_only}
   BaseTableManager(this.$state);
 
+  /// This function with return a new manager which will return each item in the database with its references
+  ///
+  /// The references are returned as a prefiltered manager, which will only return the items which are related to the item
+  ///
+  /// For example:
+  /// ```dart
+  /// for (final (group,refs) in await groups.withReferences().get()) {
+  ///   final usersInGroup = await refs.users.get();
+  ///   /// Is identical to:
+  ///   final usersInGroup = await users.filter((f) => f.group.id(group.id)).get();
+  /// }
+  /// ```
+  /// ### Prefetching
+  ///
+  /// The keen among you may notice that the above code is extremly inefficient, as it will run a query for each group to get the users in that group.
+  /// This could mean hundreds of queries for a single page of data, grinding your application to a halt.
+  ///
+  /// The solution to this is to use prefetching, which will run a single query to get all the data you need.
+  ///
+  /// For example:
+  /// ```dart
+  /// for (final (group,refs) in await groups.withReferences((prefetch) => prefetch(users: true)).get()) {
+  ///   final usersInGroup = refs.users.prefetchedData;
+  /// }
+  /// ```
+  ///
+  /// Note that `prefetchedData` will be null if the reference was not prefetched.
+  ///
   ProcessedTableManager<
           $Database,
           $Table,

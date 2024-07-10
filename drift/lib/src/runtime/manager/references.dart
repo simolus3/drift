@@ -174,6 +174,8 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
   }
 }
 
+/// This function is used to prefetch referenced data for a list of TypedResults.
+/// And then insert the prefetched data into the TypedResult object using the [MultiTypedResultKey] as a key.
 Future<List<TypedResult>> typedResultsWithPrefetched<
         $CurrentDataclass,
         $CurrentTable extends Table,
@@ -202,7 +204,6 @@ Future<List<TypedResult>> typedResultsWithPrefetched<
   if (!doPrefetch || typedResults.isEmpty) {
     return typedResults;
   } else {
-    print(referencedTable.hashCode);
     final managers = typedResults.map(managerFromTypedResult);
     // Combine all the referenced managers into 1 large query which will return all the
     // referenced items in one go.
