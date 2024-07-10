@@ -160,6 +160,18 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
       },
     );
   }
+
+  /// Only use the entity name as the hashcode
+  @override
+  int get hashCode => entityName.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is MultiTypedResultKey<$Table, $Dataclass>) {
+      return other.entityName == entityName;
+    }
+    return false;
+  }
 }
 
 Future<List<TypedResult>> typedResultsWithPrefetched<
@@ -190,6 +202,7 @@ Future<List<TypedResult>> typedResultsWithPrefetched<
   if (!doPrefetch || typedResults.isEmpty) {
     return typedResults;
   } else {
+    print(referencedTable.hashCode);
     final managers = typedResults.map(managerFromTypedResult);
     // Combine all the referenced managers into 1 large query which will return all the
     // referenced items in one go.
@@ -201,7 +214,8 @@ Future<List<TypedResult>> typedResultsWithPrefetched<
     // Put each of these referenced items into the typed results
     return typedResults.map((e) {
       final item = e.readTable(currentTable);
-      final refs = referencedItemsForCurrentItem(item, referencedItems);
+      final refs =
+          referencedItemsForCurrentItem(item, referencedItems).toList();
       e.addData(referencedTable, refs);
       return e;
     }).toList();

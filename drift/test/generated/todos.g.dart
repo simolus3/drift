@@ -4999,7 +4999,6 @@ class $$StoreTableReferences
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager($_db, $_db.listing)
         .filter((f) => f.store.id($_item.id));
-
     final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));

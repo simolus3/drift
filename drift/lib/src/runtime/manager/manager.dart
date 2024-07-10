@@ -139,7 +139,7 @@ class TableManagerState<
   final List<TypedResult>? _prefetchedData;
 
   /// Once `withReferences` is called, this field will be set to the function that will be used to get the prefetched data
-  late final PrefetchHooks _prefetchHooks;
+  late final PrefetchHooks prefetchHooks;
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
@@ -164,7 +164,7 @@ class TableManagerState<
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : _prefetchHooks = prefetchHooks ?? PrefetchHooks(),
+      : prefetchHooks = prefetchHooks ?? PrefetchHooks(),
         _prefetchedData = prefetchedData,
         _prefetchHooksCallback = prefetchHooksCallback,
         _withReferenceMapper = withReferenceMapper,
@@ -208,7 +208,7 @@ class TableManagerState<
       withReferenceMapper: _withReferenceMapper,
       prefetchHooksCallback: _prefetchHooksCallback,
       prefetchedData: prefetchedDataAsTypedResult ?? this._prefetchedData,
-      prefetchHooks: prefetchHooks ?? this._prefetchHooks,
+      prefetchHooks: prefetchHooks ?? this.prefetchHooks,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,
       orderingBuilders: orderingBuilders ?? this.orderingBuilders,
@@ -631,14 +631,14 @@ abstract class BaseTableManager<
   Future<List<$ActiveDataclass>> get(
       {bool distinct = false, int? limit, int? offset}) async {
     /// Fetch the items from the database with the prefetch hooks
-    var items = await $state._prefetchHooks
+    var items = await $state.prefetchHooks
         .withJoins($state)
         .copyWith(distinct: distinct, limit: limit, offset: offset)
         .buildSelectStatement()
         .get();
 
     /// Apply the prefetch hooks to the items
-    items = await $state._prefetchHooks.withPrefetches(items);
+    items = await $state.prefetchHooks.withPrefetches(items);
     return $state.toActiveDataclass(items);
   }
 
@@ -654,7 +654,7 @@ abstract class BaseTableManager<
   Stream<List<$ActiveDataclass>> watch(
       {bool distinct = false, int? limit, int? offset}) {
     /// Fetch the items from the database with the prefetch hooks
-    var itemStream = $state._prefetchHooks
+    var itemStream = $state.prefetchHooks
         .withJoins($state)
         .copyWith(distinct: distinct, limit: limit, offset: offset)
         .buildSelectStatement()
@@ -662,7 +662,7 @@ abstract class BaseTableManager<
 
     /// Return the stream with the prefetch hooks applied
     return itemStream.asyncMap((event) async {
-      event = await $state._prefetchHooks.withPrefetches(event);
+      event = await $state.prefetchHooks.withPrefetches(event);
       return $state.toActiveDataclass(event);
     });
   }
