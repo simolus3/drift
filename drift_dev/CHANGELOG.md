@@ -1,4 +1,4 @@
-## 2.19.0-dev
+## 2.19.0
 
 - Fix generated `CREATE VIEW` statements containing existing row class syntax
   only supposed to be used during static analysis.

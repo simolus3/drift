@@ -1,4 +1,4 @@
-## 2.19.0-dev
+## 2.19.0
 
 - Add `exclusively` method to database classes, allowing a block to temporarily
   take exclusive control over a database connection without starting a
