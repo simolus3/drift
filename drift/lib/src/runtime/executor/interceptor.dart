@@ -36,6 +36,13 @@ extension ApplyInterceptorConnection on DatabaseConnection {
 /// This wraps an existing [QueryExecutor] implemented by drift, and by default
 /// does nothing. However, specific methods can be overridden to customize the
 /// behavior of an existing query executor.
+///
+/// To apply an interceptor to an executor, use
+/// [ApplyInterceptor.interceptWith]. This returns a new [QueryExecutor] which
+/// can be used as a replacement when opening the database.
+///
+/// For an example on how interceptors may be used and installed, see this
+/// documentation page: https://drift.simonbinder.eu/docs/examples/tracing/
 abstract class QueryInterceptor {
   /// Intercept [QueryExecutor.dialect] calls.
   SqlDialect dialect(QueryExecutor executor) => executor.dialect;
