@@ -27,7 +27,7 @@ class TestAssetServer {
     await buildRunner.close();
   }
 
-  static Future<TestAssetServer> start() async {
+  static Future<TestAssetServer> start({bool debug = false}) async {
     final packageConfig =
         await loadPackageConfigUri((await Isolate.packageConfig)!);
     final ownPackage = packageConfig['web_wasm']!.root;
@@ -43,6 +43,8 @@ class TestAssetServer {
         'run',
         'build_runner',
         'daemon',
+        if (debug)
+          '--define=build_web_compilers:entrypoint=dart2js_args=["-Dsqlite3.wasm.worker.debug=true"]'
       ],
       logHandler: (log) => print(log.message),
     );
@@ -141,6 +143,10 @@ class DriftWebDriver {
 
   Future<void> insertIntoDatabase() async {
     await driver.executeAsync('insert("", arguments[0])', []);
+  }
+
+  Future<void> runExclusiveBlock() async {
+    await driver.executeAsync('do_exclusive("", arguments[0])', []);
   }
 
   Future<int> get amountOfRows async {

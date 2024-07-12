@@ -1,3 +1,8 @@
+## 2.19.1
+
+- Fix `exclusively` breaking the database connection on the web. Please note
+  that this requires an updated `drift_worker.js` to fix.
+
 ## 2.19.0
 
 - Add `exclusively` method to database classes, allowing a block to temporarily

@@ -317,7 +317,7 @@ class DriftServerController {
     );
 
     if (close != null) {
-      return db.interceptWith(_CloseVfsOnClose(close));
+      return db.interceptWith(_CloseVfsOnClose(db, close));
     } else {
       return db;
     }
@@ -341,13 +341,14 @@ class DriftServerController {
 
 class _CloseVfsOnClose extends QueryInterceptor {
   final FutureOr<void> Function() _close;
+  final QueryExecutor _root;
 
-  _CloseVfsOnClose(this._close);
+  _CloseVfsOnClose(this._root, this._close);
 
   @override
   Future<void> close(QueryExecutor inner) async {
     await inner.close();
-    if (inner is! TransactionExecutor) {
+    if (identical(_root, inner)) {
       await _close();
     }
   }

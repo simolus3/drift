@@ -266,6 +266,14 @@ void main() {
           });
         }
       }
+
+      test('supports exclusively API', () async {
+        await driver.openDatabase();
+        expect(await driver.amountOfRows, 0);
+
+        await driver.runExclusiveBlock();
+        expect(await driver.amountOfRows, 1);
+      });
     });
   }
 }

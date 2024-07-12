@@ -50,6 +50,15 @@ void main() {
       (WebStorageApi.byName[decoded[0] as String]!, decoded[1] as String),
     );
   });
+  _addCallbackForWebDriver('do_exclusive', (arg) async {
+    final database = openedDatabase!;
+    await database.exclusively(() async {
+      await database.transaction(() async {
+        await database.testTable
+            .insertOne(TestTableCompanion.insert(content: 'from exclusive'));
+      });
+    });
+  });
 
   document.getElementById('selfcheck')?.onClick.listen((event) async {
     print('starting');
