@@ -405,6 +405,44 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
 
 /// This function is used to prefetch referenced data for a list of TypedResults.
 /// And then insert the prefetched data into the TypedResult object using the [MultiTypedResultKey] as a key.
+///
+/// Here is an example.
+/// Let's say we wanted to get all the groups, with their users.
+/// We need to:
+///   1) Then run a 2nd query to get all the users who are in the groups. (Users who are'nt any groups will be ignored)
+///   2) Add the users from the group into the groups `TypedResult`
+///   3) Return the groups with the listings
+///
+/// Manually this would look like:
+///
+/// ```dart
+/// final groups = await groups.get();
+/// final groupIds = groups.map((group)=> group.id);
+/// final users = await users.filter((f)=> f.group.id.isIn(groupIds)).get()
+/// final groupsWithUsers = groups.map((group)=>(group,users.where((user)=> user.group == group.id)));
+/// ```
+///
+///
+/// Arguments:
+///   - [typedResults] is the raw result of the query, together with [currentTable] we can read it's results
+///   - [doPrefetch] is a bool which will only perform the prefetch if true.
+///   - [managerFromTypedResult] is the equivalent of:
+///     ```dart
+///     final groups = await groups.withReferences().get();
+///     for (final (group, refs) in groups){
+///         /// Manager with a filter to only get the users of this group.
+///         refs.users;
+///     }
+///     ```
+///     What we do, is collect all the filters from all of these `refs.users` and
+///     combine them with an OR operator to create a query which gets all the users
+///     [managerFromTypedResult] is the function which turns a single `group` into `refs.users`
+///   - [referencedTable] is a `MultiTypedResultKey` which is to write the results to the `TypedResult` object,
+///     This same class will be used in the `BaseReferences` class to read from the `TypedResult`.
+///   - [referencedItemsForCurrentItem] is the callback which does the mapping.
+///     It is the equivalent of`users.where((user)=> user.group == group.id)`.
+///
+/// This function is used by the generated code and should not be used directly.
 Future<List<TypedResult>> typedResultsWithPrefetched<
         $CurrentDataclass,
         $CurrentTable extends Table,

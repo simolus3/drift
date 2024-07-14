@@ -252,10 +252,9 @@ class TableManagerState<
     );
   }
 
-  /// When a user calls `withReferences` on a manager, we return a copy which is
-  /// set to return a `$DataclassWithReferences` instead of just a `$Dataclass`
+  /// This method creates a copy of this manager state with a join added to the query.
   ///
-  /// This function is used to make that copy.
+  /// If the join already exists in the [joinBuilders], but has `useColumns: false`, we update the JoinBuilder.
   TableManagerState<
           $Database,
           $Table,
@@ -744,7 +743,7 @@ abstract class BaseTableManager<
 /// By introducing a separate interface for managers with filters applied to
 /// them, the API doesn't allow combining incompatible clauses and operations.
 ///
-// As of now this is identical to [BaseTableManager] but it's kept seperate for
+// As of now this is identical to [BaseTableManager] but it's kept separate for
 // future extensibility.
 @immutable
 class ProcessedTableManager<
