@@ -9,10 +9,14 @@ import 'package:drift/drift.dart' show OpeningDetails;
 ///
 /// This is an internal api of drift, which can break often. If you want to
 /// implement custom database backends, consider using the new `backends` API.
-/// The [NativeDatabase implementation](https://github.com/simolus3/drift/blob/develop/drift/lib/src/ffi/database.dart)
+/// The [NativeDatabase implementation](https://github.com/simolus3/drift/blob/develop/drift/lib/src/sqlite3/database.dart)
 /// might be useful as a reference. If you want to write your own database
 /// engine to use with drift and run into issues, please consider creating an
 /// issue.
+///
+/// If you want to wrap an existing [QueryExecutor], e.g. to change its
+/// behavior for some methods or to add logs in a custom format, consider using
+/// the [`QueryInterceptor` API](https://drift.simonbinder.eu/docs/examples/tracing/).
 abstract class QueryExecutor {
   /// The [SqlDialect] to use for this database engine.
   SqlDialect get dialect;
