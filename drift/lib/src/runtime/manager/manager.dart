@@ -706,16 +706,11 @@ abstract class BaseTableManager<
   @override
   Future<$ActiveDataclass?> getSingleOrNull({bool distinct = true}) async {
     final list = await get(distinct: distinct);
-    final iterator = list.iterator;
-
-    if (!iterator.moveNext()) {
+    if (list.isEmpty) {
       return null;
+    } else {
+      return list.single;
     }
-    final element = iterator.current;
-    if (iterator.moveNext()) {
-      throw StateError('Expected exactly one result, but found more than one!');
-    }
-    return element;
   }
 
   /// Creates an auto-updating stream of this statement, similar to
