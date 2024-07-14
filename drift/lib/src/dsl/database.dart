@@ -9,12 +9,22 @@ part of 'dsl.dart';
 /// Drift will have generated a class that has the same name as your database
 /// class, but with `_$` as a prefix. You can now extend that class and provide
 /// a [QueryExecutor] to use drift:
+///
 /// ```dart
+/// import 'package:drift/drift.dart';
+/// import 'package:drift_flutter/drift_flutter.dart';
+///
+/// @DriftDatabase(tables: [...])
 /// class MyDatabase extends _$MyDatabase { // _$MyDatabase was generated
-///   MyDatabase():
-///     super(FlutterQueryExecutor.inDatabaseFolder(path: 'path.db'));
+///   MyDatabase(): super(driftDatabase(path: 'path.db'));
 /// }
 /// ```
+///
+/// For more information on getting started with drift, which also describes
+/// options for using drift outside of Flutter apps, see the [getting started]
+/// section in the documentation.
+///
+/// [getting started]: https://drift.simonbinder.eu/docs/getting-started/
 class DriftDatabase {
   /// The tables to include in the database
   final List<Type> tables;
