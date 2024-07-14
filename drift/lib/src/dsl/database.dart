@@ -16,7 +16,7 @@ part of 'dsl.dart';
 ///
 /// @DriftDatabase(tables: [...])
 /// class MyDatabase extends _$MyDatabase { // _$MyDatabase was generated
-///   MyDatabase(): super(driftDatabase(path: 'path.db'));
+///   MyDatabase(): super(driftDatabase(name: 'path.db'));
 /// }
 /// ```
 ///
