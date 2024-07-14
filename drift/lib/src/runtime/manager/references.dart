@@ -71,7 +71,7 @@ String $_aliasNameGenerator(
 ///
 /// ### Manager API
 ///
-/// This is quite verbose, and the manager api seeks to solve this for you.
+/// This is quite verbose, and the manager api seeks to solve this for drift users.
 /// The API looks like this:
 /// ```dart
 /// products.withReferences((prefetch) => prefetch(department: true)).get()
