@@ -16,10 +16,10 @@ class TodoItems extends Table {
 class TodoCategory extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get description => text()();
+  IntColumn get user => integer().nullable().references(Users, #id)();
 }
 
 // #docregion user_group_tables
-
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -256,14 +256,17 @@ extension ManagerExamples on AppDatabase {
   Future referencesPrefetchStream() async {
 // #docregion manager_prefetch_references_stream
     /// Get each todo, along with a its categories
-    managers.todoItems
-        .withReferences((prefetch) => prefetch(category: true))
+    managers.todoCategory
+        .withReferences((prefetch) => prefetch(todoItemsRefs: true, user: true))
         .watch()
         .listen(
-      (todoWithRefs) {
-        for (final (todo, refs) in todoWithRefs) {
-          // Updates to this category won't trigger an update
-          final category = refs.category?.prefetchedData?.firstOrNull;
+      (catWithRefs) {
+        for (final (cat, refs) in catWithRefs) {
+          // Updates to the user table will trigger a query
+          final users = refs.user?.prefetchedData;
+
+          // However, updates to the TodoItems table will not trigger a query
+          final todos = refs.todoItemsRefs.prefetchedData;
         }
       },
     );

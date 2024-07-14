@@ -49,9 +49,12 @@ This will return a record with the entity and a `refs` object which contains the
 The problem with the above approach is that it will issue a separate query for each row in the result set. This can be very inefficient if you have a large number of rows. If there were 1000 todos, this would issue 1000 queries to fetch the category for each todo.
 
 {% block "blocks/alert" title="Watching with Prefetches" color="info" %}
-Prefetching references works when streaming data, however updates wont be triggered when the referenced data changes.
+If you are using `watch` you can use the `withPrefetches` method to prefetch references in a single query.
+However changes to the referenced table will not trigger a re-query of the parent table.
 
 {% include "blocks/snippet" snippets = snippets name = 'manager_prefetch_references_stream' %}
+
+This is because that when single references (e.g a category has a single user) are prefetched, they are included in the same query as the parent table. Therefore, when the user table changes, the query will be re-run and the parent table will be updated. However, when multiple references are prefetched, they are included in a separate query. Therefore, changes to the referenced table will not trigger a re-query of the parent table.
 
 {% endblock %}
 

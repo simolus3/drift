@@ -472,6 +472,38 @@ abstract class BaseTableManager<
   ///
   /// Note that `prefetchedData` will be null if the reference was not prefetched.
   ///
+  /// ### Watching Reverse References with Prefetching
+  ///
+  /// Normally, watching a stream of data will trigger when the data in the table changes.
+  /// This is true even if there was a change on a table which was JOINed in the query.
+  ///
+  /// The caveat is that this does not work for reverse references.
+  /// A reverse reference is a reference from a table without a foreign key to the table with the foreign key.
+  /// ```dart
+  /// class Users extends Table {
+  ///   IntColumn get id => integer().autoIncrement()();
+  ///   TextColumn get name => text()();
+  ///   IntColumn get group => integer().references(Groups, #id()();
+  /// }
+  ///
+  /// class Groups extends Table {
+  ///  IntColumn get id => integer().autoIncrement()();
+  /// }
+  /// ```
+  /// So in the above example, querying the `groups` table with a reference to `users` will not trigger the stream when a user is added or removed.
+  /// So the following stream won't be triggered by changes to the `users` table:
+  /// ```dart
+  /// groups.withReferences((prefetch) => prefetch(users: true)).watch().listen((event) {
+  ///  final usersInGroup = event.users.prefetchedData;
+  /// });
+  /// ```
+  /// However, regular references will still trigger the stream.
+  /// ```dart
+  /// users.withReferences((prefetch) => prefetch(group: true)).watch().listen((event) {
+  ///  final group = event.group.prefetchedData;
+  /// });
+  /// ```
+  /// Being that `group` is a regular reference, changes to the `groups` table will trigger the stream.
   ProcessedTableManager<
           $Database,
           $Table,
