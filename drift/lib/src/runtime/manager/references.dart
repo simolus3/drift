@@ -15,13 +15,13 @@ String $_aliasNameGenerator(
 /// class which contains getters for the referenced tables manager which are pre-filtered to the item.
 /// So the following:
 /// ```dart
-/// final (group,refs) = await groups.filter((f) => f.id(5)).withReferences().getSingle()
-/// final usersInGroup = refs.users.get() // filter((f) => f.group(group.id)) is already applied
+/// final (department,refs) = await departments.filter((f) => f.id(5)).withReferences().getSingle()
+/// final productsInDepartment = refs.products.get() // filter((f) => f.department(department.id)) is already applied
 /// ```
 /// is short for:
 /// ```dart
-/// final group = await groups.filter((f) => f.id(5)).getSingle()
-/// final usersInGroup = await users.filter((f) => f.group(group.id)).get()
+/// final department = await departments.filter((f) => f.id(5)).getSingle()
+/// final productsInDepartment = await products.filter((f) => f.department(department.id)).get()
 /// ```
 ///
 /// {@macro manager_internal_use_only}
@@ -31,11 +31,11 @@ String $_aliasNameGenerator(
 /// ### Problem
 ///
 /// It's quite common that a user will want a model together with it's relations.
-/// The simple option is to prefetch all of the users, and then run a 2nd request for each related group.
+/// The simple option is to prefetch all of the products, and then run a 2nd request for each related department.
 /// ```dart
-/// final users = await users.withReferences().get()
-/// for (final (user,refs) in users){
-///   final group = await refs.groups.getSingle();
+/// final products = await products.withReferences().get()
+/// for (final (product,refs) in products){
+///   final department = await refs.departments.getSingle();
 /// }
 /// ```
 /// The issue with the above code is that we could be setting ourselves up to do tons of queries.
@@ -45,24 +45,26 @@ String $_aliasNameGenerator(
 /// There are two methods we use together to solve this.
 /// Joins and Prefetches.
 ///
-/// ##### Join
+/// #### Join
 ///
-/// For fields which are foreign keys to other tables, we can just use a join to select the related field and get it all in one query
+/// For fields which are foreign keys to other tables, we can just use a join to select the related field and get it all in one query.
+/// This is burdensome to do manually, but drift does it for you if you enable prefetching for a field.
 /// There are many examples how to do this in the drift documentation
 ///
-/// ##### Prefetch
+///
+/// #### Prefetch
 ///
 /// However, for reverse relations, we can't get it all in a single query.
 /// We have to run 2 queries. Here is how it's done manually.
 ///
 /// ```dart
-/// final groups = await groups.get();
-/// final groupIds = groups.map((group)=> group.id);
-/// final users = await users.filter((f)=> f.group.id.isIn(groupIds)).get()
-/// final groupsWithUsers = groups.map((group)=>(group,users.where((user)=> user.group == group.id)));
+/// final departments = await departments.get();
+/// final departmentIds = departments.map((department)=> department.id);
+/// final products = await products.filter((f)=> f.department.id.isIn(departmentIds)).get()
+/// final departmentsWithProducts = departments.map((department)=>(department,products.where((product)=> product.department == department.id)));
 /// ```
 ///
-/// We get all the users ahead of time, and then manually return each group with it's users using a `where(...)` filter.
+/// We get all the products ahead of time, and then manually return each department with it's products using a `where(...)` filter.
 ///
 /// We will call both of these "prefetch" throughout.
 ///
@@ -72,14 +74,14 @@ String $_aliasNameGenerator(
 /// This is quite verbose, and the manager api seeks to solve this for you.
 /// The API looks like this:
 /// ```dart
-/// users.withReferences((prefetch) => prefetch(groups: true)).get()
+/// products.withReferences((prefetch) => prefetch(department: true)).get()
 /// ```
 ///
 /// To do this there are a couple of things we need to do.
 ///
 /// For references data we are getting via JOIN
 ///
-/// 1. Before we even run a query with `users.withReferences((prefetch) => prefetch(group: true)).get()`, we need to put add a JOIN to this query.
+/// 1. Before we even run a query with `products.withReferences((prefetch) => prefetch(department: true)).get()`, we need to put add a JOIN to this query.
 /// 2. When we read back this result, we need to read the JOINed information back.
 ///
 /// For referenced data we are getting with a prefetch:
@@ -94,7 +96,8 @@ String $_aliasNameGenerator(
 ///
 /// 1) Reference class
 ///
-/// This class is kinda cool. It holds the original result of the query as a `TypedResult`, which is what drift uses to store the raw query.
+/// This class is kinda cool.
+/// It stores a reference to the database, the table and a the original result of the query as a `TypedResult`, which is what drift uses to store the raw query.
 /// But along with that, it has getters for prebuilt managers.
 /// When `withReferences` is called, we return the dataclass, together with this.
 ///
@@ -251,8 +254,6 @@ String $_aliasNameGenerator(
 /// }
 /// ```
 /// from above, we will get a manager that has prefetchedData included.
-///
-/// {@macro manager_internal_use_only}
 base class BaseReferences<$Database extends GeneratedDatabase,
     $Table extends Table, $Dataclass> {
   /// The database instance
