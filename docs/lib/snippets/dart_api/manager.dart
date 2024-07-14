@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: invalid_use_of_internal_member, unused_local_variable
 
 import 'package:drift/drift.dart';
 
@@ -209,6 +209,66 @@ extension ManagerExamples on AppDatabase {
     );
   }
 // #enddocregion manager_filter_custom_back_references
+
+// #docregion manager_references
+  Future references() async {
+    /// Get each todo, along with a its categories
+    final categoriesWithReferences =
+        await managers.todoItems.withReferences().get();
+    for (final (todo, refs) in categoriesWithReferences) {
+      final category = await refs.category?.getSingle();
+    }
+
+    /// This also works in the reverse
+    final todosWithRefs = await managers.todoCategory.withReferences().get();
+    for (final (category, refs) in todosWithRefs) {
+      final todos = await refs.todoItemsRefs.get();
+    }
+  }
+
+// #enddocregion manager_references
+// #docregion manager_prefetch_references
+  Future referencesPrefetch() async {
+    /// Get each todo, along with a its categories
+    final categoriesWithReferences = await managers.todoItems
+        .withReferences(
+          (prefetch) => prefetch(category: true),
+        )
+        .get();
+    for (final (todo, refs) in categoriesWithReferences) {
+      final category = refs.category?.prefetchedData?.firstOrNull;
+      // No longer needed
+      // final category = await refs.category?.getSingle();
+    }
+
+    /// This also works in the reverse
+    final todosWithRefs = await managers.todoCategory
+        .withReferences((prefetch) => prefetch(todoItemsRefs: true))
+        .get();
+    for (final (category, refs) in todosWithRefs) {
+      final todos = refs.todoItemsRefs.prefetchedData;
+      // No longer needed
+      //final todos = await refs.todoItemsRefs.get();
+    }
+  }
+// #enddocregion manager_prefetch_references
+
+  Future referencesPrefetchStream() async {
+// #docregion manager_prefetch_references_stream
+    /// Get each todo, along with a its categories
+    managers.todoItems
+        .withReferences((prefetch) => prefetch(category: true))
+        .watch()
+        .listen(
+      (todoWithRefs) {
+        for (final (todo, refs) in todoWithRefs) {
+          // Updates to this category won't trigger an update
+          final category = refs.category?.prefetchedData?.firstOrNull;
+        }
+      },
+    );
+// #enddocregion manager_prefetch_references_stream
+  }
 }
 
 // #docregion manager_filter_extensions
