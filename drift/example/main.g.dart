@@ -725,7 +725,7 @@ typedef $$TodoCategoriesTableUpdateCompanionBuilder = TodoCategoriesCompanion
   Value<String> name,
 });
 
-class $$TodoCategoriesTableReferences
+final class $$TodoCategoriesTableReferences
     extends BaseReferences<_$Database, $TodoCategoriesTable, TodoCategory> {
   $$TodoCategoriesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
@@ -875,7 +875,7 @@ typedef $$TodoItemsTableUpdateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> categoryId,
 });
 
-class $$TodoItemsTableReferences
+final class $$TodoItemsTableReferences
     extends BaseReferences<_$Database, $TodoItemsTable, TodoItem> {
   $$TodoItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 

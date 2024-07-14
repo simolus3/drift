@@ -26,6 +26,7 @@ part 'references.dart';
 /// E.G Instead of `CategoriesCompanion.insert(name: "School")` you would use `(f) => f(name: "School")`
 ///
 /// The [$CreatePrefetchHooksCallback] refers to the function which the user will use to create a [PrefetchHooks] in `withReferences`
+/// See the [BaseReferences] class for more information on how this is used.
 ///
 /// E.G.
 /// ```dart
@@ -88,7 +89,7 @@ class TableManagerState<
   final $UpdateCompanionCallback _updateCompanionCallback;
 
   /// This function is used internally to convert a simple [$Dataclass] into one which has its references attached [$DataclassWithReferences].
-  /// This is used internaly by [toActiveDataclass] and should not be used outside of this class.
+  /// This is used internally by [toActiveDataclass] and should not be used outside of this class.
   final List<$DataclassWithReferences> Function(List<TypedResult>)
       _withReferenceMapper;
 
@@ -104,7 +105,7 @@ class TableManagerState<
     }
   }
 
-  /// If this field has references, this field will contain the function that the user will use to create a [PrefetchHooks]
+  /// If this table has references, this field will contain the function that the user will use to create a [PrefetchHooks]
   ///
   /// E.G.
   /// If the prefetch function would look like
@@ -119,8 +120,7 @@ class TableManagerState<
   /// ```
   final $CreatePrefetchHooksCallback? _prefetchHooksCallback;
 
-  /// If this manager was created with prefetched data, this field will contain the prefetched data
-  /// otherwise it will be null
+  /// Prefetched data, if references with prefetching enabled were added to this manager
   ///
   /// E.G.
   /// ```dart
@@ -143,7 +143,7 @@ class TableManagerState<
 
   /// Defines a class which holds the state for a table manager
   /// It contains the database instance, the table instance, and any filters/orderings that will be applied to the query
-  /// This is held in a seperate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
+  /// This is held in a separate class than the [BaseTableManager] so that the state can be passed down from the root manager to the lower level managers
   ///
   /// This class is used internally by the [BaseTableManager] and should not be used directly
   TableManagerState(
@@ -412,7 +412,7 @@ class TableManagerState<
 }
 
 /// Base class for all table managers
-/// Most of this classes functionality is kept in a seperate [TableManagerState] class
+/// Most of this classes functionality is kept in a separate [TableManagerState] class
 /// This is so that the state can be passed down to lower level managers
 @immutable
 abstract class BaseTableManager<
@@ -459,7 +459,7 @@ abstract class BaseTableManager<
   /// ```
   /// ### Prefetching
   ///
-  /// The keen among you may notice that the above code is extremly inefficient, as it will run a query for each group to get the users in that group.
+  /// The keen among you may notice that the above code is extremely inefficient, as it will run a query for each group to get the users in that group.
   /// This could mean hundreds of queries for a single page of data, grinding your application to a halt.
   ///
   /// The solution to this is to use prefetching, which will run a single query to get all the data you need.
@@ -773,8 +773,8 @@ class ProcessedTableManager<
   @internal
   ProcessedTableManager(super.$state);
 
-  /// The prefetched data for this manager
-  /// This will be null if the manager was not created with prefetched data
+  /// Prefetched data, if references with prefetching enabled were added to this manager
+  ///
   /// E.G.
   /// ```dart
   /// final (group,refs) = await groups.withReferences((prefetch) => prefetch(users: true)).getSingle();

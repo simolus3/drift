@@ -549,7 +549,7 @@ class _ManagerCodeTemplates {
     ).join('\n');
 
     return """
-      class $rowClassWithReferencesName extends ${leaf.drift("BaseReferences")}<
+      final class $rowClassWithReferencesName extends ${leaf.drift("BaseReferences")}<
         ${databaseType(leaf, dbClassName)},
         ${tableClassWithPrefix(table, leaf)},
         ${rowClassWithPrefix(table, leaf)}> {

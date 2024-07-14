@@ -942,7 +942,7 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<int?> nextUser,
 });
 
-class $$UsersTableReferences
+final class $$UsersTableReferences
     extends BaseReferences<_$Database, $UsersTable, User> {
   $$UsersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -1165,7 +1165,8 @@ typedef $GroupsUpdateCompanionBuilder = GroupsCompanion Function({
   Value<int> owner,
 });
 
-class $GroupsReferences extends BaseReferences<_$Database, Groups, Group> {
+final class $GroupsReferences
+    extends BaseReferences<_$Database, Groups, Group> {
   $GroupsReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $UsersTable _ownerTable(_$Database db) =>

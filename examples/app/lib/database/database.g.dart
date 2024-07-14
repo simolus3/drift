@@ -755,7 +755,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<Color> color,
 });
 
-class $$CategoriesTableReferences
+final class $$CategoriesTableReferences
     extends BaseReferences<_$AppDatabase, $CategoriesTable, Category> {
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -922,7 +922,7 @@ typedef $$TodoEntriesTableUpdateCompanionBuilder = TodoEntriesCompanion
   Value<DateTime?> dueDate,
 });
 
-class $$TodoEntriesTableReferences
+final class $$TodoEntriesTableReferences
     extends BaseReferences<_$AppDatabase, $TodoEntriesTable, TodoEntry> {
   $$TodoEntriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 

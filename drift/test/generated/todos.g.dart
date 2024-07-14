@@ -3455,7 +3455,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<CategoryPriority> priority,
 });
 
-class $$CategoriesTableReferences
+final class $$CategoriesTableReferences
     extends BaseReferences<_$TodoDb, $CategoriesTable, Category> {
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -3636,7 +3636,7 @@ typedef $$TodosTableTableUpdateCompanionBuilder = TodosTableCompanion Function({
   Value<TodoStatus?> status,
 });
 
-class $$TodosTableTableReferences
+final class $$TodosTableTableReferences
     extends BaseReferences<_$TodoDb, $TodosTableTable, TodoEntry> {
   $$TodosTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -4636,7 +4636,7 @@ typedef $$DepartmentTableUpdateCompanionBuilder = DepartmentCompanion Function({
   Value<String?> name,
 });
 
-class $$DepartmentTableReferences
+final class $$DepartmentTableReferences
     extends BaseReferences<_$TodoDb, $DepartmentTable, DepartmentData> {
   $$DepartmentTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -4782,7 +4782,7 @@ typedef $$ProductTableUpdateCompanionBuilder = ProductCompanion Function({
   Value<int?> department,
 });
 
-class $$ProductTableReferences
+final class $$ProductTableReferences
     extends BaseReferences<_$TodoDb, $ProductTable, ProductData> {
   $$ProductTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -4989,7 +4989,7 @@ typedef $$StoreTableUpdateCompanionBuilder = StoreCompanion Function({
   Value<String?> name,
 });
 
-class $$StoreTableReferences
+final class $$StoreTableReferences
     extends BaseReferences<_$TodoDb, $StoreTable, StoreData> {
   $$StoreTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
@@ -5132,7 +5132,7 @@ typedef $$ListingTableUpdateCompanionBuilder = ListingCompanion Function({
   Value<double?> price,
 });
 
-class $$ListingTableReferences
+final class $$ListingTableReferences
     extends BaseReferences<_$TodoDb, $ListingTable, ListingData> {
   $$ListingTableReferences(super.$_db, super.$_table, super.$_typedResult);
 

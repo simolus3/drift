@@ -23,9 +23,238 @@ String $_aliasNameGenerator(
 /// final group = await groups.filter((f) => f.id(5)).getSingle()
 /// final usersInGroup = await users.filter((f) => f.group(group.id)).get()
 /// ```
+///
 /// {@macro manager_internal_use_only}
-class BaseReferences<$Database extends GeneratedDatabase, $Table extends Table,
-    $Dataclass> {
+///
+/// # Prefetching
+///
+/// ### Problem
+///
+/// It's quite common that a user will want a model together with it's relations.
+/// The simple option is to prefetch all of the users, and then run a 2nd request for each related group.
+/// ```dart
+/// final users = await users.withReferences().get()
+/// for (final (user,refs) in users){
+///   final group = await refs.groups.getSingle();
+/// }
+/// ```
+/// The issue with the above code is that we could be setting ourselves up to do tons of queries.
+///
+/// ### Solution
+///
+/// There are two methods we use together to solve this.
+/// Joins and Prefetches.
+///
+/// ##### Join
+///
+/// For fields which are foreign keys to other tables, we can just use a join to select the related field and get it all in one query
+/// There are many examples how to do this in the drift documentation
+///
+/// ##### Prefetch
+///
+/// However, for reverse relations, we can't get it all in a single query.
+/// We have to run 2 queries. Here is how it's done manually.
+///
+/// ```dart
+/// final groups = await groups.get();
+/// final groupIds = groups.map((group)=> group.id);
+/// final users = await users.filter((f)=> f.group.id.isIn(groupIds)).get()
+/// final groupsWithUsers = groups.map((group)=>(group,users.where((user)=> user.group == group.id)));
+/// ```
+///
+/// We get all the users ahead of time, and then manually return each group with it's users using a `where(...)` filter.
+///
+/// We will call both of these "prefetch" throughout.
+///
+///
+/// ### Manager API
+///
+/// This is quite verbose, and the manager api seeks to solve this for you.
+/// The API looks like this:
+/// ```dart
+/// users.withReferences((prefetch) => prefetch(groups: true)).get()
+/// ```
+///
+/// To do this there are a couple of things we need to do.
+///
+/// For references data we are getting via JOIN
+///
+/// 1. Before we even run a query with `users.withReferences((prefetch) => prefetch(group: true)).get()`, we need to put add a JOIN to this query.
+/// 2. When we read back this result, we need to read the JOINed information back.
+///
+/// For referenced data we are getting with a prefetch:
+///
+/// 1. After we get all the results we need to run more queries, map the correct data, and inject it info each object.
+///
+/// We also have to do difference behavior depending of what was prefetched, so this is a pretty complex issue.
+///
+/// ### Implementation
+///
+/// We only need to do 2 things for this to work:
+///
+/// 1) Reference class
+///
+/// This class is kinda cool. It holds the original result of the query as a `TypedResult`, which is what drift uses to store the raw query.
+/// But along with that, it has getters for prebuilt managers.
+/// When `withReferences` is called, we return the dataclass, together with this.
+///
+/// To keep things simple for now, this is a reference class which has it's prefetching abilities removed
+/// ```dart
+/// final class $$ProductTableReferences
+///     extends BaseReferences<_$TodoDb, $ProductTable, ProductData> {
+///   $$ProductTableReferences(super.$_db, super.$_table, super.$_typedResult);
+///
+///   $$DepartmentTableProcessedTableManager? get department {
+///     if ($_item.department == null) return null;
+///     return  $$DepartmentTableTableManager($_db, $_db.department)
+///         .filter((f) => f.id($_item.department!));
+///  }
+///
+///   $$ListingTableProcessedTableManager get listings {
+///     return  $$ListingTableTableManager($_db, $_db.listing)
+///         .filter((f) => f.product.id($_item.id));
+///   }
+/// }
+/// ```
+/// You can see how this allow us to easily get managers which are configured special for this product.
+///
+/// However, imagine we added extra data to this `TypedResult` before, we could read it and put it in the new managers cache.
+/// This is what the full code looks like for the reference class.
+/// Keep in mind this class only reads data, we'll get to the writing soon.
+///
+///
+/// ```dart
+///
+/// final class $$ProductTableReferences
+///    extends BaseReferences<_$TodoDb, $ProductTable, ProductData> {
+///  $$ProductTableReferences(super.$_db, super.$_table, super.$_typedResult);
+///
+///   /// When we do the join we will use this aliased table
+///   static $DepartmentTable _departmentTable(_$TodoDb db) =>
+///       db.department.createAlias(
+///           $_aliasNameGenerator(db.product.department, db.department.id));
+///
+///   $$DepartmentTableProcessedTableManager? get department {
+///     /// If we already know that this product has no department, we will return null
+///     if ($_item.department == null) return null;
+///     final manager = $$DepartmentTableTableManager($_db, $_db.department)
+///         .filter((f) => f.id($_item.department!));
+///
+///     /// If we already joined the department table, then this will be the department for this product
+///     final item = $_typedResult.readTableOrNull(_departmentTable($_db));
+///     if (item == null) return manager;
+///     return ProcessedTableManager(
+///         manager.$state.copyWith(prefetchedData: [item]));
+///   }
+///   /// This is similar to [_departmentTable] , but fot the listings.
+///   /// This is a reverse relation, so we won't be using this to create a joined query.
+///   /// But we will still use it to read and write into the `TypedResult` (`TypedResult` is a glorified `Map`, it's key needs to be a certain kind of class [ResultSetImplementation] with a generic, that's all `MultiTypedResultKey` does)
+///   static MultiTypedResultKey<$ListingTable, List<ListingData>> _listingsTable(
+///           _$TodoDb db) =>
+///       MultiTypedResultKey.fromTable(db.listing,
+///           aliasName: $_aliasNameGenerator(db.product.id, db.listing.product));
+///
+///   $$ListingTableProcessedTableManager get listings {
+///     final manager = $$ListingTableTableManager($_db, $_db.listing)
+///         .filter((f) => f.product.id($_item.id));
+///     /// If we have done any prefetches, these listings will be in the typed result
+///     /// We will take them out and put them in the new manager
+///     final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
+///     return ProcessedTableManager(
+///         manager.$state.copyWith(prefetchedData: cache));
+///   }
+/// }
+/// ```
+/// ### Hooks
+/// OK, we can see how we read references, but how does the manager actually fetch these results and add them to the `TypedResult` class?
+/// For that we use the `PrefetchedHooks` class and some callbacks.
+///
+/// So let's start at the beginning.
+/// ```
+/// products.withReferences((prefetch) => prefetch(listings: true));
+/// ```
+/// This `prefetch` function is declared on the generated manager and returns a `PrefetchedHooks`.
+/// Here is an example so we can walk through this
+/// ```
+/// prefetchHooksCallback: ({department = false, listings = false}) {
+///           return PrefetchHooks(
+///             /// This field holds a function which will add the join if the user adds it to the prefetch
+///             addJoins: <
+///                 /// The generics here are kinda messy,
+///                 /// but it's declaring a function that takes a TableManagerState and returns a TableManagerState with some changes.
+///                 T extends TableManagerState<
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic,
+///                     dynamic>>(state) {
+///               /// If the user did `prefetch(department: true)` then a join will be added to the query
+///               if (department) {
+///                 state = state.withJoin(
+///                   currentTable: table,
+///                   currentColumn: table.department,
+///                   // This `$$ProductTableReferences._departmentTable(db)` was declared above. It's an aliased copy of the department table.
+///                   referencedTable:
+///                       $$ProductTableReferences._departmentTable(db),
+///                   referencedColumn:
+///                       $$ProductTableReferences._departmentTable(db).id,
+///                 ) as T;
+///               }
+///
+///               /// Listings aren't going to use a join, so we will skip it here, and instead to it later
+///
+///               return state;
+///             },
+///             /// This callback takes care of doing the additional queries needed to get reverse referenced data.
+///             /// `items` is the products as a list of `TypedResult`, this function will add referenced data to these `TypedResult` using the above created
+///             /// MultiTypedResultKey as keys.
+///             withPrefetches: (items) async {
+///
+///               /// If `listings` is true, this function will do the hard work we mentioned above, but under the scenes
+///               /// It will:
+///               ///  1) Create a query of ALL the listings for ALL of the products / `items`
+///               ///  2) Use a map filter to get the correct listings for each individual item (referencedItemsForCurrentItem)
+///               ///  3) Add it the the `TypedResult` object.
+///               items = await typedResultsWithPrefetched(
+///                   doPrefetch: listings,
+///                   currentTable: table,
+///                   referencedTable:
+///                       $$ProductTableReferences._listingsTable(db),
+///                   managerFromTypedResult: (p0) =>
+///                       $$ProductTableReferences(db, table, p0).listings,
+///                   referencedItemsForCurrentItem: (item, referencedItems) =>
+///                       referencedItems.where((e) => e.product == item.id),
+///                   typedResults: items);
+///               return items;
+///             },
+///           );
+///         },
+/// ```
+///
+/// So once we run `withReferences`, we now have a `PrefetchHooks` class in the manager which will run these callbacks, thereby filling `TypedResult` with the
+/// data we need. So now when we run
+/// ```dart
+///   $$ListingTableProcessedTableManager get listings {
+///     final manager = $$ListingTableTableManager($_db, $_db.listing)
+///         .filter((f) => f.product.id($_item.id));
+///     /// If we have done any prefetches, these listings will be in the typed result
+///     /// We will take them out and put them in the new manager
+///     final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
+///     return ProcessedTableManager(
+///         manager.$state.copyWith(prefetchedData: cache));
+///   }
+/// }
+/// ```
+/// from above, we will get a manager that has prefetchedData included.
+///
+/// {@macro manager_internal_use_only}
+base class BaseReferences<$Database extends GeneratedDatabase,
+    $Table extends Table, $Dataclass> {
   /// The database instance
   // ignore: non_constant_identifier_names
   final $Database $_db;
