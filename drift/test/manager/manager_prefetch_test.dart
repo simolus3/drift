@@ -317,9 +317,7 @@ void main() {
 
     // When filters have joins and we select a referenced field with a join, they should be combined
     final listingWithStoreAndProduct = db.managers.listing
-        .filter(
-          (f) => f.store.name("Walmart"),
-        )
+        .filter((f) => f.store.name("Walmart"))
         .withReferences((o) => o(store: true));
     final stateWithJoins = listingWithStoreAndProduct.$state.prefetchHooks
         .withJoins(listingWithStoreAndProduct.$state);
@@ -327,5 +325,18 @@ void main() {
     for (final (listing, refs) in await listingWithStoreAndProduct.get()) {
       expect(refs.store?.prefetchedData, isNotNull);
     }
+
+    final prductWuthListings = await db.managers.product
+        .withReferences((o) => o(listings: true))
+        .get();
+    for (final (product, refs) in prductWuthListings) {
+      expect(refs.listings.prefetchedData, isNotEmpty);
+    }
+
+    final prductWuthListingsStream = db.managers.product
+        .withReferences((o) => o(listings: true))
+        .watch()
+        .map((event) => event.map((e) => e.$2.listings));
+    expect(prductWuthListingsStream, emitsInOrder([isNotEmpty]));
   });
 }
