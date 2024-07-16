@@ -85,8 +85,16 @@ class _TableManagerWriter {
       return true;
     }).toList();
 
-    // Remove any relations where the type isnt exactly the same (num and int)
+    // Remove any relations where the type isn't exactly the same (num and int)
     // This is caused by using different type converters
+    //
+    // The Manager API filters will sometimes move a filter from 1 column to another
+    // ```dart
+    // f.group.id.equals(1) // Required a JOIN
+    // // becomes
+    // f.groupId.equals(Group(id: 1)) // No JOIN required
+    // ```
+    // To move the filter, the types of the columns must be the same
     relations = relations.where((relation) {
       String typeForColumn(DriftColumn column) {
         return column.typeConverter?.dartType.getDisplayString(
