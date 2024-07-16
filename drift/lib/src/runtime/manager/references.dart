@@ -319,6 +319,12 @@ class PrefetchHooks {
       /// Build a list of stream which contain the prefetched data for each reverse reference (e.g. users and todos for a group)
       final streams = prefetchedDataStreamsCallback!(rows, watch: watch);
 
+      /// CombineLatestStream won't trigger any events if it's passed an empty list of streams.
+      /// In this case, we can just return the original stream.
+      if (streams.isEmpty) {
+        return Stream.value(rows);
+      }
+
       /// Combine all the streams of prefetched data with the stream of the original data into a single stream
       return CombineLatestStream(streams, (prefetches) {
         final results = <TypedResult>[];
