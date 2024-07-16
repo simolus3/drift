@@ -375,10 +375,8 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
 
   @override
   FutureOr<$Dataclass> map(Map<String, dynamic> data, {String? tablePrefix}) =>
-      _mapFunction(data, tablePrefix: tablePrefix);
-
-  final FutureOr<$Dataclass> Function(Map<String, dynamic> data,
-      {String? tablePrefix}) _mapFunction;
+      throw UnsupportedError(
+          "A MultiTypedResultKey cannot be used to parse the raw data from a SQL query");
 
   @override
   String get aliasedName => entityName;
@@ -391,7 +389,6 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
       attachedDatabase: attachedDatabase,
       columnsByName: columnsByName,
       entityName: alias,
-      mapFunction: _mapFunction,
     );
   }
 
@@ -400,11 +397,7 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
       required this.asDslTable,
       required this.attachedDatabase,
       required this.columnsByName,
-      required this.entityName,
-      required FutureOr<$Dataclass> Function(Map<String, dynamic>,
-              {String? tablePrefix})
-          mapFunction})
-      : _mapFunction = mapFunction;
+      required this.entityName});
 
   /// Create a [MultiTypedResultKey] from a table
   static MultiTypedResultKey<$Table, List<$Dataclass>>
@@ -417,19 +410,6 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
       attachedDatabase: table.attachedDatabase,
       columnsByName: table.columnsByName,
       entityName: aliasName,
-
-      /// This table is used a key for a map and should never be used to read data
-      /// However, in case it is, we will map a single item to a list of items
-      mapFunction: (Map<String, dynamic> data, {String? tablePrefix}) {
-        final singleResult = table.map(data, tablePrefix: tablePrefix);
-        if (singleResult is $Dataclass) {
-          return [singleResult];
-        } else {
-          return singleResult.then(
-            (value) => [value],
-          );
-        }
-      },
     );
   }
 
