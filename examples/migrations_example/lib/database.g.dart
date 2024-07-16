@@ -1122,19 +1122,21 @@ class $$UsersTableTableManager extends RootTableManager<
 
                 return state;
               },
-              withPrefetches: (items) async {
-                items = await typedResultsWithPrefetched(
-                    doPrefetch: groupsRefs,
-                    currentTable: table,
-                    referencedTable:
-                        $$UsersTableReferences._groupsRefsTable(db),
-                    managerFromTypedResult: (p0) =>
-                        $$UsersTableReferences(db, table, p0).groupsRefs,
-                    referencedItemsForCurrentItem: (item, referencedItems) =>
-                        referencedItems.where((e) => e.owner == item.id),
-                    typedResults: items);
-
-                return items;
+              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+                return [
+                  if (groupsRefs)
+                    $_streamPrefetched(
+                        watch: watch,
+                        currentTable: table,
+                        referencedTable:
+                            $$UsersTableReferences._groupsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$UsersTableReferences(db, table, p0).groupsRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.owner == item.id),
+                        typedResults: items)
+                ];
               },
             );
           },
@@ -1312,8 +1314,8 @@ class $GroupsTableManager extends RootTableManager<
 
                 return state;
               },
-              withPrefetches: (items) async {
-                return items;
+              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+                return [];
               },
             );
           },

@@ -831,20 +831,22 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
           prefetchHooksCallback: ({todoItemsRefs = false}) {
             return PrefetchHooks(
               addJoins: null,
-              withPrefetches: (items) async {
-                items = await typedResultsWithPrefetched(
-                    doPrefetch: todoItemsRefs,
-                    currentTable: table,
-                    referencedTable:
-                        $$TodoCategoriesTableReferences._todoItemsRefsTable(db),
-                    managerFromTypedResult: (p0) =>
-                        $$TodoCategoriesTableReferences(db, table, p0)
-                            .todoItemsRefs,
-                    referencedItemsForCurrentItem: (item, referencedItems) =>
-                        referencedItems.where((e) => e.categoryId == item.id),
-                    typedResults: items);
-
-                return items;
+              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+                return [
+                  if (todoItemsRefs)
+                    $_streamPrefetched(
+                        watch: watch,
+                        currentTable: table,
+                        referencedTable: $$TodoCategoriesTableReferences
+                            ._todoItemsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$TodoCategoriesTableReferences(db, table, p0)
+                                .todoItemsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.categoryId == item.id),
+                        typedResults: items)
+                ];
               },
             );
           },
@@ -1043,8 +1045,8 @@ class $$TodoItemsTableTableManager extends RootTableManager<
 
                 return state;
               },
-              withPrefetches: (items) async {
-                return items;
+              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+                return [];
               },
             );
           },
