@@ -214,29 +214,26 @@ String $_aliasNameGenerator(
 ///               return state;
 ///             },
 ///             /// This callback takes care of doing the additional queries needed to get reverse referenced data.
-///             /// `items` is the products as a list of `TypedResult`, this function will add referenced data to these `TypedResult` using the above created
-///             /// MultiTypedResultKey as keys.
-///             withPrefetches: (items) async {
-///
-///               /// If `listings` is true, this function will do the hard work we mentioned above, but under the scenes
-///               /// It will:
-///               ///  1) Create a query of ALL the listings for ALL of the products / `items`
-///               ///  2) Use a map filter to get the correct listings for each individual item (referencedItemsForCurrentItem)
-///               ///  3) Add it the the `TypedResult` object.
-///               items = await typedResultsWithPrefetched(
-///                   doPrefetch: listings,
-///                   currentTable: table,
-///                   referencedTable:
-///                       $$ProductTableReferences._listingsTable(db),
-///                   managerFromTypedResult: (p0) =>
-///                       $$ProductTableReferences(db, table, p0).listings,
-///                   referencedItemsForCurrentItem: (item, referencedItems) =>
-///                       referencedItems.where((e) => e.product == item.id),
-///                   typedResults: items);
-///               return items;
-///             },
-///           );
-///         },
+///             /// `items` is the products as a list of `TypedResult`, this function builds a list of streams, which will contain
+///             /// the prefetched data for each reverse reference.
+///             /// If `watch` is true, the streams will be watched and the TypedResult object will be updated when the prefetched data changes.
+///             /// Otherwise, the streams of prefetched data will only be read once.
+///             prefetchedDataStreamsCallback: (items, {required bool watch}) {
+///             return [
+///               if (listings) $_streamPrefetched(
+///               watch: watch,
+///               currentTable: table,
+///               referencedTable:
+///                   $$ProductTableReferences._listingsTable(db),
+///               managerFromTypedResult: (p0) =>
+///                   $$ProductTableReferences(db, table, p0).listings,
+///               referencedItemsForCurrentItem: (item, referencedItems) =>
+///                   referencedItems.where((e) => e.product == item.id),
+///               typedResults: items)
+///         ];
+///       },
+///     );
+///   },
 /// ```
 ///
 /// So once we run `withReferences`, we now have a `PrefetchHooks` class in the manager which will run these callbacks, thereby filling `TypedResult` with the
@@ -288,10 +285,6 @@ T _defaultStateTransformer<
   return $state;
 }
 
-/// Type definition for a function which transforms a List of TypedResults
-typedef TypedResultTransformer = Future<List<TypedResult>> Function(
-    List<TypedResult> results);
-
 /// When a user requests that certain fields are prefetched, we create a [PrefetchHooks] class for the manager.
 /// This class has hooks for adding joins to the query before the query is executed, and for running prefetches after the query is executed.
 /// {@macro manager_internal_use_only}
@@ -299,14 +292,63 @@ class PrefetchHooks {
   /// This callback is used to add joins to the query before it is executed.
   late final StateTransformer withJoins;
 
-  /// This callback is used to prefetch referenced data and insert it into the TypedResult object.
-  late final TypedResultTransformer withPrefetches;
+  /// A function which will return list of streams which for each prefetch data source.
+  final List<Stream<List<MultiTypedResultEntry>>> Function(List<TypedResult>,
+      {required bool watch})? prefetchedDataStreamsCallback;
 
   /// Create a [PrefetchHooks] object
   PrefetchHooks(
-      {StateTransformer? addJoins, TypedResultTransformer? withPrefetches}) {
+      {StateTransformer? addJoins, this.prefetchedDataStreamsCallback}) {
     withJoins = addJoins ?? _defaultStateTransformer;
-    this.withPrefetches = withPrefetches ?? (results) async => results;
+  }
+
+  /// Internal function for injecting the prefetched data into the TypedResult object.
+  ///
+  /// When [watch] is true, the streams will be watched and the TypedResult object will be updated when the prefetched data changes.
+  /// Otherwise, the streams of prefetched data will only be read once.
+  Stream<List<TypedResult>> _addPrefetchedDataToStream(
+      Stream<List<TypedResult>> itemStream,
+      {required bool watch}) {
+    /// If this table contains no reverse references, we can just return the stream as is.
+    if (prefetchedDataStreamsCallback == null) {
+      return itemStream;
+    }
+
+    /// Otherwise we add the prefetched data to the stream
+    return itemStream.asyncMap((rows) {
+      /// Build a list of stream which contain the prefetched data for each reverse reference (e.g. users and todos for a group)
+      final streams = prefetchedDataStreamsCallback!(rows, watch: watch);
+
+      /// Combine all the streams of prefetched data with the stream of the original data into a single stream
+      return CombineLatestStream(streams, (prefetches) {
+        final results = <TypedResult>[];
+
+        /// Iterate over each row, get the prefetched data for that row, and add it to the row.
+        for (var (rowIndex, row) in rows.indexed) {
+          final prefetchesForRow = prefetches.map((e) => e[rowIndex]);
+          for (var prefetchData in prefetchesForRow) {
+            row.addData(prefetchData.key, prefetchData.value);
+          }
+          results.add(row);
+        }
+        return results;
+      });
+    }).asyncExpand((event) => event);
+  }
+
+  /// Return a copy of a stream of result which has the prefetched data added to the TypedResult objects.
+  /// The prefetched data will be watched so that the stream will update when the prefetched data changes.
+  Stream<List<TypedResult>> addPrefetchedDataToStream(
+      Stream<List<TypedResult>> itemStream) {
+    return _addPrefetchedDataToStream(itemStream, watch: true);
+  }
+
+  /// Return a copy of the result with the prefetched data added to the TypedResult objects.
+  Future<List<TypedResult>> addPrefetchedDataToList(List<TypedResult> list) {
+    /// When doing a simple `get` operation, the streams in `prefetchedDataStreams` will only have a single item.
+    /// They will never be updated with a new value.
+    /// This allows us to use the exact same code for both streams and lists, but we will only ever return the first item.
+    return _addPrefetchedDataToStream(Stream.value(list), watch: false).first;
   }
 }
 
@@ -404,15 +446,28 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
   }
 }
 
-/// This function is used to prefetch referenced data for a list of TypedResults.
-/// And then insert the prefetched data into the TypedResult object using the [MultiTypedResultKey] as a key.
+/// Class which contains a key and a list of references.
+/// Used internally by drift to pass prefetched data to the TypedResult object.
+class MultiTypedResultEntry<T> {
+  /// The key for the TypedResult object
+  final MultiTypedResultKey key;
+
+  /// A list of references
+  final List<T> value;
+
+  /// Create a [MultiTypedResultEntry] object
+  const MultiTypedResultEntry({required this.key, required this.value});
+}
+
+/// This function is used to create a stream of prefetch referenced data for a Stream<List<TypedResults>>.
+/// Whenever the original stream emits a new list of TypedResults, this function will return the updated prefetched data.
 ///
 /// Here is an example.
 /// Let's say we wanted to get all the groups, with their users.
 /// We need to:
 ///   1) Then run a 2nd query to get all the users who are in the groups. (Users who are'nt any groups will be ignored)
-///   2) Add the users from the group into the groups `TypedResult`
-///   3) Return the groups with the listings
+///   2) Split the users into groups
+///   3) Return these users as a List<List<User>> (The first list is the groups, the 2nd list is the users in the group), along with the referenced table
 ///
 /// Manually this would look like:
 ///
@@ -426,7 +481,6 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
 ///
 /// Arguments:
 ///   - [typedResults] is the raw result of the query, together with [currentTable] we can read it's results
-///   - [doPrefetch] is a bool which will only perform the prefetch if true.
 ///   - [managerFromTypedResult] is the equivalent of:
 ///     ```dart
 ///     final groups = await groups.withReferences().get();
@@ -442,15 +496,13 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
 ///     This same class will be used in the `BaseReferences` class to read from the `TypedResult`.
 ///   - [referencedItemsForCurrentItem] is the callback which does the mapping.
 ///     It is the equivalent of`users.where((user)=> user.group == group.id)`.
+///   - [watch] is a bool which will watch the stream if true, otherwise we will just do a single read.
 ///
 /// This function is used by the generated code and should not be used directly.
-Future<List<TypedResult>> typedResultsWithPrefetched<
-        $CurrentDataclass,
-        $CurrentTable extends Table,
-        $ReferencedDataclass,
-        $ReferencedTable extends Table>(
-    {required bool doPrefetch,
-    required ProcessedTableManager<
+// ignore: non_constant_identifier_names
+Stream<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_streamPrefetched<
+        $CurrentDataclass, $CurrentTable extends Table, $ReferencedDataclass>(
+    {required ProcessedTableManager<
                 dynamic,
                 dynamic,
                 $ReferencedDataclass,
@@ -463,14 +515,15 @@ Future<List<TypedResult>> typedResultsWithPrefetched<
                 dynamic>
             Function(TypedResult)
         managerFromTypedResult,
+    required bool watch,
+    required MultiTypedResultKey referencedTable,
     required List<TypedResult> typedResults,
     required TableInfo<$CurrentTable, $CurrentDataclass> currentTable,
-    required MultiTypedResultKey referencedTable,
     required Iterable<$ReferencedDataclass> Function(
             $CurrentDataclass item, List<$ReferencedDataclass> referencedItems)
-        referencedItemsForCurrentItem}) async {
-  if (!doPrefetch || typedResults.isEmpty) {
-    return typedResults;
+        referencedItemsForCurrentItem}) {
+  if (typedResults.isEmpty) {
+    return Stream.value([]);
   } else {
     final managers = typedResults.map(managerFromTypedResult);
     // Combine all the referenced managers into 1 large query which will return all the
@@ -478,15 +531,22 @@ Future<List<TypedResult>> typedResultsWithPrefetched<
     final manager = managers.reduce((value, element) => value._filter(
         (_) => ComposableFilter._(element.$state.filter, {}),
         _BooleanOperator.or));
-    final referencedItems = await manager.get(distinct: true);
+    final Stream<List<$ReferencedDataclass>> referencedItems;
+    if (watch) {
+      referencedItems = manager.watch(distinct: true);
+    } else {
+      referencedItems = Stream.fromFuture(manager.get(distinct: true));
+    }
 
-    // Put each of these referenced items into the typed results
-    return typedResults.map((e) {
-      final item = e.readTable(currentTable);
-      final refs =
-          referencedItemsForCurrentItem(item, referencedItems).toList();
-      e.addData(referencedTable, refs);
-      return e;
-    }).toList();
+    /// Transform th stream of ALL prefetched items into a stream which has a
+    return referencedItems.asyncMap(
+      (event) {
+        return typedResults.map((e) {
+          final item = e.readTable(currentTable);
+          final refs = referencedItemsForCurrentItem(item, event).toList();
+          return MultiTypedResultEntry(key: referencedTable, value: refs);
+        }).toList();
+      },
+    );
   }
 }

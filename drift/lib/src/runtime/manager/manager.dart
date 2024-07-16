@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
+import 'package:rxdart/rxdart.dart';
 
 part 'composer.dart';
 part 'filter.dart';
@@ -471,39 +472,6 @@ abstract class BaseTableManager<
   /// ```
   ///
   /// Note that `prefetchedData` will be null if the reference was not prefetched.
-  ///
-  /// ### Watching Reverse References with Prefetching
-  ///
-  /// Normally, watching a stream of data will trigger when the data in the table changes.
-  /// This is true even if there was a change on a table which was JOINed in the query.
-  ///
-  /// The caveat is that this does not work for reverse references.
-  /// A reverse reference is a reference from a table without a foreign key to the table with the foreign key.
-  /// ```dart
-  /// class Users extends Table {
-  ///   IntColumn get id => integer().autoIncrement()();
-  ///   TextColumn get name => text()();
-  ///   IntColumn get group => integer().references(Groups, #id()();
-  /// }
-  ///
-  /// class Groups extends Table {
-  ///  IntColumn get id => integer().autoIncrement()();
-  /// }
-  /// ```
-  /// So in the above example, querying the `groups` table with a reference to `users` will not trigger the stream when a user is added or removed.
-  /// So the following stream won't be triggered by changes to the `users` table:
-  /// ```dart
-  /// groups.withReferences((prefetch) => prefetch(users: true)).watch().listen((event) {
-  ///  final usersInGroup = event.users.prefetchedData;
-  /// });
-  /// ```
-  /// However, regular references will still trigger the stream.
-  /// ```dart
-  /// users.withReferences((prefetch) => prefetch(group: true)).watch().listen((event) {
-  ///  final group = event.group.prefetchedData;
-  /// });
-  /// ```
-  /// Being that `group` is a regular reference, changes to the `groups` table will trigger the stream.
   ProcessedTableManager<
           $Database,
           $Table,
@@ -689,16 +657,18 @@ abstract class BaseTableManager<
   @override
   Future<List<$ActiveDataclass>> get(
       {bool distinct = false, int? limit, int? offset}) async {
-    /// Fetch the items from the database with the prefetch hooks
-    var items = await $state.prefetchHooks
-        .withJoins($state)
-        .copyWith(distinct: distinct, limit: limit, offset: offset)
-        .buildSelectStatement()
-        .get();
+    return $state.db.transaction(() async {
+      /// Fetch the items from the database with the prefetch hooks
+      var items = await $state.prefetchHooks
+          .withJoins($state)
+          .copyWith(distinct: distinct, limit: limit, offset: offset)
+          .buildSelectStatement()
+          .get();
 
-    /// Apply the prefetch hooks to the items
-    items = await $state.prefetchHooks.withPrefetches(items);
-    return $state.toActiveDataclass(items);
+      /// Apply the prefetch hooks to the items
+      items = await $state.prefetchHooks.addPrefetchedDataToList(items);
+      return $state.toActiveDataclass(items);
+    });
   }
 
   /// Creates an auto-updating stream of the result that emits new items
@@ -720,8 +690,10 @@ abstract class BaseTableManager<
         .watch();
 
     /// Return the stream with the prefetch hooks applied
-    return itemStream.asyncMap((event) async {
-      event = await $state.prefetchHooks.withPrefetches(event);
+
+    return $state.prefetchHooks
+        .addPrefetchedDataToStream(itemStream)
+        .map((event) {
       return $state.toActiveDataclass(event);
     });
   }

@@ -261,7 +261,8 @@ class _ManagerCodeTemplates {
                 return state;
               }
 """},
-            withPrefetches: (items) async {
+            prefetchedDataStreamsCallback: (items, {required bool watch}) {
+            return [
             ${reverseRelations.map((relation) {
                 final referencesClassName = rowReferencesClassName(
                     table: table,
@@ -270,8 +271,8 @@ class _ManagerCodeTemplates {
                     leaf: leaf,
                     withTypeArgs: false);
                 return """
-            items = await ${leaf.drift("typedResultsWithPrefetched")}(
-                  doPrefetch: ${relation.fieldName},
+          if (${relation.fieldName}) ${leaf.drift("\$_streamPrefetched")}(
+                  watch: watch,
                   currentTable: table,
                   referencedTable:
                       $referencesClassName._${relation.fieldName}Table(db),
@@ -279,10 +280,10 @@ class _ManagerCodeTemplates {
                       $referencesClassName(db, table, p0).${relation.fieldName},
                   referencedItemsForCurrentItem: (item, referencedItems) =>
                       referencedItems.where((e) => e.${relation.referencedColumn.nameInDart} == item.${relation.currentColumn.nameInDart}),
-                  typedResults: items);
+                  typedResults: items)
             """;
-              }).join('\n')}
-                return items;
+              }).join(',')}
+                ];
               },
           );
         }
