@@ -4,7 +4,6 @@ import 'package:devtools_app_shared/service.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rxdart/transformers.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:vm_service/vm_service.dart';
 
@@ -13,8 +12,36 @@ void setServiceConnectionForProviderScreen(VmService service) {
   _serviceConnection.add(service);
 }
 
+extension<T> on ValueListenable<T> {
+  Stream<T> get asStream {
+    return Stream.multi((listener) {
+      listener.add(value);
+
+      void valueListener() {
+        print('current state: $value');
+        listener.add(value);
+      }
+
+      void addListener() {
+        this.addListener(valueListener);
+      }
+
+      void removeListener() {
+        this.removeListener(valueListener);
+      }
+
+      addListener();
+      listener
+        ..onPause = removeListener
+        ..onResume = addListener
+        ..onCancel = removeListener;
+    });
+  }
+}
+
 final serviceProvider = StreamProvider<VmService>((ref) {
-  return _serviceConnection.stream.startWith(serviceManager.service!);
+  final state = serviceManager.connectedState.asStream;
+  return state.where((c) => c.connected).map((_) => serviceManager.service!);
 });
 
 final _libraryEvalProvider =

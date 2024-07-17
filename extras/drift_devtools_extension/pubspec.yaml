@@ -14,7 +14,7 @@ dependencies:
   devtools_extensions: ^0.2.1
   devtools_app_shared: ^0.2.1
   db_viewer: ^1.0.3
-  rxdart: ^0.27.7
+  rxdart: ^0.28.0
   flutter_riverpod: ^3.0.0-dev.0
   vm_service: ^14.0.0
   path: ^1.8.3
