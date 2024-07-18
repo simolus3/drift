@@ -289,6 +289,12 @@ T _defaultStateTransformer<
 /// This class has hooks for adding joins to the query before the query is executed, and for running prefetches after the query is executed.
 /// {@macro manager_internal_use_only}
 class PrefetchHooks {
+  /// The database instance
+  final GeneratedDatabase db;
+
+  /// A flag to indicate if the prefetches should be run inside a transaction.
+  final bool inTransaction;
+
   /// This callback is used to add joins to the query before it is executed.
   late final StateTransformer withJoins;
 
@@ -298,8 +304,20 @@ class PrefetchHooks {
 
   /// Create a [PrefetchHooks] object
   PrefetchHooks(
-      {StateTransformer? addJoins, this.prefetchedDataStreamsCallback}) {
+      {required this.db,
+      StateTransformer? addJoins,
+      this.inTransaction = true,
+      List<TableInfo> explicitlyWatchedTables = const [],
+      this.prefetchedDataStreamsCallback}) {
     withJoins = addJoins ?? _defaultStateTransformer;
+    _explicitlyWatchedTables = explicitlyWatchedTables;
+  }
+
+  late final List<TableInfo> _explicitlyWatchedTables;
+
+  /// Tables which should be watched explicitly by the original query.
+  List<TableInfo> get explicitlyWatchedTable {
+    return inTransaction ? _explicitlyWatchedTables : [];
   }
 
   /// Internal function for injecting the prefetched data into the TypedResult object.
@@ -314,32 +332,51 @@ class PrefetchHooks {
       return itemStream;
     }
 
-    /// Otherwise we add the prefetched data to the stream
-    return itemStream.asyncMap((rows) {
-      /// Build a list of stream which contain the prefetched data for each reverse reference (e.g. users and todos for a group)
-      final streams = prefetchedDataStreamsCallback!(rows, watch: watch);
+    return itemStream.asyncMap((rows) async {
+      /// There are 3 possible scenarios here:
+      /// 1) We aren't watching this query, we just want to get the data once.
+      /// 2) We are watching this query, but want to run the prefetches inside a transaction.
+      /// 3) We are watching this query, and we don't mind if the prefetches are run outside of a transaction.
 
-      /// CombineLatestStream won't trigger any events if it's passed an empty list of streams.
-      /// In this case, we can just return the original stream.
-      if (streams.isEmpty) {
-        return Stream.value(rows);
-      }
-
-      /// Combine all the streams of prefetched data with the stream of the original data into a single stream
-      return CombineLatestStream(streams, (prefetches) {
-        final results = <TypedResult>[];
-
-        /// Iterate over each row, get the prefetched data for that row, and add it to the row.
-        for (var (rowIndex, row) in rows.indexed) {
-          final prefetchesForRow = prefetches.map((e) => e[rowIndex]);
-          for (var prefetchData in prefetchesForRow) {
-            row.addData(prefetchData.key, prefetchData.value);
-          }
-          results.add(row);
+      /// If we are in scenario 1 or 2, we need to run the prefetches as a `get` in a transaction.
+      /// The trigger for changes under scenario 2 is the manual table watches added to the original query by
+      if (!watch || inTransaction) {
+        final streams = prefetchedDataStreamsCallback!(rows, watch: false);
+        return await db.transaction(
+          () async {
+            final prefetches = await streams.mapAsyncAndAwait((e) => e.first);
+            return Stream.value(_addPrefetchedDataToRows(rows, prefetches));
+          },
+        );
+      } else {
+        /// In scenario 3, we can just run the prefetches as a `watch` operation.
+        final streams = prefetchedDataStreamsCallback!(rows, watch: true);
+        if (streams.isEmpty) {
+          return Stream.value(rows);
         }
-        return results;
-      });
+
+        /// Combine all the streams of prefetched data with the stream of the original data into a single stream
+        return CombineLatestStream(streams, (prefetches) {
+          return _addPrefetchedDataToRows(rows, prefetches);
+        });
+      }
     }).asyncExpand((event) => event);
+  }
+
+  /// Helper function to insert the prefetched data into the TypedResult objects.
+  List<TypedResult> _addPrefetchedDataToRows(List<TypedResult> rows,
+      List<List<MultiTypedResultEntry<dynamic>>> prefetches) {
+    final results = <TypedResult>[];
+
+    /// Iterate over each row, get the prefetched data for that row, and add it to the row.
+    for (var (rowIndex, row) in rows.indexed) {
+      final prefetchesForRow = prefetches.map((e) => e[rowIndex]);
+      for (var prefetchData in prefetchesForRow) {
+        row.addData(prefetchData.key, prefetchData.value);
+      }
+      results.add(row);
+    }
+    return results;
   }
 
   /// Return a copy of a stream of result which has the prefetched data added to the TypedResult objects.

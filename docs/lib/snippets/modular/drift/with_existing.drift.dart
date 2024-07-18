@@ -505,7 +505,7 @@ class $FriendsTableManager extends i0.RootTableManager<
     $FriendsUpdateCompanionBuilder,
     (i2.Friend, i0.BaseReferences<i0.GeneratedDatabase, i2.Friends, i2.Friend>),
     i2.Friend,
-    i0.PrefetchHooks Function({bool userA, bool userB})> {
+    i0.PrefetchHooks Function({bool userA, bool userB, bool inTransaction})> {
   $FriendsTableManager(i0.GeneratedDatabase db, i2.Friends table)
       : super(i0.TableManagerState(
           db: db,
@@ -551,7 +551,7 @@ typedef $FriendsProcessedTableManager = i0.ProcessedTableManager<
     $FriendsUpdateCompanionBuilder,
     (i2.Friend, i0.BaseReferences<i0.GeneratedDatabase, i2.Friends, i2.Friend>),
     i2.Friend,
-    i0.PrefetchHooks Function({bool userA, bool userB})>;
+    i0.PrefetchHooks Function({bool userA, bool userB, bool inTransaction})>;
 
 class WithExistingDrift extends i3.ModularAccessor {
   WithExistingDrift(i0.GeneratedDatabase db) : super(db);

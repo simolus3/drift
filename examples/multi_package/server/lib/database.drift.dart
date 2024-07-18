@@ -319,7 +319,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
           i3.ActiveSession>
     ),
     i3.ActiveSession,
-    i0.PrefetchHooks Function({bool user})> {
+    i0.PrefetchHooks Function({bool user, bool inTransaction})> {
   $$ActiveSessionsTableTableManager(
       i0.GeneratedDatabase db, i3.$ActiveSessionsTable table)
       : super(i0.TableManagerState(
@@ -370,4 +370,4 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
           i3.ActiveSession>
     ),
     i3.ActiveSession,
-    i0.PrefetchHooks Function({bool user})>;
+    i0.PrefetchHooks Function({bool user, bool inTransaction})>;

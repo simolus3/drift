@@ -797,7 +797,7 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
     $$TodoCategoriesTableUpdateCompanionBuilder,
     (TodoCategory, $$TodoCategoriesTableReferences),
     TodoCategory,
-    PrefetchHooks Function({bool todoItemsRefs})> {
+    PrefetchHooks Function({bool todoItemsRefs, bool inTransaction})> {
   $$TodoCategoriesTableTableManager(_$Database db, $TodoCategoriesTable table)
       : super(TableManagerState(
           db: db,
@@ -828,8 +828,12 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
                     $$TodoCategoriesTableReferences(db, table, e)
                   ))
               .toList(),
-          prefetchHooksCallback: ({todoItemsRefs = false}) {
+          prefetchHooksCallback: (
+              {todoItemsRefs = false, bool inTransaction = true}) {
             return PrefetchHooks(
+              db: db,
+              inTransaction: inTransaction,
+              explicitlyWatchedTables: [if (todoItemsRefs) db.todoItems],
               addJoins: null,
               prefetchedDataStreamsCallback: (items, {required bool watch}) {
                 return [
@@ -863,7 +867,7 @@ typedef $$TodoCategoriesTableProcessedTableManager = ProcessedTableManager<
     $$TodoCategoriesTableUpdateCompanionBuilder,
     (TodoCategory, $$TodoCategoriesTableReferences),
     TodoCategory,
-    PrefetchHooks Function({bool todoItemsRefs})>;
+    PrefetchHooks Function({bool todoItemsRefs, bool inTransaction})>;
 typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> id,
   required String title,
@@ -979,7 +983,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
     $$TodoItemsTableUpdateCompanionBuilder,
     (TodoItem, $$TodoItemsTableReferences),
     TodoItem,
-    PrefetchHooks Function({bool categoryId})> {
+    PrefetchHooks Function({bool categoryId, bool inTransaction})> {
   $$TodoItemsTableTableManager(_$Database db, $TodoItemsTable table)
       : super(TableManagerState(
           db: db,
@@ -1018,8 +1022,12 @@ class $$TodoItemsTableTableManager extends RootTableManager<
                     $$TodoItemsTableReferences(db, table, e)
                   ))
               .toList(),
-          prefetchHooksCallback: ({categoryId = false}) {
+          prefetchHooksCallback: (
+              {categoryId = false, bool inTransaction = true}) {
             return PrefetchHooks(
+              db: db,
+              inTransaction: inTransaction,
+              explicitlyWatchedTables: [],
               addJoins: <
                   T extends TableManagerState<
                       dynamic,
@@ -1063,7 +1071,7 @@ typedef $$TodoItemsTableProcessedTableManager = ProcessedTableManager<
     $$TodoItemsTableUpdateCompanionBuilder,
     (TodoItem, $$TodoItemsTableReferences),
     TodoItem,
-    PrefetchHooks Function({bool categoryId})>;
+    PrefetchHooks Function({bool categoryId, bool inTransaction})>;
 
 class $DatabaseManager {
   final _$Database _db;

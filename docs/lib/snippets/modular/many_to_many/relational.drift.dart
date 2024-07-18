@@ -585,7 +585,8 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
           i2.ShoppingCartEntry>
     ),
     i2.ShoppingCartEntry,
-    i0.PrefetchHooks Function({bool shoppingCart, bool item})> {
+    i0.PrefetchHooks Function(
+        {bool shoppingCart, bool item, bool inTransaction})> {
   $$ShoppingCartEntriesTableTableManager(
       i0.GeneratedDatabase db, i2.$ShoppingCartEntriesTable table)
       : super(i0.TableManagerState(
@@ -637,4 +638,5 @@ typedef $$ShoppingCartEntriesTableProcessedTableManager
               i2.ShoppingCartEntry>
         ),
         i2.ShoppingCartEntry,
-        i0.PrefetchHooks Function({bool shoppingCart, bool item})>;
+        i0.PrefetchHooks Function(
+            {bool shoppingCart, bool item, bool inTransaction})>;

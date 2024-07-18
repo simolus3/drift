@@ -308,7 +308,7 @@ class $PostsTableManager extends i0.RootTableManager<
     $PostsUpdateCompanionBuilder,
     (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
     i1.Post,
-    i0.PrefetchHooks Function({bool author})> {
+    i0.PrefetchHooks Function({bool author, bool inTransaction})> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
           db: db,
@@ -354,7 +354,7 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     $PostsUpdateCompanionBuilder,
     (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
     i1.Post,
-    i0.PrefetchHooks Function({bool author})>;
+    i0.PrefetchHooks Function({bool author, bool inTransaction})>;
 
 class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
   @override
@@ -649,7 +649,7 @@ class $LikesTableManager extends i0.RootTableManager<
     $LikesUpdateCompanionBuilder,
     (i1.Like, i0.BaseReferences<i0.GeneratedDatabase, i1.Likes, i1.Like>),
     i1.Like,
-    i0.PrefetchHooks Function({bool post, bool likedBy})> {
+    i0.PrefetchHooks Function({bool post, bool likedBy, bool inTransaction})> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
       : super(i0.TableManagerState(
           db: db,
@@ -695,4 +695,4 @@ typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
     $LikesUpdateCompanionBuilder,
     (i1.Like, i0.BaseReferences<i0.GeneratedDatabase, i1.Likes, i1.Like>),
     i1.Like,
-    i0.PrefetchHooks Function({bool post, bool likedBy})>;
+    i0.PrefetchHooks Function({bool post, bool likedBy, bool inTransaction})>;

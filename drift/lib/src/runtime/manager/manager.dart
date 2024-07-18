@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
+import 'package:drift/src/utils/async.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -165,7 +166,7 @@ class TableManagerState<
       this.offset,
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
-      : prefetchHooks = prefetchHooks ?? PrefetchHooks(),
+      : prefetchHooks = prefetchHooks ?? PrefetchHooks(db: db),
         _prefetchedData = prefetchedData,
         _prefetchHooksCallback = prefetchHooksCallback,
         _withReferenceMapper = withReferenceMapper,
@@ -657,8 +658,9 @@ abstract class BaseTableManager<
   @override
   Future<List<$ActiveDataclass>> get(
       {bool distinct = false, int? limit, int? offset}) async {
-    return $state.db.transaction(() async {
-      /// Fetch the items from the database with the prefetch hooks
+    /// Build the code as a separate function so that we can run it in a transaction if needed
+    get() async {
+      /// Fetch the items from the database with the prefetch hooks applied
       var items = await $state.prefetchHooks
           .withJoins($state)
           .copyWith(distinct: distinct, limit: limit, offset: offset)
@@ -668,7 +670,14 @@ abstract class BaseTableManager<
       /// Apply the prefetch hooks to the items
       items = await $state.prefetchHooks.addPrefetchedDataToList(items);
       return $state.toActiveDataclass(items);
-    });
+    }
+
+    /// If prefetching is configured to use a transaction, we need to run the query in a transaction
+    if ($state.prefetchHooks.inTransaction) {
+      return $state.db.transaction(get);
+    } else {
+      return await get();
+    }
   }
 
   /// Creates an auto-updating stream of the result that emits new items
@@ -682,15 +691,18 @@ abstract class BaseTableManager<
   @override
   Stream<List<$ActiveDataclass>> watch(
       {bool distinct = false, int? limit, int? offset}) {
+    /// If we are streaming prefetching data using a transaction, the queries to the
+    /// referenced tables aren't watching the database.
+    /// We therefore need to manually add these tables to `itemStream` watch
+
     /// Fetch the items from the database with the prefetch hooks
     var itemStream = $state.prefetchHooks
         .withJoins($state)
         .copyWith(distinct: distinct, limit: limit, offset: offset)
         .buildSelectStatement()
-        .watch();
+        .watchWithAdditionalTables($state.prefetchHooks.explicitlyWatchedTable);
 
     /// Return the stream with the prefetch hooks applied
-
     return $state.prefetchHooks
         .addPrefetchedDataToStream(itemStream)
         .map((event) {
