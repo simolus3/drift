@@ -23,6 +23,7 @@ dependencies:
   path_provider: ^2.0.9
   path: ^1.8.0
   riverpod: ^2.3.0
+  stack_trace: ^1.11.1
 
 dev_dependencies:
   flutter_test:
