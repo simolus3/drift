@@ -18,7 +18,6 @@ extension<T> on ValueListenable<T> {
       listener.add(value);
 
       void valueListener() {
-        print('current state: $value');
         listener.add(value);
       }
 
