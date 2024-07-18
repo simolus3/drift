@@ -5,6 +5,14 @@ repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/docs/platforms/postgres/
 issue_tracker: https://github.com/simolus3/drift/issues
 
+topics:
+  - drift
+  - database
+  - postgres
+
+founding:
+  - https://github.com/sponsors/simolus3
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
 

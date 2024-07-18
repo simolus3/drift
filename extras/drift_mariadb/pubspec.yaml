@@ -2,6 +2,14 @@ name: drift_mariadb
 description: Mariadb support for drift.
 version: 1.0.0
 
+topics:
+  - drift
+  - database
+  - mariadb
+
+founding:
+  - https://github.com/sponsors/simolus3
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
 

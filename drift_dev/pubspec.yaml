@@ -4,11 +4,15 @@ version: 2.19.1
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
+
 topics:
   - codegen
   - build-runner
   - drift
   - database
+
+founding:
+  - https://github.com/sponsors/simolus3
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
