@@ -473,6 +473,19 @@ abstract class BaseTableManager<
   /// ```
   ///
   /// Note that `prefetchedData` will be null if the reference was not prefetched.
+  ///
+  /// ### Transactions
+  /// By default references which are fetched as a separate query will be ran in a single transaction.
+  /// When streaming data, this can be inefficient. Any changes to any of the referenced tables will cause all the queries to be ran again.
+  ///
+  /// This can be disabled by setting `inTransaction: false` in the `prefetch` constructor.
+  /// ```dart
+  /// groups.withReferences((prefetch) => prefetch(users: true, inTransaction: false)).watch()
+  /// ````
+  /// In the above example, if the user table is updated, the query will only be ran for the user table, not the group table.
+  /// The downside of this is that the data may be inconsistent.
+  ///
+  /// For example, if a group is deleted between queries, you will have a reference to a group that doesn't exist.
   ProcessedTableManager<
           $Database,
           $Table,
