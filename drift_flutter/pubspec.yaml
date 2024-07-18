@@ -5,6 +5,13 @@ repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
 
+topics:
+  - drift
+  - database
+
+founding:
+  - https://github.com/sponsors/simolus3
+
 environment:
   sdk: ^3.4.0
 
