@@ -1,0 +1,32 @@
+targets:
+  $default:
+    builders:
+      sass_builder:
+        generate_for:
+          include:
+            - web/**
+      build_web_compilers:entrypoint:
+        generate_for:
+          include:
+            - "web/**"
+          exclude:
+            - "web/drift_worker.dart"
+        release_options:
+          # Turn of null assertions for release builds, it looks like this
+          # makes generated code slightly smaller.
+          native_null_assertions: false
+          dart2js_args:
+            - "-O4"
+            - "--csp"
+    sources:
+      include:
+        - "lib/**"
+        - "pages/**"
+        - "templates/**"
+        - "web/**"
+        - "$package$"
+        - "pubspec.yaml"
+        - "website.yaml"
+
+additional_public_assets:
+  - "pages/**"

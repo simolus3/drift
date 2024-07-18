@@ -1,0 +1,12 @@
+{% assign branch = site.github_branch | default: 'main' %}
+{% assign subdir = site.github_subdir | default: '' %}
+{% assign edit_url = site.github_repo | append: '/edit/', branch, '/', subdir, page.source %}
+{% assign issues_url = site.github_repo | append: '/issues/new?title=Documentation issue: ', page.title %}
+
+<a href="{{ edit_url }}" title="Edit this page" class="md-content__button md-icon">
+{% include "icons/file_edit.svg" %}
+</a>
+
+<a href="{{ issues_url }}" title="Create documentation issue" class="md-content__button md-icon">
+    {% include "icons/lightbulb.svg" %}
+</a>

@@ -1,0 +1,24 @@
+site:
+  title: "Drift"
+  language: "en"
+  description: Drift - the persistence library for Flutter Dart application.
+  copyright: "Simon Binder"
+  github_repo: "https://github.com/simolus3/drift"
+  repo_name: simolus3/drift
+  github_subdir: "docs/"
+  github_branch: develop
+
+  announce:
+    id: 1
+    content: "Test"
+
+environments:
+  dev:
+    minify: false
+    base_url: "http://localhost:8080/"
+  preview:
+    minify: true
+    base_url: "https://drift.simonbinder.eu/"
+  prod:
+    minify: true
+    base_url: "https://drift.simonbinder.eu/"

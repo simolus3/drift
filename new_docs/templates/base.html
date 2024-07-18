@@ -1,0 +1,136 @@
+<!--
+  Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+-->
+
+<!doctype html>
+<html lang="{{site.language}}" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="{{page.description | default: site.description}}"/>
+    {% if environment != "prod" %}
+      <meta name="robots" content="index, follow">
+    {% endif %}
+    {% if aliases | length | gt: 0 %}
+      <link rel="canonical" href="{{ page.path | absUrl }}" />
+    {% endif %}
+
+    {% if page.previous_page %}
+      <link rel="prev" href="{{ page.previous_page | pageUrl }}" />
+    {% endif %}
+    {% if page.next_page %}
+      <link rel="next" href="{{ page.next_page | pageUrl }}" />
+    {% endif %}
+
+    <title>{{ page.title | default: site.title }}</title>
+    <link rel="stylesheet" href="{{ 'docs.css' | relUrl }}" />
+
+    <script async src="{{ 'docs.dart.js' | relUrl }}"></script>
+  </head>
+  <body dir="ltr">
+    <!--
+      State toggles - we need to set autocomplete="off" in order to reset the
+      drawer on back button invocation in some browsers
+    -->
+    <input
+      class="md-toggle"
+      data-md-toggle="drawer"
+      type="checkbox"
+      id="__drawer"
+      autocomplete="off"
+    />
+    <input
+      class="md-toggle"
+      data-md-toggle="search"
+      type="checkbox"
+      id="__search"
+      autocomplete="off"
+    />
+
+    <!-- Overlay for expanded drawer -->
+    <label class="md-overlay" for="__drawer"></label>
+
+    <!-- Skip to content -->
+    <div data-md-component="skip">
+      {% if page.toc_structure | get: 0 %}
+        {% assign skip = page.toc_structure | get: 0 %}
+        <a href="#{{ skip.anchor }}" class="md-skip">Skip to content</a>
+      {% endif %}
+    </div>
+
+
+    <!-- Announcement bar -->
+    <div data-md-component="announce" data-id="{{ site.announce.id }}">
+      {% if site.announce %}
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            <button
+              class="md-banner__button md-icon"
+              aria-label="Dismiss"
+            >
+              {% include "icons/close.svg" %}
+            </button>
+
+            <!-- Announcement bar content -->
+            {{ site.announce.content }}
+          </div>
+        </aside>
+      {% endif %}
+    </div>
+
+    {% include "partials/header.html" %}
+
+    <div class="md-container" data-md-component="contains">
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                {% include "partials/nav.html" %}
+              </div>
+            </div>
+          </div>
+
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                {% include "partials/toc.html" %}
+              </div>
+            </div>
+          </div>
+
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              {% include "partials/content.html" %}
+            </article>
+          </div>
+        </div>
+      </main>
+
+      {% include "partials/footer.html" %}
+    </div>
+
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+  </body>
+</html>

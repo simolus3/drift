@@ -1,0 +1,50 @@
+{% assign section = args.section %}
+{% assign depth = args.depth | default: 0 %}
+{% assign ids = args.ids | default: "nav" %}
+{% assign active = page_section.index == section.index %}
+{% assign isIndex = page_section.index == page.meta_id %}
+
+{% assign children = section.children | concat: section.pages | sortedByWeight %}
+
+{% for child in children %}
+    {% assign is_page = child.index == null %}
+    {% assign id = ids | concat: "-", loop_index %}
+    {% if is_page %}
+    {% if child == section.index %}
+        {% comment %}
+        This is the page defining the section. Don't show both the section and its index!
+        {% endcomment %}
+        {% continue %}
+    {% endif %}
+    {% assign page_info = child | pageInfo %}
+    <li class="md-nav__item">
+        <a class="md-nav__link" href="{{ child | pageUrl }}">
+            <span class="md-ellipsis">{{ page_info.data.nav_title | default: page_info.data.title }}</span>
+        </a>
+    </li>
+    {% else %}
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+        {% assign index_info = child.index | pageInfo %}
+        {% assign grandchildren = child.children | concat: child.pages | sortedByWeight %}
+        {% assign permalink = index_info.path | relUrl %}
+        {% assign checked = false %}
+
+        <input
+          class="md-nav__toggle md-toggle {% if checked == false %} indeterminate {% endif %}"
+          type="checkbox"
+          id="{{ id }}"
+          {% if checked %} checked {% endif %}
+        />
+
+        <div class="md-nav__link md-nav__container">
+            <a class="md-nav__link" href="{{ permalink }}">{{ index_info.data.title }}</a>
+
+            {% if grandchildren | length | gt: 1 %}
+              <label class="md-nav__link" for="{{id}}" id="{{id}}_label">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            {% endif %}
+        </div>
+    </li>
+    {% endif %}
+{% endfor %}
