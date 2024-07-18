@@ -1,3 +1,8 @@
+## 2.19.1
+
+- Fix `drift_dev schema dump` not working with older versions of the `analyzer`
+  package that are still supported by `drift_dev`.
+
 ## 2.19.0
 
 - Fix generated `CREATE VIEW` statements containing existing row class syntax

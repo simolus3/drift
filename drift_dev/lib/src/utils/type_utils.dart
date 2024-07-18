@@ -31,15 +31,18 @@ extension TypeUtils on DartType {
     return $this is InterfaceType ? $this.element.name : null;
   }
 
-  String get userVisibleName => getDisplayString();
+  // ignore: deprecated_member_use
+  String get userVisibleName => getDisplayString(withNullability: true);
 
   /// How this type should look like in generated code.
   String codeString() {
     if (nullabilitySuffix == NullabilitySuffix.star) {
       // We can't actually use the legacy star in code, so don't show it.
-      return getDisplayString();
+      // ignore: deprecated_member_use
+      return getDisplayString(withNullability: true);
     }
 
-    return getDisplayString();
+    // ignore: deprecated_member_use
+    return getDisplayString(withNullability: true);
   }
 }
