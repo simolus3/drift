@@ -99,6 +99,8 @@
     {% include "partials/header.html" %}
 
     <div class="md-container" data-md-component="contains">
+      {% include "partials/tabs.html" %}
+
       <main class="md-main" data-md-component="main">
         <div class="md-main__inner md-grid">
           <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
@@ -118,6 +120,7 @@
           </div>
 
           <div class="md-content" data-md-component="content">
+            {% include "partials/breadcrumb.html" %}
             <article class="md-content__inner md-typeset">
               {% include "partials/content.html" %}
             </article>

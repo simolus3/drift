@@ -1,0 +1,15 @@
+{% comment %}
+Include parent section up to the root, exlusive!
+So we include the parent if it has a parent section as well.
+{% endcomment %}
+{% if args.section.parent %}
+  {% assign parentSection = args.section.parent | sectionOf %}
+  {% include "partials/breadcrumb_recurse" section = parentSection %}
+{% endif %}
+
+{% if args.section.index != page.meta_id %}
+<li class="breadcrumb-item">
+  {% assign info = args.section.index | pageInfo %}
+  <a href="{{ info.path | relUrl }}">{{ info.data.title }}</a>
+</li>
+{% endif %}

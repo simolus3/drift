@@ -1,0 +1,51 @@
+.breadcrumbs {
+  font-size: .7rem;
+  margin: 0.8rem;
+  overflow: auto;
+  padding-top: 1.2rem;
+  display: block;
+}
+
+.breadcrumb {
+  align-items: center;
+  display: flex;
+  gap: .2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb-item:not(:first-child) {
+    display: inline-flex;
+    gap: .2rem;
+    white-space: nowrap;
+}
+
+.breadcrumb-item:not(:first-child):before {
+  background-color: var(--md-default-fg-color--lighter);
+  content: "";
+  display: inline;
+  height: .8rem;
+  mask-image: url("/assets/right.svg");
+  width: .8rem;
+}
+
+.breadcrumb-item > a {
+  align-items: center;
+  color: var(--md-default-fg-color--light);
+  display: flex;
+}
+
+.breadcrumb-item > a {
+  align-items: center;
+  color: var(--md-default-fg-color--light);
+  display: flex;
+}
+
+.breadcrumb-item.active > a {
+  color: var(--md-default-fg-color);
+}
+
+.breadcrumb-item > a:focus, .breadcrumb-item > a:hover {
+  color: var(--md-accent-fg-color);
+}

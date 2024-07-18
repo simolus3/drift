@@ -1,7 +1,9 @@
 ---
 template: base.html
-path: "__"
+path: ""
 emit: false
+data:
+  title: Home
 ---
 
 This page only exists to get the section index right.
