@@ -301,7 +301,7 @@ final class _ProbeResult implements WasmProbeResult {
     final local = channel.port1
         .channel(explicitClose: message.protocolVersion >= ProtocolVersion.v1);
 
-    var connection = await connectToRemoteAndInitialize(local);
+    var connection = await connectToRemoteAndInitialize(local, debugLog: true);
     if (implementation == WasmStorageImplementation.opfsLocks) {
       // We want stream queries to update for writes in other tabs. For the
       // implementations backed by a shared worker, the worker takes care of
