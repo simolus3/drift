@@ -1,4 +1,4 @@
-## 2.19.1
+## 2.19.1+1
 
 - Fix `exclusively` breaking the database connection on the web. Please note
   that this requires an updated `drift_worker.js` to fix.
