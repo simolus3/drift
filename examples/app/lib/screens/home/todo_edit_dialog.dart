@@ -82,15 +82,10 @@ class _TodoEditDialogState extends ConsumerState<TodoEditDialog> {
       ),
       actions: [
         TextButton(
-          style: ButtonStyle(
-            textStyle: WidgetStateProperty.all(
-              const TextStyle(color: Colors.black),
-            ),
-          ),
           onPressed: () {
             Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          child: const Text('Cancel', style: TextStyle(color: Colors.black)),
         ),
         TextButton(
           child: const Text('Save'),

@@ -124,13 +124,11 @@ class _CategoryDrawerEntry extends ConsumerWidget {
                       },
                     ),
                     TextButton(
-                      style: ButtonStyle(
-                        foregroundColor: WidgetStateProperty.all(Colors.red),
-                      ),
                       onPressed: () {
                         Navigator.pop(context, true);
                       },
-                      child: const Text('Delete'),
+                      child: const Text('Delete',
+                          style: TextStyle(color: Colors.red)),
                     ),
                   ],
                 );
