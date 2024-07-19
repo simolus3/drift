@@ -26,6 +26,9 @@ class AggregateFunctionInvocation extends Expression
   }) : nameToken = function;
 
   @override
+  bool get isAggregate => true;
+
+  @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitAggregateFunctionInvocation(this, arg);
   }

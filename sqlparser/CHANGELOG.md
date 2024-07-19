@@ -1,3 +1,9 @@
+## 0.37.1-dev
+
+- Refine nullability analysis for subquery expressions: Queries with aggregate
+  invocations are no longer considered nullable (the aggregate invocation had
+  to be a top-level expression before).
+
 ## 0.37.0
 
 - Add support for sqlite 3.46.0.

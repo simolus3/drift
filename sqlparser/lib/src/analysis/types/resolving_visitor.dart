@@ -66,36 +66,32 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitSubQuery(SubQuery e, TypeExpectation arg) {
+    // The query should return one column only, but this is not the right place
+    // to lint that. Just pick any column and resolve to that.
     final columnsOfQuery = e.select.resolvedColumns!;
     if (columnsOfQuery.isEmpty) {
       return super.visitSubQuery(e, arg);
     }
 
-    // The query should return one column only, but this is not the right place
-    // to lint that. Just pick any column and resolve to that.
     // The returned column is nullable (since it could be that the subquery does
     // not resolve to any row) if the expression is not an aggregate function.
+    // Aggregate functions with `GROUP BY` subqueries can also be nullable if
+    // no groups exist.
     final columnForExpr = columnsOfQuery.first;
-    final isAggregate = switch (columnForExpr.source) {
-      ExpressionColumn(expression: SqlInvocation(:final name)) => const {
-          'avg',
-          'count',
-          'group_concat',
-          'string_agg',
-          'max',
-          'min',
-          'sum',
-          'total',
-          'json_group_array',
-          'jsonb_group_array',
-          'json_group_object',
-          'jsonb_group_object',
-        }.contains(name.toLowerCase()),
+    final hasAggregate = switch (columnForExpr.source) {
+      ExpressionColumn(:final expression) =>
+        _HasAggregateSubExpressions().visit(expression, null) ?? false,
+      _ => false,
+    };
+    final hasGroupBy = switch (e.select) {
+      final SelectStatement select => select.groupBy != null,
       _ => false,
     };
 
+    final makeNullable = hasGroupBy || !hasAggregate;
+
     session._addRelation(
-        CopyTypeFrom(e, columnForExpr, makeNullable: !isAggregate));
+        CopyTypeFrom(e, columnForExpr, makeNullable: makeNullable));
     visitChildren(e, arg);
   }
 
@@ -926,5 +922,26 @@ class _ResultColumnVisitor extends RecursiveVisitor<void, void> {
   void visitDeleteStatement(DeleteStatement e, void arg) {
     _handleReturning(e);
     visitChildren(e, arg);
+  }
+}
+
+/// Visitor that returns true if any of the expressions visited is an aggregate
+/// invocation expression.
+class _HasAggregateSubExpressions extends RecursiveVisitor<void, bool> {
+  @override
+  bool? defaultNode(AstNode e, void arg) {
+    for (final child in e.childNodes) {
+      final result = visit(child, arg);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
+  @override
+  bool? visitExpressionInvocation(ExpressionInvocation e, void arg) {
+    return e.isAggregate;
   }
 }

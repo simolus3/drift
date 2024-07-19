@@ -16,7 +16,15 @@ abstract class SqlInvocation implements AstNode {
 }
 
 /// Interface for [SqlInvocation]s that are also expressions.
-abstract class ExpressionInvocation implements SqlInvocation, Expression {}
+abstract class ExpressionInvocation implements SqlInvocation, Expression {
+  /// Whether this function call is to an aggregate function, meaning that it
+  /// will combine multiple rows from the input relation into one.
+  ///
+  /// While [AggregateFunctionInvocation]s are always aggregates due to their
+  /// syntax, regular function expressions to known aggregate functions are
+  /// considered as well.
+  bool get isAggregate;
+}
 
 class FunctionExpression extends Expression
     with ReferenceOwner
@@ -30,6 +38,22 @@ class FunctionExpression extends Expression
   Token? nameToken;
 
   FunctionExpression({required this.name, required this.parameters});
+
+  @override
+  bool get isAggregate => const {
+        'avg',
+        'count',
+        'group_concat',
+        'string_agg',
+        'max',
+        'min',
+        'sum',
+        'total',
+        'json_group_array',
+        'jsonb_group_array',
+        'json_group_object',
+        'jsonb_group_object',
+      }.contains(name.toLowerCase());
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
