@@ -1,4 +1,4 @@
-## 0.37.1-dev
+## 0.37.1
 
 - Refine nullability analysis for subquery expressions: Queries with aggregate
   invocations are no longer considered nullable (the aggregate invocation had
