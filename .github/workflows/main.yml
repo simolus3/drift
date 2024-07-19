@@ -209,6 +209,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # We want to support the two latest stable Flutter versions
         flutter: [3.19, 3.22]
 
     steps:
