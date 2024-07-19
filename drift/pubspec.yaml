@@ -13,13 +13,13 @@ funding:
   - https://github.com/sponsors/simolus3
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   async: ^2.5.0
   convert: ^3.0.0
   collection: ^1.15.0
-  js: '>=0.6.3 <0.8.0'
+  js: ">=0.6.3 <0.8.0"
   meta: ^1.3.0
   stream_channel: ^2.1.0
   sqlite3: ^2.4.3
@@ -32,14 +32,14 @@ dev_dependencies:
   analyzer: ^6.4.1
   build_test: ^2.0.0
   build_runner_core: ^7.0.0
-  build_verify: ^3.0.0
+  build_verify: ^3.1.0
   build_web_compilers: ^4.0.3
   drift_dev: any
   drift_testcases:
     path: ../extras/integration_tests/drift_testcases
   http: ^1.2.1
   lints: ^3.0.0
-  uuid: ^4.0.0
+  uuid: ^4.4.0
   build_runner: ^2.0.0
   test: ^1.17.0
   mockito: ^5.4.3
@@ -47,4 +47,3 @@ dev_dependencies:
   shelf: ^1.3.0
   test_descriptor: ^2.0.1
   vm_service: ^14.0.0
-

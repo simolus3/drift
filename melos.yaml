@@ -2,40 +2,44 @@ name: drift
 repository: https://github.com/simolus3/drift
 
 packages:
- - docs
- - drift
- - drift_sqflite
- - drift_dev
- - drift_flutter
- - sqlparser
- - examples/*
- - examples/multi_package/*
- - extras/benchmarks
- - extras/drift_devtools_extension
- - extras/drift_mariadb
- - extras/drift_postgres
- - extras/encryption
- - extras/integration_tests/*
- - extras/plugin_example
- - extras/assets/*
+  - docs
+  - drift
+  - drift_sqflite
+  - drift_dev
+  - drift_flutter
+  - sqlparser
+  - examples/*
+  - examples/multi_package/*
+  - extras/benchmarks
+  - extras/drift_devtools_extension
+  - extras/drift_mariadb
+  - extras/drift_postgres
+  - extras/encryption
+  - extras/integration_tests/*
+  - extras/plugin_example
+  - extras/assets/*
 
 scripts:
+  downgrade:
+    run: dart pub downgrade
+    exec: { concurrency: 1 }
+
   check_format:
     run: dart format -o none --set-exit-if-changed .
 
   analyze:
     run: dart analyze --fatal-infos
-    exec: {concurrency: 1}
+    exec: { concurrency: 1 }
 
   build:
     run: dart run build_runner build --delete-conflicting-outputs
-    exec: {concurrency: 1}
+    exec: { concurrency: 1 }
     packageFilters:
       dependsOn: build_runner
 
   test:
     run: dart test
-    exec: {concurrency: 1}
+    exec: { concurrency: 1 }
     packageFilters:
       dependsOn: test
       ignore: drift_postgres # this is an integration test
