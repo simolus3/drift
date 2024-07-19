@@ -207,11 +207,16 @@ jobs:
           dart test
   test_flutter:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter: [3.19, 3.22]
+
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ matrix.flutter }}
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
@@ -220,6 +225,9 @@ jobs:
         shell: bash
       - name: Install dependencies in drift/example/app
         run: melos bootstrap --scope app
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+        working-directory: examples/app
       - run: flutter analyze
         working-directory: examples/app
       - run: flutter test
