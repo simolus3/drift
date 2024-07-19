@@ -231,7 +231,8 @@ String $_aliasNameGenerator(
 ///                   referencedItems.where((e) => e.product == item.id),
 ///               typedResults: items)
 ///         ];
-///       },
+///       },  // `explicitlyWatchedTables` is a list of tables which should be watched by the original query.
+///           explicitlyWatchedTables: [if (listings) db.listing],
 ///     );
 ///   },
 /// ```
@@ -292,11 +293,11 @@ class PrefetchHooks {
   /// The database instance
   final GeneratedDatabase db;
 
-  /// A flag to indicate if the prefetches should be run inside a transaction.
-  final bool inTransaction;
-
   /// This callback is used to add joins to the query before it is executed.
   late final StateTransformer withJoins;
+
+  /// Tables which should be watched explicitly by the original query.
+  final List<TableInfo> explicitlyWatchedTables;
 
   /// A function which will return list of streams which for each prefetch data source.
   final List<Stream<List<MultiTypedResultEntry>>> Function(List<TypedResult>,
@@ -306,61 +307,32 @@ class PrefetchHooks {
   PrefetchHooks(
       {required this.db,
       StateTransformer? addJoins,
-      this.inTransaction = true,
-      List<TableInfo> explicitlyWatchedTables = const [],
+      this.explicitlyWatchedTables = const [],
       this.prefetchedDataStreamsCallback}) {
     withJoins = addJoins ?? _defaultStateTransformer;
-    _explicitlyWatchedTables = explicitlyWatchedTables;
-  }
-
-  late final List<TableInfo> _explicitlyWatchedTables;
-
-  /// Tables which should be watched explicitly by the original query.
-  List<TableInfo> get explicitlyWatchedTable {
-    return inTransaction ? _explicitlyWatchedTables : [];
   }
 
   /// Internal function for injecting the prefetched data into the TypedResult object.
-  ///
-  /// When [watch] is true, the streams will be watched and the TypedResult object will be updated when the prefetched data changes.
-  /// Otherwise, the streams of prefetched data will only be read once.
   Stream<List<TypedResult>> _addPrefetchedDataToStream(
-      Stream<List<TypedResult>> itemStream,
-      {required bool watch}) {
+      Stream<List<TypedResult>> itemStream) {
     /// If this table contains no reverse references, we can just return the stream as is.
     if (prefetchedDataStreamsCallback == null) {
       return itemStream;
     }
 
     return itemStream.asyncMap((rows) async {
-      /// There are 3 possible scenarios here:
-      /// 1) We aren't watching this query, we just want to get the data once.
-      /// 2) We are watching this query, but want to run the prefetches inside a transaction.
-      /// 3) We are watching this query, and we don't mind if the prefetches are run outside of a transaction.
-
-      /// If we are in scenario 1 or 2, we need to run the prefetches as a `get` in a transaction.
-      /// The trigger for changes under scenario 2 is the manual table watches added to the original query by
-      if (!watch || inTransaction) {
-        final streams = prefetchedDataStreamsCallback!(rows, watch: false);
-        return await db.transaction(
-          () async {
-            final prefetches = await streams.mapAsyncAndAwait((e) => e.first);
-            return Stream.value(_addPrefetchedDataToRows(rows, prefetches));
-          },
-        );
-      } else {
-        /// In scenario 3, we can just run the prefetches as a `watch` operation.
-        final streams = prefetchedDataStreamsCallback!(rows, watch: true);
-        if (streams.isEmpty) {
-          return Stream.value(rows);
-        }
-
-        /// Combine all the streams of prefetched data with the stream of the original data into a single stream
-        return CombineLatestStream(streams, (prefetches) {
+      /// Build the streams of prefetched data
+      /// These query streams don't watch the database, only the original query does.
+      /// Updates to any prefetched tables will trigger the original query, and all prefetched queries will be rerun.
+      /// All queries will be run in a single transaction to avoid any race conditions.
+      final streams = prefetchedDataStreamsCallback!(rows, watch: false);
+      return await db.transaction(
+        () async {
+          final prefetches = await streams.mapAsyncAndAwait((e) => e.first);
           return _addPrefetchedDataToRows(rows, prefetches);
-        });
-      }
-    }).asyncExpand((event) => event);
+        },
+      );
+    });
   }
 
   /// Helper function to insert the prefetched data into the TypedResult objects.
@@ -380,10 +352,9 @@ class PrefetchHooks {
   }
 
   /// Return a copy of a stream of result which has the prefetched data added to the TypedResult objects.
-  /// The prefetched data will be watched so that the stream will update when the prefetched data changes.
   Stream<List<TypedResult>> addPrefetchedDataToStream(
       Stream<List<TypedResult>> itemStream) {
-    return _addPrefetchedDataToStream(itemStream, watch: true);
+    return _addPrefetchedDataToStream(itemStream);
   }
 
   /// Return a copy of the result with the prefetched data added to the TypedResult objects.
@@ -391,7 +362,7 @@ class PrefetchHooks {
     /// When doing a simple `get` operation, the streams in `prefetchedDataStreams` will only have a single item.
     /// They will never be updated with a new value.
     /// This allows us to use the exact same code for both streams and lists, but we will only ever return the first item.
-    return _addPrefetchedDataToStream(Stream.value(list), watch: false).first;
+    return _addPrefetchedDataToStream(Stream.value(list)).first;
   }
 }
 

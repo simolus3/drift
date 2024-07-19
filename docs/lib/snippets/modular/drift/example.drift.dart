@@ -363,7 +363,7 @@ class $TodosTableManager extends i0.RootTableManager<
     $TodosUpdateCompanionBuilder,
     (i1.Todo, i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo>),
     i1.Todo,
-    i0.PrefetchHooks Function({bool category, bool inTransaction})> {
+    i0.PrefetchHooks Function({bool category})> {
   $TodosTableManager(i0.GeneratedDatabase db, i1.Todos table)
       : super(i0.TableManagerState(
           db: db,
@@ -413,7 +413,7 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     $TodosUpdateCompanionBuilder,
     (i1.Todo, i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo>),
     i1.Todo,
-    i0.PrefetchHooks Function({bool category, bool inTransaction})>;
+    i0.PrefetchHooks Function({bool category})>;
 
 class Categories extends i0.Table with i0.TableInfo<Categories, i1.Category> {
   @override

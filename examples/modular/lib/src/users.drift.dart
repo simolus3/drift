@@ -769,8 +769,7 @@ class $FollowsTableManager extends i0.RootTableManager<
     $FollowsUpdateCompanionBuilder,
     (i1.Follow, i0.BaseReferences<i0.GeneratedDatabase, i1.Follows, i1.Follow>),
     i1.Follow,
-    i0.PrefetchHooks Function(
-        {bool followed, bool follower, bool inTransaction})> {
+    i0.PrefetchHooks Function({bool followed, bool follower})> {
   $FollowsTableManager(i0.GeneratedDatabase db, i1.Follows table)
       : super(i0.TableManagerState(
           db: db,
@@ -816,8 +815,7 @@ typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
     $FollowsUpdateCompanionBuilder,
     (i1.Follow, i0.BaseReferences<i0.GeneratedDatabase, i1.Follows, i1.Follow>),
     i1.Follow,
-    i0.PrefetchHooks Function(
-        {bool followed, bool follower, bool inTransaction})>;
+    i0.PrefetchHooks Function({bool followed, bool follower})>;
 
 class PopularUser extends i0.DataClass {
   final int id;

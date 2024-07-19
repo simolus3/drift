@@ -231,10 +231,9 @@ class _ManagerCodeTemplates {
         prefetchHooksCallback: ${relations.isEmpty || _scope.generationOptions.isModular ? 'null' : """
         (${"{${relations.map(
                   (e) => "${e.fieldName} = false",
-                ).join(",")}, bool inTransaction = true}"}){
+                ).join(",")}}"}){
           return ${leaf.drift("PrefetchHooks")}(
             db: db,
-            inTransaction: inTransaction,
             explicitlyWatchedTables: [
              ${reverseRelations.map((relation) {
                 return "if (${relation.fieldName}) db.${relation.referencedTable.dbGetterName}";
@@ -476,7 +475,7 @@ class _ManagerCodeTemplates {
       required List<_Relation> relations,
       required TextEmitter leaf,
       required String dbClassName}) {
-    return "${leaf.drift("PrefetchHooks")} Function(${relations.isEmpty ? '' : '{${relations.map((e) => 'bool ${e.fieldName}').join(',')} ,bool inTransaction}'})";
+    return "${leaf.drift("PrefetchHooks")} Function(${relations.isEmpty ? '' : '{${relations.map((e) => 'bool ${e.fieldName}').join(',')}}'})";
   }
 
   /// Name of the class which is used to represent a rows references

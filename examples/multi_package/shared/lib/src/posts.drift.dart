@@ -278,7 +278,7 @@ class $PostsTableManager extends i0.RootTableManager<
     $PostsUpdateCompanionBuilder,
     (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
     i1.Post,
-    i0.PrefetchHooks Function({bool author, bool inTransaction})> {
+    i0.PrefetchHooks Function({bool author})> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
       : super(i0.TableManagerState(
           db: db,
@@ -324,4 +324,4 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     $PostsUpdateCompanionBuilder,
     (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
     i1.Post,
-    i0.PrefetchHooks Function({bool author, bool inTransaction})>;
+    i0.PrefetchHooks Function({bool author})>;

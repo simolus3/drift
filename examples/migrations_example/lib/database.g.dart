@@ -1059,8 +1059,7 @@ class $$UsersTableTableManager extends RootTableManager<
     $$UsersTableUpdateCompanionBuilder,
     (User, $$UsersTableReferences),
     User,
-    PrefetchHooks Function(
-        {bool nextUser, bool groupsRefs, bool inTransaction})> {
+    PrefetchHooks Function({bool nextUser, bool groupsRefs})> {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
       : super(TableManagerState(
           db: db,
@@ -1097,13 +1096,9 @@ class $$UsersTableTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $$UsersTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: (
-              {nextUser = false,
-              groupsRefs = false,
-              bool inTransaction = true}) {
+          prefetchHooksCallback: ({nextUser = false, groupsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              inTransaction: inTransaction,
               explicitlyWatchedTables: [if (groupsRefs) db.groups],
               addJoins: <
                   T extends TableManagerState<
@@ -1160,8 +1155,7 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     $$UsersTableUpdateCompanionBuilder,
     (User, $$UsersTableReferences),
     User,
-    PrefetchHooks Function(
-        {bool nextUser, bool groupsRefs, bool inTransaction})>;
+    PrefetchHooks Function({bool nextUser, bool groupsRefs})>;
 typedef $GroupsCreateCompanionBuilder = GroupsCompanion Function({
   Value<int> id,
   required String title,
@@ -1263,7 +1257,7 @@ class $GroupsTableManager extends RootTableManager<
     $GroupsUpdateCompanionBuilder,
     (Group, $GroupsReferences),
     Group,
-    PrefetchHooks Function({bool owner, bool inTransaction})> {
+    PrefetchHooks Function({bool owner})> {
   $GroupsTableManager(_$Database db, Groups table)
       : super(TableManagerState(
           db: db,
@@ -1297,10 +1291,9 @@ class $GroupsTableManager extends RootTableManager<
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), $GroupsReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({owner = false, bool inTransaction = true}) {
+          prefetchHooksCallback: ({owner = false}) {
             return PrefetchHooks(
               db: db,
-              inTransaction: inTransaction,
               explicitlyWatchedTables: [],
               addJoins: <
                   T extends TableManagerState<
@@ -1343,7 +1336,7 @@ typedef $GroupsProcessedTableManager = ProcessedTableManager<
     $GroupsUpdateCompanionBuilder,
     (Group, $GroupsReferences),
     Group,
-    PrefetchHooks Function({bool owner, bool inTransaction})>;
+    PrefetchHooks Function({bool owner})>;
 typedef $NotesCreateCompanionBuilder = NotesCompanion Function({
   required String title,
   required String content,

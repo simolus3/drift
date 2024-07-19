@@ -316,17 +316,6 @@ void main() {
     expect(await filteredListingWithStore.get(), hasLength(1));
 
     // When filters have joins and we select a referenced field with a join, they should be combined
-    final listingWithStoreAndProductQ = db.managers.listing
-        .filter((f) => f.store.name("Walmart"))
-        .withReferences((o) => o(store: true, inTransaction: false));
-    final stateWithJoinsQ = listingWithStoreAndProductQ.$state.prefetchHooks
-        .withJoins(listingWithStoreAndProductQ.$state);
-    expect(stateWithJoinsQ.joinBuilders, hasLength(1));
-    for (final (listing, refs) in await listingWithStoreAndProductQ.get()) {
-      expect(refs.store?.prefetchedData, isNotNull);
-    }
-
-    // When filters have joins and we select a referenced field with a join, they should be combined
     final listingWithStoreAndProduct = db.managers.listing
         .filter((f) => f.store.name("Walmart"))
         .withReferences((o) => o(store: true));
@@ -345,14 +334,9 @@ void main() {
     }
 
     final prductWuthListingsStream = db.managers.product
-        .withReferences((o) => o(listings: true, inTransaction: true))
+        .withReferences((o) => o(listings: true))
         .watch()
         .map((event) => event.map((e) => e.$2.listings));
     expect(prductWuthListingsStream, emitsInOrder([isNotEmpty]));
-    final prductWuthListingsStreamT = db.managers.product
-        .withReferences((o) => o(listings: true, inTransaction: false))
-        .watch()
-        .map((event) => event.map((e) => e.$2.listings));
-    expect(prductWuthListingsStreamT, emitsInOrder([isNotEmpty]));
   });
 }

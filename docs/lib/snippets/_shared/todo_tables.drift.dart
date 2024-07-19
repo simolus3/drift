@@ -424,7 +424,7 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
       i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
     ),
     i1.TodoItem,
-    i0.PrefetchHooks Function({bool category, bool inTransaction})> {
+    i0.PrefetchHooks Function({bool category})> {
   $$TodoItemsTableTableManager(
       i0.GeneratedDatabase db, i1.$TodoItemsTable table)
       : super(i0.TableManagerState(
@@ -482,7 +482,7 @@ typedef $$TodoItemsTableProcessedTableManager = i0.ProcessedTableManager<
       i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
     ),
     i1.TodoItem,
-    i0.PrefetchHooks Function({bool category, bool inTransaction})>;
+    i0.PrefetchHooks Function({bool category})>;
 
 class $CategoriesTable extends i2.Categories
     with i0.TableInfo<$CategoriesTable, i1.Category> {
