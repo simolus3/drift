@@ -268,6 +268,17 @@ void main() {
           'SELECT (SELECT COUNT(*) == 0 FROM demo GROUP BY id);'),
       const ResolvedType.bool(nullable: true),
     );
+
+    expect(
+      resolveResultColumn('SELECT (SELECT IFNULL(MIN(id), 0) FROM demo);'),
+      const ResolvedType(type: BasicType.int, nullable: false),
+    );
+
+    expect(
+      resolveResultColumn(
+          'SELECT (SELECT IFNULL(CAST(SUM(id) AS INT), 0) FROM demo);'),
+      const ResolvedType(type: BasicType.int, nullable: false),
+    );
   });
 
   test('infers types for dart placeholders', () {

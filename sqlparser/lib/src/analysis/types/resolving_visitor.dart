@@ -942,6 +942,12 @@ class _HasAggregateSubExpressions extends RecursiveVisitor<void, bool> {
 
   @override
   bool? visitExpressionInvocation(ExpressionInvocation e, void arg) {
-    return e.isAggregate;
+    if (e.isAggregate) {
+      return true;
+    }
+
+    // Don't return false if not aggregate, an argument could be an aggregate
+    // function.
+    return defaultNode(e, arg);
   }
 }
