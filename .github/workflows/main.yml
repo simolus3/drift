@@ -228,6 +228,12 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
         working-directory: examples/app
+      - name: Test CLI
+        run: |
+          dart run drift_dev schema dump lib/database/database.dart drift_schemas/
+          dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+          dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
+        working-directory: examples/app
       - run: flutter analyze
         working-directory: examples/app
       - run: flutter test
