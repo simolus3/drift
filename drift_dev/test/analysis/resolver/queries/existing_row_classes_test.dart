@@ -30,6 +30,7 @@ class MyRow {
     state.expectNoErrors();
     final query = file.analyzedElements.single as DefinedSqlQuery;
     expect(query.resultClassName, isNull);
+    // ignore: deprecated_member_use
     expect(query.existingDartType?.type.getDisplayString(withNullability: true),
         'MyRow');
   });
@@ -56,6 +57,7 @@ class MyRow {
     state.expectNoErrors();
     final query = file.analyzedElements.single as DefinedSqlQuery;
     expect(query.resultClassName, isNull);
+    // ignore: deprecated_member_use
     expect(query.existingDartType?.type.getDisplayString(withNullability: true),
         'MyRow');
 

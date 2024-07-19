@@ -123,6 +123,7 @@ CREATE TABLE b (
             'expression',
             contains('EnumIndexConverter<Fruits>'),
           )
+          // ignore: deprecated_member_use
           .having((e) => e.dartType.getDisplayString(withNullability: true),
               'dartType', 'Fruits'),
     );
@@ -154,6 +155,7 @@ CREATE TABLE b (
             'expression',
             contains('EnumNameConverter<Fruits>'),
           )
+          // ignore: deprecated_member_use
           .having((e) => e.dartType.getDisplayString(withNullability: true),
               'dartType', 'Fruits'),
     );
