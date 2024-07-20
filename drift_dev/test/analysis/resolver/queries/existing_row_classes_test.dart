@@ -30,7 +30,9 @@ class MyRow {
     state.expectNoErrors();
     final query = file.analyzedElements.single as DefinedSqlQuery;
     expect(query.resultClassName, isNull);
-    expect(query.existingDartType?.type.getDisplayString(), 'MyRow');
+    // ignore: deprecated_member_use
+    expect(query.existingDartType?.type.getDisplayString(withNullability: true),
+        'MyRow');
   });
 
   test('can use named constructors', () async {
@@ -55,7 +57,9 @@ class MyRow {
     state.expectNoErrors();
     final query = file.analyzedElements.single as DefinedSqlQuery;
     expect(query.resultClassName, isNull);
-    expect(query.existingDartType?.type.getDisplayString(), 'MyRow');
+    // ignore: deprecated_member_use
+    expect(query.existingDartType?.type.getDisplayString(withNullability: true),
+        'MyRow');
 
     final resolvedQuery = file.fileAnalysis!.resolvedQueries.values.single;
     expect(

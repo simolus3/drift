@@ -207,11 +207,17 @@ jobs:
           dart test
   test_flutter:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # We want to support the two latest stable Flutter versions
+        flutter: [3.19, 3.22]
+
     steps:
       - uses: actions/checkout@v4
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ matrix.flutter }}
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
@@ -220,6 +226,15 @@ jobs:
         shell: bash
       - name: Install dependencies in drift/example/app
         run: melos bootstrap --scope app
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+        working-directory: examples/app
+      - name: Test CLI
+        run: |
+          dart run drift_dev schema dump lib/database/database.dart drift_schemas/
+          dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+          dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
+        working-directory: examples/app
       - run: flutter analyze
         working-directory: examples/app
       - run: flutter test
