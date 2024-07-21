@@ -57,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
 
 class OpenFlutter {
 // #docregion flutter
-  DatabaseConnection _openConnection() {
+  static DatabaseConnection _openConnection() {
     // `driftDatabase` from `package:drift_flutter` stores the database in
     // `getApplicationDocumentsDirectory()`.
     return driftDatabase(name: 'my_database');
@@ -67,7 +67,7 @@ class OpenFlutter {
 
 class OpenPostgres {
 // #docregion postgres
-  QueryExecutor _openConnection() {
+  static QueryExecutor _openConnection() {
     return PgDatabase(
       endpoint: pg.Endpoint(
         host: 'localhost',
@@ -82,7 +82,7 @@ class OpenPostgres {
 
 class OpenSqlite3 {
 // #docregion sqlite3
-  QueryExecutor _openConnection() {
+  static QueryExecutor _openConnection() {
     return NativeDatabase.createInBackground(File('path/to/your/database'));
   }
 }
