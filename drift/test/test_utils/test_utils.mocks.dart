@@ -268,8 +268,8 @@ class MockSupportedTransactionDelegate extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
   @override
-  _i5.Stream<List<Map<String, Object?>>> registerStream(
-    _i7.QueryStreamFetcher? fetcher,
+  _i5.Stream<T> registerStream<T>(
+    _i7.QueryStreamFetcher<T>? fetcher,
     _i6.DatabaseConnectionUser? database,
   ) =>
       (super.noSuchMethod(
@@ -280,10 +280,9 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
             database,
           ],
         ),
-        returnValue: _i5.Stream<List<Map<String, Object?>>>.empty(),
-        returnValueForMissingStub:
-            _i5.Stream<List<Map<String, Object?>>>.empty(),
-      ) as _i5.Stream<List<Map<String, Object?>>>);
+        returnValue: _i5.Stream<T>.empty(),
+        returnValueForMissingStub: _i5.Stream<T>.empty(),
+      ) as _i5.Stream<T>);
 
   @override
   _i5.Stream<Set<_i6.TableUpdate>> updatesForSync(
@@ -308,7 +307,7 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
 
   @override
   void markAsClosed(
-    _i7.QueryStream? stream,
+    _i7.QueryStream<dynamic>? stream,
     void Function()? whenRemoved,
   ) =>
       super.noSuchMethod(
@@ -323,7 +322,7 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
       );
 
   @override
-  void markAsOpened(_i7.QueryStream? stream) => super.noSuchMethod(
+  void markAsOpened(_i7.QueryStream<dynamic>? stream) => super.noSuchMethod(
         Invocation.method(
           #markAsOpened,
           [stream],

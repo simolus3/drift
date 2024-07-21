@@ -58,8 +58,8 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   }
 
   @override
-  Stream<List<Map<String, Object?>>> registerStream(
-      QueryStreamFetcher fetcher, DatabaseConnectionUser database) {
+  Stream<T> registerStream<T>(
+      QueryStreamFetcher<T> fetcher, DatabaseConnectionUser database) {
     return _delegateStream((store) => store.registerStream(fetcher, database));
   }
 

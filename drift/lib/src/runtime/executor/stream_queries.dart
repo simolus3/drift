@@ -16,7 +16,7 @@ const _listEquality = ListEquality<Object?>();
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
 @internal
-class QueryStreamFetcher {
+class QueryStreamFetcher<Rows> {
   /// Table updates that will affect this stream.
   ///
   /// If any of these tables changes, the stream must fetch its data again.
@@ -24,13 +24,20 @@ class QueryStreamFetcher {
 
   /// Key that can be used to check whether two fetchers will yield the same
   /// result when operating on the same data.
+  ///
+  /// When not null, [Rows] must be `List<Map<String, Object?>>` (the most
+  /// common form used for all queries except for manager queries with
+  /// prefetches).
   final StreamKey? key;
 
   /// Function that asynchronously fetches the latest set of data.
-  final Future<List<Map<String, Object?>>> Function() fetchData;
+  final Future<Rows> Function() fetchData;
 
-  QueryStreamFetcher(
-      {required this.readsFrom, this.key, required this.fetchData});
+  QueryStreamFetcher({
+    required this.readsFrom,
+    this.key,
+    required this.fetchData,
+  });
 }
 
 /// Key that uniquely identifies a select statement. If two keys created from
@@ -82,20 +89,20 @@ class StreamQueryStore {
       StreamController.broadcast(sync: true);
 
   /// Creates a new stream from the select statement.
-  Stream<List<Map<String, Object?>>> registerStream(
-      QueryStreamFetcher fetcher, DatabaseConnectionUser database) {
+  Stream<T> registerStream<T>(
+      QueryStreamFetcher<T> fetcher, DatabaseConnectionUser database) {
     final key = fetcher.key;
 
     if (key != null) {
       final cached = _activeKeyStreams[key];
       if (cached != null) {
-        return cached._stream;
+        return cached._stream as Stream<T>;
       }
     }
 
     // no cached instance found, create a new stream and register it so later
     // requests with the same key can be cached.
-    final stream = QueryStream(fetcher, this, database);
+    final stream = QueryStream<T>(fetcher, this, database);
     // todo this adds the stream to a map, where it will only be removed when
     // somebody listens to it and later calls .cancel(). Failing to do so will
     // cause a memory leak. Is there any way we can work around it? Perhaps a
@@ -175,9 +182,7 @@ class StreamQueryStore {
   }
 }
 
-typedef _Row = List<Map<String, Object?>>;
-
-class QueryStream {
+class QueryStream<Rows> {
   final QueryStreamFetcher _fetcher;
   final StreamQueryStore _store;
   final DatabaseConnectionUser _database;
@@ -189,7 +194,7 @@ class QueryStream {
 
   // We're using a Stream.multi to implement a broadcast-ish stream with per-
   // subscription pauses.
-  late final Stream<_Row> _stream = Stream.multi(
+  late final Stream<Rows> _stream = Stream.multi(
     (listener) {
       final queryListener = _QueryStreamListener(listener);
 
@@ -352,14 +357,14 @@ class QueryStream {
   }
 }
 
-class _QueryStreamListener {
-  final MultiStreamController<_Row> controller;
-  _Row? lastEvent;
+class _QueryStreamListener<Rows> {
+  final MultiStreamController<Rows> controller;
+  Rows? lastEvent;
   bool isPaused = false;
 
   _QueryStreamListener(this.controller);
 
-  void add(_Row row) {
+  void add(Rows row) {
     // Don't emit events that have already been dispatched to this listener.
     if (!identical(row, lastEvent)) {
       lastEvent = row;
