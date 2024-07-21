@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
-import 'package:drift/src/utils/async.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
@@ -687,9 +686,8 @@ abstract class BaseTableManager<
         .withJoins($state)
         .copyWith(distinct: distinct, limit: limit, offset: offset)
         .buildSelectStatement()
-
-        /// The prefetch queries don't watch the database
-        /// We need to explicitly watch the tables that are used in the prefetch queries
+        // The prefetch queries don't watch the database
+        // We need to explicitly watch the tables that are used in the prefetch queries
         .watchWithAdditionalTables(
             $state.prefetchHooks.explicitlyWatchedTables);
 
