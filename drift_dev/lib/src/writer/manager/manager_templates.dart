@@ -267,7 +267,7 @@ class _ManagerCodeTemplates {
                 return state;
               }
 """},
-            prefetchedDataStreamsCallback: (items, {required bool watch}) {
+            getPrefetchedDataCallback: (items) async {
             return [
             ${reverseRelations.map((relation) {
                 final referencesClassName = rowReferencesClassName(
@@ -277,8 +277,7 @@ class _ManagerCodeTemplates {
                     leaf: leaf,
                     withTypeArgs: false);
                 return """
-          if (${relation.fieldName}) ${leaf.drift("\$_streamPrefetched")}(
-                  watch: watch,
+          if (${relation.fieldName}) await ${leaf.drift("\$_getPrefetchedData")}(
                   currentTable: table,
                   referencedTable:
                       $referencesClassName._${relation.fieldName}Table(db),

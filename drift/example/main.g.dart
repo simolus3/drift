@@ -833,11 +833,10 @@ class $$TodoCategoriesTableTableManager extends RootTableManager<
               db: db,
               explicitlyWatchedTables: [if (todoItemsRefs) db.todoItems],
               addJoins: null,
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [
                   if (todoItemsRefs)
-                    $_streamPrefetched(
-                        watch: watch,
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable: $$TodoCategoriesTableReferences
                             ._todoItemsRefsTable(db),
@@ -1049,7 +1048,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
 
                 return state;
               },
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );

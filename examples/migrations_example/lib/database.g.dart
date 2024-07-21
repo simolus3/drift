@@ -1124,11 +1124,10 @@ class $$UsersTableTableManager extends RootTableManager<
 
                 return state;
               },
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [
                   if (groupsRefs)
-                    $_streamPrefetched(
-                        watch: watch,
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $$UsersTableReferences._groupsRefsTable(db),
@@ -1318,7 +1317,7 @@ class $GroupsTableManager extends RootTableManager<
 
                 return state;
               },
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );

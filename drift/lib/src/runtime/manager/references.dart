@@ -301,14 +301,14 @@ class PrefetchHooks {
 
   /// A function which will return list of references for each prefetch data source.
   final Future<List<List<MultiTypedResultEntry>>> Function(List<TypedResult>)?
-      prefetchedDataCallback;
+      getPrefetchedDataCallback;
 
   /// Create a [PrefetchHooks] object
   PrefetchHooks(
       {required this.db,
       StateTransformer? addJoins,
       this.explicitlyWatchedTables = const [],
-      this.prefetchedDataCallback}) {
+      this.getPrefetchedDataCallback}) {
     withJoins = addJoins ?? _defaultStateTransformer;
   }
 
@@ -316,12 +316,12 @@ class PrefetchHooks {
   Stream<List<TypedResult>> _addPrefetchedDataToStream(
       Stream<List<TypedResult>> itemStream) {
     /// If this table contains no reverse references, we can just return the stream as is.
-    if (prefetchedDataCallback == null) {
+    if (getPrefetchedDataCallback == null) {
       return itemStream;
     }
 
     return itemStream.asyncMap((rows) async {
-      final prefetchedData = await prefetchedDataCallback!(rows);
+      final prefetchedData = await getPrefetchedDataCallback!(rows);
       return await db.transaction(
         () async {
           return _addPrefetchedDataToRows(rows, prefetchedData);
@@ -493,7 +493,7 @@ class MultiTypedResultEntry<T> {
 ///
 /// This function is used by the generated code and should not be used directly.
 // ignore: non_constant_identifier_names
-Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_prefetchedReference<
+Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
         $CurrentDataclass, $CurrentTable extends Table, $ReferencedDataclass>(
     {required ProcessedTableManager<
                 dynamic,

@@ -3591,11 +3591,10 @@ class $$CategoriesTableTableManager extends RootTableManager<
               db: db,
               explicitlyWatchedTables: [if (todos) db.todosTable],
               addJoins: null,
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [
                   if (todos)
-                    $_streamPrefetched(
-                        watch: watch,
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $$CategoriesTableReferences._todosTable(db),
@@ -3831,7 +3830,7 @@ class $$TodosTableTableTableManager extends RootTableManager<
 
                 return state;
               },
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );
@@ -4749,11 +4748,10 @@ class $$DepartmentTableTableManager extends RootTableManager<
               db: db,
               explicitlyWatchedTables: [if (productRefs) db.product],
               addJoins: null,
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [
                   if (productRefs)
-                    $_streamPrefetched(
-                        watch: watch,
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $$DepartmentTableReferences._productRefsTable(db),
@@ -4963,11 +4961,10 @@ class $$ProductTableTableManager extends RootTableManager<
 
                 return state;
               },
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [
                   if (listings)
-                    $_streamPrefetched(
-                        watch: watch,
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $$ProductTableReferences._listingsTable(db),
@@ -5107,11 +5104,10 @@ class $$StoreTableTableManager extends RootTableManager<
               db: db,
               explicitlyWatchedTables: [if (listings) db.listing],
               addJoins: null,
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [
                   if (listings)
-                    $_streamPrefetched(
-                        watch: watch,
+                    await $_getPrefetchedData(
                         currentTable: table,
                         referencedTable:
                             $$StoreTableReferences._listingsTable(db),
@@ -5343,7 +5339,7 @@ class $$ListingTableTableManager extends RootTableManager<
 
                 return state;
               },
-              prefetchedDataStreamsCallback: (items, {required bool watch}) {
+              getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );
