@@ -277,7 +277,7 @@ class TestBackend extends DriftBackend {
   }
 }
 
-class TestImportManager extends ImportManager {
+class TestImportManager implements ImportManager {
   final Map<Uri, String> importAliases = {};
 
   @override

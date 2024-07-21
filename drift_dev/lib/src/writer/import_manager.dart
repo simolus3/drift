@@ -4,11 +4,11 @@ import 'package:path/path.dart' show url;
 import '../utils/string_escaper.dart';
 import 'writer.dart';
 
-abstract class ImportManager {
+abstract interface class ImportManager {
   String? prefixFor(Uri definitionUri, String elementName);
 }
 
-class ImportManagerForPartFiles extends ImportManager {
+class ImportManagerForPartFiles implements ImportManager {
   final LibraryElement mainLibrary;
   final Map<String, Map<String, Element>> _namedImports = {};
 
@@ -64,7 +64,9 @@ class ImportManagerForPartFiles extends ImportManager {
   }
 }
 
-class NullImportManager extends ImportManager {
+class NullImportManager implements ImportManager {
+  const NullImportManager();
+
   @override
   String? prefixFor(Uri definitionUri, String elementName) {
     return null;
@@ -73,7 +75,7 @@ class NullImportManager extends ImportManager {
 
 /// An [ImportManager] for generation contexts that create standalone Dart
 /// libraries capable of managing their own imports.
-class LibraryImportManager extends ImportManager {
+class LibraryImportManager implements ImportManager {
   static final _dartCore = Uri.parse('dart:core');
 
   final Map<Uri, String> _importAliases = {};
