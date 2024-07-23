@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 
 /// A query executor for drift that delegates work to multiple executors.
-abstract class MultiExecutor extends QueryExecutor {
+sealed class MultiExecutor extends QueryExecutor {
   /// Creates a query executor that will delegate work to different executors.
   ///
   /// Updating statements, or statements that run in a transaction, will be run
@@ -25,8 +25,6 @@ abstract class MultiExecutor extends QueryExecutor {
     required QueryExecutor write,
   }) =>
       _MultiExecutorImpl(reads: reads, write: write);
-
-  MultiExecutor._();
 }
 
 class _PendingSelect {
@@ -89,7 +87,7 @@ class _QueryExecutorPool {
   }
 }
 
-class _MultiExecutorImpl extends MultiExecutor {
+class _MultiExecutorImpl implements MultiExecutor {
   final _QueryExecutorPool _queryExecutorPool;
   final QueryExecutor _write;
 
@@ -100,8 +98,7 @@ class _MultiExecutorImpl extends MultiExecutor {
     required List<QueryExecutor> reads,
     required QueryExecutor write,
   })  : _queryExecutorPool = _QueryExecutorPool(reads),
-        _write = write,
-        super._();
+        _write = write;
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) async {
@@ -141,8 +138,14 @@ class _MultiExecutorImpl extends MultiExecutor {
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
-          String statement, List<Object?> args) =>
-      _queryExecutorPool.runSelect(statement, args);
+      String statement, List<Object?> args) {
+    // TODO: This is horrible, fix with https://github.com/simolus3/drift/issues/3107
+    if (statement.contains('RETURNING')) {
+      return _write.runSelect(statement, args);
+    } else {
+      return _queryExecutorPool.runSelect(statement, args);
+    }
+  }
 
   @override
   Future<int> runUpdate(String statement, List<Object?> args) =>

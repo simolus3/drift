@@ -9,6 +9,8 @@ aliases:
   - docs/other-engines/vm/
 ---
 
+{% assign snippets = "package:drift_docs/snippets/platforms/vm.dart.excerpt.json" | readString | json_decode %}
+
 ## Supported platforms
 
 The `drift/native.dart` library uses the `sqlite3` package to send queries.
@@ -19,70 +21,58 @@ If you're shipping apps for Windows and Linux, it is recommended that you bundle
 `sqlite3.so` and `sqlite3.dll` file with your app. You can then make `drift`
 support your setup by running this code before opening the database:
 
-```dart
-import 'dart:ffi';
-import 'dart:io';
-import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3/open.dart';
+{% include "blocks/snippet" snippets = snippets name = "setup" %}
 
-void main() {
-  open.overrideFor(OperatingSystem.linux, _openOnLinux);
+For Flutter apps, using the `drift_flutter` package as suggested in the
+[setup instructions]({{ '../setup.md' | pageUrl }}) takes care of these steps.
 
-  final db = sqlite3.openInMemory();
-  db.dispose();
-}
+## Drift-managed background isolates
 
-DynamicLibrary _openOnLinux() {
-  final script = File(Platform.script.toFilePath());
-  final libraryNextToScript = File('${script.path}/sqlite3.so');
-  return DynamicLibrary.open(libraryNextToScript.path);
-}
-// _openOnWindows could be implemented similarly by opening `sqlite3.dll`
+Being a C library, SQLite runs SQL statements synchronously, blocking the
+thread issuing a statement for IO or computations necessary to run statements.
+Especially in mobile apps, this blocking nature means that the database should
+not be accessed on the UI isolate directly, as this can cause dropped frames
+or other UI issues.
 
-```
+When using `NativeDatabase.createInBackground` instead of the raw `NativeDatbase`
+constructor, drift will set up a background isolate responsible for hosting the
+database:
 
-## Migrating from moor_flutter to `drift/native` {#migrating-from-moor_flutter-to-moor-ffi}
+{% include "blocks/snippet" snippets = snippets name = "background-simple" %}
 
-First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
-add both the `drift` and `sqlite3_flutter_libs` dependencies:
-{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+You can use the returned `QueryExecutor` with the constructor of your database
+class. This means that the usage of the database doesn't change at all, only the
+setup code needs to be adapted to use a background isolate.
 
-```yaml
-dependencies:
- drift: ^{{ versions.drift }}
- sqlite3_flutter_libs:
- sqflite: ^1.1.7 # Still used to obtain the database location
-dev_dependencies:
- drift_dev: ^{{ versions.drift_dev }}
-```
+### Using multiple read isolates
 
-Adapt your imports:
+Using a single background isolate to host the database is sufficient for most
+applications. In some cases though, it may be beneficial to use more than one
+background isolate for the database:
 
-  - In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
-    with `package:drift/native.dart`.
-  - In all other files where you might have imported `moor_flutter`, just import `package:drift/drift.dart`.
+1. Using multiple isolates can improve startup performance of your application
+   if it runs a lot of queries when starting up.
+2. If you have a mix of "expensive" reads (e.g. due to large data sizes in some
+   tables) and small/faster reads, distributing them across multiple isolates
+   ensures long-running reads don't impact others as much.
+3. With a single thread, long-running writes or transactions block reads. This
+   is not the case when using multiple isolates.
 
-Replace the executor. This code:
-```dart
-FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite')
-```
-can now be written as
-```dart
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
-import 'package:path/path.dart' as p;
+Efficiently using multiple isolates requires the use of [write-ahead logging](https://sqlite.org/wal.html) (WAL),
+which allows a single writer and multiple readers to operate on the same database
+file in parallel.
+Not using WAL will cause "database is locked" errors when multiple isolates
+access the same database.
 
-LazyDatabase(() async {
-  final dbFolder = await getDatabasesPath();
-  final file = File(p.join(dbFolder, 'db.sqlite'));
-  return NativeDatabase(file);
-})
-```
+An additional pool of readers can be enabled with the `readPool` argument on
+`NativeDatabase.createInBackground`:
 
-Note: If you haven't shipped a version with `moor_flutter` to your users yet, you can drop the dependency
-on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](https://github.com/flutter/plugins/tree/master/packages/path_provider).
-Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a different folder than
-`path_provider` on Android. This can cause data loss if you've already shipped a version using
-`moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.
+{% include "blocks/snippet" snippets = snippets name = "background-pool" %}
+
+In this snippet, drift will spawn five isolates to host the database: One for writes,
+and four additional ones only used for reads.
+Note that transactions and `exclusively` blocks on the database will always use the
+write isolate.
 
 ## Using native drift with an existing database {#using-moor-ffi-with-an-existing-database}
 
@@ -174,3 +164,46 @@ Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
 
 All the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
 They have that `sql` prefix to avoid clashes with `dart:math`.
+
+## Migrating from moor_flutter to `drift/native` {#migrating-from-moor_flutter-to-moor-ffi}
+
+First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
+add both the `drift` and `sqlite3_flutter_libs` dependencies:
+{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+
+```yaml
+dependencies:
+ drift: ^{{ versions.drift }}
+ sqlite3_flutter_libs:
+ sqflite: ^1.1.7 # Still used to obtain the database location
+dev_dependencies:
+ drift_dev: ^{{ versions.drift_dev }}
+```
+
+Adapt your imports:
+
+  - In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
+    with `package:drift/native.dart`.
+  - In all other files where you might have imported `moor_flutter`, just import `package:drift/drift.dart`.
+
+Replace the executor. This code:
+```dart
+FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite')
+```
+can now be written as
+```dart
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:path/path.dart' as p;
+
+LazyDatabase(() async {
+  final dbFolder = await getDatabasesPath();
+  final file = File(p.join(dbFolder, 'db.sqlite'));
+  return NativeDatabase(file);
+})
+```
+
+Note: If you haven't shipped a version with `moor_flutter` to your users yet, you can drop the dependency
+on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](https://github.com/flutter/plugins/tree/master/packages/path_provider).
+Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a different folder than
+`path_provider` on Android. This can cause data loss if you've already shipped a version using
+`moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.

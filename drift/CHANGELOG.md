@@ -1,3 +1,9 @@
+## 2.20.0-dev
+
+- Add `readPool` parameter to `NativeDatabase`. It will spawn an additional
+  pool of isolates used to serve multiple reads in parallel, which can improve
+  performance in some specific workloads.
+
 ## 2.19.1+1
 
 - Fix `exclusively` breaking the database connection on the web. Please note

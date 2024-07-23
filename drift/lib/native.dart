@@ -13,6 +13,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:meta/meta.dart';
@@ -47,6 +48,7 @@ typedef IsolateSetup = FutureOr<void> Function();
 class NativeDatabase extends DelegatedDatabase {
   // when changing this, also update the documentation in `drift_vm_database_factory`.
   static const _cacheStatementsByDefault = false;
+  static const _defaultReadPoolSize = 0;
 
   NativeDatabase._(super.delegate, bool logStatements)
       : super(isSequential: false, logStatements: logStatements);
@@ -107,9 +109,25 @@ class NativeDatabase extends DelegatedDatabase {
   /// When the database returned by this method is closed, the background
   /// isolate will shut down as well.
   ///
-  /// __Important limitations__: If the [setup] parameter is given, it must be
-  /// a static or top-level function. The reason is that it is executed on
-  /// another isolate.
+  /// When [readPool] is set to a number greater than zero, drift will spawn an
+  /// additional number of isolates only responsible for running read operations
+  /// (i.e. `SELECT` statements) on the database.
+  /// Since the original isolate is used for writes, this causes `readPool + 1`
+  /// isolates to be spawned. While these isolates will only run statements on
+  /// demand and consume few resources otherwise, using a read pool is not
+  /// necessary for most applications. It can make sense to reduce load times in
+  /// applications issuing lots of reads at startup, especially if some of these
+  /// are known to be slow.
+  /// __Please note that [readPool] is only effective when enabling write-ahead
+  /// logging!__ In the default journaling mode used by sqlite3, concurrent
+  /// reads and writes are forbidden. To enable write-ahead logging, issue a
+  /// call to [Database.execute] setting `pragma journal_mode = WAL;` in
+  /// [setup].
+  ///
+  /// Be aware that the functions [setup] and [isolateSetup], are sent to other
+  /// isolates and executed there. Thus, they don't have access to the same
+  /// contents of global variables. Care must also be taken to ensure that the
+  /// functions don't capture state not meant to be sent across isolates.
   static QueryExecutor createInBackground(
     File file, {
     bool logStatements = false,
@@ -117,6 +135,7 @@ class NativeDatabase extends DelegatedDatabase {
     DatabaseSetup? setup,
     bool enableMigrations = true,
     IsolateSetup? isolateSetup,
+    int readPool = _defaultReadPoolSize,
   }) {
     return createBackgroundConnection(
       file,
@@ -125,6 +144,7 @@ class NativeDatabase extends DelegatedDatabase {
       isolateSetup: isolateSetup,
       enableMigrations: enableMigrations,
       cachePreparedStatements: cachePreparedStatements,
+      readPool: readPool,
     );
   }
 
@@ -140,27 +160,59 @@ class NativeDatabase extends DelegatedDatabase {
     IsolateSetup? isolateSetup,
     bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
+    int readPool = _defaultReadPoolSize,
   }) {
+    RangeError.checkNotNegative(readPool);
+
     return DatabaseConnection.delayed(Future.sync(() async {
       final receiveIsolate = ReceivePort();
-      await Isolate.spawn(
-        _NativeIsolateStartup.start,
-        _NativeIsolateStartup(
-          file.absolute.path,
-          logStatements,
-          cachePreparedStatements,
-          enableMigrations,
-          setup,
-          isolateSetup,
-          receiveIsolate.sendPort,
-        ),
-        debugName: 'Drift isolate worker for ${file.path}',
-      );
+      final receive = StreamQueue(receiveIsolate.cast<DriftIsolate>());
 
-      final driftIsolate = await receiveIsolate.first as DriftIsolate;
+      Future<void> spawnIsolate(String kind) async {
+        await Isolate.spawn(
+          _NativeIsolateStartup.start,
+          _NativeIsolateStartup(
+            file.absolute.path,
+            logStatements,
+            cachePreparedStatements,
+            enableMigrations,
+            setup,
+            isolateSetup,
+            receiveIsolate.sendPort,
+          ),
+          debugName: 'Drift isolate $kind for ${file.path}',
+        );
+      }
+
+      await spawnIsolate('worker');
+      final driftIsolate = await receive.next;
+
+      var connection = await driftIsolate.connect(singleClientMode: true);
+      if (readPool != 0) {
+        final readers = <QueryExecutor>[];
+
+        for (var i = 0; i < readPool; i++) {
+          await spawnIsolate('reader');
+        }
+
+        for (var i = 0; i < readPool; i++) {
+          final spawned = await receive.next;
+          readers.add(await spawned.connect(singleClientMode: true));
+        }
+
+        connection = DatabaseConnection(
+          MultiExecutor.withReadPool(
+            reads: readers,
+            write: connection.executor,
+          ),
+          streamQueries: connection.streamQueries,
+          connectionData: connection.connectionData,
+        );
+      }
+
+      await receive.cancel();
       receiveIsolate.close();
-
-      return driftIsolate.connect(singleClientMode: true);
+      return connection;
     }));
   }
 

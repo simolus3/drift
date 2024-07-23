@@ -1,4 +1,5 @@
 @TestOn('vm')
+import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
@@ -55,6 +56,50 @@ void main() {
 
       await d.file('test.db', anything).validate();
       expect(receivePort, emits(message));
+    });
+
+    test('read pool cannot be negative', () {
+      final file = File(d.path('test.db'));
+
+      expect(() => NativeDatabase.createInBackground(file, readPool: -4),
+          throwsRangeError);
+    });
+
+    test('read pool', () async {
+      final file = File(d.path('test.db'));
+
+      final db = TodoDb(
+        NativeDatabase.createInBackground(
+          file,
+          setup: (db) {
+            var counter = 0;
+
+            db.createFunction(
+                functionName: 'inc_counter', function: (args) => counter++);
+          },
+          readPool: 10,
+        ),
+      );
+
+      var remaining = 100;
+      final done = Completer<void>();
+      while (remaining > 0) {
+        final future = db
+            .customSelect('SELECT inc_counter() AS r;')
+            .getSingle()
+            .then((row) {
+          final counter = row.data['r'] as int;
+          expect(counter < 20, isTrue,
+              reason: 'should distribute somewhat evenly, counter is $counter');
+        });
+
+        if (--remaining == 0) {
+          done.complete(future);
+        }
+      }
+
+      await done.future;
+      await db.close();
     });
   });
 
@@ -212,7 +257,8 @@ void main() {
       );
 
       addTearDown(db.close);
-      await db.customSelect('select 1').get(); // open database
+      final rows = await db.customSelect('select * from sqlite_schema').get();
+      expect(rows, isEmpty);
     }
 
     test(
@@ -236,6 +282,15 @@ void main() {
       () => runTest(NativeDatabase.createBackgroundConnection(
         File(d.path('test.db')),
         enableMigrations: false,
+      )),
+    );
+
+    test(
+      'in background with read pool',
+      () => runTest(NativeDatabase.createBackgroundConnection(
+        File(d.path('test.db')),
+        enableMigrations: false,
+        readPool: 10,
       )),
     );
 

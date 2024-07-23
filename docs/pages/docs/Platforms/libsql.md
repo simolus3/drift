@@ -1,6 +1,6 @@
 ---
 data:
-  title: Hrana (remote libsql)
+  title: Remote sqld & Turso
   description: Use drift with sqld database servers.
   weight: 100
 template: layouts/docs/single
