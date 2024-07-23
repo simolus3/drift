@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift/src/runtime/query_builder/query_builder.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
@@ -665,7 +666,7 @@ abstract class BaseTableManager<
           .get();
 
       /// Apply the prefetch hooks to the items
-      items = await $state.prefetchHooks.addPrefetchedDataToList(items);
+      items = await $state.prefetchHooks.addPrefetchedData(items);
       return $state.toActiveDataclass(items);
     });
   }
@@ -681,22 +682,23 @@ abstract class BaseTableManager<
   @override
   Stream<List<$ActiveDataclass>> watch(
       {bool distinct = false, int? limit, int? offset}) {
-    /// Fetch the items from the database with the prefetch hooks
-    var itemStream = $state.prefetchHooks
+    /// Build a select statement so we can extract the tables that should be watched
+    var baseSelect = $state.prefetchHooks
         .withJoins($state)
         .copyWith(distinct: distinct, limit: limit, offset: offset)
-        .buildSelectStatement()
-        // The prefetch queries don't watch the database
-        // We need to explicitly watch the tables that are used in the prefetch queries
-        .watchWithAdditionalTables(
-            $state.prefetchHooks.explicitlyWatchedTables);
+        .buildSelectStatement();
+    final context = GenerationContext.fromDb($state.db);
+    baseSelect.writeInto(context);
 
-    /// Return the stream with the prefetch hooks applied
-    return $state.prefetchHooks
-        .addPrefetchedDataToStream(itemStream)
-        .map((event) {
-      return $state.toActiveDataclass(event);
-    });
+    return $state.db.createStream(QueryStreamFetcher(
+      readsFrom: TableUpdateQuery.onAllTables([
+        ...context.watchedTables,
+        ...$state.prefetchHooks.explicitlyWatchedTables
+      ]),
+      fetchData: () async {
+        return get(distinct: distinct, limit: limit, offset: offset);
+      },
+    ));
   }
 
   /// Executes this statement, like [get], but only returns one

@@ -218,21 +218,22 @@ String $_aliasNameGenerator(
 ///             /// the prefetched data for each reverse reference.
 ///             /// If `watch` is true, the streams will be watched and the TypedResult object will be updated when the prefetched data changes.
 ///             /// Otherwise, the streams of prefetched data will only be read once.
-///             prefetchedDataStreamsCallback: (items, {required bool watch}) {
-///             return [
-///               if (listings) $_streamPrefetched(
-///               watch: watch,
-///               currentTable: table,
-///               referencedTable:
-///                   $$ProductTableReferences._listingsTable(db),
-///               managerFromTypedResult: (p0) =>
-///                   $$ProductTableReferences(db, table, p0).listings,
-///               referencedItemsForCurrentItem: (item, referencedItems) =>
-///                   referencedItems.where((e) => e.product == item.id),
-///               typedResults: items)
-///         ];
-///       },  // `explicitlyWatchedTables` is a list of tables which should be watched by the original query.
-///           explicitlyWatchedTables: [if (listings) db.listing],
+///             getPrefetchedDataCallback: (items) async {
+///               return [
+///                 if (listings)
+///                   await $_getPrefetchedData(
+///                     currentTable: table,
+///                     referencedTable:
+///                       $$ProductTableReferences._listingsTable(db),
+///                     managerFromTypedResult: (p0) =>
+///                       $$ProductTableReferences(db, table, p0).listings,
+///                     referencedItemsForCurrentItem: (item, referencedItems) =>
+///                       referencedItems.where((e) => e.product == item.id),
+///                     typedResults: items)
+///               ];
+///         },
+///          // `explicitlyWatchedTables` is a list of tables which should be watched by the original query.
+///          explicitlyWatchedTables: [if (listings) db.listing],
 ///     );
 ///   },
 /// ```
@@ -313,21 +314,17 @@ class PrefetchHooks {
   }
 
   /// Internal function for injecting the prefetched data into the TypedResult object.
-  Stream<List<TypedResult>> _addPrefetchedDataToStream(
-      Stream<List<TypedResult>> itemStream) {
-    /// If this table contains no reverse references, we can just return the stream as is.
+  Future<List<TypedResult>> addPrefetchedData(List<TypedResult> items) async {
+    /// If this table contains no reverse references, we can just return the rows as is.
     if (getPrefetchedDataCallback == null) {
-      return itemStream;
+      return items;
     }
-
-    return itemStream.asyncMap((rows) async {
-      final prefetchedData = await getPrefetchedDataCallback!(rows);
-      return await db.transaction(
-        () async {
-          return _addPrefetchedDataToRows(rows, prefetchedData);
-        },
-      );
-    });
+    return await db.transaction(
+      () async {
+        final prefetchedData = await getPrefetchedDataCallback!(items);
+        return _addPrefetchedDataToRows(items, prefetchedData);
+      },
+    );
   }
 
   /// Helper function to insert the prefetched data into the TypedResult objects.
@@ -344,20 +341,6 @@ class PrefetchHooks {
       results.add(row);
     }
     return results;
-  }
-
-  /// Return a copy of a stream of result which has the prefetched data added to the TypedResult objects.
-  Stream<List<TypedResult>> addPrefetchedDataToStream(
-      Stream<List<TypedResult>> itemStream) {
-    return _addPrefetchedDataToStream(itemStream);
-  }
-
-  /// Return a copy of the result with the prefetched data added to the TypedResult objects.
-  Future<List<TypedResult>> addPrefetchedDataToList(List<TypedResult> list) {
-    /// When doing a simple `get` operation, the streams in `prefetchedDataStreams` will only have a single item.
-    /// They will never be updated with a new value.
-    /// This allows us to use the exact same code for both streams and lists, but we will only ever return the first item.
-    return _addPrefetchedDataToStream(Stream.value(list)).first;
   }
 }
 
