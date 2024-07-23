@@ -61,76 +61,76 @@ void main() {
     // Filter on related table's reference id - Does not require a join
     ComposableFilter? filter;
     expect(
-        db.managers.product.filter((f) {
+        await db.managers.product.filter((f) {
           filter = f.department.id(departments[0].id);
           return filter!;
         }).count(),
-        completion(3));
+        3);
     expect(filter?.joinBuilders.length, 0);
 
     // Filter on a unrelated column on a related table - Requires a join
     expect(
-        db.managers.product.filter((f) {
+        await db.managers.product.filter((f) {
           filter = f.department.name("Electronics");
           return filter!;
         }).count(),
-        completion(3));
+        3);
     expect(filter?.joinBuilders.length, 1);
 
     // Filter on a unrelated column on a related table & on
     // a related table's reference id - Requires a join
     expect(
-        db.managers.product.filter((f) {
+        await db.managers.product.filter((f) {
           filter = f.department.name("Electronics") |
               f.department.id(departments[1].id);
           return filter!;
         }).count(),
-        completion(5));
+        5);
     expect(filter?.joinBuilders.length, 1);
 
     // Ordering on current table & Filtering on related table
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.department.name("Electronics"))
             .orderBy((f) => f.name.asc())
             .get(),
-        completion([
+        [
           products[1],
           products[2],
           products[0],
-        ]));
+        ]);
 
     // Ordering on related table & Filtering on current table
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.name.startsWith("c"))
             .orderBy((f) => f.department.name.asc() & f.name.desc())
             .get(),
-        completion([
+        [
           products[8],
           products[2],
           products[1],
           products[3],
-        ]));
+        ]);
 
     // Filtering on reverse related table
     expect(
         // Any product that is available for more than $10
         // Socks & Cap are excluded
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.listings((f) => f.price.isBiggerThan(10.0)))
             .count(distinct: true),
-        completion(7));
+        7);
 
     // Filtering on reverse related table with ordering
     expect(
         // Any product that is available for more than $10
         // Socks & Cap are excluded, and the rest are ordered by name
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.listings((f) => f.price.isBiggerThan(10.0)))
             .orderBy((f) => f.name.asc())
             .get(distinct: true),
-        completion([
+        [
           products[1],
           products[3],
           products[2],
@@ -138,76 +138,76 @@ void main() {
           products[6],
           products[5],
           products[0],
-        ]));
+        ]);
 
     // Filter on reverse related column and then a related column
     expect(
-        db.managers.product.filter((f) {
+        await db.managers.product.filter((f) {
           filter = f.listings((f) => f.store.name("Target"));
           return filter!;
         }).count(),
-        completion(6));
+        6);
     expect(filter?.joinBuilders.length, 2);
     expect(
-        db.managers.product.filter((f) {
+        await db.managers.product.filter((f) {
           filter = f.listings((f) => f.store.name("Target")) | f.name("TV");
           return filter!;
         }).count(),
-        completion(7));
+        7);
     expect(filter?.joinBuilders.length, 2);
 
     // Filter on a related column and then a related column
     expect(
-        db.managers.listing.filter((f) {
+        await db.managers.listing.filter((f) {
           // Listings of products in the electronics department
           filter = f.product.department.name("Electronics");
           return filter!;
         }).count(),
-        completion(8));
+        8);
     expect(
-        db.managers.listing.filter((f) {
+        await db.managers.listing.filter((f) {
           // Listings of products in the electronics department
           filter = f.product.department.name("Electronics") |
               f.price.isBiggerThan(150.0);
           return filter!;
         }).count(),
-        completion(9));
+        9);
 
     // Filter on a reverse related column and then a reverse related column
     expect(
-        db.managers.department.filter((f) {
+        await db.managers.department.filter((f) {
           // Departments that have products listed for more than $10
           filter = f.productRefs(
               (f) => f.listings((f) => f.price.isBiggerThan(100.0)));
           return filter!;
         }).count(),
-        completion(2));
+        2);
     expect(
-        db.managers.department.filter((f) {
+        await db.managers.department.filter((f) {
           // Departments that have products listed for more than $10 or is available at Walmart
           filter = f.productRefs((f) => f.listings(
               (f) => f.price.isBiggerThan(100.0) | f.store.name("Walmart")));
           return filter!;
         }).count(),
-        completion(3));
+        3);
 
     // Stores that have products in the clothing department
     expect(
-        db.managers.store.filter((f) {
+        await db.managers.store.filter((f) {
           // Products that are sold in a store that sells clothing
           filter = f.listings((f) => f.product.department.name("Clothing"));
           return filter!;
         }).count(),
-        completion(2));
+        2);
 
     // Any product that is sold in a store that sells clothing
     expect(
-        db.managers.product.filter((f) {
+        await db.managers.product.filter((f) {
           filter = f.listings((f) =>
               f.store.listings((f) => f.product.department.name("Clothing")));
           return filter!;
         }).count(distinct: true),
-        completion(9));
+        9);
   });
 
   test('manager - filter related with custom type for primary key', () async {
@@ -215,56 +215,56 @@ void main() {
 
     // Equals
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.id(_todoCategoryData[0].id))
             .count(),
-        completion(4));
+        4);
 
     // Not Equals
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.id.not(_todoCategoryData[0].id))
             .count(),
-        completion(4));
+        4);
 
     // Multiple filters
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.id(
                   _todoCategoryData[0].id,
                 ))
             .filter((f) => f.status.equals(TodoStatus.open))
             .count(),
-        completion(2));
+        2);
 
     // Multiple use related filters twice
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) =>
                 f.category.priority(CategoryPriority.low) |
                 f.category.descriptionInUpperCase("SCHOOL"))
             .count(),
-        completion(8));
+        8);
 
     // Use .filter multiple times
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.priority.equals(CategoryPriority.high))
             .filter((f) => f.category.descriptionInUpperCase("SCHOOL"))
             .count(),
-        completion(4));
+        4);
 
     // Use backreference
     expect(
-        db.managers.categories
+        await db.managers.categories
             .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
             .getSingle()
             .then((value) => value.description),
-        completion("School"));
+        "School");
 
     // Nested backreference
     expect(
-        db.managers.categories
+        await db.managers.categories
             .filter((f) => f.todos((f) {
                   final q =
                       f.category.todos((f) => f.title.equals("Math Homework"));
@@ -272,14 +272,14 @@ void main() {
                 }))
             .getSingle()
             .then((value) => value.description),
-        completion("School"));
+        "School");
   });
 
   test('manager - filter related with regualar id with references', () async {
     // Filter on related table's reference id - Does not require a join
     ComposableFilter? filter;
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) {
               filter = f.department.id(departments[0].id);
               return filter!;
@@ -287,12 +287,12 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(3));
+        3);
     expect(filter?.joinBuilders.length, 0);
 
     // Filter on a unrelated column on a related table - Requires a join
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) {
               filter = f.department.name("Electronics");
               return filter!;
@@ -300,13 +300,13 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(3));
+        3);
     expect(filter?.joinBuilders.length, 1);
 
     // Filter on a unrelated column on a related table & on
     // a related table's reference id - Requires a join
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) {
               filter = f.department.name("Electronics") |
                   f.department.id(departments[1].id);
@@ -315,60 +315,60 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(5));
+        5);
     expect(filter?.joinBuilders.length, 1);
 
     // Ordering on current table & Filtering on related table
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.department.name("Electronics"))
             .orderBy((f) => f.name.asc())
             .withReferences()
             .get()
             .then((value) => value.map((e) => e.$1).toList()),
-        completion([
+        [
           products[1],
           products[2],
           products[0],
-        ]));
+        ]);
 
     // Ordering on related table & Filtering on current table
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.name.startsWith("c"))
             .orderBy((f) => f.department.name.asc() & f.name.desc())
             .withReferences()
             .get()
             .then((value) => value.map((e) => e.$1).toList()),
-        completion([
+        [
           products[8],
           products[2],
           products[1],
           products[3],
-        ]));
+        ]);
 
     // Filtering on reverse related table
     expect(
         // Any product that is available for more than $10
         // Socks & Cap are excluded
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.listings((f) => f.price.isBiggerThan(10.0)))
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(7));
+        7);
 
     // Filtering on reverse related table with ordering
     expect(
         // Any product that is available for more than $10
         // Socks & Cap are excluded, and the rest are ordered by name
-        db.managers.product
+        await db.managers.product
             .filter((f) => f.listings((f) => f.price.isBiggerThan(10.0)))
             .orderBy((f) => f.name.asc())
             .withReferences()
             .get(distinct: true)
             .then((value) => value.map((e) => e.$1).toList()),
-        completion([
+        [
           products[1],
           products[3],
           products[2],
@@ -376,11 +376,11 @@ void main() {
           products[6],
           products[5],
           products[0],
-        ]));
+        ]);
 
     // Filter on reverse related column and then a related column
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) {
               filter = f.listings((f) => f.store.name("Target"));
               return filter!;
@@ -388,10 +388,10 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(6));
+        6);
     expect(filter?.joinBuilders.length, 2);
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) {
               filter = f.listings((f) => f.store.name("Target")) | f.name("TV");
               return filter!;
@@ -399,12 +399,12 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(7));
+        7);
     expect(filter?.joinBuilders.length, 2);
 
     // Filter on a related column and then a related column
     expect(
-        db.managers.listing
+        await db.managers.listing
             .filter((f) {
               // Listings of products in the electronics department
               filter = f.product.department.name("Electronics");
@@ -413,9 +413,9 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(8));
+        8);
     expect(
-        db.managers.listing
+        await db.managers.listing
             .filter((f) {
               // Listings of products in the electronics department
               filter = f.product.department.name("Electronics") |
@@ -425,11 +425,11 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(9));
+        9);
 
     // Filter on a reverse related column and then a reverse related column
     expect(
-        db.managers.department
+        await db.managers.department
             .filter((f) {
               // Departments that have products listed for more than $10
               filter = f.productRefs(
@@ -439,9 +439,9 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(2));
+        2);
     expect(
-        db.managers.department
+        await db.managers.department
             .filter((f) {
               // Departments that have products listed for more than $10 or is available at Walmart
               filter = f.productRefs((f) => f.listings((f) =>
@@ -451,11 +451,11 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(3));
+        3);
 
     // Stores that have products in the clothing department
     expect(
-        db.managers.store
+        await db.managers.store
             .filter((f) {
               // Products that are sold in a store that sells clothing
               filter = f.listings((f) => f.product.department.name("Clothing"));
@@ -464,11 +464,11 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(2));
+        2);
 
     // Any product that is sold in a store that sells clothing
     expect(
-        db.managers.product
+        await db.managers.product
             .filter((f) {
               filter = f.listings((f) => f.store
                   .listings((f) => f.product.department.name("Clothing")));
@@ -477,7 +477,7 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(9));
+        9);
   });
 
   test(
@@ -485,25 +485,25 @@ void main() {
       () async {
     // Equals
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.id(_todoCategoryData[0].id))
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(4));
+        4);
 
     // Not Equals
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.id.not(_todoCategoryData[0].id))
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(4));
+        4);
 
     // Multiple filters
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.id(
                   _todoCategoryData[0].id,
                 ))
@@ -511,41 +511,41 @@ void main() {
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(2));
+        2);
 
     // Multiple use related filters twice
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) =>
                 f.category.priority(CategoryPriority.low) |
                 f.category.descriptionInUpperCase("SCHOOL"))
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(8));
+        8);
 
     // Use .filter multiple times
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .filter((f) => f.category.priority.equals(CategoryPriority.high))
             .filter((f) => f.category.descriptionInUpperCase("SCHOOL"))
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
-        completion(4));
+        4);
 
     // Use backreference
     expect(
-        db.managers.categories
+        await db.managers.categories
             .filter((f) => f.todos((f) => f.title.equals("Math Homework")))
             .withReferences()
             .getSingle()
             .then((value) => value.$1.description),
-        completion("School"));
+        "School");
 
     // Nested backreference
     expect(
-        db.managers.categories
+        await db.managers.categories
             .filter((f) => f.todos((f) {
                   final q =
                       f.category.todos((f) => f.title.equals("Math Homework"));
@@ -554,13 +554,13 @@ void main() {
             .withReferences()
             .getSingle()
             .then((value) => value.$1.description),
-        completion("School"));
+        "School");
   });
 
   test('manager - with references tests', () async {
     // Get department for the 1st product
     expect(
-        db.managers.product
+        await db.managers.product
             .withReferences()
             .get(distinct: true)
             .then((value) =>
@@ -568,15 +568,15 @@ void main() {
             .then(
               (value) => value?.id,
             ),
-        completion(departments[0].id));
+        departments[0].id);
 
     // Get the amount of products in the 1st department
     expect(
-        db.managers.department
+        await db.managers.department
             .withReferences()
             .get(distinct: true)
             .then((value) => value.first.$2.productRefs.count()),
-        completion(3));
+        3);
 
     // Get all the products with all their listings
     final listingsWithProducts = <ProductData, List<ListingData>>{};
@@ -601,12 +601,12 @@ void main() {
 
     // Get the amount of products in the department id 2
     expect(
-        db.managers.department
+        await db.managers.department
             .filter((f) => f.id.equals(2))
             .withReferences()
             .getSingle()
             .then((value) => value.$2.productRefs.count()),
-        completion(2));
+        2);
   });
 }
 

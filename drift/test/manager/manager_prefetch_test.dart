@@ -27,6 +27,11 @@ void main() {
         Value<String> title
       })> todoData;
 
+  test("manager - with references tests - foreign key", () async {
+    final storeWithListings =
+        db.managers.store.withReferences((o) => o(listings: true));
+  });
+
   setUp(() async {
     db = TodoDb(testInMemoryDatabase());
     stores = [

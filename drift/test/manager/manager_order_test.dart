@@ -32,17 +32,17 @@ void main() {
 
     // Equals
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .orderBy((o) => o.aDateTime.desc())
             .get()
             .then((value) => value[0].id),
-        completion(3));
+        3);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .orderBy((o) => o.aDateTime.asc())
             .get()
             .then((value) => value[0].id),
-        completion(1));
+        1);
   });
 
   test('manager - order related', () async {
@@ -82,10 +82,10 @@ void main() {
         targetDate: Value(DateTime.now().add(Duration(days: 2, seconds: 10)))));
     // Order by related
     expect(
-        db.managers.todosTable
+        await db.managers.todosTable
             .orderBy((o) => o.category.id.asc())
             .get()
             .then((value) => value.map((e) => e.id).toList()),
-        completion([3, 4, 1, 2]));
+        [3, 4, 1, 2]);
   });
 }

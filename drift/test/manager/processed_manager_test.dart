@@ -42,10 +42,10 @@ void main() {
         2);
     // Test filtered delete
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.id(RowId(2)))
             .delete(),
-        completion(1));
+        1);
 
     // Test filtered update
     expect(

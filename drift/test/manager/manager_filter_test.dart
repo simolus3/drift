@@ -33,49 +33,49 @@ void main() {
 
     // Equals
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.equals(5.0))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal(3.0))
             .count(),
-        completion(1));
+        1);
 
     // Not Equals - Exclude null (Default behavior)
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.not.equals(5.0))
             .count(),
-        completion(1));
+        1);
 
     // In
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isIn([3.0, 5.0]))
             .count(),
-        completion(2));
+        2);
 
     // Not In
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.not.isIn([3.0, 5.0]))
             .count(),
-        completion(0));
+        0);
 
     // Null check
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isNull())
             .count(),
-        completion(1));
+        1);
 
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.not.isNull())
             .count(),
-        completion(2));
+        2);
   });
 
   test('manager - query number', () async {
@@ -96,39 +96,39 @@ void main() {
 
     // More than
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isBiggerThan(3.0))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isBiggerOrEqualTo(3.0))
             .count(),
-        completion(2));
+        2);
 
     // Less than
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isSmallerThan(5.0))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isSmallerOrEqualTo(5.0))
             .count(),
-        completion(2));
+        2);
 
     // Between
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.isBetween(3.0, 5.0))
             .count(),
-        completion(2));
+        2);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.not.isBetween(3.0, 5.0))
             .count(),
-        completion(0));
+        0);
   });
 
   test('manager - query string', () async {
@@ -146,48 +146,48 @@ void main() {
 
     // StartsWith
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText.startsWith("that"))
             .count(),
-        completion(2));
+        2);
 
     // EndsWith
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText.endsWith("done"))
             .count(),
-        completion(2));
+        2);
 
     // Contains
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText.contains("math"))
             .count(),
-        completion(2));
+        2);
 
     // Make the database case sensitive
     await db.customStatement('PRAGMA case_sensitive_like = ON');
 
     // StartsWith
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText.startsWith("that", caseInsensitive: false))
             .count(),
-        completion(1));
+        1);
 
     // EndsWith
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText.endsWith("done", caseInsensitive: false))
             .count(),
-        completion(1));
+        1);
 
     // Contains
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText.contains("math", caseInsensitive: false))
             .count(),
-        completion(1));
+        1);
   });
 
   test('manager - query int64', () async {
@@ -208,41 +208,41 @@ void main() {
 
     // More than
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anInt64.isBiggerThan(BigInt.from(3.0)))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anInt64.isBiggerOrEqualTo(BigInt.from(3.0)))
             .count(),
-        completion(2));
+        2);
 
     // Less than
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anInt64.isSmallerThan(BigInt.from(5.0)))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anInt64.isSmallerOrEqualTo(BigInt.from(5.0)))
             .count(),
-        completion(2));
+        2);
 
     // Between
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter(
                 (f) => f.anInt64.isBetween(BigInt.from(3.0), BigInt.from(5.0)))
             .count(),
-        completion(2));
+        2);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) =>
                 f.anInt64.not.isBetween(BigInt.from(3.0), BigInt.from(5.0)))
             .count(),
-        completion(0));
+        0);
   });
 
   test('manager - query bool', () async {
@@ -263,11 +263,11 @@ void main() {
         creationTime: Value(DateTime.now().add(Duration(days: 2)))));
 
     // False
-    expect(db.managers.users.filter((f) => f.isAwesome.isFalse()).count(),
-        completion(1));
+    expect(await db.managers.users.filter((f) => f.isAwesome.isFalse()).count(),
+        1);
     // True
-    expect(db.managers.users.filter((f) => f.isAwesome.isTrue()).count(),
-        completion(2));
+    expect(
+        await db.managers.users.filter((f) => f.isAwesome.isTrue()).count(), 2);
   });
 
   test('manager - query datetime', () async {
@@ -291,39 +291,39 @@ void main() {
 
     // More than
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aDateTime.isAfter(day2))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aDateTime.isAfterOrOn(day2))
             .count(),
-        completion(2));
+        2);
 
     // Less than
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aDateTime.isBefore(day2))
             .count(),
-        completion(1));
+        1);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aDateTime.isBeforeOrOn(day2))
             .count(),
-        completion(2));
+        2);
 
     // Between
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aDateTime.isBetween(day1, day2))
             .count(),
-        completion(2));
+        2);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aDateTime.not.isBetween(day1, day2))
             .count(),
-        completion(1));
+        1);
   });
 
   test('manager - query custom column', () async {
@@ -344,44 +344,44 @@ void main() {
 
     // Equals
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anIntEnum.equals(TodoStatus.open))
             .count(),
-        completion(2));
+        2);
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anIntEnum(TodoStatus.open))
             .count(),
-        completion(2));
+        2);
 
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anIntEnum.not(TodoStatus.open))
             .count(),
-        completion(2));
+        2);
 
     // Not Equals
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
             .count(),
-        completion(2));
+        2);
 
     // In
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) =>
                 f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
             .count(),
-        completion(3));
+        3);
 
     // Not In
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.anIntEnum.not
                 .isIn([TodoStatus.open, TodoStatus.workInProgress]))
             .count(),
-        completion(1));
+        1);
   });
 
   test('manager - multiple filters', () async {
@@ -402,10 +402,10 @@ void main() {
 
     // By default, all filters are AND
     expect(
-        db.managers.tableWithEveryColumnType
+        await db.managers.tableWithEveryColumnType
             .filter((f) => f.aText("person"))
             .filter((f) => f.aReal(5.0))
             .count(),
-        completion(1));
+        1);
   });
 }
