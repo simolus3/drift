@@ -16,7 +16,7 @@ const _listEquality = ListEquality<Object?>();
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
 @internal
-class QueryStreamFetcher<Rows> {
+class QueryStreamFetcher<Rows extends Object> {
   /// Table updates that will affect this stream.
   ///
   /// If any of these tables changes, the stream must fetch its data again.
@@ -89,7 +89,7 @@ class StreamQueryStore {
       StreamController.broadcast(sync: true);
 
   /// Creates a new stream from the select statement.
-  Stream<T> registerStream<T>(
+  Stream<T> registerStream<T extends Object>(
       QueryStreamFetcher<T> fetcher, DatabaseConnectionUser database) {
     final key = fetcher.key;
 
@@ -182,7 +182,7 @@ class StreamQueryStore {
   }
 }
 
-class QueryStream<Rows> {
+class QueryStream<Rows extends Object> {
   final QueryStreamFetcher _fetcher;
   final StreamQueryStore _store;
   final DatabaseConnectionUser _database;

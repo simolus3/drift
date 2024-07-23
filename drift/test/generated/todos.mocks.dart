@@ -930,7 +930,8 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Stream<T> createStream<T>(_i4.QueryStreamFetcher<T>? stmt) =>
+  _i5.Stream<T> createStream<T extends Object>(
+          _i4.QueryStreamFetcher<T>? stmt) =>
       (super.noSuchMethod(
         Invocation.method(
           #createStream,
