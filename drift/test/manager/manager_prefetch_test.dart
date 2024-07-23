@@ -186,6 +186,74 @@ void main() {
     }
   });
 
+  test("manager - with references tests - watch ", () async {
+    final departmentsData = [
+      (name: "Electronics", id: 1),
+      (name: "Clothing", id: 2),
+      (name: "Books", id: 3)
+    ];
+    final productsData = [
+      (name: "TV", department: 1, id: 1),
+      (name: "Shirt", department: 2, id: 2),
+      (name: "Book", department: 3, id: 3),
+      (name: "Another Book", department: 3, id: 4),
+    ];
+    final listingsData = [
+      (product: 1, store: 1, price: 100.0),
+      (product: 2, store: 1, price: 50.0),
+      (product: 3, store: 2, price: 20.0),
+      (product: 4, store: 3, price: 10.0),
+    ];
+    final storesData = [
+      (name: "Walmart", id: 1),
+      (name: "Target", id: 2),
+      (name: "Costco", id: 3)
+    ];
+    await db.managers.product.bulkCreate(
+      (o) {
+        return productsData.map((e) => o(
+            name: Value(e.name),
+            department: Value(e.department),
+            id: Value(e.id)));
+      },
+    );
+    await db.managers.department.bulkCreate(
+      (o) {
+        return departmentsData
+            .map((e) => o(name: Value(e.name), id: Value(e.id)));
+      },
+    );
+    await db.managers.store.bulkCreate(
+      (o) {
+        return storesData.map((e) => o(name: Value(e.name), id: Value(e.id)));
+      },
+    );
+    await db.managers.listing.bulkCreate(
+      (o) {
+        return listingsData.map((e) => o(
+            product: Value(e.product),
+            store: Value(e.store),
+            price: Value(e.price)));
+      },
+    );
+
+    List<(ProductData, $$ProductTableReferences)>? products;
+    final stream = db.managers.product
+        .withReferences(
+            (prefetch) => prefetch(department: true, listings: true))
+        .watch()
+        .listen(
+          (event) {},
+        );
+    await Future.delayed(const Duration(milliseconds: 100));
+    // await pumpEventQueue(times: 1000);
+    // expect(products, isNotNull);
+    // for (final (product, refs) in products!) {
+    //   expect(refs.department?.prefetchedData, allOf(isNotEmpty, hasLength(1)));
+    //   expect(refs.listings.prefetchedData, allOf(isNotEmpty));
+    // }
+  });
+
   setUp(() async {
     db = TodoDb(testInMemoryDatabase());
   });
