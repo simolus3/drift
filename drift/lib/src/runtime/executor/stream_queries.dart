@@ -237,7 +237,7 @@ class QueryStream<Rows> {
 
   StreamSubscription? _tablesChangedSubscription;
 
-  List<Map<String, Object?>>? _lastData;
+  Rows? _lastData;
   final List<CancellationToken> _runningOperations = [];
   bool _isClosed = false;
 
@@ -314,7 +314,7 @@ class QueryStream<Rows> {
   }
 
   Future<void> fetchAndEmitData() async {
-    final operation = CancellationToken<List<Map<String, dynamic>>>();
+    final operation = CancellationToken<Rows>();
     _runningOperations.add(operation);
 
     try {

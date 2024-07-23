@@ -50,8 +50,7 @@ class CancellationToken<T> {
 
 /// Extensions that can be used on cancellable operations if they return a non-
 /// nullable value.
-extension NonNullableCancellationExtension<T extends Object>
-    on CancellationToken<T> {
+extension NonNullableCancellationExtension<T> on CancellationToken<T> {
   /// Wait for the result, or return `null` if the operation was cancelled.
   ///
   /// To avoid situations where `null` could be a valid result from an async

@@ -12,6 +12,11 @@ void main() {
   late List<DepartmentData> departments;
   late List<ProductData> products;
   late List<int> listings;
+  setUp(() async {
+    db = TodoDb(testInMemoryDatabase());
+  });
+
+  tearDown(() => db.close());
 
   test("manager - with references tests - foreign key", () async {
     final departmentsData = [
@@ -198,17 +203,24 @@ void main() {
       (name: "Book", department: 3, id: 3),
       (name: "Another Book", department: 3, id: 4),
     ];
+    final storesData = [
+      (name: "Walmart", id: 1),
+      (name: "Target", id: 2),
+      (name: "Costco", id: 3)
+    ];
     final listingsData = [
       (product: 1, store: 1, price: 100.0),
       (product: 2, store: 1, price: 50.0),
       (product: 3, store: 2, price: 20.0),
       (product: 4, store: 3, price: 10.0),
     ];
-    final storesData = [
-      (name: "Walmart", id: 1),
-      (name: "Target", id: 2),
-      (name: "Costco", id: 3)
-    ];
+    await db.managers.department.bulkCreate(
+      (o) {
+        return departmentsData
+            .map((e) => o(name: Value(e.name), id: Value(e.id)));
+      },
+    );
+
     await db.managers.product.bulkCreate(
       (o) {
         return productsData.map((e) => o(
@@ -217,12 +229,7 @@ void main() {
             id: Value(e.id)));
       },
     );
-    await db.managers.department.bulkCreate(
-      (o) {
-        return departmentsData
-            .map((e) => o(name: Value(e.name), id: Value(e.id)));
-      },
-    );
+
     await db.managers.store.bulkCreate(
       (o) {
         return storesData.map((e) => o(name: Value(e.name), id: Value(e.id)));
@@ -243,20 +250,32 @@ void main() {
             (prefetch) => prefetch(department: true, listings: true))
         .watch()
         .listen(
-          (event) {},
-        );
-    await Future.delayed(const Duration(milliseconds: 100));
-    // await pumpEventQueue(times: 1000);
-    // expect(products, isNotNull);
-    // for (final (product, refs) in products!) {
-    //   expect(refs.department?.prefetchedData, allOf(isNotEmpty, hasLength(1)));
-    //   expect(refs.listings.prefetchedData, allOf(isNotEmpty));
-    // }
-  });
+      (event) {
+        products = event;
+      },
+    );
+    await pumpEventQueue();
+    expect(products, isNotNull);
+    final productCount = products!.length;
 
-  setUp(() async {
-    db = TodoDb(testInMemoryDatabase());
-  });
+    // Delete a product
+    await db.managers.product.filter((f) => f.id(1)).delete();
+    await pumpEventQueue();
+    expect(products!.length, productCount - 1);
 
-  tearDown(() => db.close());
+    // There should be at least one product whose prefetched department is the Books department
+    expect(
+        products!.where((element) =>
+            element.$2.department?.prefetchedData?.firstOrNull?.id == 3),
+        isNotEmpty);
+    // Delete the books department
+    await db.managers.department.filter((f) => f.id(3)).delete();
+    await pumpEventQueue();
+
+    // There should not be any actual instances of the Book Department
+    expect(
+        products!.where((element) =>
+            element.$2.department?.prefetchedData?.firstOrNull?.id == 3),
+        isEmpty);
+  });
 }
