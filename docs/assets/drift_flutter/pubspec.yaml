@@ -5,3 +5,6 @@ description: Fake "drift_flutter" package so that we can import it in snippets w
 environment:
   sdk: ^3.0.0
 
+dependencies:
+  drift:
+    path: ../../drift

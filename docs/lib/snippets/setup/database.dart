@@ -57,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
 
 class OpenFlutter {
 // #docregion flutter
-  static DatabaseConnection _openConnection() {
+  static QueryExecutor _openConnection() {
     // `driftDatabase` from `package:drift_flutter` stores the database in
     // `getApplicationDocumentsDirectory()`.
     return driftDatabase(name: 'my_database');
