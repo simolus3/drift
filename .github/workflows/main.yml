@@ -30,7 +30,7 @@ jobs:
         working-directory: .
       - name: Run build
         env:
-          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
+          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/redeploy-docs' }}
         run: dart run tool/ci_build.dart
       - name: Analyze Dart and Drift sources
         run: |
@@ -42,7 +42,7 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v3
         with:
-          production-branch: latest-release
+          production-branch: redeploy-docs
           publish-dir: docs/deploy
           enable-pull-request-comment: true
           enable-commit-comment: false
