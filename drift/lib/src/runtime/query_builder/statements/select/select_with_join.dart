@@ -395,7 +395,7 @@ class _ResultStructure {
 }
 
 @internal
-extension JoinedSelectStatementAdditionalTablesX on JoinedSelectStatement {
+extension JoinedSelectStatementAdditionalTables on JoinedSelectStatement {
   Stream<List<TypedResult>> watchWithAdditionalTables(
           [Iterable<ResultSetImplementation<dynamic, dynamic>> tables =
               const []]) =>
