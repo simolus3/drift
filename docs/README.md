@@ -1,23 +1,26 @@
-# Drift documentation
+### Documentation for the Drift package
 
-Welcome to the source of drift's documentation, live at drift.simonbinder.eu.
-We use a static site generator based on `build_runner` to build the documentation.
+Folder Structure:
 
-## Running the website locally
+- `bin` Contains the CLI for building and serving the documentation.
+- `builders` Contains the builders for the documentation. (Version Extraction and Code Snippets Generation)
+- `docs` Contains the markdown files for the documentation.
+- `lib` Contains the snippets for the documentation.
+- `test` Contains the tests for the documentation.
+- `web` Contains some dart which code which is compiled to javascript and served with the documentation.
+- `stubs` Contains dummy projects for the snippets to reference.
+- `mkdocs` Contains the Dockerfile and Macros for the documentation.
 
-For a fast edit-refresh cycle, run
+### Building the Documentation
+Run the following command to build the documentation:
 
+```bash
+dart run drift_docs build
 ```
-dart run build_runner serve web:8080 --live-reload
-```
 
-## Building the website
+There are multiple steps to building the documentation:
+1. Build a dartdoc site and place it in the `build` folder.
+2. Build the code snippet files and place them next to the original files.
+3. Build a version.json file which contains the versions of the packages used in the documentation.
+4. Build the documentation using MkDocs.
 
-To build the website into a directory `out`, use:
-
-```
-dart run drift_dev schema steps lib/snippets/migrations/exported_eschema/ lib/snippets/migrations/schema_versions.dart
-dart run drift_dev schema generate --data-classes --companions lib/snippets/migrations/exported_eschema/ lib/snippets/migrations/tests/generated_migrations/
-
-dart run build_runner build --release --output web:out
-```

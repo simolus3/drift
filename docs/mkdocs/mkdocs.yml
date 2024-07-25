@@ -101,16 +101,21 @@ nav:
   - Home:
       - index.md
 
-  - Getting Started:
-      - getting-started/install.md
-      - getting-started/schema.md
-  - Reference:
-      - setup.md
-      - type_converters.md
-      - faq.md
-      - testing.md
-      - CLI.md
-      - isolates.md
-      - community_tools.md
+  # - Getting Started:
+  #     - getting-started/install.md
+  #     - getting-started/schema.md
+  # - Reference:
+  #     - setup.md
+  #     - type_converters.md
+  #     - faq.md
+  #     - testing.md
+  #     - CLI.md
+  #     - isolates.md
+  #     - community_tools.md
 
-docs_dir: "../pages"
+docs_dir: "../docs"
+
+extra_javascript:
+  # This file will exist once the build_runner completes
+  - path: build/compatibility.dart.js
+    defer: true

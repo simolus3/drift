@@ -26,6 +26,7 @@ drift/extension/devtools/build
 .fvm/
 
 # Documentation
+docs/dist
 docs/deploy
 docs/lib/**/**.json
 docs/.cache

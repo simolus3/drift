@@ -1,6 +1,6 @@
 builders:
   versions:
-    import: "tool/write_versions.dart"
+    import: "builders/write_versions.dart"
     build_to: source
     builder_factories: ["writeVersions"]
     build_extensions: { "$package$": ["lib/versions.json"] }
@@ -12,7 +12,7 @@ builders:
     runs_before: [code_snippets]
     build_extensions: { "lib/lib": ["api.json"] }
   code_snippets:
-    import: "tool/snippets.dart"
+    import: "builders/snippets.dart"
     build_to: source
     builder_factories: ["SnippetsBuilder.new"]
     build_extensions: { "": [".excerpt.json"] }
@@ -35,8 +35,8 @@ targets:
       - "$package$"
       - "lib/versions.json"
       - "lib/snippets/**"
-      - "tool/write_versions.dart"
-      - "tool/snippets.dart"
+      - "builders/write_versions.dart"
+      - "builders/snippets.dart"
       - "test/generated/**"
 
   codegen:
@@ -93,7 +93,7 @@ targets:
     sources:
       - "$package$"
       - "lib/snippets/**"
-      - "tool/snippets.dart"
+      - "builders/snippets.dart"
 
   worker:
     dependencies: ["$default"]
