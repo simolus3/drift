@@ -20,7 +20,7 @@ Future<void> main() async {
 
   await Future.wait([
     _runBuildAndCopyFiles(output, isRelease),
-    _createApiDocumentation(output),
+    // _createApiDocumentation(output),
   ]);
 }
 

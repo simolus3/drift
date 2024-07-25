@@ -27,3 +27,5 @@ drift/extension/devtools/build
 
 # Documentation
 docs/deploy
+docs/lib/**/**.json
+docs/.cache

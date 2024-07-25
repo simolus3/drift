@@ -1,19 +1,19 @@
 builders:
   versions:
     import: "tool/write_versions.dart"
-    build_to: cache
+    build_to: source
     builder_factories: ["writeVersions"]
     build_extensions: { "$package$": ["lib/versions.json"] }
   api_index:
     import: "package:code_snippets/indexer.dart"
-    build_to: cache
+    build_to: source
     builder_factories: ["DartIndexBuilder.new"]
     auto_apply: all_packages
     runs_before: [code_snippets]
     build_extensions: { "lib/lib": ["api.json"] }
   code_snippets:
     import: "tool/snippets.dart"
-    build_to: cache
+    build_to: source
     builder_factories: ["SnippetsBuilder.new"]
     build_extensions: { "": [".excerpt.json"] }
     auto_apply: none
