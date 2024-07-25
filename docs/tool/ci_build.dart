@@ -115,6 +115,7 @@ Future<void> _createApiDocumentation(Directory output) async {
     File(target).parent.createSync(recursive: true);
     await file.copy(target);
   }
+  await docOutput.parent.delete(recursive: true);
 }
 
 Future<File> _findAssetGraph() {

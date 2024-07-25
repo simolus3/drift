@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:drift/web.dart';
-import 'package:drift_docs/src/external_apis.dart';
+import 'package:drift_docs/snippets/_shared/stubs.dart';
 import 'package:sqlite3/wasm.dart';
 
 typedef _$MyWebDatabase = GeneratedDatabase;

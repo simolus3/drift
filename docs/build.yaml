@@ -1,21 +1,21 @@
 builders:
   versions:
-    import: 'tool/write_versions.dart'
+    import: "tool/write_versions.dart"
     build_to: cache
     builder_factories: ["writeVersions"]
-    build_extensions: {"$package$": ["lib/versions.json"]}
+    build_extensions: { "$package$": ["lib/versions.json"] }
   api_index:
-    import: 'package:code_snippets/indexer.dart'
+    import: "package:code_snippets/indexer.dart"
     build_to: cache
-    builder_factories: ['DartIndexBuilder.new']
+    builder_factories: ["DartIndexBuilder.new"]
     auto_apply: all_packages
     runs_before: [code_snippets]
-    build_extensions: {"lib/lib": ['api.json']}
+    build_extensions: { "lib/lib": ["api.json"] }
   code_snippets:
-    import: 'tool/snippets.dart'
+    import: "tool/snippets.dart"
     build_to: cache
     builder_factories: ["SnippetsBuilder.new"]
-    build_extensions: {"": [".excerpt.json"]}
+    build_extensions: { "": [".excerpt.json"] }
     auto_apply: none
     defaults:
       options:
@@ -74,8 +74,8 @@ targets:
       json_serializable:
         enabled: true
     sources:
-     - lib/**
-     - test/generated/**
+      - lib/**
+      - test/generated/**
 
   syntax_highlighting:
     dependencies: [":codegen"]
@@ -96,7 +96,7 @@ targets:
       - "tool/snippets.dart"
 
   worker:
-    dependencies: ['$default']
+    dependencies: ["$default"]
     auto_apply_builders: false
     sources:
       - "web/drift_worker.dart"
@@ -117,9 +117,6 @@ targets:
   $default:
     dependencies: [":codegen", ":syntax_highlighting"]
     builders:
-      built_site:
-        release_options:
-          environment: "preview"
       build_web_compilers:entrypoint:
         generate_for:
           include:
@@ -148,19 +145,23 @@ targets:
       include:
         - "lib/**"
         - "pages/**"
-        - "templates/**"
         - "web/**"
         - "$package$"
         - "pubspec.yaml"
-        - "theme.yaml"
-        - "website.yaml"
 
 # Snippets referencing public API members from this package will get dartdoc links
 # embedded in them.
 global_options:
   ":api_index":
     options:
-      packages: ['drift', 'drift_dev', 'sqlite3', 'sqlite3_flutter_libs', 'sqlcipher_flutter_libs']
+      packages:
+        [
+          "drift",
+          "drift_dev",
+          "sqlite3",
+          "sqlite3_flutter_libs",
+          "sqlcipher_flutter_libs",
+        ]
 
 additional_public_assets:
   - "pages/**"

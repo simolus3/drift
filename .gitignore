@@ -24,3 +24,6 @@ drift/extension/devtools/build
 
 # FVM Version Cache
 .fvm/
+
+# Documentation
+docs/deploy

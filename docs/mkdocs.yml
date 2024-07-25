@@ -1,0 +1,116 @@
+site_name: Drift
+site_description: Drift — A modern database library for Dart & Flutter
+site_author: Simon Binder
+site_url: https://drift.simonbinder.eu/docs
+repo_url: https://github.com/simolus3/drift
+# TODO: add edit_uri
+# edit_uri:
+theme:
+  name: material
+  language: en
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  # TODO: Add logo & favicon
+  # logo: assets/logo.png
+  # favicon: assets/favicon.ico
+  features:
+    - content.tooltips
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.path
+    - toc.follow
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+extra:
+  social:
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:oss@simonbinder.eu
+      name: Contact me via e-mail
+    - icon: fontawesome/brands/github
+      link: https://github.com/simolus3/drift
+      name: Project on GitHub
+
+  # TODO: Add Google Analytics
+  # analytics:
+  #     provider: google
+  #     property: G-XXXXXXXXXX
+  consent:
+    title: Cookie consent
+    description: >-
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+
+plugins:
+  - search
+  - privacy
+  - macros
+  # - spellcheck
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - tables
+  - pymdownx.highlight:
+      auto_title: false
+      anchor_linenums: true
+      use_pygments: true
+
+  - pymdownx.betterem
+
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.critic
+  - md_in_html
+
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+copyright: >
+  Copyright &copy; 2019 - 2024 Simon Binder –
+  <a href="#__consent">Change cookie settings</a>
+nav:
+  - Home:
+      - index.md
+
+  - Getting Started:
+      - getting-started/install.md
+      - getting-started/schema.md
+  - Reference:
+      - setup.md
+      - type_converters.md
+      - faq.md
+      - testing.md
+      - CLI.md
+      - isolates.md
+      - community_tools.md
+
+docs_dir: "build"
