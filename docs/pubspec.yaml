@@ -3,7 +3,7 @@ description: Documentation website for the drift project.
 publish_to: none
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   drift:
@@ -21,13 +21,9 @@ dependencies:
   sqlite3: ^2.0.0
   # Fake flutter packages for snippets
   path_provider:
-    path: assets/path_provider
   sqlite3_flutter_libs:
-    path: assets/sqlite3_flutter_libs
   sqlcipher_flutter_libs:
-    path: assets/sqlcipher_flutter_libs
   drift_flutter:
-    path: assets/drift_flutter
   # Used in examples
   rxdart: ^0.27.3
   yaml: ^3.1.1
@@ -56,12 +52,19 @@ dev_dependencies:
   zap_dev: ^0.2.3+1
 
 dependency_overrides:
-  # todo: Remove after https://github.com/dart-lang/mime/pull/43
-  mime:
-    git:
-      url: https://github.com/simolus3/mime.git
-      ref: woff2
-  # This override is necessary to fool melos, we need the fake
-  # package because we don't have Flutter here.
+  path_provider:
+    path: assets/path_provider
+  sqlite3_flutter_libs:
+    path: assets/sqlite3_flutter_libs
+  sqlcipher_flutter_libs:
+    path: assets/sqlcipher_flutter_libs
   drift_flutter:
     path: assets/drift_flutter
+  drift:
+    path: ../drift
+  drift_dev:
+    path: ../drift_dev
+  drift_postgres:
+    path: ../extras/drift_postgres
+  sqlparser:
+    path: ../sqlparser

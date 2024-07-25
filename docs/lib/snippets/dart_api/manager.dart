@@ -130,7 +130,7 @@ extension ManagerExamples on AppDatabase {
   // #enddocregion manager_filter
 
   // #docregion manager_type_specific_filter
-  Future filterWithType() async {
+  Future<void> filterWithType() async {
     // Filter all items created since 7 days ago
     managers.todoItems.filter(
         (f) => f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))));
@@ -141,7 +141,7 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_type_specific_filter
 
 // #docregion manager_ordering
-  Future orderWithType() async {
+  Future<void> orderWithType() async {
     // Order all items by their creation date in ascending order
     managers.todoItems.orderBy((o) => o.createdAt.asc());
 
@@ -151,7 +151,7 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_ordering
 
 // #docregion manager_count
-  Future count() async {
+  Future<void> count() async {
     // Count all items
     await managers.todoItems.count();
 
@@ -161,7 +161,7 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_count
 
 // #docregion manager_exists
-  Future exists() async {
+  Future<void> exists() async {
     // Check if any items exist
     await managers.todoItems.exists();
 
@@ -171,7 +171,7 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_exists
 
 // #docregion manager_filter_forward_references
-  Future relationalFilter() async {
+  Future<void> relationalFilter() async {
     // Get all items with a category description of "School"
     managers.todoItems.filter((f) => f.category.description("School"));
 
@@ -186,7 +186,7 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_filter_forward_references
 
 // #docregion manager_filter_back_references
-  Future reverseRelationalFilter() async {
+  Future<void> reverseRelationalFilter() async {
     // Get the category that has a todo item with an id of 1
     managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)));
 
@@ -199,7 +199,7 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_filter_back_references
 
 // #docregion manager_filter_custom_back_references
-  Future reverseNamedRelationalFilter() async {
+  Future<void> reverseNamedRelationalFilter() async {
     // Get all users who are administrators of a group with a name containing "Business"
     // or who own a group with an id of 1, 2, 4, or 5
     managers.users.filter(
@@ -211,24 +211,24 @@ extension ManagerExamples on AppDatabase {
 // #enddocregion manager_filter_custom_back_references
 
 // #docregion manager_references
-  Future references() async {
+  Future<void> references() async {
     /// Get each todo, along with a its categories
-    final categoriesWithReferences =
-        await managers.todoItems.withReferences().get();
-    for (final (todo, refs) in categoriesWithReferences) {
+    final todosWithRefs = await managers.todoItems.withReferences().get();
+    for (final (todo, refs) in todosWithRefs) {
       final category = await refs.category?.getSingle();
     }
 
     /// This also works in the reverse
-    final todosWithRefs = await managers.todoCategory.withReferences().get();
-    for (final (category, refs) in todosWithRefs) {
+    final categoriesWithRefs =
+        await managers.todoCategory.withReferences().get();
+    for (final (category, refs) in categoriesWithRefs) {
       final todos = await refs.todoItemsRefs.get();
     }
   }
 
 // #enddocregion manager_references
 // #docregion manager_prefetch_references
-  Future referencesPrefetch() async {
+  Future<void> referencesPrefetch() async {
     /// Get each todo, along with a its categories
     final categoriesWithReferences = await managers.todoItems
         .withReferences(
@@ -253,7 +253,7 @@ extension ManagerExamples on AppDatabase {
   }
 // #enddocregion manager_prefetch_references
 
-  Future referencesPrefetchStream() async {
+  Future<void> referencesPrefetchStream() async {
 // #docregion manager_prefetch_references_stream
     /// Get each todo, along with a its categories
     managers.todoCategory
@@ -287,7 +287,7 @@ extension After2000Filter on ColumnFilters<DateTime> {
       $composableFilter(column.unixepoch.equals(value));
 }
 
-Future filterWithExtension(AppDatabase db) async {
+Future<void> filterWithExtension(AppDatabase db) async {
   // Use the custom filters on any column that is of type DateTime
   db.managers.todoItems.filter((f) => f.createdAt.after2000orBefore1900());
 
@@ -302,7 +302,7 @@ extension After2000Ordering on ColumnOrderings<DateTime> {
   ComposableOrdering byUnixEpoch() => ColumnOrderings(column.unixepoch).asc();
 }
 
-Future orderingWithExtension(AppDatabase db) async {
+Future<void> orderingWithExtension(AppDatabase db) async {
   // Use the custom orderings on any column that is of type DateTime
   db.managers.todoItems.orderBy((f) => f.createdAt.byUnixEpoch());
 }
@@ -315,7 +315,7 @@ extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
       (content.isNull() | createdAt.isBefore(DateTime(2000)));
 }
 
-Future customFilter(AppDatabase db) async {
+Future<void> customFilter(AppDatabase db) async {
   // Use the custom filter on the `TodoItems` table
   db.managers.todoItems.filter((f) => f.noContentOrBefore2000());
 }
@@ -327,7 +327,7 @@ extension ContentThenCreationDataX on $$TodoItemsTableOrderingComposer {
   ComposableOrdering contentThenCreatedAt() => content.asc() & createdAt.asc();
 }
 
-Future customOrdering(AppDatabase db) async {
+Future<void> customOrdering(AppDatabase db) async {
   // Use the custom ordering on the `TodoItems` table
   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
