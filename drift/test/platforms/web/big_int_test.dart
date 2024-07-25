@@ -1,4 +1,7 @@
 @TestOn('browser')
+@Skip('sql.js not set up for testing')
+library;
+
 import 'package:drift/drift.dart';
 import 'package:drift/web.dart';
 import 'package:test/test.dart';

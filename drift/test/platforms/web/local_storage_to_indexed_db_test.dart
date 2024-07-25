@@ -1,4 +1,7 @@
 @TestOn('browser')
+@Skip('sql.js not set up for testing')
+library;
+
 import 'dart:convert';
 
 import 'package:drift/drift.dart';

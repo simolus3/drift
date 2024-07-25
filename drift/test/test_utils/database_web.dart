@@ -14,8 +14,10 @@ Future<WasmSqlite3> get sqlite3 {
     final channel = spawnHybridUri('/test/test_utils/sqlite_server.dart');
     final port = await channel.stream.first as int;
 
-    return WasmSqlite3.loadFromUrl(
+    final sqlite = await WasmSqlite3.loadFromUrl(
         Uri.parse('http://localhost:$port/sqlite3.wasm'));
+    sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+    return sqlite;
   });
 }
 
