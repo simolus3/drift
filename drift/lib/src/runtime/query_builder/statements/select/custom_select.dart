@@ -22,7 +22,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
 
   /// Constructs a fetcher for this query. The fetcher is responsible for
   /// updating a stream at the right moment.
-  QueryStreamFetcher _constructFetcher() {
+  QueryStreamFetcher<List<Map<String, Object?>>> _constructFetcher() {
     final args = _mapArgs();
 
     return QueryStreamFetcher(

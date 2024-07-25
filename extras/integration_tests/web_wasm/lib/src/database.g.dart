@@ -203,41 +203,6 @@ typedef $$TestTableTableUpdateCompanionBuilder = TestTableCompanion Function({
   Value<String> content,
 });
 
-class $$TestTableTableTableManager extends RootTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableCreateCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder> {
-  $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TestTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TestTableTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> content = const Value.absent(),
-          }) =>
-              TestTableCompanion(
-            id: id,
-            content: content,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String content,
-          }) =>
-              TestTableCompanion.insert(
-            id: id,
-            content: content,
-          ),
-        ));
-}
-
 class $$TestTableTableFilterComposer
     extends FilterComposer<_$TestDatabase, $TestTableTable> {
   $$TestTableTableFilterComposer(super.$state);
@@ -265,6 +230,66 @@ class $$TestTableTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$TestTableTableTableManager extends RootTableManager<
+    _$TestDatabase,
+    $TestTableTable,
+    TestTableData,
+    $$TestTableTableFilterComposer,
+    $$TestTableTableOrderingComposer,
+    $$TestTableTableCreateCompanionBuilder,
+    $$TestTableTableUpdateCompanionBuilder,
+    (
+      TestTableData,
+      BaseReferences<_$TestDatabase, $TestTableTable, TestTableData>
+    ),
+    TestTableData,
+    PrefetchHooks Function()> {
+  $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TestTableTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TestTableTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> content = const Value.absent(),
+          }) =>
+              TestTableCompanion(
+            id: id,
+            content: content,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String content,
+          }) =>
+              TestTableCompanion.insert(
+            id: id,
+            content: content,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
+    _$TestDatabase,
+    $TestTableTable,
+    TestTableData,
+    $$TestTableTableFilterComposer,
+    $$TestTableTableOrderingComposer,
+    $$TestTableTableCreateCompanionBuilder,
+    $$TestTableTableUpdateCompanionBuilder,
+    (
+      TestTableData,
+      BaseReferences<_$TestDatabase, $TestTableTable, TestTableData>
+    ),
+    TestTableData,
+    PrefetchHooks Function()>;
 
 class $TestDatabaseManager {
   final _$TestDatabase _db;

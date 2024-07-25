@@ -39,6 +39,22 @@ Type specific filters for `int`, `double`, `Int64`, `DateTime` and `String` are 
 {% include "blocks/snippet" snippets = snippets name = 'manager_type_specific_filter' %}
 
 
+### Referencing other tables
+
+The manager also makes it easy to query an entities referenced fields by using the `withReferences` method.
+This will return a record with the entity and a `refs` object which contains the referenced fields.
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_references' %}
+
+The problem with the above approach is that it will issue a separate query for each row in the result set. This can be very inefficient if you have a large number of rows.  
+If there were 1000 todos, this would issue 1000 queries to fetch the category for each todo.
+
+#### Prefetching references
+
+Drift provides a way to prefetch references in a single query to avoid inefficient queries. This is done by using the callback in the `withReferences` method. The referenced item will then be available in the referenced managers `prefetchedData` field.
+
+{% include "blocks/snippet" snippets = snippets name = 'manager_prefetch_references' %}
+
 ### Filtering across tables
 You can filter across references to other tables by using the generated reference filters. You can nest these as deep as you'd like and the manager will take care of adding the aliased joins behind the scenes.
 

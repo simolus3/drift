@@ -930,17 +930,16 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Stream<List<Map<String, Object?>>> createStream(
-          _i4.QueryStreamFetcher? stmt) =>
+  _i5.Stream<T> createStream<T extends Object>(
+          _i4.QueryStreamFetcher<T>? stmt) =>
       (super.noSuchMethod(
         Invocation.method(
           #createStream,
           [stmt],
         ),
-        returnValue: _i5.Stream<List<Map<String, Object?>>>.empty(),
-        returnValueForMissingStub:
-            _i5.Stream<List<Map<String, Object?>>>.empty(),
-      ) as _i5.Stream<List<Map<String, Object?>>>);
+        returnValue: _i5.Stream<T>.empty(),
+        returnValueForMissingStub: _i5.Stream<T>.empty(),
+      ) as _i5.Stream<T>);
 
   @override
   T alias<T, D>(

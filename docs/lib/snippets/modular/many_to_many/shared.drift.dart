@@ -241,46 +241,6 @@ typedef $$BuyableItemsTableUpdateCompanionBuilder = i1.BuyableItemsCompanion
   i0.Value<int> price,
 });
 
-class $$BuyableItemsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$BuyableItemsTable,
-    i1.BuyableItem,
-    i1.$$BuyableItemsTableFilterComposer,
-    i1.$$BuyableItemsTableOrderingComposer,
-    $$BuyableItemsTableCreateCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder> {
-  $$BuyableItemsTableTableManager(
-      i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer: i1
-              .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> description = const i0.Value.absent(),
-            i0.Value<int> price = const i0.Value.absent(),
-          }) =>
-              i1.BuyableItemsCompanion(
-            id: id,
-            description: description,
-            price: price,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String description,
-            required int price,
-          }) =>
-              i1.BuyableItemsCompanion.insert(
-            id: id,
-            description: description,
-            price: price,
-          ),
-        ));
-}
-
 class $$BuyableItemsTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableFilterComposer(super.$state);
@@ -318,3 +278,70 @@ class $$BuyableItemsTableOrderingComposer
       builder: (column, joinBuilders) =>
           i0.ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$BuyableItemsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
+    $$BuyableItemsTableCreateCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder,
+    (
+      i1.BuyableItem,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$BuyableItemsTable,
+          i1.BuyableItem>
+    ),
+    i1.BuyableItem,
+    i0.PrefetchHooks Function()> {
+  $$BuyableItemsTableTableManager(
+      i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              i1.$$BuyableItemsTableFilterComposer(i0.ComposerState(db, table)),
+          orderingComposer: i1
+              .$$BuyableItemsTableOrderingComposer(i0.ComposerState(db, table)),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> description = const i0.Value.absent(),
+            i0.Value<int> price = const i0.Value.absent(),
+          }) =>
+              i1.BuyableItemsCompanion(
+            id: id,
+            description: description,
+            price: price,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String description,
+            required int price,
+          }) =>
+              i1.BuyableItemsCompanion.insert(
+            id: id,
+            description: description,
+            price: price,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
+    $$BuyableItemsTableCreateCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder,
+    (
+      i1.BuyableItem,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$BuyableItemsTable,
+          i1.BuyableItem>
+    ),
+    i1.BuyableItem,
+    i0.PrefetchHooks Function()>;

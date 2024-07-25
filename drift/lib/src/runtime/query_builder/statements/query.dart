@@ -238,17 +238,11 @@ abstract mixin class Selectable<T>
   @override
   Future<T?> getSingleOrNull() async {
     final list = await get();
-    final iterator = list.iterator;
-
-    if (!iterator.moveNext()) {
+    if (list.isEmpty) {
       return null;
+    } else {
+      return list.single;
     }
-    final element = iterator.current;
-    if (iterator.moveNext()) {
-      throw StateError('Expected exactly one result, but found more than one!');
-    }
-
-    return element;
   }
 
   @override

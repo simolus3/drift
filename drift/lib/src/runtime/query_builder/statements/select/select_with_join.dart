@@ -239,11 +239,15 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     _groupBy = GroupBy._(expressions.toList(), having);
   }
 
-  @override
-  Stream<List<TypedResult>> watch() {
+  /// Builds a query which which will emit a new result whenever any of the
+  /// tables this query depends on changes.
+  /// You can pass additional tables to watch to this method.
+  Stream<List<TypedResult>> _watchWithAdditionalTables(
+      [Iterable<ResultSetImplementation<dynamic, dynamic>> tables = const []]) {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher(
-      readsFrom: TableUpdateQuery.onAllTables(ctx.watchedTables),
+      readsFrom:
+          TableUpdateQuery.onAllTables(ctx.watchedTables.followedBy(tables)),
       fetchData: () => _getRaw(ctx),
       key: StreamKey(ctx.sql, ctx.boundVariables),
     );
@@ -251,6 +255,11 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     return database
         .createStream(fetcher)
         .asyncMapPerSubscription((rows) => _mapResponse(rows));
+  }
+
+  @override
+  Stream<List<TypedResult>> watch() {
+    return _watchWithAdditionalTables();
   }
 
   @override
@@ -383,4 +392,12 @@ class _ResultStructure {
   final List<ResultSetImplementation> queriedTables;
 
   _ResultStructure({required this.columnAliases, required this.queriedTables});
+}
+
+@internal
+extension JoinedSelectStatementAdditionalTables on JoinedSelectStatement {
+  Stream<List<TypedResult>> watchWithAdditionalTables(
+          [Iterable<ResultSetImplementation<dynamic, dynamic>> tables =
+              const []]) =>
+      _watchWithAdditionalTables(tables);
 }

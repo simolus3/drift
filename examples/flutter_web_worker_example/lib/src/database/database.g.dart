@@ -223,39 +223,6 @@ typedef $EntriesUpdateCompanionBuilder = EntriesCompanion Function({
   Value<String> value,
 });
 
-class $EntriesTableManager extends RootTableManager<
-    _$MyDatabase,
-    Entries,
-    Entry,
-    $EntriesFilterComposer,
-    $EntriesOrderingComposer,
-    $EntriesCreateCompanionBuilder,
-    $EntriesUpdateCompanionBuilder> {
-  $EntriesTableManager(_$MyDatabase db, Entries table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
-          orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> value = const Value.absent(),
-          }) =>
-              EntriesCompanion(
-            id: id,
-            value: value,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String value,
-          }) =>
-              EntriesCompanion.insert(
-            id: id,
-            value: value,
-          ),
-        ));
-}
-
 class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
   $EntriesFilterComposer(super.$state);
   ColumnFilters<int> get id => $state.composableBuilder(
@@ -281,6 +248,58 @@ class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $EntriesTableManager extends RootTableManager<
+    _$MyDatabase,
+    Entries,
+    Entry,
+    $EntriesFilterComposer,
+    $EntriesOrderingComposer,
+    $EntriesCreateCompanionBuilder,
+    $EntriesUpdateCompanionBuilder,
+    (Entry, BaseReferences<_$MyDatabase, Entries, Entry>),
+    Entry,
+    PrefetchHooks Function()> {
+  $EntriesTableManager(_$MyDatabase db, Entries table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $EntriesFilterComposer(ComposerState(db, table)),
+          orderingComposer: $EntriesOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> value = const Value.absent(),
+          }) =>
+              EntriesCompanion(
+            id: id,
+            value: value,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String value,
+          }) =>
+              EntriesCompanion.insert(
+            id: id,
+            value: value,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $EntriesProcessedTableManager = ProcessedTableManager<
+    _$MyDatabase,
+    Entries,
+    Entry,
+    $EntriesFilterComposer,
+    $EntriesOrderingComposer,
+    $EntriesCreateCompanionBuilder,
+    $EntriesUpdateCompanionBuilder,
+    (Entry, BaseReferences<_$MyDatabase, Entries, Entry>),
+    Entry,
+    PrefetchHooks Function()>;
 
 class $MyDatabaseManager {
   final _$MyDatabase _db;

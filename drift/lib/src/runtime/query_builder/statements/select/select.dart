@@ -300,3 +300,12 @@ class TypedResult {
         column.converter, read<S>(column));
   }
 }
+
+/// This extension is used to add custom data to a [TypedResult] row outside of this library.
+@internal
+extension EditTypedResultExtension on TypedResult {
+  /// Adds a new expression to this result row.
+  void addData(ResultSetImplementation table, dynamic data) {
+    _parsedData[table] = data;
+  }
+}

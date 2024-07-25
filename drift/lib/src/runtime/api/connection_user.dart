@@ -63,7 +63,7 @@ abstract class DatabaseConnectionUser {
 
   /// Creates and auto-updating stream from the given select statement. This
   /// method should not be used directly.
-  Stream<List<Map<String, Object?>>> createStream(QueryStreamFetcher stmt) =>
+  Stream<T> createStream<T extends Object>(QueryStreamFetcher<T> stmt) =>
       resolvedEngine.streamQueries.registerStream(stmt, this);
 
   /// Creates a copy of the table with an alias so that it can be used in the

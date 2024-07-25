@@ -143,7 +143,7 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   ///    to perform a case sensitive search, they can pass `caseInsensitive = false` manually
   ///
   /// We are using the default of {bool caseInsensitive = true}, so that users who haven't set
-  /// the database to be case sensitive wont be confues why their like expressions are case insensitive
+  /// the database to be case sensitive wont be confused why their like expressions are case insensitive
   Expression<bool> _buildExpression(
       _StringFilterTypes type, String value, bool caseInsensitive) {
     final Expression<String> column;

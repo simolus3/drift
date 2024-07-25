@@ -39,14 +39,6 @@ class _TableManagerWriter {
     leaf.writeln(insertCompanionBuilderTypeDef);
     leaf.writeln(updateCompanionBuilderTypeDef);
 
-    // Write the root and processed table managers
-    leaf.write(_templates.rootTableManager(
-        table: table,
-        dbClassName: dbClassName,
-        leaf: leaf,
-        updateCompanionBuilder: updateCompanionBuilder,
-        createCompanionBuilder: insertCompanionBuilder));
-
     // Gather the relationships to and from this table
     List<_Relation> relations =
         table.columns.map((e) => _getRelationForColumn(e)).nonNulls.toList();
@@ -93,6 +85,37 @@ class _TableManagerWriter {
       return true;
     }).toList();
 
+    // Remove any relations where the type isn't exactly the same (num and int)
+    // This is caused by using different type converters
+    //
+    // The Manager API filters will sometimes move a filter from 1 column to another
+    // ```dart
+    // f.group.id.equals(1) // Required a JOIN
+    // // becomes
+    // f.groupId.equals(Group(id: 1)) // No JOIN required
+    // ```
+    // To move the filter, the types of the columns must be the same
+    relations = relations.where((relation) {
+      String typeForColumn(DriftColumn column) {
+        return column.typeConverter?.dartType.getDisplayString(
+                withNullability: false) ?? // ignore: deprecated_member_use
+            leaf.dartCode(leaf.innerColumnType(column.sqlType));
+      }
+
+      final currentType = typeForColumn(relation.currentColumn);
+      final referencedType = typeForColumn(relation.referencedColumn);
+      if (currentType != referencedType) {
+        print(
+            "\"${relation.currentTable.baseDartName}.${relation.currentColumn.nameInSql}\" has a type of \"$currentType\""
+            " and \"${relation.referencedTable.baseDartName}.${relation.referencedColumn.nameInSql}\" has a type of \"$referencedType\"."
+            " Filters, orderings and reference getters for this relation wont be generated."
+            " The Manager API can only generate filters and orderings for relations where the types are exactly the same."
+            " If you aren't using the Manager API, you can ignore this message.");
+        return false;
+      }
+      return true;
+    }).toList();
+
     final columnFilters = <String>[];
     final columnOrderings = <String>[];
 
@@ -125,6 +148,13 @@ class _TableManagerWriter {
             .add(_templates.relatedOrderings(leaf: leaf, relation: relation));
       }
     }
+    if (!scope.generationOptions.isModular && relations.isNotEmpty) {
+      leaf.write(_templates.rowReferencesClass(
+          table: table,
+          relations: relations,
+          leaf: leaf,
+          dbClassName: dbClassName));
+    }
 
     leaf.write(_templates.filterComposer(
         table: table,
@@ -136,6 +166,20 @@ class _TableManagerWriter {
         leaf: leaf,
         dbClassName: dbClassName,
         columnOrderings: columnOrderings));
+
+    // Write the root and processed table managers
+    leaf.write(_templates.rootTableManager(
+        table: table,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        updateCompanionBuilder: updateCompanionBuilder,
+        createCompanionBuilder: insertCompanionBuilder,
+        relations: relations));
+    leaf.write(_templates.processedTableManagerTypeDef(
+        table: table,
+        dbClassName: dbClassName,
+        leaf: leaf,
+        relations: relations));
   }
 }
 

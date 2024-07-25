@@ -14,6 +14,9 @@ class JoinBuilder {
   /// The column of the [referencedTable] which will be use to create the join
   final GeneratedColumn referencedColumn;
 
+  /// Whether this join should be used to read columns from the referenced table
+  final bool useColumns;
+
   /// Class that describes how a ordering that is being
   /// applied to a referenced table
   /// should be joined to the current table
@@ -22,7 +25,8 @@ class JoinBuilder {
       {required this.currentTable,
       required this.referencedTable,
       required this.currentColumn,
-      required this.referencedColumn});
+      required this.referencedColumn,
+      this.useColumns = false});
 
   /// The name of the alias that this join will use
   String get aliasedName {
@@ -34,7 +38,8 @@ class JoinBuilder {
     if (identical(this, other)) return true;
     if (other is JoinBuilder) {
       return other.currentColumn == currentColumn &&
-          other.referencedColumn == referencedColumn;
+          other.referencedColumn == referencedColumn &&
+          other.useColumns == useColumns;
     } else {
       return false;
     }
@@ -54,7 +59,7 @@ class JoinBuilder {
   Join buildJoin() {
     return leftOuterJoin(
         referencedTable, currentColumn.equalsExp(referencedColumn),
-        useColumns: false);
+        useColumns: useColumns);
   }
 }
 
