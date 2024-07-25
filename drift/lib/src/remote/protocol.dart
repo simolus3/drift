@@ -56,8 +56,8 @@ class DriftProtocol {
   Message deserialize(Object message) {
     if (message is! List) throw const FormatException('Cannot read message');
 
-    final tag = message[0];
-    final id = message[1] as int;
+    final tag = castInt(message[0]);
+    final id = castInt(message[1]);
 
     switch (tag) {
       case _tag_Request:
@@ -168,11 +168,14 @@ class DriftProtocol {
       tag = encoded;
     } else {
       fullMessage = encoded as List;
-      tag = fullMessage[0] as int;
+      tag = castInt(fullMessage[0]);
     }
 
-    int readInt(int index) => fullMessage![index] as int;
-    int? readNullableInt(int index) => fullMessage![index] as int?;
+    int readInt(int index) => castInt(fullMessage![index]);
+    int? readNullableInt(int index) => switch (fullMessage![index]) {
+          null => null,
+          var other => castInt(other),
+        };
 
     switch (tag) {
       case _tag_NoArgsRequest_terminateAll:
@@ -191,13 +194,16 @@ class DriftProtocol {
           final list = fullMessage[i] as List;
           args.add(
             ArgumentsForBatchedStatement(
-              list[0] as int,
+              castInt(list[0]),
               [for (final encoded in list.skip(1)) _decodeDbValue(encoded)],
             ),
           );
         }
 
-        final executorId = fullMessage.last as int?;
+        final executorId = switch (fullMessage.last) {
+          null => null,
+          var other => castInt(other),
+        };
         return ExecuteBatchedStatement(
             BatchedStatements(sql, args), executorId);
       case _tag_RunTransactionAction:
@@ -216,7 +222,10 @@ class DriftProtocol {
         final updates = <TableUpdate>[];
         for (var i = 1; i < fullMessage!.length; i++) {
           final encodedUpdate = fullMessage[i] as List;
-          final kindIndex = encodedUpdate[1] as int?;
+          final kindIndex = switch (encodedUpdate[1]) {
+            null => null,
+            var other => castInt(other),
+          };
 
           updates.add(
             TableUpdate(encodedUpdate[0] as String,
@@ -480,4 +489,14 @@ class SelectResult {
   final List<Map<String, Object?>> rows;
 
   const SelectResult(this.rows);
+}
+
+int castInt(Object? source) {
+  const isDart2Wasm = bool.fromEnvironment('dart.tool.dart2wasm');
+
+  if (isDart2Wasm) {
+    return (source as double).toInt();
+  } else {
+    return source as int;
+  }
 }
