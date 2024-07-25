@@ -191,6 +191,7 @@ final class SqlTypes {
       DriftSqlType.int => switch (sqlValue) {
           int() => sqlValue,
           BigInt() => sqlValue.toInt(),
+          double() => sqlValue.toInt(),
           _ => int.parse(sqlValue.toString()),
         },
       DriftSqlType.dateTime => _readDateTime(sqlValue),

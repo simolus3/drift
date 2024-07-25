@@ -1,4 +1,3 @@
-@TestOn('vm')
 import 'dart:async';
 
 import 'package:async/async.dart';
@@ -11,12 +10,9 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 import 'generated/todos.dart';
-import 'test_utils/database_vm.dart';
-import 'test_utils/mocks.dart';
+import 'test_utils/test_utils.dart';
 
 void main() {
-  preferLocalSqlite3();
-
   test('closes channel in shutdown', () async {
     final controller = StreamChannelController<Object?>();
     final server =

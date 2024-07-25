@@ -164,8 +164,8 @@ class DriftProtocol {
     int tag;
     List? fullMessage;
 
-    if (encoded is int) {
-      tag = encoded;
+    if (isInt(encoded)) {
+      tag = castInt(encoded);
     } else {
       fullMessage = encoded as List;
       tag = castInt(fullMessage[0]);
@@ -491,12 +491,23 @@ class SelectResult {
   const SelectResult(this.rows);
 }
 
-int castInt(Object? source) {
-  const isDart2Wasm = bool.fromEnvironment('dart.tool.dart2wasm');
+const _isDart2Wasm = bool.fromEnvironment('dart.tool.dart2wasm');
 
-  if (isDart2Wasm) {
+int castInt(Object? source) {
+  if (_isDart2Wasm) {
     return (source as double).toInt();
   } else {
     return source as int;
+  }
+}
+
+bool isInt(Object? source) {
+  if (_isDart2Wasm) {
+    return switch (source) {
+      double jsDouble => jsDouble.toInt() == jsDouble,
+      _ => false,
+    };
+  } else {
+    return source is int;
   }
 }

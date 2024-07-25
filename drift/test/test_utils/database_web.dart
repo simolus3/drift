@@ -12,7 +12,7 @@ Future<WasmSqlite3>? _loadedSqlite3;
 Future<WasmSqlite3> get sqlite3 {
   return _loadedSqlite3 ??= Future.sync(() async {
     final channel = spawnHybridUri('/test/test_utils/sqlite_server.dart');
-    final port = await channel.stream.first as int;
+    final port = (await channel.stream.first as num).toInt();
 
     final sqlite = await WasmSqlite3.loadFromUrl(
         Uri.parse('http://localhost:$port/sqlite3.wasm'));
