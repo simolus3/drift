@@ -33,6 +33,9 @@ void databases() {
     },
     setup: (rawDb) {
       rawDb.execute("PRAGMA key = 'passphrase';");
+
+      // Recommended option, not enabled by default on SQLCipher
+      rawDb.config.doubleQuotedStringLiterals = false;
     },
   );
   // #enddocregion encrypted1
@@ -47,6 +50,9 @@ void databases() {
     setup: (rawDb) {
       assert(_debugCheckHasCipher(rawDb));
       rawDb.execute("PRAGMA key = 'passphrase';");
+
+      // Recommended option, not enabled by default on SQLCipher
+      rawDb.config.doubleQuotedStringLiterals = false;
     },
   );
   // #enddocregion encrypted2
