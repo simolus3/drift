@@ -226,15 +226,15 @@ optional `NULL` keyword can be used to indicate whether the type is nullable.
 ## Recommended options
 
 In general, we recommend using the default options.
-{%- comment %}
-However, some options will be enabled by default in a future drift release.
+
+<!-- However, some options will be enabled by default in a future drift release.
 At the moment, they're opt-in to not break existing users. These options are:
 
 (Currently all recommended options are also the default)
 
-We recommend enabling these options.
+We recommend enabling these options. -->
 
-{% endcomment %}
+
 However, you can disable some default drift features and reduce the amount of generated code with the following options:
 
 - `skip_verification_code: true`: You can remove a significant portion of generated code with this option. The

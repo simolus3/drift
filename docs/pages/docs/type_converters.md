@@ -33,7 +33,7 @@ Finally, we can use that converter in a table declaration:
 The generated `User` class will then have a `preferences` column of type
 `Preferences`. Drift will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
-also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
+also works with [compiled custom queries]("/queries/custom").
 
 {% block "blocks/alert" title="Caution with equality" color="warning" %}
 If your converter returns an object that is not comparable by value, the generated dataclass will not
@@ -182,7 +182,7 @@ and pass it to the serialization methods.
 
 In database rows, columns to which a type converter has been applied are storing the result of
 `toSql()`. Drift will apply the type converter automatically when reading or writing rows, but they
-are not applied automatically when creating your own [expressions]({{'Dart API/expressions.md' | pageUrl }}).
+are not applied automatically when creating your own [expressions]('Dart API/expressions.md').
 For example, filtering for values with [`column.equals`](https://drift.simonbinder.eu/api/drift/expression/equals)
 will compare not apply  the type converter, you'd be comparing the underlying database values.
 
@@ -190,5 +190,5 @@ On columns with type converters, [`equalsValue`](https://drift.simonbinder.eu/ap
 can be used instead - unlike `equals`, `equasValue` will apply the converter before emtting a comparison in SQL.
 If you need to apply the converter for other comparisons as well, you can do that manually with `column.converter.toSql`.
 
-For variables used in queries that are part of a [drift file]({{'SQL API/drift_files.md'| pageUrl}}), type converters will be
-applied by default if the `apply_converters_on_variables` [builder option]({{'Generation options/index.md'|pageUrl}}) is enabled (which it is by default).
+For variables used in queries that are part of a [drift file]('SQL API/drift_files.md'), type converters will be
+applied by default if the `apply_converters_on_variables` [builder option]('Generation options/index.md') is enabled (which it is by default).

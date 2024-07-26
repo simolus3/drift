@@ -31,13 +31,13 @@ a slower implementation based on IndexedDb in a shared worker. This makes drift 
 even ones that don't support the official sqlite3 build for the web.
 In some browsers, you need to serve your app with [additional COOP/COEP headers](#additional-headers) for full support (but drift works without that too - the official sqlite3 build doesn't).
 
-| Supported Browser | With [security headers](#additional-headers) | Without security headers |
-|-------------------|----------------------------------------------|--------------------------|
-| Firefox _(tested version 114)_ | Full | Full |
-| Chrome _(tested version 114)_ | Full | Good (slightly slower) |
-| Chrome on Android _(tested version 114)_ | Full | Limited (not with multiple tabs) |
-| Safari (_tested version 16.2_) | Good (slightly slower) | Good (slightly slower) |
-| Safari Technology Preview _(tested 172 (17.0))_ | Full | Good |
+| Supported Browser                               | With [security headers](#additional-headers) | Without security headers         |
+| ----------------------------------------------- | -------------------------------------------- | -------------------------------- |
+| Firefox _(tested version 114)_                  | Full                                         | Full                             |
+| Chrome _(tested version 114)_                   | Full                                         | Good (slightly slower)           |
+| Chrome on Android _(tested version 114)_        | Full                                         | Limited (not with multiple tabs) |
+| Safari (_tested version 16.2_)                  | Good (slightly slower)                       | Good (slightly slower)           |
+| Safari Technology Preview _(tested 172 (17.0))_ | Full                                         | Good                             |
 
 Firefox currently doesn't support the FileSystem Access API in private browsing windows
 (IndexedDB is supported from version 115). So drift will fall back to an IndexedDb-based
@@ -233,7 +233,6 @@ on the web and WAL databases can't be imported with `initializeDatabase` either.
 
 The drift repository contains a two small web applications using drift on the web:
 
-- A tiny todo app as a showcase, [available under this website]({{ '/web/example/' | relUrl }}).
 - A cross-platform Flutter app with web support ([source code](https://github.com/simolus3/drift/tree/develop/examples/app)).
 
 If you have a cool open-source web application using drift, we'd love to list it here as well. Feel free to open a PR!

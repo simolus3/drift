@@ -205,7 +205,7 @@ Consider this example:
 
 {% assign nested_drift = "package:drift_docs/snippets/custom_row_classes/employees_sql.drift.excerpt.json" | readString | json_decode %}
 
-{% include "blocks/snippet" name = "example" snippets = nested_drift %}
+{% include "blocks/snippet" snippets = nested_drift name = "example" %}
 
 Using the rules as defined above, let's see how the `EmployeeWithStaff` class can look like:
 The outermost result set has three columns: A `**` column, a simple expression column and a `LIST`

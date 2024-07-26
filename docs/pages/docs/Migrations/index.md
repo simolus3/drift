@@ -118,7 +118,7 @@ you can use a new API from `drift_dev` 1.5.0 to verify the current schema withou
 
 {% assign runtime_snippet = 'package:drift_docs/snippets/migrations/runtime_verification.dart.excerpt.json' | readString | json_decode %}
 
-{% include "blocks/snippet" snippets = runtime_snippet name = '' %}
+{% include "blocks/snippet" snippets = runtime_snippet name = '(full)' %}
 
 When you use `validateDatabaseSchema`, drift will transparently:
 

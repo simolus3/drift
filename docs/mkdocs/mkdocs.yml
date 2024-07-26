@@ -68,6 +68,7 @@ plugins:
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
   - attr_list
   - footnotes
   - toc:
@@ -99,18 +100,38 @@ copyright: >
   <a href="#__consent">Change cookie settings</a>
 nav:
   - Home:
-      - faq.md
-      - type_converters.md
+      - Getting Started: index.md
+      - setup.md
+      - Dart API:
+          - Getting Started: Dart API/index.md
+          - Dart API/manager.md
+          - Dart API/tables.md
+          - Dart API/select.md
+          - Dart API/writes.md
+          - Dart API/transactions.md
+          - Dart API/expressions.md
+          - Dart API/schema_inspection.md
+          - Dart API/views.md
+          - Dart API/daos.md
       - SQL API:
-          - SQL API/custom_queries.md
-          - SQL API/index.md
-          - SQL API/types.md
+          - Getting Started: SQL API/index.md
           - SQL API/drift_files.md
-          - SQL API/sql_ide.md
+          - SQL API/types.md
           - SQL API/extensions.md
-      - index.md
-      - CLI.md
-      - isolates.md
+          - SQL API/custom_queries.md
+          # - SQL API/sql_ide.md
+      - Migrations:
+          - Getting Started: Migrations/index.md
+          - Migrations/exports.md
+          - Migrations/step_by_step.md
+          - Migrations/tests.md
+          - Migrations/api.md
+      - type_converters.md
+      - custom_row_classes.md
+      - Generation options:
+          - Getting Started: Generation options/index.md
+          - Generation options/modular.md
+          - Generation options/in_other_builders.md
       - Examples:
           - Examples/relationships.md
           - Examples/tracing.md
@@ -118,41 +139,20 @@ nav:
           - Examples/server_sync.md
           - Examples/existing_databases.md
       - Platforms:
-          - Platforms/encryption.md
-          - Platforms/web.md
-          - Platforms/index.md
+          - Getting Started: Platforms/index.md
           - Platforms/vm.md
-          - Platforms/libsql.md
+          - Platforms/web.md
           - Platforms/postgres.md
-      - Generation options:
-          - Generation options/index.md
-          - Generation options/in_other_builders.md
-          - Generation options/modular.md
-      - Internals:
-          - Internals/index.md
-      - Migrations:
-          - Migrations/index.md
-          - Migrations/step_by_step.md
-          - Migrations/tests.md
-          - Migrations/exports.md
-          - Migrations/api.md
-      - setup.md
-      - upgrading.md
+          - Platforms/encryption.md
+          - Platforms/libsql.md
+      - isolates.md
       - testing.md
+      - CLI.md
+      - faq.md
       - community_tools.md
-      - Dart API:
-          - Dart API/schema_inspection.md
-          - Dart API/expressions.md
-          - Dart API/tables.md
-          - Dart API/index.md
-          - Dart API/transactions.md
-          - Dart API/daos.md
-          - Dart API/select.md
-          - Dart API/writes.md
-          - Dart API/manager.md
-          - Dart API/views.md
+      - Internals: Internals/index.md
       - migrating_to_drift.md
-      - custom_row_classes.md
+      - upgrading.md
 
   # - Getting Started:
   #     - getting-started/install.md

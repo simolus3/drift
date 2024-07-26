@@ -108,7 +108,7 @@ The chosen options help reduce binary size by removing features not used by drif
 - __SQLITE_DQS=0__: This will make sqlite not accept double-quoted strings (and instead parse them as identifiers). This matches
   the behavior of drift and compiled queries
 - __SQLITE_THREADSAFE=0__: Since the majority of Flutter apps only use one isolate, thread safety is turned off. Note that you
-  can still use the [isolate api]({{"../isolates.md" | pageUrl}}) for background operations. As long as all
+  can still use the [isolate api](../isolates.md") for background operations. As long as all
   database accesses happen from the same thread, there's no problem.
 - SQLITE_DEFAULT_MEMSTATUS=0: The `sqlite3_status()` interfaces are not exposed by drift, so there's no point of having them.
 - SQLITE_MAX_EXPR_DEPTH=0: Disables maximum depth when sqlite parses expressions, which can make the parser faster.

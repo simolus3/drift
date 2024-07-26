@@ -33,17 +33,17 @@ This section describes all the options available when declaring columns.
 Drift supports a variety of column types out of the box. You can store custom classes in columns by using
 [type converters]({{ "../type_converters.md" | pageUrl }}).
 
-| Dart type    | Column        | Corresponding SQLite type                           |
-|--------------|---------------|-----------------------------------------------------|
-| `int`        | `integer()`   | `INTEGER`                                           |
-| `BigInt`     | `int64()`     | `INTEGER` (useful for large values on the web)      |
-| `double`     | `real()`      | `REAL`                                              |
-| `boolean`    | `boolean()`   | `INTEGER`, which a `CHECK` to only allow `0` or `1` |
-| `String`     | `text()`      | `TEXT`                                              |
-| `DateTime`   | `dateTime()`  | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)               |
-| `Uint8List`  | `blob()`      | `BLOB`                                              |
-| `Enum`       | `intEnum()`   | `INTEGER` (more information available [here]({{ "../type_converters.md#implicit-enum-converters" | pageUrl }})). |
-| `Enum`       | `textEnum()`  | `TEXT` (more information available [here]({{ "../type_converters.md#implicit-enum-converters" | pageUrl }})). |
+| Dart type   | Column       | Corresponding SQLite type                                                                        |
+| ----------- | ------------ | ------------------------------------------------------------------------------------------------ |
+| `int`       | `integer()`  | `INTEGER`                                                                                        |
+| `BigInt`    | `int64()`    | `INTEGER` (useful for large values on the web)                                                   |
+| `double`    | `real()`     | `REAL`                                                                                           |
+| `boolean`   | `boolean()`  | `INTEGER`, which a `CHECK` to only allow `0` or `1`                                              |
+| `String`    | `text()`     | `TEXT`                                                                                           |
+| `DateTime`  | `dateTime()` | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)                          |
+| `Uint8List` | `blob()`     | `BLOB`                                                                                           |
+| `Enum`      | `intEnum()`  | `INTEGER` (more information available [here]({{ "../type_converters.md#implicit-enum-converters" | pageUrl }})). |
+| `Enum`      | `textEnum()` | `TEXT` (more information available [here]("../type_converters.md#implicit-enum-converters")).    |
 
 Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
 the database.
@@ -338,7 +338,7 @@ Would be generated as `CREATE TABLE enabled_categories (parent_category INTEGER 
 To override the table name, simply override the `tableName` getter. An explicit name for
 columns can be provided with the `named` method:
 
-{% include "blocks/snippet" snippets = snippets name="names" %}
+{% include "blocks/snippet" snippets = snippets name = "names" %}
 
 The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
 
@@ -358,7 +358,7 @@ implements `hashCode`, `operator==` and a few other useful operators.
 When you want to use your own type hierarchy, or have more control over the generated classes, you can
 also tell drift to your own class or type:
 
-{% include "blocks/snippet" snippets = snippets name="custom-type" %}
+{% include "blocks/snippet" snippets = snippets name = "custom-type" %}
 
 Drift verifies that the type is suitable for storing a row of that table.
 More details about this feature are [described here]({{ '../custom_row_classes.md' | pageUrl }}).
@@ -374,7 +374,7 @@ If your table has an `IntColumn` with an `autoIncrement()` constraint, drift rec
 primary key. If you want to specify a custom primary key for your table, you can override the `primaryKey`
 getter in your table:
 
-{% include "blocks/snippet" snippets = snippets name="primary-key" %}
+{% include "blocks/snippet" snippets = snippets name = "primary-key" %}
 
 Note that the primary key must essentially be constant so that the generator can recognize it. That means:
 
@@ -387,14 +387,14 @@ When the value of one column must be unique in the table, you can [make that col
 When the combined value of multiple columns should be unique, this needs to be declared on the
 table by overriding the `uniqueKeys` getter:
 
-{% include "blocks/snippet" snippets = snippets name="unique-table" %}
+{% include "blocks/snippet" snippets = snippets name = "unique-table" %}
 
 ### Custom constraints on tables
 
 Some table constraints are not directly supported in drift yet. Similar to [custom constraints](#custom-constraints)
 on columns, you can add those by overriding `customConstraints`:
 
-{% include "blocks/snippet" snippets = snippets name="custom-constraint-table" %}
+{% include "blocks/snippet" snippets = snippets name = "custom-constraint-table" %}
 
 ## Index
 
@@ -403,7 +403,7 @@ by these columns to be identified more easily.
 In drift, you can apply an index to a table with the `@TableIndex` annotation. More than one
 index can be applied to the same table by repeating the annotation:
 
-{% include "blocks/snippet" snippets = snippets name="index" %}
+{% include "blocks/snippet" snippets = snippets name = "index" %}
 
 Each index needs to have its own unique name. Typically, the name of the table is part of the
 index' name to ensure unique names.

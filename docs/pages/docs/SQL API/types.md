@@ -61,7 +61,9 @@ This type defines the following things:
 
 To define a custom type on a Dart table, use the `customType` column builder method with the type:
 
-{% include "blocks/snippet" snippets = ('package:drift_docs/snippets/modular/custom_types/table.dart.excerpt.json' | readString | json_decode) %}
+{% assign snippets = 'package:drift_docs/snippets/modular/custom_types/table.dart.excerpt.json' | readString | json_decode %}
+
+{% include "blocks/snippet" snippets = snippets %}
 
 As the example shows, other column constraints like `clientDefault` can still be added to custom
 columns. You can even combine custom columns and type converters if needed.
@@ -77,15 +79,14 @@ drift doesn't have a central register describing how to deal with custom type va
 In SQL, Drift's [inline Dart]({{ 'drift_files.md#dart-interop' | pageUrl }}) syntax may be used to define
 the custom type:
 
-{% include "blocks/snippet" snippets = ('package:drift_docs/snippets/modular/custom_types/drift_table.drift.excerpt.json' | readString | json_decode) %}
+{% assign snippets2 = 'package:drift_docs/snippets/modular/custom_types/drift_table.drift.excerpt.json' | readString | json_decode %}
+
+{% include "blocks/snippet" snippets = snippets2 %}
 
 Please note that support for custom types in drift files is currently limited.
 For instance, custom types are not currently supported in `CAST` expressions.
 If you are interested in advanced analysis support for custom types, please reach out by
 opening an issue or a discussion describing your use-cases, thanks!
-
-[types]: {{ '../Dart API/tables.md#supported-column-types' | pageUrl }}
-[type converters]: {{ '../type_converters.md' | pageUrl }}
 
 ## Dialect awareness
 

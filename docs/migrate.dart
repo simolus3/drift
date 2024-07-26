@@ -31,7 +31,12 @@ class DocFile {
   late String migratedContent;
 
   /// The snippet files that this file references
-  late final Map<String, Map<String, String>> snippets = {};
+  /// E.G
+  /// {
+  ///   "json_snippets" : [
+  ///   "/snippets/snippet1.json",
+  ///   ]
+  late final Map<String, List<File>> snippets = {};
 
   DocFile(this.file) {
     /// Define a regular expression to match the snippet assignment annotations
@@ -46,14 +51,11 @@ class DocFile {
     for (var match in matches) {
       final snippetFileLabel = match.group(1)!;
       final snippetFilePath = snippetsDir - match.group(2)!;
-      final snippetContent = snippetFilePath.readAsStringSync();
 
-      final Map<String, String> snippetJson =
-          Map.from(jsonDecode(snippetContent) as Map);
       if (snippets.containsKey(snippetFileLabel)) {
-        snippets[snippetFileLabel]!.addAll(snippetJson);
+        snippets[snippetFileLabel]!.add(snippetFilePath);
       } else {
-        snippets[snippetFileLabel] = snippetJson;
+        snippets[snippetFileLabel] = [snippetFilePath];
       }
     }
 
@@ -161,16 +163,24 @@ class DocFile {
 
   /// Replace the legacy snippet annotations with the MkDocs snippet injection
   String replaceSnippets(String content) {
+    content = content.replaceAllMapped(
+        RegExp(r"""{% include "blocks\/snippet" snippets ?= ?([^ ]+?) %}""",
+            multiLine: true), (match) {
+      return '{% include "blocks/snippet" snippets = ${match.group(1)} name = "(full)" %}';
+    });
     return content.replaceAllMapped(
         RegExp(
-            r"""{% include "blocks\/snippet" snippets = (.+?) name = ['"](.+?)['"] %}""",
+            r"""{% include "blocks\/snippet" snippets ?= ?(.+?) name ?= ?['"](.+?)['"] %}""",
             multiLine: true), (match) {
-      final snippetFile = match.group(1)!;
+      final snippetFileLabel = match.group(1)!;
       final snippetName = match.group(2)!;
+      print(snippetFileLabel);
+      final snippetFiles = snippets[snippetFileLabel]!;
+
       try {
-        return snippets[snippetFile]![snippetName]!;
+        return "{{ load_snippet('$snippetName',${snippetFiles.map((e) => "'${p.relative(e.path)}'").join(',')}) }}";
       } catch (e) {
-        print("Snippet not found: $snippetFile, $snippetName");
+        print("Snippet not found: $snippetFileLabel, $snippetName");
         rethrow;
       }
     });

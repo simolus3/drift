@@ -99,5 +99,5 @@ can generate boilerplate code for every schema migration you need to write, so t
 you only need to fill in what has actually changed. This makes writing migrations
 much easier.
 
-By knowing all schema versions, drift can also [generate test code]({{'tests.md' | pageUrl}}),
+By knowing all schema versions, drift can also [generate test code]('tests.md' ),
 which makes it easy to write unit tests for all your schema migrations.
