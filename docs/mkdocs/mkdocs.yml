@@ -99,7 +99,60 @@ copyright: >
   <a href="#__consent">Change cookie settings</a>
 nav:
   - Home:
+      - faq.md
+      - type_converters.md
+      - SQL API:
+          - SQL API/custom_queries.md
+          - SQL API/index.md
+          - SQL API/types.md
+          - SQL API/drift_files.md
+          - SQL API/sql_ide.md
+          - SQL API/extensions.md
       - index.md
+      - CLI.md
+      - isolates.md
+      - Examples:
+          - Examples/relationships.md
+          - Examples/tracing.md
+          - Examples/index.md
+          - Examples/server_sync.md
+          - Examples/existing_databases.md
+      - Platforms:
+          - Platforms/encryption.md
+          - Platforms/web.md
+          - Platforms/index.md
+          - Platforms/vm.md
+          - Platforms/libsql.md
+          - Platforms/postgres.md
+      - Generation options:
+          - Generation options/index.md
+          - Generation options/in_other_builders.md
+          - Generation options/modular.md
+      - Internals:
+          - Internals/index.md
+      - Migrations:
+          - Migrations/index.md
+          - Migrations/step_by_step.md
+          - Migrations/tests.md
+          - Migrations/exports.md
+          - Migrations/api.md
+      - setup.md
+      - upgrading.md
+      - testing.md
+      - community_tools.md
+      - Dart API:
+          - Dart API/schema_inspection.md
+          - Dart API/expressions.md
+          - Dart API/tables.md
+          - Dart API/index.md
+          - Dart API/transactions.md
+          - Dart API/daos.md
+          - Dart API/select.md
+          - Dart API/writes.md
+          - Dart API/manager.md
+          - Dart API/views.md
+      - migrating_to_drift.md
+      - custom_row_classes.md
 
   # - Getting Started:
   #     - getting-started/install.md

@@ -330,7 +330,7 @@ Some queries don't need a `FROM` clause at all and instead just select some expr
 An example for this may be a select that just uses subquery expressions, like here to query whether
 any rows exist in a table:
 
-{% include "blocks/snippet" snippets = json_snippet name = 'hasTodoItem' %}
+{% include "blocks/snippet" snippets = snippets name = 'hasTodoItem' %}
 
 The `selectExpressions` API is similar to `selectOnly`, except that it doesn't require any table
 at all.
