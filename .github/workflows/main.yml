@@ -29,9 +29,9 @@ jobs:
       - run: melos bootstrap --scope drift_docs,drift
         working-directory: .
       - name: Run build
-        env:
-          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
-        run: dart run tool/ci_build.dart
+        run: |
+          chmod +x ./build.sh
+          ./build.sh build
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .

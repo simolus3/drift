@@ -1,6 +1,6 @@
 {
     "yaml.schemas": {
-        "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
+        "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml",
     },
     "yaml.customTags": [
         "!ENV scalar",

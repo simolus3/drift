@@ -171,3 +171,5 @@ docs_dir: "../docs"
 extra_javascript:
   - path: compatibility.dart.js
     defer: true
+watch:
+  - "../lib"
