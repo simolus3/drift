@@ -67,6 +67,11 @@ if [ $arg1 == "build" ]; then
 elif [ $arg1 == "serve" ]; then
     echo "Serving the project..."
 
+    # if `lib/versions.json` does not exist, create it
+    if [ ! -f ./lib/versions.json ]; then
+        dart run build_runner build --delete-conflicting-outputs
+    fi
+
     build_container
 
     echo "Running MkDocs serve..."

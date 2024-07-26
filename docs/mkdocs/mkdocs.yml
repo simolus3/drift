@@ -171,5 +171,7 @@ docs_dir: "../docs"
 extra_javascript:
   - path: compatibility.dart.js
     defer: true
+extra_css:
+  - "css/highlight.css"
 watch:
   - "../lib"
