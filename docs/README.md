@@ -2,8 +2,7 @@
 
 Folder Structure:
 
-- `bin` Contains the CLI for building and serving the documentation.
-- `builders` Contains the builders for the documentation. (Version Extraction and Code Snippets Generation)
+- `builders` Contains the builders for the snippets and dart projects versions (`versions.json` and `*.excerpt.json` in `lib`).
 - `docs` Contains the markdown files for the documentation.
 - `deploy` The output of the documentation build.
 - `lib` Contains the snippets for the documentation.
