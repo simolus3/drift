@@ -20,6 +20,9 @@ if [ $arg1 == "build" ]; then
     # Remove the `build` directory if it already exists
     rm -r ./build
 
+    # Activate the webdev command
+    dart pub global activate webdev
+
     # The below command will compile the dart code in `/web` to js & run build_runner
     webdev build -o web:build/web -- --delete-conflicting-outputs
     if [ $? -ne 0 ]; then
