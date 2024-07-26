@@ -154,12 +154,12 @@ so it now looks like this:
 
 === "Flutter (sqlite3)"
 
-    {% include "blocks/snippet" snippets = snippets name = 'flutter' %}
+    {{ load_snippet('flutter','lib/snippets/setup/database.dart.excerpt.json',indent=4) }}
 
     If you need to customize how databases are opened, you can also set the connection
     up manually:
 
-    !!! note "Manual database setup"
+    ??? note "Manual database setup"
 
         ```dart
         import 'dart:io';
@@ -202,11 +202,13 @@ so it now looks like this:
 
 === "Dart (sqlite3)"
 
-    {% include "blocks/snippet" snippets = snippets name = 'sqlite3' %}
+    {{ load_snippet('sqlite3','lib/snippets/setup/database.dart.excerpt.json',indent=4) }}
+
 
 === "Dart (Postgres)"
 
-    {% include "blocks/snippet" snippets = snippets name = 'postgres' %}
+    {{ load_snippet('postgres','lib/snippets/setup/database.dart.excerpt.json',indent=4) }}
+
 
 
 

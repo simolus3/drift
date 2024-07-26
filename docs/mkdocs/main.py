@@ -29,9 +29,12 @@ def code_template(content:str,indent:int=0):
     # Add indent to each line, besides the first line
     lines = content[1:]
     content = [content[0]] + [f"{' '*indent}{line}" for line in lines]
+
+    content = [line if len(line.strip()) > 0 else f"{' '*indent}<br>" for line in content ] 
+
     # Join the content
     content = "\n".join(content)
 
     result =  f"""<pre id="{random_id}"><code>{content}</code></pre>"""
-
+    print(result)
     return result
