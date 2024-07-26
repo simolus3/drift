@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -10,21 +11,20 @@ void main() {
     final db = CustomTablesDb(testInMemoryDatabase());
     addTearDown(db.close);
 
-    expect(
-      db.select(db.myView).watch(),
-      emitsInOrder([
-        isEmpty,
-        [
-          const MyViewData(
-            configKey: 'another',
-            syncState: SyncType.synchronized,
-          ),
-        ]
-      ]),
-    );
+    final query = StreamQueue(db.select(db.myView).watch());
+    await expectLater(query, emits(isEmpty));
 
-    await pumpEventQueue();
     await db.into(db.config).insert(ConfigCompanion.insert(
         configKey: 'another', syncState: const Value(SyncType.synchronized)));
+
+    expect(
+      query,
+      emits([
+        const MyViewData(
+          configKey: 'another',
+          syncState: SyncType.synchronized,
+        ),
+      ]),
+    );
   });
 }

@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../runtime/cancellation_zone.dart';
+import '../utils/synchronized.dart';
 import 'communication.dart';
 import 'protocol.dart';
 
@@ -38,6 +39,7 @@ class ServerImplementation implements DriftServer {
   final List<int> _executorBacklog = [];
   final StreamController<void> _backlogUpdated =
       StreamController.broadcast(sync: true);
+  final Lock _executorLock = Lock();
 
   bool _isShuttingDown = false;
   final Set<DriftCommunication> _activeChannels = {};
@@ -171,8 +173,11 @@ class ServerImplementation implements DriftServer {
   }
 
   Future<int> _spawnTransaction(DriftCommunication comm, int? executor) async {
-    final transaction = (await _loadExecutor(executor)).beginTransaction();
-    final id = _putExecutor(transaction, beforeCurrent: true);
+    final (transaction, id) = await _executorLock.synchronized(() async {
+      final transaction = (await _loadExecutor(executor)).beginTransaction();
+      final id = _putExecutor(transaction, beforeCurrent: true);
+      return (transaction, id);
+    });
 
     await transaction
         .ensureOpen(_ServerDbUser(this, comm, _knownSchemaVersion));
@@ -180,8 +185,12 @@ class ServerImplementation implements DriftServer {
   }
 
   Future<int> _spawnExclusive(DriftCommunication comm, int? executor) async {
-    final exclusive = (await _loadExecutor(executor)).beginExclusive();
-    final id = _putExecutor(exclusive, beforeCurrent: true);
+    final (exclusive, id) = await _executorLock.synchronized(() async {
+      final exclusive = (await _loadExecutor(executor)).beginExclusive();
+      final id = _putExecutor(exclusive, beforeCurrent: true);
+      return (exclusive, id);
+    });
+
     await exclusive.ensureOpen(_ServerDbUser(this, comm, _knownSchemaVersion));
     return id;
   }

@@ -85,13 +85,22 @@ issue comment.
 ### Using
 
 SQLCipher implements sqlite3's C api, which means that you can continue to use the `sqlite3` package
-or `drift/ffi` without changes. They're both fully compatible with `sqlcipher_flutter_libs`.
+or `package:drift/native.dart` without changes. They're both fully compatible with `sqlcipher_flutter_libs`.
 
 To actually encrypt a database, you must set an encryption key before using it.
 A good place to do that in drift is the `setup` parameter of `NativeDatabase`, which runs before drift
 is using the database in any way:
 
 {{ load_snippet('encrypted1','lib/snippets/platforms/encryption.dart.excerpt.json') }}
+
+{% block "blocks/collapsible" title="Disabling double-quoted string literals" %}
+In `sqlite3_flutter_libs`, sqlite3 is compiled to only accept single-quoted string literals.
+This is a recommended option to avoid confusion - `SELECT "column" FROM tbl` is always a
+column reference, `SELECT 'column'` is always a string literal.
+
+SQLCipher does not disable double-quoted string literals at compile-time. For consistency,
+it is recommended to manually disable them for databases used with drift.
+{% endblock %}
 
 ### Important notice
 
