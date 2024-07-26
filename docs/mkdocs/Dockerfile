@@ -5,8 +5,3 @@ RUN apk add --no-cache gcc
 RUN pip install mkdocs-macros-plugin
 RUN pip install mkdocs-git-revision-date-localized-plugin
 RUN pip install mkdocs-spellcheck[symspellpy]
-RUN apk add --no-cache nodejs npm
-WORKDIR /docs
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm install
