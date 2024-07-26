@@ -8,7 +8,7 @@ import 'package:build_runner_core/src/asset_graph/graph.dart';
 import 'package:build_runner_core/src/asset_graph/node.dart';
 import 'package:path/path.dart' as p;
 
-final buildDir = Directory('build');
+final buildDir = Directory(p.join(Directory.current.path, 'build'));
 final dartDocsBuildDir = Directory(p.join(buildDir.path, 'dartdoc'));
 final mkDocsBuildDir = Directory(p.join(buildDir.path, 'mkdocs'));
 final buildRunnerBuildDir = Directory(p.join(buildDir.path, 'build_runner'));
@@ -49,11 +49,11 @@ class DocsCommand extends Command<int> {
       if (dartDocsBuildDir.existsSync()) {
         dartDocsBuildDir.deleteSync(recursive: true);
       }
-      dartDocsBuildDir.createSync();
+      dartDocsBuildDir.createSync(recursive: true);
       if (mkDocsBuildDir.existsSync()) {
         mkDocsBuildDir.deleteSync(recursive: true);
       }
-      mkDocsBuildDir.createSync();
+      mkDocsBuildDir.createSync(recursive: true);
 
       // Run the build and copy the files to the build directory
       await Future.wait([

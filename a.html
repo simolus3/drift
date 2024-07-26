@@ -1,0 +1,43 @@
+<pre
+  id="d33o7zsi"
+><code><span class="hljs-keyword">import</span> <span class="hljs-string">&#39;package:drift&#47;drift.dart&#39;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#39;package:drift_postgres&#47;drift_postgres.dart&#39;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#39;package:postgres&#47;postgres.dart&#39;</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">pg</span>;
+
+<span class="hljs-keyword">part</span> <span class="hljs-string">&#39;database.g.dart&#39;</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">TodoItems</span> <span class="hljs-keyword">extends</span> <span class="hljs-type">Table</span> {
+  <span class="hljs-type">IntColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">id</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-title function_ invoked__">integer</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">autoIncrement</span>()();
+  <span class="hljs-type">TextColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">title</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-title function_ invoked__">text</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">withLength</span>(<span class="hljs-variable">min</span>: <span class="hljs-number">6</span>, <span class="hljs-variable">max</span>: <span class="hljs-number">32</span>)();
+  <span class="hljs-type">TextColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">content</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-title function_ invoked__">text</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">named</span>(<span class="hljs-string">&#39;body&#39;</span>)();
+  <span class="hljs-type">IntColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">category</span> <span class="hljs-punctuation">=&gt;</span>
+      <span class="hljs-title function_ invoked__">integer</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">nullable</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">references</span>(<span class="hljs-title class_">TodoCategory</span>, #id)();
+  <span class="hljs-type">DateTimeColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">createdAt</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-title function_ invoked__">dateTime</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">nullable</span>()();
+}
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">TodoCategory</span> <span class="hljs-keyword">extends</span> <span class="hljs-type">Table</span> {
+  <span class="hljs-type">IntColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">id</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-title function_ invoked__">integer</span>()<span class="hljs-punctuation">.</span><span class="hljs-title function_ invoked__">autoIncrement</span>()();
+  <span class="hljs-type">TextColumn</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">description</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-title function_ invoked__">text</span>()();
+}
+
+<span class="hljs-meta">@</span><span class="hljs-meta">DriftDatabase</span>(<span class="hljs-variable">tables</span>: <span class="hljs-punctuation">[</span><span class="hljs-title class_">TodoItems</span>, <span class="hljs-title class_">TodoCategory</span><span class="hljs-punctuation">]</span>)
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDatabase</span> <span class="hljs-keyword">extends</span> <span class="hljs-built_in">_$AppDatabase</span> {
+  <span class="hljs-comment">&#47;&#47; After generating code, this class needs to define a `schemaVersion` getter</span>
+  <span class="hljs-comment">&#47;&#47; and a constructor telling drift where the database should be stored.</span>
+  <span class="hljs-comment">&#47;&#47; These are described in the getting started guide: https:&#47;&#47;drift.simonbinder.eu&#47;getting-started&#47;#open</span>
+  <span class="hljs-title class_">AppDatabase</span>() : <span class="hljs-keyword">super</span>(<span class="hljs-title function_ invoked__">_openConnection</span>());
+
+  <span class="hljs-meta">@</span><span class="hljs-meta">override</span>
+  <span class="hljs-built_in">int</span> <span class="hljs-keyword">get</span> <span class="hljs-title function_">schemaVersion</span> <span class="hljs-punctuation">=&gt;</span> <span class="hljs-number">1</span>;
+
+  <span class="hljs-keyword">static</span> <span class="hljs-type">QueryExecutor</span> <span class="hljs-title function_">_openConnection</span>() <span class="hljs-punctuation">{</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-type">PgDatabase</span>(
+      <span class="hljs-variable">endpoint</span>: pg.<span class="hljs-type">Endpoint</span>(
+        <span class="hljs-variable">host</span>: <span class="hljs-string">&#39;localhost&#39;</span>,
+        <span class="hljs-variable">database</span>: <span class="hljs-string">&#39;database&#39;</span>,
+        <span class="hljs-variable">username</span>: <span class="hljs-string">&#39;dart&#39;</span>,
+        <span class="hljs-variable">password</span>: <span class="hljs-string">&#39;mysecurepassword&#39;</span>,
+      ),
+    );
+  <span class="hljs-punctuation">}</span>
+}</code></pre>
