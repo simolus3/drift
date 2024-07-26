@@ -26,15 +26,16 @@ def code_template(content:str,indent:int=0):
     random_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     # Split the content by new line
     content = content.splitlines()
+
     # Add indent to each line, besides the first line
     lines = content[1:]
     content = [content[0]] + [f"{' '*indent}{line}" for line in lines]
 
+    # Replace blank lines with <br> tag
     content = [line if len(line.strip()) > 0 else f"{' '*indent}<br>" for line in content ] 
 
-    # Join the content
+
     content = "\n".join(content)
 
     result =  f"""<pre id="{random_id}"><code>{content}</code></pre>"""
-    print(result)
     return result

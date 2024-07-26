@@ -1,7 +1,7 @@
 site_name: Drift
 site_description: Drift — A modern database library for Dart & Flutter
 site_author: Simon Binder
-site_url: https://drift.simonbinder.eu/docs
+site_url: https://drift.simonbinder.eu/
 repo_url: https://github.com/simolus3/drift
 # TODO: add edit_uri
 # edit_uri:
@@ -169,6 +169,5 @@ nav:
 docs_dir: "../docs"
 
 extra_javascript:
-  # This file will exist once the build_runner completes
-  - path: build/compatibility.dart.js
+  - path: compatibility.dart.js
     defer: true
