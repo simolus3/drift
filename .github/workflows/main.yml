@@ -30,8 +30,8 @@ jobs:
         working-directory: .
       - name: Run build
         run: |
-          chmod +x ./build.sh
-          ./build.sh build
+          chmod +x ./docs.sh
+          ./docs.sh build
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .
