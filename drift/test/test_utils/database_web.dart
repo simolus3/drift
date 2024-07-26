@@ -4,7 +4,10 @@ import 'package:sqlite3/wasm.dart';
 import 'package:test/scaffolding.dart';
 
 Version get sqlite3Version {
-  return Version('3.38.2', 'stub', 3038200);
+  // We can't get the version synchronously since we need to load a wasm module.
+  // So it's hardcoded here and needs to be kept in sync with
+  // `extras/assets/sqlite3.wasm`.
+  return Version('3.46.0', 'stub', 3046000);
 }
 
 Future<WasmSqlite3>? _loadedSqlite3;
