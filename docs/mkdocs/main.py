@@ -63,7 +63,7 @@ def define_env(env):
         is_drift = any(".drift.excerpt.json" in str(file) for file in files)
         if is_dart:
             result = markdown_codeblock(content, "dart")
-        if is_drift:
+        elif is_drift:
             result = markdown_codeblock(content, "sql")
         else:
             result = markdown_codeblock(content)
