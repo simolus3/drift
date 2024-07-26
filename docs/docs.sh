@@ -30,6 +30,13 @@ if [ $arg1 == "build" ]; then
         exit 1
     fi
 
+    # Run the build_runner command to generate files in the `test` directory
+    dart run build_runner build --delete-conflicting-outputs
+    if [ $? -ne 0 ]; then
+        echo "Failed to build the project"
+        exit 1
+    fi
+
     # Remove some files that are not needed
     rm -r ./build/.dart_tool
     rm -r ./build/packages
