@@ -47,3 +47,4 @@ dev_dependencies:
   test_descriptor: ^2.0.1
   vm_service: ^14.0.0
   rxdart: ^0.28.0
+  build_daemon: ^4.0.2

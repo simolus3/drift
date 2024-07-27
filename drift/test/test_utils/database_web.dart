@@ -20,6 +20,8 @@ Future<WasmSqlite3> get sqlite3 {
     final sqlite = await WasmSqlite3.loadFromUrl(
         Uri.parse('http://localhost:$port/sqlite3.wasm'));
     sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+    channel.sink.close();
+
     return sqlite;
   });
 }

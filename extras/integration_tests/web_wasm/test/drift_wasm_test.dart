@@ -71,10 +71,21 @@ void main() {
         final rawDriver = await createDriver(
           spec: browser.isChromium ? WebDriverSpec.JsonWire : WebDriverSpec.W3c,
           uri: browser.driverUri,
+          desired: {
+            'goog:chromeOptions': {
+              'args': [
+                '--headless=new',
+                '--disable-search-engine-choice-screen',
+              ],
+            },
+            'moz:firefoxOptions': {
+              'args': ['-headless']
+            },
+          },
         );
 
         driver = DriftWebDriver(server, rawDriver);
-        await driver.driver.get('http://localhost:8080/');
+        await driver.driver.get('http://localhost:${server.server.port}/');
       });
 
       tearDown(() => driver.driver.quit());
@@ -260,7 +271,8 @@ void main() {
             expect(await driver.amountOfRows, 1);
             await Future.delayed(const Duration(seconds: 2));
 
-            await driver.driver.get('http://localhost:8080/no-coep');
+            await driver.driver
+                .get('http://localhost:${server.server.port}/no-coep');
             await driver.openDatabase();
             expect(await driver.amountOfRows, isZero);
           });

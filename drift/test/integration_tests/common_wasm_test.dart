@@ -39,6 +39,8 @@ void main() {
     sqlite3 = await WasmSqlite3.loadFromUrl(
         Uri.parse('http://localhost:$port/sqlite3.wasm'));
     sqlite3.registerVirtualFileSystem(fs, makeDefault: true);
+
+    channel.sink.close();
   });
 
   runAllTests(DriftWasmExecutor(fs, () => sqlite3));

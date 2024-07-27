@@ -98,6 +98,67 @@ jobs:
   #            moor/.dart_tool/package_config.json
   #          retention-days: 1
 
+  drift_web_ddc:
+    needs: [drift]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: drift
+    steps:
+      # setup
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: melos bootstrap --scope drift
+        working-directory: .
+      # Using build_runner test allows compiling the tests with ddc, which is much faster than
+      # dart2js since we have a lot of entrypoints.
+      - run: dart run tool/test_with_ddc.dart
+
+  # todo: Even with shards, dart2js take too long. We run unit tests with ddc and dart2wasm and
+  # also run web integration tests (compiled with dart2js), so maybe we don't need those?
+  # drift_web_dart2js:
+  #   needs: [drift]
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: drift
+  #   strategy:
+  #     matrix:
+  #       browser: [chrome, firefox]
+  #       shard: [0, 1, 2, 3]
+  #   name: "Drift web unit tests, dart2js, ${{ matrix.browser }}, shard ${{ matrix.shard }}"
+  #   steps:
+  #     # setup
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/prepare
+  #       with:
+  #         dart_version: ${{ needs.setup.outputs.dart_version }}
+  #     - run: melos bootstrap --scope drift
+  #       working-directory: .
+  #     - run: dart test -p ${{ matrix.browser }} --compiler dart2js --total-shards 4 --shard-index ${{ matrix.shard }}
+
+  drift_web_dart2wasm:
+    needs: [drift]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: drift
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+    name: "Drift web unit tests, dart2wasm, ${{ matrix.browser }}"
+    steps:
+      # setup
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: melos bootstrap --scope drift
+        working-directory: .
+      - run: dart test -p ${{ matrix.browser }} --compiler dart2wasm
+
   drift_dev:
     runs-on: ubuntu-latest
     needs: [setup]
@@ -266,6 +327,22 @@ jobs:
       - name: Check that extracting schema still works
         working-directory: examples/migrations_example
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/
+  web_integration_tests:
+    name: "Web integration tests"
+    needs: [drift]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - uses: nanasess/setup-chromedriver@v2
+      - run: melos bootstrap --scope web_wasm
+        working-directory: .
+      - name: Test
+        working-directory: extras/integration_tests/web_wasm
+        run: dart test
+
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
 #    needs: [moor, sqlparser]

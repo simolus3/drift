@@ -1,9 +1,6 @@
-# We run drift's builder in two different configurations on this package. The
-# default configuration (in the `$default`) package applies a range of
-# recommended builder options that are unlikely to cause problems.
-# For additional testing, the version of drift_dev generating the custom tables
-# file has `store_date_time_values_as_text` build option enabled.
-# This way, we get to write integration tests for both date time modes.
+# This file needs to be kept in sync with `build.yaml`.
+# It is used to also compile the test entrypoints with dart2js, a
+# resource-intensive operation we don't want to run by default.
 
 targets:
   drift_regular:
@@ -74,8 +71,14 @@ targets:
         options:
           compiler: dart2js
 
+  tests:
+    auto_apply_builders: false
+    builders:
+      build_test:test_bootstrap:
+        enabled: true
+
   $default:
-    dependencies: [:drift_regular, :drift_custom, :web_worker]
+    dependencies: [:drift_regular, :drift_custom, :web_worker, :tests]
     builders:
       build_test:test_bootstrap:
         enabled: false

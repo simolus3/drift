@@ -43,6 +43,7 @@ class TestAssetServer {
         'run',
         'build_runner',
         'daemon',
+        '-d',
         if (debug)
           '--define=build_web_compilers:entrypoint=dart2js_args=["-Dsqlite3.wasm.worker.debug=true"]'
       ],
@@ -90,7 +91,7 @@ class TestAssetServer {
         }
       },
       'localhost',
-      8080,
+      0,
     );
 
     return server;
