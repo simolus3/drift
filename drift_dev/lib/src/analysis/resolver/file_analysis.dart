@@ -117,8 +117,19 @@ class FileAnalyzer {
           result.resolvedDatabases[element.id] =
               ResolvedDatabaseAccessor(queries, imports, availableElements);
         } else if (element is DriftIndex) {
-          // We need the SQL AST for each index to create them in code
-          element.createStatementForDartDefinition();
+          if (element.createStmt != null) {
+            final engine = driver.newSqlEngine();
+            final parsed = engine.parse(element.createStmt!);
+
+            if (parsed.rootNode case CreateIndexStatement stmt) {
+              element.parsedStatement = stmt;
+            }
+          }
+
+          if (element.parsedStatement == null) {
+            // We need the SQL AST for each index to create them in code
+            element.createStatementForDartDefinition();
+          }
         }
       }
     } else if (state.extension == '.drift' || state.extension == '.moor') {

@@ -284,9 +284,20 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
       if (computed != null &&
           type != null &&
           _isTableIndex.isExactlyType(type)) {
+        final sql = computed.getField('createIndexStatement')?.toStringValue();
+        String? indexName;
+        if (sql != null) {
+          final engine = _discoverStep._driver.newSqlEngine();
+          final result = engine.parse(sql);
+          if (result.rootNode case CreateIndexStatement stmt) {
+            indexName = stmt.createdName;
+          }
+        }
+
         yield (
           annotation,
-          _discoverStep._id(computed.getField('name')?.toStringValue() ?? '')
+          _discoverStep._id(
+              indexName ?? computed.getField('name')?.toStringValue() ?? '')
         );
       }
     }

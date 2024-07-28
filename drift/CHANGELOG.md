@@ -3,6 +3,8 @@
 - Add `readPool` parameter to `NativeDatabase`. It will spawn an additional
   pool of isolates used to serve multiple reads in parallel, which can improve
   performance in some specific workloads.
+- Add `TableIndex.sql`, allowing database indexes to be defined in SQL without
+  using drift files.
 
 ## 2.19.1+1
 

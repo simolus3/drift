@@ -83,6 +83,19 @@ class Users extends Table {
 }
 // #enddocregion index
 
+// #docregion indexsql
+@TableIndex.sql('''
+  CREATE INDEX pending_orders ON orders (creation_time)
+    WHERE status == 'pending';
+''')
+class Orders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get totalAmount => integer()();
+  DateTimeColumn get creationTime => dateTime()();
+  TextColumn get status => text()();
+}
+// #enddocregion indexsql
+
 // #docregion custom-type
 typedef Category = ({int id, String name});
 

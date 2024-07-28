@@ -1,5 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
+import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 import '../driver/driver.dart';
 import '../driver/error.dart';
@@ -11,6 +13,7 @@ import 'dart/accessor.dart' as dart_accessor;
 import 'dart/index.dart' as dart_index;
 import 'dart/table.dart' as dart_table;
 import 'dart/view.dart' as dart_view;
+import 'drift/element_resolver.dart';
 import 'drift/index.dart' as drift_index;
 import 'drift/query.dart' as drift_query;
 import 'drift/table.dart' as drift_table;
@@ -284,6 +287,68 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     }
   }
 
+  Future<SqlEngine> newEngineWithTables(
+      Iterable<DriftElement> references) async {
+    final mapping = await resolver.driver.typeMapping;
+    return mapping.newEngineWithTables(references);
+  }
+
+  Future<List<DriftElement>> resolveTableReferences(AstNode stmt) async {
+    final engine = resolver.driver.newSqlEngine();
+    final references = engine.findReferencedSchemaTables(stmt);
+    final found = <DriftElement>[];
+    final missingNames = <String, ResolveReferencedElementResult>{};
+
+    for (final table in references) {
+      // If this is a reference to a table the empty engine already knows, it
+      // must be a table builtin to sqlite3, not a drift reference.
+      if (engine.knownResultSets
+          .any((e) => e.name.toLowerCase() == table.toLowerCase())) {
+        continue;
+      }
+
+      final result = await resolver.resolveReference(discovered.ownId, table);
+
+      if (result is ResolvedReferenceFound) {
+        found.add(result.element);
+      } else {
+        missingNames[table.toLowerCase()] = result;
+      }
+    }
+
+    if (missingNames.isNotEmpty) {
+      // Ok, there are unresolved table references
+      for (final reference in stmt.allDescendants.whereType<TableReference>()) {
+        if (reference.resolved == null) {
+          final unresolvedBecause =
+              missingNames[reference.tableName.toLowerCase()];
+
+          if (unresolvedBecause != null) {
+            reportErrorForUnresolvedReference(unresolvedBecause,
+                (msg) => DriftAnalysisError.inDriftFile(reference, msg));
+          }
+        }
+      }
+    }
+
+    return found;
+  }
+
+  /// Finds all referenced tables, Dart expressions and Dart types referenced
+  /// in [stmt].
+  Future<FoundReferencesInSql> resolveSqlReferences(AstNode stmt) async {
+    final driftElements = await resolveTableReferences(stmt);
+
+    final identifier = _IdentifyDartElements();
+    stmt.accept(identifier, null);
+
+    return FoundReferencesInSql(
+      referencedElements: driftElements,
+      dartExpressions: identifier.dartExpressions,
+      dartTypes: identifier.dartTypes,
+    );
+  }
+
   Future<DriftElement> resolve();
 }
 
@@ -321,4 +386,31 @@ class ReferencedElementCouldNotBeResolved
 
 class ReferencesItself extends ResolveReferencedElementResult {
   const ReferencesItself();
+}
+
+class _IdentifyDartElements extends RecursiveVisitor<void, void> {
+  final List<String> dartExpressions = [];
+  final Map<SyntacticEntity, String> dartTypes = {};
+
+  @override
+  void visitCastExpression(CastExpression e, void arg) {
+    final match = FoundReferencesInSql.enumRegex.firstMatch(e.typeName);
+
+    if (match != null) {
+      // Found `ENUMNAME(x)`, where `x` is a Dart type that we might want to
+      // resolve later.
+      dartTypes[e] = match.group(2)!;
+    }
+
+    super.visitCastExpression(e, arg);
+  }
+
+  @override
+  void visitColumnConstraint(ColumnConstraint e, void arg) {
+    if (e is MappedBy) {
+      dartExpressions.add(e.mapper.dartCode);
+    } else {
+      super.visitColumnConstraint(e, arg);
+    }
+  }
 }

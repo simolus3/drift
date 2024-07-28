@@ -399,7 +399,7 @@ on columns, you can add those by overriding `customConstraints`:
 ## Index
 
 An [index](https://sqlite.org/lang_createindex.html) on columns in a table allows rows identified
-by these columns to be identified more easily.
+by these columns to be resolved faster, which can speed up queries using these columns as a filter.
 In drift, you can apply an index to a table with the `@TableIndex` annotation. More than one
 index can be applied to the same table by repeating the annotation:
 
@@ -407,3 +407,14 @@ index can be applied to the same table by repeating the annotation:
 
 Each index needs to have its own unique name. Typically, the name of the table is part of the
 index' name to ensure unique names.
+
+Advanced index features, such as partial indexes or indexing expressions instead of columns, are
+not supported by the `@TableIndex` annotation.
+However, you can use `TableIndex.sql()` constructor to define an index with a `CREATE INDEX`
+statements:
+
+{% include "blocks/snippet" snippets = snippets name="indexsql" %}
+
+Defining an index with SQL is not less safe than the other annotation, as SQL statements are
+parsed and validated by `drift_dev` before generating code.
+`build_runner` will emit warnings for errors in the statement.

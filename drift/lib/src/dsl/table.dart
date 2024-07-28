@@ -282,6 +282,12 @@ final class TableIndex {
   /// using `#nextUpdateSnapshot`.
   final Set<Symbol> columns;
 
+  /// As an alternative to [name], [unique] and [columns], a `CREATE INDEX` SQL
+  /// statement defining the index.
+  ///
+  /// `drift_dev` will parse and validate the statement at build-time.
+  final String? createIndexStatement;
+
   /// An annotation for Dart-defined drift tables telling drift to add an SQL
   /// index to the table.
   ///
@@ -290,7 +296,19 @@ final class TableIndex {
     required this.name,
     required this.columns,
     this.unique = false,
-  });
+  }) : createIndexStatement = null;
+
+  /// An annotation for Dart-defined drift tables telling drift to add an index
+  /// defined by a [createIndexStatement].
+  ///
+  /// The index is still validated by `drift_dev` at build time. Using a custom
+  /// SQL statement enables advanced index options, such as using custom
+  /// collations or indexing expressions. It can also be used for partials
+  /// indexes by adding a `WHERE` clause.
+  const TableIndex.sql(String this.createIndexStatement)
+      : name = '',
+        unique = false,
+        columns = const {};
 }
 
 /// A class to be used as an annotation on [Table] classes to customize the
