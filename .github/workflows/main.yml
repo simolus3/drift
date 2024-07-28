@@ -33,7 +33,7 @@ jobs:
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
-      - run: melos bootstrap --scope drift_docs,drift
+      - run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
       - name: Run build
         run: |
