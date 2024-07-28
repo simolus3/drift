@@ -1,36 +1,22 @@
 ---
 
-title: Tables
-description: Everything there is to know about defining SQL tables in Dart.
+title: Columns
+description: Everything there is to know about defining SQL columns in drift.
 
 ---
 
-SQL tables are the foundation of any relational database.   
-Use them to define the structure of the data
-you want to store.
+Define columns by declaring a getter starting with the type of the column,
+its name in Dart, and the definition mapped to SQL.    
 
-Define a table by creating a class that extends `Table`.  
+In the example below, `#!dart IntColumn get category => integer().nullable()();` defines a column
+holding nullable integer values named `category`.
 
 {{ load_snippet('table','lib/snippets/setup/database.dart.excerpt.json') }}
 
-!!! note "Naming conventions"
-    
-    Table names should be in plural form, like `Users` or `Categories`.  
-    This will ensure that the generated data classes are named correctly.
-
-A dataclass is generated for each table, which can be used to interact with the database.
-See the [Dataclass](./dataclass.md) page for more information.
-
-## Columns
-
-Columns are defined by getters in the table class.
-
-For instance, in the example above, `#!dart IntColumn get category => integer().nullable()();` defined a column named `category` that can store integers and is nullable.
-
-### Types
+## Column Types
 
 Drift supports a variety of column types out of the box.  
-Additional types can be stored using [type converters](../type_converters.md).
+Other types can be stored using [type converters](../type_converters.md).
 
 | Dart type   | Column       | Corresponding SQLite type                                                                      |
 | ----------- | ------------ | ---------------------------------------------------------------------------------------------- |
@@ -49,17 +35,16 @@ Additional types can be stored using [type converters](../type_converters.md).
     The way drift maps Dart types to SQL types is independent of how it serializes data to JSON.  
     For example, Dart `bool` values are stored as `0` or `1` in the database, but as `true` or `false` in JSON.
 
-### Nullable
+## Nullable
 
 Drift adopts Dart's non-nullable by default approach.    
 If you do want to make a column nullable, just use `nullable()`:
 
 {{ load_snippet('nnbd','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-Columns in Dart-defined tables default to `NOT NULL` in SQL. 
-If a value is not provided for a column, the database will throw an error.
+Columns in Dart-defined tables default to `NOT NULL` in SQL. Omitting values during insertion causes exceptions. Drift provides compile-time warnings for this when using SQL too.
 
-### Defaults
+## Defaults
 
 
 Default values can be set for columns using two methods:
@@ -88,7 +73,7 @@ For dynamic values, like `DateTime.now()` or `Uuid().v4()`, `clientDefault` is m
 
 - Changing the default value for a column with `withDefault` requires a schema migration, while `clientDefault` allows you to change the default value without a schema migration.
 
-### Checks (Data Validation)
+## Checks (Data Validation)
 
 Use the `check` method to enforce specific conditions. This method takes a Boolean expression as an argument, which is evaluated for each insert or update.
 
@@ -113,23 +98,23 @@ For more on writing expressions, see the [Expressions](../Expressions/index.md) 
     This can be safely ignored, as this code is never executed.
 
 
-### Unique Columns
+## Unique Columns
 
-#### Single Column
+### Single Column
 
 Use the `unique()` method to enforce that a column must contain unique values.
 For example, the following code ensures that each users `username` is unique:
 
 {{ load_snippet('unique-column','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-#### Multiple Columns
+### Multiple Columns
 
 If you want to enforce a combination of columns to be unique, override the `uniqueKeys` getter in your table class:
 For example, if wanted to ensure that an author can't write 2 books with the same title:
 
 {{ load_snippet('unique-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-### Custom Types
+## Custom Types
 
 Any Dart object can be stored if a [Type Converter](../type_converters.md) is provided.
 
@@ -137,7 +122,7 @@ Any Dart object can be stored if a [Type Converter](../type_converters.md) is pr
 
 See the [Type Converters](../type_converters.md) page for more information.
 
-### `BigInt`
+## `BigInt`
 
 
 Use `int64()` to store large integers in Dart.
@@ -168,7 +153,7 @@ When using `BigInt` columns in expressions, you can use `dartCast()` to ensure t
 For example, `(table.columnA * table.columnB).dartCast<BigInt>()` will return a `BigInt` value, even if `columnA` and `columnB` are defined as regular integers.
 
 
-### `DateTime`
+## `DateTime`
 
 Drift supports two approaches of storing `DateTime`:
 
@@ -235,7 +220,7 @@ Drift stores `DateTime` values as unix timestamps be default. This can be change
 Migrating between the two modes is possible, but requires a [manual migration](#migrating-between-the-two-modes).
 
 
-### Custom Constraints
+## Custom Constraints
 
 Some column and table constraints aren't supported through Drift API. This includes the collation
 of columns, which you can apply using `customConstraint`:
@@ -252,98 +237,3 @@ In particular, that means that we need to also include the `NOT NULL` constraint
 You can also add table-wide constraints by overriding the `customConstraints` getter in your table class.
 
 {{ load_snippet('custom-constraint-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
-
-
-## Primary Keys
-
-If your table has an `IntColumn` with an `autoIncrement()` constraint, drift recognizes that as the default
-primary key.
-
-To use a custom primary key, override the `primaryKey` getter in your table.
-Here is an example using a UUID as the primary key:
-
-{{ load_snippet('primary-key','lib/snippets/dart_api/tables.dart.excerpt.json') }}
-
-Multiple columns can be used as a composite primary key by returning a set of columns.
-
-!!! note "Primary Key Syntax"
-
-    The primary key must essentially be constant so that the generator can recognize it. That means:
-
-    - it must be defined with the `=>` syntax, function bodies aren't supported
-    - it must return a set literal without collection elements like `if`, `for` or spread operators
-
-## References
-
-[Foreign Keys](https://www.sqlite.org/foreignkeys.html) are used to create relationships between tables.
-Use the `references` method to define a foreign key constraint.
-
-{{ load_snippet('references','lib/snippets/dart_api/tables.dart.excerpt.json') }}
-
-The first parameter to `references` points to the table on which a reference should be created.
-The second parameter is a [symbol](https://dart.dev/guides/language/language-tour#symbols) of the column to use for the reference.
-
-Optionally, the `onUpdate` and `onDelete` parameters can be used to describe what
-should happen when the target row gets updated or deleted.
-
-!!! info "Foreign Key Constraints"
-
-    Be aware that, in sqlite3, foreign key references aren't enabled by default.
-    They need to be enabled with `PRAGMA foreign_keys = ON`.
-    A suitable place to issue that pragma with drift is in a [post-migration callback](../Migrations/index.md#post-migration-callbacks).
-
-
-## Table Name
-
-By default, drift uses the `snake_case` name of the Dart getter in the database. For instance, the
-table
-
-{{ load_snippet('(full)','lib/snippets/dart_api/old_name.dart.excerpt.json') }}
-
-Would be generated as `CREATE TABLE enabled_categories (parent_category INTEGER NOT NULL)`.
-
-To override the table name, simply override the `tableName` getter. An explicit name for
-columns can be provided with the `named` method:
-
-{{ load_snippet('names','lib/snippets/dart_api/tables.dart.excerpt.json') }}
-
-The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
-
-## Indexes
-
-[SQL Indexes](https://sqlite.org/lang_createindex.html) are like book indexes: they help find information quickly. Without them, you'd have to scan the whole database for each search, which is slow. Indexes make searches much faster, but slightly slow down adding new data.
-
-Use the `@TableIndex` annotation to define an index on a table.  
-Each index needs to have its own unique name. Typically, the name of the table is part of the
-index' name to ensure unique names.  
-These can be used multiple times to define multiple indexes on a table.
-
-
-{{ load_snippet('index','lib/snippets/dart_api/tables.dart.excerpt.json') }}
-
-Primary keys are automatically indexed, so you don't need to add an index for them.
-
-!!! tip "When to use indexes"
-
-    Any column that is filtered or sorted on frequently should have an index.  
-    Fields likes `age`, `name`, `email`, `created_at`, `updated_at`, etc. are good candidates for indexing.
-
-
-!!! note "Multi-Column indexes"
-
-    While these two syntaxes look very similar, they have different meanings:
-
-    1. **Multiple Indexes on a Table**
-
-        {{ load_snippet('mulit-single-col-index','lib/snippets/dart_api/tables.dart.excerpt.json', indent=8) }}
-        This creates two separate indexes, one for each column. This means that queries that filter on each column individually can use the index.  
-        However, queries that filter on both columns can't use the index.
-
-    2. **Multi-Column Index**
-
-        {{ load_snippet('multi-col-index','lib/snippets/dart_api/tables.dart.excerpt.json', indent=8) }}
-
-        This creates a single index that covers both columns. This means that queries that use both or the first column can use the index. However, queries that just filter on the second column (age) can't use the index.
-
-    This topic is quite complex, and out of scope for this documentation. See [here](https://www.sqlitetutorial.net/sqlite-index/) for more information.
-

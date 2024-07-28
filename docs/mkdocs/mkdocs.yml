@@ -100,10 +100,11 @@ copyright: >
   <a href="#__consent">Change cookie settings</a>
 nav:
   - Home:
-      - Getting Started: index.md
-      - setup.md
+      - Getting Started: setup.md
+      - Schema:
+          - Dart API/tables.md
+          - Dart API/columns.md
       - Dart API:
-          - Getting Started: Dart API/index.md
           - Dart API/manager.md
           - Dart API/tables.md
           - Dart API/select.md
@@ -132,12 +133,6 @@ nav:
           - Getting Started: Generation options/index.md
           - Generation options/modular.md
           - Generation options/in_other_builders.md
-      - Examples:
-          - Examples/relationships.md
-          - Examples/tracing.md
-          - Examples/index.md
-          - Examples/server_sync.md
-          - Examples/existing_databases.md
       - Platforms:
           - Getting Started: Platforms/index.md
           - Platforms/vm.md
@@ -153,6 +148,13 @@ nav:
       - Internals: Internals/index.md
       - migrating_to_drift.md
       - upgrading.md
+  - Examples:
+      - Examples/flutter.md
+      - Examples/relationships.md
+      - Examples/tracing.md
+      - Examples/server_sync.md
+      - Examples/existing_databases.md
+      - Examples/more.md
 
   # - Getting Started:
   #     - getting-started/install.md

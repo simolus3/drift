@@ -1,40 +1,32 @@
 ---
 
-title: Many-to-many relationships
-description: An example that models a shopping cart system with drift.
+title: Many-to-Many
+description: Handling many-to-many relationships in drift
 
 ---
 
 
+Drift, being a relational database library and not an ORM, does not provide built-in support for many-to-many relationships. Instead, it gives you the tools to manually write the necessary joins to express more complex queries efficiently.
 
-Since drift is a relational database library and not an ORM, it doesn't automatically
-fetch relationships between entities for you. Instead, it gives you the tool to
-manually write the joins needed to express more complex queries efficiently.
+This example demonstrates how to handle a complex many-to-many relationship by creating a database for an online shop. Specifically, we will explore how to represent shopping carts in SQL.
 
-This example shows how to do that with a complex many-to-many relationship by
-implementing a database for an online shop. In particular, we'll focus on
-how to model shopping carts in SQL.
-Here, there is a many-to-many relationship between shopping carts and products:
-A product can be in many shopping carts at the same time, and carts can of course
-contain more than one product too.
+In this scenario, there exists a many-to-many relationship between shopping carts and products. A product can be present in multiple shopping carts simultaneously, and a cart can contain multiple products as well.
 
-In sqlite3, there are two good ways to model many-to-many relationships
-between tables:
 
-1. The traditional way of using a third table storing every combination of
-   products and carts.
-2. A more modern way might be to store product IDs in a shopping cart as a JSON
-   array.
+There are 2 ways to model many-to-many relationships in SQL:
 
-The two approaches have different upsides and downsides. With the traditional
-relational way, it's easier to ensure data integrity (by, for instance, deleting
-product references out of shopping carts when a product is deleted).
-On the other hand, queries are easier to write with JSON structures. Especially
-when the order of products in the shopping cart is important as well, a JSON
-list is very helpful since rows in a table are unordered.
+1. Using a 3rd *through* table that stores the relationships between the two entities.
+   This is the traditional way to model many-to-many relationships in SQL.
 
-Picking the right approach is a design decision you'll have to make. This page
-describes both approaches and highlights some differences between them.
+2. Store the many side of the relationship as a JSON array in the one side.
+   This approach is more flexible and can be more efficient for certain queries.
+
+Both methods have their merits and drawbacks. The conventional relational approach offers stronger data integrity safeguards. For example, it allows for automatic removal of product references from shopping carts when a product is deleted.  
+
+Conversely, JSON structures simplify query writing. This is particularly beneficial when the sequence of products in a shopping cart matters, as JSON lists inherently maintain order, unlike rows in a relational table.
+
+Picking the right approach is a design decision you'll have to make.   
+This page describes both approaches and highlights some differences between them.
 
 ## Common setup
 
@@ -48,8 +40,6 @@ We also need a table for products that can be bought:
 {{ load_snippet('buyable_items','lib/snippets/modular/many_to_many/shared.dart.excerpt.json') }}
 
 ## In a relational structure
-
-
 
 ### Defining the model
 

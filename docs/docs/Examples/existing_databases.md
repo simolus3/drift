@@ -1,6 +1,6 @@
 ---
 
-title: Importing and exporting databases
+title: Import/Export
 description: Using drift with an existing database
 
 ---

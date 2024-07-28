@@ -1,6 +1,6 @@
 ---
 
-title: Tracing database operations
+title: Logging
 description: Using the `QueryInterceptor` API to log details about database operations.
 
 ---

@@ -1,6 +1,6 @@
 ---
 
-title: Backend synchronization
+title: Backend Sync
 description: Approaches for syncing drift databases between clients and backends.
 
 ---

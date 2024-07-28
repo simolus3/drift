@@ -38,28 +38,44 @@ if [ $arg1 == "build" ]; then
     fi
 
     # Remove some files that are not needed
-    rm -r ./build/.dart_tool
-    rm -r ./build/packages
-    rm ./build/.build.manifest
-    rm ./build/.packages
-    
+    rm -r ./build/web/.dart_tool
+    rm -r ./build/web/packages
+    rm ./build/web/.build.manifest
+    rm ./build/web/.packages
+
+    # Move the contents of `build` to `docs` without overwriting the `docs`
+    mv -f ./build/web/* ./docs
+
+    # Build the flutter web project
+    cd ../examples/app
+    flutter pub get
+    if [ $? -ne 0 ]; then
+        echo "Failed to build the example project"
+        exit 1
+    fi
+    flutter build web --base-href "/examples/app/"
+    if [ $? -ne 0 ]; then
+        echo "Failed to build the example project"
+        exit 1
+    fi
+    mkdir -p ../../docs/docs/examples/app
+    rm -r ../../docs/docs/examples/app/*
+    mv -f ./build/web/* ../../docs/docs/examples/app
+    cd -
+
+
+
+    # Remove the `build` directory
+    rm -r ./build
+
     build_container
 
     echo "Running MkDocs build..."
-    docker run --rm  -v $(pwd):/docs --user $(id -u):$(id -g) mkdocs:latest build -f /docs/mkdocs/mkdocs.yml -d /docs/build/mkdocs
+    docker run --rm  -v $(pwd):/docs --user $(id -u):$(id -g) mkdocs:latest build -f /docs/mkdocs/mkdocs.yml -d /docs/deploy
     if [ $? -ne 0 ]; then
         echo "Failed to build the MkDocs project"
         exit 1
     fi
-
-    # Create a `deploy` folder with the MkDocs build and the compiled Dart code
-    mkdir -p ./deploy
-    # Move the contents of the MkDocs build to the `deploy` folder
-    mv ./build/mkdocs/* ./deploy
-    # Move the compiled Dart code to the `deploy` folder
-    mv ./build/web/* ./deploy
-    # Remove the `build` directory
-    rm -r ./build
 
     echo "Project built successfully"
     exit 0

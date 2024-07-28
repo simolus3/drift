@@ -30,3 +30,8 @@ docs/dist
 docs/deploy
 docs/lib/**/**.json
 docs/.cache
+# Ignore the generated files in the docs folder
+docs/docs/*.js
+docs/docs/*.wasm
+# Ignore the built flutter examples
+docs/docs/examples/**

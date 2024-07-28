@@ -1,28 +1,18 @@
 ---
 
-title: Examples
+title: More Examples...
 description: Example apps using drift
 
 ---
 
-For a full example of a cross-platform Flutter app using drift following best
-practices, see [app example](https://github.com/simolus3/drift/tree/develop/examples/app) in drift's repository.
-For interested users wanting to take a look at how to use drift in a Flutter app
-with a modern architecture, this is perhaps the best example to use as a starting
-point.
-
-Drift's repository also contains a number of smaller examples showcasing select
+Drift's repository contains a number of smaller examples showcasing select
 drift features:
 
 - The [encryption] example contains a simple Flutter app using an encrypted drift
   database, powered by the `sqlcipher_flutter_libs` package.
-<!-- - [web_worker] and [flutter_web_worker] are small web-only apps using drift in
-  a shared web worker, which allows for a real-time synchronization of the
-  database across tabs. Of course, this pattern can only be embedded into
-  multi-platform apps. -->
 - The [migration] example makes use of advanced schema migrations and shows how
   to test migrations between different database schemas by using drift's
-  [dedicated tooling][migration tooling] for this purpose.
+  [migration tooling](../Migrations/index.md#verifying-migrations) for this purpose.
 - There's an example showing how to share drift database definitions between a
   [server and a client][multi_package] in different packages.
 - [Another example][with_built_value] shows how to use drift-generated code in
@@ -44,13 +34,10 @@ If you are interested in seeing more drift examples, or want to contribute more
 examples yourself, don't hesitate to open an issue either.
 Providing more up-to-date examples would be a much appreciated contribution!
 
-Additional patterns are also shown and explained on this website:
-
 [encryption]: https://github.com/simolus3/drift/tree/develop/examples/encryption
 [web_worker]: https://github.com/simolus3/drift/tree/develop/examples/web_worker_example
 [flutter_web_worker]: https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example
 [migration]: https://github.com/simolus3/drift/tree/develop/examples/migrations_example
-[migration tooling]('../Migrations/tests.md#verifying-migrations')
 [with_built_value]: https://github.com/simolus3/drift/tree/develop/examples/with_built_value
 [multi_package]: https://github.com/simolus3/drift/tree/develop/examples/multi_package
 

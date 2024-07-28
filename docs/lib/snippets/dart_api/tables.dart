@@ -1,4 +1,8 @@
+// ignore_for_file: invalid_annotation_target, recursive_getters
+
 import 'package:drift/drift.dart';
+import 'package:drift_docs/snippets/modular/drift/with_existing.drift.dart';
+import 'package:uuid/uuid.dart';
 
 // #docregion nnbd
 class Items extends Table {
@@ -34,32 +38,29 @@ class TodoCategories extends Table {
 
 // #docregion unique-column
 class TableWithUniqueColumn extends Table {
-  IntColumn get unique => integer().unique()();
+  TextColumn get username => text().unique()();
 }
 // #enddocregion unique-column
 
 // #docregion primary-key
-class GroupMemberships extends Table {
-  IntColumn get group => integer()();
-  IntColumn get user => integer()();
+class UuidIdTable extends Table {
+  TextColumn get id => text().clientDefault(() => Uuid().v4())();
 
   @override
-  Set<Column> get primaryKey => {group, user};
+  Set<Column> get primaryKey => {id};
 }
 // #enddocregion primary-key
 
 // #docregion unique-table
-class IngredientInRecipes extends Table {
+class Books extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
+  TextColumn get author => text()();
+
   @override
   List<Set<Column>> get uniqueKeys => [
-        {recipe, ingredient},
-        {recipe, amountInGrams}
+        {title, author}
       ];
-
-  IntColumn get recipe => integer()();
-  IntColumn get ingredient => integer()();
-
-  IntColumn get amountInGrams => integer().named('amount')();
 }
 // #enddocregion unique-table
 
@@ -75,13 +76,31 @@ class TableWithCustomConstraints extends Table {
 }
 // #enddocregion custom-constraint-table
 
+class GroupMemberships extends Table {
+  IntColumn get group => integer()();
+  IntColumn get user => integer()();
+
+  @override
+  Set<Column> get primaryKey => {group, user};
+}
+
 // #docregion index
+// #docregion mulit-single-col-index
+@TableIndex(name: 'user_age', columns: {#age})
 @TableIndex(name: 'user_name', columns: {#name})
+// #enddocregion mulit-single-col-index
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
+  // #docregion check
+  IntColumn get age => integer().check(age.isBiggerThan(Constant(0)))();
+  // #enddocregion check
 }
 // #enddocregion index
+
+// #docregion multi-col-index
+@TableIndex(name: 'user_name', columns: {#name, #age})
+// #enddocregion multi-col-index
 
 // #docregion custom-type
 typedef Category = ({int id, String name});

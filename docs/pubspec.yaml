@@ -27,6 +27,7 @@ dependencies:
   drift_dev: any
   test: ^1.18.0
   postgres: ^3.0.0-0
+  uuid: ^4.4.2
 
 dev_dependencies:
   build_runner: ^2.4.11
