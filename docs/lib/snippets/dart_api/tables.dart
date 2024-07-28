@@ -1,7 +1,6 @@
 // ignore_for_file: invalid_annotation_target, recursive_getters
 
 import 'package:drift/drift.dart';
-import 'package:drift_docs/snippets/modular/drift/with_existing.drift.dart';
 import 'package:uuid/uuid.dart';
 
 // #docregion nnbd

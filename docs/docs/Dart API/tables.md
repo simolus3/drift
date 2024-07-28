@@ -27,9 +27,9 @@ Columns are defined by getters in the table class.
 
 For instance, in the example above, `#!dart IntColumn get category => integer().nullable()();` defined a column named `category` that can store integers and is nullable.
 
-### Types
+### Supported Types
 
-Drift supports a variety of column types out of the box.  
+Drift supports a variety of column types out of the box.  
 Additional types can be stored using [type converters](../type_converters.md).
 
 | Dart type   | Column       | Corresponding SQLite type                                                                      |
@@ -45,21 +45,20 @@ Additional types can be stored using [type converters](../type_converters.md).
 | `Enum`      | `textEnum()` | `TEXT` (more information available [here]("../type_converters.md#implicit-enum-converters")).  |
 
 !!! note "JSON Serialization"
-    
-    The way drift maps Dart types to SQL types is independent of how it serializes data to JSON.  
+    
+    The way drift maps Dart types to SQL types is independent of how it serializes data to JSON.  
     For example, Dart `bool` values are stored as `0` or `1` in the database, but as `true` or `false` in JSON.
 
-### Nullable
+### Optional Columns
 
-Drift adopts Dart's non-nullable by default approach.    
-If you do want to make a column nullable, just use `nullable()`:
+Drift adopts Dart's non-nullable by default approach.    
+If you do want to make a column nullable, use `nullable()`:
 
 {{ load_snippet('nnbd','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-Columns in Dart-defined tables default to `NOT NULL` in SQL. 
-If a value is not provided for a column, the database will throw an error.
+Columns in Dart-defined tables default to `NOT NULL` in SQL. Omitting values during insertion causes exceptions.
 
-### Defaults
+### Default Values
 
 
 Default values can be set for columns using two methods:
@@ -67,15 +66,15 @@ Default values can be set for columns using two methods:
 1. **`withDefault`**: For constant values
 ```dart
 class Preferences extends Table {
-  TextColumn get name => text()();
-  BoolColumn get enabled => boolean().withDefault(const Constant(false))();
+    TextColumn get name => text()();
+    BoolColumn get enabled => boolean().withDefault(const Constant(false))();
 }
 ```
 
 2. **`clientDefault`**: For dynamic values
 ```dart
 class Users extends Table {
-  TextColumn get id => text().clientDefault(() => Uuid().v4())();
+    TextColumn get id => text().clientDefault(() => Uuid().v4())();
 }
 ```
 
@@ -84,32 +83,32 @@ class Users extends Table {
 - `withDefault` will store the default value in the database, while `clientDefault` will generate the default value on the client side.
 
 - For constant values, like `false`, `true`, or `0`, `withDefault` is more efficient.
-For dynamic values, like `DateTime.now()` or `Uuid().v4()`, `clientDefault` is more flexible.
+`clientDefault` is more flexible for dynamic values like `DateTime.now()` or `Uuid().v4()`.
 
 - Changing the default value for a column with `withDefault` requires a schema migration, while `clientDefault` allows you to change the default value without a schema migration.
 
 ### Checks (Data Validation)
 
-Use the `check` method to enforce specific conditions. This method takes a Boolean expression as an argument, which is evaluated for each insert or update.
+Use the `check` method to enforce specific conditions. This method takes a Boolean expression as an argument and is evaluated for each insert or update.
 
 For example, the following code ensures that the `age` column is always greater than `0`:
 
 {{ load_snippet('check','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-This generates a `CHECK` constraint in the SQL table definition, which validates the column for each data modification.
+The `check` method generates a `CHECK` constraint in the SQL table definition, which validates the column for each data modification.
 
-You must write a [schema migration](../Migrations/index.md). to add, remove, or modify a check constraint after table creation.
+To add, remove, or modify a check constraint after table creation, you must write a [schema migration](../Migrations/index.md).
 
-For more on writing expressions, see the [Expressions](../Expressions/index.md) page.
+See the [Expressions](../Expressions/index.md) page for more on writing expressions.
 
 !!! info "Thrown Exceptions"
 
-    Validation/Checks are only enforced at the database level.  
+    Validation/Checks are enforced at the database level.  
     Creating a `User` dataclass with an `age` of `-1` will not throw an exception in Dart.
 
 !!! note "Recusive Checks"
 
-    The dart analyzer may report a [`recursive_getters`](https://dart.dev/tools/linter-rules/recursive_getters) error when using a column in a check expression.  
+    The dart analyzer may report a [`recursive_getters`](https://dart.dev/tools/linter-rules/recursive_getters) error when using a column in a check expression.  
     This can be safely ignored, as this code is never executed.
 
 
@@ -125,7 +124,7 @@ For example, the following code ensures that each users `username` is unique:
 #### Multiple Columns
 
 If you want to enforce a combination of columns to be unique, override the `uniqueKeys` getter in your table class:
-For example, if wanted to ensure that an author can't write 2 books with the same title:
+For example, if one wanted to ensure that an author can't write two books with the same title:
 
 {{ load_snippet('unique-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
@@ -135,7 +134,7 @@ Any Dart object can be stored if a [Type Converter](../type_converters.md) is pr
 
 {{ load_snippet('table','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
-See the [Type Converters](../type_converters.md) page for more information.
+For more information, see the [Type Converters](../type_converters.md) page.
 
 ### `BigInt`
 
@@ -143,18 +142,18 @@ See the [Type Converters](../type_converters.md) page for more information.
 Use `int64()` to store large integers in Dart.
 This will preserve precision in JavaScript-compiled apps. 
 
-!!! note annotate  "When to use `int64()`"
+!!! note annotate "When to use `int64()`"
 
-    For most cases, especially non-web apps, the standard `integer()` column suffices.   
-    Only use `int64()` for web apps dealing with values exceeding 2^52. (1)
+ The standard `integer()` column suffices for most cases, especially non-web apps.   
+ Only use `int64()` for web apps with values exceeding 2^52. (1)
 
-1.  This is an absolutly huge number, so you're unlikely to run into this limit in practice. 4,503,599,627,370,496 to be exact.
+1.  This is a huge number, so you're unlikely to reach this limit in practice. 4,503,599,627,370,496 to be exact.
 So unless you're dealing with numbers that large, you can stick with `integer()`.
 
 
 ##### Migration to/from `BigInt`
 
-Drift stores `int` and `BigInt` values in the same column type in sqlite3, so you can switch between the two without a schema migration.  
+Drift stores `int` and `BigInt` values in the same column type in sqlite3, so you can switch between the two without a schema migration.  
 
 ##### Supported Backends
 
@@ -170,37 +169,37 @@ For example, `(table.columnA * table.columnB).dartCast<BigInt>()` will return a 
 
 ### `DateTime`
 
-Drift supports two approaches of storing `DateTime`:
+Drift supports two approaches to storing `DateTime`:
 
 <div class="annotate" markdown>
 
-1. **UNIX Timestamp** [Default]:  
+1. **UNIX Timestamp** [Default]:  
 
-    DateTime values are stored as an SQL `INTEGER` containing the unix timestamp in seconds. (e.g. `1722169674`)
-    This is the default behavior and can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
+    DateTime values are stored in seconds as an SQL `INTEGER` containing the Unix timestamp. (e.g. `1722169674`)
+    This default behavior can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
 
-    **Pros**
-    
-    * **Performance**: Intergers are more efficient to store and compare than textual representations.  
-    
-    **Cons**:  
+    **Pros**
+    
+    * **Performance**: Storing and comparing integers is more efficient than text.
+    
+    **Cons**:  
 
-    * **No Timezones**: All local time information is lost. (1)  
-    
-    * **Less Precision**: Only stored as seconds, so milliseconds are truncated.
-    
-3. __ISO-8601 String__:   
+    * **No Timezones**: All local time information is lost. (1)  
+    
+    * **Less Precision**: Only stored as seconds, so milliseconds are truncated.
+    
+3. __ISO-8601 String__:   
 
-    Datetime values are stored as formated text based on `DateTime.toIso8601String()`.  
+    Datetime values are stored as a formatted text based on `DateTime.toIso8601String()`.  
     UTC values are stored unchanged (e.g. `2022-07-25 09:28:42.015Z`), while local values have their
-    UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).  
+    UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).  
 
     **Pros**
     
     * **Timezones Aware**: Local time information is preserved.
     * **Precise**: Milliseconds are stored.
     
-    **Cons**:  
+    **Cons**:
 
     * **Performance**: Textual values are less efficient to store and compare than integers.
     
@@ -208,50 +207,51 @@ Drift supports two approaches of storing `DateTime`:
     ??? info "Timezone Handling"
 
         Most of sqlite3's date and time functions operate on UTC values, but parsing
-        datetimes in SQL respects the UTC offset added to the value.  
+        date-times in SQL respects the UTC offset added to the value.  
         When reading values back from the database, drift will use `DateTime.parse`
-        as following:  
+        as following:  
 
         - If the textual value ends with `Z`, drift will use `DateTime.parse`
-              directly. The `Z` suffix will be recognized and a UTC value is returned.  
-        - If the textual value ends with a UTC offset (e.g. `+02:00`), drift first
-              uses `DateTime.parse` which respects the modifier but returns a UTC
+              directly. The `Z` suffix will be recognized and returned with a UTC value. 
+        - If the textual value ends with a UTC offset (e.g., `+02:00`), drift first
+              uses `DateTime.parse`, which respects the modifier but returns a UTC
               datetime. Drift then calls `toLocal()` on this intermediate result to
               return a local value.
         - If the textual value neither has a `Z` suffix nor a UTC offset, drift
               will parse it as if it had a `Z` modifier, returning a UTC datetime.
               The motivation for this is that the `datetime` function in sqlite3 returns
-              values in this format and uses UTC by default.  
+              values in this format and uses UTC by default.  
 
         This behavior works well with the date functions in sqlite3 while also
         preserving "UTC-ness" for stored values.
 
 </div>
 
-1. If you would like to store `DateTime` objects which are aware of their timezone, you should use Option 2.
+1. If you would like to store `DateTime` objects that know their time zones, you should use Option 2.
 
-Drift stores `DateTime` values as unix timestamps be default. This can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
+Drift stores `DateTime` values as unix timestamps by default. This can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
 
-Migrating between the two modes is possible, but requires a [manual migration](#migrating-between-the-two-modes).
+Migrating between the two modes is possible but requires a [manual migration](#migrating-between-the-two-modes).
 
 
-### Custom Constraints
+## Custom Constraints
 
 Some column and table constraints aren't supported through Drift API. This includes the collation
 of columns, which you can apply using `customConstraint`:
 
 ```dart
 class Groups extends Table {
-  TextColumn get name => integer().customConstraint('COLLATE BINARY')();
+    TextColumn get name => integer().customConstraint('COLLATE BINARY')();
 }
 ```
 
 Applying a `customConstraint` will override all other constraints that would be included by default. 
-In particular, that means that we need to also include the `NOT NULL` constraint again.
+In particular, we must also include the `NOT NULL` constraint again.
 
 You can also add table-wide constraints by overriding the `customConstraints` getter in your table class.
 
 {{ load_snippet('custom-constraint-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+
 
 
 ## Primary Keys
@@ -280,11 +280,11 @@ Use the `references` method to define a foreign key constraint.
 
 {{ load_snippet('references','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-The first parameter to `references` points to the table on which a reference should be created.
+The first parameter to `references` is the table to reference.
 The second parameter is a [symbol](https://dart.dev/guides/language/language-tour#symbols) of the column to use for the reference.
 
-Optionally, the `onUpdate` and `onDelete` parameters can be used to describe what
-should happen when the target row gets updated or deleted.
+
+
 
 !!! info "Foreign Key Constraints"
 
@@ -292,6 +292,21 @@ should happen when the target row gets updated or deleted.
     They need to be enabled with `PRAGMA foreign_keys = ON`.
     A suitable place to issue that pragma with drift is in a [post-migration callback](../Migrations/index.md#post-migration-callbacks).
 
+Optionally, the `onUpdate` and `onDelete` parameters can be used to describe what
+should happen when the target row gets updated or deleted.
+
+By default, `NO ACTION` is used for both. This mean that if foreign key constraints are enabled, an update or delete of the target row will fail if it would violate the foreign key constraint.
+
+!!! example "Example"
+
+    We have a `users` table with a `group_id` column that references the `groups` table.
+    The admin group has an id of `1`. Each user in the admin group has a `group_id` of `1`.
+
+    If we were to delete the admin group, or change its id, the `onUpdate` and `onDelete` parameters would determine what happens.
+    
+    By default, the operation would fail. However we could change the `onDelete` parameter to `cascade` to delete all users in the admin group when the group is deleted. Or we could set it to `setNull` to set the `group_id` of all users in the admin group to `null` when the group is deleted.
+
+    See the [sqlite documentation](https://sqlite.org/foreignkeys.html#fk_actions) for more information on the available actions.
 
 ## Table Name
 
@@ -300,18 +315,23 @@ table
 
 {{ load_snippet('(full)','lib/snippets/dart_api/old_name.dart.excerpt.json') }}
 
-Would be generated as `CREATE TABLE enabled_categories (parent_category INTEGER NOT NULL)`.
+Would be generated as `#!sql CREATE TABLE enabled_categories (parent_category INTEGER NOT NULL)`.
 
 To override the table name, simply override the `tableName` getter. An explicit name for
 columns can be provided with the `named` method:
 
 {{ load_snippet('names','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
+The updated class would be generated as `#!sql CREATE TABLE categories (parent INTEGER NOT NULL)`.
 
 ## Indexes
 
 [SQL Indexes](https://sqlite.org/lang_createindex.html) are like book indexes: they help find information quickly. Without them, you'd have to scan the whole database for each search, which is slow. Indexes make searches much faster, but slightly slow down adding new data.
+
+!!! tip "When to use indexes"
+
+    Any column that is filtered or sorted on frequently should have an index.  
+    Fields likes `age`, `name`, `email`, `created_at`, `updated_at`, etc. are good candidates for indexing.
 
 Use the `@TableIndex` annotation to define an index on a table.  
 Each index needs to have its own unique name. Typically, the name of the table is part of the
@@ -323,12 +343,6 @@ These can be used multiple times to define multiple indexes on a table.
 
 Primary keys are automatically indexed, so you don't need to add an index for them.
 
-!!! tip "When to use indexes"
-
-    Any column that is filtered or sorted on frequently should have an index.  
-    Fields likes `age`, `name`, `email`, `created_at`, `updated_at`, etc. are good candidates for indexing.
-
-
 !!! note "Multi-Column indexes"
 
     While these two syntaxes look very similar, they have different meanings:
@@ -336,14 +350,15 @@ Primary keys are automatically indexed, so you don't need to add an index for th
     1. **Multiple Indexes on a Table**
 
         {{ load_snippet('mulit-single-col-index','lib/snippets/dart_api/tables.dart.excerpt.json', indent=8) }}
-        This creates two separate indexes, one for each column. This means that queries that filter on each column individually can use the index.  
+        This creates two separate indexes, one for each column. 
+        Queries that filter on each column independently can use the index.
         However, queries that filter on both columns can't use the index.
 
     2. **Multi-Column Index**
 
         {{ load_snippet('multi-col-index','lib/snippets/dart_api/tables.dart.excerpt.json', indent=8) }}
 
-        This creates a single index that covers both columns. This means that queries that use both or the first column can use the index. However, queries that just filter on the second column (age) can't use the index.
+        This creates a single index that covers both columns. Queries that use both or the first column (name) can use the index. However, queries that only filter on the second column (age) can't use the index.
 
     This topic is quite complex, and out of scope for this documentation. See [here](https://www.sqlitetutorial.net/sqlite-index/) for more information.
 

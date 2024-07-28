@@ -101,9 +101,9 @@ copyright: >
 nav:
   - Home:
       - Getting Started: setup.md
-      - Schema:
-          - Dart API/tables.md
-          - Dart API/columns.md
+
+      - Dart API/tables.md
+      - Dart API/dataclass.md
       - Dart API:
           - Dart API/manager.md
           - Dart API/tables.md
