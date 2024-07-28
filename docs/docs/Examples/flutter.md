@@ -9,7 +9,7 @@ For a comprehensive example of a cross-platform Flutter app that incorporates dr
 
 This example serves as an excellent starting point for users interested in exploring how to integrate drift into a Flutter app with a modern architecture.
 
-<iframe src="http://127.0.0.1:9000/examples/app/index.html" height="600" width="400"></iframe>
+<iframe src="examples/app/index.html" height="600" width="400"></iframe>
 
 
 [:simple-github: Github](https://github.com/simolus3/drift/tree/develop/examples/app){ .md-button .md-button--primary }

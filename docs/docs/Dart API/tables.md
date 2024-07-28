@@ -175,33 +175,35 @@ Drift supports two approaches to storing `DateTime`:
 
 1. **UNIX Timestamp** [Default]:  
 
-    DateTime values are stored in seconds as an SQL `INTEGER` containing the Unix timestamp. (e.g. `1722169674`)
-    This default behavior can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
+    DateTime values are stored in seconds as an SQL `INTEGER` containing the Unix timestamp (e.g. `1722169674`). This default behavior can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).  
+    
+    <!-- | -->
+**Pros**
+    
+    * **Performance**: Intergers are more efficient to store and compare than textual representations.  
+    
+    **Cons**:  
 
-    **Pros**
-    
-    * **Performance**: Storing and comparing integers is more efficient than text.
-    
-    **Cons**:  
+    * **No Timezones**: All local time information is lost. (1)  
+    
+    * **Less Precision**: Only stored as seconds, so milliseconds are truncated.
 
-    * **No Timezones**: All local time information is lost. (1)  
-    
-    * **Less Precision**: Only stored as seconds, so milliseconds are truncated.
-    
-3. __ISO-8601 String__:   
+
+2. __ISO-8601 String__:   
 
     Datetime values are stored as a formatted text based on `DateTime.toIso8601String()`.  
     UTC values are stored unchanged (e.g. `2022-07-25 09:28:42.015Z`), while local values have their
     UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).  
 
-    **Pros**
+    **Pros**  
     
-    * **Timezones Aware**: Local time information is preserved.
-    * **Precise**: Milliseconds are stored.
-    
-    **Cons**:
+    * **Timezones Aware**: Local time information is preserved.  
 
-    * **Performance**: Textual values are less efficient to store and compare than integers.
+    * **Precise**: Milliseconds are stored.  
+    
+    **Cons**:  
+
+    * **Performance**: Textual values are less efficient to store and compare than integers.  
     
 
     ??? info "Timezone Handling"
