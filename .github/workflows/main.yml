@@ -39,7 +39,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           # Subdirectory with Dockerfile
-          context: "{{defaultContext}}:mkdocs"
+          context: "{{defaultContext}}:docs/mkdocs"
           cache-from: type=gha
           cache-to: type=gha,mode=max`
           tags: mkdocs:latest
