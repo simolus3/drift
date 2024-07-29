@@ -43,7 +43,7 @@ class Group {
 // #enddocregion ignored
 
 // #docregion async
-@UseRowClass(Book)
+@UseRowClass(Book, constructor: "fetchUrl")
 class Books extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();

@@ -33,18 +33,30 @@ jobs:
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
-      - run: melos bootstrap --scope drift_docs,drift,app
+      - name: Set up Docker CLI
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker images
+        uses: docker/build-push-action@v5
+        with:
+          # Subdirectory with Dockerfile
+          context: "{{defaultContext}}:mkdocs"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max`
+          tags: mkdocs:latest
+      - name: Bootstrap Dart packages
+        run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
-      - name: Run build
-        run: |
-          chmod +x ./docs.sh
-          ./docs.sh build
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
-      - run: dart test
+      - name: Test Dart and Drift sources
+        run: dart test
+      - name: Run build
+        run: |
+          chmod +x ./docs.sh
+          ./docs.sh build
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v3
