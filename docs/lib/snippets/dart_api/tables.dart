@@ -10,16 +10,7 @@ class Items extends Table {
 }
 // #enddocregion nnbd
 
-// #docregion names
-@DataClassName('EnabledCategory')
-class EnabledCategories extends Table {
-  @override
-  String get tableName => 'categories';
-
-  @JsonKey('parent_id')
-  IntColumn get parentCategory => integer().named('parent')();
-}
-// #enddocregion names
+// #docregion custom-column-name
 
 // #docregion references
 class TodoItems extends Table {
@@ -114,3 +105,65 @@ class Categories extends Table {
   // #docregion custom-type
 }
 // #enddocregion custom-type
+
+// #docregion column-name
+class Author extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().named('author_name')();
+}
+
+// #enddocregion column-name
+// #docregion generated-column
+@TableIndex(name: 'order_index', columns: {#total})
+class Order extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  // 25.35
+  RealColumn get price => real()();
+  // 2
+  IntColumn get quantity => integer()();
+  // 50.70
+  RealColumn get total =>
+      real().generatedAs(price * quantity.cast(DriftSqlType.double))();
+}
+// #enddocregion generated-column
+
+// #docregion reference-name
+class Book extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get name => integer().references(Books, #id)();
+  @ReferenceName("books")
+  IntColumn get publisher => integer().references(Publisher, #id)();
+}
+
+class Publisher extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get name =>
+      integer().references(Books, #id, onDelete: KeyAction.cascade)();
+}
+// #enddocregion reference-name
+
+// #docregion custom-data-class-name
+@DataClassName('EnabledCategory')
+// #docregion custom-table-name
+// #docregion custom-column-name
+// #docregion custom-json-key
+class EnabledCategories extends Table {
+  // #enddocregion custom-json-key
+  // #enddocregion custom-data-class-name
+  // #enddocregion custom-column-name
+  @override
+  String get tableName => 'categories';
+  // #enddocregion custom-table-name
+// #docregion custom-json-key
+
+  @JsonKey('parent_id')
+// #docregion custom-column-name
+  IntColumn get parentCategory => integer().named('parent')();
+// #docregion custom-data-class-name
+  //...
+// #docregion custom-table-name
+}
+// #enddocregion custom-table-name
+// #enddocregion custom-json-key
+// #enddocregion custom-data-class-name
+// #enddocregion custom-column-name

@@ -99,10 +99,12 @@ copyright: >
   Copyright &copy; 2019 - 2024 Simon Binder –
   <a href="#__consent">Change cookie settings</a>
 nav:
-  - Home:
+  - index.md
+  - Reference:
       - Getting Started: setup.md
-
       - Dart API/tables.md
+      - Dart API/columns.md
+
       - Dart API/dataclass.md
       - Dart API:
           - Dart API/manager.md

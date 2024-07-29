@@ -6,6 +6,16 @@ import 'package:test/test.dart';
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
 
+enum Gender {
+  male,
+  female;
+}
+
+final check = () {
+  assert(Gender.male.index == 0);
+  assert(Gender.female.index == 1);
+}();
+
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   late TodoDb db;

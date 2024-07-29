@@ -5,46 +5,44 @@ description: Everything there is to know about defining SQL columns in drift.
 
 ---
 
-Define columns by declaring a getter starting with the type of the column,
-its name in Dart, and the definition mapped to SQL.    
-
-In the example below, `#!dart IntColumn get category => integer().nullable()();` defines a column
-holding nullable integer values named `category`.
+Columns are defined by getters in the table class.
 
 {{ load_snippet('table','lib/snippets/setup/database.dart.excerpt.json') }}
 
-## Column Types
+For instance, in the example above, `#!dart IntColumn get category => integer().nullable()();` defined a column named `category` that can store `#!dart int?`.
+
+### Supported Types
 
 Drift supports a variety of column types out of the box.  
-Other types can be stored using [type converters](../type_converters.md).
+Additional types can be stored using [type converters](../type_converters.md).
 
-| Dart type   | Column       | Corresponding SQLite type                                                                      |
-| ----------- | ------------ | ---------------------------------------------------------------------------------------------- |
-| `int`       | `integer()`  | `INTEGER`                                                                                      |
-| `BigInt`    | `int64()`    | `INTEGER` (useful for large values on the web)                                                 |
-| `double`    | `real()`     | `REAL`                                                                                         |
-| `boolean`   | `boolean()`  | `INTEGER`, which a `CHECK` to only allow `0` or `1`                                            |
-| `String`    | `text()`     | `TEXT`                                                                                         |
-| `DateTime`  | `dateTime()` | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)                        |
-| `Uint8List` | `blob()`     | `BLOB`                                                                                         |
-| `Enum`      | `intEnum()`  | `INTEGER` (more information available [here](../type_converters.md#implicit-enum-converters)). |
-| `Enum`      | `textEnum()` | `TEXT` (more information available [here]("../type_converters.md#implicit-enum-converters")).  |
+| Dart type   | Column              | Corresponding SQLite type                                                                            |
+| ----------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `int`       | `#!dart integer()`  | `#!sql INTEGER`                                                                                      |
+| `BigInt`    | `#!dart int64()`    | `#!sql INTEGER` (useful for large values on the web)                                                 |
+| `double`    | `#!dart real()`     | `#!sql REAL`                                                                                         |
+| `bool`      | `#!dart boolean()`  | `#!sql INTEGER`, which a `CHECK` to only allow `0` or `1`                                            |
+| `String`    | `#!dart text()`     | `#!sql TEXT`                                                                                         |
+| `DateTime`  | `#!dart dateTime()` | `#!sql INTEGER` (default) or `TEXT` depending on [options](#datetime)                                |
+| `Uint8List` | `#!dart blob()`     | `#!sql BLOB`                                                                                         |
+| `enum`      | `#!dart intEnum()`  | `#!sql INTEGER` (more information available [here](../type_converters.md#implicit-enum-converters)). |
+| `enum`      | `#!dart textEnum()` | `#!sql TEXT` (more information available [here]("../type_converters.md#implicit-enum-converters")).  |
 
 !!! note "JSON Serialization"
-    
+    
     The way drift maps Dart types to SQL types is independent of how it serializes data to JSON.  
     For example, Dart `bool` values are stored as `0` or `1` in the database, but as `true` or `false` in JSON.
 
-## Nullable
+### Optional Columns
 
-Drift adopts Dart's non-nullable by default approach.    
-If you do want to make a column nullable, just use `nullable()`:
+Drift adopts Dart's non-nullable by default approach.  
+If you do want to make a column nullable, use `nullable()`:
 
 {{ load_snippet('nnbd','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-Columns in Dart-defined tables default to `NOT NULL` in SQL. Omitting values during insertion causes exceptions. Drift provides compile-time warnings for this when using SQL too.
+Columns in Dart-defined tables default to `NOT NULL` in SQL. Omitting values during an insert will throw an exception.
 
-## Defaults
+### Default Values
 
 
 Default values can be set for columns using two methods:
@@ -52,45 +50,44 @@ Default values can be set for columns using two methods:
 1. **`withDefault`**: For constant values
 ```dart
 class Preferences extends Table {
-  TextColumn get name => text()();
-  BoolColumn get enabled => boolean().withDefault(const Constant(false))();
+    TextColumn get name => text()();
+    BoolColumn get enabled => boolean().withDefault(const Constant(false))();
 }
 ```
 
 2. **`clientDefault`**: For dynamic values
 ```dart
 class Users extends Table {
-  TextColumn get id => text().clientDefault(() => Uuid().v4())();
+    TextColumn get id => text().clientDefault(() => Uuid().v4())();
 }
 ```
 
-**Key points**:
+**Key Differences**:
 
 - `withDefault` will store the default value in the database, while `clientDefault` will generate the default value on the client side.
 
 - For constant values, like `false`, `true`, or `0`, `withDefault` is more efficient.
-For dynamic values, like `DateTime.now()` or `Uuid().v4()`, `clientDefault` is more flexible.
+`clientDefault` is more flexible for dynamic values like `DateTime.now()` or `Uuid().v4()`.
 
 - Changing the default value for a column with `withDefault` requires a schema migration, while `clientDefault` allows you to change the default value without a schema migration.
 
-## Checks (Data Validation)
+### Checks (Data Validation)
 
-Use the `check` method to enforce specific conditions. This method takes a Boolean expression as an argument, which is evaluated for each insert or update.
+Use the `check` method to create a constraint that validates the column's value.
+This method takes a Boolean expression as an argument and is evaluated for each insert or update.
 
 For example, the following code ensures that the `age` column is always greater than `0`:
 
 {{ load_snippet('check','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-This generates a `CHECK` constraint in the SQL table definition, which validates the column for each data modification.
+To add, remove, or modify a check constraint after table creation, you must write a [schema migration](../Migrations/index.md).
 
-You must write a [schema migration](../Migrations/index.md). to add, remove, or modify a check constraint after table creation.
-
-For more on writing expressions, see the [Expressions](../Expressions/index.md) page.
+See the [Expressions](../Expressions/index.md) page for more on writing expressions.
 
 !!! info "Thrown Exceptions"
 
-    Validation/Checks are only enforced at the database level.  
-    Creating a `User` dataclass with an `age` of `-1` will not throw an exception in Dart.
+    Validation/Checks are enforced at the database level.  
+    Creating a `User` dataclass with an `age` of `-1` will not throw an exception. Only when that data is inserted into the database will an exception be thrown.
 
 !!! note "Recusive Checks"
 
@@ -98,52 +95,60 @@ For more on writing expressions, see the [Expressions](../Expressions/index.md) 
     This can be safely ignored, as this code is never executed.
 
 
-## Unique Columns
+### Unique Columns
 
-### Single Column
+#### Single Column
 
 Use the `unique()` method to enforce that a column must contain unique values.
 For example, the following code ensures that each users `username` is unique:
 
 {{ load_snippet('unique-column','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-### Multiple Columns
+#### Multiple Columns
 
-If you want to enforce a combination of columns to be unique, override the `uniqueKeys` getter in your table class:
-For example, if wanted to ensure that an author can't write 2 books with the same title:
+If you want to enforce a combination of columns to be unique, override the `uniqueKeys` getter in your table class.  
+For example, if one wanted to ensure that an author can't write two books with the same title:
 
 {{ load_snippet('unique-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-## Custom Types
+### Custom Types
 
-Any Dart object can be stored if a [Type Converter](../type_converters.md) is provided.
+Use the `map()` method to provide a Type Converter for a column.
+This will allow you to store any type in a column that drift doesn't support out of the box.
 
 {{ load_snippet('table','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
-See the [Type Converters](../type_converters.md) page for more information.
+For more information on how to write a type converter, see the [Type Converters](../type_converters.md) page.
 
-## `BigInt`
+
+!!! note "Isn't `customType()` for Custom Types?"
+
+    **No.**
+    Drift has a confusingly named `customType()` which typically shouldn't be used.  
+    The intended use case for this method is to add support for columns that are not supported by drift out of the box. (e.g. `drift_postgres` uses this method add support for `uuid` columns).
+
+### `BigInt`
 
 
 Use `int64()` to store large integers in Dart.
 This will preserve precision in JavaScript-compiled apps. 
 
-!!! note annotate  "When to use `int64()`"
+!!! note annotate "When to use `int64()`"
 
-    For most cases, especially non-web apps, the standard `integer()` column suffices.   
-    Only use `int64()` for web apps dealing with values exceeding 2^52. (1)
+    The standard `integer()` column suffices for most cases, especially non-web apps.  
+    Only use `int64()` for web apps with values exceeding 2^52. (1)
 
-1.  This is an absolutly huge number, so you're unlikely to run into this limit in practice. 4,503,599,627,370,496 to be exact.
+1.  This is a huge number, 4,503,599,627,370,496 to be exact. so you're unlikely to reach this limit in practice. 
 So unless you're dealing with numbers that large, you can stick with `integer()`.
 
 
 ##### Migration to/from `BigInt`
 
-Drift stores `int` and `BigInt` values in the same column type in sqlite3, so you can switch between the two without a schema migration.  
+Drift stores `int` and `BigInt` values in the same column type in sqlite3, so you can switch between the two without a schema migration.  
 
 ##### Supported Backends
 
-`BigInt` is not supported by `drift_sqflite`.
+`BigInt` is not supported by `drift_sqflite`. 
 
 
 ##### Expressions
@@ -153,87 +158,94 @@ When using `BigInt` columns in expressions, you can use `dartCast()` to ensure t
 For example, `(table.columnA * table.columnB).dartCast<BigInt>()` will return a `BigInt` value, even if `columnA` and `columnB` are defined as regular integers.
 
 
-## `DateTime`
+### `DateTime`
 
-Drift supports two approaches of storing `DateTime`:
+Drift supports two approaches to storing `DateTime`:
 
-<div class="annotate" markdown>
 
-1. **UNIX Timestamp** [Default]:  
 
-    DateTime values are stored as an SQL `INTEGER` containing the unix timestamp in seconds. (e.g. `1722169674`)
-    This is the default behavior and can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
+1. **UNIX Timestamp** [Default]:  
 
-    **Pros**
+    DateTime values are stored in seconds as an SQL `#!sql INTEGER` containing the Unix timestamp (e.g. `1722169674`).  
+    This default behavior can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).  
+
+    <!-- | -->
+**Pros**
     
     * **Performance**: Intergers are more efficient to store and compare than textual representations.  
     
     **Cons**:  
 
-    * **No Timezones**: All local time information is lost. (1)  
+    * **No Timezones**: All local time information is lost.
     
     * **Less Precision**: Only stored as seconds, so milliseconds are truncated.
-    
-3. __ISO-8601 String__:   
 
-    Datetime values are stored as formated text based on `DateTime.toIso8601String()`.  
+
+2. __ISO-8601 String__:   
+
+    Datetime values are stored as a formatted text based on `DateTime.toIso8601String()`.  
     UTC values are stored unchanged (e.g. `2022-07-25 09:28:42.015Z`), while local values have their
-    UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).  
+    UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).  
 
-    **Pros**
+    **Pros**  
     
-    * **Timezones Aware**: Local time information is preserved.
-    * **Precise**: Milliseconds are stored.
+    * **Timezones Aware**: Local time information is preserved.  
+
+    * **Precise**: Milliseconds are stored.  
     
     **Cons**:  
 
-    * **Performance**: Textual values are less efficient to store and compare than integers.
+    * **Performance**: Textual values are less efficient to store and compare than integers.  
     
 
     ??? info "Timezone Handling"
 
         Most of sqlite3's date and time functions operate on UTC values, but parsing
-        datetimes in SQL respects the UTC offset added to the value.  
+        date-times in SQL respects the UTC offset added to the value.  
         When reading values back from the database, drift will use `DateTime.parse`
-        as following:  
+        as following:  
 
         - If the textual value ends with `Z`, drift will use `DateTime.parse`
-              directly. The `Z` suffix will be recognized and a UTC value is returned.  
-        - If the textual value ends with a UTC offset (e.g. `+02:00`), drift first
-              uses `DateTime.parse` which respects the modifier but returns a UTC
+              directly. The `Z` suffix will be recognized and returned with a UTC value. 
+        - If the textual value ends with a UTC offset (e.g., `+02:00`), drift first
+              uses `DateTime.parse`, which respects the modifier but returns a UTC
               datetime. Drift then calls `toLocal()` on this intermediate result to
               return a local value.
         - If the textual value neither has a `Z` suffix nor a UTC offset, drift
               will parse it as if it had a `Z` modifier, returning a UTC datetime.
               The motivation for this is that the `datetime` function in sqlite3 returns
-              values in this format and uses UTC by default.  
+              values in this format and uses UTC by default.  
 
         This behavior works well with the date functions in sqlite3 while also
         preserving "UTC-ness" for stored values.
 
-</div>
 
-1. If you would like to store `DateTime` objects which are aware of their timezone, you should use Option 2.
+Drift stores `DateTime` values as unix timestamps by default. This can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
 
-Drift stores `DateTime` values as unix timestamps be default. This can be changed by setting the `store_date_time_values_as_text` [build option](../Generation options/index.md).
+Migrating between the two modes is possible but requires a [manual migration](#migrating-between-the-two-modes).
 
-Migrating between the two modes is possible, but requires a [manual migration](#migrating-between-the-two-modes).
+### Column Names
 
+Column names are derived from the getter name by default. 
+To override this behavior, use the `named` method:
 
-## Custom Constraints
+{{ load_snippet('column-name','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-Some column and table constraints aren't supported through Drift API. This includes the collation
-of columns, which you can apply using `customConstraint`:
+### Generated Columns
 
-```dart
-class Groups extends Table {
-  TextColumn get name => integer().customConstraint('COLLATE BINARY')();
-}
-```
+Generated columns are columns whose values are computed from other columns in the same row.
 
-Applying a `customConstraint` will override all other constraints that would be included by default. 
-In particular, that means that we need to also include the `NOT NULL` constraint again.
+{{ load_snippet('generated-column','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-You can also add table-wide constraints by overriding the `customConstraints` getter in your table class.
+These columns can be used in queries like any other column. In the example above we added an index which will be used by sqlite to quickly sort orders by their total.
 
-{{ load_snippet('custom-constraint-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+There are two types of generated columns:
+
+1. **Virtual Columns**: These columns are computed on the fly when queried. They are not stored in the database.
+2. **Stored Columns**: These columns are computed when a row is inserted or updated and stored in the database.
+
+By default, drift creates virtual columns. To create a stored column, set the `stored` parameter to `true`.
+
+!!! note "What should I use?"
+
+    Using virtual columns is more efficient as they don't require additional storage. However, they are slower to query as they are computed on the fly. See the [sqlite documentation](https://sqlite.org/gencol.html) for more information.

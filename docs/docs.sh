@@ -18,6 +18,7 @@ if [ $arg1 == "build" ]; then
     echo "Building the project..."
 
     # Remove the `build` directory if it already exists
+    rm -r ./deploy
     rm -r ./build
 
     # Activate the webdev command
