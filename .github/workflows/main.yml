@@ -33,16 +33,6 @@ jobs:
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
-      - name: Set up Docker CLI
-        uses: docker/setup-buildx-action@v3
-      - name: Build Docker images
-        uses: docker/build-push-action@v5
-        with:
-          # Subdirectory with Dockerfile
-          context: "{{defaultContext}}:docs/mkdocs"
-          cache-from: type=gha
-          cache-to: type=gha,mode=max`
-          tags: mkdocs:latest
       - name: Bootstrap Dart packages
         run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
