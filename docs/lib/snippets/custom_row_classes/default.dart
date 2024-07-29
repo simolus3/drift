@@ -70,6 +70,7 @@ Future<String> _fetchUrlForTitle(String title) async {
 @DriftDatabase(
   tables: [Users, Groups, Books],
 )
+// ignore: unused_element
 class _MyDatabase extends _$_MyDatabase {
   _MyDatabase(super.e);
 
