@@ -46,6 +46,10 @@ jobs:
       - name: Bootstrap Dart packages
         run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
+      - name: Run build
+        run: |
+          chmod +x ./docs.sh
+          ./docs.sh build
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .
@@ -53,10 +57,6 @@ jobs:
           dart run drift_dev analyze
       - name: Test Dart and Drift sources
         run: dart test
-      - name: Run build
-        run: |
-          chmod +x ./docs.sh
-          ./docs.sh build
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v3
