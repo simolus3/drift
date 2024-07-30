@@ -22,6 +22,8 @@ class Categories extends Table {
 // #enddocregion tables
 
 class Users extends Table {
+  TextColumn get firstName => text()();
+  TextColumn get lastName => text()();
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get birthDate => dateTime()();
 }

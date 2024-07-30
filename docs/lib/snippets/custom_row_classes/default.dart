@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 
 part 'default.g.dart';
 
@@ -61,7 +62,28 @@ class Book {
     return Book(id: id, title: title, url: url);
   }
 }
+
+// #docregion record
+typedef Todo = ({int id, String content});
+
+@UseRowClass(Todo)
+class Todos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get content => text()();
+}
+// #enddocregion record
+
 // #enddocregion async
+// ignore: unused_element
+void _insert() async {
+  final db = _MyDatabase(NativeDatabase.memory());
+// #docregion companion-custom-class
+  // Insert a book
+  db.into(db.books).insert(BooksCompanion.insert(title: "Drift in Action"));
+  // Update a book
+  db.update(db.books).write(BooksCompanion(title: Value("Drift in Action")));
+// #enddocregion companion-custom-class
+}
 
 Future<String> _fetchUrlForTitle(String title) async {
   return 'https://example.com/books/$title';

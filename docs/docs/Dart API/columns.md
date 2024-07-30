@@ -14,7 +14,7 @@ For instance, in the example above, `#!dart IntColumn get category => integer().
 ### Supported Types
 
 Drift supports a variety of column types out of the box.  
-Additional types can be stored using [type converters](../type_converters.md).
+Additional types can be stored using [type converters](../type_converters.md) which map any Dart type to a supported SQL type.
 
 | Dart type   | Column              | Corresponding SQLite type                                                                            |
 | ----------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -32,6 +32,11 @@ Additional types can be stored using [type converters](../type_converters.md).
     
     The way drift maps Dart types to SQL types is independent of how it serializes data to JSON.  
     For example, Dart `bool` values are stored as `0` or `1` in the database, but as `true` or `false` in JSON.
+
+??? note "Custom Column Types"
+
+    To support database engines with additional column types, custom types can be used - this feature is primarily aimed towards users porting drift to a different database system
+
 
 ### Optional Columns
 
@@ -110,6 +115,10 @@ If you want to enforce a combination of columns to be unique, override the `uniq
 For example, if one wanted to ensure that an author can't write two books with the same title:
 
 {{ load_snippet('unique-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+
+### Foreign Keys
+
+See the [References](../References/index.md) page for more information on foreign keys.
 
 ### Custom Types
 
@@ -226,10 +235,12 @@ Migrating between the two modes is possible but requires a [manual migration](#m
 
 ### Column Names
 
-Column names are derived from the getter name by default. 
-To override this behavior, use the `named` method:
+
+Column names are derived from Dart getter names, converted to snake_case by default. The `case_from_dart_to_sql`[build option](../Generation Options/index.md) allows you to change this default case convention (e.g., to pascal case or camel case). For individual columns, use the named method to set a completely custom name, overriding the default naming convention.
 
 {{ load_snippet('column-name','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+
+
 
 ### Generated Columns
 

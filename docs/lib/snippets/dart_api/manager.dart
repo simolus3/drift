@@ -170,6 +170,23 @@ extension ManagerExamples on AppDatabase {
   }
 // #enddocregion manager_exists
 
+  Future<void> relationalExample() async {
+// #docregion example-references
+    // Get all categories with their associated todo items
+    final categoryWithRefs = await managers.todoCategory.withReferences().get();
+    for (var (category, ref) in categoryWithRefs) {
+      final todos = await ref.todoItemsRefs.get();
+    }
+
+    // Get all items with a category description of "School"
+    managers.todoItems.filter((f) => f.category.description("School"));
+
+    // Retrieve all items ordered by their category description and then by their title
+    managers.todoItems
+        .orderBy((f) => f.category.description.asc() & f.title.asc());
+// #enddocregion example-references
+  }
+
 // #docregion manager_filter_forward_references
   Future<void> relationalFilter() async {
     // Get all items with a category description of "School"

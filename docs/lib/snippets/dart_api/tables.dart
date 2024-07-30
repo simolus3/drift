@@ -1,6 +1,7 @@
-// ignore_for_file: invalid_annotation_target, recursive_getters
+// ignore_for_file: invalid_annotation_target, recursive_getters, unused_element
 
 import 'package:drift/drift.dart';
+import 'package:drift_docs/snippets/_shared/todo_tables.drift.dart';
 import 'package:uuid/uuid.dart';
 
 // #docregion nnbd
@@ -167,3 +168,10 @@ class EnabledCategories extends Table {
 // #enddocregion custom-json-key
 // #enddocregion custom-data-class-name
 // #enddocregion custom-column-name
+
+// #docregion extention-on-data-class
+extension on User {
+  String get fullName => '$firstName $lastName';
+}
+// #enddocregion extention-on-data-class
+

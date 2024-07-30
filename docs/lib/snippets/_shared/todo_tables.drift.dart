@@ -767,6 +767,18 @@ class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UsersTable(this.attachedDatabase, [this._alias]);
+  static const i0.VerificationMeta _firstNameMeta =
+      const i0.VerificationMeta('firstName');
+  @override
+  late final i0.GeneratedColumn<String> firstName = i0.GeneratedColumn<String>(
+      'first_name', aliasedName, false,
+      type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _lastNameMeta =
+      const i0.VerificationMeta('lastName');
+  @override
+  late final i0.GeneratedColumn<String> lastName = i0.GeneratedColumn<String>(
+      'last_name', aliasedName, false,
+      type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
@@ -783,7 +795,7 @@ class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
       i0.GeneratedColumn<DateTime>('birth_date', aliasedName, false,
           type: i0.DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
-  List<i0.GeneratedColumn> get $columns => [id, birthDate];
+  List<i0.GeneratedColumn> get $columns => [firstName, lastName, id, birthDate];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -794,6 +806,18 @@ class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
       {bool isInserting = false}) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('first_name')) {
+      context.handle(_firstNameMeta,
+          firstName.isAcceptableOrUnknown(data['first_name']!, _firstNameMeta));
+    } else if (isInserting) {
+      context.missing(_firstNameMeta);
+    }
+    if (data.containsKey('last_name')) {
+      context.handle(_lastNameMeta,
+          lastName.isAcceptableOrUnknown(data['last_name']!, _lastNameMeta));
+    } else if (isInserting) {
+      context.missing(_lastNameMeta);
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -812,6 +836,10 @@ class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
   i1.User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.User(
+      firstName: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}first_name'])!,
+      lastName: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}last_name'])!,
       id: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
       birthDate: attachedDatabase.typeMapping.read(
@@ -826,12 +854,20 @@ class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
 }
 
 class User extends i0.DataClass implements i0.Insertable<i1.User> {
+  final String firstName;
+  final String lastName;
   final int id;
   final DateTime birthDate;
-  const User({required this.id, required this.birthDate});
+  const User(
+      {required this.firstName,
+      required this.lastName,
+      required this.id,
+      required this.birthDate});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
+    map['first_name'] = i0.Variable<String>(firstName);
+    map['last_name'] = i0.Variable<String>(lastName);
     map['id'] = i0.Variable<int>(id);
     map['birth_date'] = i0.Variable<DateTime>(birthDate);
     return map;
@@ -839,6 +875,8 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
 
   i1.UsersCompanion toCompanion(bool nullToAbsent) {
     return i1.UsersCompanion(
+      firstName: i0.Value(firstName),
+      lastName: i0.Value(lastName),
       id: i0.Value(id),
       birthDate: i0.Value(birthDate),
     );
@@ -848,6 +886,8 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
       {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return User(
+      firstName: serializer.fromJson<String>(json['firstName']),
+      lastName: serializer.fromJson<String>(json['lastName']),
       id: serializer.fromJson<int>(json['id']),
       birthDate: serializer.fromJson<DateTime>(json['birthDate']),
     );
@@ -856,17 +896,28 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
   Map<String, dynamic> toJson({i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'firstName': serializer.toJson<String>(firstName),
+      'lastName': serializer.toJson<String>(lastName),
       'id': serializer.toJson<int>(id),
       'birthDate': serializer.toJson<DateTime>(birthDate),
     };
   }
 
-  i1.User copyWith({int? id, DateTime? birthDate}) => i1.User(
+  i1.User copyWith(
+          {String? firstName,
+          String? lastName,
+          int? id,
+          DateTime? birthDate}) =>
+      i1.User(
+        firstName: firstName ?? this.firstName,
+        lastName: lastName ?? this.lastName,
         id: id ?? this.id,
         birthDate: birthDate ?? this.birthDate,
       );
   User copyWithCompanion(i1.UsersCompanion data) {
     return User(
+      firstName: data.firstName.present ? data.firstName.value : this.firstName,
+      lastName: data.lastName.present ? data.lastName.value : this.lastName,
       id: data.id.present ? data.id.value : this.id,
       birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
     );
@@ -875,6 +926,8 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
   @override
   String toString() {
     return (StringBuffer('User(')
+          ..write('firstName: $firstName, ')
+          ..write('lastName: $lastName, ')
           ..write('id: $id, ')
           ..write('birthDate: $birthDate')
           ..write(')'))
@@ -882,39 +935,58 @@ class User extends i0.DataClass implements i0.Insertable<i1.User> {
   }
 
   @override
-  int get hashCode => Object.hash(id, birthDate);
+  int get hashCode => Object.hash(firstName, lastName, id, birthDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.User &&
+          other.firstName == this.firstName &&
+          other.lastName == this.lastName &&
           other.id == this.id &&
           other.birthDate == this.birthDate);
 }
 
 class UsersCompanion extends i0.UpdateCompanion<i1.User> {
+  final i0.Value<String> firstName;
+  final i0.Value<String> lastName;
   final i0.Value<int> id;
   final i0.Value<DateTime> birthDate;
   const UsersCompanion({
+    this.firstName = const i0.Value.absent(),
+    this.lastName = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
     this.birthDate = const i0.Value.absent(),
   });
   UsersCompanion.insert({
+    required String firstName,
+    required String lastName,
     this.id = const i0.Value.absent(),
     required DateTime birthDate,
-  }) : birthDate = i0.Value(birthDate);
+  })  : firstName = i0.Value(firstName),
+        lastName = i0.Value(lastName),
+        birthDate = i0.Value(birthDate);
   static i0.Insertable<i1.User> custom({
+    i0.Expression<String>? firstName,
+    i0.Expression<String>? lastName,
     i0.Expression<int>? id,
     i0.Expression<DateTime>? birthDate,
   }) {
     return i0.RawValuesInsertable({
+      if (firstName != null) 'first_name': firstName,
+      if (lastName != null) 'last_name': lastName,
       if (id != null) 'id': id,
       if (birthDate != null) 'birth_date': birthDate,
     });
   }
 
   i1.UsersCompanion copyWith(
-      {i0.Value<int>? id, i0.Value<DateTime>? birthDate}) {
+      {i0.Value<String>? firstName,
+      i0.Value<String>? lastName,
+      i0.Value<int>? id,
+      i0.Value<DateTime>? birthDate}) {
     return i1.UsersCompanion(
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       id: id ?? this.id,
       birthDate: birthDate ?? this.birthDate,
     );
@@ -923,6 +995,12 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
+    if (firstName.present) {
+      map['first_name'] = i0.Variable<String>(firstName.value);
+    }
+    if (lastName.present) {
+      map['last_name'] = i0.Variable<String>(lastName.value);
+    }
     if (id.present) {
       map['id'] = i0.Variable<int>(id.value);
     }
@@ -935,6 +1013,8 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   @override
   String toString() {
     return (StringBuffer('UsersCompanion(')
+          ..write('firstName: $firstName, ')
+          ..write('lastName: $lastName, ')
           ..write('id: $id, ')
           ..write('birthDate: $birthDate')
           ..write(')'))
@@ -943,10 +1023,14 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
 }
 
 typedef $$UsersTableCreateCompanionBuilder = i1.UsersCompanion Function({
+  required String firstName,
+  required String lastName,
   i0.Value<int> id,
   required DateTime birthDate,
 });
 typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<String> firstName,
+  i0.Value<String> lastName,
   i0.Value<int> id,
   i0.Value<DateTime> birthDate,
 });
@@ -954,6 +1038,16 @@ typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
 class $$UsersTableFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
   $$UsersTableFilterComposer(super.$state);
+  i0.ColumnFilters<String> get firstName => $state.composableBuilder(
+      column: $state.table.firstName,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
+  i0.ColumnFilters<String> get lastName => $state.composableBuilder(
+      column: $state.table.lastName,
+      builder: (column, joinBuilders) =>
+          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+
   i0.ColumnFilters<int> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -968,6 +1062,16 @@ class $$UsersTableFilterComposer
 class $$UsersTableOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$UsersTable> {
   $$UsersTableOrderingComposer(super.$state);
+  i0.ColumnOrderings<String> get firstName => $state.composableBuilder(
+      column: $state.table.firstName,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  i0.ColumnOrderings<String> get lastName => $state.composableBuilder(
+      column: $state.table.lastName,
+      builder: (column, joinBuilders) =>
+          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+
   i0.ColumnOrderings<int> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -999,18 +1103,26 @@ class $$UsersTableTableManager extends i0.RootTableManager<
           orderingComposer:
               i1.$$UsersTableOrderingComposer(i0.ComposerState(db, table)),
           updateCompanionCallback: ({
+            i0.Value<String> firstName = const i0.Value.absent(),
+            i0.Value<String> lastName = const i0.Value.absent(),
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<DateTime> birthDate = const i0.Value.absent(),
           }) =>
               i1.UsersCompanion(
+            firstName: firstName,
+            lastName: lastName,
             id: id,
             birthDate: birthDate,
           ),
           createCompanionCallback: ({
+            required String firstName,
+            required String lastName,
             i0.Value<int> id = const i0.Value.absent(),
             required DateTime birthDate,
           }) =>
               i1.UsersCompanion.insert(
+            firstName: firstName,
+            lastName: lastName,
             id: id,
             birthDate: birthDate,
           ),

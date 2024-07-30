@@ -2,26 +2,42 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
-import 'package:json_annotation/json_annotation.dart' as j;
 
-part 'converters.g.dart';
-
-@j.JsonSerializable()
 class Preferences {
   bool receiveEmails;
   String selectedTheme;
 
   Preferences(this.receiveEmails, this.selectedTheme);
 
-  factory Preferences.fromJson(Map<String, dynamic> json) =>
-      _$PreferencesFromJson(json);
+  String toJson() => json.encode({
+        'receiveEmails': receiveEmails,
+        'selectedTheme': selectedTheme,
+      });
 
-  Map<String, dynamic> toJson() => _$PreferencesToJson(this);
+  factory Preferences.fromJson(String source) {
+    final map = json.decode(source) as Map<String, dynamic>;
+    return Preferences(
+      map['receiveEmails'] as bool,
+      map['selectedTheme'] as String,
+    );
+  }
+
+  @override
+  bool operator ==(covariant Preferences other) {
+    if (identical(this, other)) return true;
+
+    return other.receiveEmails == receiveEmails &&
+        other.selectedTheme == selectedTheme;
+  }
+
+  @override
+  int get hashCode => receiveEmails.hashCode ^ selectedTheme.hashCode;
+
   // #enddocregion start
 
   // #docregion simplified
   static TypeConverter<Preferences, String> converter = TypeConverter.json(
-    fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
+    fromJson: (json) => Preferences.fromJson(json as String),
     toJson: (pref) => pref.toJson(),
   );
   // #enddocregion simplified
@@ -36,7 +52,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
 
   @override
   Preferences fromSql(String fromDb) {
-    return Preferences.fromJson(json.decode(fromDb) as Map<String, dynamic>);
+    return Preferences.fromJson(fromDb);
   }
 
   @override

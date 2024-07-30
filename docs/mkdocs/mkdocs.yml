@@ -9,6 +9,12 @@ theme:
   name: material
   language: en
   palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -21,7 +27,7 @@ theme:
       scheme: slate
       toggle:
         icon: material/brightness-4
-        name: Switch to light mode
+        name: Switch to system preference
   # TODO: Add logo & favicon
   # logo: assets/logo.png
   # favicon: assets/favicon.ico
@@ -30,7 +36,6 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
-    - navigation.tabs.sticky
     - navigation.expand
     - navigation.path
     - toc.follow
@@ -94,11 +99,14 @@ copyright: >
 nav:
   - index.md
   - Reference:
-      - Getting Started: setup.md
-      - Dart API/tables.md
-      - Dart API/columns.md
+      - Schema:
+          - Dart API/tables.md
+          - Dart API/columns.md
+          - Dart API/references.md
+          - Dart API/dataclass.md
+          - Dart API/custom_type.md
 
-      - Dart API/dataclass.md
+      - Getting Started: setup.md
       - Dart API:
           - Dart API/manager.md
           - Dart API/tables.md
