@@ -174,4 +174,3 @@ extension on User {
   String get fullName => '$firstName $lastName';
 }
 // #enddocregion extention-on-data-class
-
