@@ -5,7 +5,6 @@ import 'dart:developer';
 import 'package:drift/drift.dart';
 import 'package:drift/src/remote/protocol.dart';
 import 'package:drift/src/runtime/executor/transactions.dart';
-import 'package:meta/meta.dart';
 
 import '../api/runtime_api.dart';
 import 'devtools.dart';
@@ -64,7 +63,7 @@ class DriftServiceExtension {
 
         return _protocol.encodePayload(result);
       case 'collect-expected-schema':
-        final executor = CollectCreateStatements(SqlDialect.sqlite);
+        final executor = _CollectCreateStatements();
         await tracked.database.runConnectionZoned(
             BeforeOpenRunner(tracked.database, executor), () async {
           // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
@@ -110,13 +109,8 @@ class DriftServiceExtension {
   static const _protocol = DriftProtocol();
 }
 
-@internal
-final class CollectCreateStatements extends QueryExecutor {
+class _CollectCreateStatements extends QueryExecutor {
   final List<String> statements = [];
-  @override
-  final SqlDialect dialect;
-
-  CollectCreateStatements(this.dialect);
 
   @override
   QueryExecutor beginExclusive() {
@@ -127,6 +121,9 @@ final class CollectCreateStatements extends QueryExecutor {
   TransactionExecutor beginTransaction() {
     throw UnimplementedError();
   }
+
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {

@@ -7,10 +7,10 @@ import 'package:collection/collection.dart';
 import 'package:path/path.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import '../../../analysis/results/results.dart';
 import '../../../services/schema/schema_files.dart';
 import '../../../services/schema/sqlite_to_drift.dart';
 import '../../cli.dart';
-import '../schema.dart';
 
 class DumpSchemaCommand extends Command {
   @override
@@ -40,11 +40,11 @@ class DumpSchemaCommand extends Command {
     }
 
     final absolute = File(rest[0]).absolute;
-    final AnalyzedDatabase result;
+    final _AnalyzedDatabase result;
     if (await absolute.isSqlite3File) {
       result = await _readElementsFromDatabase(absolute);
     } else {
-      result = await cli.readElementsFromSource(absolute);
+      result = await _readElementsFromSource(absolute);
     }
 
     final writer = SchemaWriter(result.elements, options: cli.project.options);
@@ -80,7 +80,7 @@ class DumpSchemaCommand extends Command {
   }
 
   /// Reads available drift elements from an existing sqlite database file.
-  Future<AnalyzedDatabase> _readElementsFromDatabase(File database) async {
+  Future<_AnalyzedDatabase> _readElementsFromDatabase(File database) async {
     final opened = sqlite3.open(database.path);
 
     try {
@@ -88,10 +88,37 @@ class DumpSchemaCommand extends Command {
       final userVersion =
           opened.select('pragma user_version').single.columnAt(0) as int;
 
-      return (elements: elements, schemaVersion: userVersion);
+      return _AnalyzedDatabase(elements, userVersion);
     } finally {
       opened.dispose();
     }
+  }
+
+  /// Extracts available drift elements from a [dart] source file defining a
+  /// drift database class.
+  Future<_AnalyzedDatabase> _readElementsFromSource(File dart) async {
+    final driver = await cli.createAnalysisDriver();
+
+    final input =
+        await driver.driver.fullyAnalyze(driver.uriFromPath(dart.path));
+
+    if (!input.isFullyAnalyzed) {
+      cli.exit('Unexpected error: The input file could not be analyzed');
+    }
+
+    final databases =
+        input.analysis.values.map((e) => e.result).whereType<DriftDatabase>();
+
+    if (databases.length != 1) {
+      cli.exit('Expected the input file to contain exactly one database.');
+    }
+
+    final result = input.fileAnalysis!;
+    final databaseElement = databases.single;
+    final db = result.resolvedDatabases[databaseElement.id]!;
+
+    return _AnalyzedDatabase(
+        db.availableElements, databaseElement.schemaVersion);
   }
 }
 
@@ -116,4 +143,11 @@ extension on File {
       await opened.close();
     }
   }
+}
+
+class _AnalyzedDatabase {
+  final List<DriftElement> elements;
+  final int? schemaVersion;
+
+  _AnalyzedDatabase(this.elements, this.schemaVersion);
 }

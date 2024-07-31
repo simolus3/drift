@@ -51,14 +51,14 @@ INFO: test/fake_db.dart has drift databases or daos: TodoDb, SomeDao
 
 ## Schema tools
 
-### Dump for version control
+### Export
 
 This subcommand expects two paths, a Dart file and a target. The Dart file should contain
 exactly one class annotated with `@DriftDatabase`. Running the following command will export
 the database schema to json.
 
 ```
-$ dart run drift_dev schema dump path/to/database.dart schema.json
+$ dart run drift_dev schema dump path/to/databases.dart schema.json
 ```
 
 The generated file (`schema.json` in this case) contains information about all
@@ -71,21 +71,3 @@ The generated file (`schema.json` in this case) contains information about all
 
 Exporting a schema can be used to generate test code for your schema migrations. For details,
 see [the guide]({{ "Migrations/tests.md" | pageUrl }}).
-
-### Exporting
-
-In some cases, it can be beneficial to export a list of `CREATE` statements that define a
-drift database.
-The `schema export` command does just that. It takes a path to a Dart source file defining
-a drift database as an argument:
-
-```
-$ dart run drift_dev schema dump path/to/database.dart
-```
-
-It will output all statements that would be run by drift if the database were freshly created,
-each statement on its own line.
-
-The optional `--dialect` option on `schema export` can be used to control the target dialect
-of the generated statements. It defaults to `sqlite` and experimentally also supports
-`postgres` and `mariadb`.

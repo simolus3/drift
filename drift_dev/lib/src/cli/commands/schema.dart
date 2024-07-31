@@ -7,7 +7,6 @@ import 'package:path/path.dart' as p;
 import '../../analysis/results/results.dart';
 import '../../services/schema/schema_files.dart';
 import 'schema/dump.dart';
-import 'schema/export.dart';
 import 'schema/generate_utils.dart';
 
 import '../cli.dart';
@@ -24,39 +23,6 @@ class SchemaCommand extends Command {
     addSubcommand(DumpSchemaCommand(cli));
     addSubcommand(GenerateUtilsCommand(cli));
     addSubcommand(WriteVersions(cli));
-    addSubcommand(ExportSchemaCommand(cli));
-  }
-}
-
-typedef AnalyzedDatabase = ({List<DriftElement> elements, int? schemaVersion});
-
-extension ExportSchema on DriftDevCli {
-  /// Extracts available drift elements from a [dart] source file defining a
-  /// drift database class.
-  Future<AnalyzedDatabase> readElementsFromSource(File dart) async {
-    final driver = await createAnalysisDriver();
-    final input =
-        await driver.driver.fullyAnalyze(driver.uriFromPath(dart.path));
-
-    if (!input.isFullyAnalyzed) {
-      this.exit('Unexpected error: The input file could not be analyzed');
-    }
-
-    final databases =
-        input.analysis.values.map((e) => e.result).whereType<DriftDatabase>();
-
-    if (databases.length != 1) {
-      this.exit('Expected the input file to contain exactly one database.');
-    }
-
-    final result = input.fileAnalysis!;
-    final databaseElement = databases.single;
-    final db = result.resolvedDatabases[databaseElement.id]!;
-
-    return (
-      elements: db.availableElements,
-      schemaVersion: databaseElement.schemaVersion,
-    );
   }
 }
 

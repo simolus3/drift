@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:drift_dev/src/cli/project.dart';
 import 'package:logging/logging.dart';
-import 'package:path/path.dart' as p;
 
 import '../backends/analyzer_context_backend.dart';
 import 'commands/analyze.dart';
@@ -53,7 +52,7 @@ class DriftDevCli {
   Future<PhysicalDriftDriver> createAnalysisDriver() async {
     return AnalysisContextBackend.createDriver(
       options: project.options,
-      projectDirectory: p.normalize(project.directory.path),
+      projectDirectory: project.directory.path,
     );
   }
 
