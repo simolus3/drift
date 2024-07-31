@@ -34,7 +34,7 @@ class SchemaWriter {
     return _entityIds.putIfAbsent(entity, () => _maxId++);
   }
 
-  Map<String, dynamic> createSchemaJson() {
+  Map<String, Object?> createSchemaJson() {
     return {
       '_meta': {
         'description': 'This file contains a serialized version of schema '
@@ -46,7 +46,7 @@ class SchemaWriter {
     };
   }
 
-  Map _serializeOptions() {
+  Map<String, Object?> _serializeOptions() {
     const relevantKeys = {'store_date_time_values_as_text'};
     final asJson = options.toJson()
       ..removeWhere((key, _) => !relevantKeys.contains(key));
@@ -54,9 +54,9 @@ class SchemaWriter {
     return asJson;
   }
 
-  Map? _entityToJson(DriftElement entity) {
+  Map<String, Object?>? _entityToJson(DriftElement entity) {
     String? type;
-    Map? data;
+    Map<String, Object?>? data;
 
     if (entity is DriftTable) {
       type = 'table';
@@ -123,7 +123,7 @@ class SchemaWriter {
     };
   }
 
-  Map _tableData(DriftTable table) {
+  Map<String, Object?> _tableData(DriftTable table) {
     final primaryKeyFromTableConstraint =
         table.tableConstraints.whereType<PrimaryKeyColumns>().firstOrNull;
     final uniqueKeys = table.tableConstraints.whereType<UniqueColumns>();
@@ -152,7 +152,7 @@ class SchemaWriter {
     };
   }
 
-  Map _columnData(DriftColumn column) {
+  Map<String, Object?> _columnData(DriftColumn column) {
     final constraints = defaultConstraints(column);
 
     return {
@@ -182,7 +182,7 @@ class SchemaWriter {
     if (feature is PrimaryKeyColumn) {
       return feature.isAutoIncrement ? 'auto-increment' : 'primary-key';
     } else if (feature is LimitingTextLength) {
-      return {
+      return <String, Object?>{
         'allowed-lengths': {
           'min': feature.minLength,
           'max': feature.maxLength,
