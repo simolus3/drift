@@ -1,3 +1,8 @@
+## 2.20.0-dev
+
+- Add `drift dev schema export` command, which exports the DDL statements making
+  up a database schema based on its definition in source.
+
 ## 2.19.1
 
 - Fix `drift_dev schema dump` not working with older versions of the `analyzer`
