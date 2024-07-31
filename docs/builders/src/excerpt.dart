@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' hide log;
@@ -17,17 +19,10 @@ class _ContinousRegion {
   final int startLine;
   final int endLineExclusive;
 
-  /// The directives introducing this region.
-  ///
-  /// The [start] directive is only null for the full region covering the entire
-  /// file. The [end] directive is only null if a region was not explicitly
-  /// ended with a `#docendregion` directive.
-  final Directive? start, end;
-
   final String indentation;
 
   _ContinousRegion(this.startLine, this.endLineExclusive,
-      {this.start, this.end, this.indentation = ''});
+      {this.indentation = ''});
 
   @override
   int get hashCode => Object.hash(startLine, endLineExclusive);
@@ -105,7 +100,7 @@ class _Excerpt {
     }
 
     _ContinousRegion? latestChunk;
-    for (final chunk in this.regions) {
+    for (final chunk in regions) {
       final stripIndent = removeIndent ? chunk.indentation.length : 0;
       // If there was a previous chunk, add a newline.
       if (latestChunk != null) {
