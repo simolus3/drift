@@ -31,45 +31,12 @@ class SnippetsBuilder extends Builder {
 String buildSnippets(String code, Highlighter highlighter,
     {bool removeIndent = true, required bool isDart}) {
   var snippets = extractSnippets(code, removeIndent: removeIndent);
-  final String json = Snippet.multipleToJson(snippets.entries.map((e) {
-    return Snippet(
-        name: e.key,
-        isHtml: isDart,
-        code: isDart ? highlighter.highlight(e.value).toHTML() : e.value);
-  }));
-  return json;
-}
-
-class Snippet {
-  final String name;
-  final String code;
-  final bool isHtml;
-  Snippet({
-    required this.name,
-    required this.code,
-    required this.isHtml,
-  });
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'name': name,
-      'code': code,
-      'isHtml': isHtml,
+  final String json = jsonEncode(snippets.entries.map((e) {
+    return {
+      "name": e.key,
+      "isHtml": isDart,
+      "code": isDart ? highlighter.highlight(e.value).toHTML() : e.value
     };
-  }
-
-  factory Snippet.fromMap(Map<String, dynamic> map) {
-    return Snippet(
-      name: map['name'] as String,
-      code: map['code'] as String,
-      isHtml: map['isHtml'] as bool,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory Snippet.fromJson(String source) =>
-      Snippet.fromMap(json.decode(source) as Map<String, dynamic>);
-  static String multipleToJson(Iterable<Snippet> snippets) =>
-      json.encode(snippets.map((x) => x.toMap()).toList());
+  }).toList());
+  return json;
 }
