@@ -122,3 +122,9 @@ While these two syntaxes look very similar, they have different meanings:
 
 This topic is quite complex, and out of scope for this documentation. See [here](https://www.sqlitetutorial.net/sqlite-index/) for more information.
 
+
+## Custom Table Constraints
+
+Some table constraints are not directly supported in drift yet. Similar to [custom constraints](./columns.md#custom-column-constraints) on columns, you can add those by overriding `customConstraints`:
+
+{{ load_snippet('custom-constraint-table','lib/snippets/dart_api/tables.dart.excerpt.json') }}

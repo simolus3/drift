@@ -173,4 +173,11 @@ class EnabledCategories extends Table {
 extension on User {
   String get fullName => '$firstName $lastName';
 }
+
 // #enddocregion extention-on-data-class
+// #docregion custom-col-constraint
+class Groups extends Table {
+  IntColumn get name =>
+      integer().nullable().customConstraint('COLLATE BINARY')();
+}
+// #enddocregion custom-col-constraint

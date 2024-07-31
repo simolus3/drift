@@ -1,16 +1,19 @@
-// ignore_for_file: invalid_use_of_internal_member, unused_local_variable
+// ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element
 
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 
 part 'manager.g.dart';
 
+// #docregion schema
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
+  TextColumn get title => text().unique().withLength(min: 6, max: 32)();
   TextColumn get content => text().named('body')();
   IntColumn get category =>
       integer().nullable().references(TodoCategory, #id)();
   DateTimeColumn get createdAt => dateTime().nullable()();
+  BoolColumn get isCompleted => boolean().withDefault(Constant(false))();
 }
 
 class TodoCategory extends Table {
@@ -25,6 +28,8 @@ class Users extends Table {
   TextColumn get name => text()();
 }
 
+// #enddocregion schema
+
 class Groups extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -35,245 +40,329 @@ class Groups extends Table {
 }
 
 // #enddocregion user_group_tables
-
+// #docregion schema
 @DriftDatabase(tables: [TodoItems, TodoCategory, Groups, Users])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
   @override
   int get schemaVersion => 1;
 }
+// #enddocregion schema
 
-extension ManagerExamples on AppDatabase {
-  // #docregion manager_create
+void examples() {
+  final db = AppDatabase(NativeDatabase.memory());
   Future<void> createTodoItem() async {
+    // #docregion manager_create_single
     // Create a new item
-    await managers.todoItems
+    await db.managers.todoItems
         .create((o) => o(title: 'Title', content: 'Content'));
+    // #enddocregion manager_create_single
 
-    // We can also use `mode` and `onConflict` parameters, just
-    // like in the `[InsertStatement.insert]` method on the table
-    await managers.todoItems.create(
+    // #docregion manager_create_mode
+    // We can also use `mode` and `onConflict` parameters.
+    await db.managers.todoItems.create(
         (o) => o(title: 'Title', content: 'New Content'),
-        mode: InsertMode.replace);
+        mode: InsertMode.insertOrReplace);
 
+    // #enddocregion manager_create_mode
+    // #docregion manager_create_multiple
     // We can also create multiple items at once
-    await managers.todoItems.bulkCreate(
+    await db.managers.todoItems.bulkCreate(
       (o) => [
         o(title: 'Title 1', content: 'Content 1'),
         o(title: 'Title 2', content: 'Content 2'),
       ],
     );
+    // #enddocregion manager_create_multiple
   }
-  // #enddocregion manager_create
 
-  // #docregion manager_update
   Future<void> updateTodoItems() async {
-    // Update all items
-    await managers.todoItems.update((o) => o(content: Value('New Content')));
+    final todo = await db.managers.todoItems.filter((f) => f.id(1)).getSingle();
 
-    // Update multiple items
-    await managers.todoItems
-        .filter((f) => f.id.isIn([1, 2, 3]))
-        .update((o) => o(content: Value('New Content')));
+    final todos =
+        await db.managers.todoItems.filter((f) => f.id.isIn([1, 2, 3])).get();
+    // #docregion manager_update
+    // Update a single item
+    await db.managers.todoItems
+        .filter((f) => f.id(1))
+        .update((o) => o(isCompleted: Value(true)));
+
+    // Update a single item by completely replacing it
+    await db.managers.todoItems.replace(todo.copyWith(isCompleted: true));
+
+    // Replace multiple items at once
+    await db.managers.todoItems
+        .bulkReplace(todos.map((e) => e.copyWith(isCompleted: true)));
+    // #enddocregion manager_update
   }
-  // #enddocregion manager_update
 
   // #docregion manager_replace
   Future<void> replaceTodoItems() async {
     // Replace a single item
-    var obj = await managers.todoItems.filter((o) => o.id(1)).getSingle();
+    var obj = await db.managers.todoItems.filter((o) => o.id(1)).getSingle();
     obj = obj.copyWith(content: 'New Content');
-    await managers.todoItems.replace(obj);
+    await db.managers.todoItems.replace(obj);
 
     // Replace multiple items
     var objs =
-        await managers.todoItems.filter((o) => o.id.isIn([1, 2, 3])).get();
+        await db.managers.todoItems.filter((o) => o.id.isIn([1, 2, 3])).get();
     objs = objs.map((o) => o.copyWith(content: 'New Content')).toList();
-    await managers.todoItems.bulkReplace(objs);
+    await db.managers.todoItems.bulkReplace(objs);
   }
   // #enddocregion manager_replace
 
-  // #docregion manager_delete
   Future<void> deleteTodoItems() async {
+    // #docregion manager_delete
     // Delete all items
-    await managers.todoItems.delete();
+    await db.managers.todoItems.delete();
 
     // Delete a single item
-    await managers.todoItems.filter((f) => f.id(5)).delete();
+    await db.managers.todoItems.filter((f) => f.id(5)).delete();
+    // #enddocregion manager_delete
   }
-  // #enddocregion manager_delete
 
-  // #docregion manager_select
   Future<void> selectTodoItems() async {
-    // Get all items
-    managers.todoItems.get();
+    // #docregion retrieve_all
+    // Retrieve all todo items
+    final todos = await db.managers.todoItems.get();
 
     // A stream of all the todo items, updated in real-time
-    managers.todoItems.watch();
+    final todoStream = db.managers.todoItems.watch();
+    // #enddocregion retrieve_all
 
-    // To get a single item, apply a filter and call `getSingle`
-    await managers.todoItems.filter((f) => f.id(1)).getSingle();
+    // #docregion retrieve_single
+    // Retrieve the item with an id of 1
+    await db.managers.todoItems.filter((f) => f.id(1)).getSingle();
+    // #enddocregion retrieve_single
+
+    // #docregion retrieve_first
+    // Retrieve the first item, or null if there are no items
+    await db.managers.todoItems.limit(1).getSingleOrNull();
+    // #enddocregion retrieve_first
+
+    // #docregion pagination
+    // This will retrieve the first 10 items
+    await db.managers.todoItems.get(limit: 10, offset: 0);
+
+    // You can also use `limit` method to achieve the same result
+    await db.managers.todoItems.limit(10, offset: 0).get();
+    // #enddocregion pagination
+
+    // #docregion pagination-bad
+    // This will return all the items, even the first 50
+    await db.managers.todoItems.get(offset: 50);
+    // #enddocregion pagination-bad
   }
-  // #enddocregion manager_select
 
-  // #docregion manager_filter
-  Future<void> filterTodoItems() async {
+  Future<void> filterAndSort() async {
+    // #docregion filter-and-sort-summary
     // All items with a title of "Title"
-    managers.todoItems.filter((f) => f.title("Title"));
+    db.managers.todoItems.filter((f) => f.title("Title"));
+
+    // Get all items in Category 1
+    db.managers.todoItems.filter((f) => f.category.id.equals(1));
+
+    // Sort all items by their creation date in ascending order
+    db.managers.todoItems.orderBy((o) => o.createdAt.asc());
+
+    // You can chain filters and orderings
+    db.managers.todoItems
+        // All items in Category 1 created after 2023
+        .filter((f) =>
+            f.category.id.equals(1) & f.createdAt.isAfter(DateTime(2023)))
+        // Then sort them by their title and then by their creation date.
+        .orderBy((o) => o.title.asc() & o.createdAt.asc());
+    // #enddocregion filter-and-sort-summary
+  }
+
+  Future<void> usage() async {
+    // #docregion filter-and-sort-usage
+    // Will only retrieve items with a title of "Title"
+    final titleQuery = db.managers.todoItems.filter((f) => f.title("Title"));
+
+    // Retrieve the filtered items
+    await titleQuery.get();
+
+    // Delete the filtered items
+    await titleQuery.delete();
+
+    // Update the filtered items
+    await titleQuery.update((o) => o(isCompleted: Value(true)));
+    // #enddocregion filter-and-sort-usage
+  }
+
+  Future<void> withReferences() async {
+    // #docregion with-references-summary
+    final categoriesWithRefs =
+        await db.managers.todoCategory.withReferences().get();
+
+    for (final (category, refs) in categoriesWithRefs) {
+      // `refs` has getters for each referenced table
+      final todos = await refs.todoItemsRefs.get();
+      final user = await refs.user?.getSingle();
+    }
+    // #enddocregion with-references-summary
+
+    // #docregion with-references-explained
+    for (final (category, refs)
+        in await db.managers.todoCategory.withReferences().get()) {
+      // `refs` contains a getter for each referenced table
+
+      // For example:
+      // This is a query builder for all todo items in this category
+      refs.todoItemsRefs.get();
+
+      // The above line is equivalent to
+      db.managers.todoItems
+          .filter((f) => f.category.id.equals(category.id))
+          .get();
+    }
+    // #enddocregion with-references-explained
+  }
+
+  Future<void> filterTodoItems() async {
+    // #docregion manager_filter
+    // All items with a title of "Title"
+    db.managers.todoItems.filter((f) => f.title("Title"));
 
     // All items with a title of "Title" and content of "Content"
-    managers.todoItems.filter((f) => f.title("Title") & f.content("Content"));
+    db.managers.todoItems
+        .filter((f) => f.title("Title") & f.content("Content"));
 
     // All items with a title of "Title" or content that is not null
-    managers.todoItems.filter((f) => f.title("Title") | f.content.not.isNull());
+    db.managers.todoItems
+        .filter((f) => f.title("Title") | f.content.not.isNull());
+    // #enddocregion manager_filter
+    // #docregion manager_filter_multiple
+    db.managers.todoItems
+        .filter((f) => f.title("Title"))
+        .filter((f) => f.content("Content"));
+    // Is equivalent to
+    db.managers.todoItems
+        .filter((f) => f.title("Title") & f.content("Content"));
+    // #enddocregion manager_filter_multiple
   }
-  // #enddocregion manager_filter
 
-  // #docregion manager_type_specific_filter
   Future<void> filterWithType() async {
+    // #docregion manager_type_specific_filter
     // Filter all items created since 7 days ago
-    managers.todoItems.filter(
-        (f) => f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))));
+    db.managers.todoItems.filter(
+      (f) => f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))),
+    );
 
     // Filter all items with a title that starts with "Title"
-    managers.todoItems.filter((f) => f.title.startsWith('Title'));
-  }
+    db.managers.todoItems.filter((f) => f.title.startsWith('Title'));
 // #enddocregion manager_type_specific_filter
-
-// #docregion manager_ordering
-  Future<void> orderWithType() async {
-    // Order all items by their creation date in ascending order
-    managers.todoItems.orderBy((o) => o.createdAt.asc());
-
-    // Order all items by their title in ascending order and then by their content in ascending order
-    managers.todoItems.orderBy((o) => o.title.asc() & o.content.asc());
   }
-// #enddocregion manager_ordering
 
-// #docregion manager_count
+  Future<void> orderWithType() async {
+// #docregion manager_ordering
+    // Order all items by their creation date in ascending order
+    db.managers.todoItems.orderBy((o) => o.createdAt.asc());
+    // #enddocregion manager_ordering
+    // #docregion manager_ordering_multiple
+    // Order all items by their title in and then by their content
+    db.managers.todoItems.orderBy((o) => o.title.asc() & o.content.asc());
+    // is equivalent to
+    db.managers.todoItems
+        .orderBy((o) => o.title.asc())
+        .orderBy((o) => o.content.asc());
+    // #enddocregion manager_ordering_multiple
+
+// #docregion manager_ordering_relations
+    // Order all items by their category description in ascending order
+    db.managers.todoItems.orderBy((o) => o.category.description.asc());
+// #enddocregion manager_ordering_relations
+  }
+
   Future<void> count() async {
+// #docregion manager_count
     // Count all items
-    await managers.todoItems.count();
+    await db.managers.todoItems.get();
 
     // Count all items with a title of "Title"
-    await managers.todoItems.filter((f) => f.title("Title")).count();
-  }
+    await db.managers.todoItems.filter((f) => f.title("Title")).count();
 // #enddocregion manager_count
+  }
 
-// #docregion manager_exists
   Future<void> exists() async {
+// #docregion manager_exists
     // Check if any items exist
-    await managers.todoItems.exists();
+    await db.managers.todoItems.exists();
 
     // Check if any items with a title of "Title" exist
-    await managers.todoItems.filter((f) => f.title("Title")).exists();
-  }
+    await db.managers.todoItems.filter((f) => f.title("Title")).exists();
 // #enddocregion manager_exists
+  }
 
   Future<void> relationalExample() async {
 // #docregion example-references
     // Get all categories with their associated todo items
-    final categoryWithRefs = await managers.todoCategory.withReferences().get();
+    final categoryWithRefs =
+        await db.managers.todoCategory.withReferences().get();
     for (var (category, ref) in categoryWithRefs) {
       final todos = await ref.todoItemsRefs.get();
     }
 
     // Get all items with a category description of "School"
-    managers.todoItems.filter((f) => f.category.description("School"));
+    db.managers.todoItems.filter((f) => f.category.description("School"));
 
     // Retrieve all items ordered by their category description and then by their title
-    managers.todoItems
+    db.managers.todoItems
         .orderBy((f) => f.category.description.asc() & f.title.asc());
 // #enddocregion example-references
   }
 
-// #docregion manager_filter_forward_references
   Future<void> relationalFilter() async {
+// #docregion manager_filter_forward_references
     // Get all items with a category description of "School"
-    managers.todoItems.filter((f) => f.category.description("School"));
-
-    // These can be combined with other filters
-    // For example, get all items with a title of "Title" or a category description of "School"
-    await managers.todoItems
-        .filter(
-          (f) => f.title("Title") | f.category.description("School"),
-        )
-        .exists();
-  }
+    db.managers.todoItems.filter((f) => f.category.description("School"));
 // #enddocregion manager_filter_forward_references
+  }
 
-// #docregion manager_filter_back_references
   Future<void> reverseRelationalFilter() async {
-    // Get the category that has a todo item with an id of 1
-    managers.todoCategory.filter((f) => f.todoItemsRefs((f) => f.id(1)));
-
-    // These can be combined with other filters
-    // For example, get all categories with a description of "School" or a todo item with an id of 1
-    managers.todoCategory.filter(
-      (f) => f.description("School") | f.todoItemsRefs((f) => f.id(1)),
+// #docregion manager_filter_back_references
+    // Get all categories with a todo item that has a title containing "Trash"
+    db.managers.todoCategory.filter(
+      (f) => f.todoItemsRefs(
+        (f) => f.title.contains("Trash"),
+      ),
     );
-  }
 // #enddocregion manager_filter_back_references
-
-// #docregion manager_filter_custom_back_references
-  Future<void> reverseNamedRelationalFilter() async {
-    // Get all users who are administrators of a group with a name containing "Business"
-    // or who own a group with an id of 1, 2, 4, or 5
-    managers.users.filter(
-      (f) =>
-          f.administeredGroups((f) => f.name.contains("Business")) |
-          f.ownedGroups((f) => f.id.isIn([1, 2, 4, 5])),
-    );
   }
-// #enddocregion manager_filter_custom_back_references
 
 // #docregion manager_references
   Future<void> references() async {
     /// Get each todo, along with a its categories
-    final todosWithRefs = await managers.todoItems.withReferences().get();
+    final todosWithRefs = await db.managers.todoItems.withReferences().get();
     for (final (todo, refs) in todosWithRefs) {
       final category = await refs.category?.getSingle();
     }
 
     /// This also works in the reverse
     final categoriesWithRefs =
-        await managers.todoCategory.withReferences().get();
+        await db.managers.todoCategory.withReferences().get();
     for (final (category, refs) in categoriesWithRefs) {
       final todos = await refs.todoItemsRefs.get();
     }
   }
 
 // #enddocregion manager_references
-// #docregion manager_prefetch_references
   Future<void> referencesPrefetch() async {
-    /// Get each todo, along with a its categories
-    final categoriesWithReferences = await managers.todoItems
-        .withReferences(
-          (prefetch) => prefetch(category: true),
-        )
-        .get();
-    for (final (todo, refs) in categoriesWithReferences) {
-      final category = refs.category?.prefetchedData?.firstOrNull;
-      // No longer needed
-      // final category = await refs.category?.getSingle();
-    }
-
-    /// This also works in the reverse
-    final todosWithRefs = await managers.todoCategory
+// #docregion manager_prefetch_references
+    final todosWithRefs = await db.managers.todoCategory
         .withReferences((prefetch) => prefetch(todoItemsRefs: true))
         .get();
     for (final (category, refs) in todosWithRefs) {
       final todos = refs.todoItemsRefs.prefetchedData;
-      // No longer needed
-      //final todos = await refs.todoItemsRefs.get();
     }
-  }
 // #enddocregion manager_prefetch_references
+  }
 
   Future<void> referencesPrefetchStream() async {
 // #docregion manager_prefetch_references_stream
     /// Get each todo, along with a its categories
-    managers.todoCategory
+    db.managers.todoCategory
         .withReferences((prefetch) => prefetch(todoItemsRefs: true, user: true))
         .watch()
         .listen(

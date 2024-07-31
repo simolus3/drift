@@ -120,7 +120,7 @@ For example, if one wanted to ensure that an author can't write two books with t
 
 See the [References](../References/index.md) page for more information on foreign keys.
 
-### Custom Types
+### Store Additional Types
 
 Use the `map()` method to provide a Type Converter for a column.
 This will allow you to store any type in a column that drift doesn't support out of the box.
@@ -130,7 +130,7 @@ This will allow you to store any type in a column that drift doesn't support out
 For more information on how to write a type converter, see the [Type Converters](../type_converters.md) page.
 
 
-!!! note "Isn't `customType()` for Custom Types?"
+!!! note "Isn't `customType()` for for this?"
 
     **No.**
     Drift has a confusingly named `customType()` which typically shouldn't be used.  
@@ -260,3 +260,12 @@ By default, drift creates virtual columns. To create a stored column, set the `s
 !!! note "What should I use?"
 
     Using virtual columns is more efficient as they don't require additional storage. However, they are slower to query as they are computed on the fly. See the [sqlite documentation](https://sqlite.org/gencol.html) for more information.
+
+# Custom Column Constraints
+Some column and table constraints aren't supported through drift's Dart api. This includes the collation of columns, which you can apply using `customConstraint`:
+
+Applying a `customConstraint` will override all other constraints that would be included by default. In particular, that means that we need to also include the `NOT NULL` constraint again.
+
+{{ load_snippet('custom-col-constraint','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+
+You can also add table-wide constraints by overriding the `customConstraints` getter in your table class.

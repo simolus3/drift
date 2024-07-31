@@ -4,24 +4,12 @@ builders:
     build_to: source
     builder_factories: ["writeVersions"]
     build_extensions: { "$package$": ["lib/versions.json"] }
-  api_index:
-    import: "package:code_snippets/indexer.dart"
-    build_to: source
-    builder_factories: ["DartIndexBuilder.new"]
-    auto_apply: all_packages
-    runs_before: [code_snippets]
-    build_extensions: { "lib/lib": ["api.json"] }
   code_snippets:
     import: "builders/snippets.dart"
     build_to: source
     builder_factories: ["SnippetsBuilder.new"]
     build_extensions: { "": [".excerpt.json"] }
     auto_apply: none
-    defaults:
-      options:
-        release: false
-      release_options:
-        release: true
 
 targets:
   prepare:
@@ -148,20 +136,3 @@ targets:
         - "web/**"
         - "$package$"
         - "pubspec.yaml"
-
-# Snippets referencing public API members from this package will get dartdoc links
-# embedded in them.
-global_options:
-  ":api_index":
-    options:
-      packages:
-        [
-          "drift",
-          "drift_dev",
-          "sqlite3",
-          "sqlite3_flutter_libs",
-          "sqlcipher_flutter_libs",
-        ]
-
-additional_public_assets:
-  - "pages/**"

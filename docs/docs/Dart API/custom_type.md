@@ -1,6 +1,6 @@
 ---
 
-title: Custom Types
+title: Type Converters
 description: Store more complex data in columns with type converters
 
 ---
