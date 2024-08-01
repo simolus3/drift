@@ -172,7 +172,7 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
-      - run: melos bootstrap --scope drift_dev
+      - run: melos bootstrap --scope drift_dev --scope drift
         working-directory: .
       # analysis
       - run: dart format -o none --set-exit-if-changed .
