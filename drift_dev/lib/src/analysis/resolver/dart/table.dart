@@ -73,11 +73,21 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       ],
     );
 
-    if (primaryKey != null &&
-        columns.any((c) => c.constraints.any((e) => e is PrimaryKeyColumn))) {
+    final columnsWithPrimaryKeyConstraint = columns
+        .where((c) => c.constraints.any((e) => e is PrimaryKeyColumn))
+        .length;
+    if (primaryKey != null && columnsWithPrimaryKeyConstraint > 0) {
       reportError(DriftAnalysisError.forDartElement(
         element,
         "Tables can't override primaryKey and use autoIncrement()",
+      ));
+    }
+
+    if (columnsWithPrimaryKeyConstraint > 1) {
+      reportError(DriftAnalysisError.forDartElement(
+        element,
+        'More than one column uses autoIncrement(). This would require '
+        'multiple primary keys, which is not supported.',
       ));
     }
 
