@@ -5,124 +5,104 @@ description: Tooling and APIs to safely change the schema of your database.
 
 ---
 
-The strict schema of tables and columns is what enables type-safe queries to
-the database.
-But since the schema is stored in the database too, changing it needs to happen
-through migrations developed as part of your app. Drift provides APIs to make most
-migrations easy to write, as well as command-line and testing tools to ensure
-the migrations are correct.
+Databases use strict table structures to ensure safe queries. These structures are stored in the database and can only be changed through migrations. Drift provides tools to easily write, test, and execute these migrations as part of your app development.
+
+
+## During Development
+
+During development, you might be changing your schema very often and writing migrations will start to become cumbersome. 
+To avoid this headache, use an in-memory database together with an `beforeOpen` callback to populate the database with initial data.
+
+??? example "In-memory database"
+
+    Use a configuration similar to the one below to use a temporary in-memory database during development. 
+
+    You'll only have to write migrations when you're ready to update your app :tada: 
+
+    {{ load_snippet('dev_migrations','lib/snippets/migrations/dev_without_migrations.dart.excerpt.json') }}
+
+    
+## Example Schema
+
+All the examples on this page use the following schema:
+
+??? example "Schema"
+
+    {{ load_snippet('table','lib/snippets/migrations/migrations.dart.excerpt.json', indent=4) }}
+
+
+# Migration Overview
+
+Migrations are performed in steps, with each step updating the schema until the final schema is reached.
+
+For instance:
+
+- Version 1: A table with a `content` column.
+- Version 2: Add a `dueDate` column.
+- Version 3: Add a `priority` column.
+
+In the above example, you would write two migrations: one to add the `dueDate` column and another to add the `priority` column. These migrations are executed in order to update the schema from version 1 to version 3.
+
+## Versioning
+
+The current schema version is in the `schemaVersion` getter on the database. This value is used to determine which migrations need to be run.
+
+{{ load_snippet('schemaVersion','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+
+
+## Initial Schema Creation
+
+The `MigrationStrategy.onCreate` callback is configured by default to create all tables in the database. No additional configuration is needed. You can still override this callback to perform additional actions when the database is created.
+
+
+## Writing Migrations
+
+The `MigrationStrategy.onUpgrade` callback is when the version of the database is higher than the current schema version. This callback is where you define the migrations to update the schema.
+
+### Guided Migrations
+
+Drift provides a set of tools to help you write migrations easily.
+By exporting each iteration of your database schema, you can develop migrations progressively, having access to the earlier schema for reference.  
+
+See the [Guided Migrations](./step_by_step.md) section for more information.
 
 
 
-## Manual setup 
 
-Drift provides a migration API that can be used to gradually apply schema changes after bumping
-the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
-getter.
 
-Here's an example: Let's say you wanted to add a due date to your todo entries (`v2` of the schema).
-Later, you decide to also add a priority column (`v3` of the schema).
+### Manual Migrations
 
-{{ load_snippet('table','lib/snippets/migrations/migrations.dart.excerpt.json') }}
 
-We can now change the `database` class like this:
+You can write migrations manually by using the `from` and `to` parameters to check the current schema version and execute the necessary migrations.
 
-{{ load_snippet('start','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+{{ load_snippet('manualOnUpgrade','lib/snippets/migrations/migrations.dart.excerpt.json') }}
 
-You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/drift/latest/drift/Migrator-class.html)
-for all the available options.
+!!! warning "Manual Migrations"
 
-You can also use higher-level query APIs like `select`, `update` or `delete` inside a migration callback.
-However, be aware that drift expects the latest schema when creating SQL statements or mapping results.
-For instance, when adding a new column to your database, you shouldn't run a `select` on that table before
-you've actually added the column. In general, try to avoid running queries in migration callbacks if possible.
-
-Writing migrations without any tooling support isn't easy. Since correct migrations are
-essential for app updates to work smoothly, we strongly recommend using the tools and testing
-framework provided by drift to ensure your migrations are correct.
-To do that, [export old versions](exports.md) to then use easy
-[step-by-step migrations](step_by_step.md) or [tests](tests.md).
-
-## General tips 
-
-To ensure your schema stays consistent during a migration, you can wrap it in a `transaction` block.
-However, be aware that some pragmas (including `foreign_keys`) can't be changed inside transactions.
-Still, it can be useful to:
-
-- always re-enable foreign keys before using the database, by enabling them in [`beforeOpen`](#post-migration-callbacks).
-- disable foreign-keys before migrations
-- run migrations inside a transaction
-- make sure your migrations didn't introduce any inconsistencies with `PRAGMA foreign_key_check`.
-
-With all of this combined, a migration callback can look like this:
-
-{{ load_snippet('structured','lib/snippets/migrations/migrations.dart.excerpt.json') }}
-
-## Post-migration callbacks
-
-The `beforeOpen` parameter in `MigrationStrategy` can be used to populate data after the database has been created.
-It runs after migrations, but before any other query. Note that it will be called whenever the database is opened,
-regardless of whether a migration actually ran or not. You can use `details.hadUpgrade` or `details.wasCreated` to
-check whether migrations were necessary:
-
-```dart
-beforeOpen: (details) async {
-    if (details.wasCreated) {
-      final workId = await into(categories).insert(Category(description: 'Work'));
-
-      await into(todos).insert(TodoEntry(
-            content: 'A first todo entry',
-            category: null,
-            targetDate: DateTime.now(),
-      ));
-
-      await into(todos).insert(
-            TodoEntry(
-              content: 'Rework persistence code',
-              category: workId,
-              targetDate: DateTime.now().add(const Duration(days: 4)),
-      ));
-    }
-},
-```
-
-You could also activate pragma statements that you need:
-
-```dart
-beforeOpen: (details) async {
-  if (details.wasCreated) {
-    // ...
-  }
-  await customStatement('PRAGMA foreign_keys = ON');
-}
-```
-
-## During development
-
-During development, you might be changing your schema very often and don't want to write migrations for that
-yet. You can just delete your apps' data and reinstall the app - the database will be deleted and all tables
-will be created again. Please note that uninstalling is not enough sometimes - Android might have backed up
-the database file and will re-create it when installing the app again.
-
-You can also delete and re-create all tables every time your app is opened, see [this comment](https://github.com/simolus3/drift/issues/188#issuecomment-542682912)
-on how that can be achieved.
-
-## Verifying a database schema at runtime
-
-Instead (or in addition to) [writing tests](#verifying-migrations) to ensure your migrations work as they should,
-you can use a new API from `drift_dev` 1.5.0 to verify the current schema without any additional setup.
+    We don't recommend writing migrations manually. It can be error-prone and difficult to maintain.  
+    We recommend using the tools provided by drift to create a [Guided Migration](#guided-migrations) instead.
 
 
 
-{{ load_snippet('(full)','lib/snippets/migrations/runtime_verification.dart.excerpt.json') }}
 
-When you use `validateDatabaseSchema`, drift will transparently:
 
-- collect information about your database by reading from `sqlite3_schema`.
-- create a fresh in-memory instance of your database and create a reference schema with `Migrator.createAll()`.
-- compare the two. Ideally, your actual schema at runtime should be identical to the fresh one even though it
-  grew through different versions of your app.
+## Post-Migration Callbacks
 
-When a mismatch is found, an exception with a message explaining exactly where another value was expected will
-be thrown.
-This allows you to find issues with your schema migrations quickly.
+Once the database is created and the migrations are complete, the `MigrationStrategy.beforeOpen` callback is called. This callback is useful for populating the database with initial data or enabling pragmas.
+
+{{ load_snippet('beforeOpen','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+
+The `details` parameter contains information about the database, such as whether it was created or if migrations were run.
+
+
+## Verify Migrations
+
+Drift provides a convenient way to ensure your database schema is correct after migrations, without requiring additional setup or writing separate tests.
+
+Use the `validateDatabaseSchema` function from `drift_dev` to verify the current schema of your database:
+
+{{ load_snippet('verify_scheme','lib/snippets/migrations/runtime_verification.dart.excerpt.json') }}
+
+Drift will automatically compare your current database schema to what it should be based on your current app version. 
+
+If there's any mismatch between the expected schema and the actual schema, Drift will throw an exception with a detailed message. This message will explain exactly where and how the schema differs from what's expected.

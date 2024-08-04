@@ -1,56 +1,135 @@
 ---
 
-title: Schema migration helpers
-description: Use generated code reflecting over all schema versions to write migrations step-by-step.
+title: Guided Migrations
+description: Writing migrations between schema versions using the step-by-step pattern.
 
 ---
 
+Drift provides a set of tools to help you write migrations in a manner which is testable, scalable, and easy to maintain. By exporting each iteration of your database schema, you can develop migrations progressively, having access to the earlier schema for reference.
+
+The following steps outline how to write migrations using the step-by-step pattern:
+
+## Example Schema
+
+All the examples on this page use the following schema:
+
+??? example "Schema"
+
+    {{ load_snippet('table','lib/snippets/migrations/migrations.dart.excerpt.json', indent=4) }}
 
 
-Database migrations are typically written incrementally, with one piece of code transforming
-the database schema to the next version. By chaining these migrations, you can write
-schema migrations even for very old app versions.
+## Step 1: Saving Schema Versions
 
-Reliably writing migrations between app versions isn't easy though. This code needs to be
-maintained and tested, but the growing complexity of the database schema shouldn't make
-migrations more complex.
-Let's take a look at a typical example making the incremental migrations pattern hard:
+After finalizing a new version of your database schema:
 
-1. In the initial database schema, we have a bunch of tables.
-2. In the migration from 1 to 2, we add a column `birthDate` to one of the table (`Users`).
-3. In version 3, we realize that we actually don't want to store users at all and delete
-   the table.
 
-Before version 3, the only migration could have been written as `m.addColumn(users, users.birthDate)`.
-But now that the `Users` table doesn't exist in the source code anymore, that's no longer possible!
-Sure, we could remember that the migration from 1 to 2 is now pointless and just skip it if a user
-upgrades from 1 to 3 directly, but this adds a lot of complexity. For more complex migration scripts
-spanning many versions, this can quickly lead to code that's hard to understand and maintain.
+1. Increment the schemaVersion in your database definition.
+2. Use the `drift_dev` tool to save the current schema:
 
-## Generating step-by-step code
+  ```bash
+  dart run drift_dev schema dump lib/database/database.dart drift_schemas/
+  ```
 
-Drift provides tools to [export old schema versions](exports.md). After exporting all
-your schema versions, you can use the following command to generate code aiding with the implementation
-of step-by-step migrations:
 
+This command takes your database file path (`lib/database/database.dart`) and outputs to the specified directory (`drift_schemas/`). It creates a new file (e.g., `drift_schema_v2.json`) containing the current schema.
+
+!!! tip "Commit Schema Files"
+    Make sure to commit these schema files to version control. They're crucial for managing migrations in future updates.
+
+
+## Step 2: Generating a Step-by-Step Migration Assistant
+
+After saving the schema, use the `drift_dev` tool to generate a `stepByStep` migration assistant:
+
+```bash
+dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
 ```
-$ dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
-```
 
-The first argument (`drift_schemas/`) is the folder storing exported schemas, the second argument is
-the path of the file to generate. Typically, you'd generate a file next to your database class.
-
-The generated file contains a `stepByStep` method which can be used to write migrations easily:
+This command generates a new file (`lib/database/schema_versions.dart`) containing the `stepByStep` migration assistant. This assistant provides a guided way to write migrations for each schema version.
 
 {{ load_snippet('stepbystep','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
 
-`stepByStep` expects a callback for each schema upgrade responsible for running the partial migration.
-That callback receives two parameters: A migrator `m` (similar to the regular migrator you'd get for
-`onUpgrade` callbacks) and a `schema` parameter that gives you access to the schema at the version you're
-migrating to.
-For instance, in the `from1To2` function, `schema` provides getters for the database schema at version 2.
-The migrator passed to the function is also set up to consider that specific version by default.
-A call to `m.recreateAllViews()` would re-create views at the expected state of schema version 2, for instance.
+## Step 3: Writing Migrations
+
+In each step of the `stepByStep` function, write the migration code to update the schema to the next version. 
+
+### Important Considerations
+
+
+- **Transactions**: Each migration step should be wrapped in a transaction to ensure data integrity.
+    ```dart
+    await transaction(() async {
+      // Migration code here
+    });
+    ```
+- **Foreign Key Checks**: Disable foreign key checks before running the migration and re-enable them afterwards to prevent foreign key violations. Consider adding a check to ensure no inconsistencies occurred during the migration.
+  
+    ??? example "Example"
+          
+        {{ load_snippet('stepbystep2','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+- **Testing**: Drift makes it very easy to test migrations. See the [Testing Migrations](testing.md) guide for more information.
+- **Avoid Querying In Migrations**: While it's possible to run queries in migration callbacks, it's not recommended. Drift expects the latest schema when querying the database, so if the schema has changed, the query might fail. 
+
+### Remove Column
+
+To remove a column from a table, use the `dropColumn` method in the migration step.
+
+{{ load_snippet('drop_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+
+However, there are some considerations when removing a column:
+
+- **Primary Keys**: You cannot remove a column from a table if it is part of the primary key.
+    {{ load_snippet('drop_primary_key','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+- **Unique Constraints**: You cannot remove a column with `dropColumn` if it is part of a unique constraint.
+    {{ load_snippet('drop_column_with_unique','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+- **Indexed Columns**: You cannot remove a column from a table if it is part of an index. Drop the index first.
+    {{ load_snippet('drop_column_with_index','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+- **Foreign Key Constraints**: If another table has a column that references the column you want to remove, you must remove the foreign key constraint first.
+- **Used in Expressions**: You cannot remove a column from a table if it is used in an expression anywhere on the table. These are typically found on:
+
+      - **Generated Columns**
+      - **Check Constraints**
+      - **Views**
+      - **Triggers**
+      - **Partial Indexes**  
+  
+    For example:
+      {{ load_snippet('drop_column_with_expression','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+
+### Add Column
+
+To add a column to a table, use the `addColumn` method in the migration step.
+
+{{ load_snippet('add_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+However, there are some considerations when adding a column:
+
+- **Non-Nullable Columns**: If the column is not nullable, you must provide a default value.
+  {{ load_snippet('add_required_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+- **Unique Constraints**: You cannot add a column to a table if it is part of a unique constraint.
+  {{ load_snippet('add_column_with_unique','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+- **Primary Key**: You cannot add a column to a table if it is part a primary key.
+- **Stored Generated Columns**: A stored generated column cannot be added with the `addColumn` method.
+  {{ load_snippet('add_generated_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+- **Default Value Expression**: If you provide a default value expression, it must be a constant value. For example, `defaultValue: Constant(0)` is valid, but `defaultValue: currentDateAndTime` is not.
+  {{ load_snippet('add_column_with_expression','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+
+!!! note "Empty Table"
+
+    If the table is empty, or you simply don't care about the existing data, you can drop the table entirely and recreate it to add the column.
+
+
+### Removing a Table, Index, or Trigger
+
+To remove a table, index, or trigger, use the `drop` method in the migration step.
+
+{{ load_snippet('drop_table','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+
 
 ## Customizing step-by-step migrations
 

@@ -1,9 +1,10 @@
 import 'package:drift/drift.dart';
 
-// #docregion
-// import the migrations tooling
+// #docregion verify_scheme
+// Import the migrations tooling
 import 'package:drift_dev/api/migrations.dart';
-// #enddocregion
+
+// #enddocregion verify_scheme
 
 const kDebugMode = true;
 
@@ -11,10 +12,11 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   _$MyDatabase(super.executor);
 }
 
-// #docregion
-
+// #docregion verify_scheme
 class MyDatabase extends _$MyDatabase {
-// #enddocregion
+  //...
+
+// #enddocregion verify_scheme
   MyDatabase(super.executor);
 
   @override
@@ -24,20 +26,19 @@ class MyDatabase extends _$MyDatabase {
   @override
   int get schemaVersion => throw UnimplementedError();
 
-  // #docregion
+  // #docregion verify_scheme
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {/* ... */},
-        onUpgrade: (m, from, to) async {/* your existing migration logic */},
         beforeOpen: (details) async {
-          // your existing beforeOpen callback, enable foreign keys, etc.
+          // ...
 
           if (kDebugMode) {
-            // This check pulls in a fair amount of code that's not needed
-            // anywhere else, so we recommend only doing it in debug builds.
+            // Only validate schema in debug mode to avoid performance impact and
+            // to decrease bundle size. This check helps catch migration
+            // issues during development.
             await validateDatabaseSchema();
           }
         },
       );
 }
-// #enddocregion
+// #enddocregion verify_scheme

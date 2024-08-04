@@ -67,6 +67,7 @@ final class Schema3 extends i0.VersionedSchema {
   @override
   late final List<i1.DatabaseSchemaEntity> entities = [
     todos,
+    todosTitle,
   ];
   late final Shape1 todos = Shape1(
       source: i0.VersionedTable(
@@ -85,6 +86,8 @@ final class Schema3 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  final i1.Index todosTitle =
+      i1.Index('todos__title', 'CREATE INDEX todos__title ON todos (title)');
 }
 
 class Shape1 extends i0.VersionedTable {

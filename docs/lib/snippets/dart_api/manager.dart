@@ -1,6 +1,9 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element
 
+import 'dart:async';
+
 import 'package:drift/drift.dart';
+import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
 
 part 'manager.g.dart';
@@ -378,6 +381,95 @@ void examples() {
     );
 // #enddocregion manager_prefetch_references_stream
   }
+
+  // #docregion addCategoryWithTodos
+  Future<void> addCategoryWithTodos(
+      TodoCategoryCompanion category, List<TodoItem> todos) {
+    return db.transaction(() async {
+      final categoryId = await db.managers.todoCategory.create((_) => category);
+
+      // The above category will be remove if this fails
+      await db.managers.todoItems.bulkCreate(
+          (_) => todos.map((t) => t.copyWith(category: Value(categoryId))));
+    });
+  }
+// #enddocregion addCategoryWithTodos
+
+  void badTransaction(TodoCategoryCompanion category, List<TodoItem> todos) {
+    // #docregion streamTransaction
+    // This update will be executed after the transaction has been committed
+    db.managers.todoCategory.watch().listen(
+      (event) {
+        print("There are ${event.length} categories");
+      },
+    );
+
+    // #docregion badTransaction
+    db.transaction(() async {
+      // All of these operations will run after the transaction has been committed
+      db.managers.todoCategory.create((_) => category);
+
+      Future.delayed(Duration(seconds: 1), () {
+        db.managers.todoCategory.create((_) => category);
+      });
+
+      Timer.periodic(Duration(seconds: 1), (timer) async {
+        await db.managers.todoCategory.create((_) => category);
+      });
+    });
+// #enddocregion badTransaction
+// #enddocregion streamTransaction
+  }
+
+  Future<void> nestedTransaction() async {
+    // #docregion nested
+    await db.transaction(() async {
+      await db.managers.todoCategory
+          .create((create) => create(description: 'first'));
+
+      // this is a nested transaction:
+      await db.transaction(() async {
+        // At this point, the first category is visible
+        await db.managers.todoCategory
+            .create((create) => create(description: 'second'));
+        // Here, the second category is only visible inside this nested
+        // transaction.
+      });
+
+      // At this point, the second category is visible here as well.
+
+      try {
+        await db.transaction(() async {
+          // At this point, both categories are visible
+          await db.managers.todoCategory
+              .create((create) => create(description: 'third'));
+          // The third category is only visible here.
+          throw Exception('Abort in the second nested transaction');
+        });
+      } on Exception {
+        // We're catching the exception so that this transaction isn't reverted
+        // as well.
+      }
+
+      // At this point, the third category is NOT visible, but the other two
+      // are. The transaction is in the same state as before the second nested
+      // `transaction()` call.
+    });
+    // After the transaction, two categories are visible.
+    // #enddocregion nested
+  }
+
+  Future<void> computeWithDatabase() async {
+    // #docregion computeWithDatabase
+    final todos = await db.computeWithDatabase(
+      connect: (connection) => AppDatabase(connection),
+      computation: (db) {
+        // This opperation won't block the main isolate
+        db.managers.todoItems.get();
+      },
+    );
+    // #enddocregion computeWithDatabase
+  }
 }
 
 // #docregion manager_filter_extensions
@@ -438,3 +530,4 @@ Future<void> customOrdering(AppDatabase db) async {
   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
 // #enddocregion manager_custom_ordering
+

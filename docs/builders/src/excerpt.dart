@@ -1,11 +1,11 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:math' hide log;
 
+import 'package:build/build.dart';
+import 'package:code_snippets/src/highlight/regions.dart';
 import 'package:source_span/source_span.dart';
-
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
@@ -68,6 +68,9 @@ class _Excerpt {
   }
 
   String toSnippet({required SourceFile file, bool removeIndent = true}) {
+    // Drop intersecting regions (which really shouldn't exist).
+
+    final regions = <HighlightRegion>[];
     final buffer = StringBuffer();
 
     void text(FileSpan span, [int stripIndent = 0]) {
@@ -99,23 +102,81 @@ class _Excerpt {
       }
     }
 
-    _ContinousRegion? latestChunk;
-    for (final chunk in regions) {
+    void region(HighlightRegion region,
+            [FileSpan? span, int stripIndent = 0]) =>
+        text(span ?? region.source, stripIndent);
+
+    var currentRegion = 0;
+    _ContinousRegion? last;
+
+    for (final chunk in this.regions) {
       final stripIndent = removeIndent ? chunk.indentation.length : 0;
-      // If there was a previous chunk, add a newline.
-      if (latestChunk != null) {
+
+      if (last != null) {
         buffer.write('\n');
       }
 
-      // Get the offset of the first line of the region.
+      // Find the first region that intersects this chunk of the excerpt.
+      while (currentRegion < regions.length) {
+        final current = regions[currentRegion];
+        final endLine = current.source.end.line;
+
+        if (endLine < chunk.startLine) {
+          currentRegion++;
+        } else {
+          break;
+        }
+      }
+
       var offset = file.getOffset(chunk.startLine);
 
-      // Insert the text of the region.
-      text(file.span(offset, file.getOffset(chunk.endLineExclusive) - 1),
-          stripIndent);
+      while (currentRegion < regions.length) {
+        final current = regions[currentRegion];
+        final startLine = current.source.start.line;
+        final endLine = current.source.end.line;
 
-      // Update the last chunk.
-      latestChunk = chunk;
+        int startOffset, endOffset;
+        var lastInChunk = false;
+
+        if (startLine >= chunk.endLineExclusive) {
+          // Already too far, skip!
+          break;
+        }
+
+        // Ok, this region ends in the current chunk. Does it start there too?
+        if (startLine >= chunk.startLine) {
+          // It does! We don't have to cut off text from the beginning then.
+          startOffset = current.source.start.offset;
+        } else {
+          // It doesn't, start at the start of the first line in this chunk.
+          startOffset = file.getOffset(chunk.startLine);
+        }
+
+        // Raw text that potentially comes before this region
+        text(file.span(offset, startOffset), stripIndent);
+
+        // Same story for the end. Does it exceed this chunk?
+        if (endLine >= chunk.endLineExclusive) {
+          endOffset = file.getLine(chunk.endLineExclusive);
+          lastInChunk = true;
+        } else {
+          endOffset = current.source.end.offset;
+        }
+
+        region(current, file.span(startOffset, endOffset), stripIndent);
+        currentRegion++;
+        offset = endOffset;
+        if (lastInChunk) break;
+      }
+
+      // Raw text at the end of this continous region that is not a highlight
+      // region.
+      text(
+        file.span(offset, file.getOffset(chunk.endLineExclusive) - 1),
+        stripIndent,
+      );
+
+      last = chunk;
     }
 
     return buffer.toString();
@@ -207,7 +268,7 @@ class _Excerpter {
     final regionAlreadyStarted = <String>[];
     final regionNames = directive.args;
 
-    log('_startRegion(regionNames = $regionNames)');
+    log.finer('_startRegion(regionNames = $regionNames)');
 
     if (regionNames.isEmpty) regionNames.add(_defaultRegionKey);
     for (final name in regionNames) {
@@ -226,7 +287,7 @@ class _Excerpter {
   void _endRegion(Directive directive) {
     final regionsWithoutStart = <String>[];
     final regionNames = directive.args;
-    log('_endRegion(regionNames = $regionNames)');
+    log.finer('_endRegion(regionNames = $regionNames)');
 
     if (regionNames.isEmpty) {
       regionNames.add('');
@@ -302,7 +363,7 @@ class _Excerpter {
     return true;
   }
 
-  void _warn(String msg) => log('$msg at $_lineNum');
+  void _warn(String msg) => log.warning('$msg at $_lineNum');
 
   /// Quote a region name if it isn't already quoted.
   String _quoteName(String name) => name.startsWith("'") ? name : '"$name"';

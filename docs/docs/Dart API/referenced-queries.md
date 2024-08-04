@@ -1,6 +1,6 @@
 ---
 
-title: Query References
+title: References
 description: Querying referenced fields in a single query.
 
 ---

@@ -2,6 +2,8 @@
 
 # Get the 1st argument passed to the script and convert it to lowercase
 arg1=$(echo $1 | tr '[:upper:]' '[:lower:]')
+arg2=$(echo $1 | tr '[:upper:]' '[:lower:]')
+
 
 # Build the MkDocs container which will be used to build/serve the MkDocs project
 build_container () {
@@ -11,6 +13,25 @@ build_container () {
         echo "Failed to build the container"
         exit 1
     fi
+}
+
+drift_dev () {
+    echo "Running Drift Dev..."
+    dart run drift_dev schema steps lib/snippets/migrations/exported_eschema/ lib/snippets/migrations/schema_versions.dart
+    if [ $? -ne 0 ]; then
+        echo "Failed to run Drift Dev"
+        exit 1
+    fi
+    dart run drift_dev schema generate --data-classes --companions lib/snippets/migrations/exported_eschema/ lib/snippets/migrations/tests/generated_migrations/
+    if [ $? -ne 0 ]; then
+        echo "Failed to run Drift Dev"
+        exit 1
+    fi
+}
+
+serve_mkdocs () {
+    echo "Running MkDocs serve..."
+    docker run --rm -p 9000:9000 -v $(pwd):/docs --user $(id -u):$(id -g) mkdocs:latest serve -f /docs/mkdocs/mkdocs.yml -a 0.0.0.0:9000
 }
 
 if [ $arg1 == "build" ]; then
@@ -23,6 +44,8 @@ if [ $arg1 == "build" ]; then
 
     # Activate the webdev command
     dart pub global activate webdev
+
+    drift_dev
 
     # The below command will compile the dart code in `/web` to js & run build_runner
     webdev build -o web:build/web -- --delete-conflicting-outputs
@@ -84,16 +107,22 @@ if [ $arg1 == "build" ]; then
 elif [ $arg1 == "serve" ]; then
     echo "Serving the project..."
 
-    # if `lib/versions.json` does not exist, create it
-    if [ ! -f ./lib/versions.json ]; then
-        dart run build_runner build --delete-conflicting-outputs
-    fi
+    drift_dev
 
+    dart run build_runner build --delete-conflicting-outputs
+    if [ $? -ne 0 ]; then
+        echo "Failed to build the project"
+        exit 1
+    fi
+    
     build_container
 
-    echo "Running MkDocs serve..."
-    docker run --rm -p 9000:9000 -v $(pwd):/docs --user $(id -u):$(id -g) mkdocs:latest serve -f /docs/mkdocs/mkdocs.yml -a 0.0.0.0:9000 &
-    dart run build_runner watch --delete-conflicting-outputs
+    serve_mkdocs &
+
+    if [arg2 == "--with-build-runner"]; then
+        dart run build_runner watch
+    fi
+
     wait
 
 else

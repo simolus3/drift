@@ -23,8 +23,7 @@ targets:
       - "$package$"
       - "lib/versions.json"
       - "lib/snippets/**"
-      - "builders/write_versions.dart"
-      - "builders/snippets.dart"
+      - "builders/**"
       - "test/generated/**"
 
   codegen:

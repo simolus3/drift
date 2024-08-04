@@ -30,9 +30,10 @@ class Todos extends Table with TableInfo<Todos, TodosData> {
   @override
   List<GeneratedColumn> get $columns => [id, title, content, category];
   @override
-  String get aliasedName => _alias ?? 'todos';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todos';
+  String get actualTableName => $name;
+  static const String $name = 'todos';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -121,6 +122,15 @@ class TodosData extends DataClass implements Insertable<TodosData> {
         content: content ?? this.content,
         category: category.present ? category.value : this.category,
       );
+  TodosData copyWithCompanion(TodosCompanion data) {
+    return TodosData(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      content: data.content.present ? data.content.value : this.content,
+      category: data.category.present ? data.category.value : this.category,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TodosData(')

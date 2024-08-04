@@ -1,10 +1,14 @@
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:drift_docs/snippets/setup/database.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 
 part 'migrations.g.dart';
 
 const kDebugMode = false;
 
 // #docregion table
+@TableIndex(name: "todos__title", columns: {#title})
 class Todos extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 6, max: 10)();
@@ -21,15 +25,30 @@ class MyDatabase extends _$MyDatabase {
   MyDatabase(super.e);
 
   // #docregion start
+  // ...
+  // #docregion schemaVersion
   @override
-  int get schemaVersion => 3; // bump because the tables have changed.
-
+  int get schemaVersion => 3; // bump when changing schema
+  // #enddocregion schemaVersion
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
+      // #docregion beforeOpen
+      beforeOpen: (details) async {
+        // Run PRAGMA statements
+        await customStatement('PRAGMA foreign_keys = ON');
+
+        // Create an initial todo if we just created the database+
+        if (details.wasCreated) {
+          await managers.todos.create((o) =>
+              o(title: "Your First Todo", content: "Enter your content here"));
+        }
+      },
+      // #enddocregion beforeOpen
       onCreate: (Migrator m) async {
         await m.createAll();
       },
+      // #docregion manualOnUpgrade
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           // we added the dueDate property in the change from version 1 to
@@ -42,6 +61,7 @@ class MyDatabase extends _$MyDatabase {
           await m.addColumn(todos, todos.priority);
         }
       },
+      // #enddocregion manualOnUpgrade
     );
   }
   // The rest of the class can stay the same

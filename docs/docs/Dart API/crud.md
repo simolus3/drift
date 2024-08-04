@@ -167,3 +167,13 @@ Use the `count` method to count the number of records in a table.
 To check if any records exist that match a certain condition, use the `exists` method.
 
 {{ load_snippet('manager_exists','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+## Performance Considerations
+
+Massive database operations can slow down an application's main thread, potentially causing performance issues. This happens because tasks like query building and data processing often occur on the same thread that handles user interface updates.
+
+Consider using `computeWithDatabase` to offload these tasks to a background isolate. This method is available on the `DriftDatabase` class.
+
+{{ load_snippet('computeWithDatabase','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+
