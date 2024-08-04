@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:math' hide log;
 
 import 'package:build/build.dart';
-import 'package:code_snippets/src/highlight/regions.dart';
 import 'package:source_span/source_span.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
@@ -68,9 +67,6 @@ class _Excerpt {
   }
 
   String toSnippet({required SourceFile file, bool removeIndent = true}) {
-    // Drop intersecting regions (which really shouldn't exist).
-
-    final regions = <HighlightRegion>[];
     final buffer = StringBuffer();
 
     void text(FileSpan span, [int stripIndent = 0]) {
@@ -102,14 +98,9 @@ class _Excerpt {
       }
     }
 
-    void region(HighlightRegion region,
-            [FileSpan? span, int stripIndent = 0]) =>
-        text(span ?? region.source, stripIndent);
-
-    var currentRegion = 0;
     _ContinousRegion? last;
 
-    for (final chunk in this.regions) {
+    for (final chunk in regions) {
       final stripIndent = removeIndent ? chunk.indentation.length : 0;
 
       if (last != null) {
@@ -117,57 +108,7 @@ class _Excerpt {
       }
 
       // Find the first region that intersects this chunk of the excerpt.
-      while (currentRegion < regions.length) {
-        final current = regions[currentRegion];
-        final endLine = current.source.end.line;
-
-        if (endLine < chunk.startLine) {
-          currentRegion++;
-        } else {
-          break;
-        }
-      }
-
       var offset = file.getOffset(chunk.startLine);
-
-      while (currentRegion < regions.length) {
-        final current = regions[currentRegion];
-        final startLine = current.source.start.line;
-        final endLine = current.source.end.line;
-
-        int startOffset, endOffset;
-        var lastInChunk = false;
-
-        if (startLine >= chunk.endLineExclusive) {
-          // Already too far, skip!
-          break;
-        }
-
-        // Ok, this region ends in the current chunk. Does it start there too?
-        if (startLine >= chunk.startLine) {
-          // It does! We don't have to cut off text from the beginning then.
-          startOffset = current.source.start.offset;
-        } else {
-          // It doesn't, start at the start of the first line in this chunk.
-          startOffset = file.getOffset(chunk.startLine);
-        }
-
-        // Raw text that potentially comes before this region
-        text(file.span(offset, startOffset), stripIndent);
-
-        // Same story for the end. Does it exceed this chunk?
-        if (endLine >= chunk.endLineExclusive) {
-          endOffset = file.getLine(chunk.endLineExclusive);
-          lastInChunk = true;
-        } else {
-          endOffset = current.source.end.offset;
-        }
-
-        region(current, file.span(startOffset, endOffset), stripIndent);
-        currentRegion++;
-        offset = endOffset;
-        if (lastInChunk) break;
-      }
 
       // Raw text at the end of this continous region that is not a highlight
       // region.

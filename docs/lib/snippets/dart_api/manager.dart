@@ -530,4 +530,3 @@ Future<void> customOrdering(AppDatabase db) async {
   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
 // #enddocregion manager_custom_ordering
-

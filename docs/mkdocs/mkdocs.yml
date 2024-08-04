@@ -104,10 +104,10 @@ nav:
           - Dart API/transactions.md
       - Migrations:
           - Migrations/index.md
-          - Migrations/exports.md
           - Migrations/step_by_step.md
-          - Migrations/tests.md
-          - Migrations/api.md
+          # - Migrations/exports.md
+          # - Migrations/tests.md
+          # - Migrations/api.md
 
   #     - Getting Started: setup.md
   #     - Dart API:
