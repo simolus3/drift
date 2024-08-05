@@ -1,12 +1,12 @@
 ---
 
-title: Testing migrations
+title: Testing Migrations
 description: Generate test code to write unit tests for your migrations.
 
 ---
 
 
-
+TODO: Rewrite
 
 While migrations can be written manually without additional help from drift, dedicated tools testing
 your migrations help to ensure that they are correct and aren't loosing any data.

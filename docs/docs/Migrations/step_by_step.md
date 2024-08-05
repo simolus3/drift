@@ -17,6 +17,24 @@ All the examples on this page use the following schema:
 
     {{ load_snippet('table','lib/snippets/migrations/migrations.dart.excerpt.json', indent=4) }}
 
+## Tips
+
+
+- **Transactions**: Each migration step should be wrapped in a transaction to ensure data integrity.
+    ```dart
+    await transaction(() async {
+      // Migration code here
+    });
+    ```
+- **Foreign Key Checks**: Disable foreign key checks before running the migration and re-enable them afterwards to prevent foreign key violations. Consider adding a check to ensure no inconsistencies occurred during the migration.
+  
+    ??? example "Example"
+          
+        {{ load_snippet('stepbystep2','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+- **Testing**: Drift makes it very easy to test migrations. See the [Testing Migrations](testing.md) guide for more information.
+- **Avoid Querying In Migrations**: While it's possible to run queries in migration callbacks, it's not recommended. Drift expects the latest schema when querying the database, so if the schema has changed, the query might fail. 
+
 
 ## Step 1: Saving Schema Versions
 
@@ -53,23 +71,35 @@ This command generates a new file (`lib/database/schema_versions.dart`) containi
 
 In each step of the `stepByStep` function, write the migration code to update the schema to the next version. 
 
-### Important Considerations
+!!! note "SQlite Version"
+    This migrations guide assumes you're using SQLite and a version greater or equal to 3.38.0. If you're using an older version, you might need to adjust the migration code accordingly.
 
+    The version of `sqlite3` installed automatically by `drift_flutter`/`sqlite3_flutter_libs` meets this requirement.
 
-- **Transactions**: Each migration step should be wrapped in a transaction to ensure data integrity.
-    ```dart
-    await transaction(() async {
-      // Migration code here
-    });
-    ```
-- **Foreign Key Checks**: Disable foreign key checks before running the migration and re-enable them afterwards to prevent foreign key violations. Consider adding a check to ensure no inconsistencies occurred during the migration.
-  
-    ??? example "Example"
-          
-        {{ load_snippet('stepbystep2','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+### Adding a Table, Index, View or Trigger
 
-- **Testing**: Drift makes it very easy to test migrations. See the [Testing Migrations](testing.md) guide for more information.
-- **Avoid Querying In Migrations**: While it's possible to run queries in migration callbacks, it's not recommended. Drift expects the latest schema when querying the database, so if the schema has changed, the query might fail. 
+To add a table, index, or trigger, use the `create` method in the migration step.
+
+{{ load_snippet('drop_table','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+### Removing a Table, Index or Trigger
+
+To remove a table, index, or trigger, use the `drop` method in the migration step.
+
+{{ load_snippet('drop_table','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+When a table is dropped, all indexes, views, and triggers associated with the table are also removed.
+
+#### Foreign Key Constraints
+
+If other tables have foreign key constraints that reference the table you want to drop, it depends on what action is set for the foreign key:
+
+- If the reference has an `KeyAction.noAction` (default), `KeyAction.restrict` the migration will fail.
+- If the reference has an `KeyAction.setNull`, the migration will succeed, but the foreign key will be set to `null`.
+- If the reference has an `KeyAction.cascade`, the migration will succeed, and all rows in the referencing table will be deleted.
+- If the reference has an `KeyAction.setDefault`, the migration will succeed, and the default value will be set. If this default value is not `null`, the migration will fail.
+
+It's recommended to remove the foreign key constraints first before dropping the table.
 
 ### Remove Column
 
@@ -77,8 +107,7 @@ To remove a column from a table, use the `dropColumn` method in the migration st
 
 {{ load_snippet('drop_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
 
-
-However, there are some considerations when removing a column:
+However, you may need to use an [Alter Table](#removing-any-column) statement to remove a column in some cases:
 
 - **Primary Keys**: You cannot remove a column from a table if it is part of the primary key.
     {{ load_snippet('drop_primary_key','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
@@ -105,7 +134,7 @@ To add a column to a table, use the `addColumn` method in the migration step.
 
 {{ load_snippet('add_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
 
-However, there are some considerations when adding a column:
+However, you may need to use an [Alter Table](#adding-any-column) statement to add a column in some cases:
 
 - **Non-Nullable Columns**: If the column is not nullable, you must provide a default value.
   {{ load_snippet('add_required_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
@@ -118,25 +147,89 @@ However, there are some considerations when adding a column:
   {{ load_snippet('add_column_with_expression','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
 
 
+
 !!! note "Empty Table"
 
     If the table is empty, or you simply don't care about the existing data, you can drop the table entirely and recreate it to add the column.
 
+### Rename Table
 
-### Removing a Table, Index, or Trigger
+To rename a table, use the `renameTable` method in the migration step.
 
-To remove a table, index, or trigger, use the `drop` method in the migration step.
+{{ load_snippet('rename_table','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
 
-{{ load_snippet('drop_table','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+!!! note "Foreign Key Constraints"
 
+    If you are using `sqlite` installed automatically by `drift_flutter`/`sqlite3_flutter_libs`, foreign key constraints are handled gracefully. Any other tables with foreign key constraints that reference the renamed table will be updated automatically.
 
+    However older versions of `sqlite` might not handle this gracefully. See the [SQLite documentation](https://www.sqlite.org/lang_altertable.html#renametable) for more information.
+
+### Rename Column
+
+If you only want to change the name of the column in Dart code, you can use the `named` constructor on the table to customize the column name to what it is in the database and rename the getter in the Dart code.  
+Now a migration is not needed to rename the column in the database.
+
+{{ load_snippet('fake_rename_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+If you want to rename the column in the database, you can use the `renameColumn` method in the migration step.
+
+{{ load_snippet('rename_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+### Alter Table
+
+To perform more complex operations on a table, `alterTable` can be used in the migration step.
+
+An `AlterTable` operation works by creating a new table with the desired schema, copying the data from the old table to the new table, and then dropping the old table.
+
+#### Adding any Column
+
+Most columns which could not be added with `addColumn` can be added with `alterTable`.
+
+The only exception is column which cannot store `null` and does not have a default value. This will fail because there is no way to populate the current rows with a value.
+
+{{ load_snippet('add_any_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+While `alterTable` can add any column, it is a more expensive operation than `addColumn` and should only be used when necessary.
+
+#### Removing any Column
+
+Any column which could not be removed with `dropColumn` can be removed with `alterTable`.
+
+Just run `alterTable` with the new table schema as shown below.
+
+{{ load_snippet('remove_any_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+#### Changing Constraints
+
+This is one of the most common operations when altering a table. 
+
+For example:
+
+- **Adding a Unique Constraint**
+- **Removing a Unique Constraint**
+- **Adding a Check Constraint**
+- **Removing a Check Constraint**
+- **Adding a Foreign Key Constraint**
+- **Removing a Foreign Key Constraint**
+- **Adding a Not Null Constraint**
+- **Removing a Not Null Constraint**
+
+For all these operations, you can use `alterTable` with the new table schema as shown below.
+
+{{ load_snippet('remove_any_column','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
+
+#### Changing Column Type
+
+To change the type of a column, you can use `alterTable` with a `columnTransformer` which defines how columns will be read from the old table and written to the new table.
+
+{{ load_snippet('change_type','lib/snippets/migrations/step_by_step.dart.excerpt.json') }}
 
 ## Customizing step-by-step migrations
 
 The `stepByStep` function generated by the `drift_dev schema steps` command gives you an
 `OnUpgrade` callback.
 But you might want to customize the upgrade behavior, for instance by adding foreign key
-checks afterwards (as described in [tips](index.md#tips)).
+checks afterwards as described in [tips](#tips).
 
 The `Migrator.runMigrationSteps` helper method can be used for that, as this example
 shows:

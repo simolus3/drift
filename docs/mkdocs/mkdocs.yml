@@ -106,7 +106,7 @@ nav:
           - Migrations/index.md
           - Migrations/step_by_step.md
           # - Migrations/exports.md
-          # - Migrations/tests.md
+          - Migrations/tests.md
           # - Migrations/api.md
 
   #     - Getting Started: setup.md

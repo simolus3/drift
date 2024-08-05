@@ -128,17 +128,38 @@ extension StepByStep4 on GeneratedDatabase {
       from1To2: (m, schema) async {},
       from2To3: (m, schema) async {
         // #docregion drop_column
-        m.dropColumn(schema.todos, schema.todos.dueDate.name);
+        await m.dropColumn(schema.todos, schema.todos.dueDate.name);
         // #enddocregion drop_column
         // #docregion drop_table
-        // Drop the table
-        m.drop(schema.todos);
-        // Drop an index
-        m.drop(schema.todosTitle);
+        await m.drop(schema.todos);
         // #enddocregion drop_table
         // #docregion add_column
         await m.addColumn(schema.todos, schema.todos.dueDate);
         // #enddocregion add_column
+        // #docregion add_table_and_index
+        await m.create(schema.todos);
+        await m.create(schema.todosTitle);
+        // #enddocregion add_table_and_index
+        // #docregion rename_column
+        await m.renameColumn(schema.todos, "date_due", schema.todos.dueDate);
+        // #enddocregion rename_column
+        // #docregion rename_table
+        await m.renameTable(schema.todos, "all_the_todos");
+        // #enddocregion rename_table
+        // #docregion add_any_column
+        await m.alterTable(
+            TableMigration(schema.todos, newColumns: [schema.todos.dueDate]));
+        // #enddocregion add_any_column
+        // #docregion remove_any_column
+        await m.alterTable(TableMigration(schema.todos));
+        // #enddocregion remove_any_column
+        // #docregion change_type
+        // The priority column was previously an integer, but we want to store
+        // it as a string now.
+        await m.alterTable(TableMigration(schema.todos, columnTransformer: {
+          schema.todos.priority: schema.todos.priority.cast<String>()
+        }));
+        // #enddocregion change_type
       },
     ));
   }
@@ -201,6 +222,11 @@ class Books extends Table {
   // Not OK -
   IntColumn get age2 => integer().withDefault(Constant(18) + Constant(18))();
   // #enddocregion add_column_with_expression
+// #docregion fake_rename_column
+  // No migration needed
+  // TextColumn get authorName => text()();
+  TextColumn get name => text().named('author_name')();
+// #enddocregion fake_rename_column
 }
 
 // #docregion drop_column_with_index

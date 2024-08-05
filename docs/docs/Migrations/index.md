@@ -1,6 +1,6 @@
 ---
 
-title: Migrations
+title: Overview
 description: Tooling and APIs to safely change the schema of your database.
 
 ---
