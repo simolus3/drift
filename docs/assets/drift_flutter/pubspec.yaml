@@ -7,4 +7,4 @@ environment:
 
 dependencies:
   drift:
-    path: ../../drift
+    path: ../../../drift

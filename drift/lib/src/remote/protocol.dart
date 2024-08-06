@@ -495,7 +495,7 @@ const _isDart2Wasm = bool.fromEnvironment('dart.tool.dart2wasm');
 
 int castInt(Object? source) {
   if (_isDart2Wasm) {
-    return (source as double).toInt();
+    return (source as num).toInt();
   } else {
     return source as int;
   }
@@ -504,6 +504,7 @@ int castInt(Object? source) {
 bool isInt(Object? source) {
   if (_isDart2Wasm) {
     return switch (source) {
+      int _ => true,
       double jsDouble => jsDouble.toInt() == jsDouble,
       _ => false,
     };
