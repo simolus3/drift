@@ -311,6 +311,64 @@ void main() {
   );
 
   test(
+    'can mix `DoNothing` and `DoUpdate` in `UpsertMultiple`',
+    () async {
+      await db
+          .into(db.todosTable)
+          .insert(TodosTableCompanion.insert(content: 'my content'),
+              onConflict: UpsertMultiple([
+                DoUpdate(
+                  (old) {
+                    return TodosTableCompanion.custom(
+                        content: const Variable('important: ') + old.content);
+                  },
+                ),
+                DoNothing(
+                  target: [db.todosTable.content],
+                ),
+              ]));
+
+      verify(executor.runInsert(
+        'INSERT INTO "todos" ("content") VALUES (?) '
+        'ON CONFLICT("id") DO UPDATE SET "content" = ? || "content" '
+        'ON CONFLICT("content") DO NOTHING',
+        argThat(equals(['my content', 'important: '])),
+      ));
+    },
+  );
+
+  test(
+    'can nest `UpsertMultiple`',
+    () async {
+      await db
+          .into(db.todosTable)
+          .insert(TodosTableCompanion.insert(content: 'my content'),
+              onConflict: UpsertMultiple([
+                DoUpdate(
+                  (old) {
+                    return TodosTableCompanion.custom(
+                        content: const Variable('important: ') + old.content);
+                  },
+                ),
+                UpsertMultiple(
+                  [
+                    DoNothing(
+                      target: [db.todosTable.content],
+                    ),
+                  ],
+                ),
+              ]));
+
+      verify(executor.runInsert(
+        'INSERT INTO "todos" ("content") VALUES (?) '
+        'ON CONFLICT("id") DO UPDATE SET "content" = ? || "content" '
+        'ON CONFLICT("content") DO NOTHING',
+        argThat(equals(['my content', 'important: '])),
+      ));
+    },
+  );
+
+  test(
     'can use multiple upsert targets with where',
     () async {
       await db
