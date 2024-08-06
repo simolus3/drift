@@ -556,12 +556,14 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
 ///
 /// The first [DoUpdate.target] matched by this upsert will be run.
 class UpsertMultiple<T extends Table, D> extends UpsertClause<T, D> {
-  /// All [DoUpdate] clauses that are part of this upsert.
+  /// All [DoUpdate] and [DoNothing] clauses that are part of this upsert.
   ///
-  /// The first clause with a matching [DoUpdate.target] will be considered.
-  final List<DoUpdate<T, D>> clauses;
+  /// The first clause with a matching [DoUpdate.target] or [DoNothing.target]
+  /// will be considered.
+  final List<UpsertClause<T, D>> clauses;
 
-  /// Creates an upsert consisting of multiple [DoUpdate] clauses.
+  /// Creates an upsert consisting of multiple [DoUpdate] and [DoNothing]
+  /// clauses.
   ///
   /// This requires a fairly recent sqlite3 version (3.35.0, released on 2021-
   /// 03-12).
