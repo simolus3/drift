@@ -6,6 +6,7 @@ import 'connect.dart';
 QueryExecutor driftDatabase({
   required String name,
   DriftWebOptions? web,
+  DriftNativeOptions? native,
 }) {
   if (web == null) {
     throw ArgumentError(

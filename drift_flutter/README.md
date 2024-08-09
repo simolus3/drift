@@ -39,6 +39,32 @@ These are the compiled `sqlite3.wasm` module and a `drift_worker.js` worker
 used to share databases across tabs if possible.
 Obtaining these files is [described here](https://drift.simonbinder.eu/web/#prerequisites).
 
+### Sharing databases between isolates
+
+In some setups, for instance when using `WorkManager`, you may have two
+independent isolates running your app and a background service. These may have
+to share a database without blocking each other. This package can internally
+use the `IsolateNameServer` to spawn a dedicated database isolates shared
+between other application isolates. To enable this feature, set
+`shareAcrossIsolates` to `true` in `DriftNativeOptions`:
+
+```dart
+  MyAppDatabase.defaults(): super(
+    driftDatabase(
+      name: 'app_db',
+      native: DriftNativeOptions(
+        shareAcrossIsolates: true,
+      ),
+    )
+  );
+```
+
+When the option is enabled, `drift_flutter` will create a dedicated database
+isolate that starts when the first `driftDatabase()` call connects and stops
+when all attached databases have been closed (note that you need to explicitly
+`close()` the databases to stop the server, the respective isolates shutting
+down is not enough).
+
 ## Behavior
 
 On native platforms (Android, iOS, macOS, Linux and Windows), `driftDatabase` uses

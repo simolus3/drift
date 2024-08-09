@@ -66,7 +66,7 @@ class ServerImplementation implements DriftServer {
   }
 
   @override
-  void serve(StreamChannel<Object?> channel, {bool serialize = true}) {
+  Future<void> serve(StreamChannel<Object?> channel, {bool serialize = true}) {
     if (_isShuttingDown) {
       throw StateError('Cannot add new channels after shutdown() was called');
     }
@@ -76,7 +76,7 @@ class ServerImplementation implements DriftServer {
     comm.notify(ServerInfo(connection.dialect));
 
     _activeChannels.add(comm);
-    comm.closed.then((_) => _activeChannels.remove(comm));
+    return comm.closed.then((_) => _activeChannels.remove(comm));
   }
 
   @override

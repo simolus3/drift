@@ -91,8 +91,8 @@ class DriftIsolate {
   /// {@endtemplate}
   DriftIsolate.fromConnectPort(this.connectPort, {this.serialize = true});
 
-  StreamChannel _open() {
-    return connectToServer(connectPort, serialize);
+  Future<StreamChannel> _open(Duration? timeout) {
+    return connectToServer(connectPort, serialize, timeout);
   }
 
   /// Connects to this [DriftIsolate] from another isolate.
@@ -113,9 +113,10 @@ class DriftIsolate {
   Future<DatabaseConnection> connect({
     bool isolateDebugLog = false,
     bool singleClientMode = false,
+    Duration? connectTimeout,
   }) async {
     final connection = await connectToRemoteAndInitialize(
-      _open(),
+      await _open(connectTimeout),
       debugLog: isolateDebugLog,
       serialize: serialize,
       singleClientMode: singleClientMode,
@@ -129,8 +130,8 @@ class DriftIsolate {
   /// created.
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
-  Future<void> shutdownAll() {
-    return shutdown(_open(), serialize: serialize);
+  Future<void> shutdownAll() async {
+    return await shutdown(await _open(null), serialize: serialize);
   }
 
   /// Creates a new [DriftIsolate] on a background thread.
@@ -175,10 +176,22 @@ class DriftIsolate {
   /// to call [DriftIsolate.inCurrent] will be killed.
   ///
   /// {@macro drift_isolate_serialize}
-  factory DriftIsolate.inCurrent(DatabaseOpener opener,
-      {bool killIsolateWhenDone = false, bool serialize = false}) {
-    final server = RunningDriftServer(Isolate.current, opener(),
-        killIsolateWhenDone: killIsolateWhenDone);
+  factory DriftIsolate.inCurrent(
+    DatabaseOpener opener, {
+    bool killIsolateWhenDone = false,
+    bool serialize = false,
+    bool shutdownAfterLastDisconnect = false,
+    ReceivePort? port,
+    void Function()? beforeShutdown,
+  }) {
+    final server = RunningDriftServer(
+      Isolate.current,
+      opener(),
+      killIsolateWhenDone: killIsolateWhenDone,
+      port: port,
+      beforeShutdown: beforeShutdown,
+      shutDownAfterLastDisconnect: shutdownAfterLastDisconnect,
+    );
     return DriftIsolate.fromConnectPort(
       server.portToOpenConnection,
       serialize: serialize,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:meta/meta.dart';
@@ -13,19 +14,42 @@ import '../remote.dart';
 const disconnectMessage = '_disconnect';
 
 @internal
-StreamChannel connectToServer(SendPort serverConnectPort, bool serialize) {
+Future<StreamChannel> connectToServer(
+  SendPort serverConnectPort,
+  bool serialize,
+  Duration? connectionTimeout,
+) async {
+  // The handshake starts with us sending a send port to the remote isolate.
+  // If the isolate accepts the connection, it sends us a send port back which
+  // is then used for the rest of the communication.
   final receive = ReceivePort('drift client receive');
   serverConnectPort.send([receive.sendPort, serialize]);
 
   final controller =
       StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
+  final completer = Completer<StreamChannel<Object?>>.sync();
+
+  final timer = connectionTimeout != null
+      ? Timer(connectionTimeout, () {
+          receive.close();
+          controller.local.sink.close();
+          completer.completeError(TimeoutException(
+              'No response from drift isolate received', connectionTimeout));
+        })
+      : null;
+
   receive.listen((message) {
     if (message is SendPort) {
+      // Connection accepted! Cancel timeout and return connection
+      timer?.cancel();
+
       controller.local.stream.listen(message.send, onDone: () {
         // Closed locally - notify the remote end about this.
         message.send(disconnectMessage);
         receive.close();
       });
+
+      completer.complete(controller.foreign);
     } else if (message == disconnectMessage) {
       // Server has closed the connection
       controller.local.sink.close();
@@ -34,7 +58,7 @@ StreamChannel connectToServer(SendPort serverConnectPort, bool serialize) {
     }
   });
 
-  return controller.foreign;
+  return completer.future;
 }
 
 @internal
@@ -42,10 +66,13 @@ class RunningDriftServer {
   final Isolate self;
   final bool killIsolateWhenDone;
   final bool onlyAcceptSingleConnection;
+  final bool shutDownAfterLastDisconnect;
 
   final DriftServer server;
-  final ReceivePort connectPort = ReceivePort('drift connect');
+  final ReceivePort connectPort;
+  final void Function()? beforeShutdown;
   int _counter = 0;
+  int _activeConnections = 0;
 
   SendPort get portToOpenConnection => connectPort.sendPort;
 
@@ -55,7 +82,11 @@ class RunningDriftServer {
     this.killIsolateWhenDone = true,
     bool closeConnectionAfterShutdown = true,
     this.onlyAcceptSingleConnection = false,
-  }) : server = DriftServer(
+    this.beforeShutdown,
+    this.shutDownAfterLastDisconnect = false,
+    ReceivePort? port,
+  })  : connectPort = port ?? ReceivePort('drift connect'),
+        server = DriftServer(
           connection,
           allowRemoteShutdown: true,
           closeConnectionAfterShutdown: closeConnectionAfterShutdown,
@@ -93,13 +124,22 @@ class RunningDriftServer {
           sendPort.send(disconnectMessage);
         });
 
-        server.serve(controller.foreign, serialize: serialize);
+        _activeConnections++;
+        server.serve(controller.foreign, serialize: serialize).whenComplete(() {
+          _activeConnections--;
+
+          if (_activeConnections == 0 && shutDownAfterLastDisconnect) {
+            server.shutdown();
+          }
+        });
       }
     });
 
     server.done.then((_) {
+      beforeShutdown?.call();
       subscription.cancel();
       connectPort.close();
+
       if (killIsolateWhenDone) self.kill();
     });
   }

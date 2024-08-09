@@ -114,7 +114,7 @@ abstract class DriftServer {
   /// might change with every drift version. For this reason, make sure that
   /// your server and clients are using the exact same version of the drift
   /// package to avoid conflicts.
-  void serve(StreamChannel<Object?> channel, {bool serialize = true});
+  Future<void> serve(StreamChannel<Object?> channel, {bool serialize = true});
 
   /// Shuts this server down.
   ///

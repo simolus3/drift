@@ -36,3 +36,30 @@ final class DriftWebOptions {
     this.onResult,
   });
 }
+
+/// Options used to open drift databases on native platforms (outside of the
+/// web).
+final class DriftNativeOptions {
+  /// Whether two isolates opening a drift database with the name should be
+  /// connected to a shared database instance.
+  ///
+  /// When using a shared instance, stream queries synchronize across the two
+  /// isolates. Also, drift then manages concurrent access to the database,
+  /// preventing "database is locked" errors due to concurrent transactions.
+  /// Note that this uses an `IsolateNameServer` to discover drift databases, so
+  /// this feature does not work across databases opened by independent Flutter
+  /// engines.
+  ///
+  /// A downside is a minor performance overhead caused by sending table updates
+  /// across isolates.
+  ///
+  /// This option is not enabled by default, but recommended if a drift database
+  /// may be used on multiple isolates.
+  final bool shareAcrossIsolates;
+
+  /// Create drift options effective when opening drift databases on native
+  /// platforms.
+  const DriftNativeOptions({
+    this.shareAcrossIsolates = false,
+  });
+}

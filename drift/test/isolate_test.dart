@@ -59,7 +59,7 @@ void main() {
     test('shutdownAll closes other connections', () async {
       final isolate = await spawnBackground(false);
 
-      final channel = connectToServer(isolate.connectPort, false);
+      final channel = await connectToServer(isolate.connectPort, false, null);
       final communication = DriftCommunication(channel, serialize: false);
 
       await isolate.shutdownAll();
@@ -267,6 +267,40 @@ void main() {
         ),
       );
     });
+  });
+
+  test('can use timeout when connecting', () async {
+    final deadEnd = ReceivePort();
+
+    await expectLater(
+      DriftIsolate.fromConnectPort(deadEnd.sendPort)
+          .connect(connectTimeout: Duration(milliseconds: 100)),
+      throwsA(isA<TimeoutException>()),
+    );
+
+    deadEnd.close();
+  });
+
+  test('server can shut down after clients disconnect', () async {
+    var didShutdown = Completer<void>();
+    final isolate = DriftIsolate.inCurrent(
+      () => NativeDatabase.memory(),
+      shutdownAfterLastDisconnect: true,
+      beforeShutdown: () => didShutdown.complete(),
+    );
+
+    final databases = [
+      for (var i = 0; i < 10; i++) TodoDb(await isolate.connect()),
+    ];
+    for (final database in databases) {
+      await database.customStatement('SELECT 1');
+    }
+
+    for (final database in databases) {
+      await database.close();
+    }
+
+    expect(didShutdown.future, completes);
   });
 }
 
