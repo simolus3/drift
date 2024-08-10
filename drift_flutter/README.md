@@ -71,6 +71,7 @@ On native platforms (Android, iOS, macOS, Linux and Windows), `driftDatabase` us
 `getApplicationDocumentsDirectory()` from `package:path_provider` as the folder to
 store databases.
 Inside that folder, a `$name.sqlite` file is used for the database.
+To use a custom path, the `DriftNativeOptions.databasePath` parameter can be used.
 
 On the web, [drift's web support](https://drift.simonbinder.eu/web/) is used to open
 the database.

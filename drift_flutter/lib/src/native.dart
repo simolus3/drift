@@ -26,6 +26,15 @@ QueryExecutor driftDatabase({
   DriftWebOptions? web,
   DriftNativeOptions? native,
 }) {
+  Future<File> databaseFile() async {
+    if (native?.databasePath case final lookupPath?) {
+      return File(await lookupPath());
+    } else {
+      final dbFolder = await getApplicationDocumentsDirectory();
+      return File(p.join(dbFolder.path, '$name.sqlite'));
+    }
+  }
+
   return DatabaseConnection.delayed(Future(() async {
     if (!hasConfiguredSqlite) {
       // Also work around limitations on old Android versions
@@ -57,9 +66,7 @@ QueryExecutor driftDatabase({
           }
         } else {
           // No port has been registered yet! Spawn an isolate that will try to
-          // register itself.
-          final dbFolder = await getApplicationDocumentsDirectory();
-          final file = File(p.join(dbFolder.path, '$name.sqlite'));
+          // register itself as the database server.
           final receiveFromPending = ReceivePort();
           final firstMessage = receiveFromPending.first;
           await Isolate.spawn(
@@ -68,7 +75,7 @@ QueryExecutor driftDatabase({
               name: name,
               options: native,
               sendResponses: receiveFromPending.sendPort,
-              path: file.path,
+              path: (await databaseFile()).path,
             ),
             onExit: receiveFromPending.sendPort,
           );
@@ -85,10 +92,7 @@ QueryExecutor driftDatabase({
       }
     }
 
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, '$name.sqlite'));
-
-    return NativeDatabase.createBackgroundConnection(file);
+    return NativeDatabase.createBackgroundConnection(await databaseFile());
   }));
 }
 
@@ -110,6 +114,7 @@ void _isolateEntrypoint(_EntrypointMessage message) {
         IsolateNameServer.removePortNameMapping(portName(message.name));
       },
       killIsolateWhenDone: true,
+      shutdownAfterLastDisconnect: true,
     );
 
     message.sendResponses.send(server.connectPort);

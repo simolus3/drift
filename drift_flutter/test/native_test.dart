@@ -52,6 +52,22 @@ void main() {
     await database.close();
   });
 
+  test('can use custom database path', () async {
+    final database = SimpleDatabase(driftDatabase(
+      name: 'database',
+      native: DriftNativeOptions(
+        databasePath: () async => d.path('my_dir/custom_file'),
+      ),
+    ));
+    await database.customSelect('SELECT 1').get();
+
+    expect(sqlite3.tempDirectory, d.sandbox);
+    await d.dir('my_dir', [
+      d.FileDescriptor.binaryMatcher('custom_file', anything),
+    ]).validate();
+    await database.close();
+  });
+
   group('shared between isolates', () {
     const options = DriftNativeOptions(shareAcrossIsolates: true);
 

@@ -57,9 +57,20 @@ final class DriftNativeOptions {
   /// may be used on multiple isolates.
   final bool shareAcrossIsolates;
 
+  /// An optional callback returning a custom database path to be used by drift.
+  ///
+  /// By default, drift uses the `getApplicationDocumentsDirectory()` function
+  /// from `package:path_provider` as a base directory and uses a file named
+  /// `$name.sqlite` to store the database.
+  ///
+  /// This function, which can be asynchronous for convenience, allows using
+  /// a custom database path in another directory.
+  final Future<String> Function()? databasePath;
+
   /// Create drift options effective when opening drift databases on native
   /// platforms.
   const DriftNativeOptions({
     this.shareAcrossIsolates = false,
+    this.databasePath,
   });
 }
