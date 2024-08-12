@@ -108,7 +108,7 @@ class WasmDatabaseOpener {
   Future<void> _probeDedicated() async {
     if (supportsWorkers) {
       final dedicatedWorker = _dedicatedWorker =
-          _DriftWorker.dedicated(web.Worker(driftWorkerUri.toString()));
+          _DriftWorker.dedicated(web.Worker(driftWorkerUri.toString().toJS));
       _createCompatibilityCheck().sendTo(dedicatedWorker.send);
 
       final status = await dedicatedWorker.workerMessages.nextNoError
@@ -134,7 +134,7 @@ class WasmDatabaseOpener {
   Future<void> _probeShared() async {
     if (supportsSharedWorkers) {
       final sharedWorker =
-          web.SharedWorker(driftWorkerUri.toString(), 'drift worker'.toJS);
+          web.SharedWorker(driftWorkerUri.toString().toJS, 'drift worker'.toJS);
       final port = sharedWorker.port;
       final shared = _sharedWorker = _DriftWorker.shared(sharedWorker, port);
 

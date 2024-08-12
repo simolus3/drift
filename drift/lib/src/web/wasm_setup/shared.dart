@@ -328,7 +328,7 @@ class DriftServerController {
     final options = WasmVfs.createOptions(
       root: pathForOpfs(databaseName),
     );
-    final worker = Worker(Uri.base.toString());
+    final worker = Worker(Uri.base.toString().toJS);
 
     StartFileSystemServer(options).sendToWorker(worker);
 

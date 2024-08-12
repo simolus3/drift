@@ -83,7 +83,7 @@ class SharedDriftWorker {
         version: ProtocolVersion.current,
       );
     } else {
-      final worker = _dedicatedWorker ??= Worker(Uri.base.toString());
+      final worker = _dedicatedWorker ??= Worker(Uri.base.toString().toJS);
 
       // Ask the worker about the storage implementations it can support.
       RequestCompatibilityCheck(databaseName).sendToWorker(worker);
