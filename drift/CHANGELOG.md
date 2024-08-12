@@ -1,3 +1,7 @@
+## 2.19.2
+
+- Support version `1.x` of `package:web`.
+
 ## 2.19.1
 
 - Fix `exclusively` breaking the database connection on the web. Please note
