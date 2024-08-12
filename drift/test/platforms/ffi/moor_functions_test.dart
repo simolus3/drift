@@ -1,4 +1,6 @@
 @TestOn('vm')
+library;
+
 import 'dart:math';
 
 import 'package:drift/src/sqlite3/native_functions.dart';

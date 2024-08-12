@@ -1,4 +1,6 @@
 @TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:analyzer/dart/ast/ast.dart';

@@ -1,4 +1,6 @@
 @TestOn('browser')
+library;
+
 import 'package:drift/wasm.dart';
 import 'package:drift_testcases/tests.dart';
 import 'package:sqlite3/wasm.dart';

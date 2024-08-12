@@ -1,4 +1,6 @@
 @TestOn('vm')
+library;
+
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/internal/versioned_schema.dart';
 import 'package:drift/native.dart';

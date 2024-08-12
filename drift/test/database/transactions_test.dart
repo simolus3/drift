@@ -1,4 +1,6 @@
 @TestOn('!browser')
+library;
+
 import 'dart:async';
 
 import 'package:drift/drift.dart';

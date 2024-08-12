@@ -1,4 +1,6 @@
 @Tags(['integration'])
+library;
+
 import 'package:test/test.dart';
 
 import '../generated/custom_tables.dart';
