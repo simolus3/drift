@@ -1,4 +1,6 @@
 @Tags(['analyzer'])
+library;
+
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';

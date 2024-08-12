@@ -1,4 +1,6 @@
 @Tags(['analyzer'])
+library;
+
 import 'package:build_test/build_test.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';

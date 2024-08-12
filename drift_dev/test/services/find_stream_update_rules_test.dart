@@ -1,4 +1,6 @@
 @Tags(['analyzer'])
+library;
+
 import 'package:drift/drift.dart';
 import 'package:drift_dev/src/services/find_stream_update_rules.dart';
 import 'package:test/test.dart';

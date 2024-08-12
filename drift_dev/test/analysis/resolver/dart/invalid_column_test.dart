@@ -1,4 +1,5 @@
 @Tags(['analyzer'])
+library;
 
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';

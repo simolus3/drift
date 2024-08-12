@@ -1,4 +1,6 @@
 @Tags(['analyzer'])
+library;
+
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/analysis/backend.dart';
 import 'package:drift_dev/src/backends/build/backend.dart';

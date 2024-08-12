@@ -1,4 +1,5 @@
 @Tags(['analyzer'])
+library;
 
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';

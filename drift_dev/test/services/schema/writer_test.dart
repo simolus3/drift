@@ -1,4 +1,6 @@
 @Tags(['analyzer'])
+library;
+
 import 'dart:convert';
 
 import 'package:drift_dev/src/analysis/options.dart';
