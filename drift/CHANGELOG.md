@@ -6,6 +6,10 @@
 - Add `TableIndex.sql`, allowing database indexes to be defined in SQL without
   using drift files.
 
+## 2.19.2
+
+- Support version `1.x` of `package:web`.
+
 ## 2.19.1+1
 
 - Fix `exclusively` breaking the database connection on the web. Please note
