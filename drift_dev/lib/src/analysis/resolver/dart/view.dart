@@ -31,6 +31,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           dataClassNameForClassName(discovered.dartElement.name),
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
+      interfacesForRowClass: dataClassInfo.interfaces,
       entityInfoName: '\$${discovered.dartElement.name}View',
       source: DartViewSource(structure.dartQuerySource, structure.primarySource,
           staticReferences, structure.staticSource),

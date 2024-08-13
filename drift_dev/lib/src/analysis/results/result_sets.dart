@@ -33,6 +33,9 @@ abstract class DriftElementWithResultSet extends DriftSchemaElement {
   /// Class that added to data class as implementation
   CustomParentClass? get customParentClass;
 
+  /// The interfaces to implement when generating a row class.
+  List<AnnotatedDartCode> get interfacesForRowClass;
+
   /// Whether this table has an existing row class, meaning that drift will not
   /// generate one on its own.
   bool get hasExistingRowClass => existingRowClass != null;

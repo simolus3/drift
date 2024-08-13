@@ -402,6 +402,41 @@ class Database extends _$Database {}
     },
     tags: 'analyzer',
   );
+
+  test('generates implements clause', () async {
+    final results = await emulateDriftBuild(
+      inputs: const {
+        'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+abstract interface class HasCreationTimes {
+   DateTime get createdAt;
+ }
+
+@DataClassName.custom(implementing: [HasCreationTimes])
+class Accounts extends Table {
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+@DriftDatabase(
+  tables: [Accounts],
+)
+class Database extends _$Database {}
+'''
+      },
+    );
+
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(
+            contains('implements Insertable<Account>, HasCreationTimes'))
+      },
+      results.dartOutputs,
+      results.writer,
+    );
+  });
 }
 
 class _GeneratesConstDataClasses extends Matcher {

@@ -54,6 +54,10 @@ class ElementSerializer {
         ],
         'custom_parent_class':
             _serializeCustomParentClass(element.customParentClass),
+        'interfaces_for_row_class': [
+          for (final implements in element.interfacesForRowClass)
+            implements.toJson(),
+        ],
         'fixed_entity_info_name': element.fixedEntityInfoName,
         'base_dart_name': element.baseDartName,
         'row_class_name': element.nameOfRowClass,
@@ -144,6 +148,10 @@ class ElementSerializer {
         'existing_data_class': element.existingRowClass != null
             ? _serializeExistingRowClass(element.existingRowClass!)
             : null,
+        'interfaces_for_row_class': [
+          for (final implements in element.interfacesForRowClass)
+            implements.toJson(),
+        ],
         'custom_parent_class':
             _serializeCustomParentClass(element.customParentClass),
         'name_of_row_class': element.nameOfRowClass,
@@ -538,6 +546,10 @@ class ElementDeserializer {
           ],
           customParentClass:
               _readCustomParentClass(json['custom_parent_class'] as Map?),
+          interfacesForRowClass: [
+            for (final entry in json['interfaces_for_row_class'] as List)
+              AnnotatedDartCode.fromJson(entry as Map)
+          ],
           fixedEntityInfoName: json['fixed_entity_info_name'] as String?,
           baseDartName: json['base_dart_name'] as String,
           nameOfRowClass: json['row_class_name'] as String,
@@ -681,6 +693,10 @@ class ElementDeserializer {
           entityInfoName: json['entity_info_name'] as String,
           customParentClass:
               _readCustomParentClass(json['custom_parent_class'] as Map?),
+          interfacesForRowClass: [
+            for (final entry in json['interfaces_for_row_class'] as List)
+              AnnotatedDartCode.fromJson(entry as Map)
+          ],
           nameOfRowClass: json['name_of_row_class'] as String,
           nameOfCompanionClass: json['name_of_companion_class'] as String,
           existingRowClass: json['existing_data_class'] != null

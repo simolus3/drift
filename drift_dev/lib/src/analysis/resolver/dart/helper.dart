@@ -221,12 +221,14 @@ class DataClassInformation {
   final String? companionName;
   final CustomParentClass? extending;
   final ExistingRowClass? existingClass;
+  final List<AnnotatedDartCode> interfaces;
 
   DataClassInformation(
     this.enforcedName,
     this.companionName,
     this.extending,
     this.existingClass,
+    this.interfaces,
   );
 
   static Future<DataClassInformation> resolve(
@@ -260,10 +262,20 @@ class DataClassInformation {
         dataClassName?.getField('companionName')?.toStringValue();
     CustomParentClass? customParentClass;
     ExistingRowClass? existingClass;
+    List<AnnotatedDartCode> implementedInterfaces = const [];
 
     if (dataClassName != null) {
       customParentClass =
           parseCustomParentClass(name, dataClassName, element, resolver);
+
+      final interfaces = dataClassName
+          .getField('implementing')
+          ?.toListValue()
+          ?.map((field) => AnnotatedDartCode.type(field.toTypeValue()!))
+          .toList();
+      if (interfaces != null) {
+        implementedInterfaces = interfaces;
+      }
     }
 
     if (useRowClass != null) {
@@ -303,6 +315,7 @@ class DataClassInformation {
       companionName,
       customParentClass,
       existingClass,
+      implementedInterfaces,
     );
   }
 }

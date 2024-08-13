@@ -17,6 +17,9 @@ class DriftView extends DriftElementWithResultSet {
   final CustomParentClass? customParentClass;
 
   @override
+  final List<AnnotatedDartCode> interfacesForRowClass;
+
+  @override
   String entityInfoName;
 
   @override
@@ -42,6 +45,7 @@ class DriftView extends DriftElementWithResultSet {
     required this.nameOfRowClass,
     required this.references,
     this.nameOfCompanionClass,
+    this.interfacesForRowClass = const [],
   });
 
   @override

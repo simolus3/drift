@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+import 'dart.dart';
 import 'element.dart';
 
 import 'column.dart';
@@ -22,6 +23,9 @@ class DriftTable extends DriftElementWithResultSet {
 
   @override
   final CustomParentClass? customParentClass;
+
+  @override
+  final List<AnnotatedDartCode> interfacesForRowClass;
 
   /// The fixed [entityInfoName] to use, overriding the default.
   final String? fixedEntityInfoName;
@@ -84,6 +88,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.writeDefaultConstraints = true,
     this.overrideTableConstraints = const [],
     this.attachedIndices = const [],
+    this.interfacesForRowClass = const [],
   }) {
     _rowIdColumn = DriftColumn(
       sqlType: ColumnType.drift(DriftSqlType.int),

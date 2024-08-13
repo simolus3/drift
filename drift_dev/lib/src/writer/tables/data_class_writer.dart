@@ -51,19 +51,32 @@ class DataClassWriter {
         : _emitter.drift('DataClass');
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
+    var hasImplementsClause = false;
     if (isInsertable) {
       if (scope.options.writeToColumnsMixins) {
-        _buffer.writeln('with ${table.toColumnsMixin} {');
+        _buffer.writeln('with ${table.toColumnsMixin} ');
       } else {
         // The data class is only an insertable if we can actually insert rows
         // into the target entity.
         final type = _emitter.dartCode(_emitter.writer.rowType(table));
 
-        _buffer.writeln('implements ${_emitter.drift('Insertable')}<$type> {');
+        hasImplementsClause = true;
+        _buffer.writeln('implements ${_emitter.drift('Insertable')}<$type> ');
       }
-    } else {
-      _buffer.writeln('{');
     }
+
+    if (table.interfacesForRowClass.isNotEmpty) {
+      if (!hasImplementsClause) {
+        _buffer.write(' implements ');
+      } else {
+        _buffer.write(', ');
+      }
+
+      _buffer
+          .write(table.interfacesForRowClass.map(_emitter.dartCode).join(', '));
+    }
+
+    _buffer.writeln('{'); // start of clas
 
     // write individual fields
     for (final column in columns) {

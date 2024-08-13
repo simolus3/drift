@@ -364,13 +364,43 @@ class DataClassName {
   /// ```
   final Type? extending;
 
-  /// Customize the data class name for a given table.
-  /// {@macro drift_custom_data_class}
-  const DataClassName(this.name, {this.extending, this.companion});
+  /// A list of classes that the drift-generated row class should implement.
+  ///
+  /// Listing classes here can be useful when you have several tables with the
+  /// same columns, as it allows extracting them into common interfaces shared
+  /// between multiple row classes:
+  ///
+  /// ```dart
+  /// abstract interface class HasCreationTimes {
+  ///   DateTime get createdAt;
+  /// }
+  ///
+  /// @DataClassName.custom(implementing: [HasCreationTimes])
+  /// class Accounts extends Table {
+  ///   // ...
+  ///   DateTimeColumn get createdAt => dateTime()
+  ///     .withDefault(currentDateAndTime)();
+  /// }
+  /// ```
+  final List<Type>? implementing;
 
   /// Customize the data class name for a given table.
   /// {@macro drift_custom_data_class}
-  const DataClassName.custom({this.name, this.extending, this.companion});
+  const DataClassName(
+    this.name, {
+    this.extending,
+    this.implementing,
+    this.companion,
+  });
+
+  /// Customize the data class name for a given table.
+  /// {@macro drift_custom_data_class}
+  const DataClassName.custom({
+    this.name,
+    this.extending,
+    this.implementing,
+    this.companion,
+  });
 }
 
 /// An annotation specifying an existing class to be used as a data class.

@@ -5,6 +5,8 @@
   performance in some specific workloads.
 - Add `TableIndex.sql`, allowing database indexes to be defined in SQL without
   using drift files.
+- Add `DataClassName.implementing`, which can be used to make drift-generated
+  row classes implement existing interfaces.
 
 ## 2.19.2
 
