@@ -7,6 +7,8 @@
   using drift files.
 - Add `DataClassName.implementing`, which can be used to make drift-generated
   row classes implement existing interfaces.
+- Mark legacy `package:drift/web.dart` as deprecated. Users should migrate to
+  `package:drift/wasm.dart`.
 
 ## 2.19.2
 

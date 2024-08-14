@@ -2,10 +2,12 @@
 /// You manually need to include that library into your website to use the
 /// web version of drift. See [the documentation](https://drift.simonbinder.eu/web)
 /// for a more detailed instruction.
-@experimental
+@Deprecated(
+  'This variant of web support has downsides compared to '
+  '`package:drift/wasm.dart` and is in a deprecated bugfix-only mode. '
+  'Please consider migrating to the new web APIS: https://drift.simonbinder.eu/web',
+)
 library drift.web;
-
-import 'package:meta/meta.dart';
 
 export 'src/web/sql_js.dart';
 export 'src/web/storage.dart' hide CustomSchemaVersionSave;

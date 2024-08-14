@@ -368,10 +368,12 @@ In that snippet, `old_db` is the name previously passed to the `WebDatabase`.
 ## Legacy web support
 
 Drift first gained its initial web support in 2019 by wrapping the sql.js JavaScript library.
-This implementation, which is still supported today, relies on keeping an in-memory database that is periodically saved to local storage.
+While this implementation is still supported, it is in a deprecated bugfix-only mode.
+Unlike `package:drift/wasm.dart`, sql.js has no proper file system implementation and relies on periodically creating
+a database dump saved to local storage.
 In the last years, development in web browsers and the Dart ecosystem enabled more performant approaches that are
 unfortunately impossible to implement with the original drift web API.
-This is the reason the original API is still considered experimental - while it will continue to be supported, it is now obvious that the new approach by `WasmDatabase.open` is sound and more efficient
+This is the reason the original API is now considered deprecated - while it will continue to be supported, it is now obvious that the new approach by `WasmDatabase.open` is sound and more efficient
 than these implementations.
 The original APIs are still documented on this page for your reference.
 
@@ -413,7 +415,7 @@ the regular implementation.
 
 The following example is meant to be used with a regular Dart web app, compiled using
 [build_web_compilers](https://pub.dev/packages/build_web_compilers).
-A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example).
+A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/flutter_web_worker_example).
 
 To write a web worker that will serve requests for drift, create a file called `worker.dart` in
 the `web/` folder of your app. It could have the following content:
@@ -433,7 +435,7 @@ You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on
 [isolates]({{ "../isolates.md" | pageUrl }}).
 
-A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/web_worker_example)
+A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/web_worker_example)
 in the drift repository.
 
 #### Flutter
@@ -442,7 +444,7 @@ Flutter web doesn't compile `.dart` files in web folder and won't use `.js` file
 `build_web_compilers` either. Instead, we'll use Dart's build system to manually compile the worker to a
 JavaScript file before using Flutter-specific tooling.
 
-Example is available under [examples/flutter_web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example)
+Example is available under [examples/flutter_web_worker_example](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/flutter_web_worker_example)
 in the drift repository.
 
 First, add [build_web_compilers](https://pub.dev/packages/build_web_compilers) to the project:

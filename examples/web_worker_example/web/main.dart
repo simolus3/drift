@@ -1,11 +1,16 @@
 import 'dart:html';
 
-import 'package:drift/web/worker.dart';
+import 'package:drift/wasm.dart';
 import 'package:web_worker_example/database.dart';
 
 void main() async {
-  final connection = await connectToDriftWorker('worker.dart.js');
-  final db = MyDatabase(connection);
+  final connection = await WasmDatabase.open(
+    databaseName: 'worker',
+    sqlite3Uri: Uri.parse('/sqlite3.wasm'),
+    driftWorkerUri: Uri.parse('/worker.dart.js'),
+  );
+
+  final db = MyDatabase(connection.resolvedExecutor);
 
   final output = document.getElementById('output')!;
   final input = document.getElementById('field')! as InputElement;

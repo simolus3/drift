@@ -2,6 +2,7 @@
 import 'dart:html';
 
 import 'package:drift/drift.dart';
+// ignore: deprecated_member_use
 import 'package:drift/web.dart';
 import 'package:drift_testcases/database/database.dart';
 import 'package:drift_testcases/suite/suite.dart';

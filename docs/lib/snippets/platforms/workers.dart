@@ -1,8 +1,12 @@
 // #docregion worker
+// Note: This snippet describes a legacy API! Please consider migrating to
+// `package:drift/wasm.dart`, which has builtin support for web workers!
 import 'dart:html';
 
 import 'package:drift/drift.dart';
+// ignore: deprecated_member_use
 import 'package:drift/web.dart';
+// ignore: deprecated_member_use
 import 'package:drift/web/worker.dart';
 
 void main() {

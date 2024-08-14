@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
+// ignore: deprecated_member_use
 import 'package:drift/web.dart';
 import 'package:drift_docs/src/external_apis.dart';
 import 'package:sqlite3/wasm.dart';

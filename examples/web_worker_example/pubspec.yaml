@@ -1,5 +1,6 @@
 name: web_worker_example
-description: An absolute bare-bones web app.
+description: Simple web app showing how to compile a custom drift worker with build_web_compilers.
+publish_to: none
 # version: 1.0.0
 #homepage: https://www.example.com
 
@@ -7,7 +8,7 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
-  js: ^0.6.4
+  js: ^0.7.1
   stream_channel: ^2.1.0
   drift:
 

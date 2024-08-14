@@ -4,6 +4,11 @@
 /// For more details on how to use this library, see [the documentation].
 ///
 /// [the documentation]: https://drift.simonbinder.eu/web/#using-web-workers
+@Deprecated(
+  'This variant of web support has downsides compared to '
+  '`package:drift/wasm.dart` and is in a deprecated bugfix-only mode. '
+  'Please consider migrating to the new web APIS: https://drift.simonbinder.eu/web',
+)
 library drift.web.workers;
 
 import 'dart:async';

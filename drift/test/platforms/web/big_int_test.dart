@@ -3,6 +3,7 @@
 library;
 
 import 'package:drift/drift.dart';
+// ignore: deprecated_member_use_from_same_package
 import 'package:drift/web.dart';
 import 'package:test/test.dart';
 
