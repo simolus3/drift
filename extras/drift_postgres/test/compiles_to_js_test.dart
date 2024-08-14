@@ -1,5 +1,4 @@
-@TestOn('node')
-@Skip('https://github.com/dart-lang/crypto/issues/180')
+@TestOn('browser')
 library;
 
 import 'package:test/test.dart';

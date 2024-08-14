@@ -3,4 +3,4 @@ concurrency: 1
 
 platforms:
   - vm
-  - node
+  - chrome # We only need this for a single test ensuring we can compile to js.
