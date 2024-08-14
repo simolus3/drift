@@ -197,7 +197,9 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
         !_isTableInfo.isAssignableFrom(element) &&
         // Temporary workaround until https://github.com/dart-lang/source_gen/pull/628
         // gets merged.
-        !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo');
+        !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo') &&
+        // ignore private classes, as anything using them will fail to compile
+        !element.displayName.startsWith('_');
   }
 
   bool _isDslView(ClassElement element) {
