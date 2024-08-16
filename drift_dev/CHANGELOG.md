@@ -1,4 +1,4 @@
-## 2.20.0-dev
+## 2.20.0
 
 - Add `drift dev schema export` command, which exports the DDL statements making
   up a database schema based on its definition in source.
