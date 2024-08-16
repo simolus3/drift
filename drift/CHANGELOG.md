@@ -1,5 +1,6 @@
-## 2.20.0-dev
+## 2.20.0
 
+- Improve manager API to be able to resolve references when running queries.
 - Add `readPool` parameter to `NativeDatabase`. It will spawn an additional
   pool of isolates used to serve multiple reads in parallel, which can improve
   performance in some specific workloads.
