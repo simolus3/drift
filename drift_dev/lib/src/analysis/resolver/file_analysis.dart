@@ -79,6 +79,8 @@ class FileAnalyzer {
                   // reside in the same library as the DriftDatabase.
                   // Failure to exclude these, can generate dart code which references
                   // classes that cannot be legally accessed - and will not compile.
+                  // Private classes in residing in the same library are allowed, as
+                  // per dart language accessibility rules.
                   if ((e is DriftTable) && e.baseDartName.startsWith('_')) {
                     return e.id.libraryUri == element.id.libraryUri;
                   }
