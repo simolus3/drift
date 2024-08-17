@@ -75,6 +75,10 @@ class FileAnalyzer {
               .transitiveClosureUnderReferences()
               .where((e){
                 if (element is DriftDatabase) {
+                  // Exclude any private tables (name prefixed with "_") that do not
+                  // reside in the same library as the DriftDatabase.
+                  // Failure to exclude these, can generate dart code which references
+                  // classes that cannot be legally accessed - and will not compile.
                   if ((e is DriftTable) && e.baseDartName.startsWith('_')) {
                     return e.id.libraryUri == element.id.libraryUri;
                   }
