@@ -72,7 +72,6 @@ class FileAnalyzer {
               })
               .whereType<DriftElement>()
               .followedBy(availableByDefault)
-              .transitiveClosureUnderReferences()
               .where((e){
                 if (element is DriftDatabase) {
                   // Exclude any private tables (name prefixed with "_") that do not
@@ -87,6 +86,7 @@ class FileAnalyzer {
                 }
                 return true;
               })
+              .transitiveClosureUnderReferences()
               .sortTopologicallyOrElse(driver.backend.log.severe);
 
           // We will generate code for all available elements - even those only
