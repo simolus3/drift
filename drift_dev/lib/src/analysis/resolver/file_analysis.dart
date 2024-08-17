@@ -73,6 +73,14 @@ class FileAnalyzer {
               .whereType<DriftElement>()
               .followedBy(availableByDefault)
               .transitiveClosureUnderReferences()
+              .where((e){
+                if (element is DriftDatabase) {
+                  if ((e is DriftTable) && e.baseDartName.startsWith('_')) {
+                    return e.id.libraryUri == element.id.libraryUri;
+                  }
+                }
+                return true;
+              })
               .sortTopologicallyOrElse(driver.backend.log.severe);
 
           // We will generate code for all available elements - even those only

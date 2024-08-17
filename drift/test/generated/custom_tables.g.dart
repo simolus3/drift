@@ -1708,6 +1708,226 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   Set<String> get readTables => const {'config'};
 }
 
+class $MyPublicTableTable extends MyPublicTable
+    with TableInfo<$MyPublicTableTable, MyPublicTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MyPublicTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _nameFromPrivateTableMeta =
+      const VerificationMeta('nameFromPrivateTable');
+  @override
+  late final GeneratedColumn<String> nameFromPrivateTable =
+      GeneratedColumn<String>('name_from_private_table', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameFromPublicTableMeta =
+      const VerificationMeta('nameFromPublicTable');
+  @override
+  late final GeneratedColumn<String> nameFromPublicTable =
+      GeneratedColumn<String>('name_from_public_table', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [nameFromPrivateTable, nameFromPublicTable];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'my_public_table';
+  @override
+  VerificationContext validateIntegrity(Insertable<MyPublicTableData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('name_from_private_table')) {
+      context.handle(
+          _nameFromPrivateTableMeta,
+          nameFromPrivateTable.isAcceptableOrUnknown(
+              data['name_from_private_table']!, _nameFromPrivateTableMeta));
+    } else if (isInserting) {
+      context.missing(_nameFromPrivateTableMeta);
+    }
+    if (data.containsKey('name_from_public_table')) {
+      context.handle(
+          _nameFromPublicTableMeta,
+          nameFromPublicTable.isAcceptableOrUnknown(
+              data['name_from_public_table']!, _nameFromPublicTableMeta));
+    } else if (isInserting) {
+      context.missing(_nameFromPublicTableMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  MyPublicTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MyPublicTableData(
+      nameFromPrivateTable: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}name_from_private_table'])!,
+      nameFromPublicTable: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}name_from_public_table'])!,
+    );
+  }
+
+  @override
+  $MyPublicTableTable createAlias(String alias) {
+    return $MyPublicTableTable(attachedDatabase, alias);
+  }
+}
+
+class MyPublicTableData extends DataClass
+    implements Insertable<MyPublicTableData> {
+  final String nameFromPrivateTable;
+  final String nameFromPublicTable;
+  const MyPublicTableData(
+      {required this.nameFromPrivateTable, required this.nameFromPublicTable});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['name_from_private_table'] = Variable<String>(nameFromPrivateTable);
+    map['name_from_public_table'] = Variable<String>(nameFromPublicTable);
+    return map;
+  }
+
+  MyPublicTableCompanion toCompanion(bool nullToAbsent) {
+    return MyPublicTableCompanion(
+      nameFromPrivateTable: Value(nameFromPrivateTable),
+      nameFromPublicTable: Value(nameFromPublicTable),
+    );
+  }
+
+  factory MyPublicTableData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MyPublicTableData(
+      nameFromPrivateTable:
+          serializer.fromJson<String>(json['nameFromPrivateTable']),
+      nameFromPublicTable:
+          serializer.fromJson<String>(json['nameFromPublicTable']),
+    );
+  }
+  factory MyPublicTableData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      MyPublicTableData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'nameFromPrivateTable': serializer.toJson<String>(nameFromPrivateTable),
+      'nameFromPublicTable': serializer.toJson<String>(nameFromPublicTable),
+    };
+  }
+
+  MyPublicTableData copyWith(
+          {String? nameFromPrivateTable, String? nameFromPublicTable}) =>
+      MyPublicTableData(
+        nameFromPrivateTable: nameFromPrivateTable ?? this.nameFromPrivateTable,
+        nameFromPublicTable: nameFromPublicTable ?? this.nameFromPublicTable,
+      );
+  MyPublicTableData copyWithCompanion(MyPublicTableCompanion data) {
+    return MyPublicTableData(
+      nameFromPrivateTable: data.nameFromPrivateTable.present
+          ? data.nameFromPrivateTable.value
+          : this.nameFromPrivateTable,
+      nameFromPublicTable: data.nameFromPublicTable.present
+          ? data.nameFromPublicTable.value
+          : this.nameFromPublicTable,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MyPublicTableData(')
+          ..write('nameFromPrivateTable: $nameFromPrivateTable, ')
+          ..write('nameFromPublicTable: $nameFromPublicTable')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(nameFromPrivateTable, nameFromPublicTable);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MyPublicTableData &&
+          other.nameFromPrivateTable == this.nameFromPrivateTable &&
+          other.nameFromPublicTable == this.nameFromPublicTable);
+}
+
+class MyPublicTableCompanion extends UpdateCompanion<MyPublicTableData> {
+  final Value<String> nameFromPrivateTable;
+  final Value<String> nameFromPublicTable;
+  final Value<int> rowid;
+  const MyPublicTableCompanion({
+    this.nameFromPrivateTable = const Value.absent(),
+    this.nameFromPublicTable = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MyPublicTableCompanion.insert({
+    required String nameFromPrivateTable,
+    required String nameFromPublicTable,
+    this.rowid = const Value.absent(),
+  })  : nameFromPrivateTable = Value(nameFromPrivateTable),
+        nameFromPublicTable = Value(nameFromPublicTable);
+  static Insertable<MyPublicTableData> custom({
+    Expression<String>? nameFromPrivateTable,
+    Expression<String>? nameFromPublicTable,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (nameFromPrivateTable != null)
+        'name_from_private_table': nameFromPrivateTable,
+      if (nameFromPublicTable != null)
+        'name_from_public_table': nameFromPublicTable,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MyPublicTableCompanion copyWith(
+      {Value<String>? nameFromPrivateTable,
+      Value<String>? nameFromPublicTable,
+      Value<int>? rowid}) {
+    return MyPublicTableCompanion(
+      nameFromPrivateTable: nameFromPrivateTable ?? this.nameFromPrivateTable,
+      nameFromPublicTable: nameFromPublicTable ?? this.nameFromPublicTable,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (nameFromPrivateTable.present) {
+      map['name_from_private_table'] =
+          Variable<String>(nameFromPrivateTable.value);
+    }
+    if (nameFromPublicTable.present) {
+      map['name_from_public_table'] =
+          Variable<String>(nameFromPublicTable.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MyPublicTableCompanion(')
+          ..write('nameFromPrivateTable: $nameFromPrivateTable, ')
+          ..write('nameFromPublicTable: $nameFromPublicTable, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(e);
   $CustomTablesDbManager get managers => $CustomTablesDbManager(this);
@@ -1724,6 +1944,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
   late final MyView myView = MyView(this);
+  late final $MyPublicTableTable myPublicTable = $MyPublicTableTable(this);
   Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
@@ -2005,7 +2226,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         myTrigger,
         myView,
         OnCreateQuery(
-            'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')')
+            'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')'),
+        myPublicTable
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
@@ -2765,6 +2987,111 @@ typedef $WeirdTableProcessedTableManager = ProcessedTableManager<
     (WeirdData, BaseReferences<_$CustomTablesDb, WeirdTable, WeirdData>),
     WeirdData,
     PrefetchHooks Function()>;
+typedef $$MyPublicTableTableCreateCompanionBuilder = MyPublicTableCompanion
+    Function({
+  required String nameFromPrivateTable,
+  required String nameFromPublicTable,
+  Value<int> rowid,
+});
+typedef $$MyPublicTableTableUpdateCompanionBuilder = MyPublicTableCompanion
+    Function({
+  Value<String> nameFromPrivateTable,
+  Value<String> nameFromPublicTable,
+  Value<int> rowid,
+});
+
+class $$MyPublicTableTableFilterComposer
+    extends FilterComposer<_$CustomTablesDb, $MyPublicTableTable> {
+  $$MyPublicTableTableFilterComposer(super.$state);
+  ColumnFilters<String> get nameFromPrivateTable => $state.composableBuilder(
+      column: $state.table.nameFromPrivateTable,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get nameFromPublicTable => $state.composableBuilder(
+      column: $state.table.nameFromPublicTable,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$MyPublicTableTableOrderingComposer
+    extends OrderingComposer<_$CustomTablesDb, $MyPublicTableTable> {
+  $$MyPublicTableTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get nameFromPrivateTable => $state.composableBuilder(
+      column: $state.table.nameFromPrivateTable,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get nameFromPublicTable => $state.composableBuilder(
+      column: $state.table.nameFromPublicTable,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $$MyPublicTableTableTableManager extends RootTableManager<
+    _$CustomTablesDb,
+    $MyPublicTableTable,
+    MyPublicTableData,
+    $$MyPublicTableTableFilterComposer,
+    $$MyPublicTableTableOrderingComposer,
+    $$MyPublicTableTableCreateCompanionBuilder,
+    $$MyPublicTableTableUpdateCompanionBuilder,
+    (
+      MyPublicTableData,
+      BaseReferences<_$CustomTablesDb, $MyPublicTableTable, MyPublicTableData>
+    ),
+    MyPublicTableData,
+    PrefetchHooks Function()> {
+  $$MyPublicTableTableTableManager(
+      _$CustomTablesDb db, $MyPublicTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$MyPublicTableTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$MyPublicTableTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<String> nameFromPrivateTable = const Value.absent(),
+            Value<String> nameFromPublicTable = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              MyPublicTableCompanion(
+            nameFromPrivateTable: nameFromPrivateTable,
+            nameFromPublicTable: nameFromPublicTable,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String nameFromPrivateTable,
+            required String nameFromPublicTable,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              MyPublicTableCompanion.insert(
+            nameFromPrivateTable: nameFromPrivateTable,
+            nameFromPublicTable: nameFromPublicTable,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$MyPublicTableTableProcessedTableManager = ProcessedTableManager<
+    _$CustomTablesDb,
+    $MyPublicTableTable,
+    MyPublicTableData,
+    $$MyPublicTableTableFilterComposer,
+    $$MyPublicTableTableOrderingComposer,
+    $$MyPublicTableTableCreateCompanionBuilder,
+    $$MyPublicTableTableUpdateCompanionBuilder,
+    (
+      MyPublicTableData,
+      BaseReferences<_$CustomTablesDb, $MyPublicTableTable, MyPublicTableData>
+    ),
+    MyPublicTableData,
+    PrefetchHooks Function()>;
 
 class $CustomTablesDbManager {
   final _$CustomTablesDb _db;
@@ -2780,6 +3107,8 @@ class $CustomTablesDbManager {
   $EmailTableManager get email => $EmailTableManager(_db, _db.email);
   $WeirdTableTableManager get weirdTable =>
       $WeirdTableTableManager(_db, _db.weirdTable);
+  $$MyPublicTableTableTableManager get myPublicTable =>
+      $$MyPublicTableTableTableManager(_db, _db.myPublicTable);
 }
 
 typedef ReadMultiple$clause = OrderBy Function(ConfigTable config);

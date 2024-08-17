@@ -1,5 +1,6 @@
 import 'data_classes.dart';
 import 'converter.dart';
+import 'derived_private_table.dart';
 
 CREATE TABLE no_ids (
     payload BLOB NOT NULL PRIMARY KEY
