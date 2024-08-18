@@ -28,7 +28,7 @@ void main() {
 
     products = await _productData.mapAsyncAndAwait(
       (p0) => db.managers.product.createReturning(
-          (o) => o(name: p0.name, department: p0.department, id: Value(p0.id))),
+          (o) => o(name: p0.name, department: p0.department, sku: p0.id)),
     );
 
     listings = await _listingsData.mapAsyncAndAwait(
@@ -628,45 +628,49 @@ const _departmentData = [
 ];
 
 final _productData = [
-  (name: Value("TV"), department: Value(_departmentData[0].id), id: 1),
-  (name: Value("Cell Phone"), department: Value(_departmentData[0].id), id: 2),
-  (name: Value("Charger"), department: Value(_departmentData[0].id), id: 3),
-  (name: Value("Cereal"), department: Value(_departmentData[1].id), id: 4),
-  (name: Value("Meat"), department: Value(_departmentData[1].id), id: 5),
-  (name: Value("Shirt"), department: Value(_departmentData[2].id), id: 6),
-  (name: Value("Pants"), department: Value(_departmentData[2].id), id: 7),
-  (name: Value("Socks"), department: Value(_departmentData[2].id), id: 8),
-  (name: Value("Cap"), department: Value(_departmentData[2].id), id: 9),
+  (name: Value("TV"), department: Value(_departmentData[0].id), id: "1"),
+  (
+    name: Value("Cell Phone"),
+    department: Value(_departmentData[0].id),
+    id: "2"
+  ),
+  (name: Value("Charger"), department: Value(_departmentData[0].id), id: "3"),
+  (name: Value("Cereal"), department: Value(_departmentData[1].id), id: "4"),
+  (name: Value("Meat"), department: Value(_departmentData[1].id), id: "5"),
+  (name: Value("Shirt"), department: Value(_departmentData[2].id), id: "6"),
+  (name: Value("Pants"), department: Value(_departmentData[2].id), id: "7"),
+  (name: Value("Socks"), department: Value(_departmentData[2].id), id: "8"),
+  (name: Value("Cap"), department: Value(_departmentData[2].id), id: "9"),
 ];
 final _listingsData = [
   // Walmart - Electronics
-  (product: 1, store: 1, price: 100.0),
-  (product: 2, store: 1, price: 200.0),
-  (product: 3, store: 1, price: 10.0),
+  (product: "1", store: 1, price: 100.0),
+  (product: "2", store: 1, price: 200.0),
+  (product: "3", store: 1, price: 10.0),
   // Walmart - Grocery
-  (product: 4, store: 1, price: 5.0),
-  (product: 5, store: 1, price: 15.0),
+  (product: "4", store: 1, price: 5.0),
+  (product: "5", store: 1, price: 15.0),
   // Walmart - Clothing
-  (product: 6, store: 1, price: 20.0),
-  (product: 7, store: 1, price: 30.0),
-  (product: 8, store: 1, price: 5.0),
-  (product: 9, store: 1, price: 10.0),
+  (product: "6", store: 1, price: 20.0),
+  (product: "7", store: 1, price: 30.0),
+  (product: "8", store: 1, price: 5.0),
+  (product: "9", store: 1, price: 10.0),
   // Target - Electronics
-  (product: 2, store: 2, price: 150.0),
-  (product: 3, store: 2, price: 15.0),
+  (product: "2", store: 2, price: 150.0),
+  (product: "3", store: 2, price: 15.0),
   // Target - Grocery
-  (product: 4, store: 2, price: 10.0),
-  (product: 5, store: 2, price: 20.0),
+  (product: "4", store: 2, price: 10.0),
+  (product: "5", store: 2, price: 20.0),
   // Target - Clothing
-  (product: 8, store: 2, price: 5.0),
-  (product: 9, store: 2, price: 10.0),
+  (product: "8", store: 2, price: 5.0),
+  (product: "9", store: 2, price: 10.0),
   // Costco - Electronics
-  (product: 1, store: 3, price: 50.0),
-  (product: 2, store: 3, price: 100.0),
-  (product: 3, store: 3, price: 2.50),
+  (product: "1", store: 3, price: 50.0),
+  (product: "2", store: 3, price: 100.0),
+  (product: "3", store: 3, price: 2.50),
   // Costco - Grocery
-  (product: 4, store: 3, price: 20.0),
-  (product: 5, store: 3, price: 900.0),
+  (product: "4", store: 3, price: 20.0),
+  (product: "5", store: 3, price: 900.0),
 ];
 final _todosData = <({
   Value<RowId> category,

@@ -12,30 +12,29 @@ void main() {
   late List<DepartmentData> departments;
   late List<ProductData> products;
   late List<int> listings;
+
+  const departmentsData = [
+    (name: "Electronics", id: 1),
+    (name: "Clothing", id: 2),
+    (name: "Books", id: 3)
+  ];
+  const productsData = [
+    (name: "TV", department: 1, id: "1"),
+    (name: "Shirt", department: 2, id: "2"),
+    (name: "Book", department: 3, id: "3"),
+    (name: "Another Book", department: 3, id: "4"),
+  ];
+
   setUp(() async {
     db = TodoDb(testInMemoryDatabase());
-  });
 
-  tearDown(() => db.close());
-
-  test("manager - with references tests - foreign key", () async {
-    final departmentsData = [
-      (name: "Electronics", id: 1),
-      (name: "Clothing", id: 2),
-      (name: "Books", id: 3)
-    ];
-    final productsData = [
-      (name: "TV", department: 1, id: 1),
-      (name: "Shirt", department: 2, id: 2),
-      (name: "Book", department: 3, id: 3),
-      (name: "Another Book", department: 3, id: 4),
-    ];
     await db.managers.product.bulkCreate(
       (o) {
         return productsData.map((e) => o(
-            name: Value(e.name),
-            department: Value(e.department),
-            id: Value(e.id)));
+              sku: e.id,
+              name: Value(e.name),
+              department: Value(e.department),
+            ));
       },
     );
     await db.managers.department.bulkCreate(
@@ -44,7 +43,11 @@ void main() {
             .map((e) => o(name: Value(e.name), id: Value(e.id)));
       },
     );
+  });
 
+  tearDown(() => db.close());
+
+  test("manager - with references tests - foreign key", () async {
     /// Test that nothing is prefetched if not requested
     for (final (product, refs)
         in await db.managers.product.withReferences().get()) {
@@ -77,32 +80,6 @@ void main() {
   });
 
   test("manager - with references tests - reverse reference", () async {
-    final departmentsData = [
-      (name: "Electronics", id: 1),
-      (name: "Clothing", id: 2),
-      (name: "Books", id: 3)
-    ];
-    final productsData = [
-      (name: "TV", department: 1, id: 1),
-      (name: "Shirt", department: 2, id: 2),
-      (name: "Book", department: 3, id: 3),
-      (name: "Another Book", department: 3, id: 4),
-    ];
-    await db.managers.product.bulkCreate(
-      (o) {
-        return productsData.map((e) => o(
-            name: Value(e.name),
-            department: Value(e.department),
-            id: Value(e.id)));
-      },
-    );
-    await db.managers.department.bulkCreate(
-      (o) {
-        return departmentsData
-            .map((e) => o(name: Value(e.name), id: Value(e.id)));
-      },
-    );
-
     /// Test that nothing is prefetched if not requested
     for (final (department, refs)
         in await db.managers.department.withReferences().get()) {
@@ -120,7 +97,7 @@ void main() {
 
     /// Department which contains Product ID #3
     final booksDepartment = await db.managers.department
-        .filter((f) => f.productRefs((f) => f.id(3)))
+        .filter((f) => f.productRefs((f) => f.sku("3")))
         .withReferences((prefetch) => prefetch(productRefs: true))
         .get();
     for (final (department, refs) in booksDepartment) {
@@ -130,42 +107,17 @@ void main() {
 
   test("manager - with references tests - foreign key & reverse reference ",
       () async {
-    final departmentsData = [
-      (name: "Electronics", id: 1),
-      (name: "Clothing", id: 2),
-      (name: "Books", id: 3)
-    ];
-    final productsData = [
-      (name: "TV", department: 1, id: 1),
-      (name: "Shirt", department: 2, id: 2),
-      (name: "Book", department: 3, id: 3),
-      (name: "Another Book", department: 3, id: 4),
-    ];
     final listingsData = [
-      (product: 1, store: 1, price: 100.0),
-      (product: 2, store: 1, price: 50.0),
-      (product: 3, store: 2, price: 20.0),
-      (product: 4, store: 3, price: 10.0),
+      (product: "1", store: 1, price: 100.0),
+      (product: "2", store: 1, price: 50.0),
+      (product: "3", store: 2, price: 20.0),
+      (product: "4", store: 3, price: 10.0),
     ];
     final storesData = [
       (name: "Walmart", id: 1),
       (name: "Target", id: 2),
       (name: "Costco", id: 3)
     ];
-    await db.managers.product.bulkCreate(
-      (o) {
-        return productsData.map((e) => o(
-            name: Value(e.name),
-            department: Value(e.department),
-            id: Value(e.id)));
-      },
-    );
-    await db.managers.department.bulkCreate(
-      (o) {
-        return departmentsData
-            .map((e) => o(name: Value(e.name), id: Value(e.id)));
-      },
-    );
     await db.managers.store.bulkCreate(
       (o) {
         return storesData.map((e) => o(name: Value(e.name), id: Value(e.id)));
@@ -192,44 +144,17 @@ void main() {
   });
 
   test("manager - with references tests - watch ", () async {
-    final departmentsData = [
-      (name: "Electronics", id: 1),
-      (name: "Clothing", id: 2),
-      (name: "Books", id: 3)
-    ];
-    final productsData = [
-      (name: "TV", department: 1, id: 1),
-      (name: "Shirt", department: 2, id: 2),
-      (name: "Book", department: 3, id: 3),
-      (name: "Another Book", department: 3, id: 4),
-    ];
     final storesData = [
       (name: "Walmart", id: 1),
       (name: "Target", id: 2),
       (name: "Costco", id: 3)
     ];
     final listingsData = [
-      (product: 1, store: 1, price: 100.0),
-      (product: 2, store: 1, price: 50.0),
-      (product: 3, store: 2, price: 20.0),
-      (product: 4, store: 3, price: 10.0),
+      (product: "1", store: 1, price: 100.0),
+      (product: "2", store: 1, price: 50.0),
+      (product: "3", store: 2, price: 20.0),
+      (product: "4", store: 3, price: 10.0),
     ];
-    await db.managers.department.bulkCreate(
-      (o) {
-        return departmentsData
-            .map((e) => o(name: Value(e.name), id: Value(e.id)));
-      },
-    );
-
-    await db.managers.product.bulkCreate(
-      (o) {
-        return productsData.map((e) => o(
-            name: Value(e.name),
-            department: Value(e.department),
-            id: Value(e.id)));
-      },
-    );
-
     await db.managers.store.bulkCreate(
       (o) {
         return storesData.map((e) => o(name: Value(e.name), id: Value(e.id)));
@@ -259,7 +184,7 @@ void main() {
     final productCount = products!.length;
 
     // Delete a product
-    await db.managers.product.filter((f) => f.id(1)).delete();
+    await db.managers.product.filter((f) => f.sku("1")).delete();
     await pumpEventQueue();
     expect(products!.length, productCount - 1);
 

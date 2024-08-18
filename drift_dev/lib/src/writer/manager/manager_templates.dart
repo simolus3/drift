@@ -257,12 +257,10 @@ class _ManagerCodeTemplates {
                     referencedTable:
                         $referencesClassName._${relation.fieldName}Table(db),
                     referencedColumn:
-                        $referencesClassName._${relation.fieldName}Table(db).id,
+                        $referencesClassName._${relation.fieldName}Table(db).${relation.referencedColumn.nameInDart},
                   ) as T;
                }""";
                   }).join('\n')}
-
-
 
                 return state;
               }
