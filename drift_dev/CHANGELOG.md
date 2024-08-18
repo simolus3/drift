@@ -1,3 +1,8 @@
+## 2.20.1
+
+- Fix a code generation bug causing managers to reference the wrong column when
+  building joins.
+
 ## 2.20.0
 
 - Add `drift dev schema export` command, which exports the DDL statements making
