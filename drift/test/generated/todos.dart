@@ -117,7 +117,7 @@ class Department extends Table {
 }
 
 class Product extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get sku => text()();
   TextColumn get name => text().nullable()();
   IntColumn get department =>
       integer().references(Department, #id).nullable()();
@@ -126,7 +126,7 @@ class Product extends Table {
 class Listing extends Table {
   IntColumn get id => integer().autoIncrement()();
   @ReferenceName('listings')
-  IntColumn get product => integer().references(Product, #id).nullable()();
+  TextColumn get product => text().references(Product, #sku).nullable()();
   @ReferenceName('listings')
   IntColumn get store => integer().references(Store, #id).nullable()();
   RealColumn get price => real().nullable()();
