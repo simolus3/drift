@@ -2,7 +2,6 @@ import 'package:drift/drift.dart';
 
 import 'converter.dart';
 import 'data_classes.dart';
-import 'derived_private_table.dart';
 
 export 'data_classes.dart';
 
