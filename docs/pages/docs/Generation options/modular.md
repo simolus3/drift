@@ -97,7 +97,9 @@ targets:
 With modular generation, drift generates standalone Dart libraries (Dart files
 without a `part of` statement). This also means that you no longer need `part`
 statements in your sources. Instead, you import the generated `.drift.dart`
-files.
+files. And of course, every private mixin/class previously generated under the 
+part files will now be public. Replacing all ` _$` (notice the leading space)
+with ` $` (leading space here as well) should fix those problems there.
 
 When it comes to using the generated code, not much is different: The API for
 the database and DAOs stays mostly the same.
