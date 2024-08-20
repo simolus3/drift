@@ -15,11 +15,16 @@ class Database {}
       'a|lib/tables.dart': '''
 import 'package:drift/drift.dart';
 
-class PartOfDatabase extends _NotPartOfDatabase {
+class PartOfDatabase extends _AlsoNotPartOfDatabase {
 
 }
 
 class _NotPartOfDatabase extends Table {
+  IntColumn get id => integer()();
+}
+
+@DataClassName('AlsoNotPartOfDatabase')
+class _AlsoNotPartOfDatabase extends _NotPartOfDatabase {
   IntColumn get id => integer()();
 }
 
