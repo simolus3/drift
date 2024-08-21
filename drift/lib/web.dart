@@ -12,4 +12,5 @@ library drift.web;
 export 'src/web/sql_js.dart';
 export 'src/web/storage.dart' hide CustomSchemaVersionSave;
 export 'src/web/web_db.dart';
-export 'src/web/channel.dart' show PortToChannel;
+export 'src/web/channel_legacy.dart';
+export 'src/web/channel_new.dart';

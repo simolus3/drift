@@ -491,18 +491,22 @@ cp -f build/web/worker.dart.js web/worker.dart.min.js
 Finally, use this to connect to a worker:
 
 ```dart
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/web.dart';
 import 'package:flutter/foundation.dart';
+import 'package:web/web.dart';
 
 DatabaseConnection connectToWorker(String databaseName) {
   final worker = SharedWorker(
-      kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js', databaseName);
-  return remote(worker.port!.channel());
+      (kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js').toJS,
+      databaseName.toJS);
+
+  return DatabaseConnection.delayed(
+      connectToRemoteAndInitialize(worker.port.channel()));
 }
 ```
 
-You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.
+You can pass that `DatabaseConnection` to the constructor of your database class.

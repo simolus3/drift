@@ -27,7 +27,7 @@ import 'package:sqlite3/src/wasm/js_interop/core.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../new_channel.dart';
+import '../channel_new.dart';
 import 'protocol.dart';
 
 @JS('navigator')
@@ -426,6 +426,9 @@ extension CompleteIdbRequest on IDBRequest {
       completer.complete(result as T);
     });
     EventStreamProviders.errorEvent.forTarget(this).listen((event) {
+      completer.completeError(error ?? event);
+    });
+    EventStreamProviders.blockedEvent.forTarget(this).listen((event) {
       completer.completeError(error ?? event);
     });
 

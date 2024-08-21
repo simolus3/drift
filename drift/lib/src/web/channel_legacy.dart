@@ -20,6 +20,11 @@ extension PortToChannel on MessagePort {
   /// for channels being closed due to a tab or worker being closed.
   /// Both "ends" of a JS channel calling [channel] on their part must use the
   /// value for [explicitClose].
+  @Deprecated(
+    'Please use MessagePorts from package:web instead of those from dart:html. '
+    'This extension will be removed from drift once `dart:html` is removed '
+    'from the SDK.',
+  )
   StreamChannel<Object?> channel({bool explicitClose = false}) {
     final controller = StreamChannelController<Object?>();
     onMessage.listen((event) {

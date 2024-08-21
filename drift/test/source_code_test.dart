@@ -11,12 +11,8 @@ void main() {
   test('drift does not import legacy JS interop files', () {
     // The old web APIs can't be used in dart2wasm, so we shouldn't use them in
     // web-specific drift code.
-    // Legacy APIs (involving `WebDatabase`) are excempt from this.
     const allowedLegacyCode = [
-      'lib/web/worker.dart', // Wasm uses a different worker
-      'lib/src/web/channel.dart',
-      'lib/src/web/storage.dart',
-      'lib/src/web/sql_js.dart',
+      'lib/src/web/channel_legacy.dart',
     ];
 
     final failures = <(String, String)>[];

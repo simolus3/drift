@@ -12,13 +12,14 @@
 library drift.web.workers;
 
 import 'dart:async';
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
-import 'package:drift/src/web/channel.dart';
+import 'package:drift/src/web/channel_new.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:web/web.dart';
 
 /// Describes the topology between clients (e.g. tabs) and the drift web worker
 /// when spawned with [connectToDriftWorker].
@@ -120,7 +121,7 @@ enum DriftWorkerMode {
 /// contains additional information and an example on how to use workers with
 /// Dart and Drift.
 void driftWorkerMain(QueryExecutor Function() openConnection) {
-  final self = WorkerGlobalScope.instance;
+  final self = globalContext;
   _RunningDriftWorker worker;
 
   if (self is SharedWorkerGlobalScope) {
@@ -152,18 +153,18 @@ Future<DatabaseConnection> connectToDriftWorker(String workerJsUri,
   StreamChannel<Object?> channel;
 
   if (mode == DriftWorkerMode.dedicated) {
-    final worker = Worker(workerJsUri);
+    final worker = Worker(workerJsUri.toJS);
     final webChannel = MessageChannel();
 
     // Transfer first port to the channel, we'll use the second port on this side.
-    worker.postMessage(webChannel.port1, [webChannel.port1]);
+    worker.postMessage(webChannel.port1, [webChannel.port1].toJS);
     channel = webChannel.port2.channel();
   } else {
-    final worker = SharedWorker(workerJsUri, 'drift database');
-    final port = worker.port!;
+    final worker = SharedWorker(workerJsUri.toJS, 'drift database'.toJS);
+    final port = worker.port;
 
     var didGetInitializationResponse = false;
-    port.postMessage(mode.name);
+    port.postMessage(mode.name.toJS);
     channel = port.channel().transformStream(StreamTransformer.fromHandlers(
       handleData: (data, sink) {
         if (didGetInitializationResponse) {
@@ -221,9 +222,9 @@ class _RunningDriftWorker {
       // The only purpose of this worker is to start the drift server, so if the
       // server is done, so is the worker.
       if (isShared) {
-        SharedWorkerGlobalScope.instance.close();
+        (self as SharedWorkerGlobalScope).close();
       } else {
-        DedicatedWorkerGlobalScope.instance.close();
+        (self as DedicatedWorkerGlobalScope).close();
       }
     });
 
@@ -233,7 +234,7 @@ class _RunningDriftWorker {
   /// Handle a new connection, which implies that this worker is shared.
   void _newConnection(MessageEvent event) {
     assert(isShared);
-    final outgoingPort = event.ports.first;
+    final outgoingPort = event.ports.toDart.first;
 
     // We still don't know whether this shared worker is supposed to host the
     // server itself or whether this is delegated to a dedicated worker managed
@@ -270,12 +271,12 @@ class _RunningDriftWorker {
             // Instead of running a server ourselves, we're starting a dedicated
             // child worker and forward the port.
             _knownMode = DriftWorkerMode.dedicatedInShared;
-            final worker = _dedicatedWorker = Worker(Uri.base.toString());
+            final worker = _dedicatedWorker = Worker(Uri.base.toString().toJS);
 
             // This will call [_handleMessage], but in the context of the
             // dedicated worker we just created.
-            outgoingPort.postMessage(true);
-            worker.postMessage(outgoingPort, [outgoingPort]);
+            outgoingPort.postMessage(true.toJS);
+            worker.postMessage(outgoingPort, [outgoingPort].toJS);
 
             // This closes the channel, but doesn't close the port since it has
             // been transferred to the child worker.
@@ -283,7 +284,7 @@ class _RunningDriftWorker {
             break;
         }
       } else if (_knownMode == expectedMode) {
-        outgoingPort.postMessage(true);
+        outgoingPort.postMessage(true.toJS);
         switch (_knownMode!) {
           case DriftWorkerMode.dedicated:
             // This is a shared worker, we won't ever set our mode to this.
@@ -292,7 +293,7 @@ class _RunningDriftWorker {
             _startedServer!.serve(remainingChannel());
             break;
           case DriftWorkerMode.dedicatedInShared:
-            _dedicatedWorker!.postMessage(outgoingPort, [outgoingPort]);
+            _dedicatedWorker!.postMessage(outgoingPort, [outgoingPort].toJS);
             originalChannel.sink.close();
             break;
         }
@@ -319,5 +320,5 @@ class _RunningDriftWorker {
     }
   }
 
-  static WorkerGlobalScope get self => WorkerGlobalScope.instance;
+  static WorkerGlobalScope get self => globalContext as WorkerGlobalScope;
 }

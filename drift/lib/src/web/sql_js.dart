@@ -1,24 +1,10 @@
-@JS()
 import 'dart:async';
-import 'dart:js';
 import 'dart:typed_data';
-
-import 'package:js/js.dart';
-import 'package:js/js_util.dart';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 @JS('initSqlJs')
-external Object /*Promise<_SqlJs>*/ _initSqlJs();
-
-@JS('undefined')
-// ignore: prefer_void_to_null
-external Null get _undefined;
-
-@JS('eval')
-external Object? _eval(String source);
-
-// We write our own mapping code to js instead of depending on package:js
-// This way, projects using drift can run on flutter as long as they don't
-// import this file.
+external JSPromise<_SqlJs> _initSqlJs();
 
 Completer<SqlJsModule>? _moduleCompleter;
 
@@ -29,59 +15,56 @@ Future<SqlJsModule> initSqlJs() {
   }
 
   final completer = _moduleCompleter = Completer();
-  if (!context.hasProperty('initSqlJs')) {
+  if (!globalContext.has('initSqlJs')) {
     completer.completeError(UnsupportedError(
         'Could not access the sql.js javascript library. '
         'The drift documentation contains instructions on how to setup drift '
         'the web, which might help you fix this.'));
   } else {
-    completer
-        .complete(promiseToFuture<_SqlJs>(_initSqlJs()).then(SqlJsModule._));
+    completer.complete((_initSqlJs().toDart).then(SqlJsModule._));
   }
 
   return _moduleCompleter!.future;
 }
 
-@JS()
-@anonymous
-class _SqlJs {
-  // ignore: non_constant_identifier_names
-  external Object get Database;
+extension type _SqlJs._(JSObject _) implements JSObject {
+  @JS('Database')
+  external JSFunction get database;
 }
 
-@JS()
-@anonymous
-class _SqlJsDatabase {
+extension type _SqlJsDatabase._(JSObject _) implements JSObject {
   external int getRowsModified();
 
-  external void run(String sql, List<Object?>? args);
-  external List<_QueryExecResult> exec(String sql, List<Object?>? params);
-  external _SqlJsStatement prepare(String sql);
+  @JS('run')
+  external void runNoArgs(JSString sql);
+  external void run(JSString sql, JSArray<JSAny?>? args);
 
-  external Uint8List export();
+  @JS('exec')
+  external JSArray<_QueryExecResult> execNoArgs(JSString sql);
+  external JSArray<_QueryExecResult> exec(JSString sql, JSArray<JSAny?> params);
+  external _SqlJsStatement prepare(JSString sql);
+
+  external JSUint8Array export();
   external void close();
 }
 
-@JS()
+extension type _QueryExecResult._(JSObject _) implements JSObject {
+  external JSArray<JSString> get columns;
+  external JSArray<JSArray<JSAny?>> get values;
+}
+
 @anonymous
-class _QueryExecResult {
-  external List<String> get columns;
-  external List<List<Object?>> get values;
+extension type _SqlJsStatementGetOptions._(JSObject _) implements JSObject {
+  external factory _SqlJsStatementGetOptions({required bool useBigInt});
 }
 
 @JS()
-@anonymous
-class _SqlJsStatementGetOptions {
-  external factory _SqlJsStatementGetOptions({bool useBigInt = false});
-}
-
-@JS()
-@anonymous
-class _SqlJsStatement {
-  external void bind(List<Object?> values);
-  external bool step();
-  external List<Object?> get(Object? params, _SqlJsStatementGetOptions? config);
-  external List<String> getColumnNames();
+extension type _SqlJsStatement._(JSObject _) implements JSObject {
+  external void bind(JSArray<JSAny?> values);
+  external JSBoolean step();
+  external JSArray<JSAny?> get(
+      JSObject? params, _SqlJsStatementGetOptions? config);
+  external JSArray<JSString> getColumnNames();
   external void free();
 }
 
@@ -95,7 +78,7 @@ class SqlJsModule {
     final dbObj = _createInternally(data);
     assert(() {
       // set the window.db variable to make debugging easier
-      context['db'] = dbObj;
+      globalContext['db'] = dbObj;
       return true;
     }());
 
@@ -104,24 +87,24 @@ class SqlJsModule {
 
   _SqlJsDatabase _createInternally(Uint8List? data) {
     if (data != null) {
-      return callConstructor<_SqlJsDatabase>(_obj.Database, [data]);
+      return _obj.database.callAsConstructor(data.toJS);
     } else {
-      return callConstructor<_SqlJsDatabase>(_obj.Database, const []);
+      return _obj.database.callAsConstructor();
     }
   }
 }
 
 @JS('BigInt')
-external Object _bigInt(Object s);
+external JSBigInt _bigInt(JSString s);
 
-final bool Function(Object?) _isBigInt =
-    _eval("(x)=>typeof x == 'bigint'") as bool Function(Object?);
-
-List<Object?> _replaceDartBigInts(List<Object?> dartList) {
+JSArray<JSAny?> _replaceDartBigInts(List<Object?> dartList) {
   return [
     for (final arg in dartList)
-      if (arg is BigInt) _bigInt(arg.checkRange.toString()) else arg
-  ];
+      if (arg is BigInt)
+        _bigInt(arg.checkRange.toString().toJS)
+      else
+        arg.jsify()
+  ].toJS;
 }
 
 /// Dart wrapper around a sql database provided by the sql.js library.
@@ -141,12 +124,12 @@ class SqlJsDatabase {
 
   /// Calls `prepare` on the underlying js api
   PreparedStatement prepare(String sql) {
-    return PreparedStatement._(_obj.prepare(sql));
+    return PreparedStatement._(_obj.prepare(sql.toJS));
   }
 
   /// Calls `run(sql)` on the underlying js api
   void run(String sql) {
-    _obj.run(sql, _undefined);
+    _obj.runNoArgs(sql.toJS);
   }
 
   /// Calls `run(sql, args)` on the underlying js api
@@ -155,9 +138,9 @@ class SqlJsDatabase {
       // Call run without providing arguments. sql.js will then use sqlite3_exec
       // internally, which supports running multiple statements at once. This
       // matches the behavior from a `NativeDatabase`.
-      _obj.run(sql, _undefined);
+      _obj.runNoArgs(sql.toJS);
     } else {
-      _obj.run(sql, _replaceDartBigInts(args));
+      _obj.run(sql.toJS, _replaceDartBigInts(args));
     }
   }
 
@@ -173,15 +156,15 @@ class SqlJsDatabase {
   }
 
   dynamic _selectSingleRowAndColumn(String sql) {
-    final results = _obj.exec(sql, _undefined);
-    final result = results.first;
-    final row = result.values.first;
+    final results = _obj.execNoArgs(sql.toJS);
+    final result = results.toDart.first;
+    final row = result.values.toDart.first.toDart;
 
-    return row.first;
+    return row.first.dartify();
   }
 
   /// Runs `export` on the underlying js api
-  Uint8List export() => _obj.export();
+  Uint8List export() => _obj.export().toDart;
 
   /// Runs `close` on the underlying js api
   void close() => _obj.close();
@@ -197,27 +180,34 @@ class PreparedStatement {
   void executeWith(List<dynamic> args) => _obj.bind(_replaceDartBigInts(args));
 
   /// Performs `step` on the underlying js api
-  bool step() => _obj.step();
+  bool step() => _obj.step().toDart;
 
   /// Reads the current from the underlying js api
   List<dynamic> currentRow([bool useBigInt = false]) {
     if (useBigInt) {
-      final result = _obj.get(null, _SqlJsStatementGetOptions(useBigInt: true));
+      final result =
+          _obj.get(null, _SqlJsStatementGetOptions(useBigInt: true)).toDart;
+      final dartResult = <Object?>[];
+
       for (var i = 0; i < result.length; i++) {
-        if (_isBigInt(result[i])) {
-          final toString = callMethod<String>(result[i]!, 'toString', const []);
-          result[i] = BigInt.parse(toString);
+        if (result[i].typeofEquals('bigint')) {
+          final toString =
+              (result[i] as JSObject).callMethod<JSString>('toString'.toJS);
+          dartResult.add(BigInt.parse(toString.toDart));
+        } else {
+          dartResult.add(result[i].dartify());
         }
       }
-      return result;
+      return dartResult;
     } else {
-      return _obj.get(null, null);
+      return _obj.get(null, null).dartify() as List;
     }
   }
 
   /// The columns returned by this statement. This will only be available after
   /// [step] has been called once.
-  List<String> columnNames() => _obj.getColumnNames();
+  List<String> columnNames() =>
+      _obj.getColumnNames().toDart.map((e) => e.toDart).toList();
 
   /// Calls `free` on the underlying js api
   void free() => _obj.free();

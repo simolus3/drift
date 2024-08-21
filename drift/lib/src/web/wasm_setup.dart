@@ -23,7 +23,7 @@ import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart' as web;
 
 import 'broadcast_stream_queries.dart';
-import 'new_channel.dart';
+import 'channel_new.dart';
 import 'wasm_setup/shared.dart';
 import 'wasm_setup/protocol.dart';
 

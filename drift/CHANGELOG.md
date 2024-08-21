@@ -1,3 +1,11 @@
+## 2.21.0-dev
+
+- Migrate legacy `package:drift/web.dart` to the new JS interop SDK libraries.
+  For backwards compatibility, the `channel()` extension on the `MessagePort`
+  class in `dart:html` has been kept.
+  Once `dart:html` is removed from the Dart SDK, that extension will have to
+  be removed from drift as well.
+
 ## 2.20.0
 
 - Improve manager API to be able to resolve references when running queries.

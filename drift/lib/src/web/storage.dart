@@ -1,8 +1,10 @@
-import 'dart:html';
-import 'dart:indexed_db';
+import 'dart:async';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
+import 'package:web/web.dart' hide window;
 
 import 'binary_string_conversion.dart';
 import 'wasm_setup/shared.dart';
@@ -91,8 +93,18 @@ String _legacyVersionKeyForLocalStorage(String name) {
   return 'moor_db_version_$name';
 }
 
+Storage get _localStorage {
+  final context = globalContext;
+  return context.getProperty('localStorage'.toJS);
+}
+
+IDBFactory get _indexedDb {
+  final context = globalContext;
+  return context.getProperty('indexedDB'.toJS);
+}
+
 Uint8List? _restoreLocalStorage(String name) {
-  final raw = window.localStorage[_persistenceKeyForLocalStorage(name)];
+  final raw = _localStorage.getItem(_persistenceKeyForLocalStorage(name));
   if (raw != null) {
     return bin2str.decode(raw);
   }
@@ -109,7 +121,7 @@ class _LocalStorageImpl implements DriftWebStorage, CustomSchemaVersionSave {
 
   @override
   int? get schemaVersion {
-    final versionStr = window.localStorage[_versionKey];
+    final versionStr = _localStorage[_versionKey];
     // ignore: avoid_returning_null
     if (versionStr == null) return null;
 
@@ -121,9 +133,9 @@ class _LocalStorageImpl implements DriftWebStorage, CustomSchemaVersionSave {
     final key = _versionKey;
 
     if (value == null) {
-      window.localStorage.remove(key);
+      _localStorage.removeItem(key);
     } else {
-      window.localStorage[_versionKey] = value.toString();
+      _localStorage.setItem(_versionKey, value.toString());
     }
   }
 
@@ -141,7 +153,7 @@ class _LocalStorageImpl implements DriftWebStorage, CustomSchemaVersionSave {
   @override
   Future<void> store(Uint8List data) {
     final binStr = bin2str.encode(data);
-    window.localStorage[_persistenceKey] = binStr;
+    _localStorage[_persistenceKey] = binStr;
 
     return Future.value();
   }
@@ -154,7 +166,7 @@ class _IndexedDbStorage implements DriftWebStorage {
   final bool migrateFromLocalStorage;
   final bool inWebWorker;
 
-  late Database _database;
+  late IDBDatabase _database;
 
   _IndexedDbStorage(this.name,
       {this.migrateFromLocalStorage = true, this.inWebWorker = false});
@@ -163,19 +175,16 @@ class _IndexedDbStorage implements DriftWebStorage {
   Future<void> open() async {
     var wasCreated = false;
 
-    final indexedDb =
-        inWebWorker ? WorkerGlobalScope.instance.indexedDB : window.indexedDB;
+    final indexedDb = _indexedDb;
 
-    _database = await indexedDb!.open(
-      _objectStoreName,
-      version: 1,
-      onUpgradeNeeded: (event) {
-        final database = event.target.result as Database;
+    final openRequest = indexedDb.open(_objectStoreName, 1);
+    openRequest.onupgradeneeded = ((IDBVersionChangeEvent event) {
+      final database = openRequest.result as IDBDatabase;
+      database.createObjectStore(_objectStoreName);
+      wasCreated = true;
+    }).toJS;
 
-        database.createObjectStore(_objectStoreName);
-        wasCreated = true;
-      },
-    );
+    _database = await openRequest.complete<IDBDatabase>();
 
     if (migrateFromLocalStorage && wasCreated) {
       final fromLocalStorage = _restoreLocalStorage(name);
@@ -193,28 +202,28 @@ class _IndexedDbStorage implements DriftWebStorage {
   @override
   Future<void> store(Uint8List data) async {
     final transaction =
-        _database.transactionStore(_objectStoreName, 'readwrite');
+        _database.transaction(_objectStoreName.toJS, 'readwrite');
     final store = transaction.objectStore(_objectStoreName);
 
-    await store.put(Blob([data]), name);
-    await transaction.completed;
+    await store.put(Blob([data.toJS].toJS), name.toJS).complete();
+    await EventStreamProviders.completeEvent.forTarget(transaction).first;
   }
 
   @override
   Future<Uint8List?> restore() async {
     final transaction =
-        _database.transactionStore(_objectStoreName, 'readonly');
+        _database.transaction(_objectStoreName.toJS, 'readonly');
     final store = transaction.objectStore(_objectStoreName);
 
-    final result = await store.getObject(name) as Blob?;
+    final result = await store.get(name.toJS).complete<Blob?>();
     if (result == null) return null;
 
     final reader = FileReader();
     reader.readAsArrayBuffer(result);
     // todo: Do we need to handle errors? We're reading from memory
-    await reader.onLoad.first;
+    await EventStreamProviders.loadEvent.forTarget(reader).first;
 
-    return reader.result as Uint8List;
+    return (reader.result as JSArrayBuffer).toDart.asUint8List();
   }
 }
 
