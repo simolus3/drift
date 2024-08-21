@@ -10,8 +10,14 @@ tags:
 platforms:
   - vm
 
+on_platform:
+  browser:
+    # Browsers doing browser things...
+    retry: 2
+
 presets:
-  # Only run on browsers when requested. In CI, we only test on browsers after the VM tests went through
+  # Testing on browsers is slow! In drift's CI, browser tests only run after the VM tests passed.
+  # Further, JS unit tests are only using dartdevc to speed things up (tool/test_with_ddc.dart).
   browsers:
     platforms:
       - chrome
