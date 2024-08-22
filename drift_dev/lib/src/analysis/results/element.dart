@@ -19,9 +19,6 @@ class DriftElementId {
 
   factory DriftElementId.fromJson(Map json) => _$DriftElementIdFromJson(json);
 
-  /// Whether this element is private to its own dart library, based on the element name.
-  bool get isPrivate => name.startsWith('_');
-
   bool get isDefinedInDart => url.extension(libraryUri.path) == '.dart';
   bool get isDefinedInDrift => url.extension(libraryUri.path) == '.drift';
 
