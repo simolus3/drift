@@ -71,6 +71,19 @@ class FileAnalyzer {
                     (e) => e is DefinedSqlQuery || e is DriftSchemaElement);
               })
               .whereType<DriftElement>()
+              .where((e) {
+                // Exclude any private tables that do not reside in the same library
+                // as the DriftDatabase.
+                // Failure to exclude these, can generate dart code which references
+                // classes that cannot be legally accessed - and will not compile.
+                // Private classes residing in the same library are allowed, as
+                // per dart language accessibility rules.
+                if (e is DriftElementWithResultSet &&
+                    e.entityInfoName.startsWith(r'$_')) {
+                  return e.id.libraryUri == element.id.libraryUri;
+                }
+                return true;
+              })
               .followedBy(availableByDefault)
               .transitiveClosureUnderReferences()
               .sortTopologicallyOrElse(driver.backend.log.severe);
