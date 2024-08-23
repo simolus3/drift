@@ -111,6 +111,20 @@ QueryExecutor databaseWithDefaultAsset(File file, String asset) {
 }
 ```
 
+## My generated code is using another class with the same name
+
+When you have an imported a class with the same name as the should-be generated
+ones on your `database.dart` file and your run `build_runner` there is a known
+problem about it using the imported class instead of the generated ones.
+
+To solve that, if you can, you can enable
+[modular code generation]({{ 'Generation options/modular.md' | pageUrl }}).
+It slightly changes how drift is used, but you probably will only have to update
+a few files to change parts to imports. The big difference is that it allows drift
+to emit a standalone library file instead of a part - that can have its own imports,
+so this is much easier and we'll use the correct imports even when the same name
+classes are imported in your `database.dart` file.
+
 ## How does drift compare to X?
 There are a variety of good persistence libraries for Dart and Flutter.
 

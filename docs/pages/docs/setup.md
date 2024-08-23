@@ -222,6 +222,7 @@ started with drift:
 - Something to keep in mind for later: When changing the database, for instance by adding new columns
   or tables, you need to write a migration so that existing databases are transformed to the new
   format. Drift's extensive [migration tools]({{ 'Migrations/index.md' | pageUrl }}) help with that.
+- Take a look at our [FAQ]({{ 'faq.md' | pageUrl }})! It will help you with the most common questions about drift projects.
 
 Once you're familiar with the basics, the [overview here]({{ 'index.md' | pageUrl }}) shows what
 more drift has to offer.
