@@ -180,3 +180,5 @@ Yes! Drift stores its data in a sqlite3 database file that can be extracted from
 
 To inspect a drift database directly in your app, you can use the [`drift_db_viewer`](https://pub.dev/packages/drift_db_viewer)
 package by Koen Van Looveren.
+
+There is also an under-development DevTools Extension that comes when you add `drift` to your app. Open DevTools and try it out! Contributions and feedback are definitely welcome!
