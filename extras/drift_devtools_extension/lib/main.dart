@@ -95,8 +95,10 @@ class _InfoButton extends StatelessWidget {
                     'DevTools. If you have ideas for additional functionality '
                     'that could be provided here, please ',
                   ),
-                  _link('opening an issue',
-                      'https://github.com/simolus3/drift/issues/new'),
+                  _link(
+                    'opening an issue',
+                    'https://github.com/simolus3/drift/issues/new?template=bug_report_devtools_extension.md',
+                  ),
                   _text(
                       'to make suggestions.\nAlso, thanks to Koen Van Looveren for writing '),
                   _link('drift_db_viewer',

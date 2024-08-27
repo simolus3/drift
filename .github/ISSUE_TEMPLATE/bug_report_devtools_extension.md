@@ -2,14 +2,15 @@
 name: Bug report DevTools extension
 about: Create a report to help improve drift's DevTools extension
 title: ''
-labels: ['package-devtools', 'bug']
+labels: ['package-devtools']
 assignees: ''
 
 ---
 
 **Describe the bug**
 
-A clear and concise description of what the bug is, what behavior you saw.
+A clear and concise description of what the bug is, what behavior you saw. If this is
+a feature request, ignore delete this.
 
 **Expected behavior**
 
@@ -17,16 +18,17 @@ Please briefly describe what behavior you expected
 
 **Reproducing**
 
-How the bug can be reproduced.
+How the bug can be reproduced. If this is a feature request, ignore delete this.
 
 **Versions**
 
-Please add here the versions of `drift` and related packages as well as `flutter`'s (for the DevTools).
+Please add here the versions of `drift` and related packages as well as `flutter`'s
+(for the DevTools). If this is a feature request, ignore delete this.
 
 **Screenshots**
 
-Add screenshots and videos here if needed to help explain your problem.
+Add screenshots and videos here if needed to help explain your point.
 
 **Aditional info**
 
-Write down any aditional info/discussion for this bug.
+Write down any aditional info/discussion for this issue.
