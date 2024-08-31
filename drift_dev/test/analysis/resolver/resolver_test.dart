@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide DriftView;
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
@@ -126,6 +126,108 @@ CREATE TABLE deleted_b (
         isA<WrittenDriftTable>()
             .having((e) => e.table.schemaName, 'table.schemaName', 'deleted_b')
             .having((e) => e.kind, 'kind', UpdateKind.insert),
+      ]);
+    });
+
+    test('for view insert triggers', () async {
+      final backend = await TestBackend.inTest({
+        'a|lib/a.drift': '''
+CREATE TABLE foo(id INTEGER PRIMARY KEY, name TEXT);
+CREATE VIEW foo_view AS SELECT * FROM foo;
+
+CREATE TRIGGER foo_create
+INSTEAD OF INSERT ON foo_view
+BEGIN
+  INSERT INTO foo VALUES (new.id, new.name);
+END;
+''',
+      });
+
+      final file = await backend.analyze('package:a/a.drift');
+      backend.expectNoErrors();
+
+      final trigger = file.analyzedElements.whereType<DriftTrigger>().single;
+      expect(
+        trigger.references,
+        unorderedEquals([
+          isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
+          isA<DriftView>()
+              .having((e) => e.schemaName, 'schemaName', 'foo_view'),
+        ]),
+      );
+
+      expect(trigger.writes, [
+        isA<WrittenDriftTable>()
+            .having((e) => e.table.schemaName, 'table.schemaName', 'foo')
+            .having((e) => e.kind, 'kind', UpdateKind.insert),
+      ]);
+    });
+
+    test('for view update triggers', () async {
+      final backend = await TestBackend.inTest({
+        'a|lib/a.drift': '''
+CREATE TABLE foo(id INTEGER PRIMARY KEY, name TEXT);
+CREATE VIEW foo_view AS SELECT * FROM foo;
+
+CREATE TRIGGER foo_update
+INSTEAD OF UPDATE ON foo_view
+BEGIN
+  UPDATE foo SET name = new.name WHERE id = new.id;
+END;
+''',
+      });
+
+      final file = await backend.analyze('package:a/a.drift');
+      backend.expectNoErrors();
+
+      final trigger = file.analyzedElements.whereType<DriftTrigger>().single;
+      expect(
+        trigger.references,
+        unorderedEquals([
+          isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
+          isA<DriftView>()
+              .having((e) => e.schemaName, 'schemaName', 'foo_view'),
+        ]),
+      );
+
+      expect(trigger.writes, [
+        isA<WrittenDriftTable>()
+            .having((e) => e.table.schemaName, 'table.schemaName', 'foo')
+            .having((e) => e.kind, 'kind', UpdateKind.update),
+      ]);
+    });
+
+    test('for view delete triggers', () async {
+      final backend = await TestBackend.inTest({
+        'a|lib/a.drift': '''
+CREATE TABLE foo(id INTEGER PRIMARY KEY, name TEXT);
+CREATE VIEW foo_view AS SELECT * FROM foo;
+
+CREATE TRIGGER foo_delete
+INSTEAD OF DELETE ON foo_view
+BEGIN
+  DELETE FROM foo WHERE id = old.id;
+END;
+''',
+      });
+
+      final file = await backend.analyze('package:a/a.drift');
+      backend.expectNoErrors();
+
+      final trigger = file.analyzedElements.whereType<DriftTrigger>().single;
+      expect(
+        trigger.references,
+        unorderedEquals([
+          isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
+          isA<DriftView>()
+              .having((e) => e.schemaName, 'schemaName', 'foo_view'),
+        ]),
+      );
+
+      expect(trigger.writes, [
+        isA<WrittenDriftTable>()
+            .having((e) => e.table.schemaName, 'table.schemaName', 'foo')
+            .having((e) => e.kind, 'kind', UpdateKind.delete),
       ]);
     });
 

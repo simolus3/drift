@@ -60,7 +60,8 @@ class DriftTriggerResolver
     return DriftTrigger(
       discovered.ownId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      on: findInResolved(references, stmt.onTable.tableName) as DriftTable?,
+      on: findInResolved(references, stmt.onTable.tableName)
+          as DriftElementWithResultSet?,
       onWrite: onWrite,
       references: references,
       createStmt: source.substring(stmt.firstPosition, stmt.lastPosition),
