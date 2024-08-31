@@ -798,6 +798,38 @@ CREATE TABLE [STRING_TABLE](
     );
   });
 
+  test('escapes module accessorss for leading numerics', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/001_main.drift': '''
+CREATE TABLE foo (bar INTEGER PRIMARY KEY);
+
+getFoo: SELECT * FROM foo WHERE bar = ?;
+''',
+        'a|lib/database.dart': r'''
+import 'package:drift/drift.dart';
+
+import 'database.drift.dart';
+import '001_main.drift.dart';
+
+@DriftDatabase(include: {'001_main.drift'})
+class MyDatabase extends _$MyDatabase {}
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/001_main.drift.dart': decodedMatches(
+        contains('class MainDrift extends i2.ModularAccessor'),
+      ),
+      'a|lib/database.drift.dart': decodedMatches(
+        contains('i1.MainDrift get mainDrift'),
+      ),
+    }, result.dartOutputs, result.writer);
+  });
+
   group('reports issues', () {
     for (final fatalWarnings in [false, true]) {
       group('fatalWarnings: $fatalWarnings', () {

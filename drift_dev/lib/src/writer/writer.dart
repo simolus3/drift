@@ -71,7 +71,9 @@ abstract class _NodeOrWriter {
 
     return AnnotatedDartCode([
       DartTopLevelSymbol(
-          ReCase(url.basename(driftFile.path)).pascalCase, id.modularImportUri),
+        ReCase(stripLeadingNumerics(url.basename(driftFile.path))).pascalCase,
+        id.modularImportUri,
+      ),
     ]);
   }
 
