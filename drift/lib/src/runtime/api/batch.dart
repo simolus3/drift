@@ -86,7 +86,7 @@ class Batch {
   /// that match the [where] clause.
   ///
   /// For more details on how updates work in drift, check out
-  /// [UpdateStatement.write] or the [documentation with examples](https://drift.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
+  /// [UpdateStatement.write] or the [documentation with examples](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)
   void update<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row,
       {Expression<bool> Function(T table)? where}) {
     _addUpdate(table, UpdateKind.update);

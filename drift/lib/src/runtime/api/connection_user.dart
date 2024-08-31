@@ -274,7 +274,7 @@ abstract class DatabaseConnectionUser {
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   ///
-  /// See the [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
+  /// See the [documentation](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)
   /// for more details and example on how delete statements work.
   DeleteStatement<T, D> delete<T extends Table, D>(TableInfo<T, D> table) {
     return DeleteStatement<T, D>(this, table);
