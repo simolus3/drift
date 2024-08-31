@@ -1,4 +1,4 @@
-package com.example.app
+package com.example.encryption
 
 import io.flutter.embedding.android.FlutterActivity
 
