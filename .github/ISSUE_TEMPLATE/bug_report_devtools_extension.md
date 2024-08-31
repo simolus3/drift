@@ -10,7 +10,7 @@ assignees: ''
 **Describe the bug**
 
 A clear and concise description of what the bug is, what behavior you saw. If this is
-a feature request, ignore delete this.
+a feature request, please describe the feature you're interested in.
 
 **Expected behavior**
 
