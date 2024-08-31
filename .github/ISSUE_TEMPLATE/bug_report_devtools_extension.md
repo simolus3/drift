@@ -1,5 +1,5 @@
 ---
-name: Bug report DevTools extension
+name: Drift DevTools extension: Issue / Feature request
 about: Create a report to help improve drift's DevTools extension
 title: ''
 labels: ['package-devtools']
