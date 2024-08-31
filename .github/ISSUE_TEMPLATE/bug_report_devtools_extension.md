@@ -7,23 +7,20 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+**Description**
 
-A clear and concise description of what the bug is, what behavior you saw. If this is
-a feature request, please describe the feature you're interested in.
+Thanks for taking the time to file an issue for drift's DevTools extension!
 
-**Expected behavior**
+For feature requests, please describe the feature you're interested in and
+perhaps how you would expect it to be integrated into the extension.
 
-Please briefly describe what behavior you expected
-
-**Reproducing**
-
-How the bug can be reproduced. If this is a feature request, ignore delete this.
+For bug reports, please describe what is happening how can we reproduce it
+and what do you believe should be happening.
 
 **Versions**
 
 Please add here the versions of `drift` and related packages as well as `flutter`'s
-(for the DevTools). If this is a feature request, ignore delete this.
+(for the DevTools).
 
 **Screenshots**
 
