@@ -82,7 +82,7 @@ class _Json1Functions implements FunctionHandler {
           return const ResolveResult(ResolvedType.bool());
         case 'json_extract':
         case 'jsonb_extract':
-          return const ResolveResult.unknown();
+          return const ResolveResult.needsContext();
         case 'json_array_length':
           return const ResolveResult(ResolvedType(type: BasicType.int));
       }
