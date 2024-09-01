@@ -1209,7 +1209,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   _i5.Future<int> customUpdate(
     String? query, {
     List<_i2.Variable<Object>>? variables = const [],
-    Set<_i2.TableInfo<_i2.Table, dynamic>>? updates,
+    Set<_i2.ResultSetImplementation<dynamic, dynamic>>? updates,
     _i2.UpdateKind? updateKind,
   }) =>
       (super.noSuchMethod(
@@ -1230,7 +1230,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   _i5.Future<int> customInsert(
     String? query, {
     List<_i2.Variable<Object>>? variables = const [],
-    Set<_i2.TableInfo<_i2.Table, dynamic>>? updates,
+    Set<_i2.ResultSetImplementation<dynamic, dynamic>>? updates,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1249,7 +1249,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   _i5.Future<List<_i2.QueryRow>> customWriteReturning(
     String? query, {
     List<_i2.Variable<Object>>? variables = const [],
-    Set<_i2.TableInfo<_i2.Table, dynamic>>? updates,
+    Set<_i2.ResultSetImplementation<dynamic, dynamic>>? updates,
     _i2.UpdateKind? updateKind,
   }) =>
       (super.noSuchMethod(

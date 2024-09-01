@@ -291,7 +291,7 @@ abstract class DatabaseConnectionUser {
   Future<int> customUpdate(
     String query, {
     List<Variable> variables = const [],
-    Set<TableInfo>? updates,
+    Set<ResultSetImplementation>? updates,
     UpdateKind? updateKind,
   }) async {
     return _customWrite(
@@ -311,7 +311,8 @@ abstract class DatabaseConnectionUser {
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
   Future<int> customInsert(String query,
-      {List<Variable> variables = const [], Set<TableInfo>? updates}) {
+      {List<Variable> variables = const [],
+      Set<ResultSetImplementation>? updates}) {
     return _customWrite(
       query,
       variables,
@@ -334,7 +335,7 @@ abstract class DatabaseConnectionUser {
   Future<List<QueryRow>> customWriteReturning(
     String query, {
     List<Variable> variables = const [],
-    Set<TableInfo>? updates,
+    Set<ResultSetImplementation>? updates,
     UpdateKind? updateKind,
   }) {
     return _customWrite(query, variables, updates, updateKind,
@@ -350,7 +351,7 @@ abstract class DatabaseConnectionUser {
   Future<T> _customWrite<T>(
     String query,
     List<Variable> variables,
-    Set<TableInfo>? updates,
+    Set<ResultSetImplementation>? updates,
     UpdateKind? updateKind,
     _CustomWriter<T> writer,
   ) async {
@@ -365,7 +366,7 @@ abstract class DatabaseConnectionUser {
     if (updates != null) {
       engine.notifyUpdates({
         for (final table in updates)
-          TableUpdate(table.actualTableName, kind: updateKind),
+          TableUpdate(table.entityName, kind: updateKind),
       });
     }
 
