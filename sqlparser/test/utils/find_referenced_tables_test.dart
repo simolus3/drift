@@ -87,6 +87,12 @@ void main() {
       expect(
           findWrittenTables(ctx.root), {TableWrite(users, UpdateKind.delete)});
     });
+
+    test('for views', () {
+      final ctx = engine.analyze('UPDATE old_users SET name = ?');
+      expect(findWrittenTables(ctx.root),
+          {TableWrite(oldUsers, UpdateKind.update)});
+    });
   });
 
   test('ignores unresolved references', () {

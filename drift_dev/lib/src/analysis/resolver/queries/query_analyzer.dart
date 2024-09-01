@@ -217,20 +217,13 @@ class QueryAnalyzer {
       queryContext.elementReferences,
       updatedFinder.writtenTables
           .map((write) {
-            final table = _lookupReference<DriftTable?>(write.table.name);
-            drift.UpdateKind kind;
-
-            switch (write.kind) {
-              case UpdateKind.insert:
-                kind = drift.UpdateKind.insert;
-                break;
-              case UpdateKind.update:
-                kind = drift.UpdateKind.update;
-                break;
-              case UpdateKind.delete:
-                kind = drift.UpdateKind.delete;
-                break;
-            }
+            final table =
+                _lookupReference<DriftElementWithResultSet?>(write.table.name);
+            final kind = switch (write.kind) {
+              UpdateKind.insert => drift.UpdateKind.insert,
+              UpdateKind.update => drift.UpdateKind.update,
+              UpdateKind.delete => drift.UpdateKind.delete,
+            };
 
             return table != null ? WrittenDriftTable(table, kind) : null;
           })

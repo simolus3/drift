@@ -382,7 +382,7 @@ class CapturedVariable {
 }
 
 class WrittenDriftTable {
-  final DriftTable table;
+  final DriftElementWithResultSet table;
   final UpdateKind kind;
 
   WrittenDriftTable(this.table, this.kind);

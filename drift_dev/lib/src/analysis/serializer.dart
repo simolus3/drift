@@ -643,7 +643,7 @@ class ElementDeserializer {
             for (final write in json.list('writes').cast<Map>())
               WrittenDriftTable(
                 await _readElementReference(write['table'] as Map)
-                    as DriftTable,
+                    as DriftElementWithResultSet,
                 UpdateKind.values.byName(write['kind'] as String),
               )
           ],

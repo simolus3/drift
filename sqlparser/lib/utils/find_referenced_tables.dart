@@ -54,10 +54,14 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
 
 enum UpdateKind { insert, update, delete }
 
-/// A write to a table as found while analyzing a statement.
+/// A write to a table or view as found while analyzing a statement.
+///
+/// While views normally can't be written to, sqlite3 supports `INSTEAD OF`
+/// triggers allowing other statements to be executed when running writes on
+/// views.
 class TableWrite {
   /// The table that a statement might write to when run.
-  final Table table;
+  final NamedResultSet table;
 
   /// What kind of update was found (e.g. insert, update or delete).
   final UpdateKind kind;
@@ -86,7 +90,7 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
 
   void _addIfResolved(ResolvesToResultSet? r, UpdateKind kind) {
     final resolved = _toResultSetOrNull(r);
-    if (resolved != null && resolved is Table) {
+    if (resolved != null && (resolved is Table || resolved is View)) {
       writtenTables.add(TableWrite(resolved, kind));
     }
   }

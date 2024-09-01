@@ -1,7 +1,8 @@
-## 0.37.2
+## 0.38.0
 
 - Resolve `json_extract` return types from context if possible.
 - Warn when `INSTEAD OF` triggers are not used on views.
+- Represent writes to views in `TableWrite`.
 
 ## 0.37.1
 
