@@ -1,3 +1,8 @@
+## 2.20.2
+
+- Strip leading numbers when generating modular accessor names for drift files,
+  fixing syntax errors.
+
 ## 2.20.1
 
 - Fix a code generation bug causing managers to reference the wrong column when
