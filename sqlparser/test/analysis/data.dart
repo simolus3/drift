@@ -34,4 +34,10 @@ extension RegisterTableExtension on SqlEngine {
     final stmt = analyze(createTable).root as TableInducingStatement;
     registerTable(schemaReader.read(stmt));
   }
+
+  void registerViewFromSql(String createView) {
+    final context = analyze(createView);
+    registerView(
+        schemaReader.readView(context, context.root as CreateViewStatement));
+  }
 }

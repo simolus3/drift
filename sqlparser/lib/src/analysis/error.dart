@@ -78,6 +78,7 @@ enum AnalysisErrorType {
   missingPrimaryKey,
   noTypeNameInStrictTable,
   invalidTypeNameInStrictTable,
+  invalidTriggerMode,
   distinctAggregateWithWrongParameterCount,
   other,
   hint,

@@ -49,7 +49,15 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
       ];
 }
 
-enum TriggerMode { before, after, insteadOf }
+enum TriggerMode {
+  before,
+  after,
+  insteadOf;
+
+  // https://www.sqlite.org/lang_createtrigger.html#instead_of_triggers
+  bool get isSupportedOnViews => this == insteadOf;
+  bool get isSupportedOnTables => this != insteadOf;
+}
 
 abstract class TriggerTarget extends AstNode {
   @override

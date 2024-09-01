@@ -1,6 +1,7 @@
 ## 0.37.2
 
 - Resolve `json_extract` return types from context if possible.
+- Warn when `INSTEAD OF` triggers are not used on views.
 
 ## 0.37.1
 

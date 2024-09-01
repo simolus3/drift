@@ -157,6 +157,23 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
     final topLevelBefore = _isInTopLevelTriggerStatement;
     _isInTopLevelTriggerStatement = true;
+
+    if (e.onTable.resultSet?.unalias() case final on?) {
+      if (on is View && !e.mode.isSupportedOnViews) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.invalidTriggerMode,
+          relevantNode: e.onTable,
+          message: 'Only `INSTEAD OF` triggers are allowed for views.',
+        ));
+      } else if (on is Table && !e.mode.isSupportedOnTables) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.invalidTriggerMode,
+          relevantNode: e.onTable,
+          message: '`INSTEAD OF` triggers are only allowed on views.',
+        ));
+      }
+    }
+
     visitChildren(e, arg);
     _isInTopLevelTriggerStatement = topLevelBefore;
   }
