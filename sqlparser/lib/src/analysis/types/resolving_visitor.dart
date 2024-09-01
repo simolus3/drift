@@ -71,11 +71,6 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitSelectInsertSource(SelectInsertSource e, TypeExpectation arg) {
-    visitBaseSelectStatement(e.stmt, arg);
-  }
-
-  @override
   void visitSubQuery(SubQuery e, TypeExpectation arg) {
     // The query should return one column only, but this is not the right place
     // to lint that. Just pick any column and resolve to that.

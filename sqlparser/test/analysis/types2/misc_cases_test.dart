@@ -151,4 +151,29 @@ WITH RECURSIVE
 
     expect(content.typeOf(column).type, ResolvedType.bool());
   });
+
+  test('infers json_extract type from context', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_46))
+      ..registerTableFromSql('''
+      CREATE TABLE IF NOT EXISTS foo (
+        bar TEXT NOT NULL,
+        baz INTEGER NOT NULL
+      );
+    ''');
+
+    final ctx = engine.analyze(r'''
+      INSERT INTO foo(bar, baz)
+        SELECT json_extract(value, '$.bar'), json_extract(value, '$.baz')
+        FROM json_each(:foo_jsons);
+    ''');
+
+    final insert = ctx.root as InsertStatement;
+    final select = (insert.source as SelectInsertSource).stmt;
+    expect(ctx.errors, isEmpty);
+
+    expect(select.resolvedColumns!.map(ctx.types2.typeOf), [
+      ResolvedType(type: BasicType.text),
+      ResolvedType(type: BasicType.int),
+    ]);
+  });
 }

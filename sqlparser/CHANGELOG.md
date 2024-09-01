@@ -1,3 +1,7 @@
+## 0.37.2
+
+- Resolve `json_extract` return types from context if possible.
+
 ## 0.37.1
 
 - Refine nullability analysis for subquery expressions: Queries with aggregate
