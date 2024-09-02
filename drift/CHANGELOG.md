@@ -5,6 +5,8 @@
   class in `dart:html` has been kept.
   Once `dart:html` is removed from the Dart SDK, that extension will have to
   be removed from drift as well.
+- Fix cast errors in the protocol for remote workers when compiling with
+  `dart2wasm`.
 
 ## 2.20.0
 

@@ -23,6 +23,10 @@ String? get expectedLocalSqlite3Path {
   }
 }
 
+Object? transportRoundtrip(Object? source) {
+  return source;
+}
+
 /// Checks if a sqlite3 build has been downloaded into [expectedLocalSqlite3Path],
 /// usually by the user running `dart run tool/download_sqlite3.dart` before
 /// running tests.

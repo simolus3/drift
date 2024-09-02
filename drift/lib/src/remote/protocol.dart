@@ -154,6 +154,7 @@ class DriftProtocol {
     } else if (payload is RequestCancellation) {
       return [_tag_RequestCancellation, payload.originalRequestId];
     } else {
+      assert(payload is int);
       return [_tag_DirectValue, payload];
     }
   }
@@ -256,7 +257,7 @@ class DriftProtocol {
       case _tag_RequestCancellation:
         return RequestCancellation(readInt(1));
       case _tag_DirectValue:
-        return encoded[1];
+        return castInt(encoded[1]);
     }
 
     throw ArgumentError.value(tag, 'tag', 'Tag was unknown');

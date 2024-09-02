@@ -1,7 +1,13 @@
+import 'dart:js_interop';
+
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:test/scaffolding.dart';
+
+Object? transportRoundtrip(Object? source) {
+  return source.jsify().dartify();
+}
 
 Version get sqlite3Version {
   // We can't get the version synchronously since we need to load a wasm module.
