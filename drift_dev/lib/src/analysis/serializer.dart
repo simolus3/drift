@@ -626,10 +626,11 @@ class ElementDeserializer {
           dartTypes: types,
         );
       case 'trigger':
-        DriftTable? on;
+        DriftElementWithResultSet? on;
 
         if (json['on'] != null) {
-          on = await _readElementReference(json['on'] as Map) as DriftTable;
+          on = await _readElementReference(json['on'] as Map)
+              as DriftElementWithResultSet;
         }
 
         return DriftTrigger(
@@ -698,7 +699,7 @@ class ElementDeserializer {
               AnnotatedDartCode.fromJson(entry as Map)
           ],
           nameOfRowClass: json['name_of_row_class'] as String,
-          nameOfCompanionClass: json['name_of_companion_class'] as String,
+          nameOfCompanionClass: json['name_of_companion_class'] as String?,
           existingRowClass: json['existing_data_class'] != null
               ? await _readExistingRowClass(
                   id.libraryUri, json['existing_data_class'] as Map)

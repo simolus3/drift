@@ -48,7 +48,7 @@ class DriftResolver {
         return await _deserializer.readDriftElement(element);
       }
     } on CouldNotDeserializeException catch (e, s) {
-      driver.backend.log.fine('Could not deserialize $element', e, s);
+      driver.backend.log.warning('Could not deserialize $element', e, s);
     }
 
     // We can't resolve the element from cache, so we need to resolve it.

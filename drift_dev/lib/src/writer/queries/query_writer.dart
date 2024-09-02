@@ -573,6 +573,9 @@ class QueryWriter {
   }
 
   void _writeUpdateKind(UpdatingQuery update) {
+    if (update.updates.isEmpty) {
+      return;
+    }
     if (update.isOnlyDelete) {
       _buffer.write(', updateKind: ${_emitter.drift('UpdateKind.delete')}');
     } else if (update.isOnlyUpdate) {

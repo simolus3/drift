@@ -1,13 +1,11 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide DriftView;
 import 'package:sqlparser/sqlparser.dart';
 
-import 'element.dart';
-import 'query.dart';
-import 'table.dart';
+import 'results.dart';
 
 class DriftTrigger extends DriftSchemaElement {
-  /// The table whose writes trigger this trigger.
-  final DriftTable? on;
+  /// The [DriftTable] or [DriftView] whose writes trigger this trigger.
+  final DriftElementWithResultSet? on;
 
   /// The kind of write (insert, update, delete) causing this trigger to run.
   final UpdateKind onWrite;
