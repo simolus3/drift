@@ -263,8 +263,15 @@ class DriftServerController {
       return wasmServer;
     });
 
-    server.serve(message.port
-        .channel(explicitClose: message.protocolVersion >= ProtocolVersion.v1));
+    server.serve(
+      message.port.channel(
+        explicitClose: message.protocolVersion >= ProtocolVersion.v1,
+        webNativeSerialization: message.newSerialization,
+      ),
+      // With the new serialization mode, instruct the drift server not to apply
+      // its internal serialization logic.
+      !message.newSerialization,
+    );
   }
 
   /// Loads a new sqlite3 WASM module, registers an appropriate VFS for [storage]
@@ -373,7 +380,7 @@ class RunningWasmServer {
   RunningWasmServer(this.storage, this.server);
 
   /// Tracks a new connection and serves drift database requests over it.
-  void serve(StreamChannel<Object?> channel) {
+  void serve(StreamChannel<Object?> channel, bool serialize) {
     _connectedClients++;
 
     server.serve(
@@ -386,6 +393,7 @@ class RunningWasmServer {
           sink.close();
         },
       )),
+      serialize: serialize,
     );
   }
 }

@@ -106,7 +106,7 @@ class DriftCommunication {
   ///
   /// The [requestId] parameter can be used to set a fixed request id for the
   /// request.
-  Future<T> request<T>(Object? request, {int? requestId}) {
+  Future<T> request<T>(RequestPayload? request, {int? requestId}) {
     final id = requestId ?? newRequestId();
     final completer = Completer<T>();
 
@@ -119,7 +119,7 @@ class DriftCommunication {
   /// Sends the [notification] to the other remote.
   ///
   /// The acknowledgement from the remote will be ignored.
-  void notify(Object? notification) {
+  void notify(RequestPayload? notification) {
     _send(Request(newRequestId(), notification));
   }
 
@@ -137,7 +137,7 @@ class DriftCommunication {
   }
 
   /// Sends a response for a handled [Request].
-  void respond(Request request, Object? response) {
+  void respond(Request request, ResponsePayload? response) {
     _send(SuccessResponse(request.id, response));
   }
 
@@ -157,9 +157,9 @@ class DriftCommunication {
   /// each request, sending the result back to the originating client. If
   /// [handler] throws, the error will be re-directed to the client. If
   /// [handler] returns a [Future], it will be awaited.
-  void setRequestHandler(dynamic Function(Request) handler) {
+  void setRequestHandler(FutureOr<ResponsePayload?> Function(Request) handler) {
     incomingRequests.listen((request) async {
-      Object? response;
+      ResponsePayload? response;
 
       try {
         response = await handler(request);

@@ -245,6 +245,7 @@ final class _ProbeResult implements WasmProbeResult {
           initializationPort: initChannel?.port2,
           enableMigrations: enableMigrations,
           protocolVersion: sharedWorker!.version,
+          newSerialization: sharedWorker.version >= ProtocolVersion.v3,
         );
 
         message.sendTo(sharedWorker.send);
@@ -259,6 +260,7 @@ final class _ProbeResult implements WasmProbeResult {
             initializationPort: initChannel?.port2,
             enableMigrations: enableMigrations,
             protocolVersion: dedicatedWorker.version,
+            newSerialization: dedicatedWorker.version >= ProtocolVersion.v3,
           );
 
           message.sendTo(dedicatedWorker.send);
@@ -298,10 +300,13 @@ final class _ProbeResult implements WasmProbeResult {
       });
     }
 
-    final local = channel.port1
-        .channel(explicitClose: message.protocolVersion >= ProtocolVersion.v1);
+    final local = channel.port1.channel(
+      explicitClose: message.protocolVersion >= ProtocolVersion.v1,
+      webNativeSerialization: message.newSerialization,
+    );
 
-    var connection = await connectToRemoteAndInitialize(local);
+    var connection = await connectToRemoteAndInitialize(local,
+        serialize: !message.newSerialization);
     if (implementation == WasmStorageImplementation.opfsLocks) {
       // We want stream queries to update for writes in other tabs. For the
       // implementations backed by a shared worker, the worker takes care of

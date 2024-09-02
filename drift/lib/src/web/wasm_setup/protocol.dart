@@ -22,13 +22,18 @@ enum ProtocolVersion {
 
   /// This version adds the `enableMigrations` field to [ServeDriftDatabase],
   /// controlling whether the worker server should implement migrations.
-  v2(2);
+  v2(2),
+
+  /// This adds [ServeDriftDatabase.newSerialization]. When enabled, we
+  /// serialize high-level protocol messages to `JSObject`s directly instead of
+  /// using `jsify()` / `dartify()`.
+  v3(3);
 
   final int versionCode;
 
   const ProtocolVersion(this.versionCode);
 
-  static const current = v2;
+  static const current = v3;
 
   void writeToJs(JSObject object) {
     object['v'] = versionCode.toJS;
@@ -248,6 +253,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final MessagePort? initializationPort;
   final ProtocolVersion protocolVersion;
   final bool enableMigrations;
+  final bool newSerialization;
 
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
@@ -257,6 +263,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     required this.initializationPort,
     required this.protocolVersion,
     required this.enableMigrations,
+    required this.newSerialization,
   });
 
   factory ServeDriftDatabase.fromJsPayload(JSObject payload) {
@@ -272,6 +279,9 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       enableMigrations: version >= ProtocolVersion.v2
           ? (payload['migrations'] as JSBoolean).toDart
           : true,
+      newSerialization: version >= ProtocolVersion.v3
+          ? (payload['new_serialization'] as JSBoolean).toDart
+          : true,
       protocolVersion: version,
     );
   }
@@ -284,7 +294,8 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       ..['storage'] = storage.name.toJS
       ..['database'] = databaseName.toJS
       ..['initPort'] = initializationPort
-      ..['migrations'] = enableMigrations.toJS;
+      ..['migrations'] = enableMigrations.toJS
+      ..['new_serialization'] = newSerialization.toJS;
 
     protocolVersion.writeToJs(object);
 

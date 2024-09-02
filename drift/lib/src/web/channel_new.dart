@@ -22,7 +22,10 @@ extension WebPortToChannel on web.MessagePort {
   /// for channels being closed due to a tab or worker being closed.
   /// Both "ends" of a JS channel calling [channel] on their part must use the
   /// value for [explicitClose].
-  StreamChannel<Object?> channel({bool explicitClose = false}) {
+  StreamChannel<Object?> channel({
+    bool explicitClose = false,
+    bool webNativeSerialization = false,
+  }) {
     final controller = StreamChannelController<Object?>();
 
     onmessage = (web.MessageEvent event) {
@@ -31,12 +34,18 @@ extension WebPortToChannel on web.MessagePort {
       if (explicitClose && message == _disconnectMessage.toJS) {
         // Other end has closed the connection
         controller.local.sink.close();
+      } else if (webNativeSerialization) {
       } else {
         controller.local.sink.add(message.dartify());
       }
     }.toJS;
 
-    controller.local.stream.listen((e) => postMessage(e.jsify()), onDone: () {
+    controller.local.stream.listen((e) {
+      if (webNativeSerialization) {
+      } else {
+        postMessage(e.jsify());
+      }
+    }, onDone: () {
       // Closed locally, inform the other end.
       if (explicitClose) {
         postMessage(_disconnectMessage.toJS);
