@@ -333,7 +333,7 @@ final class SuccessResponse extends Message {
 }
 
 final class PrimitiveResponsePayload implements ResponsePayload {
-  final Object? message;
+  final Object message;
 
   PrimitiveResponsePayload.bool(bool this.message);
   PrimitiveResponsePayload.int(int this.message);
