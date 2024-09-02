@@ -398,11 +398,9 @@ class UpdatingQuery extends SqlQuery {
   @override
   final AstNode root;
 
-  bool get isOnlyDelete =>
-      updates.isNotEmpty && updates.every((w) => w.kind == UpdateKind.delete);
+  bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
 
-  bool get isOnlyUpdate =>
-      updates.isNotEmpty && updates.every((w) => w.kind == UpdateKind.update);
+  bool get isOnlyUpdate => updates.every((w) => w.kind == UpdateKind.update);
 
   UpdatingQuery(
     String name,
