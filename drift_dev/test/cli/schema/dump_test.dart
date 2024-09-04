@@ -54,9 +54,6 @@ void main() {
             "moor_type": "int",
             "nullable": false,
             "customConstraints": "PRIMARY KEY",
-            "dialectAwareDefaultConstraints": {
-              "sqlite": "PRIMARY KEY"
-            },
             "default_dart": null,
             "default_client_dart": null,
             "dsl_features": [
