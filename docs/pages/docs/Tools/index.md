@@ -1,6 +1,6 @@
 ---
 data:
-  title: "Command line tools for drift"
+  title: "Drift tools"
   description: A set of CLI tools to interact with drift projects
   weight: 20
 path: /cli/
@@ -70,7 +70,7 @@ The generated file (`schema.json` in this case) contains information about all
 - dependencies thereof
 
 Exporting a schema can be used to generate test code for your schema migrations. For details,
-see [the guide]({{ "Migrations/tests.md" | pageUrl }}).
+see [the guide]({{ "../Migrations/tests.md" | pageUrl }}).
 
 ### Exporting
 
