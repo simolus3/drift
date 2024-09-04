@@ -48,6 +48,8 @@ class ExportSchemaCommand extends Command {
       usageException(
           'Expected input path to Dart source declaring database file.');
     }
+    final dialect =
+        SqlDialect.values.byName(argResults!.option('dialect') ?? 'sqlite');
 
     var (:elements, schemaVersion: _) =
         await cli.readElementsFromSource(File(rest.single).absolute);
@@ -65,6 +67,9 @@ class ExportSchemaCommand extends Command {
       DriftOptions.fromJson({
         ...cli.project.options.toJson(),
         'generate_manager': false,
+        'sql': {
+          'dialect': dialect.name,
+        },
       }),
       generationOptions: GenerationOptions(
         forSchema: 1,
@@ -102,19 +107,19 @@ void main(List<String> args, SendPort port) {
     final receiveErrors = ReceivePort();
     final isolate = await Isolate.spawnUri(
       Uri.dataFromString(output),
-      [argResults!.option('dialect') ?? 'sqlite'],
+      [dialect.name],
       receive.sendPort,
       errorsAreFatal: true,
       onError: receiveErrors.sendPort,
     );
 
     await Future.any([
-      receiveErrors.first.then((e) {
+      receiveErrors.firstOrNever.then((e) {
         stderr
           ..writeln('Could not spawn isolate to print statements: $e')
           ..flush();
       }),
-      receive.first.then((statements) {
+      receive.firstOrNever.then((statements) {
         for (final statement in (statements as List).cast<String>()) {
           if (statement.endsWith(';')) {
             print(statement);
@@ -131,4 +136,21 @@ void main(List<String> args, SendPort port) {
   }
 
   static final _dartfmt = DartFormatter();
+}
+
+extension<T> on Stream<T> {
+  /// Variant of [Stream.first] that, when the stream is closed without emitting
+  /// an event, simply never completes instead of throwing.
+  Future<T> get firstOrNever {
+    final completer = Completer<T>.sync();
+    late StreamSubscription<T> subscription;
+    subscription = listen((data) {
+      subscription.cancel();
+      completer.complete(data);
+    }, onError: (Object error, StackTrace trace) {
+      subscription.cancel();
+      completer.completeError(error, trace);
+    });
+    return completer.future;
+  }
 }

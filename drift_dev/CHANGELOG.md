@@ -2,6 +2,9 @@
 
 - Strip leading numbers when generating modular accessor names for drift files,
   fixing syntax errors.
+- Support triggers targeting views.
+- Include dialect-specific constraints in exported schema files.
+- Fix `schema export` not respecting column constraints of the target dialect.
 
 ## 2.20.1
 

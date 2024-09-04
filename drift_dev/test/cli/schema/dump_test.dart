@@ -34,7 +34,7 @@ void main() {
 {
   "_meta": {
     "description": "This file contains a serialized version of schema entities for drift.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "options": {
     "store_date_time_values_as_text": false
@@ -54,6 +54,9 @@ void main() {
             "moor_type": "int",
             "nullable": false,
             "customConstraints": "PRIMARY KEY",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY"
+            },
             "default_dart": null,
             "default_client_dart": null,
             "dsl_features": [

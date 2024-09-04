@@ -3,6 +3,7 @@ library;
 
 import 'dart:convert';
 
+import 'package:drift/backends.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/file_results.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
@@ -16,8 +17,18 @@ import '../../analysis/test_utils.dart';
 
 void main() {
   test('writer integration test', () async {
-    final state = await TestBackend.inTest({
-      'a|lib/a.drift': '''
+    const options = DriftOptions.defaults(
+      dialect: DialectOptions(
+        null,
+        [SqlDialect.sqlite, SqlDialect.postgres],
+        SqliteAnalysisOptions(
+          modules: [SqlModule.fts5],
+        ),
+      ),
+    );
+    final state = await TestBackend.inTest(
+      {
+        'a|lib/a.drift': '''
 import 'main.dart';
 
 CREATE TABLE "groups" (
@@ -48,7 +59,7 @@ CREATE VIEW my_view WITH MyViewRow AS SELECT id FROM "groups";
 
 simple_query: SELECT * FROM my_view; -- not part of the schema
       ''',
-      'a|lib/main.dart': '''
+        'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
 
 class Users extends Table {
@@ -77,14 +88,17 @@ class MyViewRow {
 @DriftDatabase(include: {'a.drift'}, tables: [Users])
 class Database {}
       ''',
-    }, options: const DriftOptions.defaults(modules: [SqlModule.fts5]));
+      },
+      options: options,
+    );
 
     final file = await state.analyze('package:a/main.dart');
     state.expectNoErrors();
 
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
-    final schemaJson = SchemaWriter(db.availableElements).createSchemaJson();
+    final schemaJson =
+        SchemaWriter(db.availableElements, options: options).createSchemaJson();
 
     expect(schemaJson, json.decode(expected));
 
@@ -136,7 +150,7 @@ const expected = r'''
 {
     "_meta": {
         "description": "This file contains a serialized version of schema entities for drift.",
-        "version": "1.1.0"
+        "version": "1.2.0"
     },
     "options": {
         "store_date_time_values_as_text": false
@@ -245,6 +259,10 @@ const expected = r'''
                         "nullable": false,
                         "customConstraints": null,
                         "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+                        "dialectAwareDefaultConstraints": {
+                          "sqlite": "PRIMARY KEY AUTOINCREMENT",
+                          "postgres": "PRIMARY KEY AUTOINCREMENT"
+                        },
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [

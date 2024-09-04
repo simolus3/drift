@@ -10,7 +10,8 @@ import '../../analysis/options.dart';
 import '../../writer/utils/column_constraints.dart';
 
 class _ExportedSchemaVersion {
-  static final Version current = Version(1, 1, 0);
+  static final Version current = _supportDialectSpecificConstraints;
+  static final Version _supportDialectSpecificConstraints = Version(1, 2, 0);
   static final Version _supportDartIndex = Version(1, 1, 0);
 
   final Version version;
@@ -154,6 +155,11 @@ class SchemaWriter {
 
   Map<String, Object?> _columnData(DriftColumn column) {
     final constraints = defaultConstraints(column);
+    final dialectSpecific = {
+      for (final dialect in options.supportedDialects)
+        if (constraints[dialect] case final specific?)
+          if (specific.isNotEmpty) dialect: specific,
+    };
 
     return {
       'name': column.nameInSql,
@@ -163,8 +169,12 @@ class SchemaWriter {
       'customConstraints': column.customConstraints,
       if (constraints[SqlDialect.sqlite]!.isNotEmpty &&
           column.customConstraints == null)
-        // TODO: Dialect-specific constraints in schema file
         'defaultConstraints': constraints[SqlDialect.sqlite]!,
+      if (column.customConstraints == null && dialectSpecific.isNotEmpty)
+        'dialectAwareDefaultConstraints': {
+          for (final MapEntry(:key, :value) in dialectSpecific.entries)
+            key.name: value,
+        },
       'default_dart': column.defaultArgument?.toString(),
       'default_client_dart': column.clientDefaultCode?.toString(),
       'dsl_features': [...column.constraints.map(_dslFeatureData)],
@@ -448,6 +458,8 @@ class SchemaReader {
     );
   }
 
+  static final _dialectByName = SqlDialect.values.asNameMap();
+
   DriftColumn _readColumn(Map<String, dynamic> data) {
     final name = data['name'] as String;
     final columnType =
@@ -455,10 +467,19 @@ class SchemaReader {
     final nullable = data['nullable'] as bool;
     final customConstraints = data['customConstraints'] as String?;
     final defaultConstraints = data['defaultConstraints'] as String?;
+    final dialectAwareConstraints =
+        data['dialectAwareDefaultConstraints'] as Map<String, Object?>?;
+
     final dslFeatures = <DriftColumnConstraint?>[
       for (final feature in data['dsl_features'] as List<dynamic>)
         _columnFeature(feature),
-      if (defaultConstraints != null)
+      if (dialectAwareConstraints != null)
+        DefaultConstraintsFromSchemaFile(null, dialectSpecific: {
+          for (final MapEntry(:key, :value)
+              in dialectAwareConstraints.cast<String, String>().entries)
+            if (_dialectByName[key] case final dialect?) dialect: value,
+        })
+      else if (defaultConstraints != null)
         DefaultConstraintsFromSchemaFile(defaultConstraints),
     ].whereType<DriftColumnConstraint>().toList();
     final getterName = data['getter_name'] as String?;
