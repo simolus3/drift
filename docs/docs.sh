@@ -77,6 +77,13 @@ if [ $arg1 == "build" ]; then
         echo "Failed to build the example project"
         exit 1
     fi
+    # Run build_runner to generate files in the `test` directory
+    dart run build_runner  build
+    if [ $? -ne 0 ]; then
+        echo "Failed to build the example project"
+        exit 1
+    fi
+
     flutter build web --base-href "/examples/app/" --no-web-resources-cdn
     if [ $? -ne 0 ]; then
         echo "Failed to build the example project"

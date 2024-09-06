@@ -134,11 +134,11 @@ nav:
       - upgrading.md
   - Examples:
       - Examples/index.md
+      - Examples/flutter.md
       - Examples/relationships.md
       - Examples/tracing.md
       - Examples/server_sync.md
       - Examples/existing_databases.md
-      - Examples/more.md
   - Tools:
       - Tools/index.md
       - Tools/devtools.md
