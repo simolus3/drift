@@ -3,19 +3,13 @@ description: Documentation website for the drift project.
 publish_to: none
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.4.0
 
 dependencies:
   drift:
   drift_postgres:
   path: ^1.8.2
-  json_annotation: ^4.8.1
-  docsy:
-    hosted: https://simonbinder.eu
-    version: ^0.2.4
-  code_snippets:
-    hosted: https://simonbinder.eu
-    version: ^0.0.13
+  json_annotation: ^4.9.0
   # used in snippets
   http: ^1.1.0
   sqlite3: ^2.0.0
@@ -28,38 +22,31 @@ dependencies:
   rxdart: ^0.27.3
   yaml: ^3.1.1
   drift_dev: any
-  zap: ^0.2.0
-  picocss:
-    hosted: https://simonbinder.eu
-    version: ^1.5.10
   test: ^1.18.0
   postgres: ^3.0.0-0
+  uuid: ^4.4.2
 
 dev_dependencies:
-  lints: ^4.0.0
+  build_runner: ^2.4.11
+  build_verify: ^3.1.0
+  lints: ^3.0.0
   build: ^2.1.0
-  build_runner: ^2.0.5
-  build_runner_core: ^7.2.7
   build_web_compilers: ^4.0.0
-  built_site:
-    hosted: https://simonbinder.eu
-    version: ^0.2.17
   json_serializable: ^6.1.6
-  shelf: ^1.2.0
-  shelf_static: ^1.1.0
   source_span: ^1.9.1
   sqlparser:
-  zap_dev: ^0.2.3+1
+  characters: ^1.3.0
+  args: ^2.5.0
 
 dependency_overrides:
   path_provider:
-    path: assets/path_provider
+    path: stubs/path_provider
   sqlite3_flutter_libs:
-    path: assets/sqlite3_flutter_libs
+    path: stubs/sqlite3_flutter_libs
   sqlcipher_flutter_libs:
-    path: assets/sqlcipher_flutter_libs
+    path: stubs/sqlcipher_flutter_libs
   drift_flutter:
-    path: assets/drift_flutter
+    path: stubs/drift_flutter
   drift:
     path: ../drift
   drift_dev:

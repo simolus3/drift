@@ -1,27 +1,15 @@
 builders:
   versions:
-    import: 'tool/write_versions.dart'
-    build_to: cache
+    import: "builders/write_versions.dart"
+    build_to: source
     builder_factories: ["writeVersions"]
-    build_extensions: {"$package$": ["lib/versions.json"]}
-  api_index:
-    import: 'package:code_snippets/indexer.dart'
-    build_to: cache
-    builder_factories: ['DartIndexBuilder.new']
-    auto_apply: all_packages
-    runs_before: [code_snippets]
-    build_extensions: {"lib/lib": ['api.json']}
+    build_extensions: { "$package$": ["lib/versions.json"] }
   code_snippets:
-    import: 'tool/snippets.dart'
-    build_to: cache
+    import: "builders/snippets.dart"
+    build_to: source
     builder_factories: ["SnippetsBuilder.new"]
-    build_extensions: {"": [".excerpt.json"]}
+    build_extensions: { "": [".excerpt.json"] }
     auto_apply: none
-    defaults:
-      options:
-        release: false
-      release_options:
-        release: true
 
 targets:
   prepare:
@@ -35,8 +23,7 @@ targets:
       - "$package$"
       - "lib/versions.json"
       - "lib/snippets/**"
-      - "tool/write_versions.dart"
-      - "tool/snippets.dart"
+      - "builders/**"
       - "test/generated/**"
 
   codegen:
@@ -74,8 +61,8 @@ targets:
       json_serializable:
         enabled: true
     sources:
-     - lib/**
-     - test/generated/**
+      - lib/**
+      - test/generated/**
 
   syntax_highlighting:
     dependencies: [":codegen"]
@@ -93,10 +80,10 @@ targets:
     sources:
       - "$package$"
       - "lib/snippets/**"
-      - "tool/snippets.dart"
+      - "builders/snippets.dart"
 
   worker:
-    dependencies: ['$default']
+    dependencies: ["$default"]
     auto_apply_builders: false
     sources:
       - "web/drift_worker.dart"
@@ -117,9 +104,6 @@ targets:
   $default:
     dependencies: [":codegen", ":syntax_highlighting"]
     builders:
-      built_site:
-        release_options:
-          environment: "preview"
       build_web_compilers:entrypoint:
         generate_for:
           include:
@@ -148,19 +132,6 @@ targets:
       include:
         - "lib/**"
         - "pages/**"
-        - "templates/**"
         - "web/**"
         - "$package$"
         - "pubspec.yaml"
-        - "theme.yaml"
-        - "website.yaml"
-
-# Snippets referencing public API members from this package will get dartdoc links
-# embedded in them.
-global_options:
-  ":api_index":
-    options:
-      packages: ['drift', 'drift_dev', 'sqlite3', 'sqlite3_flutter_libs', 'sqlcipher_flutter_libs']
-
-additional_public_assets:
-  - "pages/**"
