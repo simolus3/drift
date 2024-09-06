@@ -18,14 +18,7 @@ If something on a page appears to be wrong or outdated, please include a link to
 the relevant section and mention what didn't work (or possibly what should be
 written instead).
 
-**Versions**
-
-Please add here the versions of `drift` you're using. It might be relevant to the docs to show somethings version-wise in specific cases.
-
-**Screenshots**
-
-Add screenshots and videos here if needed to help explain your point. For example if something in the website is not behaving correctly.
-
 **Aditional info**
 
-Write down any aditional info/discussion for this issue.
+Write down any aditional info/discussion for this issue. If you think the documentation issue may be related to your drift version, please include the versions of `drift` you're using.
+Also, feel free to add screenshots or videos if they help explaining the documentation issue.
