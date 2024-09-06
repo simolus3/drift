@@ -1,15 +1,11 @@
 ---
-data:
-  title: Native Drift (cross-platform)
-  description: Run drift on both mobile and desktop
-  weight: 1
-template: layouts/docs/single
 
-aliases:
-  - docs/other-engines/vm/
+title: Native Drift (cross-platform)
+description: Run drift on both mobile and desktop
+
 ---
 
-{% assign snippets = "package:drift_docs/snippets/platforms/vm.dart.excerpt.json" | readString | json_decode %}
+
 
 ## Supported platforms
 
@@ -21,10 +17,10 @@ If you're shipping apps for Windows and Linux, it is recommended that you bundle
 `sqlite3.so` and `sqlite3.dll` file with your app. You can then make `drift`
 support your setup by running this code before opening the database:
 
-{% include "blocks/snippet" snippets = snippets name = "setup" %}
+{{ load_snippet('setup','lib/snippets/platforms/vm.dart.excerpt.json') }}
 
 For Flutter apps, using the `drift_flutter` package as suggested in the
-[setup instructions]({{ '../setup.md' | pageUrl }}) takes care of these steps.
+[setup instructions](../setup.md) takes care of these steps.
 
 ## Drift-managed background isolates
 
@@ -38,7 +34,7 @@ When using `NativeDatabase.createInBackground` instead of the raw `NativeDatbase
 constructor, drift will set up a background isolate responsible for hosting the
 database:
 
-{% include "blocks/snippet" snippets = snippets name = "background-simple" %}
+{{ load_snippet('background-simple','lib/snippets/platforms/vm.dart.excerpt.json') }}
 
 You can use the returned `QueryExecutor` with the constructor of your database
 class. This means that the usage of the database doesn't change at all, only the
@@ -67,14 +63,14 @@ access the same database.
 An additional pool of readers can be enabled with the `readPool` argument on
 `NativeDatabase.createInBackground`:
 
-{% include "blocks/snippet" snippets = snippets name = "background-pool" %}
+{{ load_snippet('background-pool','lib/snippets/platforms/vm.dart.excerpt.json') }}
 
 In this snippet, drift will spawn five isolates to host the database: One for writes,
 and four additional ones only used for reads.
 Note that transactions and `exclusively` blocks on the database will always use the
 write isolate.
 
-## Using native drift with an existing database {#using-moor-ffi-with-an-existing-database}
+## Using native drift with an existing database 
 
 If your existing sqlite database is stored as a file, you can just use `NativeDatabase(thatFile)` - no further
 changes are required.
@@ -96,7 +92,7 @@ LazyDatabase(() async {
 });
 ```
 
-Using existing databases is explained in more detail in [this example]({{ '../Examples/existing_databases.md' | pageUrl }}).
+Using existing databases is explained in more detail in [this example](../Examples/existing_databases.md).
 
 ## Used compile options on Android
 
@@ -108,7 +104,7 @@ The chosen options help reduce binary size by removing features not used by drif
 - __SQLITE_DQS=0__: This will make sqlite not accept double-quoted strings (and instead parse them as identifiers). This matches
   the behavior of drift and compiled queries
 - __SQLITE_THREADSAFE=0__: Since the majority of Flutter apps only use one isolate, thread safety is turned off. Note that you
-  can still use the [isolate api]({{"../isolates.md" | pageUrl}}) for background operations. As long as all
+  can still use the [isolate api](../isolates.md") for background operations. As long as all
   database accesses happen from the same thread, there's no problem.
 - SQLITE_DEFAULT_MEMSTATUS=0: The `sqlite3_status()` interfaces are not exposed by drift, so there's no point of having them.
 - SQLITE_MAX_EXPR_DEPTH=0: Disables maximum depth when sqlite parses expressions, which can make the parser faster.
@@ -123,7 +119,7 @@ The chosen options help reduce binary size by removing features not used by drif
 
 For more details on sqlite compile options, see [their documentation](https://www.sqlite.org/compile.html).
 
-## Drift-only functions {#moor-only-functions}
+## Drift-only functions 
 
 The `NativeDatabase` includes additional sql functions not available in standard sqlite:
 
@@ -137,7 +133,7 @@ The `NativeDatabase` includes additional sql functions not available in standard
 
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
 
-When enabling the `moor_ffi` module in your [build options]({{ "../Generation options/index.md#available-extensions" | pageUrl }}),
+When enabling the `moor_ffi` module in your [build options](../Generation options/index.md#available-extensions),
 the generator will allow you to use those functions in drift files or compiled queries.
 
 To use those methods from Dart, you need to import `package:drift/extensions/native.dart`.
@@ -165,11 +161,11 @@ Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
 All the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
 They have that `sql` prefix to avoid clashes with `dart:math`.
 
-## Migrating from moor_flutter to `drift/native` {#migrating-from-moor_flutter-to-moor-ffi}
+## Migrating from moor_flutter to `drift/native` 
 
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
 add both the `drift` and `sqlite3_flutter_libs` dependencies:
-{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+
 
 ```yaml
 dependencies:

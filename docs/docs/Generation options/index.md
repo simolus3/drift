@@ -1,12 +1,8 @@
 ---
-data:
-  title: Generation options
-  description: Options for `drift_dev` and `build_runner` to change the generated code.
-  weight: 7
-template: layouts/docs/list
-path: docs/advanced-features/builder_options/
-aliases:
-  - "options/"
+
+title: Generation options
+description: Options for `drift_dev` and `build_runner` to change the generated code.
+
 ---
 
 The `drift_dev` package supports a range of options that control how code
@@ -46,7 +42,7 @@ At the moment, drift supports these options:
   of inserted data and report detailed errors when the integrity is violated. If you're only using
   inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
   generated code.
-- `use_data_class_name_for_companions`: By default, the name for [companion classes]({{ "../Dart API/writes.md#updates-and-deletes" | pageUrl }})
+- `use_data_class_name_for_companions`: By default, the name for [companion classes](../Dart API/writes.md#updates-and-deletes)
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
@@ -71,15 +67,15 @@ At the moment, drift supports these options:
   to `null`.
 - `named_parameters`: Generates named parameters for named variables in SQL queries.
 - `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
-- `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders]({{ '../SQL API/drift_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
+- `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders](../SQL API/drift_files.md#dart-components-in-sql) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
 - `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
-  For more information on these modes, see [datetime options]({{ '../Dart API/tables.md#datetime-options' | pageUrl }}).
+  For more information on these modes, see [datetime options](../Dart API/tables.md#datetime-options).
 - `case_from_dart_to_sql` (defaults to `snake_case`): Controls how the table and column names are re-cased from the Dart identifiers.
   The possible values are `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 - `write_to_columns_mixins`: Whether the `toColumns` method should be written as a mixin instead of being added directly to the data class.
-  This is useful when using [existing row classes]({{ '../custom_row_classes.md' | pageUrl }}), as the mixin is generated for those as well.
+  This is useful when using [existing row classes](../custom_row_classes.md), as the mixin is generated for those as well.
 - `has_separate_analyzer`: This option is only relevant when using the `drift_dev:not_shared` builder, which needs to use a less efficient
   analysis implementation than the other builders by default. After also applying `drift_dev:analyzer` to the same build target, this option
   can be enabled to speed up builds. This option has no effect with the default or the modular builder.
@@ -185,7 +181,7 @@ We currently support the following extensions:
   polygons. Note that this is not the case for most sqlite3 builds,
   including the ones shipping with `sqlite3_flutter_libs`.
 - `moor_ffi`: Enables support for functions that are only available when using a `NativeDatabase`. This contains `pow`, `sqrt` and a variety
-  of trigonometric functions. Details on those functions are available [here]({{ "../Platforms/vm.md#moor-only-functions" | pageUrl }}).
+  of trigonometric functions. Details on those functions are available [here](../Platforms/vm.md#moor-only-functions).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
   This module is largely incompatible with the `moor_ffi` module.
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)
@@ -226,15 +222,15 @@ optional `NULL` keyword can be used to indicate whether the type is nullable.
 ## Recommended options
 
 In general, we recommend using the default options.
-{%- comment %}
-However, some options will be enabled by default in a future drift release.
+
+<!-- However, some options will be enabled by default in a future drift release.
 At the moment, they're opt-in to not break existing users. These options are:
 
 (Currently all recommended options are also the default)
 
-We recommend enabling these options.
+We recommend enabling these options. -->
 
-{% endcomment %}
+
 However, you can disable some default drift features and reduce the amount of generated code with the following options:
 
 - `skip_verification_code: true`: You can remove a significant portion of generated code with this option. The

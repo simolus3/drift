@@ -1,12 +1,8 @@
 ---
-data:
-  title: Expressions
-  description: Deep-dive into what kind of SQL expressions can be written in Dart
-  weight: 5
 
-# used to be in the "getting started" section
-path: docs/getting-started/expressions/
-template: layouts/docs/single
+title: Expressions
+description: Deep-dive into what kind of SQL expressions can be written in Dart
+
 ---
 
 Expressions are pieces of SQL that return a value when the database interprets them.
@@ -18,7 +14,7 @@ In most cases, you're writing an expression that combines other expressions. Any
 column name is a valid expression, so for most `where` clauses you'll be writing
 a expression that wraps a column name in some kind of comparison.
 
-{% assign snippets = 'package:drift_docs/snippets/dart_api/expressions.dart.excerpt.json' | readString | json_decode %}
+
 
 ## Comparisons
 Every expression can be compared to a value by using `equals`. If you want to compare
@@ -78,9 +74,9 @@ a concatenation in SQL.
 For integer values, you can use `~`, `bitwiseAnd` and `bitwiseOr` to perform
 bitwise operations:
 
-{% include "blocks/snippet" snippets = snippets name = 'bitwise' %}
+{{ load_snippet('bitwise','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
 
-## Null checks {#nullability}
+## Null checks 
 To check whether an expression evaluates to `NULL` in SQL, you can use the `isNull` extension:
 
 ```dart
@@ -106,7 +102,7 @@ For columns and expressions that return a `DateTime`, you can use the
 `year`, `month`, `day`, `hour`, `minute` and `second` getters to extract individual
 fields from that date:
 
-{% include "blocks/snippet" snippets = snippets name = 'date1' %}
+{{ load_snippet('date1','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
 
 The individual fields like `year`, `month` and so on are expressions themselves. This means
 that you can use operators and comparisons on them.
@@ -115,12 +111,12 @@ and `currentDateAndTime` constants provided by drift.
 
 You can also use the `+` and `-` operators to add or subtract a duration from a time column:
 
-{% include "blocks/snippet" snippets = snippets name = 'date2' %}
+{{ load_snippet('date2','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
 
 For more complex transformations of a datetime, the `modify` and `modifyAll` function is useful.
 For instance, this increments every `dueDate` value for todo items to the same time on a Monday:
 
-{% include "blocks/snippet" snippets = snippets name = 'date3' %}
+{{ load_snippet('date3','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
 
 ## `IN` and `NOT IN`
 You can check whether an expression is in a list of values by using the `isIn` and `isNotIn`
@@ -135,16 +131,16 @@ Again, the `isNotIn` function works the other way around.
 
 Support for common JSON operators is provided through `package:drift/extensions/json1.dart`.
 This provides things like `jsonExtract` to extract fields from JSON or `jsonEach` to query
-nested JSON structures. For more details, see the [JSON support]({{ 'select.md#json-support' | pageUrl }}) section on the page about selects or [this more complex example]({{ '../Examples/relationships.md#with-json-functions' | pageUrl }}).
+nested JSON structures. For more details, see the [JSON support](select.md#json-support) section on the page about selects or [this more complex example](../Examples/relationships.md#with-json-functions).
 
-## Aggregate functions (like count and sum) {#aggregate}
+## Aggregate functions (like count and sum) 
 
 [Aggregate functions](https://www.sqlite.org/lang_aggfunc.html) are available
 from the Dart api. Unlike regular functions, aggregate functions operate on multiple rows at
 once.
 By default, they combine all rows that would be returned by the select statement into a single value.
 You can also make them run over different groups in the result by using
-[group by]({{ "select.md#group-by" | pageUrl }}).
+[group by](select.md#group-by).
 
 ### Comparing
 
@@ -168,12 +164,12 @@ Stream<double> averageItemLength() {
 
 __Note__: We're using `selectOnly` instead of `select` because we're not interested in any colum that
 `todos` provides - we only care about the average length. More details are available
-[here]({{ "select.md#group-by" | pageUrl }})
+[here](select.md#group-by)
 
 ### Counting
 
 Sometimes, it's useful to count how many rows are present in a group. By using the
-[table layout from the example]({{ "../setup.md" | pageUrl }}), this
+[table layout from the example](../setup.md), this
 query will report how many todo entries are associated to each category:
 
 ```dart
@@ -198,7 +194,7 @@ To count all rows (instead of a single value), you can use the top-level `countA
 function.
 
 More information on how to write aggregate queries with drift's Dart api is available
-[here]({{ "select.md#group-by" | pageUrl }})
+[here](select.md#group-by)
 
 ### group_concat
 
@@ -220,7 +216,7 @@ with the `separator` argument on `groupConcat`.
 
 When using a `NativeDatabase`, a basic set of trigonometric functions will be available.
 It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in SQL queries.
-For more information, see the [list of functions]({{ "../Platforms/vm.md#moor-only-functions" | pageUrl }}) here.
+For more information, see the [list of functions](../Platforms/vm.md#moor-only-functions) here.
 
 ## Subqueries
 
@@ -259,12 +255,12 @@ The subquery must return exactly one column, but it is allowed to return more th
 The `existsQuery` and `notExistsQuery` functions can be used to check if a subquery contains
 any rows. For instance, we could use this to find empty categories:
 
-{% include "blocks/snippet" snippets = snippets name = 'emptyCategories' %}
+{{ load_snippet('emptyCategories','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
 
 ### Full subqueries
 
 Drift also supports subqueries that appear in `JOIN`s, which are described in the
-[documentation for joins]({{ 'select.md#subqueries' | pageUrl }}).
+[documentation for joins](select.md#subqueries).
 
 ## Custom expressions
 If you want to inline custom SQL into Dart queries, you can use a `CustomExpression` class.
@@ -277,4 +273,4 @@ select(users)..where((u) => inactive);
 _Note_: It's easy to write invalid queries by using `CustomExpressions` too much. If you feel like
 you need to use them because a feature you use is not available in drift, consider creating an issue
 to let us know. If you just prefer SQL, you could also take a look at
-[compiled SQL]({{ "../SQL API/custom_queries.md" | pageUrl }}) which is type-safe to use.
+[compiled SQL](../SQL API/custom_queries.md) which is type-safe to use.

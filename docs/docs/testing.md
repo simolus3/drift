@@ -1,10 +1,8 @@
 ---
-data:
-  title: "Testing"
-  description: Guide on writing unit tests for drift databases
-  weight: 10
 
-template: layouts/docs/single
+title: Testing
+description: Guide on writing unit tests for drift databases
+
 ---
 
 Flutter apps using drift can always be tested with [integration tests](https://flutter.dev/docs/cookbook/testing/integration/introduction)
@@ -51,28 +49,32 @@ class MyDatabase extends _$MyDatabase {
 }
 ```
 
-{% block "blocks/alert" title="Installing sqlite" %}
-We can't distribute an sqlite installation as a pub package (at least
-not as something that works outside of a Flutter build), so you need
-to ensure that you have the sqlite3 shared library installed on your
-system.
+!!! note "Installing sqlite"
 
-On macOS, it's installed by default.
+    
+    We can't distribute an sqlite installation as a pub package (at least
+    not as something that works outside of a Flutter build), so you need
+    to ensure that you have the sqlite3 shared library installed on your
+    system.
+    
+    On macOS, it's installed by default.
+    
+    On Linux, you can use the `libsqlite3-dev` package on Ubuntu and the
+    `sqlite3` package on Arch (other distros will have similar packages).
+    
+    On Windows, you can [download 'Precompiled Binaries for Windows'](https://www.sqlite.org/download.html)
+    and extract `sqlite3.dll` into a folder that's in your `PATH`
+    environment variable. Then restart your device to ensure that
+    all apps will run with this `PATH` change.
+    
+    As `sqlite3_flutter_libs` bundles the latest sqlite3 version with your app,
+    using a recent sqlite3 version is recommended to avoid differences in how tests
+    behave from your app.
+    The minimum sqlite version tested with drift is 3.29.0, but many drift features
+    like `returning` or generated columns will require more recent versions.
+    
 
-On Linux, you can use the `libsqlite3-dev` package on Ubuntu and the
-`sqlite3` package on Arch (other distros will have similar packages).
 
-On Windows, you can [download 'Precompiled Binaries for Windows'](https://www.sqlite.org/download.html)
-and extract `sqlite3.dll` into a folder that's in your `PATH`
-environment variable. Then restart your device to ensure that
-all apps will run with this `PATH` change.
-
-As `sqlite3_flutter_libs` bundles the latest sqlite3 version with your app,
-using a recent sqlite3 version is recommended to avoid differences in how tests
-behave from your app.
-The minimum sqlite version tested with drift is 3.29.0, but many drift features
-like `returning` or generated columns will require more recent versions.
-{% endblock %}
 
 ## Writing tests
 
@@ -123,4 +125,4 @@ test('stream emits a new user when the name updates', () async {
 ## Testing migrations
 
 Drift can help you generate code for schema migrations. For more details, see
-[this guide]({{ "Migrations/tests.md" | pageUrl }}).
+[this guide](Migrations/tests.md).

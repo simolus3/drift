@@ -1,8 +1,8 @@
 ---
-data:
-  title: "DevTools extension"
-  description: Inspect drift databases within DevTools
-template: layouts/docs/single
+
+title: "DevTools extension"
+description: Inspect drift databases within DevTools
+
 ---
 
 [DevTools](https://docs.flutter.dev/tools/devtools) is a collection of performance and debugging

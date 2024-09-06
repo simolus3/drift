@@ -1,8 +1,8 @@
 ---
-data:
-  title: "Importing and exporting databases"
-  description: Using drift with an existing database
-template: layouts/docs/single
+
+title: Importing and exporting databases
+description: Using drift with an existing database
+
 ---
 
 You can use drift with a pre-propulated database that you ship with your app.

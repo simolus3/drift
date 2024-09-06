@@ -1,22 +1,18 @@
 ---
-data:
-  title: "Selects"
-  description: "Select rows or individual columns from tables in Dart"
-  weight: 2
-template: layouts/docs/single
 
-aliases:
-  - docs/getting-started/writing_queries/
+title: Selects
+description: Select rows or individual columns from tables in Dart
+
 ---
 
-{% assign tables = 'package:drift_docs/snippets/_shared/todo_tables.dart.excerpt.json' | readString | json_decode %}
-{% assign snippets = 'package:drift_docs/snippets/dart_api/select.dart.excerpt.json' | readString | json_decode %}
+
+
 
 This page describes how to write `SELECT` statements with drift's Dart API.
 To make examples easier to grasp, they're referencing two common tables forming
 the basis of a todo-list app:
 
-{% include "blocks/snippet" snippets = tables name = 'tables' %}
+{{ load_snippet('tables','lib/snippets/_shared/todo_tables.dart.excerpt.json') }}
 
 For each table you've specified in the `@DriftDatabase` annotation on your database class,
 a corresponding getter for a table will be generated. That getter can be used to
@@ -56,21 +52,21 @@ You can apply filters to a query by calling `where()`. The where method takes a 
 should map the given table to an `Expression` of boolean. A common way to create such expression
 is by using `equals` on expressions. Integer columns can also be compared with `isBiggerThan`
 and `isSmallerThan`. You can compose expressions using `a & b, a | b` and `a.not()`. For more
-details on expressions, see [this guide]({{ "../Dart API/expressions.md" | pageUrl }}).
+details on expressions, see [this guide](../Dart API/expressions.md).
 
 ### Limit
 You can limit the amount of results returned by calling `limit` on queries. The method accepts
 the amount of rows to return and an optional offset.
 
-{% include "blocks/snippet" snippets = snippets name = 'limit' %}
+{{ load_snippet('limit','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 
 ### Ordering
 You can use the `orderBy` method on the select statement. It expects a list of functions that extract the individual
 ordering terms from the table. You can use any expression as an ordering term - for more details, see
-[this guide]({{ "../Dart API/expressions.md" | pageUrl }}).
+[this guide](../Dart API/expressions.md).
 
-{% include "blocks/snippet" snippets = snippets name = 'order-by' %}
+{{ load_snippet('order-by','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 You can also reverse the order by setting the `mode` property of the `OrderingTerm` to
 `OrderingMode.desc`.
@@ -79,7 +75,7 @@ You can also reverse the order by setting the `mode` property of the `OrderingTe
 If you know a query is never going to return more than one row, wrapping the result in a `List`
 can be tedious. Drift lets you work around that with `getSingle` and `watchSingle`:
 
-{% include "blocks/snippet" snippets = snippets name = 'single' %}
+{{ load_snippet('single','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 If an entry with the provided id exists, it will be sent to the stream. Otherwise,
 `null` will be added to stream. If a query used with `watchSingle` ever returns
@@ -90,13 +86,13 @@ instead.
 Before calling `watch` or `get` (or the single variants), you can use `map` to transform
 the result.
 
-{% include "blocks/snippet" snippets = snippets name = 'mapping' %}
+{{ load_snippet('mapping','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 ### Deferring get vs watch
 If you want to make your query consumable as either a `Future` or a `Stream`,
 you can refine your return type using one of the `Selectable` abstract base classes;
 
-{% include "blocks/snippet" snippets = snippets name = 'selectable' %}
+{{ load_snippet('selectable','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 These base classes don't have query-building or `map` methods, signaling to the consumer
 that they are complete results.
@@ -108,11 +104,11 @@ Drift supports sql joins to write queries that operate on more than one table. T
 a select regular select statement with `select(table)` and then add a list of joins using `.join()`. For
 inner and left outer joins, a `ON` expression needs to be specified.
 
-{% include "blocks/snippet" snippets = snippets name = 'joinIntro' %}
+{{ load_snippet('joinIntro','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 Of course, you can also join multiple tables:
 
-{% include "blocks/snippet" snippets = snippets name = 'otherTodosInSameCategory' %}
+{{ load_snippet('otherTodosInSameCategory','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 ### Parsing results
 
@@ -123,7 +119,7 @@ read. It contains a `rawData` getter to obtain the raw columns. But more importa
 
 In the example query above, we've read the todo entry and the category from each row like this:
 
-{% include "blocks/snippet" snippets = snippets name = 'results' %}
+{{ load_snippet('results','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 _Note_: `readTable` will throw an `ArgumentError` when a table is not present in the row. For instance,
 todo entries might not be in any category. To account for that, we use `row.readTableOrNull` to load
@@ -134,7 +130,7 @@ categories.
 Select statements aren't limited to columns from tables. You can also include more complex expressions in the
 query. For each row in the result, those expressions will be evaluated by the database engine.
 
-{% include "blocks/snippet" snippets = snippets name = 'custom-columns' %}
+{{ load_snippet('custom-columns','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 Note that the `like` check is _not_ performed in Dart - it's sent to the underlying database engine which
 can efficiently compute it for all rows.
@@ -236,7 +232,7 @@ comes from multiple rows. Common questions include
 
 What these queries have in common is that data from multiple rows needs to be combined into a single
 row. In sql, this can be achieved with "aggregate functions", for which drift has
-[builtin support]({{ "expressions.md#aggregate" | pageUrl }}).
+[builtin support](expressions.md#aggregate).
 
 _Additional info_: A good tutorial for group by in sql is available [here](https://www.sqlitetutorial.net/sqlite-group-by/).
 
@@ -246,7 +242,7 @@ We're going to select all categories and join each todo entry for each category.
 We only care about how many there are. By default, drift would attempt to read each todo item when it appears
 in a join.
 
-{% include "blocks/snippet" snippets = snippets name = 'countTodosInCategories' %}
+{{ load_snippet('countTodosInCategories','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 To find the average length of a todo entry, we use `avg`. In this case, we don't even have to use
 a `join` since all the data comes from a single table (todos).
@@ -257,7 +253,7 @@ Drift provides a special method for this case - instead of using `select`, we us
 The "only" means that drift will only report columns we added via "addColumns". In a regular select,
 all columns from the table would be selected, which is what you'd usually need.
 
-{% include "blocks/snippet" snippets = snippets name = 'averageItemLength' %}
+{{ load_snippet('averageItemLength','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 ## Using selects as inserts
 
@@ -267,7 +263,7 @@ It is possible to construct these statements in drift with the `insertFromSelect
 This example shows how that method is used to construct a statement that creates a new category
 for each todo entry that didn't have one assigned before:
 
-{% include "blocks/snippet" snippets = snippets name = 'createCategoryForUnassignedTodoEntries' %}
+{{ load_snippet('createCategoryForUnassignedTodoEntries','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 The first parameter for `insertFromSelect` is the select statement statement to use as a source.
 Then, the `columns` map maps columns from the table in which rows are inserted to columns from the
@@ -286,13 +282,13 @@ in each category.
 It does this by first creating a select statement for the top-10 items (but not executing it), and then
 joining this select statement onto a larger one grouping by category:
 
-{% include "blocks/snippet" snippets = snippets name = 'subquery' %}
+{{ load_snippet('subquery','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
-Any statement can be used as a subquery. But be aware that, unlike [subquery expressions]({{ 'expressions.md#scalar-subqueries' | pageUrl }}), full subqueries can't use tables from the outer select statement.
+Any statement can be used as a subquery. But be aware that, unlike [subquery expressions](expressions.md#scalar-subqueries), full subqueries can't use tables from the outer select statement.
 
 ## JSON support
 
-{% assign json_snippet = 'package:drift_docs/snippets/dart_api/json.dart.excerpt.json' | readString | json_decode %}
+
 
 sqlite3 has great support for [JSON operators](https://sqlite.org/json1.html) that are also available
 in drift (under the additional `'package:drift/extensions/json1.dart'` import).
@@ -303,11 +299,11 @@ that you need to support.
 As an example, consider a contact book application that started with a JSON structure to store
 contacts:
 
-{% include "blocks/snippet" snippets = json_snippet name = 'existing' %}
+{{ load_snippet('existing','lib/snippets/dart_api/json.dart.excerpt.json') }}
 
 To easily store this contact representation in a drift database, one could use a JSON column:
 
-{% include "blocks/snippet" snippets = json_snippet name = 'contacts' %}
+{{ load_snippet('contacts','lib/snippets/dart_api/json.dart.excerpt.json') }}
 
 Note the `name` column as well: It uses `generatedAs` with the `jsonExtract` function to
 extract the `name` field from the JSON value on the fly.
@@ -315,14 +311,14 @@ The full syntax for JSON path arguments is explained on the [sqlite3 website](ht
 
 To make the example more complex, let's look at another table storing a log of phone calls:
 
-{% include "blocks/snippet" snippets = json_snippet name = 'calls' %}
+{{ load_snippet('calls','lib/snippets/dart_api/json.dart.excerpt.json') }}
 
 Let's say we wanted to find the contact for each call, if there is any with a matching phone number.
 For this to be expressible in SQL, each `contacts` row would somehow have to be expanded into a row
 for each stored phone number.
 Luckily, the `json_each` function in sqlite3 can do exactly that, and drift exposes it:
 
-{% include "blocks/snippet" snippets = json_snippet name = 'calls-with-contacts' %}
+{{ load_snippet('calls-with-contacts','lib/snippets/dart_api/json.dart.excerpt.json') }}
 
 ## Selects without tables
 
@@ -330,7 +326,7 @@ Some queries don't need a `FROM` clause at all and instead just select some expr
 An example for this may be a select that just uses subquery expressions, like here to query whether
 any rows exist in a table:
 
-{% include "blocks/snippet" snippets = snippets name = 'hasTodoItem' %}
+{{ load_snippet('hasTodoItem','lib/snippets/dart_api/select.dart.excerpt.json') }}
 
 The `selectExpressions` API is similar to `selectOnly`, except that it doesn't require any table
 at all.

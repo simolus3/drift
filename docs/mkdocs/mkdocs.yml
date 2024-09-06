@@ -134,7 +134,6 @@ nav:
           - Platforms/libsql.md
       - isolates.md
       - testing.md
-      - CLI.md
       - faq.md
       - community_tools.md
       - Internals: Internals/index.md
@@ -146,6 +145,9 @@ nav:
       - Examples/server_sync.md
       - Examples/existing_databases.md
       - Examples/more.md
+  - Tools:
+      - Tools/index.md
+      - Tools/devtools.md
 
 docs_dir: "../docs"
 

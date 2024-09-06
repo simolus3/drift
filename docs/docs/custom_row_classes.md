@@ -1,12 +1,8 @@
 ---
-data:
-  title: "Custom row classes"
-  weight: 6
-  description: >-
-    Use your own classes as data classes for drift tables
-template: layouts/docs/single
 
-path: docs/advanced-features/custom_row_classes/
+title: Custom row classes
+description: Use your own classes as data classes for drift tables
+
 ---
 
 For each table declared in Dart or in a drift file, `drift_dev` generates a row class (sometimes also referred to as _data class_)
@@ -22,8 +18,8 @@ As a solution, drift allows you to use your own classes as data classes for the 
 
 To use a custom row class, simply annotate your table definition with `@UseRowClass`.
 
-{% assign snippets = "package:drift_docs/snippets/custom_row_classes/default.dart.excerpt.json" | readString | json_decode %}
-{% include "blocks/snippet" snippets = snippets name = "start" %}
+
+{{ load_snippet('start','lib/snippets/custom_row_classes/default.dart.excerpt.json','lib/snippets/custom_row_classes/named.dart.excerpt.json') }}
 
 A row class must adhere to the following requirements:
 
@@ -47,8 +43,8 @@ By default, drift will use the default, unnamed constructor to map a row to the 
 If you want to use another constructor, set the `constructor` parameter on the
 `@UseRowClass` annotation:
 
-{% assign snippets = "package:drift_docs/snippets/custom_row_classes/named.dart.excerpt.json" | readString | json_decode %}
-{% include "blocks/snippet" snippets = snippets name = "named" %}
+
+{{ load_snippet('named','lib/snippets/custom_row_classes/default.dart.excerpt.json','lib/snippets/custom_row_classes/named.dart.excerpt.json') }}
 
 ### Static and asynchronous factories
 
@@ -128,7 +124,7 @@ class User implements Insertable<User> {
 }
 ```
 
-## Existing row classes for queries {#queries}
+## Existing row classes for queries 
 
 Existing row classes may also be applied to named queries defined in a `.drift` file.
 They have a similar syntax, adding the `WITH` keyword after the name of the query:
@@ -169,10 +165,10 @@ For your convenience, drift is using different generation strategies even for qu
 an existing row class. It is helpful to enumerate them because they affect the allowed type for
 fields in existing types as well.
 
-1. Nested tables: When the [`SELECT table.**` syntax]({{ 'SQL API/drift_files.md#nested-results' | pageUrl }})
+1. Nested tables: When the [`SELECT table.**` syntax](SQL API/drift_files.md#nested-results)
    is used in a query, drift will pack columns  from `table` into a nested object instead of generating fields
    for every column.
-2. Nested list results: The [`LIST()` macro]({{ 'SQL API/drift_files.md#list-subqueries' | pageUrl }})
+2. Nested list results: The [`LIST()` macro](SQL API/drift_files.md#list-subqueries)
    can be used to expose results of a subquery as a list.
 3. Single-table results: When a select statement reads all columns from a table (and no additional columns),
    like in `SELECT * FROM table`, drift will use the data class of the table instead of generating a new one.
@@ -203,9 +199,9 @@ While these rules may seem complicated when entirely spelled out, they are desig
 intuitive mapping one would expect.
 Consider this example:
 
-{% assign nested_drift = "package:drift_docs/snippets/custom_row_classes/employees_sql.drift.excerpt.json" | readString | json_decode %}
 
-{% include "blocks/snippet" name = "example" snippets = nested_drift %}
+
+{{ load_snippet('example','lib/snippets/custom_row_classes/employees_sql.drift.excerpt.json') }}
 
 Using the rules as defined above, let's see how the `EmployeeWithStaff` class can look like:
 The outermost result set has three columns: A `**` column, a simple expression column and a `LIST`

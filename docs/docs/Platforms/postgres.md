@@ -1,9 +1,8 @@
 ---
-data:
-  title: PostgreSQL support
-  description: Use drift with PostgreSQL database servers.
-  weight: 10
-template: layouts/docs/single
+
+title: PostgreSQL support
+description: Use drift with PostgreSQL database servers.
+
 ---
 
 While drift has originally been designed as a client-side database wrapper for SQLite databases, it can also be used
@@ -16,7 +15,7 @@ Most queries will work without any modification though.
 
 Begin by adding both `drift` and `drift_postgres` to your pubspec:
 
-{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+
 
 ```yaml
 dependencies:
@@ -29,12 +28,12 @@ dev_dependencies:
 ```
 
 Defining a database with Postgres is no different than defining it for sqlite3 - the
-pages on [Dart]({{ '../setup.md' | pageUrl }}) and [SQL]({{ '../SQL API/index.md' | pageUrl }})
+pages on [Dart](../setup.md) and [SQL](../SQL API/index.md)
 explain how to define tables picked up by drift.
 
 Different dialects require changes in generated code in some cases. Since most drift users are
 targeting sqlite3, drift generates code optimized for sqlite3 by default. To enable code generation
-for PostgreSQL as well, [create a `build.yaml`]({{ '../Generation options/index.md' | pageUrl }}) next to your pubspec with this content:
+for PostgreSQL as well, [create a `build.yaml`](../Generation options/index.md) next to your pubspec with this content:
 
 ```yaml
 targets:
@@ -48,18 +47,18 @@ targets:
               - postgres
 ```
 
-{% assign snippets = "package:drift_docs/snippets/platforms/postgres.dart.excerpt.json" | readString | json_decode %}
+
 
 Then, perhaps this example database is helpful as a starting point:
 
-{% include "blocks/snippet" snippets = snippets name = "(full)" %}
+{{ load_snippet('(full)','lib/snippets/platforms/postgres.dart.excerpt.json') }}
 
 After starting a database server, for example by running `docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`,
 you can run the example to see drift talking to Postgres.
 
 ## API extensions
 
-The postgres library provides a few [custom types]({{ '../SQL API/types.md' | pageUrl }}) enabling you to use
+The postgres library provides a few [custom types](../SQL API/types.md) enabling you to use
 postgres-specific types when writing queries in drift.
 For instance, the `PgTypes.uuid` type used in the example maps to a native UUID column type in Postgres. The
 `gen_random_uuid()` function in postgres is also exposed.

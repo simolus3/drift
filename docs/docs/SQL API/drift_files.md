@@ -1,23 +1,16 @@
 ---
-data:
-  title: "Drift files"
-  weight: 1
-  description: Learn everything about the `.drift` files, a powerful tool to define your database in SQL.
 
-aliases:
-  - /docs/using-sql/custom_tables/  # Redirect from outdated "custom tables" page which has been deleted
-  - /docs/using-sql/moor_files/
-  - /docs/using-sql/drift_files/
+title: Drift files
+description: Learn everything about the `.drift` files, a powerful tool to define your database in SQL.
 
-template: layouts/docs/single
 ---
 
-{% assign dart_snippets = "package:drift_docs/snippets/drift_files/database.dart.excerpt.json" | readString | json_decode %}
-{% assign drift_tables = "package:drift_docs/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
-{% assign small = "package:drift_docs/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
 
-{% assign newDrift = "package:drift_docs/snippets/modular/drift/example.drift.excerpt.json" | readString | json_decode %}
-{% assign newDart = "package:drift_docs/snippets/modular/drift/dart_example.dart.excerpt.json" | readString | json_decode %}
+
+
+
+
+
 
 Drift files are a new feature that lets you write all your database code in SQL.
 But unlike raw SQL strings you might pass to simple database clients, everything in a drift file is verified
@@ -29,11 +22,11 @@ Dart APIs for them so that you don't have to read back results manually.
 To use this feature, lets create two files: `database.dart` and `tables.drift`. The Dart file only contains the minimum code
 to setup the database:
 
-{% include "blocks/snippet" snippets = dart_snippets name = "overview" %}
+{{ load_snippet('overview','lib/snippets/drift_files/database.dart.excerpt.json') }}
 
 We can now declare tables and queries in the drift file:
 
-{% include "blocks/snippet" snippets = drift_tables %}
+{{ load_snippet('(full)','lib/snippets/drift_files/tables.drift.excerpt.json') }}
 
 After running the build runner with `dart run build_runner build`,
 drift will write the `database.g.dart`
@@ -70,26 +63,26 @@ When it's ambiguous, the analyzer might be unable to resolve the type of
 a variable. For those scenarios, you can also denote the explicit type
 of a variable:
 
-{% include "blocks/snippet" snippets = small name = "q1" %}
+{{ load_snippet('q1','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
 
 In addition to the base type, you can also declare that the type is nullable:
 
-{% include "blocks/snippet" snippets = small name = "q2" %}
+{{ load_snippet('q2','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
 
 Finally, you can declare that a variable should be required in Dart when using
 named parameters. To do so, add a `REQUIRED` keyword:
 
-{% include "blocks/snippet" snippets = small name = "q3" %}
+{{ load_snippet('q3','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
 
 Note that this only has an effect when the `named_parameters`
-[build option]({{ '../Generation options/index.md' | pageUrl }}) is
+[build option](../Generation options/index.md) is
 enabled. Further, non-nullable variables are required by default.
 
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but drift will desugar that at runtime. So, for this query:
 
-{% include "blocks/snippet" snippets = small name = "entries" %}
+{{ load_snippet('entries','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
 
 Drift will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
 Running `entriesWithId([1,2])` would generate `SELECT * ... id IN (?1, ?2)` and
@@ -116,7 +109,7 @@ to determine the column type based on the declared type name.
 Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
 `bool` or `DateTime` as their Dart counterpart.
 Booleans are stored as `INTEGER` (either `0` or `1`). Datetimes are stored as
-unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) [depending on a configurable build option]({{ '../Dart API/tables.md#datetime-options' | pageUrl }}).
+unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) [depending on a configurable build option](../Dart API/tables.md#datetime-options).
 For integers that should be represented as a `BigInt` in Dart (i.e. to have better compatibility with large numbers when compiling to JS),
 define the column with the `INT64` type.
 
@@ -141,12 +134,12 @@ CREATE TABLE tasks (
 );
 ```
 
-More information on storing enums is available [in the page on type converters]({{ '../type_converters.md#using-converters-in-moor' | pageUrl }}).
+More information on storing enums is available [in the page on type converters](../type_converters.md#using-converters-in-moor).
 Instead of using an integer mapping enums by their index, you can also store them
 by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
 For details on all supported types, and information on how to switch between the
-datetime modes, see [this section]({{ '../Dart API/tables.md#supported-column-types' | pageUrl }}).
+datetime modes, see [this section](../Dart API/tables.md#supported-column-types).
 
 The additional drift-specific types (`BOOLEAN`, `DATETIME`, `ENUM` and `ENUMNAME`) are also supported in `CAST`
 expressions, which is helpful for views:
@@ -183,7 +176,7 @@ statement before it runs it.
 ## Imports
 You can put import statements at the top of a `drift` file:
 
-{% include "blocks/snippet" snippets = small name = "import" %}
+{{ load_snippet('import','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
 
 All tables reachable from the other file will then also be visible in
 the current file and to the database that `includes` it. If you want
@@ -201,13 +194,13 @@ know from Dart.
 
 ## Nested results
 
-{% assign nested = "package:drift_docs/snippets/drift_files/nested.drift.excerpt.json" | readString | json_decode %}
+
 
 Many queries fetch all columns from some table, typically by using the
 `SELECT table.*` syntax. That approach can become a bit tedious when applied
 over multiple tables from a join, as shown in this example:
 
-{% include "blocks/snippet" snippets = nested name = "overview" %}
+{{ load_snippet('overview','lib/snippets/drift_files/nested.drift.excerpt.json') }}
 
 To match the returned column names while avoiding name clashes in Dart, drift
 will generate a class having an `id`, `name`,  `id1`, `lat`, `long`, `lat1` and
@@ -215,7 +208,7 @@ a `long1` field.
 Of course, that's not helpful at all - was `lat1` coming from `from` or `to`
 again? Let's rewrite the query, this time using nested results:
 
-{% include "blocks/snippet" snippets = nested name = "nested" %}
+{{ load_snippet('nested','lib/snippets/drift_files/nested.drift.excerpt.json') }}
 
 As you can see, we can nest a result simply by using the drift-specific
 `table.**` syntax.
@@ -254,13 +247,13 @@ Re-using the `coordinates` and `saved_routes` tables introduced in the example
 for [nested results](#nested-results), we add a new table storing coordinates
 along a route:
 
-{% include "blocks/snippet" snippets = nested name = "route_points" %}
+{{ load_snippet('route_points','lib/snippets/drift_files/nested.drift.excerpt.json') }}
 
 Now, assume we wanted to query a route with information about all points
 along the way. While this requires two SQL statements, we can write this as a
 single drift query that is then split into the two statements automatically:
 
-{% include "blocks/snippet" snippets = nested name = "list" %}
+{{ load_snippet('list','lib/snippets/drift_files/nested.drift.excerpt.json') }}
 
 This will generate a result set containing a `SavedRoute route` field along with a
 `List<Point> points` list of all points along the route.
@@ -280,7 +273,7 @@ Drift files work perfectly together with drift's existing Dart API:
 
 - you can write Dart queries for tables declared in a drift file:
 
-{% include "blocks/snippet" snippets = dart_snippets name = "dart_interop_insert" %}
+{{ load_snippet('dart_interop_insert','lib/snippets/drift_files/database.dart.excerpt.json') }}
 
 - by importing Dart files into a drift file, you can write sql queries for
   tables declared in Dart.
@@ -298,17 +291,17 @@ You can make most of both SQL and Dart with "Dart Templates", which is a
 Dart expression that gets inlined to a query at runtime. To use them, declare a
 $-variable in a query:
 
-{% include "blocks/snippet" snippets = newDrift name = "filterTodos" %}
+{{ load_snippet('filterTodos','lib/snippets/modular/drift/example.drift.excerpt.json') }}
 
 Drift will generate a `Selectable<Todo>` method with a `predicate` parameter that
 can be used to construct dynamic filters at runtime:
 
-{% include "blocks/snippet" snippets = newDart name = "watchInCategory" %}
+{{ load_snippet('watchInCategory','lib/snippets/modular/drift/dart_example.dart.excerpt.json') }}
 
 This lets you write a single SQL query and dynamically apply a predicate at runtime!
 This feature works for
 
-- [expressions]({{ "../Dart API/expressions.md" | pageUrl }}), as you've seen in the example above
+- [expressions](../Dart API/expressions.md), as you've seen in the example above
 - single ordering terms: `SELECT * FROM todos ORDER BY $term, id ASC`
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
@@ -318,14 +311,14 @@ This feature works for
 
 When used as expression, you can also supply a default value in your query:
 
-{% include "blocks/snippet" snippets = newDrift name = "getTodos" %}
+{{ load_snippet('getTodos','lib/snippets/modular/drift/example.drift.excerpt.json') }}
 
 This will make the `predicate` parameter optional in Dart. It will use the
 default SQL value (here, `TRUE`) when not explicitly set.
 
 ### Type converters
 
-You can import and use [type converters]({{ "../type_converters.md" | pageUrl }})
+You can import and use [type converters](../type_converters.md)
 written in Dart in a drift file. Importing a Dart file works with a regular `import` statement.
 To apply a type converter on a column definition, you can use the `MAPPED BY` column constraints:
 
@@ -351,41 +344,41 @@ FROM users;
 ```
 
 More details on type converts in drift files are available
-[here]({{ "../type_converters.md#using-converters-in-moor" | pageUrl }}).
+[here](../type_converters.md#using-converters-in-moor).
 
-When using type converters, we recommend the [`apply_converters_on_variables`]({{ "../Generation options/index.md" | pageUrl }})
+When using type converters, we recommend the [`apply_converters_on_variables`](../Generation options/index.md)
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
 
 ### Existing row classes
 
-{% assign existingDrift = "package:drift_docs/snippets/modular/drift/with_existing.drift.excerpt.json" | readString | json_decode %}
-{% assign rowClassDart = "package:drift_docs/snippets/modular/drift/row_class.dart.excerpt.json" | readString | json_decode %}
+
+
 
 You can use custom row classes instead of having drift generate one for you.
 For instance, let's say you had a Dart class defined as
 
-{% include "blocks/snippet" snippets = rowClassDart name = "user" %}
+{{ load_snippet('user','lib/snippets/modular/drift/row_class.dart.excerpt.json') }}
 
 Then, you can instruct drift to use that class as a row class as follows:
 
-{% include "blocks/snippet" snippets = existingDrift name = "users" %}
+{{ load_snippet('users','lib/snippets/modular/drift/with_existing.drift.excerpt.json') }}
 
 When using custom row classes defined in another Dart file, you also need to import that file into the file where you define
 the database.
-For more general information on this feature, please check [this page]({{ '../custom_row_classes.md' | pageUrl }}).
+For more general information on this feature, please check [this page](../custom_row_classes.md).
 
 Custom row classes can be applied to `SELECT` queries defined a `.drift` file. To use a custom row class, the `WITH` syntax
 can be added after the name of the query.
 
 For instance, let's say we expand the existing Dart code in `row_class.dart` by adding another class:
 
-{% include "blocks/snippet" snippets = rowClassDart name = "userwithfriends" %}
+{{ load_snippet('userwithfriends','lib/snippets/modular/drift/row_class.dart.excerpt.json') }}
 
 Now, we can add a corresponding query using the new class for its rows:
 
-{% include "blocks/snippet" snippets = existingDrift name = "friends" %}
+{{ load_snippet('friends','lib/snippets/modular/drift/with_existing.drift.excerpt.json') }}
 
 The `WITH UserWithFriends` syntax will make drift consider the `UserWithFriends` class.
 For every field in the constructor, drift will check the column from the query and
@@ -394,7 +387,7 @@ Internally, drift will then generate query code to map the row to an instance of
 `UserWithFriends` class.
 
 For a more complete overview of using custom row classes for queries, see
-[the section for queries]({{ '../custom_row_classes.md#queries' | pageUrl }}).
+[the section for queries](../custom_row_classes.md#queries).
 
 ### Dart documentation comments
 

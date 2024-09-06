@@ -1,16 +1,11 @@
 ---
-data:
-  title: "Transactions"
-  weight: 4
-  description: Run multiple statements atomically
 
-template: layouts/docs/single
-path: /docs/transactions/
-aliases:
-  - /transactions/
+title: Transactions
+description: Run multiple statements atomically
+
 ---
 
-{% assign snippets = "package:drift_docs/snippets/dart_api/transactions.dart.excerpt.json" | readString | json_decode %}
+
 
 Drift has support for transactions and allows multiple statements to run atomically,
 so that none of their changes is visible to the main database until the transaction
@@ -20,9 +15,9 @@ It takes a function as an argument that will be run transactionally. In the
 following example, which deals with deleting a category, we move all todo entries
 in that category back to the default category:
 
-{% include "blocks/snippet" snippets = snippets name = "deleteCategory" %}
+{{ load_snippet('deleteCategory','lib/snippets/dart_api/transactions.dart.excerpt.json') }}
 
-## ⚠️ Important things to know about transactions {#-gotchas}
+## ⚠️ Important things to know about transactions 
 There are a couple of things that should be kept in mind when working with transactions:
 
 1. __Await all calls__: All queries inside the transaction must be `await`-ed. The transaction
@@ -75,7 +70,7 @@ method invocations), a _nested transaction_ is created. Nested transactions beha
 
 The following snippet illustrates the behavior of nested transactions:
 
-{% include "blocks/snippet" snippets = snippets name = "nested" %}
+{{ load_snippet('nested','lib/snippets/dart_api/transactions.dart.excerpt.json') }}
 
 ### Supported implementations
 

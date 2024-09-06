@@ -1,16 +1,16 @@
 ---
-data:
-  title: "Views"
-  description: How to define SQL views as Dart classes
-template: layouts/docs/single
+
+title: Views
+description: How to define SQL views as Dart classes
+
 ---
 
 It is also possible to define [SQL views](https://www.sqlite.org/lang_createview.html)
 as Dart classes.
 To do so, write an abstract class extending `View`. This example declares a view reading
-the amount of todo-items added to a category in the schema from [the example]({{ 'index.md' | pageUrl }}):
-{% assign snippets = 'package:drift_docs/snippets/dart_api/views.dart.excerpt.json' | readString | json_decode %}
-{% include "blocks/snippet" snippets = snippets name = 'view' %}
+the amount of todo-items added to a category in the schema from [the example](index.md):
+
+{{ load_snippet('view','lib/snippets/dart_api/views.dart.excerpt.json') }}
 
 Inside a Dart view, use
 
@@ -20,7 +20,7 @@ Inside a Dart view, use
   The columns referenced in `select` may refer to two kinds of columns:
    - Columns defined on the view itself (like `itemCount` in the example above).
    - Columns defined on referenced tables (like `categories.description` in the example).
-     For these references, advanced drift features like [type converters]({{ '../type_converters.md' | pageUrl }})
+     For these references, advanced drift features like [type converters](../type_converters.md)
      used in the column's definition from the table are also applied to the view's column.
 
    Both kind of columns will be added to the data class for the view when selected.

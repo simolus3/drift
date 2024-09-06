@@ -1,9 +1,8 @@
 ---
-data:
-  title: "Examples"
-  weight: 30
-  description: Example apps using drift
-template: layouts/docs/list
+
+title: Examples
+description: Example apps using drift
+
 ---
 
 For a full example of a cross-platform Flutter app using drift following best
@@ -17,12 +16,10 @@ drift features:
 
 - The [encryption] example contains a simple Flutter app using an encrypted drift
   database, powered by the `sqlcipher_flutter_libs` package.
-{% comment %}
-- [web_worker] and [flutter_web_worker] are small web-only apps using drift in
+<!-- - [web_worker] and [flutter_web_worker] are small web-only apps using drift in
   a shared web worker, which allows for a real-time synchronization of the
   database across tabs. Of course, this pattern can only be embedded into
-  multi-platform apps.
-{%- endcomment %}
+  multi-platform apps. -->
 - The [migration] example makes use of advanced schema migrations and shows how
   to test migrations between different database schemas by using drift's
   [dedicated tooling][migration tooling] for this purpose.
@@ -53,7 +50,7 @@ Additional patterns are also shown and explained on this website:
 [web_worker]: https://github.com/simolus3/drift/tree/develop/examples/web_worker_example
 [flutter_web_worker]: https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example
 [migration]: https://github.com/simolus3/drift/tree/develop/examples/migrations_example
-[migration tooling]: {{ '../Migrations/tests.md#verifying-migrations' | pageUrl }}
+[migration tooling]('../Migrations/tests.md#verifying-migrations')
 [with_built_value]: https://github.com/simolus3/drift/tree/develop/examples/with_built_value
 [multi_package]: https://github.com/simolus3/drift/tree/develop/examples/multi_package
 

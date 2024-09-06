@@ -1,15 +1,18 @@
 ---
-data:
-  title: "Community"
-  weight: 50
-  description: Packages contributed by the community
-template: layouts/docs/single
+
+title: Community
+description: Packages contributed by the community
+
 ---
 
-{% block "blocks/pageinfo" %}
-Do you have a drift-related package you want to share? Awesome, please let me know!
-[Twitter](https://twitter.com/dersimolus) or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
-{% endblock %}
+!!! note ""
+
+    
+    Do you have a drift-related package you want to share? Awesome, please let me know!
+    [Twitter](https://twitter.com/dersimolus) or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
+    
+
+
 
 ## Conflict-free replicated datatypes
 

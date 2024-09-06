@@ -1,19 +1,21 @@
 ---
-data:
-  title: Web
-  description: Drift support in Flutter and Dart web apps.
-  weight: 2
-template: layouts/docs/single
-path: web/
+
+title: Web
+description: Drift support in Flutter and Dart web apps.
+
 ---
 
-{% block "blocks/pageinfo" %}
-__Good news__: With drift 2.9.0, web support is stable and officially supported!
-The `WasmDatabase.open` API is the preferred way to run drift on the web. While older
-APIs continue to work, using the stable API will bring performance and safety benefits.
-{% endblock %}
+!!! note ""
 
-{% assign snippets = "package:drift_docs/snippets/platforms/web.dart.excerpt.json" | readString | json_decode %}
+    
+    __Good news__: With drift 2.9.0, web support is stable and officially supported!
+    The `WasmDatabase.open` API is the preferred way to run drift on the web. While older
+    APIs continue to work, using the stable API will bring performance and safety benefits.
+    
+
+
+
+
 
 Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
 you can use drift databases for the web version of your Flutter and Dart applications.
@@ -31,13 +33,13 @@ a slower implementation based on IndexedDb in a shared worker. This makes drift 
 even ones that don't support the official sqlite3 build for the web.
 In some browsers, you need to serve your app with [additional COOP/COEP headers](#additional-headers) for full support (but drift works without that too - the official sqlite3 build doesn't).
 
-| Supported Browser | With [security headers](#additional-headers) | Without security headers |
-|-------------------|----------------------------------------------|--------------------------|
-| Firefox _(tested version 114)_ | Full | Full |
-| Chrome _(tested version 114)_ | Full | Good (slightly slower) |
-| Chrome on Android _(tested version 114)_ | Full | Limited (not with multiple tabs) |
-| Safari (_tested version 16.2_) | Good (slightly slower) | Good (slightly slower) |
-| Safari Technology Preview _(tested 172 (17.0))_ | Full | Good |
+| Supported Browser                               | With [security headers](#additional-headers) | Without security headers         |
+| ----------------------------------------------- | -------------------------------------------- | -------------------------------- |
+| Firefox _(tested version 114)_                  | Full                                         | Full                             |
+| Chrome _(tested version 114)_                   | Full                                         | Good (slightly slower)           |
+| Chrome on Android _(tested version 114)_        | Full                                         | Limited (not with multiple tabs) |
+| Safari (_tested version 16.2_)                  | Good (slightly slower)                       | Good (slightly slower)           |
+| Safari Technology Preview _(tested 172 (17.0))_ | Full                                         | Good                             |
 
 Firefox currently doesn't support the FileSystem Access API in private browsing windows
 (IndexedDB is supported from version 115). So drift will fall back to an IndexedDb-based
@@ -49,20 +51,24 @@ which can lead to persistence issues. Drift informs you about the chosen storage
 how critical persistence is to your app, you can instruct users to download a native app or use a different
 browser in that case.
 
-{% block "blocks/alert" title="Compatibility check"  %}
-This page includes a tiny drift database compiled to JavaScript.
-You can use it to verify drift works in the browsers you want to target.
-Clicking on the button will start a feature detection run, so you can see which file system
-implementation drift would pick on this browser and which web APIs are missing.
+!!! note "Compatibility check"
 
-<button class="btn btn-light" id="drift-compat-btn">Check compatibility</button>
+    
+    This page includes a tiny drift database compiled to JavaScript.
+    You can use it to verify drift works in the browsers you want to target.
+    Clicking on the button will start a feature detection run, so you can see which file system
+    implementation drift would pick on this browser and which web APIs are missing.
+    
+    <button class="btn btn-light" id="drift-compat-btn">Check compatibility</button>
+    
+    <pre id="drift-compat-results">
+    Compatibility check not started yet
+    </pre>
+    
+    More information about these results is available [below](#storages).
+    
 
-<pre id="drift-compat-results">
-Compatibility check not started yet
-</pre>
 
-More information about these results is available [below](#storages).
-{% endblock %}
 
 ## Getting started
 
@@ -95,13 +101,17 @@ web/
 └── sqlite3.wasm
 ```
 
-{% block "blocks/alert" title="Serving wasm files" color="info" %}
-For browsers to accept the `sqlite3.wasm` file, it must be served with
-`Content-Type: application/wasm`.
-`flutter run` does this by default, but some webservers might not. After
-deploying your app to the web, check that your server is configured to send the
-correct `Content-Type` header for wasm files.
-{% endblock %}
+!!! info "Serving wasm files"
+
+    
+    For browsers to accept the `sqlite3.wasm` file, it must be served with
+    `Content-Type: application/wasm`.
+    `flutter run` does this by default, but some webservers might not. After
+    deploying your app to the web, check that your server is configured to send the
+    correct `Content-Type` header for wasm files.
+    
+
+
 
 #### Additional headers
 
@@ -121,31 +131,35 @@ but we recommend researching and enabling these headers in production if possibl
 Also, note that the `sqlite3.wasm` file needs to be served with a `Content-Type` of
 `application/wasm` since browsers will reject the module otherwise.
 
-{% block "blocks/alert" title="Downsides of COOP and COEP" color="danger" %}
-While these headers are required for the origin-private FileSystem Access API
-and bring a security benefit, there are some known problems:
+!!! danger "Downsides of COOP and COEP"
 
-- These headers are incompatible with some other packages opening popups,
-   such as the ones used for [Google Auth](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid?hl=en#cross_origin_opener_policy).
-- Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cgi?id=245346)
-preventing dedicated workers to be loaded from cache with these headers. However, shared and service workers
-are unaffected by this.
+    
+    While these headers are required for the origin-private FileSystem Access API
+    and bring a security benefit, there are some known problems:
+    
+    - These headers are incompatible with some other packages opening popups,
+    such as the ones used for [Google Auth](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid?hl=en#cross_origin_opener_policy).
+    - Safari 16 has an [unfortunate bug](https://bugs.webkit.org/show_bug.cgi?id=245346)
+    preventing dedicated workers to be loaded from cache with these headers. However, shared and service workers
+    are unaffected by this.
+    
+    Please carefully test your app with these headers to evaluate whether you might
+    be affected by these limitations.
+    If the headers break your app, you should not enable them - drift will fall back
+    to another (potentially slower) implementation in that case.
+    
 
-Please carefully test your app with these headers to evaluate whether you might
-be affected by these limitations.
-If the headers break your app, you should not enable them - drift will fall back
-to another (potentially slower) implementation in that case.
-{% endblock %}
+
 
 ### Setup in Dart
 
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
-You can follow the [getting started guide]({{ '../setup.md' | pageUrl }}) as a general setup guide.
+You can follow the [getting started guide](../setup.md) as a general setup guide.
 
 Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized for
 the web:
 
-{% include "blocks/snippet" snippets = snippets name = "connect" %}
+{{ load_snippet('connect','lib/snippets/platforms/web.dart.excerpt.json') }}
 
 When you call `WasmDatabase.open`, drift will automatically find a suitable persistence implementation
 supported by the current browser.
@@ -224,7 +238,7 @@ function on `WasmDatabase.open`.
 This function will be called when attempting to open a database that doesn't exist yet,
 allowing the initial sqlite3 file to be provided instead:
 
-{% include "blocks/snippet" snippets = snippets name = "existing" %}
+{{ load_snippet('existing','lib/snippets/platforms/web.dart.excerpt.json') }}
 
 Please be aware that this only works for the default journal mode, WAL is not supported
 on the web and WAL databases can't be imported with `initializeDatabase` either.
@@ -233,14 +247,13 @@ on the web and WAL databases can't be imported with `initializeDatabase` either.
 
 The drift repository contains a two small web applications using drift on the web:
 
-- A tiny todo app as a showcase, [available under this website]({{ '/web/example/' | relUrl }}).
 - A cross-platform Flutter app with web support ([source code](https://github.com/simolus3/drift/tree/develop/examples/app)).
 
 If you have a cool open-source web application using drift, we'd love to list it here as well. Feel free to open a PR!
 
 ## Advanced uses
 
-### Supported storage implementations {#storages}
+### Supported storage implementations 
 
 When opening a database, drift determines the state of a number of web APIs in the current browser.
 It then picks a suitable database storage based on what the current browser supports.
@@ -278,11 +291,11 @@ may only exist on a web worker, we can't use Dart callback functions.
 However, it is possible to compile a custom worker that will setup drift databases it creates. For that,
 you can create a Dart file (usually put into `web/`) with content like:
 
-{% include "blocks/snippet" snippets = snippets name = "setupAll" %}
+{{ load_snippet('setupAll','lib/snippets/platforms/web.dart.excerpt.json') }}
 
 To open the database from the application, you can then use this:
 
-{% include "blocks/snippet" snippets = snippets name = "setupLocal" %}
+{{ load_snippet('setupLocal','lib/snippets/platforms/web.dart.excerpt.json') }}
 
 The `setupDatabase` value is duplicated with `localSetup` in case drift determines that it needs to use
 an in-memory database or an IndexedDB-powered database that doesn't run in a worker. In that case,
@@ -302,8 +315,8 @@ If you want to instead compile these yourself, this section describes how to do 
 The web worker is written in Dart - the entrypoint is stable and part of drift's public API.
 To compile a worker suitable for `WasmDatabase.open`, create a new Dart file that calls `WasmDatabase.workerMainForOpen`:
 
-{% assign worker = "package:drift_docs/snippets/platforms/stable_worker.dart.excerpt.json" | readString | json_decode %}
-{% include "blocks/snippet" snippets = worker %}
+
+{{ load_snippet('(full)','lib/snippets/platforms/stable_worker.dart.excerpt.json') }}
 
 The JavaScript file included in drift releases is compiled with `dart compile js -O4 web/drift_worker.dart`.
 You can use that command or a tool such as `build_web_compilers` to compile this worker.
@@ -353,7 +366,7 @@ its features out of the box with `WasmDatabase.open`.
 In older drift versions, you may have used a custom setup that loaded the WASM binary manually, created
 a `CommonSqlite3` instance with it and passed that to `WasmDatabase`.
 
-{% include "blocks/snippet" snippets = snippets name = "migrate-wasm" %}
+{{ load_snippet('migrate-wasm','lib/snippets/platforms/web.dart.excerpt.json') }}
 
 ### Migrating from `package:drift/web.dart`
 
@@ -361,19 +374,17 @@ To migrate from a `WebDatabase` to the new setup, you can use the `initializeDat
 It is invoked when opening the database if no file exists yet. By loading the old database there,
 it is migrated to the new format without data loss:
 
-{% include "blocks/snippet" snippets = snippets name = "migrate-legacy" %}
+{{ load_snippet('migrate-legacy','lib/snippets/platforms/web.dart.excerpt.json') }}
 
 In that snippet, `old_db` is the name previously passed to the `WebDatabase`.
 
 ## Legacy web support
 
 Drift first gained its initial web support in 2019 by wrapping the sql.js JavaScript library.
-While this implementation is still supported, it is in a deprecated bugfix-only mode.
-Unlike `package:drift/wasm.dart`, sql.js has no proper file system implementation and relies on periodically creating
-a database dump saved to local storage.
+This implementation, which is still supported today, relies on keeping an in-memory database that is periodically saved to local storage.
 In the last years, development in web browsers and the Dart ecosystem enabled more performant approaches that are
 unfortunately impossible to implement with the original drift web API.
-This is the reason the original API is now considered deprecated - while it will continue to be supported, it is now obvious that the new approach by `WasmDatabase.open` is sound and more efficient
+This is the reason the original API is still considered experimental - while it will continue to be supported, it is now obvious that the new approach by `WasmDatabase.open` is sound and more efficient
 than these implementations.
 The original APIs are still documented on this page for your reference.
 
@@ -415,27 +426,27 @@ the regular implementation.
 
 The following example is meant to be used with a regular Dart web app, compiled using
 [build_web_compilers](https://pub.dev/packages/build_web_compilers).
-A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/flutter_web_worker_example).
+A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example).
 
 To write a web worker that will serve requests for drift, create a file called `worker.dart` in
 the `web/` folder of your app. It could have the following content:
 
-{% assign workers = 'package:drift_docs/snippets/platforms/workers.dart.excerpt.json' | readString | json_decode %}
 
-{% include "blocks/snippet" snippets = workers name = "worker" %}
+
+{{ load_snippet('worker','lib/snippets/platforms/workers.dart.excerpt.json') }}
 
 For more information on this api, see the [remote API](https://pub.dev/documentation/drift/latest/remote/remote-library.html).
 
 Connecting to that worker is very simple with drift's web and remote apis. In your regular app code (outside of the worker),
 you can connect like this:
 
-{% include "blocks/snippet" snippets = workers name = "client" %}
+{{ load_snippet('client','lib/snippets/platforms/workers.dart.excerpt.json') }}
 
 You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on
-[isolates]({{ "../isolates.md" | pageUrl }}).
+[isolates](../isolates.md).
 
-A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/web_worker_example)
+A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/web_worker_example)
 in the drift repository.
 
 #### Flutter
@@ -444,7 +455,7 @@ Flutter web doesn't compile `.dart` files in web folder and won't use `.js` file
 `build_web_compilers` either. Instead, we'll use Dart's build system to manually compile the worker to a
 JavaScript file before using Flutter-specific tooling.
 
-Example is available under [examples/flutter_web_worker_example](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/flutter_web_worker_example)
+Example is available under [examples/flutter_web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example)
 in the drift repository.
 
 First, add [build_web_compilers](https://pub.dev/packages/build_web_compilers) to the project:
@@ -491,22 +502,18 @@ cp -f build/web/worker.dart.js web/worker.dart.min.js
 Finally, use this to connect to a worker:
 
 ```dart
-import 'dart:js_interop';
+import 'dart:html';
 
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/web.dart';
 import 'package:flutter/foundation.dart';
-import 'package:web/web.dart';
 
 DatabaseConnection connectToWorker(String databaseName) {
   final worker = SharedWorker(
-      (kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js').toJS,
-      databaseName.toJS);
-
-  return DatabaseConnection.delayed(
-      connectToRemoteAndInitialize(worker.port.channel()));
+      kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js', databaseName);
+  return remote(worker.port!.channel());
 }
 ```
 
-You can pass that `DatabaseConnection` to the constructor of your database class.
+You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.

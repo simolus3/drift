@@ -1,33 +1,35 @@
 ---
-data:
-  title: Isolates
-  description: Accessing drift databases on multiple isolates.
-  weight: 10
-template: layouts/docs/single
-path: docs/advanced-features/isolates/
+
+title: Isolates
+description: Accessing drift databases on multiple isolates.
+
 ---
 
-{% assign snippets = 'package:drift_docs/snippets/isolates.dart.excerpt.json' | readString | json_decode %}
+
 
 As sqlite3 is a synchronous C library, accessing the database from the main isolate
 can cause blocking IO operations that lead to reduced responsiveness of your
 application.
 To resolve this problem, drift can spawn a long-running isolate to run SQL statements.
-When following the recommended [getting started guide]({{ 'setup.md' | pageUrl }})
+When following the recommended [getting started guide](setup.md)
 and using `NativeDatabase.createInBackground`, you automatically benefit from an isolate
 drift manages for you without needing additional setup.
 This page describes when advanced isolate setups are necessary, and how to approach them.
 
-{% block "blocks/alert" title="When to use drift isolates" color="success" %}
-- Drift already uses isolates with the default setups to avoid blocking the main
-  isolate on synchronous IO.
-- You can open two _independent_ drift databases on different isolates without
-  any special setup or drift APIs too. These can even point to the same database
-  file, but then stream queries won't synchronize between those independent
-  instances.
-- If you need to share a single drift database on multiple isolates, some setup
-  is necessary. This is what drift's isolate APIs are for!
-{% endblock %}
+!!! success "When to use drift isolates"
+
+    
+    - Drift already uses isolates with the default setups to avoid blocking the main
+    isolate on synchronous IO.
+    - You can open two _independent_ drift databases on different isolates without
+    any special setup or drift APIs too. These can even point to the same database
+    file, but then stream queries won't synchronize between those independent
+    instances.
+    - If you need to share a single drift database on multiple isolates, some setup
+    is necessary. This is what drift's isolate APIs are for!
+    
+
+
 
 ## Introduction
 
@@ -42,7 +44,7 @@ In particular, some of these
 When you try to send a drift database instance across isolates, you will run into
 an exception about sending an invalid object:
 
-{% include "blocks/snippet" snippets = snippets name = 'invalid' %}
+{{ load_snippet('invalid','lib/snippets/isolates.dart.excerpt.json') }}
 
 Unfortunately, there is no magic change drift could implement to make sending
 databases over isolates feasible: There's simply too much mutable state needed
@@ -63,9 +65,9 @@ on the foreground isolate for synchronization, you need a constructor on your
 database class that can take a custom `QueryExecutor`, the class used by drift
 to represent lower-level databases:
 
-{% include "blocks/snippet" snippets = snippets name = 'database-definition' %}
+{{ load_snippet('database-definition','lib/snippets/isolates.dart.excerpt.json') }}
 
-{% include "blocks/snippet" snippets = snippets name = 'compute' %}
+{{ load_snippet('compute','lib/snippets/isolates.dart.excerpt.json') }}
 
 As the example shows, `computeWithDatabase` is an API useful to run heavy tasks,
 like inserting a large amount of batch data, into a database.
@@ -85,7 +87,7 @@ If you don't want drift to spawn the isolate for you, for instance because you w
 to use `compute` instead of `Isolate.run`, you can also do that manually with the
 `serializableConnection()` API:
 
-{% include "blocks/snippet" snippets = snippets name = 'custom-compute' %}
+{{ load_snippet('custom-compute','lib/snippets/isolates.dart.excerpt.json') }}
 
 ## Manually managing drift isolates
 
@@ -97,22 +99,22 @@ Drift exposes the `DriftIsolate` class, which is a reference to an internal
 database server you can access on other isolates.
 Creating a `DriftIsolate` server is possible with `DriftIsolate.spawn()`:
 
-{% include "blocks/snippet" snippets = snippets name = 'driftisolate-spawn' %}
+{{ load_snippet('driftisolate-spawn','lib/snippets/isolates.dart.excerpt.json') }}
 
 If you want to spawn the isolate yourself, that is possible too:
 
-{% include "blocks/snippet" snippets = snippets name = 'custom-spawn' %}
+{{ load_snippet('custom-spawn','lib/snippets/isolates.dart.excerpt.json') }}
 
 After creating a `DriftIsolate` server, you can use `connect()` to connect
 to it from different isolates:
 
-{% include "blocks/snippet" snippets = snippets name = 'isolate' %}
+{{ load_snippet('isolate','lib/snippets/isolates.dart.excerpt.json') }}
 
 If you need to construct the database outside of an `async` context, you can use the
 `DatabaseConnection.delayed` constructor. In the example above, you
 could synchronously obtain a `MyDatabase` instance by using:
 
-{% include "blocks/snippet" snippets = snippets name = 'delayed' %}
+{{ load_snippet('delayed','lib/snippets/isolates.dart.excerpt.json') }}
 
 This can be helpful when using drift in dependency injection frameworks, since you have a way
 to create the database instance synchronously.
@@ -127,25 +129,29 @@ This section describes a workaround to start the isolate running the database
 manually. This allows passing additional data that can be computed on the main
 isolate, using platform channels.
 
-{% include "blocks/snippet" snippets = snippets name = 'initialization' %}
+{{ load_snippet('initialization','lib/snippets/isolates.dart.excerpt.json') }}
 
 Once again, you can use a `DatabaseConnection.delayed()` to obtain a database
 connection for your database class:
 
-{% include "blocks/snippet" snippets = snippets name = 'init_connect' %}
+{{ load_snippet('init_connect','lib/snippets/isolates.dart.excerpt.json') }}
 
-{% block "blocks/alert" title="Initializations and background isolates" color="warning" %}
-As the name implies, Dart isolates don't share memory. This means that global variables
-and values accessible in one isolate may not be visible in a background isolate.
+!!! warning "Initializations and background isolates"
 
-For instance, if you're using `open.overrideFor` from `package:sqlite3`, you need to do that
-on the isolate where you're actually opening the database!
-With a background isolate as shown here, the right place to call `open.overrideFor` is in the
-`_startBackground` function, before you're using `DriftIsolate.inCurrent`.
-Other global fields that you might be relying on when constructing the database (service
-locators like `get_it` come to mind) may also need to be initialized separately on the background
-isolate.
-{% endblock %}
+    
+    As the name implies, Dart isolates don't share memory. This means that global variables
+    and values accessible in one isolate may not be visible in a background isolate.
+    
+    For instance, if you're using `open.overrideFor` from `package:sqlite3`, you need to do that
+    on the isolate where you're actually opening the database!
+    With a background isolate as shown here, the right place to call `open.overrideFor` is in the
+    `_startBackground` function, before you're using `DriftIsolate.inCurrent`.
+    Other global fields that you might be relying on when constructing the database (service
+    locators like `get_it` come to mind) may also need to be initialized separately on the background
+    isolate.
+    
+
+
 
 ### Shutting down the isolate
 

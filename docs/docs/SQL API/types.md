@@ -1,13 +1,11 @@
 ---
-data:
-  title: "Custom SQL types"
-  weight: 10
-  description: Use custom SQL types in Drift files and Dart code.
 
-template: layouts/docs/single
+title: Custom SQL types
+description: Use custom SQL types in Drift files and Dart code.
+
 ---
 
-{% assign type_snippets = "package:drift_docs/snippets/modular/custom_types/type.dart.excerpt.json" | readString | json_decode %}
+
 
 Drift's core library is written with sqlite3 as a primary target. This is
 reflected in the [SQL types][types] drift supports out of the box - these
@@ -24,14 +22,18 @@ talking to same database.
 For this reason, drift allows the use of "custom types" - types that are not defined
 in the core `drift` package and don't work with all databases.
 
-{% block "blocks/alert" title="When to use custom types - summary"  %}
-Custom types are a good tool when extending drift support to new database engines
-with their own types not already covered by drift.
+!!! note "When to use custom types - summary"
 
-Unless you're extending drift to work with a new database package (which is awesome,
-please reach out!), you probably don't need to implement custom types yourself.
-Packages like `drift_postgres` already define relevant custom types for you.
-{% endblock %}
+    
+    Custom types are a good tool when extending drift support to new database engines
+    with their own types not already covered by drift.
+    
+    Unless you're extending drift to work with a new database package (which is awesome,
+    please reach out!), you probably don't need to implement custom types yourself.
+    Packages like `drift_postgres` already define relevant custom types for you.
+    
+
+
 
 ## Defining a type
 
@@ -43,7 +45,7 @@ prepared statements and also be read from rows without manual conversions.
 In that case, a custom type class to implement `Duration` support for drift would be
 added:
 
-{% include "blocks/snippet" snippets = type_snippets name = "duration" %}
+{{ load_snippet('duration','lib/snippets/modular/custom_types/type.dart.excerpt.json') }}
 
 This type defines the following things:
 
@@ -61,7 +63,9 @@ This type defines the following things:
 
 To define a custom type on a Dart table, use the `customType` column builder method with the type:
 
-{% include "blocks/snippet" snippets = ('package:drift_docs/snippets/modular/custom_types/table.dart.excerpt.json' | readString | json_decode) %}
+
+
+{{ load_snippet('(full)','lib/snippets/modular/custom_types/table.dart.excerpt.json') }}
 
 As the example shows, other column constraints like `clientDefault` can still be added to custom
 columns. You can even combine custom columns and type converters if needed.
@@ -74,18 +78,17 @@ drift doesn't have a central register describing how to deal with custom type va
 
 ### In SQL
 
-In SQL, Drift's [inline Dart]({{ 'drift_files.md#dart-interop' | pageUrl }}) syntax may be used to define
+In SQL, Drift's [inline Dart](drift_files.md#dart-interop) syntax may be used to define
 the custom type:
 
-{% include "blocks/snippet" snippets = ('package:drift_docs/snippets/modular/custom_types/drift_table.drift.excerpt.json' | readString | json_decode) %}
+
+
+{{ load_snippet('(full)','lib/snippets/modular/custom_types/drift_table.drift.excerpt.json') }}
 
 Please note that support for custom types in drift files is currently limited.
 For instance, custom types are not currently supported in `CAST` expressions.
 If you are interested in advanced analysis support for custom types, please reach out by
 opening an issue or a discussion describing your use-cases, thanks!
-
-[types]: {{ '../Dart API/tables.md#supported-column-types' | pageUrl }}
-[type converters]: {{ '../type_converters.md' | pageUrl }}
 
 ## Dialect awareness
 
@@ -99,7 +102,7 @@ the dialect used.
 This can be used to build polyfills for other database systems. First, consider a custom type storing
 durations as integers, similar to what a type converter might do:
 
-{% include "blocks/snippet" snippets = type_snippets name = "fallback" %}
+{{ load_snippet('fallback','lib/snippets/modular/custom_types/type.dart.excerpt.json') }}
 
 By using a `DialectAwareSqlType`, you can automatically use the `interval` type on PostgreSQL databases
 while falling back to an integer type on sqlite3 and other databases:

@@ -1,12 +1,8 @@
 ---
-data:
-  title: "Type converters"
-  weight: 5
-  description: Store more complex data in columns with type converters
-aliases:
- - /type_converters
-path: /docs/advanced-features/type_converters/
-template: layouts/docs/single
+
+title: Type converters
+description: Store more complex data in columns with type converters
+
 ---
 
 Drift supports a variety of types out of the box, but sometimes you need to store more complex data.
@@ -15,36 +11,40 @@ You can achieve this by using `TypeConverters`. In this example, we'll use the t
 text column. Drift supports any Dart type for which you provide a `TypeConverter`, we're using that
 package here to make the example simpler.
 
-{% assign dart = 'package:drift_docs/snippets/type_converters/converters.dart.excerpt.json' | readString | json_decode %}
+
 
 ## Using converters in Dart
 
-{% include "blocks/snippet" snippets = dart name = 'start' %}
+{{ load_snippet('start','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
 Next, we have to tell drift how to store a `Preferences` object in the database. We write
 a `TypeConverter` for that:
 
-{% include "blocks/snippet" snippets = dart name = 'converter' %}
+{{ load_snippet('converter','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
 Finally, we can use that converter in a table declaration:
 
-{% include "blocks/snippet" snippets = dart name = 'table' %}
+{{ load_snippet('table','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
 The generated `User` class will then have a `preferences` column of type
 `Preferences`. Drift will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
-also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
+also works with [compiled custom queries]("/queries/custom").
 
-{% block "blocks/alert" title="Caution with equality" color="warning" %}
-If your converter returns an object that is not comparable by value, the generated dataclass will not
-be comparable by value. Consider implementing `==` and `hashCode` on those classes.
-{% endblock %}
+!!! warning "Caution with equality"
+
+    
+    If your converter returns an object that is not comparable by value, the generated dataclass will not
+    be comparable by value. Consider implementing `==` and `hashCode` on those classes.
+    
+
+
 
 Since applying type converters for JSON conversion is so common, drift provides a helper
 for that. For instance, we could declare the type converter as a field in the
 `Preferences` class:
 
-{% include "blocks/snippet" snippets = dart name = 'simplified' %}
+{{ load_snippet('simplified','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
 ### Implicit enum converters
 
@@ -66,25 +66,29 @@ class Tasks extends Table {
 }
 ```
 
-{% block "blocks/alert" title="Caution with enums" color="warning" %}
-It can be easy to accidentally invalidate your database by introducing another enum value.
-For instance, let's say we inserted a `Task` into the database in the above example and set its
-`Status` to `running` (index = 1).
-Now we modify `Status` enum to include another entry:
-```dart
-enum Status {
-  none,
-  starting, // new!
-  running,
-  stopped,
-  paused
-}
-```
-When selecting the task, it will now report as `starting`, as that's the new value at index 1.
-For this reason, it's best to add new values at the end of the enumeration, where they can't conflict
-with existing values. Otherwise you'd need to bump your schema version and run a custom update statement
-to fix this.
-{% endblock %}
+!!! warning "Caution with enums"
+
+    
+    It can be easy to accidentally invalidate your database by introducing another enum value.
+    For instance, let's say we inserted a `Task` into the database in the above example and set its
+    `Status` to `running` (index = 1).
+    Now we modify `Status` enum to include another entry:
+    ```dart
+    enum Status {
+    none,
+    starting, // new!
+    running,
+    stopped,
+    paused
+    }
+    ```
+    When selecting the task, it will now report as `starting`, as that's the new value at index 1.
+    For this reason, it's best to add new values at the end of the enumeration, where they can't conflict
+    with existing values. Otherwise you'd need to bump your schema version and run a custom update statement
+    to fix this.
+    
+
+
 
 If you prefer to store the enum as a text, you can use `textEnum` instead.
 
@@ -102,27 +106,31 @@ class Tasks extends Table {
 }
 ```
 
-{% block "blocks/alert" title="Caution with enums" color="warning" %}
-It can be easy to accidentally invalidate your database by renaming your enum values.
-For instance, let's say we inserted a `Task` into the database in the above example and set its
-`Status` to `running`.
-Now we modify `Status` enum to rename `running` into `processing`:
-```dart
-enum Status {
-  none,
-  processing,
-  stopped,
-  paused
-}
-```
-When selecting the task, it won't be able to find the enum value `running` anymore, and will throw an error. 
+!!! warning "Caution with enums"
 
-For this reason, it's best to not modify the name of your enum values. Otherwise you'd need to bump your schema version and run a custom update statement to fix this.
-{% endblock %}
+    
+    It can be easy to accidentally invalidate your database by renaming your enum values.
+    For instance, let's say we inserted a `Task` into the database in the above example and set its
+    `Status` to `running`.
+    Now we modify `Status` enum to rename `running` into `processing`:
+    ```dart
+    enum Status {
+    none,
+    processing,
+    stopped,
+    paused
+    }
+    ```
+    When selecting the task, it won't be able to find the enum value `running` anymore, and will throw an error.
+    
+    For this reason, it's best to not modify the name of your enum values. Otherwise you'd need to bump your schema version and run a custom update statement to fix this.
+    
+
+
 
 Also note that you can't apply another type converter on a column declared with an enum converter.
 
-## Using converters in drift {#using-converters-in-moor}
+## Using converters in drift 
 
 Type converters can also be used inside drift files.
 Assuming that the `Preferences` and `PreferenceConverter` are contained in
@@ -139,7 +147,7 @@ CREATE TABLE users (
 );
 ```
 
-When using type converters in drift files, we recommend the [`apply_converters_on_variables`]({{ "Generation options/index.md" | pageUrl }})
+When using type converters in drift files, we recommend the [`apply_converters_on_variables`](Generation options/index.md)
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
@@ -182,7 +190,7 @@ and pass it to the serialization methods.
 
 In database rows, columns to which a type converter has been applied are storing the result of
 `toSql()`. Drift will apply the type converter automatically when reading or writing rows, but they
-are not applied automatically when creating your own [expressions]({{'Dart API/expressions.md' | pageUrl }}).
+are not applied automatically when creating your own [expressions]('Dart API/expressions.md').
 For example, filtering for values with [`column.equals`](https://drift.simonbinder.eu/api/drift/expression/equals)
 will compare not apply  the type converter, you'd be comparing the underlying database values.
 
@@ -190,5 +198,5 @@ On columns with type converters, [`equalsValue`](https://drift.simonbinder.eu/ap
 can be used instead - unlike `equals`, `equasValue` will apply the converter before emtting a comparison in SQL.
 If you need to apply the converter for other comparisons as well, you can do that manually with `column.converter.toSql`.
 
-For variables used in queries that are part of a [drift file]({{'SQL API/drift_files.md'| pageUrl}}), type converters will be
-applied by default if the `apply_converters_on_variables` [builder option]({{'Generation options/index.md'|pageUrl}}) is enabled (which it is by default).
+For variables used in queries that are part of a [drift file]('SQL API/drift_files.md'), type converters will be
+applied by default if the `apply_converters_on_variables` [builder option]('Generation options/index.md') is enabled (which it is by default).

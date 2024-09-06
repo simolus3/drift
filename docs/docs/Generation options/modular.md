@@ -1,8 +1,8 @@
 ---
-data:
-  title: "Modular code generation"
-  description: Make drift generate code in multiple files.
-template: layouts/docs/single
+
+title: Modular code generation
+description: Make drift generate code in multiple files.
+
 ---
 
 By default, drift generates code from a single entrypoint - all tables, views
@@ -97,9 +97,7 @@ targets:
 With modular generation, drift generates standalone Dart libraries (Dart files
 without a `part of` statement). This also means that you no longer need `part`
 statements in your sources. Instead, you import the generated `.drift.dart`
-files. And of course, every private mixin/class previously generated under the
-part files will now be public. Replacing all ` _$` (notice the leading space)
-with ` $` (leading space here as well) should probably fix those problems there.
+files.
 
 When it comes to using the generated code, not much is different: The API for
 the database and DAOs stays mostly the same.
@@ -123,5 +121,5 @@ findUsers($predicate = TRUE): SELECT * FROM users WHERE $predicate;
 
 If such a `users.drift` file is included from a database, we no longer generate
 a `findUsers` method for the database itself.
-Instead, a `users.drift.dart` file contains a [database accessor]({{ '../Dart API/daos.md' | pageUrl }}) called `UsersDrift` which is implicitly added to the database.
+Instead, a `users.drift.dart` file contains a [database accessor](../Dart API/daos.md) called `UsersDrift` which is implicitly added to the database.
 To call `findUsers`, you'd now call `database.usersDrift.findUsers()`.

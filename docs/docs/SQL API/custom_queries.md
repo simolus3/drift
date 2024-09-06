@@ -1,15 +1,11 @@
 ---
-data:
-  title: "Custom queries"
-  weight: 10
-  description: Write SQL for advanced queries that drift can't express in Dart yet.
-aliases:
-  - /queries/custom
-  - /docs/using-sql/custom_queries/
-template: layouts/docs/single
+
+title: Custom queries
+description: Write SQL for advanced queries that drift can't express in Dart yet.
+
 ---
 
-{% assign snippets = "package:drift_docs/snippets/drift_files/custom_queries.dart.excerpt.json" | readString | json_decode %}
+
 
 Although drift includes a fluent api that can be used to model most statements, advanced
 features like `WITH` clauses or some subqueries aren't supported yet.
@@ -31,7 +27,7 @@ sql manually. See the sections below for details.
 
 To use this feature, all you need to is define your queries in your `DriftDatabase` annotation:
 
-{% include "blocks/snippet" snippets = snippets name = "setup" %}
+{{ load_snippet('setup','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
 
 After running the build step again, drift will have written the `CategoriesWithCountResult` class for you -
 it will hold the result of your query. Also, the `_$MyDatabase` class from which you inherit will have a
@@ -39,32 +35,40 @@ it will hold the result of your query. Also, the `_$MyDatabase` class from which
 Like all `Selectable`s in drift, you can use `get()` to run the query once or `watch()` to get an auto-updating
 stream of results:
 
-{% block "blocks/alert" title="Better support for custom queries in drift files" %}
-Defining SQL in the `@DriftDatabase` annotation is a great way to define a few custom queries. For apps that
-use lots of custom queries, extracting them into separate files may be more manageable.
-[Drift files]({{ "drift_files.md" | pageUrl }}), which can be included into the database, are a really great fit for this, and may be easier
-to use.
-{% endblock %}
+!!! note "Better support for custom queries in drift files"
 
-{% include "blocks/snippet" snippets = snippets name = "run" %}
+    
+    Defining SQL in the `@DriftDatabase` annotation is a great way to define a few custom queries. For apps that
+    use lots of custom queries, extracting them into separate files may be more manageable.
+    [Drift files](drift_files.md), which can be included into the database, are a really great fit for this, and may be easier
+    to use.
+    
+
+
+
+{{ load_snippet('run','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
 
 Queries can have parameters in them by using the `?` or `:name` syntax. For parameters in queries,
 drift will figure out an appropriate type and include them in the generated methods. For instance,
 `'categoryById': 'SELECT * FROM categories WHERE id = :id'` will generate the method `categoryById(int id)`.
 Drift also supports additional convenience features in custom queries, like embededding Dart expressions in
-SQL. For more details, see the documentation on [drift files]({{ 'drift_files.md' | pageUrl }}).
+SQL. For more details, see the documentation on [drift files](drift_files.md).
 
-{% block "blocks/alert" title="On table names" color="info" %}
-To use this feature, it's helpful to know how Dart tables are named in sql. For tables that don't
-override `tableName`, the name in sql will be the `snake_case` of the class name. So a Dart table
-called `Categories` will be named `categories`, a table called `UserAddressInformation` would be
-called `user_address_information`. The same rule applies to column getters without an explicit name.
-Tables and columns declared in [Drift files]({{ "drift_files.md" | pageUrl }}) will always have the
-name you specified.
-{% endblock %}
+!!! info "On table names"
+
+    
+    To use this feature, it's helpful to know how Dart tables are named in sql. For tables that don't
+    override `tableName`, the name in sql will be the `snake_case` of the class name. So a Dart table
+    called `Categories` will be named `categories`, a table called `UserAddressInformation` would be
+    called `user_address_information`. The same rule applies to column getters without an explicit name.
+    Tables and columns declared in [Drift files](drift_files.md) will always have the
+    name you specified.
+    
+
+
 
 You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for
-[daos]({{ "../Dart API/daos.md" | pageUrl }}),
+[daos](../Dart API/daos.md),
 and it perfectly integrates with auto-updating streams by analyzing what tables you're reading from or
 writing to.
 
@@ -73,10 +77,10 @@ If you don't want to use the statements with an generated api, you can
 still send custom queries by calling `customSelect` for a one-time query or
 `customSelectStream` for a query stream that automatically emits a new set of items when
 the underlying data changes. Using the todo example introduced in the
-[getting started guide]({{ "../setup.md" | pageUrl }}), we can
+[getting started guide](../setup.md), we can
 write this query which will load the amount of todo entries in each category:
 
-{% include "blocks/snippet" snippets = snippets name = "manual" %}
+{{ load_snippet('manual','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
 
 For custom selects, you should use the `readsFrom` parameter to specify from which tables the query is
 reading. When using a `Stream`, drift will be able to know after which updates the stream should emit
@@ -84,7 +88,7 @@ items.
 
 You can also bind SQL variables by using question-mark placeholders and the `variables` parameter:
 
-{% include "blocks/snippet" snippets = snippets name = "amountOfTodosInCategory" %}
+{{ load_snippet('amountOfTodosInCategory','lib/snippets/drift_files/custom_queries.dart.excerpt.json') }}
 
 
 Of course, you can also use indexed variables (like `?12`) - for more information on them, see

@@ -1,9 +1,8 @@
 ---
-data:
-  title: "Writes (update, insert, delete)"
-  description: "Select rows or invidiual columns from tables in Dart"
-  weight: 3
-template: layouts/docs/single
+
+title: Writes (update, insert, delete)
+description: Select rows or invidiual columns from tables in Dart
+
 ---
 
 ## Updates and deletes
@@ -40,20 +39,24 @@ Future feelingLazy() {
 __⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or deletes, 
 the statement will affect all rows in the table!
 
-{% block "blocks/alert"  title="Entries, companions - why do we need all of this?" %}
-You might have noticed that we used a `TodosCompanion` for the first update instead of
-just passing a `Todo`. Drift generates the `Todo` class (also called _data
-class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
-prefer to use companions. In the example above, we only set the the `category` column,
-so we used a companion. 
-Why is that necessary? If a field was set to `null`, we wouldn't know whether we need 
-to set that column back to null in the database or if we should just leave it unchanged.
-Fields in the companions have a special `Value.absent()` state which makes this explicit.
+!!! note "Entries, companions - why do we need all of this?"
 
-Companions also have a special constructor for inserts - all columns which don't have
-a default value and aren't nullable are marked `@required` on that constructor. This makes
-companions easier to use for inserts because you know which fields to set.
-{% endblock %}
+    
+    You might have noticed that we used a `TodosCompanion` for the first update instead of
+    just passing a `Todo`. Drift generates the `Todo` class (also called _data
+    class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
+    prefer to use companions. In the example above, we only set the the `category` column,
+    so we used a companion.
+    Why is that necessary? If a field was set to `null`, we wouldn't know whether we need
+    to set that column back to null in the database or if we should just leave it unchanged.
+    Fields in the companions have a special `Value.absent()` state which makes this explicit.
+    
+    Companions also have a special constructor for inserts - all columns which don't have
+    a default value and aren't nullable are marked `@required` on that constructor. This makes
+    companions easier to use for inserts because you know which fields to set.
+    
+
+
 
 ## Inserts
 You can very easily insert any valid object into tables. As some values can be absent
@@ -109,7 +112,7 @@ This makes them suitable for bulk insert or update operations.
 
 ### Upserts
 
-{% assign upserts = "package:drift_docs/snippets/modular/upserts.dart.excerpt.json" | readString | json_decode %}
+
 
 Upserts are a feature from newer sqlite3 versions that allows an insert to
 behave like an update if a conflicting row already exists.
@@ -139,24 +142,28 @@ Inserts can also be used with more advanced queries. For instance, let's say
 we're building a dictionary and want to keep track of how many times we
 encountered a word. A table for that might look like
 
-{% include "blocks/snippet" snippets = upserts name = "words-table" %}
+{{ load_snippet('words-table','lib/snippets/modular/upserts.dart.excerpt.json') }}
 
 By using a custom upserts, we can insert a new word or increment its `usages`
 counter if it already exists:
 
-{% include "blocks/snippet" snippets = upserts name = "track-word" %}
+{{ load_snippet('track-word','lib/snippets/modular/upserts.dart.excerpt.json') }}
 
-{% block "blocks/alert" title="Unique constraints and conflict targets" %}
-Both `insertOnConflictUpdate` and `onConflict: DoUpdate` use an `DO UPDATE`
-upsert in sql. This requires us to provide a so-called "conflict target", a
-set of columns to check for uniqueness violations. By default, drift will use
-the table's primary key as conflict target. That works in most cases, but if
-you have custom `UNIQUE` constraints on some columns, you'll need to use
-the `target` parameter on `DoUpdate` in Dart to include those columns:
+!!! note "Unique constraints and conflict targets"
 
-{% include "blocks/snippet" snippets = upserts name = "upsert-target" %}
+    
+    Both `insertOnConflictUpdate` and `onConflict: DoUpdate` use an `DO UPDATE`
+    upsert in sql. This requires us to provide a so-called "conflict target", a
+    set of columns to check for uniqueness violations. By default, drift will use
+    the table's primary key as conflict target. That works in most cases, but if
+    you have custom `UNIQUE` constraints on some columns, you'll need to use
+    the `target` parameter on `DoUpdate` in Dart to include those columns:
+    
+    {{ load_snippet('upsert-target','lib/snippets/modular/upserts.dart.excerpt.json') }}
+    
+    
 
-{% endblock %}
+
 
 Note that this requires a fairly recent sqlite3 version (3.24.0) that might not
 be available on older Android devices when using `drift_sqflite`. `NativeDatabases`
@@ -173,7 +180,7 @@ generated.
 
 __Note:__ This uses the `RETURNING` syntax added in sqlite3 version 3.35, which is not available on most operating systems by default. When using this method, make sure that you have a recent sqlite3 version available. This is the case with `sqlite3_flutter_libs`.
 
-For instance, consider this snippet using the tables from the [getting started guide]({{ '../setup.md' | pageUrl }}):
+For instance, consider this snippet using the tables from the [getting started guide](../setup.md):
 
 ```dart
 final row = await into(todos).insertReturning(TodosCompanion.insert(

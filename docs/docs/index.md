@@ -1,8 +1,8 @@
 ---
-data:
-  title: "Documentation & Guides"
-  description: Welcome to drift's documentation. This site shows you what drift can do and how to use it.
-template: layouts/docs/list
+
+title: Documentation & Guides
+description: Welcome to drift's documentation. This site shows you what drift can do and how to use it.
+
 ---
 
 ## Welcome to drift
@@ -28,7 +28,7 @@ SQL error code. Of course, it supports transactions. And DAOs. And efficient bat
 
 ## Getting started
 
-To get started with drift, follow the [setup guide]({{ 'setup.md' | pageUrl }}).
+To get started with drift, follow the [setup guide](setup.md).
 It explains everything from setting up the dependencies to writing database classes
 and generating code.
 

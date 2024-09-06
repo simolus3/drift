@@ -1,13 +1,13 @@
 ---
-data:
-  title: "Backend synchronization"
-  description: Approaches for syncing drift databases between clients and backends.
-template: layouts/docs/single
+
+title: Backend synchronization
+description: Approaches for syncing drift databases between clients and backends.
+
 ---
 
 At its core, drift is a package to access relational databases. On clients, that would
 typically be a SQLite3 database, which is what drift is optimized for.
-More recently, drift also gained stable support for [PostgreSQL databases]({{ '../Platforms/postgres.md' | pageUrl }}) as well.
+More recently, drift also gained stable support for [PostgreSQL databases](../Platforms/postgres.md) as well.
 This allows drift to be deployed in [fullstack Dart applications](https://github.com/simolus3/drift/tree/develop/examples/multi_package),
 where a server uses drift to talk to a Postgres database and clients use it to manage a sqlite3 database.
 Thanks to utilities like [DialectAwareSqlType](https://pub.dev/documentation/drift/latest/drift/DialectAwareSqlType-class.html),

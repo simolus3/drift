@@ -1,12 +1,11 @@
 ---
-data:
-  title: "The migrator API"
-  weight: 50
-  description: How to run `ALTER` statements and complex table migrations.
-template: layouts/docs/single
+
+title: The migrator API
+description: How to run `ALTER` statements and complex table migrations.
+
 ---
 
-{% assign snippets = 'package:drift_docs/snippets/migrations/migrations.dart.excerpt.json' | readString | json_decode %}
+
 
 You can write migrations manually by using `customStatement()` in a migration
 callback. However, the callbacks also give you an instance of `Migrator` as a
@@ -83,7 +82,7 @@ class Todos extends Table {
 
 After re-running your build and incrementing the schema version, you can write a migration:
 
-{% include "blocks/snippet" snippets = snippets name = 'change_type' %}
+{{ load_snippet('change_type','lib/snippets/migrations/migrations.dart.excerpt.json') }}
 
 The important part here is the `columnTransformer` - a map from columns to expressions that will
 be used to copy the old data. The values in that map refer to the old table, so we can use

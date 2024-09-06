@@ -1,13 +1,12 @@
 ---
-data:
-  title: "Testing migrations"
-  weight: 30
-  description: Generate test code to write unit tests for your migrations.
-template: layouts/docs/single
+
+title: Testing migrations
+description: Generate test code to write unit tests for your migrations.
+
 ---
 
-{% assign snippets = 'package:drift_docs/snippets/migrations/tests/schema_test.dart.excerpt.json' | readString | json_decode %}
-{% assign verify = 'package:drift_docs/snippets/migrations/tests/verify_data_integrity_test.dart.excerpt.json' | readString | json_decode %}
+
+
 
 While migrations can be written manually without additional help from drift, dedicated tools testing
 your migrations help to ensure that they are correct and aren't loosing any data.
@@ -20,8 +19,8 @@ Drift's migration tooling consists of the following steps:
 3. Use generated code to make writing schema migrations easier.
 
 This page describes steps 2 and 3. It assumes that you're already following step 1 by
-[exporting your schema]({{ 'exports.md' | pageUrl }}) when it changes.
-Also consider the [general page]({{ '../testing.md' | pageUrl }}) on writing unit tests with drift.
+[exporting your schema](exports.md) when it changes.
+Also consider the [general page](../testing.md) on writing unit tests with drift.
 In particular, you may have to manually install `sqlite3` on your system as `sqlite3_flutter_libs` does
 not apply to unit tests.
 
@@ -41,7 +40,7 @@ $ dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
 
 After that setup, it's finally time to write some tests! For instance, a test could look like this:
 
-{% include "blocks/snippet" snippets = snippets name = 'setup' %}
+{{ load_snippet('setup','lib/snippets/migrations/tests/schema_test.dart.excerpt.json') }}
 
 In general, a test looks like this:
 
@@ -58,12 +57,16 @@ In general, a test looks like this:
 `migrateAndValidate` will extract all `CREATE` statement from the `sqlite_schema` table and semantically compare them.
 If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fail your test.
 
-{% block "blocks/alert" title="Writing testable migrations" %}
-To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if your current version is `v3`),
-your `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
-For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
-Or, use [step-by-step migrations]({{ 'step_by_step.md' | pageUrl }}) which do this automatically.
-{% endblock %}
+!!! note "Writing testable migrations"
+
+    
+    To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if your current version is `v3`),
+    your `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
+    For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
+    Or, use [step-by-step migrations](step_by_step.md) which do this automatically.
+    
+
+
 
 ## Verifying data integrity
 
@@ -83,8 +86,8 @@ $ dart run drift_dev schema generate --data-classes --companions drift_schemas/ 
 
 Then, you can import the generated classes with an alias:
 
-{% include "blocks/snippet" snippets = verify name = 'imports' %}
+{{ load_snippet('imports','lib/snippets/migrations/tests/verify_data_integrity_test.dart.excerpt.json') }}
 
 This can then be used to manually create and verify data at a specific version:
 
-{% include "blocks/snippet" snippets = verify name = 'main' %}
+{{ load_snippet('main','lib/snippets/migrations/tests/verify_data_integrity_test.dart.excerpt.json') }}

@@ -1,9 +1,8 @@
 ---
-data:
-  title: "Drift internals"
-  weight: 300000
-  description: Work in progress documentation on drift internals
-template: layouts/docs/list
+
+title: Drift internals
+description: Work in progress documentation on drift internals
+
 ---
 
 ## Using an unreleased drift version

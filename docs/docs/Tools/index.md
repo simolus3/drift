@@ -1,15 +1,14 @@
 ---
-data:
-  title: "Drift tools"
-  description: A set of CLI tools to interact with drift projects
-  weight: 20
-path: /cli/
-template: layouts/docs/single
+
+title: "CLI"
+description: A set of CLI tools to interact with drift projects
+
 ---
 
-{% block "blocks/alert" title="Experimental"  %}
-The drift cli tool is experimental at the moment. Please report all issues you can find.
-{% endblock %}
+!!! note "Experimental"
+
+    The drift cli tool is experimental at the moment. Please report all issues you can find.
+    
 
 ## Usage
 
@@ -70,7 +69,7 @@ The generated file (`schema.json` in this case) contains information about all
 - dependencies thereof
 
 Exporting a schema can be used to generate test code for your schema migrations. For details,
-see [the guide]({{ "../Migrations/tests.md" | pageUrl }}).
+see [the guide]("../Migrations/tests.md").
 
 ### Exporting
 

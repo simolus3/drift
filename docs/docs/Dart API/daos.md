@@ -1,11 +1,8 @@
 ---
-data:
-  title: "DAOs"
-  description: Keep your database code modular with DAOs
-path: /docs/advanced-features/daos/
-aliases:
-  - /daos/
-template: layouts/docs/single
+
+title: DAOs
+description: Keep your database code modular with DAOs
+
 ---
 
 When you have a lot of queries, putting them all into one class might become

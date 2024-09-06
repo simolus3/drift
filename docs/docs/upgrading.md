@@ -1,10 +1,8 @@
 ---
-data:
-  title: "Upgrading"
-  description: >-
-    How to upgrade between major drift versions
-template: layouts/docs/single
-aliases: ["/name"]
+
+title: Upgrading
+description: How to upgrade between major drift versions
+
 ---
 
 ## Migrating from drift 1.x to drift 2.x
@@ -67,7 +65,7 @@ hesistate to [start a new discussion](https://github.com/simolus3/drift/discussi
 or to [open an issue](https://github.com/simolus3/drift/issues).
 Thanks for using drift!
 
-## Migrating from `moor` to `drift` {#name}
+## Migrating from `moor` to `drift` 
 
 Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatory term.
 I have not been aware of this when starting this project, but we believe that the current name does not reflect the inclusivity of the Dart and Flutter communities.
@@ -110,7 +108,7 @@ Also, you may have to
 
 - Format your sources again: Run `dart format .`.
 - Re-run the build: Run `dart run build_runner build -d`.
-  - If you have been using generated [migration test files]({{ 'Migrations/exports.md' | pageUrl }}),
+  - If you have been using generated [migration test files](Migrations/exports.md),
     re-generate them as well with `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`
     (you may have to adapt the command to the directories you use for schemas).
 - Manually fix the changed order of imports caused by the migration.
@@ -132,7 +130,7 @@ The following sections will describe each of the steps.
 
 #### New dependencies
 
-{% assign versions = 'package:drift_docs/versions.json' | readString | json_decode %}
+
 
 First, replace the `moor` dependency with `drift` and `moor_generator` with `drift_dev`, respectively:
 
@@ -191,7 +189,7 @@ If you opt for a rename, also update your imports and `include:` parameters in d
 
 #### Build configuration
 
-When configuring moor builders for [options]({{ 'Generation options/index.md' | pageUrl }}), you have to update your `build.yaml` files to reflect the new builder keys:
+When configuring moor builders for [options](Generation options/index.md), you have to update your `build.yaml` files to reflect the new builder keys:
 
 | Moor builder key                            | Drift builder key              |
 | ------------------------------------------- | ------------------------------ |
