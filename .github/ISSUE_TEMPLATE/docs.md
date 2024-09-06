@@ -15,8 +15,9 @@ For feature requests, please describe the feature you're interested in.
 For information requests, please describe what you think is missing from
 the docs and if possible where should this information be placed.
 
-For bug reports, please describe what is wrongand what do you believe should
-be written instead.
+If something on a page appears to be wrong or outdated, please include a link to
+the relevant section and mention what didn't work (or possibly what should be
+written instead).
 
 **Versions**
 
