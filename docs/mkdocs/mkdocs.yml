@@ -88,13 +88,6 @@ copyright: >
 nav:
   - index.md
   - Reference:
-      - Schema:
-          - Dart API/tables.md
-          - Dart API/columns.md
-          - Dart API/references.md
-          - Dart API/dataclass.md
-          - Dart API/custom_type.md
-
       - Getting Started: setup.md
       - Dart API:
           - Dart API/manager.md
@@ -140,6 +133,7 @@ nav:
       - migrating_to_drift.md
       - upgrading.md
   - Examples:
+      - Examples/index.md
       - Examples/relationships.md
       - Examples/tracing.md
       - Examples/server_sync.md
