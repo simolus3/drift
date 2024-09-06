@@ -8,7 +8,7 @@ assignees: ''
 
 **Description**
 
-Thanks for taking the time to file an issue for drift's docs!
+Thanks for taking the time to file an issue for drift's documentation website or dartdocs!
 
 For feature requests, please describe the feature you're interested in.
 
