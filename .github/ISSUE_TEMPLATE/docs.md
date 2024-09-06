@@ -10,10 +10,9 @@ assignees: ''
 
 Thanks for taking the time to file an issue for drift's documentation website or dartdocs!
 
-For feature requests, please describe the feature you're interested in.
-
-For information requests, please describe what you think is missing from
-the docs and if possible where should this information be placed.
+If you are looking for information that you feel is not sufficiently explained on the
+website (or too hard to find), please describe what the site is missing and, if possible,
+where you think the information should be added.
 
 If something on a page appears to be wrong or outdated, please include a link to
 the relevant section and mention what didn't work (or possibly what should be
