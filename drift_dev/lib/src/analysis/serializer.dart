@@ -762,10 +762,10 @@ class ElementDeserializer {
   }
 
   Future<ColumnType> _readColumnType(Map json, Uri definition) async {
-    if (json.containsKey('custom')) {
+    if (json['custom'] case final customType?) {
       return ColumnType.custom(CustomColumnType(
-        AnnotatedDartCode.fromJson(json['expression'] as Map),
-        await _readDartType(definition, json['dart'] as int),
+        AnnotatedDartCode.fromJson(customType['expression'] as Map),
+        await _readDartType(definition, customType['dart'] as int),
       ));
     } else {
       return ColumnType.drift(
