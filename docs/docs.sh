@@ -78,7 +78,7 @@ if [ $arg1 == "build" ]; then
         exit 1
     fi
     # Run build_runner to generate files in the `test` directory
-    dart run build_runner  build
+    dart run build_runner build --delete-conflicting-outputs
     if [ $? -ne 0 ]; then
         echo "Failed to build the example project"
         exit 1
