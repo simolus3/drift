@@ -86,7 +86,7 @@ copyright: >
   Copyright &copy; 2019 - 2024 Simon Binder –
   <a href="#__consent">Change cookie settings</a>
 nav:
-  # - index.md
+  - index.md
   - Reference:
       - Schema:
           - Dart API/tables.md
@@ -94,82 +94,58 @@ nav:
           - Dart API/references.md
           - Dart API/dataclass.md
           - Dart API/custom_type.md
-      - Queries:
-          - Dart API/crud.md
-          - Dart API/filter-and-sort.md
-          - Dart API/referenced-queries.md
+
+      - Getting Started: setup.md
+      - Dart API:
+          - Dart API/manager.md
+          - Dart API/tables.md
+          - Dart API/select.md
+          - Dart API/writes.md
           - Dart API/transactions.md
+          - Dart API/expressions.md
+          - Dart API/schema_inspection.md
+          - Dart API/views.md
+          - Dart API/daos.md
+      - SQL API:
+          - Getting Started: SQL API/index.md
+          - SQL API/drift_files.md
+          - SQL API/types.md
+          - SQL API/extensions.md
+          - SQL API/custom_queries.md
+          # - SQL API/sql_ide.md
       - Migrations:
-          - Migrations/index.md
+          - Getting Started: Migrations/index.md
+          - Migrations/exports.md
           - Migrations/step_by_step.md
-          # - Migrations/exports.md
           - Migrations/tests.md
-          # - Migrations/api.md
-
-  #     - Getting Started: setup.md
-  #     - Dart API:
-  #         - Dart API/manager.md
-  #         - Dart API/tables.md
-  #         - Dart API/select.md
-  #         - Dart API/writes.md
-  #         - Dart API/transactions.md
-  #         - Dart API/expressions.md
-  #         - Dart API/schema_inspection.md
-  #         - Dart API/views.md
-  #         - Dart API/daos.md
-  #     - SQL API:
-  #         - Getting Started: SQL API/index.md
-  #         - SQL API/drift_files.md
-  #         - SQL API/types.md
-  #         - SQL API/extensions.md
-  #         - SQL API/custom_queries.md
-  #         # - SQL API/sql_ide.md
-  #     - Migrations:
-  #         - Getting Started: Migrations/index.md
-  #         - Migrations/exports.md
-  #         - Migrations/step_by_step.md
-  #         - Migrations/tests.md
-  #         - Migrations/api.md
-  #     - type_converters.md
-  #     - custom_row_classes.md
-  #     - Generation options:
-  #         - Getting Started: Generation options/index.md
-  #         - Generation options/modular.md
-  #         - Generation options/in_other_builders.md
-  #     - Platforms:
-  #         - Getting Started: Platforms/index.md
-  #         - Platforms/vm.md
-  #         - Platforms/web.md
-  #         - Platforms/postgres.md
-  #         - Platforms/encryption.md
-  #         - Platforms/libsql.md
-  #     - isolates.md
-  #     - testing.md
-  #     - CLI.md
-  #     - faq.md
-  #     - community_tools.md
-  #     - Internals: Internals/index.md
-  #     - migrating_to_drift.md
-  #     - upgrading.md
-  # - Examples:
-  #     - Examples/flutter.md
-  #     - Examples/relationships.md
-  #     - Examples/tracing.md
-  #     - Examples/server_sync.md
-  #     - Examples/existing_databases.md
-  #     - Examples/more.md
-
-  # - Getting Started:
-  #     - getting-started/install.md
-  #     - getting-started/schema.md
-  # - Reference:
-  #     - setup.md
-  #     - type_converters.md
-  #     - faq.md
-  #     - testing.md
-  #     - CLI.md
-  #     - isolates.md
-  #     - community_tools.md
+          - Migrations/api.md
+      - type_converters.md
+      - custom_row_classes.md
+      - Generation options:
+          - Getting Started: Generation options/index.md
+          - Generation options/modular.md
+          - Generation options/in_other_builders.md
+      - Platforms:
+          - Getting Started: Platforms/index.md
+          - Platforms/vm.md
+          - Platforms/web.md
+          - Platforms/postgres.md
+          - Platforms/encryption.md
+          - Platforms/libsql.md
+      - isolates.md
+      - testing.md
+      - CLI.md
+      - faq.md
+      - community_tools.md
+      - Internals: Internals/index.md
+      - migrating_to_drift.md
+      - upgrading.md
+  - Examples:
+      - Examples/relationships.md
+      - Examples/tracing.md
+      - Examples/server_sync.md
+      - Examples/existing_databases.md
+      - Examples/more.md
 
 docs_dir: "../docs"
 
