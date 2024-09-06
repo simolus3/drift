@@ -12,6 +12,12 @@ Folder Structure:
 - `mkdocs` Contains the MkDocs configuration.
 
 ### Building the Documentation
+You will need to make the `docs.sh` script executable before you can run it. You can do this by running the following command:
+
+```bash
+chmod +x docs.sh
+```
+
 Run the following command to build the documentation:
 
 ```bash
