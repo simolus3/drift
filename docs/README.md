@@ -1,23 +1,45 @@
-# Drift documentation
+### Documentation for the Drift package
 
-Welcome to the source of drift's documentation, live at drift.simonbinder.eu.
-We use a static site generator based on `build_runner` to build the documentation.
+Folder Structure:
 
-## Running the website locally
+- `builders` Contains the builders for the snippets and dart projects versions (`versions.json` and `*.excerpt.json` in `lib`).
+- `docs` Contains the markdown files for the documentation.
+- `deploy` The output of the documentation build.
+- `lib` Contains the code snippets for the documentation.
+- `test` Contains the tests for the documentation.
+- `web` Contains some dart which code which is compiled to JavaScript and served with the documentation.
+- `stubs` Contains dummy projects for the snippets to reference.
+- `mkdocs` Contains the MkDocs configuration.
 
-For a fast edit-refresh cycle, run
+### Building the Documentation
+Run the following command to build the documentation:
 
+```bash
+docs.sh build
 ```
-dart run build_runner serve web:8080 --live-reload
+
+### 
+Run the following command to build the documentation:
+
+```bash
+docs.sh serve
 ```
 
-## Building the website
+If you would like changes to snippets to be available in real-time, you can run the following command:
 
-To build the website into a directory `out`, use:
-
+```bash
+docs.sh serve --with-build-runner
 ```
-dart run drift_dev schema steps lib/snippets/migrations/exported_eschema/ lib/snippets/migrations/schema_versions.dart
-dart run drift_dev schema generate --data-classes --companions lib/snippets/migrations/exported_eschema/ lib/snippets/migrations/tests/generated_migrations/
 
-dart run build_runner build --release --output web:out
-```
+### Understanding the Build Process
+
+Behind the scenes, the `docs.sh` script does the following:
+1. Running `webdev`:
+    - Creates `versions.json` which will inject the latest version into MkDocs. e.g. `^{{ versions.drift }}`
+    - Creates `.excerpt.json` snippet files in `lib` which MkDocs will use to inject syntax highlighted code into the documentation. e.g. `{{ load_snippet('flutter','lib/snippets/setup/database.dart.excerpt.json') }}`
+    - Run the `drift_dev` builder to generate the code for the snippets.
+    - Compile the dart code in `web` to JavaScript.
+2. Running `mkdocs`:
+    - Compile the markdown files in `docs` to HTML.
+3. Combine the output of the two steps into the `deploy` folder.
+
