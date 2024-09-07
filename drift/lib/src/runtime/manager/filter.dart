@@ -71,10 +71,11 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
       ColumnFilters(column, inverted: !inverted, joinBuilders: joinBuilders);
 
   /// Create a filter that checks if the column equals a value.
-  ComposableFilter equals(T value) => $composableFilter(column.equals(value));
+  ComposableFilter equals(T? value) =>
+      $composableFilter(column.equalsNullable(value));
 
   /// Shortcut for [equals]
-  ComposableFilter call(T value) => equals(value);
+  ComposableFilter call(T? value) => equals(value);
 
   /// Create a filter that checks if the column is in a list of values.
   ComposableFilter isIn(Iterable<T> values) =>
