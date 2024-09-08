@@ -134,7 +134,7 @@ CREATE TABLE tasks (
 );
 ```
 
-More information on storing enums is available [in the page on type converters](../type_converters.md#using-converters-in-moor).
+More information on storing enums is available [in the page on type converters](../type_converters.md#using-converters-in-drift).
 Instead of using an integer mapping enums by their index, you can also store them
 by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
@@ -387,7 +387,7 @@ Internally, drift will then generate query code to map the row to an instance of
 `UserWithFriends` class.
 
 For a more complete overview of using custom row classes for queries, see
-[the section for queries](../custom_row_classes.md#queries).
+[the section for queries](../custom_row_classes.md#existing-row-classes-for-queries).
 
 ### Dart documentation comments
 

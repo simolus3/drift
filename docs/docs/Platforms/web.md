@@ -58,14 +58,14 @@ browser in that case.
     You can use it to verify drift works in the browsers you want to target.
     Clicking on the button will start a feature detection run, so you can see which file system
     implementation drift would pick on this browser and which web APIs are missing.
+
+    <button class="md-button" id="drift-compat-btn">Check compatibility</button>
     
-    <button class="btn btn-light" id="drift-compat-btn">Check compatibility</button>
-    
-    <pre id="drift-compat-results">
+    <pre id="drift-compat-results", style="display: flex; flex-direction: column;">
     Compatibility check not started yet
     </pre>
     
-    More information about these results is available [below](#storages).
+    More information about these results is available [below](#supported-storage-implementations).
     
 
 
