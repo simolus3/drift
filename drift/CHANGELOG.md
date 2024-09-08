@@ -1,4 +1,4 @@
-## 2.21.0-dev
+## 2.20.1
 
 - Migrate legacy `package:drift/web.dart` to the new JS interop SDK libraries.
   For backwards compatibility, the `channel()` extension on the `MessagePort`
@@ -7,6 +7,8 @@
   be removed from drift as well.
 - Fix cast errors in the protocol for remote workers when compiling with
   `dart2wasm`.
+- Introduce a faster protocol for communicating with workers. This protocol is
+  enabled automatically after upgrading `drift_worker.js`.
 
 ## 2.20.0
 

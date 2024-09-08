@@ -1,3 +1,11 @@
+/// This is a variant of `protocol.dart` that, instead of serializing to simple
+/// values (e.g. strings, numbers, blobs and list thereof), serializes to
+/// `JSObject`s.
+///
+/// This has a a few advantages, like avoiding an expensive `jsify`/`dartify`
+/// call afterwards as well a more efficient transport of byte data. Finally, we
+/// have a different encoding for [int] and [double] values that ensures they're
+/// preserved, which is not possible with the default translation on the web.
 // ignore_for_file: constant_identifier_names
 @internal
 library;
