@@ -27,7 +27,10 @@ class TestAssetServer {
     await buildRunner.close();
   }
 
-  static Future<TestAssetServer> start({bool debug = false}) async {
+  static Future<TestAssetServer> start({
+    bool debug = false,
+    int? fixedPort,
+  }) async {
     final packageConfig =
         await loadPackageConfigUri((await Isolate.packageConfig)!);
     final ownPackage = packageConfig['web_wasm']!.root;
@@ -91,7 +94,7 @@ class TestAssetServer {
         }
       },
       'localhost',
-      0,
+      fixedPort ?? 0,
     );
 
     return server;
