@@ -15,7 +15,7 @@ class SnippetsBuilder extends Builder {
     if (assetId.package.startsWith(r'$') || assetId.path.endsWith(r'$')) return;
 
     final content = await buildStep.readAsString(assetId);
-    final highlighter = Highlighter(theme: HighlighterTheme(ThemeMode.dark));
+    final highlighter = Highlighter();
     final isDart = assetId.path.endsWith('.dart');
     final json = buildSnippets(content, highlighter, isDart: isDart);
     await buildStep.writeAsString(outputAssetId, json);
@@ -32,10 +32,21 @@ String buildSnippets(String code, Highlighter highlighter,
     {bool removeIndent = true, required bool isDart}) {
   var snippets = extractSnippets(code, removeIndent: removeIndent);
   final String json = jsonEncode(snippets.entries.map((e) {
+    final String code;
+    final String? css;
+    if (isDart) {
+      final (:html, :cssClasses) = highlighter.highlight(e.value).toHTML();
+      code = html;
+      css = cssClasses.styleBlocks();
+    } else {
+      code = e.value;
+      css = null;
+    }
     return {
       "name": e.key,
       "isHtml": isDart,
-      "code": isDart ? highlighter.highlight(e.value).toHTML() : e.value
+      "code": code,
+      "css": css,
     };
   }).toList());
   return json;

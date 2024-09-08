@@ -11,12 +11,24 @@ theme:
   language: en
   custom_dir: overrides
   palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+    #     icon: empty
+    #     name: ""
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+    #     icon: empty
+    #     name: ""
+
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       toggle:
-        icon: empty
-        name: ""
+
   # TODO: Add logo & favicon
   # logo: assets/logo.png
   # favicon: assets/favicon.ico
