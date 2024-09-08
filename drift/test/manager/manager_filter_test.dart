@@ -408,4 +408,13 @@ void main() {
             .count(),
         1);
   });
+
+  test('can use shorthand filter for nulls', () async {
+    final row = await db.todosTable.insertReturning(
+        TodosTableCompanion.insert(content: 'my test content'));
+
+    final query =
+        await db.managers.todosTable.filter((f) => f.targetDate(null)).get();
+    expect(query, [row]);
+  });
 }
