@@ -3,11 +3,11 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:characters/characters.dart';
 import 'package:path/path.dart' as p;
 
+import 'css_classes.dart';
 import 'span_parser.dart';
 
 const _bracketStyles = <TextStyle>[
@@ -18,12 +18,13 @@ const _bracketStyles = <TextStyle>[
   TextStyle(color: Color(0xFF97c26c)),
   TextStyle(color: Color(0xFFabb2c0)),
 ];
-final _bracketCssClasses =
-    _bracketStyles.map((e) => CssClass(lightStyle: e, darkStyle: e)).toList();
+final _bracketCssClasses = _bracketStyles
+    .map((e) => DynamicTextStyle(lightStyle: e, darkStyle: e))
+    .toList();
 
 const _failedBracketStyle = TextStyle(color: Color(0xFFff0000));
-final _failedBracketCssClass =
-    CssClass(lightStyle: _failedBracketStyle, darkStyle: _failedBracketStyle);
+final _failedBracketCssClass = DynamicTextStyle(
+    lightStyle: _failedBracketStyle, darkStyle: _failedBracketStyle);
 
 const _defaultLightThemeFiles = [
   'light_vs.json',
@@ -74,7 +75,8 @@ class Highlighter {
       textSpans.add(
         TextSpan(
             text: segment,
-            cssClass: CssClass(lightStyle: lightStyle, darkStyle: darkStyle)),
+            cssClass:
+                DynamicTextStyle(lightStyle: lightStyle, darkStyle: darkStyle)),
       );
 
       charPos = span.end;
@@ -92,7 +94,7 @@ class Highlighter {
 
     return TextSpan(
         children: textSpans,
-        cssClass: CssClass(
+        cssClass: DynamicTextStyle(
             lightStyle: lightTheme._wrapper, darkStyle: darkTheme._wrapper));
   }
 
@@ -139,7 +141,7 @@ class Highlighter {
     }
   }
 
-  CssClass _getBracketStyle(int bracketCounter) {
+  DynamicTextStyle _getBracketStyle(int bracketCounter) {
     if (bracketCounter < 0) {
       return _failedBracketCssClass;
     }
@@ -265,215 +267,5 @@ class HighlighterTheme {
   }
 }
 
-/// Flutter Stubs
-enum ThemeMode {
-  light,
-  dark,
-}
-
-enum Brightness {
-  dark,
-  light;
-}
-
-enum FontStyle {
-  italic,
-  bold;
-}
-
-enum FontWeight {
-  bold;
-}
-
-enum TextDecoration {
-  underline;
-}
-
-class Color {
-  final int value;
-  const Color(this.value);
-}
-
-class TextStyle {
-  final Color? color;
-  final FontStyle? fontStyle;
-  final FontWeight? fontWeight;
-  final TextDecoration? decoration;
-
-  const TextStyle(
-      {this.color, this.fontStyle, this.fontWeight, this.decoration});
-
-  String? toCSS() {
-    final css = <String>[];
-    if (color != null) {
-      var colorString = color!.value.toRadixString(16);
-      // Remove alpha channel
-      colorString = colorString.substring(2);
-      css.add('color: #$colorString;');
-    }
-    if (fontStyle != null) {
-      if (fontStyle == FontStyle.italic) {
-        css.add('font-style: italic;');
-      }
-      if (fontStyle == FontStyle.bold) {
-        css.add('font-weight: bold;');
-      }
-    }
-    if (fontWeight != null) {
-      css.add('font-weight: bold;');
-    }
-    if (decoration != null) {
-      // Add underline
-      css.add('text-decoration: underline;');
-    }
-    if (css.isEmpty) {
-      return null;
-    } else {
-      return css.join('\n');
-    }
-  }
-
-  @override
-  bool operator ==(other) {
-    if (identical(this, other)) return true;
-    if (other is! TextStyle) return false;
-    return other.hashCode == hashCode;
-  }
-
-  @override
-  int get hashCode {
-    /// Purposefully not including name in the hash code
-    return color.hashCode ^
-        fontStyle.hashCode ^
-        fontWeight.hashCode ^
-        decoration.hashCode;
-  }
-}
-
-class CssClass {
-  late String className;
-  final TextStyle? lightStyle;
-  final TextStyle? darkStyle;
-
-  CssClass({required this.lightStyle, required this.darkStyle})
-      : assert(lightStyle == null && darkStyle == null ||
-            lightStyle != null && darkStyle != null),
-        className = randomCssClassName();
-
-  @override
-  bool operator ==(covariant CssClass other) {
-    if (identical(this, other)) return true;
-    // Class Name is not included in the comparison cuz we will use a Set to try and find identical styles
-    return other.lightStyle == lightStyle && other.darkStyle == darkStyle;
-  }
-
-  @override
-  int get hashCode =>
-      className.hashCode ^ lightStyle.hashCode ^ darkStyle.hashCode;
-
-  String? toCSS() {
-    if (lightStyle == null || darkStyle == null) {
-      return null;
-    }
-    var css = '';
-    final lightCss = lightStyle!.toCSS();
-    final darkCss = darkStyle!.toCSS();
-    if (lightCss != null && darkCss != null) {
-      css += '/* Light Theme */\n.$className { $lightCss }\n';
-      css +=
-          '/* Dark Theme */\n@media (prefers-color-scheme: dark) { .$className { $darkCss } }\n';
-    }
-    return css;
-  }
-}
-
-final letters = 'abcdefghijklmnopqrstuvwxyz';
-final _usedNames = <String>{};
-final _random = Random();
-
-/// Generates a random CSS class name.
-String randomCssClassName() {
-  String randomStringGenerator() {
-    final randomString = _random.nextInt(100000).toRadixString(36);
-    if (_usedNames.contains(randomString)) {
-      return randomStringGenerator();
-    } else {
-      return randomString;
-    }
-  }
-
-  return 'class-${randomStringGenerator()}';
-}
-
-/// A span of text with a light and dark [TextStyle].
-class TextSpan {
-  final List<TextSpan> children;
-  final String? text;
-  final CssClass? cssClass;
-  const TextSpan({this.text, required this.cssClass, this.children = const []});
-
-  /// Cleans all the children [TextStyle] elements so that there should be only a single class
-  /// for each unique [TextStyle] element.
-  // ignore: no_leading_underscores_for_local_identifiers
-  void _cleanChildren([Set<CssClass>? _classes]) {
-    final classes = _classes ?? <CssClass>{};
-    if (cssClass != null) {
-      // If we already have a class with the same style, then we should just update the class name
-      if (classes.contains(cssClass)) {
-        cssClass!.className = classes.lookup(cssClass)!.className;
-      } else {
-        // Otherwise, we should add the class to the set
-        classes.add(cssClass!);
-      }
-    }
-    // If we have children, then we should clean them as well
-    for (var child in children) {
-      child._cleanChildren(classes);
-    }
-  }
-
-  ({String html, Set<CssClass> cssClasses}) toHTML() {
-    /// Clean the children so that identical styles have the same class name
-    _cleanChildren();
-
-    var html = '';
-    var classes = <CssClass>{};
-    if (text != null) {
-      html += text!.replaceAll(" ", "&nbsp;").replaceAll('\n', "<br>");
-    }
-    if (cssClass != null) {
-      classes.add(cssClass!);
-    }
-
-    if (children.isNotEmpty) {
-      for (var child in children) {
-        final result = child.toHTML();
-        html += result.html;
-        classes.addAll(result.cssClasses);
-      }
-    }
-
-    return (
-      html:
-          '<span ${cssClass == null ? "" : "class=${cssClass!.className}"} >$html</span>',
-      cssClasses: classes
-    );
-  }
-}
-
-extension CssClassSetExt on Set<CssClass> {
-  String? styleBlocks() {
-    var css = <String>[];
-    for (var cssClass in this) {
-      final styleBlock = cssClass.toCSS();
-      if (styleBlock != null) {
-        css.add(styleBlock);
-      }
-    }
-    if (css.isEmpty) {
-      return null;
-    } else {
-      return '<style>\n${css.join('\n')}\n</style>';
-    }
-  }
-}
+/// Represents a theme mode.
+enum ThemeMode { light, dark }

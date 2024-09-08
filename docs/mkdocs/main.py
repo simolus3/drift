@@ -31,7 +31,6 @@ class Snippet:
         self.is_html: bool = data["isHtml"]
         self.code: str = data["code"]
         self.name: str = data["name"]
-        self.styleBlock = data.get("css")
 
 
 def strip_tags(html):
@@ -75,7 +74,7 @@ def define_env(env):
         result: str
 
         if snippet.is_html:
-            result = html_codeblock(snippet.code, snippet.styleBlock)
+            result = html_codeblock(snippet.code)
         elif is_drift:
             result = markdown_codeblock(snippet.code, "sql")
         else:
@@ -89,7 +88,7 @@ def markdown_codeblock(content: str, lang: str = "") -> str:
     return f"```{lang}\n{content}\n```"
 
 
-def html_codeblock(content: str, style_block:str|None) -> str:
+def html_codeblock(content: str) -> str:
     """
     Create the html for this code block.
     """
@@ -103,6 +102,4 @@ def html_codeblock(content: str, style_block:str|None) -> str:
     content = "\n".join(lines)
 
     result = f"""<pre id="{random_id}"><code>{content}</code></pre>"""
-    if style_block:
-        result += f"\n\n<style>{style_block}</style>"
     return result

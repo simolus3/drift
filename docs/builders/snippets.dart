@@ -33,20 +33,16 @@ String buildSnippets(String code, Highlighter highlighter,
   var snippets = extractSnippets(code, removeIndent: removeIndent);
   final String json = jsonEncode(snippets.entries.map((e) {
     final String code;
-    final String? css;
     if (isDart) {
-      final (:html, :cssClasses) = highlighter.highlight(e.value).toHTML();
-      code = html;
-      css = cssClasses.styleBlocks();
+      final h = highlighter.highlight(e.value);
+      code = h.toHTML();
     } else {
       code = e.value;
-      css = null;
     }
     return {
       "name": e.key,
       "isHtml": isDart,
       "code": code,
-      "css": css,
     };
   }).toList());
   return json;
