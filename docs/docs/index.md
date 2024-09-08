@@ -1,6 +1,6 @@
 ---
 
-title: Documentation & Guides
+title: Home
 description: Welcome to drift's documentation. This site shows you what drift can do and how to use it.
 
 ---
