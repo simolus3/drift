@@ -30,8 +30,8 @@ theme:
       toggle:
 
   # TODO: Add logo & favicon
-  # logo: assets/logo.png
-  # favicon: assets/favicon.ico
+  logo: images/icon.png
+  favicon: images/icon.png
   features:
     - content.tooltips
     - navigation.instant
