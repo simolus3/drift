@@ -5,7 +5,7 @@ site_url: https://drift.simonbinder.eu/
 repo_url: https://github.com/simolus3/drift
 
 # TODO: Change to develop
-edit_uri: edit/mkdocs-clean/docs/docs
+edit_uri: edit/develop/docs/docs
 theme:
   name: material
   language: en
