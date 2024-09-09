@@ -426,7 +426,7 @@ the regular implementation.
 
 The following example is meant to be used with a regular Dart web app, compiled using
 [build_web_compilers](https://pub.dev/packages/build_web_compilers).
-A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example).
+A Flutter port of this example is [part of the drift repository](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/flutter_web_worker_example).
 
 To write a web worker that will serve requests for drift, create a file called `worker.dart` in
 the `web/` folder of your app. It could have the following content:
@@ -446,7 +446,7 @@ You can then open a drift database with that connection.
 For more information on the `DatabaseConnection` class, see the documentation on
 [isolates](../isolates.md).
 
-A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/web_worker_example)
+A small, but working example is available under [examples/web_worker_example](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/web_worker_example)
 in the drift repository.
 
 #### Flutter
@@ -455,7 +455,7 @@ Flutter web doesn't compile `.dart` files in web folder and won't use `.js` file
 `build_web_compilers` either. Instead, we'll use Dart's build system to manually compile the worker to a
 JavaScript file before using Flutter-specific tooling.
 
-Example is available under [examples/flutter_web_worker_example](https://github.com/simolus3/drift/tree/develop/examples/flutter_web_worker_example)
+Example is available under [examples/flutter_web_worker_example](https://github.com/simolus3/drift/tree/drift-2.19.2/examples/flutter_web_worker_example)
 in the drift repository.
 
 First, add [build_web_compilers](https://pub.dev/packages/build_web_compilers) to the project:
@@ -502,18 +502,22 @@ cp -f build/web/worker.dart.js web/worker.dart.min.js
 Finally, use this to connect to a worker:
 
 ```dart
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
 import 'package:drift/web.dart';
 import 'package:flutter/foundation.dart';
+import 'package:web/web.dart';
 
 DatabaseConnection connectToWorker(String databaseName) {
   final worker = SharedWorker(
-      kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js', databaseName);
-  return remote(worker.port!.channel());
+      (kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js').toJS,
+      databaseName.toJS);
+
+  return DatabaseConnection.delayed(
+      connectToRemoteAndInitialize(worker.port.channel()));
 }
 ```
 
-You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.
+You can pass that `DatabaseConnection` to the constructor of your database class.
