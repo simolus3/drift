@@ -493,16 +493,12 @@ class DelegatedDatabase extends _BaseExecutor {
   @override
   // ignore: library_private_types_in_public_api
   TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
-    final transactionDelegate = delegate.transactionDelegate;
-
     switch (delegate.transactionDelegate) {
       case NoTransactionDelegate noTransactionDelegate:
         return _StatementBasedTransactionExecutor(
             this, context, noTransactionDelegate);
       case SupportedTransactionDelegate supported:
         return _WrappingTransactionExecutor(this, supported);
-      default:
-        throw StateError('Unknown transaction delegate: $transactionDelegate');
     }
   }
 
