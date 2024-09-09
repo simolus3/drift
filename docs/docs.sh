@@ -2,7 +2,7 @@
 
 # Get the 1st argument passed to the script and convert it to lowercase
 arg1=$(echo $1 | tr '[:upper:]' '[:lower:]')
-arg2=$(echo $1 | tr '[:upper:]' '[:lower:]')
+arg2=$(echo $2 | tr '[:upper:]' '[:lower:]')
 
 
 # Build the MkDocs container which will be used to build/serve the MkDocs project
@@ -126,7 +126,8 @@ elif [ $arg1 == "serve" ]; then
 
     serve_mkdocs &
 
-    if [arg2 == "--with-build-runner"]; then
+    if [ $arg2 == "--with-build-runner" ]; then
+        echo "Running build_runner watch..."
         dart run build_runner watch
     fi
 

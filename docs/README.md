@@ -37,6 +37,10 @@ If you would like changes to snippets to be available in real-time, you can run 
 docs.sh serve --with-build-runner
 ```
 
+### Syntax Highlighting
+The CSS for the syntax highlighting rarely changes. It can be found in the `docs/docs/css` folder. If you need to update it, run the `docs/builders/src/css_classes.dart` file which outputs the contents of the CSS file.
+
+
 ### Understanding the Build Process
 
 Behind the scenes, the `docs.sh` script does the following:
